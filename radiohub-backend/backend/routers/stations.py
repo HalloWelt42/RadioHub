@@ -72,15 +72,17 @@ async def search_stations(req: StationSearchRequest):
         favs_only=req.favs_only
     )
 
-    # Erkannte Bitrates/Codecs mergen -- reale Werte haben immer Vorrang
+    # Erkannte Bitrates/Codecs mergen -- nur fehlende Werte ergaenzen
     if stations:
         uuids = [s["uuid"] for s in stations if "uuid" in s]
         detected = get_cached_bitrates(uuids)
         for s in stations:
             det = detected.get(s.get("uuid"))
             if det and det["bitrate"] > 0:
-                s["bitrate"] = det["bitrate"]
-                if det.get("codec"):
+                # Nur ueberschreiben wenn Original-Wert fehlt oder 0
+                if not s.get("bitrate") or s["bitrate"] == 0:
+                    s["bitrate"] = det["bitrate"]
+                if det.get("codec") and (not s.get("codec") or s["codec"] == ""):
                     s["codec"] = det["codec"].upper()
 
     return {"count": len(stations), "stations": stations}

@@ -16,6 +16,21 @@ from typing import Optional
 from dataclasses import dataclass, field
 
 
+# Standard-Bitrate-Stufen (kbps)
+STANDARD_BITRATES = [32, 48, 64, 96, 128, 192, 256, 320]
+
+
+def snap_to_step(bitrate: int) -> int:
+    """Rundet auf die naechste Standard-Bitrate ab (nicht hoeher als Input)."""
+    best = STANDARD_BITRATES[0]
+    for step in STANDARD_BITRATES:
+        if step <= bitrate:
+            best = step
+        else:
+            break
+    return best
+
+
 @dataclass
 class StreamInfo:
     """Informationen über den Eingabe-Stream"""
@@ -134,31 +149,29 @@ class HLSBufferService:
         self,
         input_bitrate: int,
         min_bitrate: int,
-        max_bitrate: int
+        max_bitrate: int,
+        override_bitrate: int = 0
     ) -> int:
         """
         Berechnet optimale Output-Bitrate.
-        
-        Regel: Nicht höher als Input (sinnlos), aber mindestens min.
-        
-        Args:
-            input_bitrate: Erkannte Bitrate des Eingabe-Streams
-            min_bitrate: User-Einstellung Minimum
-            max_bitrate: User-Einstellung Maximum
-            
-        Returns:
-            Optimale Output-Bitrate in kbps
+
+        Bei Override: User-Wahl direkt verwenden (bereits Standard-Stufe).
+        Sonst: Nicht hoeher als Input, auf Standard-Stufe snappen.
         """
+        if override_bitrate and override_bitrate > 0:
+            # User hat explizit gewaehlt
+            return override_bitrate
+
         if input_bitrate <= 0:
-            # Unbekannt → max_bitrate als sicherer Fallback
-            return max_bitrate
-        
-        # Nicht höher als Input (Aufblähen ist sinnlos)
+            # Unbekannt -> max_bitrate als sicherer Fallback
+            return snap_to_step(max_bitrate)
+
+        # Nicht hoeher als Input (Aufblaehen ist sinnlos)
         output = min(input_bitrate, max_bitrate)
         # Aber mindestens min_bitrate
         output = max(output, min_bitrate)
-        
-        return output
+        # Auf Standard-Stufe snappen
+        return snap_to_step(output)
         
     def _build_ffmpeg_cmd(self, stream_url: str) -> list:
         """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate"""
@@ -198,8 +211,9 @@ class HLSBufferService:
         bitrate: int = 128,
         max_minutes: int = 10,
         min_bitrate: int = 32,
-        max_bitrate: int = 256,
-        sample_rate: int = 44100
+        max_bitrate: int = 320,
+        sample_rate: int = 44100,
+        override_bitrate: int = 0
     ) -> dict:
         """
         Startet HLS Buffering für einen Stream.
@@ -246,7 +260,8 @@ class HLSBufferService:
         output_bitrate = self._calculate_output_bitrate(
             input_bitrate=input_bitrate,
             min_bitrate=min_bitrate,
-            max_bitrate=max_bitrate
+            max_bitrate=max_bitrate,
+            override_bitrate=override_bitrate
         )
         
         print(f"  📈 Bitrate: Input {input_bitrate} kbps → Output {output_bitrate} kbps (Range: {min_bitrate}-{max_bitrate})")

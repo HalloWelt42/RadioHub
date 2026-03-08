@@ -195,7 +195,7 @@ class RadioHubAPI {
         station_name: station.name,
         stream_url: station.url_resolved || station.url,
         bitrate: station.bitrate || 128,
-        max_minutes: 10
+        max_minutes: 120
       })
     });
   }
@@ -221,6 +221,7 @@ class RadioHubAPI {
 
   // === HLS Timeshift Buffer ===
   async startHLS(station) {
+    const overrideBitrate = JSON.parse(localStorage.getItem('radiohub_bitrate_override') || '0');
     return this.fetch('/api/hls/start', {
       method: 'POST',
       body: JSON.stringify({
@@ -228,7 +229,8 @@ class RadioHubAPI {
         station_name: station.name,
         stream_url: station.url_resolved || station.url,
         bitrate: station.bitrate || 128,
-        max_minutes: 10
+        max_minutes: 120,
+        override_bitrate: overrideBitrate || 0
       })
     });
   }

@@ -444,8 +444,39 @@ export function toggleStreamMode() {
     _switchToDirect();
     _userModeOverride = true;
   } else if (_appState.playerMode === 'direct' && _appState.canPlayHLS === true) {
-    _switchToHLS(_generation);
+    // Backend-Buffer neu starten + direkt umschalten wenn ready
     _userModeOverride = true;
+    const station = _appState.currentStation;
+    const gen = _generation;
+    (async () => {
+      try {
+        await api.stopHLS();
+        _appState.hlsActive = false;
+        const result = await api.startHLS(station);
+        if (_generation !== gen) return;
+        if (result.status === 'started' || result.status === 'already_active') {
+          _hlsSessionId = result.session_id || null;
+          _appState.hlsActive = true;
+          _appState.hlsStatus = result;
+          _startHLSPolling(gen);
+          // Warten bis Segmente bereit, dann umschalten
+          for (let i = 0; i < 30; i++) {
+            await new Promise(r => setTimeout(r, 500));
+            if (_generation !== gen) return;
+            const status = await api.getHLSStatus();
+            if (status?.segment_count >= 3) {
+              _switchToHLS(gen);
+              return;
+            }
+          }
+          // Timeout: trotzdem versuchen
+          _switchToHLS(gen);
+        }
+      } catch (e) {
+        console.error('HLS restart on toggle failed:', e);
+        _switchToHLS(gen);
+      }
+    })();
   }
   // canPlayHLS === null: HLS noch nicht bereit, ignorieren
 }
@@ -480,6 +511,25 @@ export function canToggleMode() {
   if (!_appState) return false;
   return (_appState.playerMode === 'hls' && _appState.canPlayDirect) ||
          (_appState.playerMode === 'direct' && _appState.canPlayHLS === true);
+}
+
+/**
+ * Startet HLS-Session neu (z.B. nach Bitrate-Override-Aenderung).
+ * Backend-Buffer wird gestoppt und mit neuen Parametern gestartet.
+ */
+export async function restartHLS() {
+  if (!_appState || _appState.playerMode !== 'hls') return;
+  const station = _appState.currentStation;
+  if (!station) return;
+
+  try {
+    await api.stopHLS();
+    _appState.hlsActive = false;
+    const gen = _generation;
+    _startHLSBackground(station, gen);
+  } catch (e) {
+    console.error('HLS restart failed:', e);
+  }
 }
 
 // ============================================================

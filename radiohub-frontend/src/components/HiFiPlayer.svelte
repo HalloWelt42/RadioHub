@@ -2,6 +2,7 @@
   import HiFiLed from './hifi/HiFiLed.svelte';
   import HiFiKnob from './hifi/HiFiKnob.svelte';
   import HiFiVuMeter from './hifi/HiFiVuMeter.svelte';
+  import HiFiBitrateLed from './hifi/HiFiBitrateLed.svelte';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as engine from '../lib/playerEngine.js';
   import { connect as connectAnalyser } from '../lib/audioAnalyser.js';
@@ -285,6 +286,25 @@
     (appState.playerMode === 'hls' && appState.canPlayDirect) ||
     (appState.playerMode === 'direct' && appState.canPlayHLS === true)
   );
+
+  // Bitrate Override (persistent via localStorage)
+  let bitrateOverride = $state(JSON.parse(localStorage.getItem('radiohub_bitrate_override') || 'null'));
+
+  // Erkannte Input-Bitrate des Streams (Original, nicht die HLS-Encoding-Bitrate)
+  let hlsInputBitrate = $derived(appState.streamQuality?.inputBitrate || 0);
+
+  async function handleBitrateOverrideChange(newOverride) {
+    bitrateOverride = newOverride;
+    if (newOverride !== null) {
+      localStorage.setItem('radiohub_bitrate_override', JSON.stringify(newOverride));
+    } else {
+      localStorage.removeItem('radiohub_bitrate_override');
+    }
+    // HLS aktiv -> neu starten mit neuer Bitrate
+    if (appState.playerMode === 'hls' && appState.currentStation) {
+      await engine.restartHLS();
+    }
+  }
 </script>
 
 <footer class="hifi-player">
@@ -390,7 +410,7 @@
         {/if}
       </span>
       <span class="section-label">{transportLabel}</span>
-      <span class="transport-time">
+      <span class="transport-time" class:time-blue={isHLSMode && appState.hlsStatus?.buffered_seconds}>
         {#if isPodcast && duration > 0}
           {formatTimeShort(duration)}
         {:else if isHLSMode && appState.hlsStatus?.buffered_seconds}
@@ -524,6 +544,18 @@
           </button>
         {/if}
       </div>
+
+      <!-- Bitrate LED Selector (nur bei HLS sichtbar) -->
+      {#if isHLSMode && appState.hlsActive}
+        <div class="bitrate-bar">
+          <span class="bitrate-label">BITRATE</span>
+          <HiFiBitrateLed
+            activeBitrate={hlsInputBitrate}
+            overrideBitrate={bitrateOverride}
+            onchange={handleBitrateOverrideChange}
+          />
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -782,6 +814,11 @@
     text-align: right;
   }
 
+  .transport-time.time-blue {
+    color: var(--hifi-led-blue);
+    text-shadow: 0 0 4px var(--hifi-led-blue-glow);
+  }
+
   .live-indicator {
     color: var(--hifi-led-blue);
     font-weight: 700;
@@ -791,10 +828,27 @@
   .transport-content {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    height: 64px;
-    justify-content: center;
+    min-height: 80px;
+  }
+
+  .bitrate-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 4px;
+    gap: 6px;
+  }
+
+  .bitrate-label {
+    font-family: var(--hifi-font-labels);
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--hifi-text-secondary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   /* Horizontal Fader */
@@ -915,8 +969,18 @@
     opacity: 1;
   }
 
+  .transport-btn.rec {
+    background: rgba(180, 40, 40, 0.08);
+    border-color: #5a2020;
+  }
+
+  .transport-btn.rec:hover:not(:disabled) {
+    background: rgba(180, 40, 40, 0.15);
+  }
+
   .transport-btn.rec .transport-icon {
     color: var(--hifi-led-red);
+    opacity: 0.6;
   }
 
   /* Player Error */

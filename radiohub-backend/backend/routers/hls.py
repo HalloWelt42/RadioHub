@@ -33,6 +33,7 @@ class HLSStartRequest(BaseModel):
     stream_url: str
     bitrate: int = 128
     max_minutes: int = 10
+    override_bitrate: int = 0
 
 
 # === Buffer Control ===
@@ -64,7 +65,8 @@ async def start_hls_buffer(request: HLSStartRequest):
         max_minutes=request.max_minutes,
         min_bitrate=min_bitrate,
         max_bitrate=max_bitrate,
-        sample_rate=sample_rate
+        sample_rate=sample_rate,
+        override_bitrate=request.override_bitrate
     )
     
     if result.get("status") == "error":
