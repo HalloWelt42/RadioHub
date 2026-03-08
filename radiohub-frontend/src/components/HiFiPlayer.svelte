@@ -213,20 +213,29 @@
   let needsScroll = $derived(displayName.length * CHAR_WIDTH > displayWidth);
 
   // Timer
+  // Recording: Aufnahmedauer (rot)
+  // HLS Timeshift: Abstand zu Live (gelb) -- nur wenn NICHT live
+  // Podcast: aktuelle Position (gruen)
+  // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
     appState.isRecording ? 'red' :
-    isHLSMode ? 'yellow' :
+    isHLSMode && !isLive ? 'yellow' :
     isPodcast ? 'green' :
     'default'
   );
 
   let timerDisplayTime = $derived(
     appState.isRecording ? appState.recordingElapsed :
-    (appState.hlsStatus?.buffered_seconds) ? appState.hlsStatus.buffered_seconds :
-    currentTime
+    isHLSMode && !isLive ? secondsBehindLive :
+    isPodcast ? currentTime :
+    0
   );
 
-  let timerActive = $derived(appState.isRecording || appState.hlsActive || isPodcast);
+  let timerActive = $derived(
+    appState.isRecording ||
+    (isHLSMode && !isLive) ||
+    isPodcast
+  );
 
   // === LED States ===
   let playPauseLedColor = $derived(
@@ -242,6 +251,12 @@
     appState.playerMode === 'hls' ? 'green' :
     appState.playerMode === 'direct' ? 'yellow' :
     'off'
+  );
+
+  // Mode Toggle Verfuegbarkeit
+  let canToggleStreamMode = $derived(
+    (appState.playerMode === 'hls' && appState.canPlayDirect) ||
+    (appState.playerMode === 'direct' && appState.canPlayHLS === true)
   );
 </script>
 
@@ -479,6 +494,18 @@
           <HiFiLed color={liveLedColor} size="small" />
           <i class="fa-solid fa-tower-broadcast transport-icon"></i>
         </button>
+
+        <!-- Mode Toggle (Original/HLS) -->
+        {#if isStation}
+          <button
+            class="transport-btn mode-btn"
+            disabled={!canToggleStreamMode}
+            onclick={() => engine.toggleStreamMode()}
+          >
+            <HiFiLed color={modeLedColor} size="small" />
+            <i class="fa-solid {appState.playerMode === 'hls' ? 'fa-arrows-rotate' : 'fa-wave-square'} transport-icon"></i>
+          </button>
+        {/if}
       </div>
     </div>
   </div>
@@ -697,12 +724,12 @@
 
   .timer-display.timer-red .timer-text {
     color: var(--hifi-led-red);
-    text-shadow: 0 0 8px var(--hifi-led-red-glow);
+    text-shadow: none;
   }
 
   .timer-display.timer-yellow .timer-text {
     color: var(--hifi-led-yellow);
-    text-shadow: 0 0 8px var(--hifi-led-yellow-glow);
+    text-shadow: none;
   }
 
   .timer-display.timer-green .timer-text {

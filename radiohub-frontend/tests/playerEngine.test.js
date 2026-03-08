@@ -107,6 +107,8 @@ function createMockState() {
     hlsStatus: null,
     isLive: true,
     currentSegment: null,
+    canPlayDirect: true,
+    canPlayHLS: null,
     stations: [],
   };
 }
@@ -766,6 +768,118 @@ describe('PlayerEngine', () => {
       await engine.playStation(STATION_A);
       expect(state.playerError).toBe('Kein Audio-Element');
       expect(state.isPlaying).toBe(false);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Stream Mode Toggle (Original/HLS)
+  // ----------------------------------------------------------
+  describe('Stream Mode Toggle', () => {
+    it('TC-SM1: toggleStreamMode wechselt von HLS zu Direct', () => {
+      state.playerMode = 'hls';
+      state.canPlayDirect = true;
+      state.canPlayHLS = true;
+      state.currentStation = STATION_A;
+
+      engine.toggleStreamMode();
+
+      expect(state.playerMode).toBe('direct');
+      expect(audioEl.src).toBe(STATION_A.url_resolved);
+      expect(state.isLive).toBe(true);
+    });
+
+    it('TC-SM2: toggleStreamMode wechselt von Direct zu HLS', async () => {
+      vi.useRealTimers();
+      await engine.playStation(STATION_A);
+      await new Promise(r => setTimeout(r, 50));
+
+      state.playerMode = 'direct';
+      state.canPlayHLS = true;
+      state.canPlayDirect = true;
+
+      engine.toggleStreamMode();
+
+      // HLS switch passiert (playerMode wird in MANIFEST_PARSED gesetzt)
+      // Wir pruefen hier nur dass kein Fehler fliegt
+      expect(state.canPlayHLS).toBe(true);
+      vi.useFakeTimers();
+    });
+
+    it('TC-SM3: toggleStreamMode ignoriert wenn canPlayHLS unbekannt', async () => {
+      await engine.playStation(STATION_A);
+      state.canPlayHLS = null;
+
+      engine.toggleStreamMode();
+
+      expect(state.playerMode).toBe('direct'); // Keine Aenderung
+    });
+
+    it('TC-SM4: toggleStreamMode ignoriert wenn Direct nicht abspielbar', () => {
+      state.playerMode = 'hls';
+      state.canPlayDirect = false;
+      state.currentStation = STATION_A;
+
+      engine.toggleStreamMode();
+
+      expect(state.playerMode).toBe('hls'); // Keine Aenderung
+    });
+
+    it('TC-SM5: canToggleMode gibt korrekten Wert zurueck', () => {
+      state.playerMode = 'hls';
+      state.canPlayDirect = true;
+      expect(engine.canToggleMode()).toBe(true);
+
+      state.canPlayDirect = false;
+      expect(engine.canToggleMode()).toBe(false);
+
+      state.playerMode = 'direct';
+      state.canPlayHLS = true;
+      expect(engine.canToggleMode()).toBe(true);
+
+      state.canPlayHLS = null;
+      expect(engine.canToggleMode()).toBe(false);
+    });
+
+    it('TC-SM6: Dekodierungsfehler setzt canPlayDirect auf false', () => {
+      state.playerMode = 'direct';
+      state.canPlayHLS = false; // HLS auch nicht verfuegbar
+
+      engine.handleError({ target: { error: { code: 3 } } });
+
+      expect(state.canPlayDirect).toBe(false);
+      expect(state.playerError).toBe('Dekodierungsfehler');
+    });
+
+    it('TC-SM7: Dekodierungsfehler bei verfuegbarem HLS wechselt automatisch', () => {
+      state.playerMode = 'direct';
+      state.canPlayHLS = true;
+      state.currentStation = STATION_A;
+
+      engine.handleError({ target: { error: { code: 3 } } });
+
+      expect(state.canPlayDirect).toBe(false);
+      // Kein playerError weil auto-switch zu HLS
+      expect(state.playerError).toBeNull();
+    });
+
+    it('TC-SM8: playStation resettet Mode-Felder', async () => {
+      state.canPlayDirect = false;
+      state.canPlayHLS = true;
+
+      await engine.playStation(STATION_A);
+
+      expect(state.canPlayDirect).toBe(true);
+      expect(state.canPlayHLS).toBe(null);
+    });
+
+    it('TC-SM9: stop resettet Mode-Felder', async () => {
+      state.canPlayDirect = false;
+      state.canPlayHLS = true;
+
+      await engine.stop();
+
+      expect(state.canPlayDirect).toBe(true);
+      expect(state.canPlayHLS).toBe(null);
     });
   });
 

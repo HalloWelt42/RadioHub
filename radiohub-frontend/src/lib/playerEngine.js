@@ -29,6 +29,7 @@ let _recordingInterval = null;
 let _recordingStartTime = null;
 let _hlsSessionId = null;
 let _lastSeekPosition = 0;
+let _userModeOverride = false;
 
 // === Initialisierung ===
 
@@ -114,6 +115,9 @@ export async function playStation(station) {
   _appState.streamQuality = null;
   _appState.playerError = null;
   _appState.currentSegment = null;
+  _appState.canPlayDirect = true;
+  _appState.canPlayHLS = null;
+  _userModeOverride = false;
   _lastSeekPosition = 100; // Live = rechter Rand
 
   // --- Phase 5: Direct Stream starten ---
@@ -285,8 +289,11 @@ export async function stop() {
   _appState.streamQuality = null;
   _appState.playerError = null;
   _appState.currentSegment = null;
+  _appState.canPlayDirect = true;
+  _appState.canPlayHLS = null;
   _hlsSessionId = null;
   _lastSeekPosition = 0;
+  _userModeOverride = false;
 }
 
 /**
@@ -420,6 +427,59 @@ export function goLive() {
 export function canSeek() {
   if (!_appState) return false;
   return _appState.playerMode === 'podcast' || _appState.playerMode === 'hls';
+}
+
+// ============================================================
+//  Stream Mode Toggle (Original/HLS)
+// ============================================================
+
+/**
+ * Wechselt zwischen Direct (Original) und HLS (re-encoded) Modus.
+ * Nur moeglich wenn der Zielmodus verfuegbar ist.
+ */
+export function toggleStreamMode() {
+  if (!_appState || !_audioEl) return;
+
+  if (_appState.playerMode === 'hls' && _appState.canPlayDirect) {
+    _switchToDirect();
+    _userModeOverride = true;
+  } else if (_appState.playerMode === 'direct' && _appState.canPlayHLS === true) {
+    _switchToHLS(_generation);
+    _userModeOverride = true;
+  }
+  // canPlayHLS === null: HLS noch nicht bereit, ignorieren
+}
+
+/**
+ * Wechselt von HLS zurueck zu Direct Stream.
+ * HLS-Polling + Backend-Buffer laufen weiter, damit
+ * spaeteres Zurueckschalten sofort moeglich ist.
+ */
+function _switchToDirect() {
+  if (!_audioEl || !_appState?.currentStation) return;
+
+  // HLS.js Instanz zerstoeren, aber Backend-Buffer + Polling behalten
+  _destroyHLS();
+
+  const url = _appState.currentStation.url_resolved || _appState.currentStation.url;
+  _audioEl.src = url;
+  _audioEl.load();
+  _audioEl.play().catch(e => console.error('Direct play error:', e));
+
+  _appState.playerMode = 'direct';
+  _appState.isLive = true;
+  _appState.currentSegment = null;
+  _lastSeekPosition = 100;
+  console.log('Wechsel zu Direct-Modus (Original-Qualitaet)');
+}
+
+/**
+ * Prueft ob der Stream-Modus gewechselt werden kann.
+ */
+export function canToggleMode() {
+  if (!_appState) return false;
+  return (_appState.playerMode === 'hls' && _appState.canPlayDirect) ||
+         (_appState.playerMode === 'direct' && _appState.canPlayHLS === true);
 }
 
 // ============================================================
@@ -571,6 +631,17 @@ export function handleError(event) {
     3: 'Dekodierungsfehler'
   };
 
+  // Dekodierungsfehler im Direct-Modus: Codec nicht abspielbar
+  if (error.code === 3 && _appState.playerMode === 'direct') {
+    _appState.canPlayDirect = false;
+    // Automatisch zu HLS wechseln wenn verfuegbar
+    if (_appState.canPlayHLS === true) {
+      console.log('Direct-Codec nicht abspielbar, wechsle zu HLS');
+      _switchToHLS(_generation);
+      return;
+    }
+  }
+
   _appState.playerError = messages[error.code] || 'Wiedergabefehler';
   console.error('Audio error:', error.code, _appState.playerError);
 }
@@ -594,6 +665,7 @@ async function _startHLSBackground(station, gen) {
   } catch (e) {
     if (_generation !== gen) return;
     console.error('HLS start failed:', e);
+    _appState.canPlayHLS = false;
     // Direct Stream laeuft weiter - HLS ist optional
   }
 }
@@ -647,7 +719,10 @@ async function _waitForHLSSegments(gen) {
     if (!_appState?.isPlaying) return;
 
     if (_appState.hlsStatus?.segment_count >= 3) {
-      _switchToHLS(gen);
+      _appState.canPlayHLS = true;
+      if (!_userModeOverride) {
+        _switchToHLS(gen);
+      }
       return;
     }
   }
@@ -770,6 +845,7 @@ export function _resetForTest() {
   _recordingStartTime = null;
   _hlsSessionId = null;
   _lastSeekPosition = 0;
+  _userModeOverride = false;
 }
 
 /**

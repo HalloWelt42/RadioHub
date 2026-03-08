@@ -40,6 +40,10 @@ export const appState = $state({
   isLive: true,
   currentSegment: null,
 
+  // Stream Mode Capabilities
+  canPlayDirect: true,   // true=ja, false=Codec nicht abspielbar
+  canPlayHLS: null,      // null=unbekannt, true=Segmente verfuegbar, false=Start fehlgeschlagen
+
   // Data
   stations: [],
   favorites: [],
@@ -208,6 +212,11 @@ export const actions = {
   // HLS Status Update - NICHT MEHR NOETIG, Engine pollt selbst
   async updateHLSStatus() {
     // Backward-Compat: wird von altem Code aufgerufen, macht jetzt nichts
+  },
+
+  // Stream-Modus wechseln (Original/HLS)
+  toggleStreamMode() {
+    engine.toggleStreamMode();
   },
 
   // Live-Modus setzen
