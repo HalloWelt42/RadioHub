@@ -40,11 +40,12 @@
   });
 
   // === Handlers ===
-  function handlePlay() {
-    if (appState.isPaused) {
+  function handlePlayPause() {
+    if (appState.isPlaying && !appState.isPaused) {
+      engine.togglePause();
+    } else if (appState.isPaused) {
       engine.resume();
-    } else if (!appState.isPlaying && (appState.currentStation || appState.currentEpisode)) {
-      // Re-play letzte Source
+    } else if (appState.currentStation || appState.currentEpisode) {
       if (appState.currentStation) {
         engine.playStation(appState.currentStation);
       } else if (appState.currentEpisode) {
@@ -55,10 +56,6 @@
 
   function handleStop() {
     engine.stop();
-  }
-
-  function handlePause() {
-    engine.togglePause();
   }
 
   function handleRec() {
@@ -232,8 +229,10 @@
   let timerActive = $derived(appState.isRecording || appState.hlsActive || isPodcast);
 
   // === LED States ===
-  let playLedColor = $derived(appState.isPlaying && !appState.isPaused ? 'green' : 'off');
-  let pauseLedColor = $derived(appState.isPaused ? 'yellow' : 'off');
+  let playPauseLedColor = $derived(
+    appState.isPaused ? 'yellow' :
+    appState.isPlaying ? 'green' : 'off'
+  );
   let stopLedColor = $derived(!appState.isPlaying && !appState.isPaused && hasSource ? 'yellow' : 'off');
   let recLedColor = $derived(appState.isRecording ? 'red' : 'off');
   let liveLedColor = $derived(isHLSMode && !isLive ? 'blue' : 'off');
@@ -431,16 +430,10 @@
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
-        <!-- Pause -->
-        <button class="transport-btn" onclick={handlePause} disabled={!appState.isPlaying && !appState.isPaused}>
-          <HiFiLed color={pauseLedColor} size="small" />
-          <i class="fa-solid fa-pause transport-icon"></i>
-        </button>
-
-        <!-- Play -->
-        <button class="transport-btn" onclick={handlePlay}>
-          <HiFiLed color={playLedColor} size="small" />
-          <i class="fa-solid fa-play transport-icon"></i>
+        <!-- Play/Pause -->
+        <button class="transport-btn" onclick={handlePlayPause}>
+          <HiFiLed color={playPauseLedColor} size="small" />
+          <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
 
         <!-- Rec -->
