@@ -202,14 +202,14 @@ async def probe_stations(stations: List[dict]):
                 return
 
             result = await probe_bitrate(url)
-            if result and result["bitrate"] > 0:
+            if result and (result["bitrate"] > 0 or result.get("codec")):
                 save_detected_bitrate(
                     uuid,
                     result["bitrate"],
                     result.get("codec", ""),
                     result.get("sample_rate", 0)
                 )
-                print(f"  Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']} kbps")
+                print(f"  Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']}kbps/{result.get('codec', '?')}")
             else:
                 save_detected_bitrate(uuid, 0)
 

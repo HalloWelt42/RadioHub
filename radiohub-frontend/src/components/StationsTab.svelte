@@ -287,15 +287,16 @@
       try {
         const result = await api.getDetectedBitrates([station.uuid]);
         const det = (result.bitrates || {})[station.uuid];
-        if (!det || det.bitrate <= 0) return;
+        if (!det || (det.bitrate <= 0 && !det.codec)) return;
         stations = stations.map(s => {
           if (s.uuid !== station.uuid) return s;
-          const updates = { bitrate: det.bitrate };
+          const updates = {};
+          if (det.bitrate > 0) updates.bitrate = det.bitrate;
           if (det.codec) updates.codec = det.codec.toUpperCase();
           return { ...s, ...updates };
         });
       } catch { /* ignore */ }
-    }, 12000);
+    }, 10000);
   }
   
   async function refreshStations() {

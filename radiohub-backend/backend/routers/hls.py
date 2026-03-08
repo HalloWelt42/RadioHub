@@ -20,6 +20,7 @@ from typing import Optional
 
 from ..services.hls_buffer import hls_buffer
 from ..services.config_service import get_config_service
+from ..services.bitrate_detector import save_detected_bitrate
 
 
 router = APIRouter(prefix="/api/hls", tags=["HLS Buffer"])
@@ -71,7 +72,15 @@ async def start_hls_buffer(request: HLSStartRequest):
             status_code=500,
             detail=result.get("error", "Unbekannter Fehler")
         )
-    
+
+    # Erkannte Stream-Infos in detected_bitrates speichern
+    if hls_buffer.session:
+        br = hls_buffer.session.input_bitrate
+        codec = hls_buffer.session.input_codec
+        sr = hls_buffer.session.sample_rate
+        if br > 0 or (codec and codec != "unknown"):
+            save_detected_bitrate(request.station_uuid, br, codec, sr)
+
     return result
 
 
