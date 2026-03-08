@@ -223,6 +223,15 @@ export function pause() {
  */
 export function resume() {
   if (!_audioEl || !_appState?.isPaused) return;
+
+  // HLS: Nach Pause sind wir hinter der Live-Kante,
+  // weil waehrend der Pause neue Segmente dazukamen.
+  // isLive = false damit handleTimeUpdate die echte Position berechnet
+  // statt auf 100% zu pinnen. User kann mit goLive() zurueckspringen.
+  if (_appState.playerMode === 'hls') {
+    _appState.isLive = false;
+  }
+
   _audioEl.play().catch(e => {
     console.error('Resume error:', e);
     _appState.playerError = 'Wiedergabe konnte nicht fortgesetzt werden';
