@@ -115,7 +115,7 @@
     /* ==========================================
        TYPOGRAPHY
        ========================================== */
-    --hifi-font-family: 'Segoe UI', 'Roboto', -apple-system, sans-serif;
+    --hifi-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --hifi-font-display: 'Share Tech Mono', monospace;
     --hifi-font-segment: 'Orbitron', monospace;
     --hifi-font-size-xs: 9px;

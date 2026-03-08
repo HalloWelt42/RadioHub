@@ -58,27 +58,48 @@ class CacheService:
         
         return {"status": "synced", "count": count}
     
-    async def _fetch_stations(self, limit: int = 50000) -> List[dict]:
-        """Lädt Sender von API"""
-        url = f"{self.api_base}/json/stations/search"
-        params = {
-            "limit": limit,
-            "hidebroken": "true",
-            "order": "clickcount",
-            "reverse": "true"
-        }
-        
+    async def _fetch_stations(self) -> List[dict]:
+        """Laedt alle Sender von API in Batches (API-Limit ~20000 pro Request)"""
+        BATCH_SIZE = 20000
+        all_stations = []
+        offset = 0
+
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                resp = await client.get(url, params=params, headers={
-                    "User-Agent": "RadioHub/0.1"
-                })
-                if resp.status_code == 200:
-                    return resp.json()
+            async with httpx.AsyncClient(timeout=180.0) as client:
+                while True:
+                    url = f"{self.api_base}/json/stations/search"
+                    params = {
+                        "limit": BATCH_SIZE,
+                        "offset": offset,
+                        "hidebroken": "true",
+                        "order": "clickcount",
+                        "reverse": "true"
+                    }
+
+                    resp = await client.get(url, params=params, headers={
+                        "User-Agent": "RadioHub/0.1"
+                    })
+
+                    if resp.status_code != 200:
+                        print(f"✗ API Fehler bei Offset {offset}: Status {resp.status_code}")
+                        break
+
+                    batch = resp.json()
+                    if not batch:
+                        break
+
+                    all_stations.extend(batch)
+                    print(f"  Batch geladen: {len(batch)} Sender (gesamt: {len(all_stations)})")
+
+                    if len(batch) < BATCH_SIZE:
+                        break
+
+                    offset += BATCH_SIZE
         except Exception as e:
-            print(f"✗ Fehler beim Laden: {e}")
-        
-        return []
+            print(f"✗ Fehler beim Laden bei Offset {offset}: {e}")
+
+        print(f"✓ {len(all_stations)} Sender insgesamt geladen")
+        return all_stations
     
     def _save_stations(self, stations: List[dict]) -> int:
         """Speichert Sender in DB"""
