@@ -277,7 +277,21 @@ class CacheService:
                     results.append(station)
                     if len(results) >= limit:
                         break
-            
+
+            # Detected bitrates mergen (ueberschreibt 0/null Werte)
+            if results:
+                uuids = [s['uuid'] for s in results]
+                placeholders = ",".join("?" * len(uuids))
+                c.execute(
+                    f"SELECT uuid, bitrate FROM detected_bitrates WHERE uuid IN ({placeholders}) AND bitrate > 0",
+                    uuids
+                )
+                detected = {row[0]: row[1] for row in c.fetchall()}
+                for station in results:
+                    det = detected.get(station['uuid'])
+                    if det and (not station.get('bitrate') or station['bitrate'] == 0):
+                        station['bitrate'] = det
+
             return results
 
 

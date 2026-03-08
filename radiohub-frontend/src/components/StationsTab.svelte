@@ -8,24 +8,92 @@
   function formatNumber(num) {
     return num?.toLocaleString('de-DE') ?? '-';
   }
+
+  // k-Format: 1234 -> "1.2k", 12345 -> "12.3k", 999 -> "999"
+  function formatK(num) {
+    if (num == null) return '-';
+    if (num < 1000) return String(num);
+    const k = num / 1000;
+    return k >= 100 ? Math.round(k) + 'k' : k.toFixed(1).replace('.', ',') + 'k';
+  }
+
+  // Laendernamen-Mapping (Korrektur der radio-browser.info Namen)
+  const COUNTRY_NAMES = {
+    'The United States Of America': 'USA',
+    'United States of America': 'USA',
+    'The Russian Federation': 'Russland',
+    'Russian Federation': 'Russland',
+    'Germany': 'Deutschland',
+    'France': 'Frankreich',
+    'Australia': 'Australien',
+    'Austria': 'Oesterreich',
+    'Switzerland': 'Schweiz',
+    'Netherlands': 'Niederlande',
+    'The Netherlands': 'Niederlande',
+    'Belgium': 'Belgien',
+    'Brazil': 'Brasilien',
+    'Spain': 'Spanien',
+    'Italy': 'Italien',
+    'Japan': 'Japan',
+    'China': 'China',
+    'India': 'Indien',
+    'Canada': 'Kanada',
+    'Mexico': 'Mexiko',
+    'Poland': 'Polen',
+    'Sweden': 'Schweden',
+    'Norway': 'Norwegen',
+    'Denmark': 'Daenemark',
+    'Finland': 'Finnland',
+    'Czech Republic': 'Tschechien',
+    'Czechia': 'Tschechien',
+    'Hungary': 'Ungarn',
+    'Romania': 'Rumaenien',
+    'Turkey': 'Tuerkei',
+    'Greece': 'Griechenland',
+    'Portugal': 'Portugal',
+    'Argentina': 'Argentinien',
+    'Colombia': 'Kolumbien',
+    'Chile': 'Chile',
+    'Peru': 'Peru',
+    'Indonesia': 'Indonesien',
+    'South Korea': 'Suedkorea',
+    'Thailand': 'Thailand',
+    'Ukraine': 'Ukraine',
+    'Ireland': 'Irland',
+    'New Zealand': 'Neuseeland',
+    'South Africa': 'Suedafrika',
+    'Croatia': 'Kroatien',
+    'Serbia': 'Serbien',
+    'Bulgaria': 'Bulgarien',
+    'Slovakia': 'Slowakei',
+    'Slovenia': 'Slowenien',
+    'Lithuania': 'Litauen',
+    'Latvia': 'Lettland',
+    'Estonia': 'Estland',
+    'Luxembourg': 'Luxemburg',
+    'United Kingdom': 'Grossbritannien',
+    'The United Kingdom Of Great Britain And Northern Ireland': 'Grossbritannien',
+  };
+
+  function translateCountry(name) {
+    return COUNTRY_NAMES[name] || name;
+  }
   
   let searchQuery = $state('');
   let stations = $state([]);
   let isLoading = $state(false);
   let isLoadingMore = $state(false);
   let isRefreshing = $state(false);
-  
-  // Details erweitert für welche Station (null = keine)
-  let expandedUuid = $state(null);
+
+  // Suchhistorie (localStorage)
+  let searchHistory = $state(JSON.parse(localStorage.getItem('radiohub_search_history') || '[]'));
+  let showSearchHistory = $state(false);
   
   // Aktuell spielender Sender
   let currentPlayingStation = $derived(appState.currentStation);
-  
-  // Stationen OHNE den aktuellen Sender (der wird separat dargestellt)
-  let filteredStations = $derived(() => {
-    if (!currentPlayingStation) return stations;
-    return stations.filter(s => s.uuid !== currentPlayingStation.uuid);
-  });
+
+  // Ausgewaehlter Sender (Details sichtbar)
+  let selectedUuid = $state(null);
   
   // Filter-Daten
   let availableCountries = $state([]);
@@ -48,10 +116,21 @@
   let limit = 50;
   let hasMore = $state(true);
   
-  // Filter collapsed
-  let countriesExpanded = $state(true);
-  let bitratesExpanded = $state(true);
-  let votesExpanded = $state(true);
+  // Aktive Filter-Chips (abgeleitete Liste aller aktiven Filter)
+  let activeChips = $derived(() => {
+    const chips = [];
+    for (const code of selectedCountries) {
+      const c = availableCountries.find(x => x.code === code);
+      chips.push({ type: 'country', code, label: code });
+    }
+    for (const b of selectedBitrates) {
+      chips.push({ type: 'bitrate', label: b.label, ref: b });
+    }
+    for (const v of selectedVotesRanges) {
+      chips.push({ type: 'votes', label: v.label, ref: v });
+    }
+    return chips;
+  });
   
   // Search debounce
   let searchTimeout;
@@ -66,13 +145,24 @@
     appState.stations = stations;
   });
   
-  // Votes-Ranges: saubere feste Bereiche
+  // Votes-Ranges: 6 Bereiche, k-Format
   const VOTES_RANGES = [
     { label: '0', min: 0, max: 0 },
     { label: '1 - 100', min: 1, max: 100 },
-    { label: '101 - 1.000', min: 101, max: 1000 },
-    { label: '1.001 - 10.000', min: 1001, max: 10000 },
-    { label: '> 10.000', min: 10001, max: 999999999 }
+    { label: '101 - 1k', min: 101, max: 1000 },
+    { label: '1k - 10k', min: 1001, max: 10000 },
+    { label: '10k - 100k', min: 10001, max: 100000 },
+    { label: '> 100k', min: 100001, max: 999999999 }
+  ];
+
+  // Bitrate-Bereiche: 6 Stufen
+  const BITRATE_RANGES = [
+    { label: '< 64', min: 0, max: 64 },
+    { label: '64 - 128', min: 64, max: 128 },
+    { label: '128 - 192', min: 128, max: 192 },
+    { label: '192 - 256', min: 192, max: 256 },
+    { label: '256 - 320', min: 256, max: 320 },
+    { label: '> 320', min: 320, max: 9999 }
   ];
   
   async function loadFilters() {
@@ -97,17 +187,8 @@
         availableCountries = allCountries.slice(0, 10);
       }
 
-      // Backend gibt Bitrate-Bereiche als Objekte: {label, min, max}
-      const defaultBitrates = [
-        { label: '< 64 kbps', min: 0, max: 64 },
-        { label: '64-128 kbps', min: 64, max: 128 },
-        { label: '128-192 kbps', min: 128, max: 192 },
-        { label: '192-256 kbps', min: 192, max: 256 },
-        { label: '> 256 kbps', min: 256, max: 9999 }
-      ];
-
-      availableBitrates = filters.bitrates?.length ? filters.bitrates : defaultBitrates;
-
+      // Feste Bereiche aus Konstanten
+      availableBitrates = BITRATE_RANGES;
       availableVotesRanges = VOTES_RANGES;
 
       search();
@@ -122,6 +203,7 @@
       isLoading = true;
       offset = 0;
       stations = [];
+      if (searchQuery && searchQuery.length >= 2) saveSearchHistory(searchQuery);
     } else {
       isLoadingMore = true;
     }
@@ -175,6 +257,9 @@
       
       hasMore = newStations.length === limit;
       offset = stations.length;
+
+      // Bitrate-Detection fuer Sender ohne Bitrate im Hintergrund starten
+      requestBitrateDetection(newStations);
     } catch (e) {
       actions.showToast('Suche fehlgeschlagen', 'error');
     } finally {
@@ -182,10 +267,50 @@
       isLoadingMore = false;
     }
   }
+
+  let bitrateCheckTimer;
+  async function requestBitrateDetection(stationList) {
+    const missing = stationList.filter(s => !s.bitrate || s.bitrate === 0);
+    if (missing.length === 0) return;
+
+    const uuids = missing.map(s => s.uuid);
+    try {
+      await api.verifyBitrate(uuids);
+    } catch { /* fire-and-forget */ }
+
+    // Nach Verzoegerung erkannte Bitrates abholen und in Liste mergen
+    clearTimeout(bitrateCheckTimer);
+    bitrateCheckTimer = setTimeout(async () => {
+      try {
+        const allMissing = stations.filter(s => !s.bitrate || s.bitrate === 0).map(s => s.uuid);
+        if (allMissing.length === 0) return;
+        const result = await api.getDetectedBitrates(allMissing);
+        const detected = result.bitrates || {};
+        let updated = false;
+        stations = stations.map(s => {
+          const det = detected[s.uuid];
+          if (det && det > 0 && (!s.bitrate || s.bitrate === 0)) {
+            updated = true;
+            return { ...s, bitrate: det };
+          }
+          return s;
+        });
+      } catch { /* ignore */ }
+    }, 12000);
+  }
   
   async function refreshStations() {
     isRefreshing = true;
     try {
+      // Filter/Sortierung zuruecksetzen
+      searchQuery = '';
+      selectedCountries = [];
+      selectedBitrates = [];
+      selectedVotesRanges = [];
+      showFavsOnly = false;
+      sortBy = 'name';
+      sortOrder = 'asc';
+
       await api.syncCache(true);
       await loadFilters();
       actions.showToast('Stationen aktualisiert', 'success');
@@ -197,9 +322,28 @@
   
   function handleSearchInput() {
     clearTimeout(searchTimeout);
+    showSearchHistory = false;
     if (searchQuery.length >= 2 || searchQuery.length === 0) {
       searchTimeout = setTimeout(() => search(), 300);
     }
+  }
+
+  function saveSearchHistory(query) {
+    if (!query || query.length < 2) return;
+    searchHistory = [query, ...searchHistory.filter(h => h !== query)].slice(0, 10);
+    localStorage.setItem('radiohub_search_history', JSON.stringify(searchHistory));
+  }
+
+  function selectFromHistory(query) {
+    searchQuery = query;
+    showSearchHistory = false;
+    search();
+  }
+
+  function clearSearchHistory() {
+    searchHistory = [];
+    showSearchHistory = false;
+    localStorage.removeItem('radiohub_search_history');
   }
   
   function handleScroll(e) {
@@ -209,18 +353,19 @@
     }
   }
   
-  function playStation(station) {
-    actions.playStation(station);
+  function selectStation(station) {
+    // Klick spielt ab und klappt Details auf, zweiter Klick klappt zu
+    if (selectedUuid === station.uuid) {
+      selectedUuid = null;
+    } else {
+      selectedUuid = station.uuid;
+      actions.playStation(station);
+    }
   }
   
   function toggleFavorite(station, e) {
     e.stopPropagation();
     actions.toggleFavorite(station);
-  }
-  
-  function toggleDetails(uuid, e) {
-    e?.stopPropagation();
-    expandedUuid = expandedUuid === uuid ? null : uuid;
   }
   
   function toggleCountry(code) {
@@ -278,12 +423,22 @@
         appState.currentStation = null;
       }
       
-      expandedUuid = null;
     } catch (err) {
       actions.showToast('Blockieren fehlgeschlagen', 'error');
     }
   }
   
+  function removeChip(chip) {
+    if (chip.type === 'country') {
+      selectedCountries = selectedCountries.filter(c => c !== chip.code);
+    } else if (chip.type === 'bitrate') {
+      selectedBitrates = selectedBitrates.filter(b => b.label !== chip.ref.label);
+    } else if (chip.type === 'votes') {
+      selectedVotesRanges = selectedVotesRanges.filter(r => r.label !== chip.ref.label);
+    }
+    search();
+  }
+
   function clearFilters() {
     selectedCountries = [];
     selectedBitrates = [];
@@ -301,216 +456,161 @@
 <div class="stations-tab">
   <!-- Filter Panel (Links) -->
   <aside class="filter-panel">
-    <!-- Search ohne Label -->
-    <div class="filter-section">
-      <input 
-        type="text" 
-        class="search-input"
-        placeholder="Suchen..." 
-        bind:value={searchQuery}
-        oninput={handleSearchInput}
-      />
+    <!-- Action Row: Favs + Clear + Filter -->
+    <div class="action-row">
+      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); }} title={showFavsOnly ? 'Alle Sender anzeigen' : 'Nur Favoriten anzeigen'}>
+        <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
+        <span>FAVORITEN</span>
+      </button>
+      {#if activeFilterCount > 0}
+        <button class="action-btn square" onclick={clearFilters} title="Alle Filter zuruecksetzen">&#10005;</button>
+      {/if}
+      <button class="action-btn square" onclick={() => showFilterOverlay = true} title="Sender-Filter oeffnen">
+        <i class="fa-solid fa-sliders"></i>
+      </button>
     </div>
-    
-    <!-- Favorites Toggle -->
-    <button class="filter-item" onclick={() => { showFavsOnly = !showFavsOnly; search(); }}>
-      <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
-      <span>FAVORITES ONLY</span>
-    </button>
 
-    <!-- Global Filter Button -->
-    <button class="filter-item global-filter-btn" onclick={() => showFilterOverlay = true}>
-      <i class="fa-solid fa-sliders"></i>
-      <span>SENDER-FILTER</span>
-    </button>
-
-    <!-- Countries -->
-    <div class="filter-section">
-      <button class="filter-header" onclick={() => countriesExpanded = !countriesExpanded}>
-        <span class="filter-label">COUNTRY</span>
-        <span class="filter-toggle">{countriesExpanded ? '▼' : '▶'}</span>
-        {#if selectedCountries.length > 0}
-          <span class="filter-badge">{selectedCountries.length}</span>
-        {/if}
-      </button>
-      {#if countriesExpanded}
-        <div class="filter-options">
-          {#each availableCountries.slice(0, 25) as country}
-            <button class="filter-item" onclick={() => toggleCountry(country.code)}>
-              <HiFiLed color={selectedCountries.includes(country.code) ? 'yellow' : 'off'} size="small" />
-              <span class="filter-item-label">{country.name}</span>
-              <span class="filter-item-count">{formatNumber(country.count)}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
-    
-    <!-- Bitrates -->
-    <div class="filter-section">
-      <button class="filter-header" onclick={() => bitratesExpanded = !bitratesExpanded}>
-        <span class="filter-label">BITRATE</span>
-        <span class="filter-toggle">{bitratesExpanded ? '▼' : '▶'}</span>
-        {#if selectedBitrates.length > 0}
-          <span class="filter-badge">{selectedBitrates.length}</span>
-        {/if}
-      </button>
-      {#if bitratesExpanded}
-        <div class="filter-options">
-          {#each availableBitrates as bitrate}
-            <button class="filter-item" onclick={() => toggleBitrate(bitrate)}>
-              <HiFiLed color={selectedBitrates.some(b => b.label === bitrate.label) ? 'yellow' : 'off'} size="small" />
-              <span>{bitrate.label}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
-    
-    <!-- Votes -->
-    <div class="filter-section">
-      <button class="filter-header" onclick={() => votesExpanded = !votesExpanded}>
-        <span class="filter-label">VOTES</span>
-        <span class="filter-toggle">{votesExpanded ? '▼' : '▶'}</span>
-        {#if selectedVotesRanges.length > 0}
-          <span class="filter-badge">{selectedVotesRanges.length}</span>
-        {/if}
-      </button>
-      {#if votesExpanded}
-        <div class="filter-options">
-          {#each availableVotesRanges as range}
-            <button class="filter-item" onclick={() => toggleVotesRange(range)}>
-              <HiFiLed color={selectedVotesRanges.some(r => r.label === range.label) ? 'yellow' : 'off'} size="small" />
-              <span>{range.label}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
-    
-    <!-- Clear -->
-    {#if activeFilterCount > 0}
-      <button class="clear-btn" onclick={clearFilters}>
-        CLEAR ({activeFilterCount})
-      </button>
+    <!-- Active Filter Chips -->
+    {#if activeChips().length > 0}
+      <div class="sidebar-divider"></div>
+      <div class="active-chips">
+        {#each activeChips() as chip}
+          <button class="filter-chip" onclick={() => removeChip(chip)} title="Filter entfernen: {chip.label}">{chip.label}</button>
+        {/each}
+      </div>
     {/if}
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Countries: nimmt Restplatz, scrollt intern -->
+    <div class="section-flex">
+      <div class="section-header">
+        <span class="section-label">COUNTRY</span>
+        {#if selectedCountries.length > 0}
+          <span class="section-count">{selectedCountries.length}</span>
+        {/if}
+      </div>
+      <div class="filter-list">
+        {#each availableCountries.slice(0, 25) as country}
+          {@const isSelected = selectedCountries.includes(country.code)}
+          {@const hasSel = selectedCountries.length > 0}
+          <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCountry(country.code)} title={isSelected ? 'Filter entfernen: ' + translateCountry(country.name) : 'Filtern nach: ' + translateCountry(country.name)}>
+            <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+            <span class="country-code">{country.code}</span>
+            <span class="filter-item-label">{translateCountry(country.name)}</span>
+            <span class="filter-item-count">{formatNumber(country.count)}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Bitrate: 2-spaltig -->
+    <div class="section-fixed">
+      <div class="section-header">
+        <span class="section-label">BITRATE</span>
+        {#if selectedBitrates.length > 0}
+          <span class="section-count">{selectedBitrates.length}</span>
+        {/if}
+      </div>
+      <div class="filter-grid">
+        {#each availableBitrates as bitrate}
+          {@const isSelected = selectedBitrates.some(b => b.label === bitrate.label)}
+          {@const hasSel = selectedBitrates.length > 0}
+          <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleBitrate(bitrate)} title={isSelected ? 'Filter entfernen: ' + bitrate.label + ' kbps' : 'Filtern nach: ' + bitrate.label + ' kbps'}>
+            <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+            <span class="grid-label">{bitrate.label}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Votes: 2-spaltig -->
+    <div class="section-fixed">
+      <div class="section-header">
+        <span class="section-label">VOTES</span>
+        {#if selectedVotesRanges.length > 0}
+          <span class="section-count">{selectedVotesRanges.length}</span>
+        {/if}
+      </div>
+      <div class="filter-grid">
+        {#each availableVotesRanges as range}
+          {@const isSelected = selectedVotesRanges.some(r => r.label === range.label)}
+          {@const hasSel = selectedVotesRanges.length > 0}
+          <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleVotesRange(range)} title={isSelected ? 'Filter entfernen: ' + range.label + ' Votes' : 'Filtern nach: ' + range.label + ' Votes'}>
+            <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+            <span class="grid-label">{range.label}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
   </aside>
   
   <!-- Station List (Rechts) -->
   <main class="station-list-container">
-    <!-- Header -->
+    <!-- Header mit Suche -->
     <div class="list-header">
       <div class="station-count-display">
-        <span class="count-zeros">{String(stations.length).padStart(7, '0').slice(0, -String(stations.length).length)}</span><span class="count-value">{formatNumber(stations.length)}</span>
+        <span class="count-zeros">{'0'.repeat(Math.max(0, 7 - String(stations.length).length))}</span><span class="count-value">{formatNumber(stations.length)}</span>
         <span class="count-label">STATIONS</span>
       </div>
-      
-      <!-- Sort Buttons -->
-      <div class="sort-controls">
-        <button class="sort-btn" class:active={sortBy === 'name'} onclick={() => setSort('name')}>NAME</button>
-        <button class="sort-btn" class:active={sortBy === 'country'} onclick={() => setSort('country')}>COUNTRY</button>
-        <button class="sort-btn" class:active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>BITRATE</button>
-        <button class="sort-btn" class:active={sortBy === 'votes'} onclick={() => setSort('votes')}>VOTES</button>
+
+      <!-- Suchfeld -->
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Sender suchen..."
+          bind:value={searchQuery}
+          oninput={handleSearchInput}
+          onfocus={() => { if (searchHistory.length > 0 && !searchQuery) showSearchHistory = true; }}
+          onblur={() => { setTimeout(() => showSearchHistory = false, 200); }}
+        />
+        {#if searchQuery}
+          <button class="search-clear" onclick={() => { searchQuery = ''; search(); }}>&#10005;</button>
+        {/if}
+        {#if showSearchHistory && searchHistory.length > 0}
+          <div class="search-history">
+            {#each searchHistory as item}
+              <button class="history-item" onmousedown={() => selectFromHistory(item)}>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>{item}</span>
+              </button>
+            {/each}
+            <button class="history-clear" onmousedown={clearSearchHistory}>
+              Historie loeschen
+            </button>
+          </div>
+        {/if}
       </div>
-      
+
       <!-- Refresh mit Spinner-Platz -->
-      <button class="sort-btn refresh-btn" onclick={refreshStations} disabled={isRefreshing}>
+      <button class="refresh-btn" onclick={refreshStations} disabled={isRefreshing} title={isRefreshing ? 'Senderliste wird aktualisiert...' : 'Komplette Senderliste vom Server neu laden'}>
         <span class="refresh-spinner-slot">
           {#if isRefreshing}
             <div class="btn-spinner"></div>
           {/if}
         </span>
-        <span>REFRESH ALL STATIONS</span>
+        <span>REFRESH</span>
       </button>
     </div>
-    
-    <!-- FIXIERTER AKTUELLER SENDER (außerhalb der scrollbaren Liste) -->
-    {#if currentPlayingStation && !isLoading}
-      {@const isFav = actions.isFavorite(currentPlayingStation.uuid)}
-      {@const bitrateVal = typeof currentPlayingStation.bitrate === 'object' ? currentPlayingStation.bitrate?.value : currentPlayingStation.bitrate}
-      {@const votesVal = currentPlayingStation.votes ?? 0}
-      <div class="current-station-wrapper">
-        <div 
-          class="station-row playing sticky"
-          onclick={() => toggleDetails(currentPlayingStation.uuid)}
-        >
-          <div class="station-led">
-            <HiFiLed color="green" size="small" />
-          </div>
-          <div class="station-name">{currentPlayingStation.name}</div>
-          <div class="station-country">{currentPlayingStation.country || '-'}</div>
-          <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '-'} kbps</div>
-          <div class="station-stats">{formatNumber(votesVal)}</div>
-          <button 
-            class="station-fav"
-            onclick={(e) => toggleFavorite(currentPlayingStation, e)}
-          >
-            <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
-          </button>
-          <span class="expand-icon">{expandedUuid === currentPlayingStation.uuid ? '▼' : '▶'}</span>
-        </div>
-        
-        <!-- Details aufklappbar -->
-        {#if expandedUuid === currentPlayingStation.uuid}
-          <div class="station-details">
-            <div class="details-content">
-              <div class="details-grid">
-                {#if currentPlayingStation.homepage}
-                  <div class="detail-row">
-                    <span class="detail-label">HOMEPAGE</span>
-                    <a href={currentPlayingStation.homepage} target="_blank" class="detail-value link">{currentPlayingStation.homepage}</a>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.tags}
-                  <div class="detail-row">
-                    <span class="detail-label">TAGS</span>
-                    <span class="detail-value">{currentPlayingStation.tags}</span>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.language}
-                  <div class="detail-row">
-                    <span class="detail-label">LANGUAGE</span>
-                    <span class="detail-value">{currentPlayingStation.language}</span>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.codec}
-                  <div class="detail-row">
-                    <span class="detail-label">CODEC</span>
-                    <span class="detail-value">{currentPlayingStation.codec}</span>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.votes !== undefined}
-                  <div class="detail-row">
-                    <span class="detail-label">VOTES</span>
-                    <span class="detail-value">{formatNumber(currentPlayingStation.votes)}</span>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.clickcount !== undefined}
-                  <div class="detail-row">
-                    <span class="detail-label">CLICKS</span>
-                    <span class="detail-value">{formatNumber(currentPlayingStation.clickcount)}</span>
-                  </div>
-                {/if}
-                {#if currentPlayingStation.url_resolved}
-                  <div class="detail-row">
-                    <span class="detail-label">STREAM URL</span>
-                    <span class="detail-value url">{currentPlayingStation.url_resolved}</span>
-                  </div>
-                {/if}
-              </div>
-              <div class="details-actions">
-                <button class="block-btn" onclick={(e) => blockStation(currentPlayingStation, e)}>
-                  BLOCK
-                </button>
-              </div>
-            </div>
-          </div>
-        {/if}
-      </div>
-    {/if}
-    
-    <!-- List (scrollbar, ohne aktuellen Sender) -->
+
+    <!-- Liste (scrollbar, alle Sender) -->
     <div class="station-list" onscroll={handleScroll}>
+      <!-- Spaltenkoepfe (sticky) -->
+      <div class="column-headers">
+        <div class="col-led"></div>
+        <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>NAME {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')}>COUNTRY {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>KBPS / CODEC {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>VOTES / ZUHOERER {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-fav"></div>
+      </div>
+
       {#if isLoading}
         <div class="loading">
           <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
@@ -520,33 +620,95 @@
           <div class="empty-display">NO STATIONS FOUND</div>
         </div>
       {:else}
-        <!-- RESTLICHE STATIONEN -->
-        {#each filteredStations() as station}
-          {@const isPlaying = appState.currentStation?.uuid === station.uuid && appState.isPlaying}
+        {#each stations as station}
+          {@const isPlaying = appState.currentStation?.uuid === station.uuid}
+          {@const isSelected = selectedUuid === station.uuid}
+          {@const isExpanded = isPlaying || isSelected}
           {@const isFav = actions.isFavorite(station.uuid)}
           {@const bitrateVal = typeof station.bitrate === 'object' ? station.bitrate?.value : station.bitrate}
           {@const votesVal = station.votes ?? 0}
-          <div 
-            class="station-row" 
-            class:playing={isPlaying}
-            onclick={() => playStation(station)}
-          >
-            <div class="station-led">
-              <HiFiLed color={isPlaying ? 'green' : 'off'} size="small" />
-            </div>
-            <div class="station-name">{station.name}</div>
-            <div class="station-country">{station.country || '-'}</div>
-            <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '-'} kbps</div>
-            <div class="station-stats">{formatNumber(votesVal)}</div>
-            <button 
-              class="station-fav"
-              onclick={(e) => toggleFavorite(station, e)}
+
+          <div class="station-wrapper" class:playing={isPlaying} class:selected={isSelected && !isPlaying}>
+            <div
+              class="station-row"
+              class:playing={isPlaying}
+              class:selected={isSelected && !isPlaying}
+              onclick={() => selectStation(station)}
             >
-              <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
-            </button>
+              <div class="station-led">
+                <HiFiLed color={isPlaying ? 'blue' : isSelected ? 'blue' : 'off'} size="small" />
+              </div>
+              <div class="station-name">{station.name}</div>
+              <div class="station-country">{translateCountry(station.country) || '-'}</div>
+              <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}{station.codec ? ' / ' + station.codec : ''}</div>
+              <div class="station-stats">{formatNumber(votesVal)}{station.clickcount ? ' / ' + formatK(station.clickcount) : ''}</div>
+              <button
+                class="station-fav"
+                onclick={(e) => toggleFavorite(station, e)}
+                title={isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufuegen'}
+              >
+                <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
+              </button>
+            </div>
+
+            {#if isExpanded}
+              <div class="station-details">
+                <div class="details-content">
+                  <div class="details-grid">
+                    {#if station.homepage}
+                      <div class="detail-row">
+                        <span class="detail-label">HOMEPAGE</span>
+                        <a href={station.homepage} target="_blank" class="detail-value link">{station.homepage}</a>
+                      </div>
+                    {/if}
+                    {#if station.tags}
+                      <div class="detail-row">
+                        <span class="detail-label">TAGS</span>
+                        <span class="detail-value">{station.tags}</span>
+                      </div>
+                    {/if}
+                    {#if station.language}
+                      <div class="detail-row">
+                        <span class="detail-label">LANGUAGE</span>
+                        <span class="detail-value">{station.language}</span>
+                      </div>
+                    {/if}
+                    {#if station.codec}
+                      <div class="detail-row">
+                        <span class="detail-label">CODEC</span>
+                        <span class="detail-value">{station.codec}</span>
+                      </div>
+                    {/if}
+                    {#if station.votes !== undefined}
+                      <div class="detail-row">
+                        <span class="detail-label">VOTES</span>
+                        <span class="detail-value">{formatNumber(station.votes)}</span>
+                      </div>
+                    {/if}
+                    {#if station.clickcount !== undefined}
+                      <div class="detail-row">
+                        <span class="detail-label">CLICKS</span>
+                        <span class="detail-value">{formatNumber(station.clickcount)}</span>
+                      </div>
+                    {/if}
+                    {#if station.url_resolved}
+                      <div class="detail-row">
+                        <span class="detail-label">STREAM URL</span>
+                        <span class="detail-value url">{station.url_resolved}</span>
+                      </div>
+                    {/if}
+                  </div>
+                  <div class="details-actions">
+                    <button class="block-btn" onclick={(e) => blockStation(station, e)} title="Sender dauerhaft aus der Liste entfernen">
+                      BLOCK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/if}
           </div>
         {/each}
-        
+
         {#if isLoadingMore}
           <div class="loading-more">
             <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
@@ -570,147 +732,227 @@
     height: 100%;
     gap: 1px;
     background: var(--hifi-border-dark);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
   }
   
   /* Filter Panel */
   .filter-panel {
-    width: 220px;
+    width: 224px;
     background: var(--hifi-bg-panel);
-    overflow-y: auto;
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    overflow: hidden;
   }
-  
-  .filter-section {
+
+  /* Action Row */
+  .action-row {
     display: flex;
-    flex-direction: column;
     gap: 6px;
+    align-items: center;
   }
-  
-  .search-input {
-    padding: 10px 14px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--hifi-text-primary);
+
+  .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0;
     background: var(--hifi-bg-tertiary);
     border: none;
     border-radius: var(--hifi-border-radius-sm);
-    outline: none;
-    box-shadow: var(--hifi-shadow-inset);
+    color: var(--hifi-text-primary);
+    font-family: var(--hifi-font-values);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: var(--hifi-shadow-button);
   }
-  
-  .search-input:focus {
-    box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
+
+  .action-btn:hover {
+    background: var(--hifi-bg-secondary);
   }
-  
-  .search-input::placeholder {
-    color: var(--hifi-text-secondary);
+
+  .action-btn.square {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    font-size: 14px;
+    color: var(--hifi-accent);
   }
-  
-  .filter-header {
+
+  .action-btn.square i {
+    font-size: 12px;
+  }
+
+  /* Divider */
+  .sidebar-divider {
+    height: 1px;
+    background: var(--hifi-border-dark);
+  }
+
+  /* Active Filter Chips */
+  .active-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    background: rgba(74,144,217,0.15);
+    border: 1px solid rgba(74,144,217,0.3);
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--hifi-accent);
+    cursor: pointer;
+    font-family: var(--hifi-font-values);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .filter-chip:hover {
+    background: rgba(74,144,217,0.25);
+  }
+
+  /* Section Headers */
+  .section-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    color: var(--hifi-text-secondary);
-    cursor: pointer;
-    padding: 4px 0;
-    font-family: 'Roboto', sans-serif;
+    gap: 6px;
+    padding: 2px 0;
   }
-  
-  .filter-label {
+
+  .section-label {
     font-size: 10px;
     font-weight: 400;
     letter-spacing: 1px;
+    color: var(--hifi-text-secondary);
   }
-  
-  .filter-toggle {
-    font-size: 8px;
-  }
-  
-  .filter-badge {
+
+  .section-count {
     margin-left: auto;
-    background: transparent;
-    color: var(--hifi-accent);
     font-family: var(--hifi-font-values);
     font-size: 10px;
+    color: var(--hifi-accent);
     font-weight: 700;
-    padding: 2px 6px;
   }
-  
-  .filter-options {
+
+  /* Country: flex-Restplatz, scrollt intern */
+  .section-flex {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    max-height: 180px;
-    overflow-y: auto;
   }
-  
+
+  .filter-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    margin-top: 4px;
+  }
+
+  /* Bitrate/Votes: feste Hoehe */
+  .section-fixed {
+    flex-shrink: 0;
+  }
+
+  /* 2-spaltig Grid fuer Bitrate/Votes */
+  .filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 4px;
+  }
+
+  .filter-grid .filter-item {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+
+  .grid-label {
+    font-family: var(--hifi-font-values);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
   .filter-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 8px;
+    padding: 5px 6px;
     background: none;
     border: none;
     color: var(--hifi-text-primary);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 11px;
     font-weight: 400;
     cursor: pointer;
     text-align: left;
     border-radius: var(--hifi-border-radius-sm);
   }
-  
+
   .filter-item:hover {
     background: var(--hifi-row-hover);
   }
-  
+
+  /* Ausgewaehlt: blau */
+  .filter-item.selected {
+    color: var(--hifi-accent);
+  }
+
+  .filter-item.selected .country-code,
+  .filter-item.selected .filter-item-count {
+    color: var(--hifi-accent);
+  }
+
+  /* Nicht ausgewaehlt wenn Gruppe aktiv: hellgrau/gedimmt */
+  .filter-item.dimmed {
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+  }
+
+  .filter-item.dimmed .country-code,
+  .filter-item.dimmed .filter-item-count {
+    color: var(--hifi-text-secondary);
+  }
+
+  /* Country Code */
+  .country-code {
+    font-family: var(--hifi-font-values);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    width: 22px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
   .filter-item-label {
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .filter-item-count {
-    font-size: 10px;
-    color: var(--hifi-text-secondary);
-  }
-  
-  .global-filter-btn {
-    background: var(--hifi-bg-tertiary);
-    box-shadow: var(--hifi-shadow-button);
-    border-radius: var(--hifi-border-radius-sm);
-    justify-content: center;
-  }
-
-  .global-filter-btn i {
-    font-size: 11px;
-    color: var(--hifi-accent);
-  }
-
-  .clear-btn {
-    width: 100%;
-    padding: 8px 16px;
-    background: var(--hifi-bg-tertiary);
-    border: 1px solid var(--hifi-border-dark);
-    border-radius: var(--hifi-border-radius-sm);
-    color: var(--hifi-text-primary);
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--hifi-font-values);
     font-size: 10px;
     font-weight: 500;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 8px;
-  }
-  
-  .clear-btn:hover {
-    background: var(--hifi-bg-secondary);
+    color: var(--hifi-text-secondary);
+    text-align: right;
+    min-width: 46px;
+    letter-spacing: 0.3px;
   }
   
   /* Station List */
@@ -726,90 +968,77 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 10px 16px;
+    padding: 12px 16px;
     background: var(--hifi-bg-panel);
     border-bottom: 1px solid var(--hifi-border-dark);
   }
   
   .station-count-display {
     display: flex;
-    align-items: baseline;
-    gap: 6px;
+    align-items: center;
+    gap: 0;
     background: var(--hifi-display-bg);
     border: 1px solid var(--hifi-display-border);
     border-radius: var(--hifi-border-radius-sm);
-    padding: 6px 12px;
-    min-width: 140px;
+    padding: 0 10px;
+    height: 34px;
+    box-sizing: border-box;
+    width: 160px;
+    flex-shrink: 0;
   }
-  
+
   .count-zeros {
-    font-family: var(--hifi-font-display);
-    font-size: 14px;
+    font-family: var(--hifi-font-values);
+    font-size: 13px;
+    font-weight: 700;
     color: var(--hifi-display-text);
-    opacity: 0.2;
+    opacity: 0.15;
   }
-  
+
   .count-value {
-    font-family: var(--hifi-font-display);
-    font-size: 14px;
+    font-family: var(--hifi-font-values);
+    font-size: 13px;
+    font-weight: 700;
     color: var(--hifi-display-text);
     text-shadow: 0 0 6px var(--hifi-display-text);
   }
-  
+
   .count-label {
     font-family: var(--hifi-font-values);
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: 700;
     color: var(--hifi-display-text);
-    opacity: 0.6;
+    opacity: 0.5;
+    margin-left: 8px;
   }
   
-  .sort-controls {
+  .refresh-btn {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex: 1;
-  }
-  
-  .sort-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--hifi-bg-panel);
+    height: 34px;
+    padding: 0 14px;
+    background: var(--hifi-bg-tertiary);
     border: none;
     border-radius: var(--hifi-border-radius-sm);
     color: var(--hifi-text-primary);
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 400;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     cursor: pointer;
     box-shadow: var(--hifi-shadow-button);
+    flex-shrink: 0;
   }
-  
-  .sort-btn:hover:not(:disabled) {
+
+  .refresh-btn:hover:not(:disabled) {
     box-shadow: 2px 2px 4px var(--hifi-shadow-dark), -2px -2px 4px var(--hifi-shadow-light);
   }
-  
-  .sort-btn:active:not(:disabled) {
-    box-shadow: var(--hifi-shadow-inset);
-  }
-  
-  /* Aktive Sort-Buttons: Blau mit leichtem Hover-Effekt */
-  .sort-btn.active {
-    background: var(--hifi-accent);
-    color: white;
-    box-shadow: 2px 2px 4px var(--hifi-shadow-dark), -2px -2px 4px var(--hifi-shadow-light);
-  }
-  
-  .sort-btn:disabled {
+
+  .refresh-btn:disabled {
     opacity: 0.7;
     cursor: wait;
-  }
-  
-  .refresh-btn {
-    margin-left: auto;
   }
   
   .refresh-spinner-slot {
@@ -833,16 +1062,136 @@
     to { transform: rotate(360deg); }
   }
   
+  /* Suchleiste (im Header, gleiche Hoehe wie Stations-Display) */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    height: 34px;
+    background: var(--hifi-display-bg);
+    border: 1px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    box-sizing: border-box;
+    padding: 0 10px;
+    gap: 8px;
+    position: relative;
+  }
+
+  .search-bar:focus-within {
+    border-color: var(--hifi-accent);
+  }
+
+  .search-icon {
+    font-size: 11px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--hifi-font-values);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    outline: none;
+    letter-spacing: 0.5px;
+  }
+
+  .search-input::placeholder {
+    color: var(--hifi-text-secondary);
+    opacity: 0.4;
+  }
+
+  .search-clear {
+    background: none;
+    border: none;
+    color: var(--hifi-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+
+  .search-clear:hover {
+    color: var(--hifi-text-primary);
+  }
+
   .station-list {
     flex: 1;
     overflow-y: auto;
   }
-  
+
+  /* Spaltenkoepfe */
+  .column-headers {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    background: var(--hifi-bg-tertiary);
+    border-bottom: 1px solid var(--hifi-border-dark);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    font-family: var(--hifi-font-segment);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--hifi-text-secondary);
+    text-transform: uppercase;
+  }
+
+  .column-headers > div {
+    cursor: pointer;
+  }
+
+  .column-headers > div:hover {
+    color: var(--hifi-text-primary);
+  }
+
+  .col-active {
+    color: var(--hifi-accent) !important;
+  }
+
+  .col-led {
+    width: 12px;
+    flex-shrink: 0;
+  }
+
+  .col-name {
+    flex: 1;
+  }
+
+  .col-country {
+    width: 224px;
+    padding: 0 16px;
+  }
+
+  .col-bitrate {
+    width: 120px;
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .col-votes {
+    width: 140px;
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .col-fav {
+    width: 20px;
+    cursor: default !important;
+  }
+
   .station-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 16px;
+    padding: 6px 16px;
     cursor: pointer;
     border-bottom: 1px solid var(--hifi-border-dark);
     transition: background 0.1s ease;
@@ -860,11 +1209,11 @@
     flex-shrink: 0;
   }
   
-  /* Sendernamen: Roboto */
+  /* Sendernamen: Barlow */
   .station-name {
     flex: 1;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 18px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -883,16 +1232,16 @@
   }
   
   .station-bitrate {
-    width: 90px;
+    width: 120px;
     font-size: 11px;
     color: var(--hifi-text-secondary);
     text-align: right;
     padding-right: 8px;
   }
-  
+
   .station-stats {
-    width: 70px;
-    font-family: 'Roboto', sans-serif;
+    width: 140px;
+    font-family: 'Barlow', sans-serif;
     font-size: 10px;
     color: var(--hifi-text-secondary);
     text-align: right;
@@ -929,45 +1278,65 @@
     padding: 20px;
   }
   
-  /* Aktueller Sender - fixiert oberhalb der Liste */
-  .current-station-wrapper {
-    flex-shrink: 0;
+  /* Ausgewaehlter Sender: blauer Schein */
+  .station-wrapper.selected {
     background: var(--hifi-bg-panel);
-    border-bottom: 2px solid var(--hifi-accent);
+    border-bottom: 2px solid rgba(51, 153, 255, 0.2);
   }
-  
-  .station-row.sticky {
-    background: var(--hifi-row-selected);
+
+  .station-row.selected {
+    background: rgba(51, 153, 255, 0.08);
+    box-shadow: inset 0 0 20px rgba(51, 153, 255, 0.06);
+  }
+
+  .station-row.selected:hover {
+    background: rgba(51, 153, 255, 0.12);
+  }
+
+  .station-row.selected .station-name {
+    color: var(--hifi-display-blue);
+  }
+
+  /* Spielender Sender: Wrapper-Styling, komplett sticky unterhalb Spaltenkoepfe */
+  .station-wrapper.playing {
+    position: sticky;
+    top: 28px;
+    bottom: 0;
+    z-index: 10;
+    background: var(--hifi-bg-panel);
+    border-bottom: 2px solid rgba(51, 153, 255, 0.3);
+  }
+
+  .station-wrapper.playing .station-row {
+    background: var(--hifi-bg-panel);
     border-bottom: none;
   }
-  
-  .station-row.sticky:hover {
-    background: var(--hifi-row-selected);
+
+  .station-wrapper.playing .station-row:hover {
+    background: var(--hifi-bg-panel);
+  }
+
+  .station-wrapper.playing .station-name {
+    color: #fff;
+    font-weight: 600;
   }
   
-  .expand-icon {
-    font-size: 10px;
-    color: var(--hifi-text-secondary);
-    margin-left: 8px;
-    width: 16px;
-  }
-  
-  /* Station Details */
+  /* Station Details (kompakt) */
   .station-details {
     background: var(--hifi-bg-tertiary);
-    padding: 12px 16px;
+    padding: 6px 16px 6px 40px;
     border-top: 1px solid var(--hifi-border-dark);
   }
-  
+
   .details-content {
     display: flex;
-    gap: 16px;
+    gap: 12px;
   }
-  
+
   .details-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 3px;
     flex: 1;
   }
   
@@ -986,13 +1355,13 @@
     color: var(--hifi-led-red);
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 400;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     cursor: pointer;
     box-shadow: var(--hifi-shadow-button);
   }
-  
+
   .block-btn:hover {
     background: var(--hifi-led-red);
     color: white;
@@ -1015,7 +1384,7 @@
   }
   
   .detail-value {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 12px;
     color: var(--hifi-text-primary);
     word-break: break-word;
@@ -1035,5 +1404,75 @@
     font-size: 10px;
     color: var(--hifi-text-secondary);
     word-break: break-all;
+  }
+
+  /* Sort-Icons in Spaltenkoepfen */
+  .column-headers i {
+    margin-left: 4px;
+    font-size: 10px;
+  }
+
+  /* Suchhistorie Dropdown */
+  .search-history {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-display-border);
+    border-top: none;
+    border-radius: 0 0 var(--hifi-border-radius-sm) var(--hifi-border-radius-sm);
+    z-index: 30;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    background: none;
+    border: none;
+    color: var(--hifi-text-primary);
+    font-family: var(--hifi-font-values);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .history-item:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .history-item i {
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+  }
+
+  .history-clear {
+    display: block;
+    width: 100%;
+    padding: 6px 10px;
+    background: none;
+    border: none;
+    border-top: 1px solid var(--hifi-border-dark);
+    color: var(--hifi-text-secondary);
+    font-family: var(--hifi-font-values);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .history-clear:hover {
+    color: var(--hifi-text-primary);
+    background: var(--hifi-row-hover);
   }
 </style>

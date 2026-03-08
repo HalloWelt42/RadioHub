@@ -183,6 +183,23 @@
   let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls');
   let canNavigate = $derived(appState.stations?.length > 0 || isPodcast);
 
+  // Prev/Next Sendernamen fuer Tooltips
+  let prevStationName = $derived(() => {
+    if (!appState.currentStation || !appState.stations?.length) return null;
+    const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
+    if (idx > 0) return appState.stations[idx - 1].name;
+    if (idx === 0) return appState.stations[appState.stations.length - 1].name;
+    return null;
+  });
+
+  let nextStationName = $derived(() => {
+    if (!appState.currentStation || !appState.stations?.length) return null;
+    const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
+    if (idx >= 0 && idx < appState.stations.length - 1) return appState.stations[idx + 1].name;
+    if (idx === appState.stations.length - 1) return appState.stations[0].name;
+    return null;
+  });
+
   // Quality Info
   let qualityLabel = $derived(() => {
     const q = appState.streamQuality;
@@ -425,6 +442,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate}
+          title={!canNavigate ? 'Kein vorheriger Sender verfuegbar' : prevStationName() || 'Vorheriger Sender'}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
           onmouseleave={() => prevPressed = false}
@@ -439,6 +457,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek}
+          title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden zurueckspulen'}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
           onmouseleave={() => skipBackPressed = false}
@@ -450,19 +469,19 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onclick={handleStop}>
+        <button class="transport-btn" onclick={handleStop} title="Wiedergabe stoppen">
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onclick={handlePlayPause}>
+        <button class="transport-btn" onclick={handlePlayPause} title={appState.isPaused ? 'Pause' : 'Abspielen'}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onclick={handleRec} disabled={!isStation}>
+        <button class="transport-btn rec" onclick={handleRec} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
@@ -471,6 +490,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek}
+          title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
           onmouseleave={() => skipFwdPressed = false}
@@ -485,6 +505,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate}
+          title={!canNavigate ? 'Kein naechster Sender verfuegbar' : nextStationName() || 'Naechster Sender'}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
           onmouseleave={() => nextPressed = false}
@@ -499,6 +520,7 @@
         <button
           class="transport-btn live-btn"
           disabled={isLive || !isHLSMode}
+          title={isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfuegbar' : 'Zur Live-Position springen'}
           onclick={() => engine.goLive()}
         >
           <HiFiLed color={liveLedColor} size="small" />
@@ -510,6 +532,7 @@
           <button
             class="transport-btn mode-btn"
             disabled={!canToggleStreamMode}
+            title={!canToggleStreamMode ? 'Moduswechsel nicht verfuegbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
             onclick={() => engine.toggleStreamMode()}
           >
             <HiFiLed color={modeLedColor} size="small" />
@@ -524,7 +547,7 @@
   {#if appState.playerError}
     <div class="player-error">
       <span>{appState.playerError}</span>
-      <button onclick={() => appState.playerError = null}>x</button>
+      <button onclick={() => appState.playerError = null} title="Fehlermeldung schliessen">x</button>
     </div>
   {/if}
 </footer>
@@ -710,21 +733,21 @@
 
   /* TIMER */
   .timer-section {
-    width: 98px;
+    width: 110px;
   }
 
   .timer-display {
-    width: 84px;
+    width: 96px;
     height: 64px;
-    padding: 0 8px;
+    padding: 0 14px;
   }
 
   .timer-text {
     font-family: var(--hifi-font-values);
-    font-size: 12px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--hifi-display-text);
-    text-shadow: 0 0 8px var(--hifi-display-text);
+    text-shadow: 0 0 6px var(--hifi-display-text);
     letter-spacing: 1px;
   }
 

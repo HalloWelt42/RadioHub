@@ -96,9 +96,9 @@
           onkeydown={handleKeydown}
         />
       </div>
-      <button class="hifi-btn hifi-btn-primary" onclick={search}>SEARCH</button>
+      <button class="hifi-btn hifi-btn-primary" onclick={search} title="Podcasts suchen">SEARCH</button>
       {#if view !== 'subscriptions'}
-        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }}>MY PODCASTS</button>
+        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurueck zu meinen abonnierten Podcasts">MY PODCASTS</button>
       {/if}
     </div>
   </div>
@@ -130,7 +130,7 @@
                     <div style="font-size:11px;color:var(--hifi-text-secondary);">{podcast.author}</div>
                   </td>
                   <td style="width:100px;">
-                    <button class="hifi-btn hifi-btn-success hifi-btn-small" onclick={() => subscribe(podcast)}>+ ADD</button>
+                    <button class="hifi-btn hifi-btn-success hifi-btn-small" onclick={() => subscribe(podcast)} title="Podcast abonnieren">+ ADD</button>
                   </td>
                 </tr>
               {/each}
@@ -142,7 +142,7 @@
       <!-- Episode Header -->
       <div class="hifi-panel" style="margin:16px;">
         <div class="hifi-flex hifi-gap-md" style="align-items:center;">
-          <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }}>← BACK</button>
+          <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurueck zur Podcast-Uebersicht">← BACK</button>
           {#if selectedPodcast?.image_url}
             <img src={selectedPodcast.image_url} alt="" style="width:60px;height:60px;border-radius:4px;" />
           {/if}
@@ -194,7 +194,7 @@
                     <div style="font-size:11px;color:var(--hifi-text-secondary);">{podcast.episode_count || 0} episodes</div>
                   </td>
                   <td style="width:80px;">
-                    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={(e) => unsubscribe(podcast, e)}>✕</button>
+                    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={(e) => unsubscribe(podcast, e)} title="Podcast-Abo entfernen">✕</button>
                   </td>
                 </tr>
               {/each}

@@ -262,20 +262,23 @@
             class="tab-btn"
             class:active={activeTab === 'filter'}
             onclick={() => activeTab = 'filter'}
+            title="Sender nach Sprache, Tags oder Votes ausblenden"
           >FILTER</button>
           <button
             class="tab-btn"
             class:active={activeTab === 'release'}
             onclick={() => activeTab = 'release'}
+            title="Ausgeblendete Sender wieder freigeben"
           >FREIGEBEN</button>
           <button
             class="tab-btn"
             class:active={activeTab === 'options'}
             onclick={() => activeTab = 'options'}
+            title="Sidebar-Anzeige konfigurieren"
           >OPTIONEN</button>
         </div>
       </div>
-      <button class="hifi-modal-close" onclick={close}>
+      <button class="hifi-modal-close" onclick={close} title="Filter-Dialog schliessen">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -291,8 +294,8 @@
           <div class="section-header">
             <span class="section-label">SPRACHEN</span>
             <div class="section-actions">
-              <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
-              <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
+              <button class="mini-btn" onclick={selectAllLanguages} title="Alle Sprachen einschliessen">Alle</button>
+              <button class="mini-btn" onclick={selectNoLanguages} title="Alle Sprachen ausschliessen">Keine</button>
             </div>
           </div>
 
@@ -325,7 +328,7 @@
             {#each excludedTags as tag}
               <span class="tag-chip">
                 {tag}
-                <button class="tag-remove" onclick={() => removeTag(tag)}>&times;</button>
+                <button class="tag-remove" onclick={() => removeTag(tag)} title="Tag '{tag}' aus Ausschlussliste entfernen">&times;</button>
               </span>
             {/each}
           </div>
@@ -337,11 +340,11 @@
               bind:value={tagInput}
               onkeydown={handleTagKeydown}
             />
-            <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()}>+</button>
+            <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()} title={!tagInput.trim() ? 'Tag-Name eingeben' : 'Tag zur Ausschlussliste hinzufuegen'}>+</button>
           </div>
           <div class="tag-suggestions">
             {#each tagSuggestions.filter(s => !excludedTags.includes(s)) as suggestion}
-              <button class="suggestion-chip" onclick={() => addTag(suggestion)}>{suggestion}</button>
+              <button class="suggestion-chip" onclick={() => addTag(suggestion)} title="Klicken um '{suggestion}' auszuschliessen">{suggestion}</button>
             {/each}
           </div>
         </div>
@@ -360,7 +363,7 @@
 
         <!-- Preview + Push -->
         <div class="filter-actions">
-          <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
+          <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing} title="Zeigt wie viele Sender mit diesen Filtern ausgeblendet wuerden">
             {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
           </button>
           {#if previewCount !== null}
@@ -377,7 +380,7 @@
           <div class="release-header">
             <span class="release-total">{hiddenData.count} Sender ausgeblendet</span>
             {#if hiddenData.count > 0}
-              <button class="action-btn release-all-btn" onclick={releaseAll} disabled={isReleasing}>
+              <button class="action-btn release-all-btn" onclick={releaseAll} disabled={isReleasing} title={isReleasing ? 'Freigabe laeuft...' : 'Alle ausgeblendeten Sender wieder sichtbar machen'}>
                 ALLE FREIGEBEN
               </button>
             {/if}
@@ -393,6 +396,7 @@
                     class="mini-btn release-btn"
                     onclick={() => releaseByReason(reason)}
                     disabled={isReleasing}
+                    title={isReleasing ? 'Freigabe laeuft...' : 'Diese Gruppe wieder sichtbar machen'}
                   >FREIGEBEN</button>
                 </div>
               {/each}
@@ -409,9 +413,9 @@
           <div class="section-header">
             <span class="section-label">SIDEBAR-LAENDER</span>
             <div class="section-actions">
-              <button class="mini-btn" onclick={() => selectTopCountries(10)}>Top 10</button>
-              <button class="mini-btn" onclick={() => selectTopCountries(20)}>Top 20</button>
-              <button class="mini-btn" onclick={() => visibleCountryCodes = allCountries.map(c => c.code)}>Alle</button>
+              <button class="mini-btn" onclick={() => selectTopCountries(10)} title="Die 10 Laender mit den meisten Sendern anzeigen">Top 10</button>
+              <button class="mini-btn" onclick={() => selectTopCountries(20)} title="Die 20 Laender mit den meisten Sendern anzeigen">Top 20</button>
+              <button class="mini-btn" onclick={() => visibleCountryCodes = allCountries.map(c => c.code)} title="Alle Laender in der Sidebar anzeigen">Alle</button>
             </div>
           </div>
 
@@ -451,6 +455,7 @@
           class="action-btn push-btn"
           onclick={push}
           disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
+          title={isPushing ? 'Sender werden ausgeblendet...' : (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0) ? 'Mindestens einen Filter setzen (Sprache, Tag oder Votes)' : 'Gefilterte Sender dauerhaft ausblenden (kumulativ)'}
         >
           {isPushing ? 'AUSBLENDEN...' : 'PUSH - AUSBLENDEN'}
         </button>
@@ -462,6 +467,7 @@
           class="action-btn push-btn"
           onclick={saveSidebarConfig}
           disabled={isSavingOptions}
+          title={isSavingOptions ? 'Einstellungen werden gespeichert...' : 'Sidebar-Laender Konfiguration speichern'}
         >
           {isSavingOptions ? 'SPEICHERE...' : 'SPEICHERN'}
         </button>
@@ -498,7 +504,7 @@
     background: var(--hifi-bg-tertiary);
     border: none;
     color: var(--hifi-text-secondary);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.5px;
@@ -549,7 +555,7 @@
     background: var(--hifi-bg-tertiary);
     border: none;
     color: var(--hifi-text-secondary);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 10px;
     cursor: pointer;
     border-radius: var(--hifi-border-radius-sm);
@@ -567,7 +573,7 @@
 
   .filter-search {
     padding: 7px 10px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 11px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
@@ -605,7 +611,7 @@
     background: none;
     border: none;
     color: var(--hifi-text-primary);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 11px;
     cursor: pointer;
     text-align: left;
@@ -716,7 +722,7 @@
     border: 1px dashed var(--hifi-border-dark);
     border-radius: var(--hifi-border-radius-sm);
     color: var(--hifi-text-secondary);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 10px;
     cursor: pointer;
   }
@@ -740,7 +746,7 @@
 
   .action-btn {
     padding: 8px 16px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Barlow', sans-serif;
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.5px;

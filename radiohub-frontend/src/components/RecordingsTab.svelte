@@ -84,16 +84,18 @@
       <div style="flex:1;"></div>
       
       <!-- Folder buttons -->
-      <button 
+      <button
         class="hifi-btn"
         class:active={currentPath === ''}
         onclick={() => loadFiles('')}
+        title="Alle Aufnahmen anzeigen"
       >ALL</button>
       {#each folders as folder}
-        <button 
+        <button
           class="hifi-btn"
           class:active={currentPath === folder.path}
           onclick={() => loadFiles(folder.path)}
+          title={'Ordner: ' + folder.name}
         >{folder.name.toUpperCase()}</button>
       {/each}
     </div>
@@ -127,7 +129,7 @@
                 <td>{formatSize(file.size)}</td>
                 <td>{formatDate(file.modified)}</td>
                 <td>
-                  <button class="hifi-btn hifi-btn-small hifi-btn-danger" onclick={(e) => deleteFile(file, e)}>✕</button>
+                  <button class="hifi-btn hifi-btn-small hifi-btn-danger" onclick={(e) => deleteFile(file, e)} title="Aufnahme loeschen">✕</button>
                 </td>
               </tr>
             {/each}

@@ -45,10 +45,11 @@
     
     <nav class="hifi-nav">
       {#each tabs as tab}
-        <button 
+        <button
           class="hifi-nav-btn"
           class:active={appState.activeTab === tab.id}
           onclick={() => actions.setTab(tab.id)}
+          title={tab.label + ' anzeigen'}
         >
           <HiFiLed color={appState.activeTab === tab.id ? 'green' : 'off'} size="small" />
           {tab.label}
@@ -58,7 +59,7 @@
     
     <div class="hifi-header-right">
       <!-- Theme Switch -->
-      <button class="theme-switch" onclick={() => actions.toggleTheme()}>
+      <button class="theme-switch" onclick={() => actions.toggleTheme()} title={appState.theme === 'dark' ? 'Zu hellem Design wechseln' : 'Zu dunklem Design wechseln'}>
         <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
         <span class="theme-label hifi-value">{appState.theme === 'dark' ? 'DARK' : 'LIGHT'}</span>
       </button>

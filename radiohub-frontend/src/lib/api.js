@@ -57,6 +57,21 @@ class RadioHubAPI {
     return this.fetch(`/api/stations/${uuid}`);
   }
 
+  // === Bitrate Detection ===
+  async verifyBitrate(uuids) {
+    return this.fetch('/api/stations/verify-bitrate', {
+      method: 'POST',
+      body: JSON.stringify({ uuids })
+    });
+  }
+
+  async getDetectedBitrates(uuids) {
+    return this.fetch('/api/stations/bitrates', {
+      method: 'POST',
+      body: JSON.stringify({ uuids })
+    });
+  }
+
   // === Favorites ===
   async getFavorites() {
     return this.fetch('/api/favorites');

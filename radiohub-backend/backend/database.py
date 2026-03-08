@@ -185,6 +185,15 @@ def init_db():
         hidden_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
+    # === Detected Bitrates (ffprobe-Ergebnisse) ===
+    c.execute('''CREATE TABLE IF NOT EXISTS detected_bitrates (
+        uuid TEXT PRIMARY KEY,
+        bitrate INTEGER,
+        codec TEXT,
+        sample_rate INTEGER,
+        detected_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     # === Cache Meta ===
     c.execute('''CREATE TABLE IF NOT EXISTS cache_meta (
         key TEXT PRIMARY KEY,

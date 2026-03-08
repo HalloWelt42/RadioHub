@@ -11,6 +11,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/barlow": "^5.2.8",
+    "@fontsource/orbitron": "^5.2.8",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "hls.js": "^1.5.0"
   },

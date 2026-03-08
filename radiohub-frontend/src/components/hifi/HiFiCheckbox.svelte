@@ -1,8 +1,9 @@
 <script>
-  let { 
+  let {
     checked = $bindable(false),
     label = '',
     count = undefined,
+    title = undefined,
     onchange
   } = $props();
   
@@ -12,7 +13,7 @@
   }
 </script>
 
-<button class="hifi-checkbox" class:checked onclick={toggle}>
+<button class="hifi-checkbox" class:checked onclick={toggle} title={title || (checked ? label + ' deaktivieren' : label + ' aktivieren')}>
   <span class="hifi-checkbox-box">
     {#if checked}
       <span class="hifi-checkbox-mark">✓</span>
