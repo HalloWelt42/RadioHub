@@ -1,0 +1,85 @@
+"""
+RadioHub v0.1.10 - Stations Router
+
+Sender-Suche, Cache-Sync, Filter mit Sortierung
+"""
+from typing import Optional, List, Literal
+from fastapi import APIRouter, Query
+from pydantic import BaseModel
+
+from ..services.cache import cache_service
+
+router = APIRouter(prefix="/api", tags=["stations"])
+
+
+class StationSearchRequest(BaseModel):
+    q: Optional[str] = None
+    countries: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
+    bitrate_min: Optional[int] = None
+    bitrate_max: Optional[int] = None
+    votes_min: Optional[int] = None
+    votes_max: Optional[int] = None
+    sort_by: Literal['name', 'country', 'bitrate', 'votes'] = 'votes'
+    sort_order: Literal['asc', 'desc'] = 'desc'
+    offset: int = 0
+    limit: int = 100
+    favs_only: bool = False
+
+
+# === Cache ===
+
+@router.post("/cache/sync")
+async def sync_cache(force: bool = Query(False)):
+    """Synchronisiert Sender-Cache mit radio-browser.info"""
+    result = await cache_service.sync_stations(force)
+    return result
+
+
+@router.get("/cache/stats")
+async def cache_stats():
+    """Cache-Statistiken"""
+    return cache_service.get_stats()
+
+
+@router.get("/cache/filters")
+async def cache_filters():
+    """Filter-Optionen (Länder, Genres, Bitraten, max_votes)"""
+    return cache_service.get_filters()
+
+
+# === Stations ===
+
+@router.post("/stations/search")
+async def search_stations(req: StationSearchRequest):
+    """Sucht Sender mit Filtern und Sortierung"""
+    stations = cache_service.search_stations(
+        q=req.q,
+        countries=req.countries,
+        tags=req.tags,
+        bitrate_min=req.bitrate_min,
+        bitrate_max=req.bitrate_max,
+        votes_min=req.votes_min,
+        votes_max=req.votes_max,
+        sort_by=req.sort_by,
+        sort_order=req.sort_order,
+        limit=req.limit,
+        offset=req.offset,
+        favs_only=req.favs_only
+    )
+    return {"count": len(stations), "stations": stations}
+
+
+@router.get("/stations/{uuid}")
+async def get_station(uuid: str):
+    """Holt einzelnen Sender"""
+    from ..database import db_session
+    
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM stations WHERE uuid = ?", (uuid,))
+        row = c.fetchone()
+        if row:
+            return dict(row)
+    
+    return {"error": "Sender nicht gefunden"}

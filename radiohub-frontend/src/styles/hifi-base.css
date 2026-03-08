@@ -1,0 +1,438 @@
+/**
+ * HiFi UI Framework - Base Styles
+ * ================================
+ * Reset, Container, Grid, Typography, Utilities
+ * 
+ * Abhängigkeit: hifi-variables.css
+ */
+
+/* ==========================================
+   RESET & BOX-SIZING
+   ========================================== */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   BASE ELEMENTS
+   ========================================== */
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--hifi-font-family);
+    background: var(--hifi-bg-primary);
+    color: var(--hifi-text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+    transition: background var(--hifi-transition-slow), 
+                color var(--hifi-transition-slow);
+}
+
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+.hifi-font-display {
+    font-family: var(--hifi-font-display);
+}
+
+.hifi-font-segment {
+    font-family: var(--hifi-font-segment);
+    font-weight: 700;
+}
+
+.hifi-font-label {
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-label);
+}
+
+.hifi-font-value {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-md);
+    font-weight: 500;
+}
+
+/* ==========================================
+   LAYOUT - Container
+   ========================================== */
+.hifi-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--hifi-spacing-lg);
+}
+
+.hifi-container-sm { max-width: 800px; }
+.hifi-container-md { max-width: 1000px; }
+.hifi-container-lg { max-width: 1200px; }
+.hifi-container-xl { max-width: 1600px; }
+.hifi-container-fluid { max-width: none; }
+
+/* ==========================================
+   LAYOUT - Panel
+   ========================================== */
+.hifi-panel {
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-lg);
+    padding: var(--hifi-spacing-xl);
+    margin-bottom: var(--hifi-spacing-xl);
+    box-shadow: var(--hifi-shadow-raised);
+    border: 1px solid var(--hifi-border-light);
+}
+
+.hifi-panel-inset {
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-md);
+    padding: var(--hifi-spacing-lg);
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-panel-flat {
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-lg);
+    padding: var(--hifi-spacing-xl);
+    border: 1px solid var(--hifi-border-dark);
+}
+
+/* ==========================================
+   LAYOUT - Section
+   ========================================== */
+.hifi-section {
+    margin-bottom: var(--hifi-spacing-xl);
+}
+
+.hifi-section:last-child {
+    margin-bottom: 0;
+}
+
+.hifi-section-title {
+    font-size: var(--hifi-font-size-md);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--hifi-text-secondary);
+    margin-bottom: var(--hifi-spacing-lg);
+    padding-bottom: var(--hifi-spacing-sm);
+    border-bottom: 1px solid var(--hifi-border-dark);
+}
+
+/* ==========================================
+   LAYOUT - Grid
+   ========================================== */
+.hifi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--hifi-spacing-lg);
+}
+
+.hifi-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.hifi-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.hifi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.hifi-grid-5 { grid-template-columns: repeat(5, 1fr); }
+.hifi-grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* ==========================================
+   LAYOUT - Flex
+   ========================================== */
+.hifi-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hifi-spacing-lg);
+    align-items: center;
+}
+
+.hifi-flex-col {
+    flex-direction: column;
+}
+
+.hifi-flex-start { align-items: flex-start; }
+.hifi-flex-end { align-items: flex-end; }
+.hifi-flex-center { justify-content: center; }
+.hifi-flex-between { justify-content: space-between; }
+.hifi-flex-around { justify-content: space-around; }
+.hifi-flex-nowrap { flex-wrap: nowrap; }
+
+/* Gap variations */
+.hifi-gap-xs { gap: var(--hifi-spacing-xs); }
+.hifi-gap-sm { gap: var(--hifi-spacing-sm); }
+.hifi-gap-md { gap: var(--hifi-spacing-md); }
+.hifi-gap-lg { gap: var(--hifi-spacing-lg); }
+.hifi-gap-xl { gap: var(--hifi-spacing-xl); }
+
+/* ==========================================
+   ELEMENT WRAPPER (for demos)
+   ========================================== */
+.hifi-element-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--hifi-spacing-sm);
+}
+
+.hifi-element-name {
+    font-size: var(--hifi-font-size-xs);
+    color: var(--hifi-text-secondary);
+    font-family: var(--hifi-font-display);
+    background: var(--hifi-bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* ==========================================
+   SPACING UTILITIES
+   ========================================== */
+/* Margin */
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--hifi-spacing-sm); }
+.mt-2 { margin-top: var(--hifi-spacing-lg); }
+.mt-3 { margin-top: var(--hifi-spacing-xl); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--hifi-spacing-sm); }
+.mb-2 { margin-bottom: var(--hifi-spacing-lg); }
+.mb-3 { margin-bottom: var(--hifi-spacing-xl); }
+
+.ml-0 { margin-left: 0; }
+.ml-1 { margin-left: var(--hifi-spacing-sm); }
+.ml-2 { margin-left: var(--hifi-spacing-lg); }
+
+.mr-0 { margin-right: 0; }
+.mr-1 { margin-right: var(--hifi-spacing-sm); }
+.mr-2 { margin-right: var(--hifi-spacing-lg); }
+
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Padding */
+.p-0 { padding: 0; }
+.p-1 { padding: var(--hifi-spacing-sm); }
+.p-2 { padding: var(--hifi-spacing-lg); }
+.p-3 { padding: var(--hifi-spacing-xl); }
+
+.px-1 { padding-left: var(--hifi-spacing-sm); padding-right: var(--hifi-spacing-sm); }
+.px-2 { padding-left: var(--hifi-spacing-lg); padding-right: var(--hifi-spacing-lg); }
+
+.py-1 { padding-top: var(--hifi-spacing-sm); padding-bottom: var(--hifi-spacing-sm); }
+.py-2 { padding-top: var(--hifi-spacing-lg); padding-bottom: var(--hifi-spacing-lg); }
+
+/* ==========================================
+   TEXT UTILITIES
+   ========================================== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--hifi-text-primary); }
+.text-secondary { color: var(--hifi-text-secondary); }
+.text-accent { color: var(--hifi-accent); }
+.text-success { color: var(--hifi-led-green); }
+.text-warning { color: var(--hifi-led-yellow); }
+.text-danger { color: var(--hifi-led-red); }
+
+.text-xs { font-size: var(--hifi-font-size-xs); }
+.text-sm { font-size: var(--hifi-font-size-sm); }
+.text-md { font-size: var(--hifi-font-size-md); }
+.text-lg { font-size: var(--hifi-font-size-lg); }
+.text-xl { font-size: var(--hifi-font-size-xl); }
+
+.text-bold { font-weight: 700; }
+.text-medium { font-weight: 500; }
+.text-normal { font-weight: 400; }
+
+.text-uppercase { text-transform: uppercase; letter-spacing: 1px; }
+.text-nowrap { white-space: nowrap; }
+.text-truncate { 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+}
+
+/* ==========================================
+   DISPLAY UTILITIES
+   ========================================== */
+.d-none { display: none; }
+.d-block { display: block; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+
+.visible { visibility: visible; }
+.invisible { visibility: hidden; }
+
+/* ==========================================
+   WIDTH & HEIGHT
+   ========================================== */
+.w-100 { width: 100%; }
+.w-auto { width: auto; }
+.h-100 { height: 100%; }
+.h-auto { height: auto; }
+
+.max-w-sm { max-width: 300px; }
+.max-w-md { max-width: 500px; }
+.max-w-lg { max-width: 700px; }
+.max-w-xl { max-width: 900px; }
+
+/* ==========================================
+   BORDER RADIUS
+   ========================================== */
+.rounded-none { border-radius: 0; }
+.rounded-sm { border-radius: var(--hifi-border-radius-sm); }
+.rounded { border-radius: var(--hifi-border-radius-md); }
+.rounded-lg { border-radius: var(--hifi-border-radius-lg); }
+.rounded-full { border-radius: var(--hifi-border-radius-round); }
+.rounded-pill { border-radius: var(--hifi-border-radius-pill); }
+
+/* ==========================================
+   CURSOR
+   ========================================== */
+.cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
+.cursor-not-allowed { cursor: not-allowed; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+
+/* ==========================================
+   OVERFLOW
+   ========================================== */
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-scroll { overflow: scroll; }
+.overflow-x-auto { overflow-x: auto; overflow-y: hidden; }
+.overflow-y-auto { overflow-x: hidden; overflow-y: auto; }
+
+/* ==========================================
+   POSITION
+   ========================================== */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+
+/* ==========================================
+   SCROLLBAR STYLING
+   ========================================== */
+.hifi-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.hifi-scrollbar::-webkit-scrollbar-track {
+    background: var(--hifi-bg-tertiary);
+    border-radius: 4px;
+}
+
+.hifi-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--hifi-bg-panel);
+    border-radius: 4px;
+}
+
+.hifi-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--hifi-text-secondary);
+}
+
+/* ==========================================
+   ANIMATIONS - Keyframes
+   ========================================== */
+@keyframes hifi-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+@keyframes hifi-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+}
+
+@keyframes hifi-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes hifi-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes hifi-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes hifi-slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes hifi-slide-in-right {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* ==========================================
+   RESPONSIVE BREAKPOINTS
+   ========================================== */
+@media (max-width: 1200px) {
+    .hifi-grid-4, .hifi-grid-5, .hifi-grid-6 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .hifi-grid-3, .hifi-grid-4, .hifi-grid-5, .hifi-grid-6 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .hifi-container {
+        padding: var(--hifi-spacing-md);
+    }
+}
+
+@media (max-width: 768px) {
+    .hifi-grid, 
+    .hifi-grid-2, 
+    .hifi-grid-3, 
+    .hifi-grid-4, 
+    .hifi-grid-5, 
+    .hifi-grid-6 {
+        grid-template-columns: 1fr;
+    }
+    
+    .hifi-panel {
+        padding: var(--hifi-spacing-lg);
+        border-radius: var(--hifi-border-radius-md);
+    }
+    
+    .hifi-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .hifi-hide-mobile { display: none; }
+}
+
+@media (max-width: 480px) {
+    .hifi-container {
+        padding: var(--hifi-spacing-sm);
+    }
+    
+    .hifi-panel {
+        padding: var(--hifi-spacing-md);
+    }
+}
+
+/* Show only on mobile */
+.hifi-show-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hifi-show-mobile { display: block; }
+}

@@ -1,0 +1,109 @@
+/**
+ * HiFi UI - Lokale Fonts v0.2.24
+ * Roboto für Body/Buttons, Orbitron für UI-Labels, Share Tech Mono für Displays
+ * Orbitron Variable Font von Google Fonts
+ */
+
+/* Roboto 300 (Light) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('./fonts/roboto-300.woff2') format('woff2');
+}
+
+/* Roboto 400 (Regular) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/roboto-400.woff2') format('woff2');
+}
+
+/* Roboto 500 (Medium) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/roboto-500.woff2') format('woff2');
+}
+
+/* Roboto 700 (Bold) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/roboto-700.woff2') format('woff2');
+}
+
+/* Roboto 900 (Black) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('./fonts/roboto-900.woff2') format('woff2');
+}
+
+/* Orbitron Variable Font (400-900) */
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('./fonts/orbitron.woff2') format('woff2');
+}
+
+/* Share Tech Mono für Displays */
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/share-tech-mono.woff2') format('woff2');
+}
+
+/* Font Stacks */
+:root {
+  /* Roboto für Body und Buttons */
+  --hifi-font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  /* Orbitron für UI-Labels (SOURCE, DISPLAY, etc.) */
+  --hifi-font-values: 'Orbitron', 'Century Gothic', monospace;
+  
+  /* Share Tech Mono für Displays (grüne Anzeigen) - Monospace! */
+  --hifi-font-display: 'Share Tech Mono', 'Consolas', monospace;
+  
+  /* Segment Font für Knob-Werte */
+  --hifi-font-segment: 'Share Tech Mono', 'Consolas', monospace;
+  
+  /* Fallback */
+  --hifi-font-mono: 'Share Tech Mono', 'Consolas', 'Monaco', monospace;
+}
+
+/* Body Font */
+body {
+  font-family: var(--hifi-font-body);
+  font-weight: 400;
+}
+
+/* Utility class für Orbitron (UI-Labels) */
+.hifi-value {
+  font-family: var(--hifi-font-values);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* Display-Text (grüne Anzeigen) */
+.hifi-display-text {
+  font-family: var(--hifi-font-display);
+  letter-spacing: 1px;
+}
+
+.hifi-mono {
+  font-family: var(--hifi-font-mono);
+}

@@ -1,0 +1,1849 @@
+/**
+ * HiFi UI Framework - Components
+ * ===============================
+ * Alle Komponenten-Styles
+ * 
+ * Abhängigkeiten: 
+ *   - hifi-variables.css
+ *   - hifi-base.css
+ * 
+ * Kategorien:
+ *   1. Buttons & Toggle
+ *   2. Form Inputs
+ *   3. Tables
+ *   4. Navigation
+ *   5. Overlays & Feedback
+ *   6. LEDs
+ *   7. Displays
+ *   8. Meters (VU, Spectrum, GR, LUFS)
+ *   9. Controls (Knobs, Faders, Transport)
+ *   10. Special (Tuner, Balance, Phase, Cassette, etc.)
+ */
+
+/* ==========================================
+   1. BUTTONS
+   ========================================== */
+.hifi-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-primary);
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-md);
+    cursor: pointer;
+    box-shadow: var(--hifi-shadow-button);
+    transition: all var(--hifi-transition-fast);
+    outline: none;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.hifi-btn:hover {
+    box-shadow: 2px 2px 4px var(--hifi-shadow-dark), 
+                -2px -2px 4px var(--hifi-shadow-light);
+}
+
+.hifi-btn:active,
+.hifi-btn.active {
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Button Variants */
+.hifi-btn-primary { background: var(--hifi-accent); color: white; }
+.hifi-btn-danger { background: var(--hifi-led-red); color: white; }
+.hifi-btn-success { background: var(--hifi-led-green); color: white; }
+.hifi-btn-warning { background: var(--hifi-led-yellow); color: #333; }
+
+/* Button Sizes */
+.hifi-btn-small { padding: 8px 16px; font-size: 10px; }
+.hifi-btn-large { padding: 16px 32px; font-size: 14px; }
+
+/* Button Shapes */
+.hifi-btn-round { 
+    width: 50px; height: 50px; 
+    border-radius: var(--hifi-border-radius-round); 
+    padding: 0; 
+}
+.hifi-btn-pill { border-radius: var(--hifi-border-radius-pill); }
+.hifi-btn-icon { 
+    width: 40px; height: 40px; 
+    padding: 0; 
+    border-radius: var(--hifi-border-radius-sm); 
+}
+
+/* Toggle Group */
+.hifi-toggle-group {
+    display: inline-flex;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-pill);
+    padding: 4px;
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-toggle-btn {
+    padding: 8px 20px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all var(--hifi-transition-normal);
+}
+
+.hifi-toggle-btn.active {
+    background: var(--hifi-bg-panel);
+    color: var(--hifi-text-primary);
+    box-shadow: var(--hifi-shadow-button);
+}
+
+/* ==========================================
+   2. FORM INPUTS
+   ========================================== */
+.hifi-input {
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--hifi-text-primary);
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-inset);
+    outline: none;
+    transition: all var(--hifi-transition-normal);
+    width: 100%;
+}
+
+.hifi-input:focus {
+    box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
+}
+
+.hifi-input::placeholder {
+    color: var(--hifi-text-secondary);
+}
+
+.hifi-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.hifi-select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    cursor: pointer;
+}
+
+/* Checkbox */
+.hifi-checkbox-wrapper,
+.hifi-radio-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: var(--hifi-font-size-md);
+}
+
+.hifi-checkbox,
+.hifi-radio {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+    cursor: pointer;
+    position: relative;
+    transition: background var(--hifi-transition-normal);
+}
+
+.hifi-radio { border-radius: var(--hifi-border-radius-round); }
+
+.hifi-checkbox:checked,
+.hifi-radio:checked {
+    background: var(--hifi-accent);
+}
+
+.hifi-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.hifi-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 10px;
+    background: white;
+    border-radius: var(--hifi-border-radius-round);
+}
+
+/* Switch */
+.hifi-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 15px;
+    box-shadow: var(--hifi-shadow-inset);
+    cursor: pointer;
+}
+
+.hifi-switch-input { display: none; }
+
+.hifi-switch-slider {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 24px; height: 24px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: var(--hifi-shadow-button);
+    transition: all var(--hifi-transition-slow);
+}
+
+.hifi-switch-input:checked + .hifi-switch .hifi-switch-slider {
+    left: 33px;
+    background: var(--hifi-accent);
+}
+
+/* Range Slider */
+.hifi-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 4px;
+    box-shadow: var(--hifi-shadow-inset);
+    outline: none;
+}
+
+.hifi-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px; height: 24px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: var(--hifi-shadow-button);
+    cursor: pointer;
+}
+
+.hifi-range::-moz-range-thumb {
+    width: 24px; height: 24px;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: var(--hifi-shadow-button);
+    cursor: pointer;
+}
+
+.hifi-range-wrapper {
+    width: 100%;
+    max-width: 220px;
+}
+
+/* Progress Bar */
+.hifi-progress {
+    width: 100%;
+    height: 10px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 5px;
+    box-shadow: var(--hifi-shadow-inset);
+    overflow: hidden;
+}
+
+.hifi-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--hifi-led-green), var(--hifi-led-yellow), var(--hifi-led-red));
+    border-radius: 5px;
+    transition: width var(--hifi-transition-slow);
+}
+
+.hifi-progress-bar-solid { background: var(--hifi-accent); }
+.hifi-progress-bar-green { background: var(--hifi-led-green); }
+
+/* Stepper */
+.hifi-stepper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hifi-stepper-btn {
+    width: 36px; height: 36px;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--hifi-text-primary);
+    box-shadow: var(--hifi-shadow-button);
+    transition: all var(--hifi-transition-fast);
+}
+
+.hifi-stepper-btn:active { box-shadow: var(--hifi-shadow-inset); }
+
+.hifi-stepper-value {
+    min-width: 60px;
+    padding: 8px 12px;
+    text-align: center;
+    font-family: var(--hifi-font-segment);
+    font-size: 14px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+/* Dual Range */
+.hifi-dual-range {
+    position: relative;
+    width: 100%;
+    height: 30px;
+}
+
+.hifi-dual-range-track {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 100%; height: 8px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 4px;
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-dual-range-fill {
+    position: absolute;
+    height: 100%;
+    background: var(--hifi-accent);
+    border-radius: 4px;
+}
+
+.hifi-dual-range input[type="range"] {
+    position: absolute;
+    width: 100%; height: 100%;
+    -webkit-appearance: none;
+    background: transparent;
+    pointer-events: none;
+}
+
+.hifi-dual-range input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: var(--hifi-shadow-button);
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.hifi-dual-range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: var(--hifi-font-size-sm);
+    font-family: var(--hifi-font-segment);
+    color: var(--hifi-text-secondary);
+}
+
+/* Star Rating */
+.hifi-rating { display: flex; gap: 5px; }
+
+.hifi-star {
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--hifi-text-secondary);
+    transition: color var(--hifi-transition-fast), transform var(--hifi-transition-fast);
+}
+
+.hifi-star:hover { transform: scale(1.2); }
+.hifi-star.active { color: var(--hifi-led-yellow); }
+
+/* Tags */
+.hifi-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.hifi-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 20px;
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-tag-remove {
+    width: 16px; height: 16px;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-round);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--hifi-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hifi-tag-remove:hover { color: var(--hifi-led-red); }
+
+/* Search Input */
+.hifi-search {
+    position: relative;
+    width: 100%;
+}
+
+.hifi-search-icon {
+    position: absolute;
+    left: 15px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--hifi-text-secondary);
+    pointer-events: none;
+}
+
+.hifi-search input {
+    width: 100%;
+    padding: 12px 40px 12px 45px;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: var(--hifi-border-radius-pill);
+    box-shadow: var(--hifi-shadow-inset);
+    font-size: 14px;
+    color: var(--hifi-text-primary);
+    outline: none;
+}
+
+.hifi-search input:focus {
+    box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
+}
+
+.hifi-search-clear {
+    position: absolute;
+    right: 15px; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--hifi-text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    display: none;
+}
+
+.hifi-search.has-value .hifi-search-clear { display: block; }
+
+/* File Upload */
+.hifi-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: var(--hifi-bg-tertiary);
+    border: 2px dashed var(--hifi-text-secondary);
+    border-radius: var(--hifi-border-radius-lg);
+    cursor: pointer;
+    transition: all var(--hifi-transition-normal);
+}
+
+.hifi-upload:hover,
+.hifi-upload.dragover {
+    border-color: var(--hifi-accent);
+    background: var(--hifi-row-hover);
+}
+
+.hifi-upload-icon { font-size: 48px; margin-bottom: 15px; color: var(--hifi-text-secondary); }
+.hifi-upload-text { font-size: 14px; color: var(--hifi-text-secondary); margin-bottom: 8px; }
+.hifi-upload-hint { font-size: var(--hifi-font-size-sm); color: var(--hifi-text-secondary); opacity: 0.7; }
+.hifi-upload input { display: none; }
+
+/* ==========================================
+   3. TABLES
+   ========================================== */
+.hifi-table-wrapper {
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-inset);
+    overflow: hidden;
+}
+
+.hifi-table-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.hifi-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--hifi-font-size-md);
+}
+
+.hifi-table th,
+.hifi-table td {
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.hifi-table th {
+    background: var(--hifi-bg-panel);
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-secondary);
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.hifi-table th:hover { background: var(--hifi-bg-secondary); }
+
+.hifi-table tr:not(:last-child) td {
+    border-bottom: 1px solid var(--hifi-border-dark);
+}
+
+.hifi-table tbody tr {
+    transition: background var(--hifi-transition-fast);
+}
+
+.hifi-table tbody tr:hover { background: var(--hifi-row-hover); }
+.hifi-table tbody tr.selected { background: var(--hifi-row-selected); }
+.hifi-table tbody tr.playing td:first-child::before {
+    content: '▶ ';
+    color: var(--hifi-accent);
+}
+
+/* ==========================================
+   4. NAVIGATION
+   ========================================== */
+/* Tabs */
+.hifi-tabs { display: flex; flex-direction: column; }
+
+.hifi-tab-list {
+    display: flex;
+    gap: 5px;
+    background: var(--hifi-bg-tertiary);
+    padding: 5px;
+    border-radius: var(--hifi-border-radius-md) var(--hifi-border-radius-md) 0 0;
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-tab {
+    padding: 10px 20px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    transition: all var(--hifi-transition-normal);
+}
+
+.hifi-tab.active {
+    background: var(--hifi-bg-panel);
+    color: var(--hifi-text-primary);
+    box-shadow: var(--hifi-shadow-button);
+}
+
+.hifi-tab-content {
+    display: none;
+    padding: 20px;
+    background: var(--hifi-bg-panel);
+    border-radius: 0 0 var(--hifi-border-radius-md) var(--hifi-border-radius-md);
+}
+
+.hifi-tab-content.active { display: block; }
+
+/* Accordion */
+.hifi-accordion { display: flex; flex-direction: column; gap: 10px; }
+
+.hifi-accordion-item {
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-button);
+    overflow: hidden;
+}
+
+.hifi-accordion-header {
+    padding: 15px 20px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background var(--hifi-transition-normal);
+}
+
+.hifi-accordion-header:hover { background: var(--hifi-bg-secondary); }
+
+.hifi-accordion-icon { transition: transform var(--hifi-transition-slow); }
+.hifi-accordion-item.open .hifi-accordion-icon { transform: rotate(180deg); }
+
+.hifi-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--hifi-transition-slow);
+}
+
+.hifi-accordion-item.open .hifi-accordion-content { max-height: 500px; }
+
+.hifi-accordion-body {
+    padding: 0 20px 20px;
+    font-size: var(--hifi-font-size-md);
+    color: var(--hifi-text-secondary);
+}
+
+/* Breadcrumbs */
+.hifi-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--hifi-font-size-sm);
+}
+
+.hifi-breadcrumb {
+    color: var(--hifi-text-secondary);
+    text-decoration: none;
+    transition: color var(--hifi-transition-normal);
+}
+
+.hifi-breadcrumb:hover { color: var(--hifi-accent); }
+.hifi-breadcrumb.active { color: var(--hifi-text-primary); font-weight: 500; }
+.hifi-breadcrumb-sep { opacity: 0.5; }
+
+/* Pagination */
+.hifi-pagination { display: flex; gap: 5px; }
+
+.hifi-page-btn {
+    min-width: 36px; height: 36px;
+    padding: 0 12px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    color: var(--hifi-text-secondary);
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    box-shadow: var(--hifi-shadow-button);
+    transition: all var(--hifi-transition-fast);
+}
+
+.hifi-page-btn:hover { color: var(--hifi-text-primary); }
+.hifi-page-btn.active { background: var(--hifi-accent); color: white; }
+.hifi-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Dropdown */
+.hifi-dropdown { position: relative; display: inline-block; }
+
+.hifi-dropdown-menu {
+    position: absolute;
+    top: 100%; left: 0;
+    min-width: 200px;
+    margin-top: 8px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-raised);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--hifi-transition-normal);
+    z-index: var(--hifi-z-dropdown);
+}
+
+.hifi-dropdown.open .hifi-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.hifi-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: var(--hifi-font-size-md);
+    cursor: pointer;
+    transition: background var(--hifi-transition-fast);
+}
+
+.hifi-dropdown-item:first-child { border-radius: var(--hifi-border-radius-md) var(--hifi-border-radius-md) 0 0; }
+.hifi-dropdown-item:last-child { border-radius: 0 0 var(--hifi-border-radius-md) var(--hifi-border-radius-md); }
+.hifi-dropdown-item:hover { background: var(--hifi-row-hover); }
+
+.hifi-dropdown-divider {
+    height: 1px;
+    background: var(--hifi-border-dark);
+    margin: 5px 0;
+}
+
+/* Context Menu */
+.hifi-context-menu {
+    position: fixed;
+    min-width: 180px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-raised);
+    z-index: var(--hifi-z-context);
+    display: none;
+}
+
+.hifi-context-menu.visible { display: block; }
+
+/* ==========================================
+   5. OVERLAYS & FEEDBACK
+   ========================================== */
+/* Modal */
+.hifi-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--hifi-z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--hifi-transition-slow);
+}
+
+.hifi-modal-overlay.visible { opacity: 1; visibility: visible; }
+
+.hifi-modal {
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-lg);
+    box-shadow: var(--hifi-shadow-raised);
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform var(--hifi-transition-slow);
+}
+
+.hifi-modal-overlay.visible .hifi-modal { transform: scale(1); }
+
+.hifi-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--hifi-border-dark);
+}
+
+.hifi-modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hifi-modal-close {
+    width: 32px; height: 32px;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--hifi-text-secondary);
+    box-shadow: var(--hifi-shadow-button);
+}
+
+.hifi-modal-close:hover { color: var(--hifi-text-primary); }
+
+.hifi-modal-body { padding: 20px; overflow-y: auto; }
+
+.hifi-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid var(--hifi-border-dark);
+}
+
+/* Toast */
+.hifi-toast-container {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: var(--hifi-z-toast);
+}
+
+.hifi-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-raised);
+    transform: translateX(120%);
+    transition: transform var(--hifi-transition-slow);
+    min-width: 280px;
+}
+
+.hifi-toast.visible { transform: translateX(0); }
+
+.hifi-toast-icon { font-size: 20px; }
+.hifi-toast-message { flex: 1; font-size: var(--hifi-font-size-md); }
+
+.hifi-toast.success .hifi-toast-icon { color: var(--hifi-led-green); }
+.hifi-toast.error .hifi-toast-icon { color: var(--hifi-led-red); }
+.hifi-toast.warning .hifi-toast-icon { color: var(--hifi-led-yellow); }
+.hifi-toast.info .hifi-toast-icon { color: var(--hifi-led-blue); }
+
+/* Spinners */
+.hifi-spinner { width: 40px; height: 40px; position: relative; }
+
+.hifi-spinner-ring {
+    position: absolute;
+    width: 100%; height: 100%;
+    border: 3px solid var(--hifi-bg-tertiary);
+    border-top-color: var(--hifi-accent);
+    border-radius: var(--hifi-border-radius-round);
+    animation: hifi-spin 1s linear infinite;
+}
+
+.hifi-spinner-dots { display: flex; gap: 6px; align-items: center; }
+
+.hifi-spinner-dot {
+    width: 10px; height: 10px;
+    background: var(--hifi-accent);
+    border-radius: var(--hifi-border-radius-round);
+    animation: hifi-bounce 1.4s ease-in-out infinite;
+}
+
+.hifi-spinner-dot:nth-child(1) { animation-delay: -0.32s; }
+.hifi-spinner-dot:nth-child(2) { animation-delay: -0.16s; }
+
+.hifi-spinner-vu { display: flex; gap: 3px; align-items: flex-end; height: 30px; }
+
+.hifi-spinner-vu-bar {
+    width: 6px;
+    background: var(--hifi-led-green);
+    border-radius: 2px;
+    animation: hifi-vu-bounce 0.8s ease-in-out infinite;
+}
+
+.hifi-spinner-vu-bar:nth-child(1) { animation-delay: 0s; }
+.hifi-spinner-vu-bar:nth-child(2) { animation-delay: 0.1s; }
+.hifi-spinner-vu-bar:nth-child(3) { animation-delay: 0.2s; }
+.hifi-spinner-vu-bar:nth-child(4) { animation-delay: 0.3s; }
+.hifi-spinner-vu-bar:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes hifi-vu-bounce {
+    0%, 100% { height: 10px; }
+    50% { height: 30px; }
+}
+
+/* Badges */
+.hifi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: 4px;
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+/* Cards */
+.hifi-card {
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-lg);
+    padding: 20px;
+    box-shadow: var(--hifi-shadow-raised);
+}
+
+.hifi-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--hifi-border-dark);
+}
+
+.hifi-card-title {
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tooltip */
+.hifi-tooltip { position: relative; }
+
+.hifi-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 12px;
+    background: var(--hifi-display-bg);
+    color: var(--hifi-display-text);
+    font-size: var(--hifi-font-size-sm);
+    white-space: nowrap;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--hifi-transition-normal);
+    margin-bottom: 8px;
+    z-index: 100;
+}
+
+.hifi-tooltip:hover::after { opacity: 1; }
+
+/* ==========================================
+   6. LEDs
+   ========================================== */
+.hifi-led {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    background: var(--hifi-led-off);
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+    transition: all var(--hifi-transition-fast);
+}
+
+/* Light Mode: schwarzer Rahmen für bessere Sichtbarkeit */
+:root .hifi-led {
+    border: 1px solid rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .hifi-led {
+    border: none;
+}
+
+.hifi-led-small { width: 8px; height: 8px; }
+.hifi-led-round { border-radius: var(--hifi-border-radius-round); }
+.hifi-led-large { width: 20px; height: 8px; }
+.hifi-led-xlarge { width: 30px; height: 10px; }
+
+.hifi-led.on-green { 
+    background: var(--hifi-led-green); 
+    box-shadow: 0 0 8px var(--hifi-led-green-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+}
+.hifi-led.on-yellow { 
+    background: var(--hifi-led-yellow); 
+    box-shadow: 0 0 8px var(--hifi-led-yellow-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+}
+.hifi-led.on-red { 
+    background: var(--hifi-led-red); 
+    box-shadow: 0 0 8px var(--hifi-led-red-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+}
+.hifi-led.on-blue { 
+    background: var(--hifi-led-blue); 
+    box-shadow: 0 0 8px var(--hifi-led-blue-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+}
+
+.hifi-led.blink { animation: hifi-blink 1s infinite; }
+.hifi-led.pulse { animation: hifi-pulse 2s infinite; }
+
+/* ==========================================
+   7. DISPLAYS
+   ========================================== */
+.hifi-display {
+    background: var(--hifi-display-bg);
+    border: 3px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 15px 20px;
+    font-family: var(--hifi-font-display);
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 10px var(--hifi-display-text);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.hifi-display::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+    pointer-events: none;
+    border-radius: var(--hifi-border-radius-sm);
+}
+
+.hifi-display-large { font-size: var(--hifi-font-size-display); letter-spacing: 3px; }
+.hifi-display-medium { font-size: var(--hifi-font-size-xl); letter-spacing: 2px; }
+.hifi-display-small { font-size: var(--hifi-font-size-md); letter-spacing: 1px; }
+.hifi-display-segment { font-family: var(--hifi-font-segment); font-weight: 700; }
+
+.hifi-display-amber { color: var(--hifi-display-amber); text-shadow: 0 0 10px var(--hifi-display-amber); }
+.hifi-display-blue { color: var(--hifi-display-blue); text-shadow: 0 0 10px var(--hifi-display-blue); }
+.hifi-display-red { color: var(--hifi-display-red); text-shadow: 0 0 10px var(--hifi-display-red); }
+.hifi-display-cyan { color: var(--hifi-display-cyan); text-shadow: 0 0 10px var(--hifi-display-cyan); }
+
+.hifi-display-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hifi-display-label {
+    font-size: 10px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Time Display */
+.hifi-time-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 10px 15px;
+}
+
+.hifi-time-segment {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-xxl);
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 10px var(--hifi-display-text);
+    display: flex;
+}
+
+.hifi-time-digit {
+    width: 24px;
+    text-align: center;
+    position: relative;
+}
+
+.hifi-time-digit::before {
+    content: '8';
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    color: var(--hifi-display-text-dim);
+    text-shadow: none;
+}
+
+.hifi-time-colon {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-xxl);
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 10px var(--hifi-display-text);
+}
+
+.hifi-time-colon.blink { animation: hifi-blink 1s infinite; }
+
+.hifi-time-label {
+    font-size: 10px;
+    color: var(--hifi-display-text);
+    opacity: 0.6;
+    margin-left: 10px;
+    text-transform: uppercase;
+}
+
+/* Tape Counter */
+.hifi-tape-counter {
+    display: inline-flex;
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 8px 12px;
+    gap: 2px;
+}
+
+.hifi-tape-digit {
+    font-family: var(--hifi-font-segment);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 8px var(--hifi-display-text);
+    width: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.hifi-tape-digit::before {
+    content: '8';
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    color: var(--hifi-display-text-dim);
+    text-shadow: none;
+}
+
+/* ==========================================
+   8. METERS
+   ========================================== */
+/* VU Meter */
+.hifi-vu-meter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.hifi-vu-meter-vertical {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3px;
+    padding: 10px 8px;
+    background: var(--hifi-display-bg);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5), var(--hifi-shadow-raised);
+}
+
+.hifi-vu-led {
+    width: 24px; height: 6px;
+    border-radius: 1px;
+    background: var(--hifi-led-off-dim);
+    transition: all 0.05s;
+}
+
+.hifi-vu-meter-horizontal {
+    display: flex;
+    gap: 2px;
+    padding: 8px 10px;
+    background: var(--hifi-display-bg);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5), var(--hifi-shadow-raised);
+}
+
+.hifi-vu-led-h {
+    width: 6px; height: 20px;
+    border-radius: 1px;
+    background: var(--hifi-led-off-dim);
+    transition: all 0.05s;
+}
+
+/* Spectrum Analyzer */
+.hifi-spectrum {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 80px;
+    padding: 10px;
+    background: var(--hifi-display-bg);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5);
+}
+
+.hifi-spectrum-bar {
+    width: 8px;
+    background: linear-gradient(to top, var(--hifi-led-green), var(--hifi-led-yellow) 70%, var(--hifi-led-red));
+    border-radius: 2px;
+    box-shadow: 0 0 5px rgba(51,204,51,0.5);
+    transition: height 0.05s;
+}
+
+/* GR Meter */
+.hifi-gr-meter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.hifi-gr-meter-bar {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 2px;
+    padding: 8px 10px;
+    background: var(--hifi-display-bg);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5);
+}
+
+.hifi-gr-led {
+    width: 8px; height: 20px;
+    border-radius: 1px;
+    background: var(--hifi-led-off-dim);
+    transition: all 0.05s;
+}
+
+.hifi-gr-led.active {
+    background: var(--hifi-led-yellow);
+    box-shadow: 0 0 6px var(--hifi-led-yellow-glow);
+}
+
+/* LUFS Meter */
+.hifi-lufs-meter {
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 15px;
+}
+
+.hifi-lufs-value {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-display);
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 10px var(--hifi-display-text);
+    text-align: center;
+}
+
+.hifi-lufs-label {
+    font-size: 10px;
+    color: var(--hifi-display-text);
+    text-align: center;
+    opacity: 0.6;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hifi-lufs-bar {
+    margin-top: 15px;
+    height: 8px;
+    background: var(--hifi-led-off-dim);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.hifi-lufs-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--hifi-led-green), var(--hifi-led-yellow) 70%, var(--hifi-led-red));
+    border-radius: 4px;
+    transition: width var(--hifi-transition-fast);
+}
+
+/* ==========================================
+   9. CONTROLS (Knobs, Faders, Transport)
+   ========================================== */
+/* Rotary Knob */
+.hifi-knob-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.hifi-knob-container {
+    position: relative;
+    width: 64px; height: 64px;
+}
+
+.hifi-knob-ticks {
+    position: absolute;
+    width: 100%; height: 100%;
+    pointer-events: none;
+}
+
+.hifi-knob-tick {
+    position: absolute;
+    width: 2px; height: 6px;
+    background: var(--hifi-knob-tick);
+    left: 50%; top: 0;
+    transform-origin: 50% 32px;
+    border-radius: 1px;
+}
+
+.hifi-knob-tick.active {
+    background: var(--hifi-knob-tick-active);
+    height: 8px;
+}
+
+.hifi-knob-base {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 48px; height: 48px;
+    margin: -24px 0 0 -24px;
+    background: var(--hifi-knob-bg);
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: var(--hifi-shadow-knob);
+}
+
+.hifi-knob {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 48px; height: 48px;
+    margin: -24px 0 0 -24px;
+    border-radius: var(--hifi-border-radius-round);
+    cursor: pointer;
+    z-index: 1;
+}
+
+.hifi-knob-indicator {
+    position: absolute;
+    top: 5px; left: 50%;
+    margin-left: -1px;
+    width: 2px; height: 10px;
+    background: var(--hifi-knob-indicator);
+    border-radius: 2px;
+}
+
+.hifi-knob-value {
+    font-family: var(--hifi-font-segment);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.hifi-knob-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-label);
+}
+
+/* Small Knob */
+.hifi-knob-small .hifi-knob-container { width: 50px; height: 50px; }
+.hifi-knob-small .hifi-knob-base,
+.hifi-knob-small .hifi-knob { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+.hifi-knob-small .hifi-knob-indicator { top: 4px; width: 2px; height: 8px; margin-left: -1px; }
+.hifi-knob-small .hifi-knob-tick { height: 5px; transform-origin: 50% 25px; }
+
+/* Large Knob */
+.hifi-knob-large .hifi-knob-container { width: 100px; height: 100px; }
+.hifi-knob-large .hifi-knob-base,
+.hifi-knob-large .hifi-knob { width: 76px; height: 76px; margin: -38px 0 0 -38px; }
+.hifi-knob-large .hifi-knob-indicator { top: 8px; width: 4px; height: 16px; margin-left: -2px; }
+.hifi-knob-large .hifi-knob-tick { height: 10px; transform-origin: 50% 50px; }
+
+/* Vertical Fader */
+.hifi-fader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.hifi-fader-container {
+    position: relative;
+    width: 50px; height: 150px;
+    display: flex;
+    justify-content: center;
+}
+
+.hifi-fader-scale {
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 8px;
+    color: var(--hifi-text-secondary);
+    font-family: var(--hifi-font-display);
+}
+
+.hifi-fader-track {
+    width: 8px; height: 100%;
+    background: var(--hifi-fader-track);
+    border-radius: 4px;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.hifi-fader-cap {
+    position: absolute;
+    width: 30px; height: 40px;
+    background: var(--hifi-fader-cap);
+    border-radius: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.hifi-fader-cap::before,
+.hifi-fader-cap::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 20px; height: 2px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 1px;
+}
+
+.hifi-fader-cap::before { top: calc(50% - 2px); }
+.hifi-fader-cap::after { top: calc(50% + 2px); }
+
+.hifi-fader-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--hifi-text-label);
+}
+
+.hifi-fader-value {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-sm);
+}
+
+/* Transport Controls */
+.hifi-transport {
+    display: flex;
+    gap: 8px;
+    padding: 15px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-transport-btn {
+    width: 44px; height: 44px;
+    border-radius: var(--hifi-border-radius-sm);
+    border: none;
+    background: var(--hifi-bg-panel);
+    box-shadow: var(--hifi-shadow-button);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--hifi-transition-fast);
+}
+
+.hifi-transport-btn:active,
+.hifi-transport-btn.active {
+    box-shadow: var(--hifi-shadow-inset);
+}
+
+.hifi-transport-btn svg {
+    width: 20px; height: 20px;
+    fill: var(--hifi-text-primary);
+}
+
+.hifi-transport-btn.rec svg { fill: var(--hifi-led-red); }
+.hifi-transport-btn.rec.active { background: var(--hifi-led-red); }
+.hifi-transport-btn.rec.active svg { fill: white; }
+
+/* ==========================================
+   10. SPECIAL COMPONENTS
+   ========================================== */
+/* Tuner */
+.hifi-tuner {
+    background: var(--hifi-display-bg);
+    border: 3px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 15px 20px;
+}
+
+.hifi-tuner-scale {
+    position: relative;
+    height: 30px;
+    background: repeating-linear-gradient(90deg, var(--hifi-display-text-dim) 0 1px, transparent 1px 10%);
+    margin-bottom: 10px;
+}
+
+.hifi-tuner-needle {
+    position: absolute;
+    top: 0; width: 2px; height: 100%;
+    background: var(--hifi-led-red);
+    box-shadow: 0 0 8px var(--hifi-led-red-glow);
+    transition: left var(--hifi-transition-slow);
+}
+
+.hifi-tuner-freq {
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-xxl);
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 10px var(--hifi-display-text);
+    text-align: center;
+}
+
+.hifi-tuner-band {
+    font-family: var(--hifi-font-display);
+    font-size: var(--hifi-font-size-sm);
+    color: var(--hifi-display-text);
+    opacity: 0.7;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* Balance */
+.hifi-balance {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 200px;
+}
+
+.hifi-balance-track {
+    width: 100%; height: 8px;
+    background: var(--hifi-display-bg);
+    border-radius: 4px;
+    position: relative;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hifi-balance-center {
+    position: absolute;
+    top: -4px; left: 50%;
+    transform: translateX(-50%);
+    width: 2px; height: 16px;
+    background: var(--hifi-text-secondary);
+}
+
+.hifi-balance-indicator {
+    position: absolute;
+    top: 50%; transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    background: var(--hifi-accent);
+    border-radius: var(--hifi-border-radius-round);
+    box-shadow: 0 0 8px var(--hifi-accent);
+    cursor: pointer;
+}
+
+.hifi-balance-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+}
+
+/* Phase Meter */
+.hifi-phase-meter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.hifi-phase-display {
+    width: 120px; height: 70px;
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.hifi-phase-arc {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 90px; height: 45px;
+    border: 2px solid var(--hifi-display-text-dim);
+    border-bottom: none;
+    border-radius: 45px 45px 0 0;
+}
+
+.hifi-phase-needle {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    width: 2px; height: 40px;
+    background: var(--hifi-led-green);
+    box-shadow: 0 0 6px var(--hifi-led-green-glow);
+    transform-origin: bottom center;
+    transition: transform var(--hifi-transition-fast);
+}
+
+.hifi-phase-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 120px;
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+}
+
+/* Input Selector */
+.hifi-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.hifi-selector-display {
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 10px 20px;
+    font-family: var(--hifi-font-segment);
+    font-size: var(--hifi-font-size-lg);
+    font-weight: 700;
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 8px var(--hifi-display-text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    min-width: 120px;
+    text-align: center;
+}
+
+.hifi-selector-buttons { display: flex; gap: 5px; }
+
+.hifi-selector-btn {
+    width: 36px; height: 36px;
+    border-radius: var(--hifi-border-radius-sm);
+    border: none;
+    background: var(--hifi-bg-panel);
+    box-shadow: var(--hifi-shadow-button);
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--hifi-text-primary);
+}
+
+.hifi-selector-btn:active { box-shadow: var(--hifi-shadow-inset); }
+
+/* Waveform */
+.hifi-waveform {
+    background: var(--hifi-display-bg);
+    border: 2px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    padding: 10px;
+    height: 80px;
+    position: relative;
+}
+
+.hifi-waveform-canvas { width: 100%; height: 100%; display: block; }
+
+.hifi-waveform-center {
+    position: absolute;
+    top: 50%; left: 10px; right: 10px;
+    height: 1px;
+    background: var(--hifi-display-text-dim);
+}
+
+/* Flow Diagram */
+.hifi-flow { display: flex; align-items: center; gap: 15px; }
+
+.hifi-flow-arrow {
+    width: 40px; height: 2px;
+    background: var(--hifi-text-secondary);
+    position: relative;
+}
+
+.hifi-flow-arrow::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--hifi-text-secondary);
+}
+
+.hifi-flow-box {
+    padding: 10px 20px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
+    font-size: var(--hifi-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* EQ Visual */
+.hifi-eq-visual {
+    width: 100%;
+    height: 100px;
+    background: var(--hifi-display-bg);
+    border-radius: var(--hifi-border-radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.hifi-eq-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        repeating-linear-gradient(90deg, var(--hifi-display-text-dim) 0 1px, transparent 1px 20%),
+        repeating-linear-gradient(0deg, var(--hifi-display-text-dim) 0 1px, transparent 1px 25%);
+}
+
+.hifi-eq-curve {
+    position: absolute;
+    bottom: 50%; left: 0; right: 0;
+    height: 2px;
+    background: var(--hifi-display-text);
+    box-shadow: 0 0 10px var(--hifi-display-text);
+}
+
+/* Presets */
+.hifi-presets { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.hifi-preset {
+    padding: 10px 20px;
+    font-size: var(--hifi-font-size-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    box-shadow: var(--hifi-shadow-button);
+    color: var(--hifi-text-primary);
+    transition: all var(--hifi-transition-fast);
+}
+
+.hifi-preset:hover { background: var(--hifi-bg-secondary); }
+.hifi-preset.active { background: var(--hifi-accent); color: white; }
+
+/* Album Art */
+.hifi-album-art {
+    width: 180px; height: 180px;
+    background: var(--hifi-display-bg);
+    border: 4px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: var(--hifi-shadow-raised);
+}
+
+.hifi-album-art img { width: 100%; height: 100%; object-fit: cover; }
+.hifi-album-art-placeholder { font-size: 64px; color: var(--hifi-text-secondary); opacity: 0.3; }
+
+/* XY Scope */
+.hifi-xy-scope {
+    width: 150px; height: 150px;
+    background: var(--hifi-display-bg);
+    border: 3px solid var(--hifi-display-border);
+    border-radius: var(--hifi-border-radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.hifi-xy-scope canvas { width: 100%; height: 100%; display: block; }
+
+.hifi-xy-scope-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        linear-gradient(var(--hifi-display-text-dim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--hifi-display-text-dim) 1px, transparent 1px);
+    background-size: 25% 25%;
+    pointer-events: none;
+}
+
+.hifi-xy-scope-crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; height: 100%;
+    pointer-events: none;
+}
+
+.hifi-xy-scope-crosshair::before,
+.hifi-xy-scope-crosshair::after {
+    content: '';
+    position: absolute;
+    background: var(--hifi-display-text-dim);
+}
+
+.hifi-xy-scope-crosshair::before { top: 50%; left: 0; right: 0; height: 1px; }
+.hifi-xy-scope-crosshair::after { left: 50%; top: 0; bottom: 0; width: 1px; }
+
+/* Cassette */
+.hifi-cassette {
+    width: 300px;
+    background: linear-gradient(180deg, #4a4a4a, #3a3a3a);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: var(--hifi-shadow-raised);
+}
+
+.hifi-cassette-window {
+    background: rgba(0,0,0,0.8);
+    border-radius: 5px;
+    height: 80px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 30px;
+}
+
+.hifi-cassette-reel {
+    width: 50px; height: 50px;
+    background: #222;
+    border-radius: var(--hifi-border-radius-round);
+    border: 3px solid #444;
+    position: relative;
+}
+
+.hifi-cassette-reel::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 15px; height: 15px;
+    background: #666;
+    border-radius: var(--hifi-border-radius-round);
+}
+
+.hifi-cassette-reel.spinning { animation: hifi-cassette-spin 2s linear infinite; }
+.hifi-cassette-reel.spinning.reverse { animation-direction: reverse; }
+
+@keyframes hifi-cassette-spin { to { transform: rotate(360deg); } }
+
+.hifi-cassette-tape {
+    width: 60px; height: 4px;
+    background: #654321;
+    border-radius: 2px;
+}
+
+.hifi-cassette-label {
+    margin-top: 15px;
+    background: #f5f5dc;
+    padding: 10px;
+    border-radius: 3px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: var(--hifi-font-size-sm);
+    color: #333;
+}
+
+/* ==========================================
+   HELPER: Header, Logo, Theme Switch
+   ========================================== */
+.hifi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: var(--hifi-bg-panel);
+    border-radius: var(--hifi-border-radius-lg);
+    box-shadow: var(--hifi-shadow-raised);
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: var(--hifi-spacing-xl);
+}
+
+.hifi-logo {
+    font-family: var(--hifi-font-segment);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.hifi-logo span {
+    color: var(--hifi-accent);
+}
+
+.hifi-theme-switch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

@@ -1,0 +1,19 @@
+services:
+  radiohub-backend:
+    build: .
+    container_name: radiohub-backend
+    restart: unless-stopped
+    ports:
+      - "9091:8000"
+    volumes:
+      # Externes Datenverzeichnis - NICHT im Projektordner!
+      - ~/radiohub-data:/data
+    environment:
+      - DATA_PATH=/data
+      - ALLOWED_ORIGINS=*
+      - TZ=Europe/Berlin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

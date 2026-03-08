@@ -1,0 +1,230 @@
+/**
+ * HiFi UI Framework - Variables
+ * ==============================
+ * Alle CSS Custom Properties für Theming
+ * 
+ * Verwendung:
+ *   @import 'hifi-variables.css';
+ *   
+ * Theme wechseln:
+ *   document.documentElement.setAttribute('data-theme', 'dark');
+ */
+
+/**
+ * HiFi UI Variables - RadioHub Edition
+ * Lokale Fonts, keine CDNs
+ */
+
+:root {
+    /* ==========================================
+       COLORS - Backgrounds
+       ========================================== */
+    --hifi-bg-primary: #e8e8e8;
+    --hifi-bg-secondary: #f0f0f0;
+    --hifi-bg-tertiary: #d8d8d8;
+    --hifi-bg-panel: #e0e0e0;
+
+    /* ==========================================
+       COLORS - Text
+       ========================================== */
+    --hifi-text-primary: #333333;
+    --hifi-text-secondary: #666666;
+    --hifi-text-label: #555555;
+    --hifi-text-value: #222222;
+
+    /* ==========================================
+       COLORS - Accent
+       ========================================== */
+    --hifi-accent: #4a90d9;
+    --hifi-accent-hover: #5aa0e9;
+    --hifi-accent-active: #3a80c9;
+
+    /* ==========================================
+       COLORS - LEDs
+       ========================================== */
+    --hifi-led-green: #33cc33;
+    --hifi-led-green-glow: rgba(51, 204, 51, 0.8);
+    --hifi-led-yellow: #ffcc00;
+    --hifi-led-yellow-glow: rgba(255, 204, 0, 0.8);
+    --hifi-led-red: #ff3333;
+    --hifi-led-red-glow: rgba(255, 51, 51, 0.8);
+    --hifi-led-blue: #3399ff;
+    --hifi-led-blue-glow: rgba(51, 153, 255, 0.8);
+    --hifi-led-off: #444444;
+    --hifi-led-off-dim: rgba(100, 100, 100, 0.3);
+
+    /* ==========================================
+       COLORS - Display
+       ========================================== */
+    --hifi-display-bg: #1a1a1a;
+    --hifi-display-text: #00ff88;
+    --hifi-display-text-dim: rgba(0, 255, 136, 0.15);
+    --hifi-display-border: #333333;
+    --hifi-display-amber: #ffaa00;
+    --hifi-display-blue: #00aaff;
+    --hifi-display-red: #ff4444;
+    --hifi-display-cyan: #00ffff;
+
+    /* ==========================================
+       SHADOWS - Neumorphic
+       ========================================== */
+    --hifi-shadow-light: #ffffff;
+    --hifi-shadow-dark: #bebebe;
+    --hifi-shadow-raised: 
+        8px 8px 16px var(--hifi-shadow-dark), 
+        -8px -8px 16px var(--hifi-shadow-light);
+    --hifi-shadow-inset: 
+        inset 4px 4px 8px var(--hifi-shadow-dark), 
+        inset -4px -4px 8px var(--hifi-shadow-light);
+    --hifi-shadow-button: 
+        4px 4px 8px var(--hifi-shadow-dark), 
+        -4px -4px 8px var(--hifi-shadow-light);
+    --hifi-shadow-knob: 
+        6px 6px 12px var(--hifi-shadow-dark), 
+        -6px -6px 12px var(--hifi-shadow-light), 
+        inset 2px 2px 4px var(--hifi-shadow-light), 
+        inset -2px -2px 4px var(--hifi-shadow-dark);
+
+    /* ==========================================
+       BORDERS
+       ========================================== */
+    --hifi-border-light: rgba(255, 255, 255, 0.5);
+    --hifi-border-dark: rgba(0, 0, 0, 0.1);
+    --hifi-border-radius-sm: 6px;
+    --hifi-border-radius-md: 12px;
+    --hifi-border-radius-lg: 20px;
+    --hifi-border-radius-round: 50%;
+    --hifi-border-radius-pill: 25px;
+
+    /* ==========================================
+       KNOBS & FADERS
+       ========================================== */
+    --hifi-knob-bg: linear-gradient(145deg, #f0f0f0, #d0d0d0);
+    --hifi-knob-indicator: #333333;
+    --hifi-knob-tick: #999999;
+    --hifi-knob-tick-active: #333333;
+    --hifi-fader-track: #2a2a2a;
+    --hifi-fader-cap: linear-gradient(180deg, #f5f5f5, #d0d0d0, #e0e0e0);
+
+    /* ==========================================
+       TABLES & LISTS
+       ========================================== */
+    --hifi-row-hover: rgba(74, 144, 217, 0.1);
+    --hifi-row-selected: rgba(74, 144, 217, 0.2);
+
+    /* ==========================================
+       TYPOGRAPHY
+       ========================================== */
+    --hifi-font-family: 'Segoe UI', 'Roboto', -apple-system, sans-serif;
+    --hifi-font-display: 'Share Tech Mono', monospace;
+    --hifi-font-segment: 'Orbitron', monospace;
+    --hifi-font-size-xs: 9px;
+    --hifi-font-size-sm: 11px;
+    --hifi-font-size-md: 13px;
+    --hifi-font-size-lg: 16px;
+    --hifi-font-size-xl: 20px;
+    --hifi-font-size-xxl: 28px;
+    --hifi-font-size-display: 32px;
+
+    /* ==========================================
+       SPACING
+       ========================================== */
+    --hifi-spacing-xs: 5px;
+    --hifi-spacing-sm: 10px;
+    --hifi-spacing-md: 15px;
+    --hifi-spacing-lg: 20px;
+    --hifi-spacing-xl: 30px;
+
+    /* ==========================================
+       TRANSITIONS
+       ========================================== */
+    --hifi-transition-fast: 0.1s ease;
+    --hifi-transition-normal: 0.2s ease;
+    --hifi-transition-slow: 0.3s ease;
+
+    /* ==========================================
+       Z-INDEX
+       ========================================== */
+    --hifi-z-dropdown: 1000;
+    --hifi-z-context: 2000;
+    --hifi-z-modal: 3000;
+    --hifi-z-toast: 4000;
+}
+
+/* ==========================================
+   DARK THEME
+   ========================================== */
+[data-theme="dark"] {
+    /* Backgrounds */
+    --hifi-bg-primary: #1e1e1e;
+    --hifi-bg-secondary: #252525;
+    --hifi-bg-tertiary: #181818;
+    --hifi-bg-panel: #222222;
+
+    /* Text */
+    --hifi-text-primary: #e0e0e0;
+    --hifi-text-secondary: #999999;
+    --hifi-text-label: #aaaaaa;
+    --hifi-text-value: #ffffff;
+
+    /* Shadows */
+    --hifi-shadow-light: #2a2a2a;
+    --hifi-shadow-dark: #141414;
+
+    /* Display */
+    --hifi-display-bg: #0a0a0a;
+    --hifi-display-border: #444444;
+
+    /* Borders */
+    --hifi-border-light: rgba(255, 255, 255, 0.1);
+    --hifi-border-dark: rgba(0, 0, 0, 0.3);
+
+    /* Knobs & Faders */
+    --hifi-knob-bg: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    --hifi-knob-indicator: #ffffff;
+    --hifi-knob-tick: #555555;
+    --hifi-knob-tick-active: #888888;
+    --hifi-fader-cap: linear-gradient(180deg, #3a3a3a, #252525, #2a2a2a);
+
+    /* Tables */
+    --hifi-row-hover: rgba(74, 144, 217, 0.15);
+    --hifi-row-selected: rgba(74, 144, 217, 0.25);
+}
+
+/* ==========================================
+   ALTERNATIVE COLOR SCHEMES (optional)
+   ========================================== */
+
+/* Amber Display Theme */
+[data-display="amber"] {
+    --hifi-display-text: #ffaa00;
+    --hifi-display-text-dim: rgba(255, 170, 0, 0.15);
+}
+
+/* Blue Display Theme */
+[data-display="blue"] {
+    --hifi-display-text: #00aaff;
+    --hifi-display-text-dim: rgba(0, 170, 255, 0.15);
+}
+
+/* Red Display Theme */
+[data-display="red"] {
+    --hifi-display-text: #ff4444;
+    --hifi-display-text-dim: rgba(255, 68, 68, 0.15);
+}
+
+/* Vintage/Warm Theme */
+[data-theme="vintage"] {
+    --hifi-bg-primary: #d4c4a8;
+    --hifi-bg-secondary: #e0d4bc;
+    --hifi-bg-tertiary: #c8b898;
+    --hifi-bg-panel: #d8ccb0;
+    --hifi-text-primary: #3d3528;
+    --hifi-text-secondary: #6b5d4a;
+    --hifi-shadow-light: #e8dcc4;
+    --hifi-shadow-dark: #b8a888;
+    --hifi-accent: #8b6914;
+    --hifi-display-bg: #2a2418;
+    --hifi-display-text: #ffcc66;
+    --hifi-display-text-dim: rgba(255, 204, 102, 0.15);
+}
