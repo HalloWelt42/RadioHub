@@ -671,7 +671,7 @@
   /* VOLUME */
   .volume-section {
     width: 55px;
-    margin: 0 20px;
+    margin: 0 12px;
   }
 
   .volume-section .section-content {
@@ -719,7 +719,7 @@
 
   /* TRANSPORT */
   .transport-section {
-    width: 320px;
+    width: 360px;
   }
 
   .transport-header {
@@ -838,13 +838,13 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    padding: 6px 7px;
+    padding: 5px 6px;
     background: var(--hifi-bg-tertiary);
     border: 1px solid var(--hifi-border-dark);
     border-radius: var(--hifi-border-radius-sm);
     cursor: pointer;
     transition: background 0.1s ease;
-    min-width: 37px;
+    min-width: 34px;
   }
 
   .transport-btn:hover:not(:disabled) {
