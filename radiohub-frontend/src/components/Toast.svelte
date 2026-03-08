@@ -1,16 +1,15 @@
 <script>
-  import Icon from './Icon.svelte';
   import { appState } from '../lib/store.svelte.js';
-  
-  let iconName = $derived(
-    appState.toast?.type === 'success' ? 'check' :
-    appState.toast?.type === 'error' ? 'x' : 'radio'
+
+  let iconClass = $derived(
+    appState.toast?.type === 'success' ? 'fa-check' :
+    appState.toast?.type === 'error' ? 'fa-xmark' : 'fa-radio'
   );
 </script>
 
 {#if appState.toast}
   <div class="toast" class:success={appState.toast.type === 'success'} class:error={appState.toast.type === 'error'}>
-    <Icon name={iconName} size={18} />
+    <i class="fa-solid {iconClass}"></i>
     <span>{appState.toast.message}</span>
   </div>
 {/if}

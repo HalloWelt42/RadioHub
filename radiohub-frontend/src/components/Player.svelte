@@ -1,5 +1,4 @@
 <script>
-  import Icon from './Icon.svelte';
   import { appState, actions } from '../lib/store.svelte.js';
   
   let audioEl = $state(null);
@@ -91,7 +90,7 @@
   <!-- Now Playing Info -->
   <div class="now-playing">
     <div class="now-playing-icon" class:playing={appState.isPlaying}>
-      <Icon name={appState.currentEpisode ? 'podcast' : 'radio'} size={24} />
+      <i class="fa-solid {appState.currentEpisode ? 'fa-podcast' : 'fa-radio'}"></i>
     </div>
     <div class="now-playing-text">
       <div class="now-playing-name truncate">{nowPlayingName}</div>
@@ -105,17 +104,17 @@
   <div class="controls">
     {#if showSeekbar}
       <button class="btn btn-icon btn-ghost" onclick={() => audioEl.currentTime -= 10}>
-        <Icon name="skip-back" size={20} />
+        <i class="fa-solid fa-backward-step"></i>
       </button>
     {/if}
     
     <button class="btn btn-icon btn-primary play-btn" onclick={togglePlay}>
-      <Icon name={appState.isPlaying ? 'pause' : 'play'} size={24} />
+      <i class="fa-solid {appState.isPlaying ? 'fa-pause' : 'fa-play'}"></i>
     </button>
     
     {#if showSeekbar}
       <button class="btn btn-icon btn-ghost" onclick={() => audioEl.currentTime += 10}>
-        <Icon name="skip-forward" size={20} />
+        <i class="fa-solid fa-forward-step"></i>
       </button>
     {/if}
   </div>
@@ -138,7 +137,7 @@
   <!-- Volume & Recording -->
   <div class="player-actions">
     <div class="volume-control">
-      <Icon name={appState.volume === 0 ? 'volume-x' : 'volume'} size={20} />
+      <i class="fa-solid {appState.volume === 0 ? 'fa-volume-xmark' : 'fa-volume-high'}"></i>
       <input 
         type="range" 
         min="0" 
@@ -155,7 +154,7 @@
         onclick={toggleRecording}
         title={appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}
       >
-        <Icon name={appState.isRecording ? 'stop' : 'mic'} size={20} />
+        <i class="fa-solid {appState.isRecording ? 'fa-stop' : 'fa-microphone'}"></i>
       </button>
     {/if}
   </div>

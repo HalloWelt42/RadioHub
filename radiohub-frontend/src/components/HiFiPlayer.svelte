@@ -408,7 +408,7 @@
           ontouchend={() => { prevPressed = false; navigatePrev(); }}
         >
           <HiFiLed color={prevPressed ? 'yellow' : 'off'} size="small" />
-          <span class="transport-icon">|&#9664;</span>
+          <i class="fa-solid fa-backward-step transport-icon"></i>
         </button>
 
         <!-- -10s -->
@@ -422,31 +422,31 @@
           ontouchend={() => { skipBackPressed = false; handleSkip(-10); }}
         >
           <HiFiLed color={skipBackPressed ? 'yellow' : 'off'} size="small" />
-          <span class="transport-icon">&#9664;&#9664;</span>
+          <i class="fa-solid fa-backward transport-icon"></i>
         </button>
 
         <!-- Stop -->
         <button class="transport-btn" onclick={handleStop}>
           <HiFiLed color={stopLedColor} size="small" />
-          <span class="transport-icon">&#9632;</span>
+          <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Pause -->
         <button class="transport-btn" onclick={handlePause} disabled={!appState.isPlaying && !appState.isPaused}>
           <HiFiLed color={pauseLedColor} size="small" />
-          <span class="transport-icon">&#10074;&#10074;</span>
+          <i class="fa-solid fa-pause transport-icon"></i>
         </button>
 
         <!-- Play -->
         <button class="transport-btn" onclick={handlePlay}>
           <HiFiLed color={playLedColor} size="small" />
-          <span class="transport-icon">&#9654;</span>
+          <i class="fa-solid fa-play transport-icon"></i>
         </button>
 
         <!-- Rec -->
         <button class="transport-btn rec" onclick={handleRec} disabled={!isStation}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
-          <span class="transport-icon">&#9679;</span>
+          <i class="fa-solid fa-circle transport-icon"></i>
         </button>
 
         <!-- +10s -->
@@ -460,7 +460,7 @@
           ontouchend={() => { skipFwdPressed = false; handleSkip(10); }}
         >
           <HiFiLed color={skipFwdPressed ? 'yellow' : 'off'} size="small" />
-          <span class="transport-icon">&#9654;&#9654;</span>
+          <i class="fa-solid fa-forward transport-icon"></i>
         </button>
 
         <!-- Next Track -->
@@ -474,7 +474,7 @@
           ontouchend={() => { nextPressed = false; navigateNext(); }}
         >
           <HiFiLed color={nextPressed ? 'yellow' : 'off'} size="small" />
-          <span class="transport-icon">&#9654;|</span>
+          <i class="fa-solid fa-forward-step transport-icon"></i>
         </button>
 
         <!-- Live -->
@@ -484,7 +484,7 @@
           onclick={() => engine.goLive()}
         >
           <HiFiLed color={liveLedColor} size="small" />
-          <span class="transport-label">LIVE</span>
+          <i class="fa-solid fa-tower-broadcast transport-icon"></i>
         </button>
       </div>
     </div>
@@ -861,29 +861,16 @@
   }
 
   .transport-icon {
-    font-family: 'Roboto', sans-serif;
     font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
     color: var(--hifi-text-primary);
     line-height: 1;
   }
 
-  .transport-label {
-    font-family: var(--hifi-font-values);
-    font-size: 7px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--hifi-text-primary);
-    letter-spacing: 0.5px;
-    line-height: 1;
-  }
-
-  .transport-btn.live-btn .transport-label {
+  .transport-btn.live-btn .transport-icon {
     color: var(--hifi-led-blue);
   }
 
-  .transport-btn.live-btn:disabled .transport-label {
+  .transport-btn.live-btn:disabled .transport-icon {
     color: var(--hifi-led-blue);
     opacity: 1;
   }
