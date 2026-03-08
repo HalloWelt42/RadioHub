@@ -1,0 +1,843 @@
+/**
+ * RadioHub Player Engine - Testcases
+ *
+ * Testet alle Playback-Szenarien:
+ * - Case A: Radio Direct Stream
+ * - Case B: Radio mit HLS Timeshift
+ * - Case C: Podcast
+ * - Uebergaenge zwischen Cases
+ * - Fehlerszenarien
+ * - Recording
+ *
+ * Ausfuehren: npm test
+ */
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+// === Mocks ===
+
+// Mock hls.js - muss Klasse sein (new Hls() im Engine)
+vi.mock('hls.js', () => {
+  class MockHls {
+    constructor() {
+      this.loadSource = vi.fn();
+      this.attachMedia = vi.fn();
+      this.destroy = vi.fn();
+      this.startLoad = vi.fn();
+      this.recoverMediaError = vi.fn();
+      this._handlers = {};
+      this.on = vi.fn((event, handler) => {
+        this._handlers[event] = handler;
+      });
+    }
+  }
+  MockHls.isSupported = vi.fn(() => true);
+  MockHls.Events = {
+    MANIFEST_PARSED: 'hlsManifestParsed',
+    ERROR: 'hlsError',
+  };
+  MockHls.ErrorTypes = {
+    NETWORK_ERROR: 'networkError',
+    MEDIA_ERROR: 'mediaError',
+  };
+  return { default: MockHls };
+});
+
+// Mock API
+vi.mock('../src/lib/api.js', () => ({
+  api: {
+    startHLS: vi.fn(() => Promise.resolve({ status: 'started', session_id: 'test' })),
+    stopHLS: vi.fn(() => Promise.resolve({ status: 'stopped' })),
+    getHLSStatus: vi.fn(() => Promise.resolve({
+      active: true,
+      segment_count: 5,
+      buffered_seconds: 5,
+      input_codec: 'mp3',
+      input_bitrate: 192,
+      output_bitrate: 128,
+      sample_rate: 44100
+    })),
+    getHLSPlaylistUrl: vi.fn((sid) => {
+      const base = 'http://localhost:9091/api/hls/playlist.m3u8';
+      return sid ? `${base}?sid=${sid}` : base;
+    }),
+    startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
+    stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
+    updateConfig: vi.fn(() => Promise.resolve({})),
+  }
+}));
+
+import * as engine from '../src/lib/playerEngine.js';
+import { api } from '../src/lib/api.js';
+
+// === Test Fixtures ===
+
+function createMockAudioElement() {
+  return {
+    src: '',
+    volume: 1,
+    currentTime: 0,
+    duration: 0,
+    paused: true,
+    seekable: {
+      length: 0,
+      start: vi.fn(() => 0),
+      end: vi.fn(() => 0),
+    },
+    play: vi.fn(() => Promise.resolve()),
+    pause: vi.fn(),
+    load: vi.fn(),
+    removeAttribute: vi.fn(),
+  };
+}
+
+function createMockState() {
+  return {
+    isPlaying: false,
+    isPaused: false,
+    currentStation: null,
+    currentEpisode: null,
+    volume: 70,
+    playerMode: 'none',
+    streamQuality: null,
+    playerError: null,
+    isRecording: false,
+    recordingSession: null,
+    recordingElapsed: 0,
+    hlsActive: false,
+    hlsStatus: null,
+    isLive: true,
+    currentSegment: null,
+    stations: [],
+  };
+}
+
+const STATION_A = {
+  uuid: 'station-a-uuid',
+  name: 'TestRadio A',
+  url: 'http://stream-a.example.com/live',
+  url_resolved: 'http://stream-a-resolved.example.com/live',
+  bitrate: 128,
+  tags: 'rock,pop',
+  country: 'Germany',
+  countrycode: 'DE',
+};
+
+const STATION_B = {
+  uuid: 'station-b-uuid',
+  name: 'TestRadio B',
+  url: 'http://stream-b.example.com/live',
+  url_resolved: 'http://stream-b-resolved.example.com/live',
+  bitrate: 192,
+  tags: 'jazz',
+  country: 'Austria',
+  countrycode: 'AT',
+};
+
+const PODCAST_EPISODE = {
+  id: 'episode-1',
+  title: 'Test Episode',
+  audio_url: 'http://podcast.example.com/ep1.mp3',
+  podcast: {
+    id: 'podcast-1',
+    title: 'Test Podcast',
+  },
+};
+
+
+// ============================================================
+//  Test Suites
+// ============================================================
+
+describe('PlayerEngine', () => {
+  let audioEl;
+  let state;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    engine._resetForTest();
+    audioEl = createMockAudioElement();
+    state = createMockState();
+    engine.init(audioEl, state);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // ----------------------------------------------------------
+  //  Initialisierung
+  // ----------------------------------------------------------
+  describe('Initialisierung', () => {
+    it('setzt Audio-Volume auf State-Wert', () => {
+      expect(audioEl.volume).toBe(0.7); // 70/100
+    });
+
+    it('meldet initialisiert', () => {
+      expect(engine.isInitialized()).toBe(true);
+    });
+
+    it('meldet nicht initialisiert ohne Audio', () => {
+      engine._resetForTest();
+      expect(engine.isInitialized()).toBe(false);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Case A: Radio Direct Stream
+  // ----------------------------------------------------------
+  describe('Case A: Radio Direct Stream', () => {
+    it('TC-A1: Sender abspielen setzt korrekten State', async () => {
+      await engine.playStation(STATION_A);
+
+      expect(state.isPlaying).toBe(true);
+      expect(state.isPaused).toBe(false);
+      expect(state.currentStation).toEqual(STATION_A);
+      expect(state.currentEpisode).toBe(null);
+      expect(state.playerMode).toBe('direct');
+      expect(state.isLive).toBe(true);
+      expect(state.playerError).toBe(null);
+    });
+
+    it('TC-A2: Audio-Source wird auf Stream-URL gesetzt', async () => {
+      await engine.playStation(STATION_A);
+
+      expect(audioEl.src).toBe(STATION_A.url_resolved);
+      expect(audioEl.load).toHaveBeenCalled();
+      expect(audioEl.play).toHaveBeenCalled();
+    });
+
+    it('TC-A3: HLS-Buffer wird im Hintergrund gestartet', async () => {
+      await engine.playStation(STATION_A);
+
+      expect(api.startHLS).toHaveBeenCalledWith(STATION_A);
+    });
+
+    it('TC-A4: Stop setzt alles zurueck', async () => {
+      await engine.playStation(STATION_A);
+      await engine.stop();
+
+      expect(state.isPlaying).toBe(false);
+      expect(state.isPaused).toBe(false);
+      expect(state.playerMode).toBe('none');
+      expect(state.hlsActive).toBe(false);
+      expect(audioEl.pause).toHaveBeenCalled();
+      expect(audioEl.removeAttribute).toHaveBeenCalledWith('src');
+    });
+
+    it('TC-A5: Pause funktioniert', async () => {
+      await engine.playStation(STATION_A);
+
+      engine.pause();
+      expect(state.isPaused).toBe(true);
+      expect(state.isPlaying).toBe(true); // Noch "playing" aber pausiert
+      expect(audioEl.pause).toHaveBeenCalled();
+    });
+
+    it('TC-A6: Resume nach Pause', async () => {
+      await engine.playStation(STATION_A);
+      engine.pause();
+
+      audioEl.play.mockClear();
+      engine.resume();
+      expect(state.isPaused).toBe(false);
+      expect(audioEl.play).toHaveBeenCalled();
+    });
+
+    it('TC-A7: togglePause wechselt hin und her', async () => {
+      await engine.playStation(STATION_A);
+
+      engine.togglePause();
+      expect(state.isPaused).toBe(true);
+
+      engine.togglePause();
+      expect(state.isPaused).toBe(false);
+    });
+
+    it('TC-A8: Seeking ist bei Direct Stream deaktiviert', async () => {
+      await engine.playStation(STATION_A);
+      expect(engine.canSeek()).toBe(false);
+    });
+
+    it('TC-A9: Last Station wird gespeichert', async () => {
+      await engine.playStation(STATION_A);
+
+      expect(api.updateConfig).toHaveBeenCalledWith({
+        last_station_uuid: STATION_A.uuid,
+        last_station_name: STATION_A.name
+      });
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Case B: Radio mit HLS Timeshift
+  // ----------------------------------------------------------
+  describe('Case B: HLS Timeshift', () => {
+    it('TC-B1: HLS wird als aktiv markiert nach Start', async () => {
+      // HLS-Start ist fire-and-forget, der API-Mock resolved sofort
+      vi.useRealTimers(); // Brauchen echte Timers fuer async polling
+      await engine.playStation(STATION_A);
+
+      // Kurz warten bis der async HLS-Start-Call resolved
+      await new Promise(r => setTimeout(r, 50));
+
+      expect(state.hlsActive).toBe(true);
+      expect(state.hlsStatus).toBeTruthy();
+      vi.useFakeTimers(); // Zurueck zu Fake-Timers fuer andere Tests
+    });
+
+    it('TC-B2: Seeking ist im HLS-Modus aktiv', async () => {
+      await engine.playStation(STATION_A);
+      state.playerMode = 'hls'; // Simuliere HLS-Switch
+
+      expect(engine.canSeek()).toBe(true);
+    });
+
+    it('TC-B3: Backend-HLS wird bei Stop gestoppt', async () => {
+      await engine.playStation(STATION_A);
+      state.hlsActive = true;
+
+      await engine.stop();
+      expect(api.stopHLS).toHaveBeenCalled();
+    });
+
+    it('TC-B4: goLive springt zur Live-Kante', async () => {
+      state.playerMode = 'hls';
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      engine.goLive();
+
+      expect(audioEl.currentTime).toBeCloseTo(299.5, 1);
+      expect(state.isLive).toBe(true);
+      expect(state.currentSegment).toBe(300);
+    });
+
+    it('TC-B5: Seek aktualisiert isLive und currentSegment', async () => {
+      state.playerMode = 'hls';
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      engine.seek(50); // 50% von 300 Segmenten = Segment 150
+      expect(state.isLive).toBe(false);
+      expect(audioEl.currentTime).toBeCloseTo(150, 0);
+      expect(state.currentSegment).toBe(150);
+    });
+
+    it('TC-B6: Seek nahe Ende springt zu Live', async () => {
+      state.playerMode = 'hls';
+      state.hlsStatus = { first_segment: 0, last_segment: 10, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 10),
+      };
+
+      engine.seek(95); // 95% von 10 = Segment 9.5 -> round = 10 -> >= 9 (lastSeg-1)
+      expect(state.isLive).toBe(true);
+      expect(state.currentSegment).toBe(10);
+    });
+
+    it('TC-B7: Skip +10s funktioniert im HLS', async () => {
+      state.playerMode = 'hls';
+      state.currentSegment = 100;
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      engine.skip(10);
+      expect(state.currentSegment).toBe(110);
+      expect(audioEl.currentTime).toBeCloseTo(110, 0);
+    });
+
+    it('TC-B8: Skip -10s funktioniert im HLS', async () => {
+      state.playerMode = 'hls';
+      state.currentSegment = 100;
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      engine.skip(-10);
+      expect(state.currentSegment).toBe(90);
+      expect(audioEl.currentTime).toBeCloseTo(90, 0);
+    });
+
+    it('TC-B10: Session-ID wird in Playlist-URL unterstuetzt', () => {
+      const url = api.getHLSPlaylistUrl('test123');
+      expect(url).toContain('sid=test123');
+
+      const urlNoSid = api.getHLSPlaylistUrl();
+      expect(urlNoSid).not.toContain('sid=');
+    });
+
+    it('TC-B9: Skip stoppt bei erstem Segment', async () => {
+      state.playerMode = 'hls';
+      state.currentSegment = 5;
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      engine.skip(-20);
+      expect(state.currentSegment).toBe(0);
+      expect(audioEl.currentTime).toBeCloseTo(0, 0);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Case C: Podcast
+  // ----------------------------------------------------------
+  describe('Case C: Podcast', () => {
+    it('TC-C1: Podcast abspielen setzt korrekten State', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+
+      expect(state.isPlaying).toBe(true);
+      expect(state.currentEpisode).toBeTruthy();
+      expect(state.currentEpisode.title).toBe('Test Episode');
+      expect(state.currentStation).toBe(null);
+      expect(state.playerMode).toBe('podcast');
+    });
+
+    it('TC-C2: Audio-Source ist Episode-URL', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+
+      expect(audioEl.src).toBe(PODCAST_EPISODE.audio_url);
+    });
+
+    it('TC-C3: HLS wird bei Podcast-Start gestoppt', async () => {
+      // Erst Radio mit HLS spielen
+      await engine.playStation(STATION_A);
+      state.hlsActive = true;
+      api.stopHLS.mockClear();
+
+      // Dann Podcast
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+
+      expect(state.hlsActive).toBe(false);
+    });
+
+    it('TC-C4: Seeking funktioniert im Podcast', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+      audioEl.duration = 3600; // 1 Stunde
+
+      engine.seek(25); // 25% = 900s
+      expect(audioEl.currentTime).toBe(900);
+    });
+
+    it('TC-C5: Seeking ist im Podcast aktiv', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+      expect(engine.canSeek()).toBe(true);
+    });
+
+    it('TC-C6: Ende des Podcasts stoppt Wiedergabe', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+      engine.handleEnded();
+
+      // stop() ist async, aber handleEnded ruft es auf
+      await vi.runAllTimersAsync();
+      expect(state.isPlaying).toBe(false);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Senderwechsel (KEIN Audio-Bleed!)
+  // ----------------------------------------------------------
+  describe('Senderwechsel - Anti Audio-Bleed', () => {
+    it('TC-SW1: Wechsel A->B: Audio wird sofort gestoppt', async () => {
+      await engine.playStation(STATION_A);
+      audioEl.pause.mockClear();
+
+      await engine.playStation(STATION_B);
+
+      // pause() muss VOR dem neuen play() aufgerufen worden sein
+      expect(audioEl.pause).toHaveBeenCalled();
+      expect(audioEl.removeAttribute).toHaveBeenCalledWith('src');
+    });
+
+    it('TC-SW2: Wechsel A->B: Backend-HLS wird gestoppt und neu gestartet', async () => {
+      await engine.playStation(STATION_A);
+      state.hlsActive = true;
+      api.stopHLS.mockClear();
+      api.startHLS.mockClear();
+
+      await engine.playStation(STATION_B);
+
+      expect(api.stopHLS).toHaveBeenCalled();
+      expect(api.startHLS).toHaveBeenCalledWith(STATION_B);
+    });
+
+    it('TC-SW3: Wechsel A->B: Neue Source ist Station B', async () => {
+      await engine.playStation(STATION_A);
+      await engine.playStation(STATION_B);
+
+      expect(state.currentStation).toEqual(STATION_B);
+      expect(audioEl.src).toBe(STATION_B.url_resolved);
+    });
+
+    it('TC-SW4: Schneller Wechsel A->B->C: Nur C spielt', async () => {
+      const stationC = { ...STATION_A, uuid: 'c', name: 'TestRadio C', url_resolved: 'http://c.example.com' };
+
+      // Schneller Wechsel ohne await
+      const p1 = engine.playStation(STATION_A);
+      const p2 = engine.playStation(STATION_B);
+      const p3 = engine.playStation(stationC);
+
+      await Promise.all([p1, p2, p3]);
+
+      // Nur C darf aktiv sein
+      expect(state.currentStation.name).toBe('TestRadio C');
+      expect(audioEl.src).toBe('http://c.example.com');
+    });
+
+    it('TC-SW5: Generation Counter verhindert veraltete State-Updates', async () => {
+      const gen1 = engine.getGeneration();
+      await engine.playStation(STATION_A);
+      const gen2 = engine.getGeneration();
+
+      expect(gen2).toBeGreaterThan(gen1);
+
+      await engine.playStation(STATION_B);
+      const gen3 = engine.getGeneration();
+
+      expect(gen3).toBeGreaterThan(gen2);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Uebergaenge Radio <-> Podcast
+  // ----------------------------------------------------------
+  describe('Uebergaenge Radio <-> Podcast', () => {
+    it('TC-T1: Radio -> Podcast: HLS wird gestoppt', async () => {
+      await engine.playStation(STATION_A);
+      state.hlsActive = true;
+
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+
+      expect(state.hlsActive).toBe(false);
+      expect(state.currentStation).toBe(null);
+      expect(state.currentEpisode).toBeTruthy();
+    });
+
+    it('TC-T2: Podcast -> Radio: Podcast-Audio wird gestoppt', async () => {
+      await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
+      audioEl.pause.mockClear();
+
+      await engine.playStation(STATION_A);
+
+      expect(audioEl.pause).toHaveBeenCalled();
+      expect(state.currentEpisode).toBe(null);
+      expect(state.currentStation).toEqual(STATION_A);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Volume
+  // ----------------------------------------------------------
+  describe('Volume', () => {
+    it('TC-V1: setVolume aktualisiert State und Audio', () => {
+      engine.setVolume(50);
+
+      expect(state.volume).toBe(50);
+      expect(audioEl.volume).toBe(0.5);
+    });
+
+    it('TC-V2: setVolume auf 0 = Stumm', () => {
+      engine.setVolume(0);
+
+      expect(audioEl.volume).toBe(0);
+    });
+
+    it('TC-V3: setVolume auf 100 = Maximum', () => {
+      engine.setVolume(100);
+
+      expect(audioEl.volume).toBe(1);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Recording
+  // ----------------------------------------------------------
+  describe('Recording', () => {
+    it('TC-R1: Aufnahme starten setzt State', async () => {
+      state.currentStation = STATION_A;
+      const result = await engine.startRecording();
+
+      expect(result.success).toBe(true);
+      expect(state.isRecording).toBe(true);
+      expect(state.recordingSession).toBe('rec1');
+    });
+
+    it('TC-R2: Aufnahme ohne Station schlaegt fehl', async () => {
+      state.currentStation = null;
+      const result = await engine.startRecording();
+
+      expect(result.success).toBe(false);
+      expect(state.isRecording).toBe(false);
+    });
+
+    it('TC-R3: Aufnahme stoppen raeumt auf', async () => {
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+
+      const result = await engine.stopRecording();
+
+      expect(result.success).toBe(true);
+      expect(state.isRecording).toBe(false);
+      expect(state.recordingSession).toBe(null);
+      expect(state.recordingElapsed).toBe(0);
+    });
+
+    it('TC-R4: Senderwechsel stoppt laufende Aufnahme', async () => {
+      await engine.playStation(STATION_A);
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+      expect(state.isRecording).toBe(true);
+
+      await engine.playStation(STATION_B);
+
+      expect(state.isRecording).toBe(false);
+    });
+
+    it('TC-R5: Recording-API wird mit korrekten Daten aufgerufen', async () => {
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+
+      expect(api.startRecording).toHaveBeenCalledWith({
+        station_uuid: STATION_A.uuid,
+        station_name: STATION_A.name,
+        stream_url: STATION_A.url_resolved,
+        bitrate: STATION_A.bitrate,
+      });
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Time Update Handler
+  // ----------------------------------------------------------
+  describe('Time Update Handler', () => {
+    it('TC-TU1: Podcast-Time wird korrekt berechnet', () => {
+      state.playerMode = 'podcast';
+      audioEl.currentTime = 180; // 3 Minuten
+      audioEl.duration = 3600;   // 1 Stunde
+
+      const result = engine.handleTimeUpdate();
+
+      expect(result.currentTime).toBe(180);
+      expect(result.duration).toBe(3600);
+      expect(result.seekPosition).toBe(5); // 180/3600 * 100 = 5%
+    });
+
+    it('TC-TU2: HLS-Time mappt auf Segment-Position', () => {
+      state.playerMode = 'hls';
+      state.isLive = false; // Nicht-Live damit Position berechnet wird
+      state.hlsStatus = { first_segment: 200, last_segment: 300, segment_duration: 1 };
+      audioEl.currentTime = 250;
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 200),
+        end: vi.fn(() => 300),
+      };
+
+      const result = engine.handleTimeUpdate();
+
+      // fraction = (250-200)/(300-200) = 0.5 -> Segment 250
+      // seekPosition = (250-200)/100 * 100 = 50%
+      expect(result.seekPosition).toBe(50);
+      expect(state.currentSegment).toBe(250);
+    });
+
+    it('TC-TU3: Live-Modus pinnt seekPosition auf 100%', () => {
+      state.playerMode = 'hls';
+      state.isLive = true;
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.currentTime = 295; // Etwas hinter Live-Kante
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      const result = engine.handleTimeUpdate();
+      // Im Live-Modus: Position gepinnt, kein Neuberechnen
+      expect(result.seekPosition).toBe(100);
+      expect(state.currentSegment).toBe(300);
+      expect(state.isLive).toBe(true); // Bleibt true
+    });
+
+    it('TC-TU4: Nicht-Live berechnet Segment-Position normal', () => {
+      state.playerMode = 'hls';
+      state.isLive = false; // Explizit nicht-live (z.B. nach seek)
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.currentTime = 200;
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      const result = engine.handleTimeUpdate();
+      expect(state.currentSegment).toBe(200);
+      // isLive wird von handleTimeUpdate NICHT geaendert
+      expect(state.isLive).toBe(false);
+    });
+
+    it('TC-TU5: Anti-Jitter: gleiches Segment ergibt gleiche seekPosition', () => {
+      state.playerMode = 'hls';
+      state.isLive = false; // Nicht-Live damit Position berechnet wird
+      state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
+      audioEl.seekable = {
+        length: 1,
+        start: vi.fn(() => 0),
+        end: vi.fn(() => 300),
+      };
+
+      // Erstes Update: Segment 150
+      audioEl.currentTime = 150.1;
+      const result1 = engine.handleTimeUpdate();
+
+      // Zweites Update: immer noch Segment 150
+      audioEl.currentTime = 150.4;
+      const result2 = engine.handleTimeUpdate();
+
+      // seekPosition muss identisch sein (Anti-Jitter)
+      expect(result1.seekPosition).toBe(result2.seekPosition);
+      expect(state.currentSegment).toBe(150);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Error Handling
+  // ----------------------------------------------------------
+  describe('Error Handling', () => {
+    it('TC-E1: Audio-Error wird in State geschrieben', () => {
+      // MediaError codes: 1=ABORTED, 2=NETWORK, 3=DECODE, 4=SRC_NOT_SUPPORTED
+      const event = {
+        target: {
+          error: { code: 2 }
+        }
+      };
+
+      engine.handleError(event);
+      expect(state.playerError).toBe('Netzwerkfehler');
+    });
+
+    it('TC-E2: Unbekannter Error zeigt generische Meldung', () => {
+      const event = {
+        target: {
+          error: { code: 99 }
+        }
+      };
+
+      engine.handleError(event);
+      expect(state.playerError).toBe('Wiedergabefehler');
+    });
+
+    it('TC-E2b: Error Code 4 wird ignoriert (transienter Source-Wechsel)', () => {
+      const event = {
+        target: {
+          error: { code: 4 }
+        }
+      };
+
+      engine.handleError(event);
+      expect(state.playerError).toBeNull();
+    });
+
+    it('TC-E3: Ohne Audio-Element kein Absturz bei playStation', async () => {
+      engine._resetForTest();
+      engine.init(null, state);
+
+      await engine.playStation(STATION_A);
+      expect(state.playerError).toBe('Kein Audio-Element');
+      expect(state.isPlaying).toBe(false);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Quality Info
+  // ----------------------------------------------------------
+  describe('Quality Info', () => {
+    it('TC-Q1: streamQuality wird bei playStation zurueckgesetzt', async () => {
+      state.streamQuality = { inputCodec: 'mp3', inputBitrate: 128 };
+      await engine.playStation(STATION_A);
+
+      expect(state.streamQuality).toBe(null);
+    });
+
+    // Note: Quality wird durch HLS-Polling gesetzt.
+    // Das Polling selbst ist schwer zu unit-testen (Timer-basiert).
+    // Wird im manuellen UI-Test geprueft (TC-Q2 bis TC-Q4).
+  });
+});
+
+
+// ============================================================
+//  Zusammenfassung der Testcases (fuer manuelle Pruefung)
+// ============================================================
+/**
+ * MANUELLE TESTCASES (im Browser mit laufendem Backend):
+ *
+ * TC-M1: Sender anklicken
+ *   Erwartung: Direct Stream spielt sofort, nach ~3-5s Wechsel zu HLS
+ *   Pruefen: SOURCE zeigt "Tuner / HLS", Display zeigt Sendername
+ *
+ * TC-M2: Senderwechsel waehrend Wiedergabe
+ *   Erwartung: KEIN Audio-Bleed! Alter Sender stoppt sofort.
+ *   Pruefen: Nur neuer Sender hoerbar, kein kurzes Ueberlappen
+ *
+ * TC-M3: 3x schnell hintereinander verschiedene Sender klicken
+ *   Erwartung: Nur der letzte Sender spielt
+ *   Pruefen: Display, Audio, kein Chaos
+ *
+ * TC-M4: Play -> Pause -> Play
+ *   Erwartung: Gruene LED -> Gelbe LED -> Gruene LED
+ *   Pruefen: Audio stoppt/startet korrekt
+ *
+ * TC-M5: Play -> Stop
+ *   Erwartung: Audio stoppt komplett, State zurueckgesetzt
+ *   Pruefen: Stop-LED gelb (kurz), dann alles aus
+ *
+ * TC-M6: HLS-Seekbar zurueckziehen
+ *   Erwartung: Audio springt zurueck im Buffer
+ *   Pruefen: LIVE-Anzeige verschwindet, LIVE-Button wird aktiv (blau)
+ *
+ * TC-M7: LIVE-Button nach Zurueckspulen
+ *   Erwartung: Springt zur Live-Kante
+ *   Pruefen: LIVE-Anzeige kommt zurueck
+ *
+ * TC-M8: Podcast abspielen
+ *   Erwartung: SOURCE "Podcast", Timer gruen, Seekbar aktiv
+ *   Pruefen: Volle Dauer wird angezeigt
+ *
+ * TC-M9: Quality-Anzeige
+ *   Erwartung: Unter dem Sendernamen: z.B. "MP3 192k -> HLS 128k"
+ *   Pruefen: Aktualisiert sich nach HLS-Start
+ *
+ * TC-M10: Aufnahme starten/stoppen
+ *   Erwartung: REC-LED rot + blinkt, Timer rot, Toast bei Stop
+ *   Pruefen: Aufnahme-Datei wird erstellt
+ *
+ * TC-M11: Recording bei Senderwechsel
+ *   Erwartung: Aufnahme wird automatisch gestoppt
+ *   Pruefen: Toast erscheint, REC-LED aus
+ *
+ * TC-M12: Error-Handling (ungueltige Stream-URL)
+ *   Erwartung: Fehler-Banner erscheint ueber dem Player
+ *   Pruefen: Kann mit "x" geschlossen werden
+ */

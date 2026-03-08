@@ -226,8 +226,9 @@ class RadioHubAPI {
     return this.fetch('/api/hls/status');
   }
 
-  getHLSPlaylistUrl() {
-    return `${this.baseUrl}/api/hls/playlist.m3u8`;
+  getHLSPlaylistUrl(sessionId) {
+    const base = `${this.baseUrl}/api/hls/playlist.m3u8`;
+    return sessionId ? `${base}?sid=${sessionId}` : base;
   }
 
   // === Config ===

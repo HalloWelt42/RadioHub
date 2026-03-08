@@ -124,26 +124,34 @@ async def get_hls_playlist():
 
 
 @router.get("/segment/{segment_id}")
-async def get_hls_segment(segment_id: int):
+async def get_hls_segment(segment_id: int, sid: Optional[str] = None):
     """
-    Gibt ein einzelnes Audio-Segment zurück.
-    
-    Segmente sind ~3 Sekunden lang im MPEG-TS Format.
-    Können vom Browser gecached werden.
+    Gibt ein einzelnes Audio-Segment zurueck.
+
+    Segmente sind 1 Sekunde lang im MPEG-TS Format.
+    sid-Parameter verhindert Cache-Kollisionen bei Senderwechsel.
     """
+    # Session-ID validieren: verhindert Auslieferung alter Segmente
+    current_sid = hls_buffer.get_session_id()
+    if sid and current_sid and sid != current_sid:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Session {sid} nicht mehr aktiv"
+        )
+
     segment_path = hls_buffer.get_segment_path(segment_id)
-    
+
     if not segment_path:
         raise HTTPException(
             status_code=404,
             detail=f"Segment {segment_id} nicht gefunden"
         )
-    
+
     return FileResponse(
         path=segment_path,
         media_type="video/mp2t",
         headers={
-            "Cache-Control": "max-age=86400",  # 24h Cache OK
+            "Cache-Control": "no-cache, no-store, must-revalidate",
             "Access-Control-Allow-Origin": "*"
         }
     )

@@ -1,0 +1,771 @@
+/**
+ * RadioHub Player Engine v1.0.0
+ *
+ * Zentrale Playback-Steuerung mit State-Machine.
+ * Loest die Probleme:
+ * - Audio-Bleed bei Senderwechsel (Generation Counter)
+ * - Race Conditions bei HLS-Start/Stop
+ * - Unklare Button-States
+ * - Fehlende Quality-Anzeige
+ *
+ * Prinzip: "Lieber nichts abspielen als Chaos verursachen"
+ *
+ * Playback Modes:
+ *   'none'    - Nichts geladen
+ *   'direct'  - Direkter Stream (kein Timeshift)
+ *   'hls'     - HLS-Buffer (seekbar, Timeshift)
+ *   'podcast' - Podcast-Episode (seekbar, feste Dauer)
+ */
+import Hls from 'hls.js';
+import { api } from './api.js';
+
+// === Interne State-Variablen (nicht reaktiv) ===
+let _audioEl = null;
+let _appState = null;
+let _hlsInstance = null;
+let _hlsPollInterval = null;
+let _generation = 0;
+let _recordingInterval = null;
+let _recordingStartTime = null;
+let _hlsSessionId = null;
+let _lastSeekPosition = 0;
+
+// === Initialisierung ===
+
+/**
+ * Setzt Audio-Element und State-Referenz.
+ * Wird vom HiFiPlayer-Component beim Mount aufgerufen.
+ */
+export function init(audioElement, appState) {
+  _audioEl = audioElement;
+  _appState = appState;
+  if (_audioEl && _appState) {
+    _audioEl.volume = _appState.volume / 100;
+  }
+}
+
+/**
+ * Gibt die aktuelle Generation zurueck (fuer Tests).
+ */
+export function getGeneration() {
+  return _generation;
+}
+
+/**
+ * Prueft ob Engine initialisiert ist.
+ */
+export function isInitialized() {
+  return _audioEl !== null && _appState !== null;
+}
+
+// ============================================================
+//  CASE A/B: Radio Station abspielen
+// ============================================================
+
+/**
+ * Spielt einen Radiosender ab.
+ *
+ * Ablauf:
+ * 1. Audio sofort stummschalten (kein Bleed!)
+ * 2. HLS-Instanz zerstoeren
+ * 3. Backend-HLS stoppen (await!)
+ * 4. State zuruecksetzen
+ * 5. Direct Stream starten
+ * 6. HLS-Buffer im Hintergrund starten
+ * 7. Bei genug Segmenten: nahtlos zu HLS wechseln
+ */
+export async function playStation(station) {
+  if (!_appState) return;
+  const gen = ++_generation;
+
+  // --- Phase 1: Sofortige Stille ---
+  // REIHENFOLGE KRITISCH: Erst HLS zerstoeren (loest MediaSource),
+  // dann Audio stummschalten (kann src jetzt sauber entfernen)
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+
+  // --- Phase 2: Backend-HLS sauber stoppen ---
+  if (_appState.hlsActive) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+    try {
+      await api.stopHLS();
+    } catch (e) {
+      console.error('HLS stop error:', e);
+    }
+  }
+  if (_generation !== gen) return; // Abgebrochen durch neueren Aufruf
+
+  // --- Phase 3: Recording stoppen falls aktiv ---
+  if (_appState.isRecording) {
+    await _stopRecordingInternal();
+  }
+  if (_generation !== gen) return;
+
+  // --- Phase 4: State setzen ---
+  _appState.currentStation = station;
+  _appState.currentEpisode = null;
+  _appState.isPlaying = true;
+  _appState.isPaused = false;
+  _appState.isLive = true;
+  _appState.playerMode = 'direct';
+  _appState.streamQuality = null;
+  _appState.playerError = null;
+  _appState.currentSegment = null;
+  _lastSeekPosition = 0;
+
+  // --- Phase 5: Direct Stream starten ---
+  if (!_audioEl) {
+    _appState.playerError = 'Kein Audio-Element';
+    _appState.isPlaying = false;
+    return;
+  }
+
+
+  const url = station.url_resolved || station.url;
+  _audioEl.src = url;
+  _audioEl.load();
+
+  try {
+    await _audioEl.play();
+  } catch (e) {
+    // Autoplay-Restriction: nicht fatal, User kann manuell Play druecken
+    console.warn('Autoplay blocked:', e.message);
+  }
+  if (_generation !== gen) return;
+
+  // --- Phase 6: HLS-Buffer im Hintergrund starten ---
+  _startHLSBackground(station, gen);
+
+  // --- Phase 7: Last Station speichern ---
+  api.updateConfig({
+    last_station_uuid: station.uuid,
+    last_station_name: station.name
+  }).catch(() => {});
+}
+
+// ============================================================
+//  CASE C: Podcast abspielen
+// ============================================================
+
+/**
+ * Spielt eine Podcast-Episode ab.
+ */
+export async function playPodcast(episode, podcast) {
+  if (!_appState) return;
+  const gen = ++_generation;
+
+  // Sofortige Stille + Cleanup
+  // REIHENFOLGE: Erst HLS zerstoeren, dann Audio stummschalten
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+
+  if (_appState.hlsActive) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+    api.stopHLS().catch(() => {});
+  }
+
+  if (_appState.isRecording) {
+    await _stopRecordingInternal();
+  }
+  if (_generation !== gen) return;
+
+  // State setzen
+  _appState.currentEpisode = { ...episode, podcast };
+  _appState.currentStation = null;
+  _appState.isPlaying = true;
+  _appState.isPaused = false;
+  _appState.isLive = true;
+  _appState.playerMode = 'podcast';
+  _appState.streamQuality = null;
+  _appState.playerError = null;
+  _appState.currentSegment = null;
+  _lastSeekPosition = 0;
+
+  if (!_audioEl) {
+    _appState.playerError = 'Kein Audio-Element';
+    _appState.isPlaying = false;
+    return;
+  }
+
+
+  _audioEl.src = episode.audio_url;
+  _audioEl.load();
+
+  try {
+    await _audioEl.play();
+  } catch (e) {
+    console.warn('Podcast autoplay blocked:', e.message);
+  }
+}
+
+// ============================================================
+//  Playback Control
+// ============================================================
+
+/**
+ * Pausiert die Wiedergabe.
+ * HLS-Buffer laeuft im Backend weiter!
+ */
+export function pause() {
+  if (!_audioEl || !_appState?.isPlaying || _appState.isPaused) return;
+  _audioEl.pause();
+  _appState.isPaused = true;
+}
+
+/**
+ * Setzt die Wiedergabe fort.
+ */
+export function resume() {
+  if (!_audioEl || !_appState?.isPaused) return;
+  _audioEl.play().catch(e => {
+    console.error('Resume error:', e);
+    _appState.playerError = 'Wiedergabe konnte nicht fortgesetzt werden';
+  });
+  _appState.isPaused = false;
+}
+
+/**
+ * Wechselt zwischen Pause und Play.
+ */
+export function togglePause() {
+  if (_appState?.isPaused) {
+    resume();
+  } else if (_appState?.isPlaying) {
+    pause();
+  }
+}
+
+/**
+ * Stoppt alles: Audio, HLS, Recording.
+ * "Lieber nichts abspielen als Chaos."
+ */
+export async function stop() {
+  if (!_appState) return;
+  _generation++; // Alle laufenden Operationen abbrechen
+
+  // 1. HLS zerstoeren (loest MediaSource VOR Audio-Cleanup)
+  _destroyHLS();
+  _stopHLSPolling();
+
+  // 2. Audio sofort stumm
+  _silenceAudio();
+
+  // 3. Backend HLS stoppen
+  if (_appState.hlsActive) {
+    api.stopHLS().catch(e => console.error('HLS stop error:', e));
+  }
+
+  // 4. Recording stoppen
+  if (_appState.isRecording) {
+    await _stopRecordingInternal();
+  }
+
+  // 5. State zuruecksetzen
+  _appState.isPlaying = false;
+  _appState.isPaused = false;
+  _appState.hlsActive = false;
+  _appState.hlsStatus = null;
+  _appState.isLive = true;
+  _appState.playerMode = 'none';
+  _appState.streamQuality = null;
+  _appState.playerError = null;
+  _appState.currentSegment = null;
+  _hlsSessionId = null;
+  _lastSeekPosition = 0;
+}
+
+/**
+ * Setzt die Lautstaerke.
+ */
+export function setVolume(vol) {
+  if (!_appState) return;
+  _appState.volume = vol;
+  if (_audioEl) _audioEl.volume = vol / 100;
+}
+
+// ============================================================
+//  Seeking
+// ============================================================
+
+/**
+ * Seeked zu einer Position (0-100%).
+ * Im HLS-Modus: Mappt auf Segment-Nummern fuer exaktes Seeking.
+ */
+export function seek(position) {
+  if (!_audioEl) return;
+
+  if (_appState?.playerMode === 'hls') {
+    const hs = _appState.hlsStatus;
+    if (!hs || hs.first_segment == null || hs.last_segment == null) {
+      // Kein HLS-Status, aber User-Intent speichern
+      _lastSeekPosition = position;
+      return;
+    }
+
+    const firstSeg = hs.first_segment;
+    const lastSeg = hs.last_segment;
+    const segRange = lastSeg - firstSeg;
+    const targetSeg = Math.round(firstSeg + (position / 100) * segRange);
+
+    // State IMMER updaten (User Intent), auch wenn seekable Range fehlt
+    if (targetSeg >= lastSeg - 1) {
+      _appState.isLive = true;
+      _appState.currentSegment = lastSeg;
+    } else {
+      _appState.isLive = false;
+      _appState.currentSegment = targetSeg;
+    }
+    _lastSeekPosition = position;
+
+    // Tatsaechlicher Audio-Seek nur wenn seekable Range vorhanden
+    if (_audioEl.seekable.length > 0) {
+      if (targetSeg >= lastSeg - 1) {
+        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+        _audioEl.currentTime = seekEnd - 0.3;
+      } else {
+        const seekStart = _audioEl.seekable.start(0);
+        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+        const seekRange = seekEnd - seekStart;
+        const fraction = segRange > 0 ? (targetSeg - firstSeg) / segRange : 0;
+        _audioEl.currentTime = seekStart + fraction * seekRange;
+      }
+    }
+  } else if (_appState?.playerMode === 'podcast') {
+    const dur = _audioEl.duration || 0;
+    if (dur > 0) {
+      _audioEl.currentTime = (position / 100) * dur;
+    }
+  }
+}
+
+/**
+ * Springt relativ (+/- Sekunden).
+ * Im HLS-Modus: Rechnet in Segment-Einheiten.
+ */
+export function skip(seconds) {
+  if (!_audioEl || !_appState) return;
+  const mode = _appState.playerMode;
+  if (mode !== 'hls' && mode !== 'podcast') return;
+
+  if (mode === 'hls') {
+    const hs = _appState.hlsStatus;
+    if (hs && hs.first_segment != null && hs.last_segment != null && _audioEl.seekable.length > 0) {
+      const segDur = hs.segment_duration || 1;
+      const segDelta = Math.round(seconds / segDur);
+      const currentSeg = _appState.currentSegment ?? hs.last_segment;
+      const firstSeg = hs.first_segment;
+      const lastSeg = hs.last_segment;
+      const targetSeg = Math.max(firstSeg, Math.min(lastSeg, currentSeg + segDelta));
+      const segRange = lastSeg - firstSeg;
+
+      if (targetSeg >= lastSeg - 1) {
+        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+        _audioEl.currentTime = seekEnd - 0.3;
+        _appState.isLive = true;
+      } else {
+        const seekStart = _audioEl.seekable.start(0);
+        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+        const seekRange = seekEnd - seekStart;
+        const fraction = segRange > 0 ? (targetSeg - firstSeg) / segRange : 0;
+        _audioEl.currentTime = seekStart + fraction * seekRange;
+        _appState.isLive = false;
+      }
+      _appState.currentSegment = targetSeg;
+    }
+  } else {
+    // Podcast
+    const newTime = Math.max(0, Math.min(
+      _audioEl.duration || 0,
+      _audioEl.currentTime + seconds
+    ));
+    _audioEl.currentTime = newTime;
+  }
+}
+
+/**
+ * Springt zur Live-Kante (nur HLS).
+ */
+export function goLive() {
+  if (!_audioEl || _appState?.playerMode !== 'hls') return;
+  if (_audioEl.seekable.length > 0) {
+    const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+    _audioEl.currentTime = seekEnd - 0.5;
+    _appState.isLive = true;
+    const hs = _appState.hlsStatus;
+    if (hs && hs.last_segment != null) {
+      _appState.currentSegment = hs.last_segment;
+    }
+    _lastSeekPosition = 100;
+  }
+}
+
+/**
+ * Prueft ob Seeking moeglich ist.
+ */
+export function canSeek() {
+  if (!_appState) return false;
+  return _appState.playerMode === 'podcast' || _appState.playerMode === 'hls';
+}
+
+// ============================================================
+//  Recording
+// ============================================================
+
+/**
+ * Startet Aufnahme.
+ */
+export async function startRecording() {
+  if (!_appState?.currentStation) return { success: false };
+
+  try {
+    const result = await api.startRecording({
+      station_uuid: _appState.currentStation.uuid,
+      station_name: _appState.currentStation.name,
+      stream_url: _appState.currentStation.url_resolved || _appState.currentStation.url,
+      bitrate: _appState.currentStation.bitrate || 128
+    });
+
+    if (result.success) {
+      _appState.isRecording = true;
+      _appState.recordingSession = result.session_id;
+      _recordingStartTime = Date.now();
+      _appState.recordingElapsed = 0;
+      _recordingInterval = setInterval(() => {
+        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+      }, 1000);
+    }
+    return result;
+  } catch (e) {
+    console.error('Recording start error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Stoppt Aufnahme.
+ */
+export async function stopRecording() {
+  return _stopRecordingInternal();
+}
+
+async function _stopRecordingInternal() {
+  if (!_appState) return { success: false };
+
+  if (_recordingInterval) {
+    clearInterval(_recordingInterval);
+    _recordingInterval = null;
+  }
+  _recordingStartTime = null;
+
+  try {
+    const result = await api.stopRecording();
+    _appState.isRecording = false;
+    _appState.recordingSession = null;
+    _appState.recordingElapsed = 0;
+    return result;
+  } catch (e) {
+    _appState.isRecording = false;
+    _appState.recordingSession = null;
+    _appState.recordingElapsed = 0;
+    return { success: false, error: e.message };
+  }
+}
+
+// ============================================================
+//  Audio Event Handlers (vom Component aufgerufen)
+// ============================================================
+
+/**
+ * Berechnet Seek-Position und Live-Status.
+ * Im HLS-Modus: Segment-basiert mit Anti-Jitter.
+ * Gibt { currentTime, duration, seekPosition } zurueck.
+ */
+export function handleTimeUpdate() {
+  if (!_audioEl || !_appState) return null;
+
+  const currentTime = _audioEl.currentTime || 0;
+  const duration = _audioEl.duration || 0;
+  let seekPosition = _lastSeekPosition;
+
+  if (_appState.playerMode === 'hls') {
+    const hs = _appState.hlsStatus;
+    if (hs && hs.first_segment != null && hs.last_segment != null && _audioEl.seekable.length > 0) {
+      const firstSeg = hs.first_segment;
+      const lastSeg = hs.last_segment;
+      const segRange = lastSeg - firstSeg;
+
+      if (segRange > 0) {
+        if (_appState.isLive) {
+          // Live-Modus: Position an rechten Rand pinnen.
+          // Kein Neuberechnen -- verhindert Pendeln an der Live-Kante.
+          // isLive wird nur durch seek/skip/goLive geaendert.
+          _appState.currentSegment = lastSeg;
+          seekPosition = 100;
+          _lastSeekPosition = 100;
+        } else {
+          const seekStart = _audioEl.seekable.start(0);
+          const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
+          const seekRange = seekEnd - seekStart;
+
+          // Map currentTime auf Segment-Nummer
+          const fraction = seekRange > 0 ? (currentTime - seekStart) / seekRange : 0;
+          const currentSeg = Math.round(firstSeg + fraction * segRange);
+
+          // Anti-Jitter: Nur updaten wenn sich Segment aendert
+          if (_appState.currentSegment !== currentSeg) {
+            _appState.currentSegment = currentSeg;
+            seekPosition = ((currentSeg - firstSeg) / segRange) * 100;
+            _lastSeekPosition = seekPosition;
+          }
+          // isLive wird hier NICHT gesetzt -- nur seek/skip/goLive aendern das
+        }
+      }
+    }
+  } else if (duration > 0 && _appState.playerMode === 'podcast') {
+    seekPosition = (currentTime / duration) * 100;
+    _lastSeekPosition = seekPosition;
+  }
+
+  return { currentTime, duration, seekPosition };
+}
+
+/**
+ * Audio-Ende Handler.
+ */
+export function handleEnded() {
+  if (_appState?.playerMode === 'podcast') {
+    stop();
+  }
+}
+
+/**
+ * Audio-Error Handler.
+ *
+ * Error Code 4 (SRC_NOT_SUPPORTED) wird ignoriert:
+ * - Tritt bei Source-Wechseln auf wenn die alte blob-URL ungueltig wird
+ * - Echte Format-Fehler werden durch play()-Promise und HLS-Error-Handler gefangen
+ */
+export function handleError(event) {
+  const error = event?.target?.error;
+  if (!error || !_appState) return;
+  if (error.code === 4) return; // Transienter Fehler bei Source-Wechsel
+
+  const messages = {
+    1: 'Medienladen abgebrochen',
+    2: 'Netzwerkfehler',
+    3: 'Dekodierungsfehler'
+  };
+
+  _appState.playerError = messages[error.code] || 'Wiedergabefehler';
+  console.error('Audio error:', error.code, _appState.playerError);
+}
+
+// ============================================================
+//  HLS Management (intern)
+// ============================================================
+
+async function _startHLSBackground(station, gen) {
+  try {
+    const result = await api.startHLS(station);
+    if (_generation !== gen) return;
+
+    if (result.status === 'started' || result.status === 'already_active') {
+      _hlsSessionId = result.session_id || null;
+      _appState.hlsActive = true;
+      _appState.hlsStatus = result;
+      _startHLSPolling(gen);
+      _waitForHLSSegments(gen);
+    }
+  } catch (e) {
+    if (_generation !== gen) return;
+    console.error('HLS start failed:', e);
+    // Direct Stream laeuft weiter - HLS ist optional
+  }
+}
+
+function _startHLSPolling(gen) {
+  _stopHLSPolling();
+  _hlsPollInterval = setInterval(async () => {
+    if (_generation !== gen || !_appState?.hlsActive) {
+      _stopHLSPolling();
+      return;
+    }
+    try {
+      const status = await api.getHLSStatus();
+      if (_generation !== gen) return;
+      _appState.hlsStatus = status;
+
+      // Quality-Info aktualisieren
+      if (status.input_codec) {
+        _appState.streamQuality = {
+          inputCodec: status.input_codec,
+          inputBitrate: status.input_bitrate,
+          outputBitrate: status.output_bitrate,
+          sampleRate: status.sample_rate
+        };
+      }
+
+      // Wenn Live, Position an rechten Rand pinnen
+      if (_appState.isLive && status.last_segment != null) {
+        _appState.currentSegment = status.last_segment;
+        _lastSeekPosition = 100;
+      }
+    } catch (e) {
+      // Still - Polling kann mal scheitern
+    }
+  }, 2000);
+}
+
+function _stopHLSPolling() {
+  if (_hlsPollInterval) {
+    clearInterval(_hlsPollInterval);
+    _hlsPollInterval = null;
+  }
+}
+
+async function _waitForHLSSegments(gen) {
+  // Alle 500ms pruefen, max 15 Sekunden warten
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 500));
+    if (_generation !== gen) return;
+    if (!_appState?.hlsActive) return;
+    if (!_appState?.isPlaying) return;
+
+    if (_appState.hlsStatus?.segment_count >= 3) {
+      _switchToHLS(gen);
+      return;
+    }
+  }
+  console.log('HLS-Segmente nicht rechtzeitig bereit, bleibe auf Direct Stream');
+}
+
+function _switchToHLS(gen) {
+  if (_generation !== gen) return;
+  if (!_audioEl || !Hls.isSupported()) return;
+
+  _destroyHLS();
+
+  _hlsInstance = new Hls({
+    debug: false,
+    enableWorker: true,
+    lowLatencyMode: false,
+    backBufferLength: 90
+  });
+
+  _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+    if (_generation !== gen) return;
+    _appState.playerMode = 'hls';
+    _audioEl.play().catch(e => console.error('HLS play error:', e));
+    console.log('Nahtloser Wechsel zu HLS-Modus');
+  });
+
+  _hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+    if (_generation !== gen) return;
+
+    if (data.fatal) {
+      console.error('HLS Fatal Error:', data.type, data.details);
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        console.log('HLS Network Error - Reconnect in 3s');
+        setTimeout(() => _hlsInstance?.startLoad(), 3000);
+      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        console.log('HLS Media Error - Recovery');
+        _hlsInstance?.recoverMediaError();
+      } else {
+        // Fatal: Zurueck zu Direct Stream
+        console.log('Fataler HLS Error - Fallback zu Direct Stream');
+        _destroyHLS();
+        _appState.playerMode = 'direct';
+        _playDirectFallback(gen);
+      }
+    }
+  });
+
+  const playlistUrl = api.getHLSPlaylistUrl(_hlsSessionId);
+  _hlsInstance.loadSource(playlistUrl);
+  _hlsInstance.attachMedia(_audioEl);
+}
+
+function _playDirectFallback(gen) {
+  if (_generation !== gen || !_audioEl || !_appState?.currentStation) return;
+  const url = _appState.currentStation.url_resolved || _appState.currentStation.url;
+  _audioEl.src = url;
+  _audioEl.load();
+  _audioEl.play().catch(e => console.error('Fallback play error:', e));
+}
+
+// ============================================================
+//  Interne Hilfsfunktionen
+// ============================================================
+
+/**
+ * Audio sofort stummschalten und Source entfernen.
+ * Verhindert Audio-Bleed bei Senderwechsel.
+ *
+ * WICHTIG: _destroyHLS() MUSS vorher aufgerufen werden!
+ * Wenn HLS.js eine MediaSource haelt, kann removeAttribute('src')
+ * den alten Stream nicht korrekt loesen.
+ */
+function _silenceAudio() {
+  if (!_audioEl) return;
+  _audioEl.pause();
+  _audioEl.srcObject = null;      // MediaSource-Referenz loesen
+  _audioEl.removeAttribute('src');
+  // KEIN load() hier - das feuert Error Code 4 (SRC_NOT_SUPPORTED) async.
+  // Der naechste src-Zuweisung + load() bricht den alten Request automatisch ab.
+}
+
+
+/**
+ * HLS.js-Instanz zerstoeren.
+ * Muss VOR _silenceAudio() aufgerufen werden,
+ * damit die MediaSource sauber geloest wird.
+ */
+function _destroyHLS() {
+  if (_hlsInstance) {
+    // Audio-Element VOR destroy() vom Blob-URL loesen,
+    // damit kein Error Code 4 feuert wenn MediaSource wegfaellt
+    if (_audioEl) {
+      _audioEl.pause();
+      _audioEl.removeAttribute('src');
+      _audioEl.srcObject = null;
+    }
+    _hlsInstance.destroy(); // Ruft intern detachMedia() auf
+    _hlsInstance = null;
+  }
+}
+
+// ============================================================
+//  Test-Hilfsfunktionen
+// ============================================================
+
+/**
+ * Fuer Tests: Setzt alle internen State-Variablen zurueck.
+ */
+export function _resetForTest() {
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+  if (_recordingInterval) {
+    clearInterval(_recordingInterval);
+    _recordingInterval = null;
+  }
+  _audioEl = null;
+  _appState = null;
+  _generation = 0;
+  _recordingStartTime = null;
+  _hlsSessionId = null;
+  _lastSeekPosition = 0;
+}
+
+/**
+ * Fuer Tests: Zugriff auf interne HLS-Instanz.
+ */
+export function _getHLSInstance() {
+  return _hlsInstance;
+}

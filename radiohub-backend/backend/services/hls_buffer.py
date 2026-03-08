@@ -429,22 +429,24 @@ class HLSBufferService:
         }
     
     def get_playlist(self) -> Optional[str]:
-        """Gibt die aktuelle HLS Playlist zurück"""
+        """Gibt die aktuelle HLS Playlist zurueck.
+        Segment-URLs enthalten Session-ID zur Cache-Isolation."""
         playlist_path = self.buffer_dir / "playlist.m3u8"
-        
+
         if not playlist_path.exists():
             return None
-        
+
+        sid = self.get_session_id() or ""
+
         try:
             content = playlist_path.read_text()
-            # Segment-Pfade anpassen für API-Zugriff
-            # segment_42.ts -> /api/hls/segment/42
+            # Segment-Pfade anpassen fuer API-Zugriff
+            # segment_42.ts -> /api/hls/segment/42?sid=SESSION_ID
             lines = []
             for line in content.split('\n'):
                 if line.startswith('segment_') and line.endswith('.ts'):
-                    # segment_42.ts -> 42
                     num = line.replace('segment_', '').replace('.ts', '')
-                    lines.append(f"/api/hls/segment/{num}")
+                    lines.append(f"/api/hls/segment/{num}?sid={sid}")
                 else:
                     lines.append(line)
             return '\n'.join(lines)
@@ -459,8 +461,12 @@ class HLSBufferService:
             return segment_path
         return None
     
+    def get_session_id(self) -> Optional[str]:
+        """Gibt aktuelle Session-ID zurueck (oder None)"""
+        return self.session.session_id if self.session else None
+
     def is_active(self) -> bool:
-        """Prüft ob Buffer aktiv ist"""
+        """Prueft ob Buffer aktiv ist"""
         return self.session is not None and self.session.is_active
 
 
