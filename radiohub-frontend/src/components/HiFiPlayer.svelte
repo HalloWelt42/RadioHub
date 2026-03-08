@@ -382,7 +382,7 @@
             class="transport-fader"
             min="0"
             max="100"
-            step={isHLSMode && hlsSegRange > 0 ? (100 / hlsSegRange) : 0.1}
+            step={isHLSMode && hlsSegRange > 0 && !isLive ? (100 / hlsSegRange) : 0.1}
             value={seekPosition}
             disabled={!_canSeek || isSeeking}
             oninput={handleFaderInput}

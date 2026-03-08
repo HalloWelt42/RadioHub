@@ -114,7 +114,7 @@ export async function playStation(station) {
   _appState.streamQuality = null;
   _appState.playerError = null;
   _appState.currentSegment = null;
-  _lastSeekPosition = 0;
+  _lastSeekPosition = 100; // Live = rechter Rand
 
   // --- Phase 5: Direct Stream starten ---
   if (!_audioEl) {
