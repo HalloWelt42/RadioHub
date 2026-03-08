@@ -4,6 +4,7 @@
   import HiFiVuMeter from './hifi/HiFiVuMeter.svelte';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as engine from '../lib/playerEngine.js';
+  import { connect as connectAnalyser } from '../lib/audioAnalyser.js';
 
   // Audio Element
   let audioEl = $state(null);
@@ -26,6 +27,7 @@
   $effect(() => {
     if (audioEl) {
       engine.init(audioEl, appState);
+      connectAnalyser(audioEl);
     }
     return () => {
       // Cleanup bei Unmount: nicht stoppen, nur de-registrieren
@@ -253,6 +255,14 @@
     'off'
   );
 
+  // Transport Section Label (kontextabhaengig)
+  let transportLabel = $derived(
+    appState.isRecording ? 'RECORDING' :
+    isPodcast ? 'PODCAST' :
+    isHLSMode ? 'TIMESHIFT' :
+    'TRANSPORT'
+  );
+
   // Mode Toggle Verfuegbarkeit
   let canToggleStreamMode = $derived(
     (appState.playerMode === 'hls' && appState.canPlayDirect) ||
@@ -378,7 +388,7 @@
           {/if}
         {/if}
       </span>
-      <span class="section-label">TRANSPORT</span>
+      <span class="section-label">{transportLabel}</span>
       <span class="transport-time">
         {#if isPodcast && duration > 0}
           {formatTimeShort(duration)}
@@ -555,7 +565,7 @@
   .section-label {
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    font-weight: 400;
+    font-weight: 600;
     letter-spacing: 1px;
     color: var(--hifi-text-secondary);
     text-transform: uppercase;

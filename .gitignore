@@ -31,3 +31,6 @@ Thumbs.db
 
 # Umgebung
 .env
+
+# Dokumentation (privat)
+LEXIKON.md
