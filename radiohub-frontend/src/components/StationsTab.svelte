@@ -94,7 +94,15 @@
 
   // Ausgewaehlter Sender (Details sichtbar)
   let selectedUuid = $state(null);
-  
+
+  // selectedUuid folgt dem aktuell spielenden Sender (z.B. bei Prev/Next Navigation)
+  $effect(() => {
+    const playingUuid = appState.currentStation?.uuid ?? null;
+    if (playingUuid) {
+      selectedUuid = playingUuid;
+    }
+  });
+
   // Filter-Daten
   let availableCountries = $state([]);
   let availableBitrates = $state([]);
@@ -258,8 +266,6 @@
       hasMore = newStations.length === limit;
       offset = stations.length;
 
-      // Bitrate-Detection fuer Sender ohne Bitrate im Hintergrund starten
-      requestBitrateDetection(newStations);
     } catch (e) {
       actions.showToast('Suche fehlgeschlagen', 'error');
     } finally {
@@ -268,32 +274,25 @@
     }
   }
 
-  let bitrateCheckTimer;
-  async function requestBitrateDetection(stationList) {
-    const missing = stationList.filter(s => !s.bitrate || s.bitrate === 0);
-    if (missing.length === 0) return;
-
-    const uuids = missing.map(s => s.uuid);
+  // Einzelne Station proben bei Play -- echte Werte ermitteln und in Liste mergen
+  let probeTimer;
+  async function probeOnPlay(station) {
     try {
-      await api.verifyBitrate(uuids);
-    } catch { /* fire-and-forget */ }
+      await api.verifyBitrate([station.uuid]);
+    } catch { return; }
 
-    // Nach Verzoegerung erkannte Bitrates abholen und in Liste mergen
-    clearTimeout(bitrateCheckTimer);
-    bitrateCheckTimer = setTimeout(async () => {
+    // Nach Verzoegerung erkannten Wert abholen
+    clearTimeout(probeTimer);
+    probeTimer = setTimeout(async () => {
       try {
-        const allMissing = stations.filter(s => !s.bitrate || s.bitrate === 0).map(s => s.uuid);
-        if (allMissing.length === 0) return;
-        const result = await api.getDetectedBitrates(allMissing);
-        const detected = result.bitrates || {};
-        let updated = false;
+        const result = await api.getDetectedBitrates([station.uuid]);
+        const det = (result.bitrates || {})[station.uuid];
+        if (!det || det.bitrate <= 0) return;
         stations = stations.map(s => {
-          const det = detected[s.uuid];
-          if (det && det > 0 && (!s.bitrate || s.bitrate === 0)) {
-            updated = true;
-            return { ...s, bitrate: det };
-          }
-          return s;
+          if (s.uuid !== station.uuid) return s;
+          const updates = { bitrate: det.bitrate };
+          if (det.codec) updates.codec = det.codec.toUpperCase();
+          return { ...s, ...updates };
         });
       } catch { /* ignore */ }
     }, 12000);
@@ -360,6 +359,7 @@
     } else {
       selectedUuid = station.uuid;
       actions.playStation(station);
+      probeOnPlay(station);
     }
   }
   

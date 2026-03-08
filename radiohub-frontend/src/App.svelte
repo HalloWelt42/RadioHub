@@ -66,7 +66,7 @@
       
       <!-- Status -->
       <div class="hifi-status">
-        <HiFiLed color={backendOnline ? 'green' : 'red'} />
+        <HiFiLed color={backendOnline ? 'green' : 'red'} size="small" />
         <span class="hifi-font-label">{backendOnline ? 'ONLINE' : 'OFFLINE'}</span>
       </div>
     </div>
@@ -110,6 +110,7 @@
     padding: 10px 20px;
     background: var(--hifi-bg-panel);
     border-bottom: 1px solid var(--hifi-border-dark);
+    border-radius: 0;
   }
   
   .hifi-logo {
@@ -186,7 +187,7 @@
     cursor: pointer;
     transition: all 0.15s ease;
   }
-  
+
   .theme-switch:hover {
     background: var(--hifi-bg-secondary);
     color: var(--hifi-text-primary);

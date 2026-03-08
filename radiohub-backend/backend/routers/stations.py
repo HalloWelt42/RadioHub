@@ -71,6 +71,18 @@ async def search_stations(req: StationSearchRequest):
         offset=req.offset,
         favs_only=req.favs_only
     )
+
+    # Erkannte Bitrates/Codecs mergen -- reale Werte haben immer Vorrang
+    if stations:
+        uuids = [s["uuid"] for s in stations if "uuid" in s]
+        detected = get_cached_bitrates(uuids)
+        for s in stations:
+            det = detected.get(s.get("uuid"))
+            if det and det["bitrate"] > 0:
+                s["bitrate"] = det["bitrate"]
+                if det.get("codec"):
+                    s["codec"] = det["codec"].upper()
+
     return {"count": len(stations), "stations": stations}
 
 

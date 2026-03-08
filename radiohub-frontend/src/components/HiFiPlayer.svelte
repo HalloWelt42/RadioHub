@@ -228,7 +228,7 @@
     return () => resizeObserver.disconnect();
   });
 
-  const CHAR_WIDTH = 9.6;
+  const CHAR_WIDTH = 19.2;
   let needsScroll = $derived(displayName.length * CHAR_WIDTH > displayWidth);
 
   // Timer
@@ -327,22 +327,6 @@
             </div>
           {/if}
         </div>
-        {#if displayActive}
-          <div class="display-meta">
-            {#if nowPlayingMeta}
-              {nowPlayingMeta}
-            {/if}
-            {#if appState.streamQuality && appState.playerMode !== 'podcast'}
-              <span class="quality-info">
-                {appState.streamQuality.inputCodec.toUpperCase()}
-                {appState.streamQuality.inputBitrate}k
-                {#if appState.playerMode === 'hls'}
-                  &rarr; HLS {appState.streamQuality.outputBitrate}k
-                {/if}
-              </span>
-            {/if}
-          </div>
-        {/if}
       </div>
     </div>
   </div>
@@ -670,18 +654,21 @@
     padding: 0 12px;
     overflow: hidden;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
   }
 
   .display-text-wrapper {
     width: 100%;
     overflow: hidden;
     position: relative;
+    text-align: center;
   }
 
   .display-text-scroll {
     font-family: var(--hifi-font-display);
-    font-size: 16px;
-    font-weight: 400;
+    font-size: 32px;
+    font-weight: 500;
     color: var(--hifi-display-text);
     text-shadow: 0 0 8px var(--hifi-display-text);
     white-space: nowrap;
@@ -716,8 +703,8 @@
   .quality-info {
     font-family: var(--hifi-font-values);
     font-size: 7px;
-    color: var(--hifi-display-blue);
-    text-shadow: 0 0 4px var(--hifi-display-blue);
+    color: var(--hifi-display-text);
+    text-shadow: 0 0 4px var(--hifi-display-text);
     letter-spacing: 0.5px;
   }
 

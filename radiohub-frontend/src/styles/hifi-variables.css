@@ -56,10 +56,10 @@
     /* ==========================================
        COLORS - Display
        ========================================== */
-    --hifi-display-bg: #1a1a1a;
-    --hifi-display-text: #00ff88;
-    --hifi-display-text-dim: rgba(0, 255, 136, 0.15);
-    --hifi-display-border: #333333;
+    --hifi-display-bg: #3a3a3a;
+    --hifi-display-text: #33cc33;
+    --hifi-display-text-dim: rgba(51, 204, 51, 0.15);
+    --hifi-display-border: #555555;
     --hifi-display-amber: #ffaa00;
     --hifi-display-blue: #00aaff;
     --hifi-display-red: #ff4444;

@@ -74,9 +74,9 @@
 <style>
   .hifi-vu-meter {
     display: grid;
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 5px);
     gap: 2px;
-    padding: 4px 3px;
+    padding: 3px;
     background: var(--hifi-display-bg);
     border: 1px solid var(--hifi-display-border);
     border-radius: 3px;
@@ -84,6 +84,7 @@
     width: 20px;
     box-sizing: border-box;
     overflow: hidden;
+    align-content: center;
     /* 180° gedreht - LEDs von oben nach unten */
     transform: rotate(180deg);
   }
