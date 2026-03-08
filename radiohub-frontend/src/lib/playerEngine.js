@@ -720,9 +720,9 @@ async function _waitForHLSSegments(gen) {
 
     if (_appState.hlsStatus?.segment_count >= 3) {
       _appState.canPlayHLS = true;
-      if (!_userModeOverride) {
-        _switchToHLS(gen);
-      }
+      // Kein Auto-Switch: Direct bleibt Default.
+      // User kann manuell zu HLS wechseln (Mode-Button).
+      // Nur bei Codec-Fehler (handleError) wird automatisch gewechselt.
       return;
     }
   }
