@@ -9,16 +9,18 @@ from .config import router as config_router
 from .blocklist import router as blocklist_router
 from .buffer import router as buffer_router
 from .hls import router as hls_router
+from .filters import router as filters_router
 
 __all__ = [
-    "stations_router", 
-    "favorites_router", 
-    "recording_router", 
-    "recordings_router", 
-    "podcasts_router", 
-    "stream_router", 
-    "config_router", 
-    "blocklist_router", 
+    "stations_router",
+    "favorites_router",
+    "recording_router",
+    "recordings_router",
+    "podcasts_router",
+    "stream_router",
+    "config_router",
+    "blocklist_router",
     "buffer_router",
-    "hls_router"
+    "hls_router",
+    "filters_router"
 ]

@@ -1,5 +1,6 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
+  import FilterOverlay from './FilterOverlay.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   
@@ -36,6 +37,7 @@
   let selectedBitrates = $state([]);
   let selectedVotesRanges = $state([]);
   let showFavsOnly = $state(false);
+  let showFilterOverlay = $state(false);
   
   // Sortierung
   let sortBy = $state('name');
@@ -64,58 +66,37 @@
     appState.stations = stations;
   });
   
-  // Votes-Ranges logarithmisch berechnen
-  function calculateVotesRanges(maxVotes) {
-    if (!maxVotes || maxVotes <= 0) return [];
-    
-    const ranges = [];
-    
-    // Bereich 0: Exakt 0 Votes
-    ranges.push({ label: '0', min: 0, max: 0 });
-    
-    // 9 weitere Bereiche logarithmisch verteilt
-    // log10(1) = 0, log10(maxVotes) = max
-    const logMax = Math.log10(maxVotes);
-    
-    for (let i = 1; i <= 9; i++) {
-      // Logarithmische Verteilung
-      const logMin = (logMax / 9) * (i - 1);
-      const logMaxRange = (logMax / 9) * i;
-      
-      let min = i === 1 ? 1 : Math.ceil(Math.pow(10, logMin));
-      let max = Math.floor(Math.pow(10, logMaxRange));
-      
-      // Runden auf schöne Zahlen (mehr Nullen bei größeren Werten)
-      if (max >= 100000) {
-        max = Math.floor(max / 10000) * 10000;
-        min = Math.floor(min / 10000) * 10000 || min;
-      } else if (max >= 10000) {
-        max = Math.floor(max / 1000) * 1000;
-        min = Math.floor(min / 1000) * 1000 || min;
-      } else if (max >= 1000) {
-        max = Math.floor(max / 100) * 100;
-        min = Math.floor(min / 100) * 100 || min;
-      }
-      
-      // Label formatieren mit Tausendertrennern
-      const formatLabel = (n) => n.toLocaleString('de-DE');
-      
-      if (i === 9) {
-        // Letzter Bereich: > X
-        ranges.push({ label: `> ${formatLabel(min)}`, min: min, max: 999999999 });
-      } else {
-        ranges.push({ label: `${formatLabel(min)} - ${formatLabel(max)}`, min: min, max: max });
-      }
-    }
-    
-    return ranges;
-  }
+  // Votes-Ranges: saubere feste Bereiche
+  const VOTES_RANGES = [
+    { label: '0', min: 0, max: 0 },
+    { label: '1 - 100', min: 1, max: 100 },
+    { label: '101 - 1.000', min: 101, max: 1000 },
+    { label: '1.001 - 10.000', min: 1001, max: 10000 },
+    { label: '> 10.000', min: 10001, max: 999999999 }
+  ];
   
   async function loadFilters() {
     try {
-      const filters = await api.getFilters();
-      availableCountries = filters.countries || [];
-      
+      const [filters, config] = await Promise.all([
+        api.getFilters(),
+        api.getConfig()
+      ]);
+
+      let allCountries = filters.countries || [];
+
+      // Sidebar-Config: nur konfigurierte Laender anzeigen
+      if (config.sidebar_countries) {
+        try {
+          const visible = JSON.parse(config.sidebar_countries);
+          availableCountries = allCountries.filter(c => visible.includes(c.code));
+        } catch {
+          availableCountries = allCountries.slice(0, 10);
+        }
+      } else {
+        // Default: Top 10
+        availableCountries = allCountries.slice(0, 10);
+      }
+
       // Backend gibt Bitrate-Bereiche als Objekte: {label, min, max}
       const defaultBitrates = [
         { label: '< 64 kbps', min: 0, max: 64 },
@@ -124,13 +105,11 @@
         { label: '192-256 kbps', min: 192, max: 256 },
         { label: '> 256 kbps', min: 256, max: 9999 }
       ];
-      
+
       availableBitrates = filters.bitrates?.length ? filters.bitrates : defaultBitrates;
-      
-      // Votes-Ranges aus max_votes berechnen (vom Backend oder Default)
-      const maxVotes = filters.max_votes || 100000;
-      availableVotesRanges = calculateVotesRanges(maxVotes);
-      
+
+      availableVotesRanges = VOTES_RANGES;
+
       search();
     } catch (e) {
       console.error('Filter laden fehlgeschlagen:', e);
@@ -338,7 +317,13 @@
       <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
       <span>FAVORITES ONLY</span>
     </button>
-    
+
+    <!-- Global Filter Button -->
+    <button class="filter-item global-filter-btn" onclick={() => showFilterOverlay = true}>
+      <i class="fa-solid fa-sliders"></i>
+      <span>SENDER-FILTER</span>
+    </button>
+
     <!-- Countries -->
     <div class="filter-section">
       <button class="filter-header" onclick={() => countriesExpanded = !countriesExpanded}>
@@ -570,6 +555,13 @@
       {/if}
     </div>
   </main>
+
+  {#if showFilterOverlay}
+    <FilterOverlay
+      open={true}
+      onclose={() => { showFilterOverlay = false; loadFilters(); }}
+    />
+  {/if}
 </div>
 
 <style>
@@ -690,6 +682,18 @@
     color: var(--hifi-text-secondary);
   }
   
+  .global-filter-btn {
+    background: var(--hifi-bg-tertiary);
+    box-shadow: var(--hifi-shadow-button);
+    border-radius: var(--hifi-border-radius-sm);
+    justify-content: center;
+  }
+
+  .global-filter-btn i {
+    font-size: 11px;
+    color: var(--hifi-accent);
+  }
+
   .clear-btn {
     width: 100%;
     padding: 8px 16px;

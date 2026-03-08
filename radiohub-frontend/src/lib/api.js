@@ -262,6 +262,39 @@ class RadioHubAPI {
   async isBlocked(uuid) {
     return this.fetch(`/api/blocklist/check/${uuid}`);
   }
+
+  // === Station Filters ===
+  async filterPreview(filters) {
+    return this.fetch('/api/filters/preview', {
+      method: 'POST',
+      body: JSON.stringify(filters)
+    });
+  }
+
+  async filterPush(filters) {
+    return this.fetch('/api/filters/push', {
+      method: 'POST',
+      body: JSON.stringify(filters)
+    });
+  }
+
+  async getHiddenStations(reason = null) {
+    const url = reason
+      ? `/api/filters/hidden?reason=${encodeURIComponent(reason)}`
+      : '/api/filters/hidden';
+    return this.fetch(url);
+  }
+
+  async releaseStations(payload) {
+    return this.fetch('/api/filters/release', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getAvailableLanguages() {
+    return this.fetch('/api/filters/languages');
+  }
 }
 
 export const api = new RadioHubAPI(API_BASE);

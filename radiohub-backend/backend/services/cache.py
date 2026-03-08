@@ -216,9 +216,11 @@ class CacheService:
         with db_session() as conn:
             c = conn.cursor()
             
-            # Blockierte UUIDs holen
+            # Blockierte + ausgeblendete UUIDs holen
             c.execute("SELECT uuid FROM blocklist")
             blocked_uuids = {row[0] for row in c.fetchall()}
+            c.execute("SELECT uuid FROM hidden_stations")
+            blocked_uuids |= {row[0] for row in c.fetchall()}
             
             if favs_only:
                 # Nur Favoriten mit Sortierung

@@ -34,3 +34,8 @@ Thumbs.db
 
 # Dokumentation (privat)
 LEXIKON.md
+
+# Runtime
+.logs/
+.pids/
+backups/

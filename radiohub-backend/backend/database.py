@@ -177,6 +177,14 @@ def init_db():
         blocked_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
     
+    # === Hidden Stations (Massen-Filter) ===
+    c.execute('''CREATE TABLE IF NOT EXISTS hidden_stations (
+        uuid TEXT PRIMARY KEY,
+        name TEXT,
+        reason TEXT,
+        hidden_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     # === Cache Meta ===
     c.execute('''CREATE TABLE IF NOT EXISTS cache_meta (
         key TEXT PRIMARY KEY,
@@ -190,6 +198,7 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast ON podcast_episodes(podcast_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_published ON podcast_episodes(published_at DESC)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_hidden_stations_reason ON hidden_stations(reason)")
     
     conn.commit()
     conn.close()

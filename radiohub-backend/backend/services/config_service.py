@@ -25,6 +25,8 @@ DEFAULT_CONFIG = {
     "hls_min_bitrate": 32,    # Minimum kbps
     "hls_max_bitrate": 256,   # Maximum kbps
     "hls_sample_rate": 44100, # Sample Rate (Hz)
+    # Sidebar-Filter Konfiguration
+    "sidebar_countries": None, # JSON-Array mit sichtbaren Country-Codes
 }
 
 
