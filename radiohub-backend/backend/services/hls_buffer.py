@@ -21,7 +21,7 @@ STANDARD_BITRATES = [32, 48, 64, 96, 128, 192, 256, 320]
 
 
 def snap_to_step(bitrate: int) -> int:
-    """Rundet auf die naechste Standard-Bitrate ab (nicht hoeher als Input)."""
+    """Rundet auf die nächste Standard-Bitrate ab (nicht höher als Input)."""
     best = STANDARD_BITRATES[0]
     for step in STANDARD_BITRATES:
         if step <= bitrate:
@@ -156,17 +156,17 @@ class HLSBufferService:
         Berechnet optimale Output-Bitrate.
 
         Bei Override: User-Wahl direkt verwenden (bereits Standard-Stufe).
-        Sonst: Nicht hoeher als Input, auf Standard-Stufe snappen.
+        Sonst: Nicht höher als Input, auf Standard-Stufe snappen.
         """
         if override_bitrate and override_bitrate > 0:
-            # User hat explizit gewaehlt
+            # User hat explizit gewählt
             return override_bitrate
 
         if input_bitrate <= 0:
             # Unbekannt -> max_bitrate als sicherer Fallback
             return snap_to_step(max_bitrate)
 
-        # Nicht hoeher als Input (Aufblaehen ist sinnlos)
+        # Nicht höher als Input (Aufblähen ist sinnlos)
         output = min(input_bitrate, max_bitrate)
         # Aber mindestens min_bitrate
         output = max(output, min_bitrate)
@@ -444,7 +444,7 @@ class HLSBufferService:
         }
     
     def get_playlist(self) -> Optional[str]:
-        """Gibt die aktuelle HLS Playlist zurueck.
+        """Gibt die aktuelle HLS Playlist zurück.
         Segment-URLs enthalten Session-ID zur Cache-Isolation."""
         playlist_path = self.buffer_dir / "playlist.m3u8"
 
@@ -455,7 +455,7 @@ class HLSBufferService:
 
         try:
             content = playlist_path.read_text()
-            # Segment-Pfade anpassen fuer API-Zugriff
+            # Segment-Pfade anpassen für API-Zugriff
             # segment_42.ts -> /api/hls/segment/42?sid=SESSION_ID
             lines = []
             for line in content.split('\n'):
@@ -477,11 +477,11 @@ class HLSBufferService:
         return None
     
     def get_session_id(self) -> Optional[str]:
-        """Gibt aktuelle Session-ID zurueck (oder None)"""
+        """Gibt aktuelle Session-ID zurück (oder None)"""
         return self.session.session_id if self.session else None
 
     def is_active(self) -> bool:
-        """Prueft ob Buffer aktiv ist"""
+        """Prüft ob Buffer aktiv ist"""
         return self.session is not None and self.session.is_active
 
 

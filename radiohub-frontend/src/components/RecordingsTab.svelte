@@ -129,7 +129,7 @@
                 <td>{formatSize(file.size)}</td>
                 <td>{formatDate(file.modified)}</td>
                 <td>
-                  <button class="hifi-btn hifi-btn-small hifi-btn-danger" onclick={(e) => deleteFile(file, e)} title="Aufnahme loeschen">✕</button>
+                  <button class="hifi-btn hifi-btn-small hifi-btn-danger" onclick={(e) => deleteFile(file, e)} title="Aufnahme löschen">✕</button>
                 </td>
               </tr>
             {/each}

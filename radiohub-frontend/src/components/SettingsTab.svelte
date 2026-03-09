@@ -150,7 +150,7 @@
         <HiFiDisplay size="medium">{cacheStats.total_stations.toLocaleString()} STATIONS</HiFiDisplay>
         <HiFiDisplay size="small">{cacheStats.countries} COUNTRIES</HiFiDisplay>
         <div style="flex:1;"></div>
-        <button class="hifi-btn hifi-btn-primary" onclick={syncCache} disabled={isSyncing} title={isSyncing ? 'Synchronisierung laeuft...' : 'Senderliste mit radio-browser.info synchronisieren'}>
+        <button class="hifi-btn hifi-btn-primary" onclick={syncCache} disabled={isSyncing} title={isSyncing ? 'Synchronisierung läuft...' : 'Senderliste mit radio-browser.info synchronisieren'}>
           {#if isSyncing}
             SYNCING...
           {:else}

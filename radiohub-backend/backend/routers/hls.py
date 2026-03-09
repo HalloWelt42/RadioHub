@@ -137,7 +137,7 @@ async def get_hls_playlist():
 @router.get("/segment/{segment_id}")
 async def get_hls_segment(segment_id: int, sid: Optional[str] = None):
     """
-    Gibt ein einzelnes Audio-Segment zurueck.
+    Gibt ein einzelnes Audio-Segment zurück.
 
     Segmente sind 1 Sekunde lang im MPEG-TS Format.
     sid-Parameter verhindert Cache-Kollisionen bei Senderwechsel.

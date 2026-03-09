@@ -21,11 +21,12 @@
   let angle = $derived(startAngle + ((value - min) / (max - min)) * (endAngle - startAngle));
   let display = $derived(step < 1 ? value.toFixed(1) : Math.round(value));
   
-  function start(e) { 
-    e.preventDefault(); 
+  function start(e) {
+    e.preventDefault();
     dragging = true;
+    _targetValue = value;
     const r = container.getBoundingClientRect();
-    centerX = r.left + r.width / 2; 
+    centerX = r.left + r.width / 2;
     centerY = r.top + r.height / 2;
   }
   
@@ -53,7 +54,7 @@
       _smoothId = null;
       return;
     }
-    // Daempfung: 5% pro Frame -- schwerer, mechanischer Widerstand
+    // Dämpfung: 5% pro Frame -- schwerer, mechanischer Widerstand
     value = Math.round((value + diff * 0.05) / step) * step;
     value = Math.max(min, Math.min(max, value));
     onchange?.({ value });
@@ -69,15 +70,12 @@
     }
   }
   
-  let _lastWheelTime = 0;
   function wheel(e) {
     e.preventDefault();
-    // Throttle: max 1 Aenderung pro 120ms -- verhindert Ueberreaktion
-    const now = Date.now();
-    if (now - _lastWheelTime < 120) return;
-    _lastWheelTime = now;
-    _targetValue = Math.max(min, Math.min(max, _targetValue + (e.deltaY > 0 ? -step : step)));
-    if (!_smoothId) smoothStep();
+    // Scroll: direkt, keine Dämpfung, 2 Steps pro Tick
+    value = Math.max(min, Math.min(max, value + (e.deltaY > 0 ? -step * 2 : step * 2)));
+    _targetValue = value;
+    onchange?.({ value });
   }
   
   $effect(() => {

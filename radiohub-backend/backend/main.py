@@ -12,8 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import DATA_DIR, VERSION
 from .database import init_db, check_db_health
-from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router
+from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
+from .services.ad_detector import seed_domain_blacklist
 
 
 @asynccontextmanager
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     init_db()
     get_config_service()  # Config initialisieren
+    seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befuellen
     print(f"✓ RadioHub Backend v{VERSION} gestartet")
     print(f"✓ Daten-Verzeichnis: {DATA_DIR}")
     print(f"✓ HLS Buffer verfügbar: /api/hls/")
@@ -69,6 +71,7 @@ app.include_router(blocklist_router)
 app.include_router(buffer_router)
 app.include_router(hls_router)  # HLS Buffer
 app.include_router(filters_router)
+app.include_router(ad_detection_router)  # Ad-Detection
 
 
 @app.get("/")

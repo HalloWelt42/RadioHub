@@ -72,14 +72,14 @@ async def search_stations(req: StationSearchRequest):
         favs_only=req.favs_only
     )
 
-    # Erkannte Bitrates/Codecs mergen -- nur fehlende Werte ergaenzen
+    # Erkannte Bitrates/Codecs mergen -- nur fehlende Werte ergänzen
     if stations:
         uuids = [s["uuid"] for s in stations if "uuid" in s]
         detected = get_cached_bitrates(uuids)
         for s in stations:
             det = detected.get(s.get("uuid"))
             if det and det["bitrate"] > 0:
-                # Nur ueberschreiben wenn Original-Wert fehlt oder 0
+                # Nur überschreiben wenn Original-Wert fehlt oder 0
                 if not s.get("bitrate") or s["bitrate"] == 0:
                     s["bitrate"] = det["bitrate"]
                 if det.get("codec") and (not s.get("codec") or s["codec"] == ""):
@@ -112,14 +112,14 @@ class VerifyBitrateRequest(BaseModel):
 @router.post("/stations/verify-bitrate")
 async def verify_bitrate(req: VerifyBitrateRequest):
     """
-    Startet Bitrate-Erkennung via ffprobe fuer Sender mit fehlender Bitrate.
-    Laeuft im Hintergrund, Ergebnisse werden gecacht.
+    Startet Bitrate-Erkennung via ffprobe für Sender mit fehlender Bitrate.
+    Läuft im Hintergrund, Ergebnisse werden gecacht.
     """
     # Nur UUIDs die noch nicht geprobt wurden
     to_probe = get_uuids_needing_probe(req.uuids)
 
     if not to_probe:
-        return {"queued": 0, "message": "Alle bereits geprueft"}
+        return {"queued": 0, "message": "Alle bereits geprüft"}
 
     # Stationen mit URLs aus DB holen
     from ..database import db_session
@@ -146,6 +146,6 @@ async def verify_bitrate(req: VerifyBitrateRequest):
 
 @router.post("/stations/bitrates")
 async def get_bitrates(req: VerifyBitrateRequest):
-    """Holt gecachte erkannte Bitrates fuer gegebene UUIDs."""
+    """Holt gecachte erkannte Bitrates für gegebene UUIDs."""
     cached = get_cached_bitrates(req.uuids)
     return {"bitrates": cached}

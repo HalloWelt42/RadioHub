@@ -2,8 +2,8 @@
   /**
    * HiFi Bitrate LED Selector
    *
-   * 8 kompakte LEDs fuer Standard-Bitrate-Stufen.
-   * Gruen = erkannte Bitrate, Gelb = User-Override.
+   * 8 kompakte LEDs für Standard-Bitrate-Stufen.
+   * Grün = erkannte Bitrate, Gelb = User-Override.
    * Klick auf LED: Override setzen/entfernen.
    */
   const STEPS = [32, 48, 64, 96, 128, 192, 256, 320];

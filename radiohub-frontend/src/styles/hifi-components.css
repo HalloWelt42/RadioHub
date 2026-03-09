@@ -965,9 +965,13 @@
     background: var(--hifi-led-red); 
     box-shadow: 0 0 8px var(--hifi-led-red-glow), inset 0 0 4px rgba(255,255,255,0.3); 
 }
-.hifi-led.on-blue { 
-    background: var(--hifi-led-blue); 
-    box-shadow: 0 0 8px var(--hifi-led-blue-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+.hifi-led.on-blue {
+    background: var(--hifi-led-blue);
+    box-shadow: 0 0 8px var(--hifi-led-blue-glow), inset 0 0 4px rgba(255,255,255,0.3);
+}
+.hifi-led.on-amber {
+    background: var(--hifi-led-amber);
+    box-shadow: 0 0 8px var(--hifi-led-amber-glow), inset 0 0 4px rgba(255,255,255,0.3);
 }
 
 .hifi-led.blink { animation: hifi-blink 1s infinite; }

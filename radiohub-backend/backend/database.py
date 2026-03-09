@@ -81,7 +81,7 @@ def init_db():
         last_seen TEXT
     )''')
 
-    # Migration: last_seen Spalte hinzufuegen falls nicht vorhanden
+    # Migration: last_seen Spalte hinzufügen falls nicht vorhanden
     try:
         c.execute("ALTER TABLE stations ADD COLUMN last_seen TEXT")
     except Exception:
@@ -185,7 +185,7 @@ def init_db():
     )''')
     
     # === Migration: hidden_stations -> blocklist ===
-    # Daten uebernehmen, dann Tabelle loeschen
+    # Daten übernehmen, dann Tabelle löschen
     try:
         c.execute("SELECT uuid, name, reason, hidden_at FROM hidden_stations")
         hidden_rows = c.fetchall()
@@ -215,7 +215,46 @@ def init_db():
         key TEXT PRIMARY KEY,
         value TEXT
     )''')
-    
+
+    # === Ad-Detection: Sender-Status ===
+    c.execute('''CREATE TABLE IF NOT EXISTS station_ad_status (
+        station_uuid TEXT PRIMARY KEY,
+        stream_url TEXT,
+        block_status TEXT DEFAULT 'clean',
+        confidence REAL DEFAULT 0.0,
+        reasons_json TEXT,
+        detection_method TEXT,
+        first_detected TEXT,
+        last_checked TEXT,
+        blocked_at TEXT,
+        manually_set INTEGER DEFAULT 0,
+        manual_note TEXT,
+        ad_detections INTEGER DEFAULT 0,
+        false_positives INTEGER DEFAULT 0,
+        check_count INTEGER DEFAULT 0
+    )''')
+
+    # === Ad-Detection: Erkennungs-Log ===
+    c.execute('''CREATE TABLE IF NOT EXISTS ad_detections_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        station_uuid TEXT,
+        detected_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        method TEXT,
+        reason_code TEXT,
+        detail TEXT,
+        confidence REAL DEFAULT 0.0,
+        resolved INTEGER DEFAULT 0
+    )''')
+
+    # === Ad-Detection: Domain-Blacklist ===
+    c.execute('''CREATE TABLE IF NOT EXISTS domain_blacklist (
+        domain TEXT PRIMARY KEY,
+        category TEXT,
+        source TEXT DEFAULT 'builtin',
+        confidence REAL DEFAULT 0.9,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     # === Indices für Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")
@@ -224,7 +263,10 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast ON podcast_episodes(podcast_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_published ON podcast_episodes(published_at DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_blocklist_reason ON blocklist(reason)")
-    
+    c.execute("CREATE INDEX IF NOT EXISTS idx_ad_status_block ON station_ad_status(block_status)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_ad_log_station ON ad_detections_log(station_uuid)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_domain_blacklist_cat ON domain_blacklist(category)")
+
     conn.commit()
     conn.close()
     print("✓ Datenbank initialisiert")

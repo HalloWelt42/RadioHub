@@ -87,9 +87,8 @@ class ConfigService:
     def update(self, updates: dict) -> dict:
         """Mehrere Werte aktualisieren"""
         for key, value in updates.items():
-            if key in DEFAULT_CONFIG or key in self._cache:
-                self.set(key, value)
-        
+            self.set(key, value)
+
         return self.get_all()
     
     def reset(self) -> dict:

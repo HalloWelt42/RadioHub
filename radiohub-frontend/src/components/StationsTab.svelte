@@ -4,7 +4,8 @@
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
-  
+  import { translateCountry } from '../lib/countryNames.js';
+
   // 1000er-Trenner für Zahlen
   function formatNumber(num) {
     return num?.toLocaleString('de-DE') ?? '-';
@@ -18,67 +19,6 @@
     return k >= 100 ? Math.round(k) + 'k' : k.toFixed(1).replace('.', ',') + 'k';
   }
 
-  // Laendernamen-Mapping (Korrektur der radio-browser.info Namen)
-  const COUNTRY_NAMES = {
-    'The United States Of America': 'USA',
-    'United States of America': 'USA',
-    'The Russian Federation': 'Russland',
-    'Russian Federation': 'Russland',
-    'Germany': 'Deutschland',
-    'France': 'Frankreich',
-    'Australia': 'Australien',
-    'Austria': 'Oesterreich',
-    'Switzerland': 'Schweiz',
-    'Netherlands': 'Niederlande',
-    'The Netherlands': 'Niederlande',
-    'Belgium': 'Belgien',
-    'Brazil': 'Brasilien',
-    'Spain': 'Spanien',
-    'Italy': 'Italien',
-    'Japan': 'Japan',
-    'China': 'China',
-    'India': 'Indien',
-    'Canada': 'Kanada',
-    'Mexico': 'Mexiko',
-    'Poland': 'Polen',
-    'Sweden': 'Schweden',
-    'Norway': 'Norwegen',
-    'Denmark': 'Daenemark',
-    'Finland': 'Finnland',
-    'Czech Republic': 'Tschechien',
-    'Czechia': 'Tschechien',
-    'Hungary': 'Ungarn',
-    'Romania': 'Rumaenien',
-    'Turkey': 'Tuerkei',
-    'Greece': 'Griechenland',
-    'Portugal': 'Portugal',
-    'Argentina': 'Argentinien',
-    'Colombia': 'Kolumbien',
-    'Chile': 'Chile',
-    'Peru': 'Peru',
-    'Indonesia': 'Indonesien',
-    'South Korea': 'Suedkorea',
-    'Thailand': 'Thailand',
-    'Ukraine': 'Ukraine',
-    'Ireland': 'Irland',
-    'New Zealand': 'Neuseeland',
-    'South Africa': 'Suedafrika',
-    'Croatia': 'Kroatien',
-    'Serbia': 'Serbien',
-    'Bulgaria': 'Bulgarien',
-    'Slovakia': 'Slowakei',
-    'Slovenia': 'Slowenien',
-    'Lithuania': 'Litauen',
-    'Latvia': 'Lettland',
-    'Estonia': 'Estland',
-    'Luxembourg': 'Luxemburg',
-    'United Kingdom': 'Grossbritannien',
-    'The United Kingdom Of Great Britain And Northern Ireland': 'Grossbritannien',
-  };
-
-  function translateCountry(name) {
-    return COUNTRY_NAMES[name] || name;
-  }
   
   let searchQuery = $state('');
   let stations = $state([]);
@@ -93,7 +33,7 @@
   // Aktuell spielender Sender
   let currentPlayingStation = $derived(appState.currentStation);
 
-  // Ausgewaehlter Sender (Details sichtbar)
+  // Ausgewählter Sender (Details sichtbar)
   let selectedUuid = $state(null);
 
   // selectedUuid folgt dem aktuell spielenden Sender nur bei externer Navigation
@@ -115,29 +55,43 @@
   let availableBitrates = $state([]);
   let availableVotesRanges = $state([]);
   
-  // Aktive Filter
+  // Sichtbare Laender (im Overlay konfiguriert, in Config persistiert)
+  let visibleCountries = $state([]);
+
+  // Aktive Filter (in Sidebar angeklickt = Suchfilter)
   let selectedCountries = $state([]);
   let selectedBitrates = $state([]);
   let selectedVotesRanges = $state([]);
   let showFavsOnly = $state(false);
   let showFilterOverlay = $state(false);
-  
+
   // Sortierung
   let sortBy = $state('name');
   let sortOrder = $state('asc');
-  
+
+  // visibleCountries persistieren (Backend-Config)
+  let _countriesInitialized = false;
+  $effect(() => {
+    if (!_countriesInitialized) return;
+    api.updateConfig({ sidebar_countries: visibleCountries });
+  });
+
   // Pagination
   let offset = $state(0);
   let limit = 50;
   let hasMore = $state(true);
-  
+
+  // Sidebar-Laender: nur die im Overlay konfigurierten, mit Daten aus availableCountries
+  let sidebarCountries = $derived(() => {
+    if (visibleCountries.length === 0) return [];
+    const visSet = new Set(visibleCountries);
+    return availableCountries.filter(c => visSet.has(c.code));
+  });
+
   // Aktive Filter-Chips (abgeleitete Liste aller aktiven Filter)
   let activeChips = $derived(() => {
     const chips = [];
-    for (const code of selectedCountries) {
-      const c = availableCountries.find(x => x.code === code);
-      chips.push({ type: 'country', code, label: code });
-    }
+    // Country-Chips entfallen -- Sidebar zeigt Laender direkt mit LED an
     for (const b of selectedBitrates) {
       chips.push({ type: 'bitrate', label: b.label, ref: b });
     }
@@ -189,18 +143,19 @@
 
       let allCountries = filters.countries || [];
 
-      // Sidebar-Config: nur konfigurierte Laender anzeigen
-      if (config.sidebar_countries) {
+      // Alle Länder speichern (Sidebar zeigt dynamische Auswahl)
+      availableCountries = allCountries;
+
+      // Gespeicherte sichtbare Laender aus Config laden
+      if (config.sidebar_countries && !_countriesInitialized) {
         try {
-          const visible = JSON.parse(config.sidebar_countries);
-          availableCountries = allCountries.filter(c => visible.includes(c.code));
-        } catch {
-          availableCountries = allCountries.slice(0, 10);
-        }
-      } else {
-        // Default: Top 10
-        availableCountries = allCountries.slice(0, 10);
+          const saved = typeof config.sidebar_countries === 'string'
+            ? JSON.parse(config.sidebar_countries)
+            : config.sidebar_countries;
+          if (Array.isArray(saved)) visibleCountries = saved;
+        } catch { /* ignore */ }
       }
+      _countriesInitialized = true;
 
       // Feste Bereiche aus Konstanten
       availableBitrates = BITRATE_RANGES;
@@ -265,7 +220,7 @@
       const newStations = result.stations || [];
       
       if (append) {
-        // Deduplizierung: nur Sender hinzufuegen die noch nicht in der Liste sind
+        // Deduplizierung: nur Sender hinzufügen die noch nicht in der Liste sind
         const existingUuids = new Set(stations.map(s => s.uuid));
         const uniqueNew = newStations.filter(s => !existingUuids.has(s.uuid));
         stations = [...stations, ...uniqueNew];
@@ -291,7 +246,13 @@
       await api.verifyBitrate([station.uuid]);
     } catch { return; }
 
-    // Nach Verzoegerung erkannten Wert abholen
+    // Fire-and-forget: Ad-Check im Hintergrund
+    const streamUrl = station.url_resolved || station.url;
+    if (streamUrl) {
+      api.checkAds(station.uuid, streamUrl, station.name).catch(() => {});
+    }
+
+    // Nach Verzögerung erkannten Wert abholen
     clearTimeout(probeTimer);
     probeTimer = setTimeout(async () => {
       try {
@@ -312,7 +273,7 @@
   async function refreshStations() {
     isRefreshing = true;
     try {
-      // Filter/Sortierung zuruecksetzen
+      // Filter/Sortierung zurücksetzen
       searchQuery = '';
       selectedCountries = [];
       selectedBitrates = [];
@@ -473,7 +434,7 @@
       // Aus Liste entfernen
       stations = stations.filter(s => s.uuid !== station.uuid);
 
-      // Zum naechsten Sender springen
+      // Zum nächsten Sender springen
       if (stations.length > 0) {
         const nextIdx = Math.min(idx, stations.length - 1);
         const nextStation = stations[nextIdx];
@@ -491,11 +452,37 @@
       actions.showToast('Blockieren fehlgeschlagen', 'error');
     }
   }
-  
+
+  async function reportAd(station, e) {
+    e.stopPropagation();
+    try {
+      const idx = stations.findIndex(s => s.uuid === station.uuid);
+      const streamUrl = station.url_resolved || station.url;
+
+      await api.reportAd(station.uuid, streamUrl, station.name);
+      actions.showToast(`${station.name} als Werbung gemeldet`, 'info');
+
+      stations = stations.filter(s => s.uuid !== station.uuid);
+
+      if (stations.length > 0) {
+        const nextIdx = Math.min(idx, stations.length - 1);
+        const nextStation = stations[nextIdx];
+        selectedUuid = nextStation.uuid;
+        _lastPlayTriggeredUuid = nextStation.uuid;
+        actions.playStation(nextStation);
+        probeOnPlay(nextStation);
+      } else {
+        selectedUuid = null;
+        actions.stop();
+        appState.currentStation = null;
+      }
+    } catch (err) {
+      actions.showToast('Werbung melden fehlgeschlagen', 'error');
+    }
+  }
+
   function removeChip(chip) {
-    if (chip.type === 'country') {
-      selectedCountries = selectedCountries.filter(c => c !== chip.code);
-    } else if (chip.type === 'bitrate') {
+    if (chip.type === 'bitrate') {
       selectedBitrates = selectedBitrates.filter(b => b.label !== chip.ref.label);
     } else if (chip.type === 'votes') {
       selectedVotesRanges = selectedVotesRanges.filter(r => r.label !== chip.ref.label);
@@ -527,9 +514,9 @@
         <span>FAVORITEN</span>
       </button>
       {#if activeFilterCount > 0}
-        <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zuruecksetzen">&#10005;</button>
+        <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zurücksetzen">&#10005;</button>
       {/if}
-      <button class="action-btn square" onclick={() => { showFilterOverlay = true; sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Sender-Filter oeffnen">
+      <button class="action-btn square" onclick={() => { showFilterOverlay = true; sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Sender-Filter öffnen">
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
@@ -551,21 +538,29 @@
       <div class="section-header">
         <span class="section-label">COUNTRY</span>
         {#if selectedCountries.length > 0}
-          <span class="section-count">{selectedCountries.length}</span>
+          <span class="section-count">{selectedCountries.length}/{visibleCountries.length}</span>
+        {:else if visibleCountries.length > 0}
+          <span class="section-count dim">{visibleCountries.length}</span>
         {/if}
       </div>
-      <div class="filter-list">
-        {#each availableCountries.slice(0, 25) as country}
-          {@const isSelected = selectedCountries.includes(country.code)}
-          {@const hasSel = selectedCountries.length > 0}
-          <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCountry(country.code)} title={isSelected ? 'Filter entfernen: ' + translateCountry(country.name) : 'Filtern nach: ' + translateCountry(country.name)}>
-            <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
-            <span class="country-code">{country.code}</span>
-            <span class="filter-item-label">{translateCountry(country.name)}</span>
-            <span class="filter-item-count">{formatNumber(country.count)}</span>
-          </button>
-        {/each}
-      </div>
+      {#if sidebarCountries().length > 0}
+        <div class="filter-list">
+          {#each sidebarCountries() as country}
+            {@const isSelected = selectedCountries.includes(country.code)}
+            {@const hasSel = selectedCountries.length > 0}
+            <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCountry(country.code)} title={isSelected ? 'Filter entfernen: ' + translateCountry(country.name) : 'Filtern nach: ' + translateCountry(country.name)}>
+              <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+              <span class="country-code">{country.code}</span>
+              <span class="filter-item-label">{translateCountry(country.name)}</span>
+              <span class="filter-item-count">{formatNumber(country.count)}</span>
+            </button>
+          {/each}
+        </div>
+      {:else}
+        <div class="empty-hint" onclick={() => { showFilterOverlay = true; sfx.click(); }}>
+          Laender im Overlay konfigurieren
+        </div>
+      {/if}
     </div>
 
     <div class="sidebar-divider"></div>
@@ -646,7 +641,7 @@
               </button>
             {/each}
             <button class="history-clear" onmousedown={clearSearchHistory}>
-              Historie loeschen
+              Historie löschen
             </button>
           </div>
         {/if}
@@ -708,7 +703,7 @@
               <button
                 class="station-fav"
                 onclick={(e) => toggleFavorite(station, e)}
-                title={isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufuegen'}
+                title={isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
               >
                 <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
               </button>
@@ -762,6 +757,9 @@
                     {/if}
                   </div>
                   <div class="details-actions">
+                    <button class="ad-btn" onclick={(e) => reportAd(station, e)} title="Sender als Werbung melden und blockieren">
+                      WERBUNG
+                    </button>
                     <button class="block-btn" onclick={(e) => blockStation(station, e)} title="Sender dauerhaft aus der Liste entfernen">
                       BLOCK
                     </button>
@@ -784,6 +782,7 @@
   {#if showFilterOverlay}
     <FilterOverlay
       open={true}
+      bind:visibleCountries={visibleCountries}
       onclose={() => { showFilterOverlay = false; loadFilters(); search(); }}
     />
   {/if}
@@ -910,6 +909,25 @@
     font-weight: 700;
   }
 
+  .section-count.dim {
+    color: var(--hifi-text-secondary);
+    font-weight: 500;
+  }
+
+  .empty-hint {
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.6;
+    padding: 8px 4px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .empty-hint:hover {
+    opacity: 1;
+    color: var(--hifi-accent);
+  }
+
   /* Country: flex-Restplatz, scrollt intern */
   .section-flex {
     flex: 1;
@@ -927,12 +945,12 @@
     margin-top: 4px;
   }
 
-  /* Bitrate/Votes: feste Hoehe */
+  /* Bitrate/Votes: feste Höhe */
   .section-fixed {
     flex-shrink: 0;
   }
 
-  /* 2-spaltig Grid fuer Bitrate/Votes */
+  /* 2-spaltig Grid für Bitrate/Votes */
   .filter-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -971,7 +989,7 @@
     background: var(--hifi-row-hover);
   }
 
-  /* Ausgewaehlt: blau */
+  /* Ausgewählt: blau */
   .filter-item.selected {
     color: var(--hifi-accent);
   }
@@ -981,7 +999,7 @@
     color: var(--hifi-accent);
   }
 
-  /* Nicht ausgewaehlt wenn Gruppe aktiv: hellgrau/gedimmt */
+  /* Nicht ausgewählt wenn Gruppe aktiv: hellgrau/gedimmt */
   .filter-item.dimmed {
     color: var(--hifi-text-secondary);
     opacity: 0.5;
@@ -1122,7 +1140,7 @@
     to { transform: rotate(360deg); }
   }
   
-  /* Suchleiste (im Header, gleiche Hoehe wie Stations-Display) */
+  /* Suchleiste (im Header, gleiche Höhe wie Stations-Display) */
   .search-bar {
     display: flex;
     align-items: center;
@@ -1363,7 +1381,7 @@
     color: var(--hifi-led-yellow);
   }
 
-  /* Ausgewaehlter Sender: blauer Schein */
+  /* Ausgewählter Sender: blauer Schein */
   .station-wrapper.selected {
     background: var(--hifi-bg-panel);
     border-top: 2px solid rgba(51, 153, 255, 0.2);
@@ -1453,6 +1471,28 @@
 
   .block-btn:hover {
     background: var(--hifi-led-red);
+    color: white;
+  }
+
+  .ad-btn {
+    padding: 4px 10px;
+    margin-right: 8px;
+    margin-top: 8px;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    color: var(--hifi-led-amber, #e6a23c);
+    font-family: var(--hifi-font-values);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: var(--hifi-shadow-button);
+  }
+
+  .ad-btn:hover {
+    background: var(--hifi-led-amber, #e6a23c);
     color: white;
   }
   

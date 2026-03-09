@@ -70,7 +70,7 @@
         actions.navigatePrev();
         break;
 
-      case 'ArrowRight':  // Pfeil rechts = Naechster Sender
+      case 'ArrowRight':  // Pfeil rechts = Nächster Sender
         e.preventDefault();
         actions.navigateNext();
         break;
@@ -94,7 +94,7 @@
         actions.setTab('settings');
         break;
 
-      case 'Escape':  // Escape = Overlays schliessen
+      case 'Escape':  // Escape = Overlays schließen
         // Wird von Komponenten selbst behandelt
         break;
     }

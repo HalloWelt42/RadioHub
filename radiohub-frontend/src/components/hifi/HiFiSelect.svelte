@@ -80,7 +80,7 @@
     <span class="hifi-select-label">{label}</span>
   {/if}
   
-  <button class="hifi-select-trigger" class:open={isOpen} onclick={toggle} title={isOpen ? 'Auswahl schliessen' : 'Auswahl oeffnen'}>
+  <button class="hifi-select-trigger" class:open={isOpen} onclick={toggle} title={isOpen ? 'Auswahl schließen' : 'Auswahl öffnen'}>
     <span class="hifi-select-value">{displayText()}</span>
     <span class="hifi-select-arrow">{isOpen ? '▲' : '▼'}</span>
   </button>
@@ -88,7 +88,7 @@
   {#if isOpen}
     <div class="hifi-select-dropdown">
       {#if multiple && value?.length > 0}
-        <button class="hifi-select-clear" onclick={clearAll} title="Gesamte Auswahl zuruecksetzen">
+        <button class="hifi-select-clear" onclick={clearAll} title="Gesamte Auswahl zurücksetzen">
           ✕ Alle entfernen
         </button>
       {/if}
@@ -99,7 +99,7 @@
             class="hifi-select-option"
             class:selected={isSelected(opt)}
             onclick={() => selectOption(opt)}
-            title={isSelected(opt) ? opt.label + ' abwaehlen' : opt.label + ' auswaehlen'}
+            title={isSelected(opt) ? opt.label + ' abwählen' : opt.label + ' auswählen'}
           >
             {#if multiple}
               <span class="hifi-select-checkbox">

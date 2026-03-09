@@ -1,7 +1,7 @@
 /**
  * HiFi UI - Lokale Fonts v0.3.0
- * Barlow fuer Body/Buttons/Displays, Orbitron fuer UI-Labels/Werte
- * Alle Fonts via @fontsource (npm), keine externen Abhaengigkeiten
+ * Barlow für Body/Buttons/Displays, Orbitron für UI-Labels/Werte
+ * Alle Fonts via @fontsource (npm), keine externen Abhängigkeiten
  */
 
 /* Barlow - Body, Buttons, Display-Text */
@@ -19,16 +19,16 @@
 
 /* Font Stacks */
 :root {
-  /* Barlow fuer Body und Buttons */
+  /* Barlow für Body und Buttons */
   --hifi-font-body: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Barlow fuer Display-Texte (Sendernamen, Scrolltext) */
+  /* Barlow für Display-Texte (Sendernamen, Scrolltext) */
   --hifi-font-display: 'Barlow', sans-serif;
 
-  /* Orbitron fuer UI-Labels und Zahlenwerte */
+  /* Orbitron für UI-Labels und Zahlenwerte */
   --hifi-font-values: 'Orbitron', 'Century Gothic', monospace;
 
-  /* Orbitron fuer Segment-Anzeigen */
+  /* Orbitron für Segment-Anzeigen */
   --hifi-font-segment: 'Orbitron', 'Century Gothic', monospace;
 
   /* Fallback Mono */
@@ -41,7 +41,7 @@ body {
   font-weight: 400;
 }
 
-/* Utility class fuer Orbitron (UI-Labels) */
+/* Utility class für Orbitron (UI-Labels) */
 .hifi-value {
   font-family: var(--hifi-font-values);
   font-weight: 400;

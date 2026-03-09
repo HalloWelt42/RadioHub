@@ -312,6 +312,36 @@ class RadioHubAPI {
   async getAvailableLanguages() {
     return this.fetch('/api/filters/languages');
   }
+
+  async getAvailableCountries() {
+    return this.fetch('/api/filters/countries');
+  }
+
+  // === Ad-Detection ===
+  async checkAds(uuid, streamUrl, name = null) {
+    return this.fetch('/api/ad-detection/check', {
+      method: 'POST',
+      body: JSON.stringify({ uuid, stream_url: streamUrl, name })
+    });
+  }
+
+  async reportAd(uuid, streamUrl, name, note = null) {
+    return this.fetch('/api/ad-detection/report', {
+      method: 'POST',
+      body: JSON.stringify({ uuid, stream_url: streamUrl, name, note })
+    });
+  }
+
+  async markFalsePositive(uuid) {
+    return this.fetch('/api/ad-detection/false-positive', {
+      method: 'POST',
+      body: JSON.stringify({ uuid })
+    });
+  }
+
+  async getAdSummary() {
+    return this.fetch('/api/ad-detection/summary/overview');
+  }
 }
 
 export const api = new RadioHubAPI(API_BASE);

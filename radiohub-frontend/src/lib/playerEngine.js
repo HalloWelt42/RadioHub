@@ -2,7 +2,7 @@
  * RadioHub Player Engine v1.0.0
  *
  * Zentrale Playback-Steuerung mit State-Machine.
- * Loest die Probleme:
+ * Löst die Probleme:
  * - Audio-Bleed bei Senderwechsel (Generation Counter)
  * - Race Conditions bei HLS-Start/Stop
  * - Unklare Button-States
@@ -46,14 +46,14 @@ export function init(audioElement, appState) {
 }
 
 /**
- * Gibt die aktuelle Generation zurueck (fuer Tests).
+ * Gibt die aktuelle Generation zurück (für Tests).
  */
 export function getGeneration() {
   return _generation;
 }
 
 /**
- * Prueft ob Engine initialisiert ist.
+ * Prüft ob Engine initialisiert ist.
  */
 export function isInitialized() {
   return _audioEl !== null && _appState !== null;
@@ -68,9 +68,9 @@ export function isInitialized() {
  *
  * Ablauf:
  * 1. Audio sofort stummschalten (kein Bleed!)
- * 2. HLS-Instanz zerstoeren
+ * 2. HLS-Instanz zerstören
  * 3. Backend-HLS stoppen (await!)
- * 4. State zuruecksetzen
+ * 4. State zurücksetzen
  * 5. Direct Stream starten
  * 6. HLS-Buffer im Hintergrund starten
  * 7. Bei genug Segmenten: nahtlos zu HLS wechseln
@@ -80,7 +80,7 @@ export async function playStation(station) {
   const gen = ++_generation;
 
   // --- Phase 1: Sofortige Stille ---
-  // REIHENFOLGE KRITISCH: Erst HLS zerstoeren (loest MediaSource),
+  // REIHENFOLGE KRITISCH: Erst HLS zerstören (löst MediaSource),
   // dann Audio stummschalten (kann src jetzt sauber entfernen)
   _destroyHLS();
   _stopHLSPolling();
@@ -135,7 +135,7 @@ export async function playStation(station) {
   try {
     await _audioEl.play();
   } catch (e) {
-    // Autoplay-Restriction: nicht fatal, User kann manuell Play druecken
+    // Autoplay-Restriction: nicht fatal, User kann manuell Play drücken
     console.warn('Autoplay blocked:', e.message);
   }
   if (_generation !== gen) return;
@@ -162,7 +162,7 @@ export async function playPodcast(episode, podcast) {
   const gen = ++_generation;
 
   // Sofortige Stille + Cleanup
-  // REIHENFOLGE: Erst HLS zerstoeren, dann Audio stummschalten
+  // REIHENFOLGE: Erst HLS zerstören, dann Audio stummschalten
   _destroyHLS();
   _stopHLSPolling();
   _silenceAudio();
@@ -214,7 +214,7 @@ export async function playPodcast(episode, podcast) {
 
 /**
  * Pausiert die Wiedergabe.
- * HLS-Buffer laeuft im Backend weiter!
+ * HLS-Buffer läuft im Backend weiter!
  */
 export function pause() {
   if (!_audioEl || !_appState?.isPlaying || _appState.isPaused) return;
@@ -229,9 +229,9 @@ export function resume() {
   if (!_audioEl || !_appState?.isPaused) return;
 
   // HLS: Nach Pause sind wir hinter der Live-Kante,
-  // weil waehrend der Pause neue Segmente dazukamen.
+  // weil während der Pause neue Segmente dazukamen.
   // isLive = false damit handleTimeUpdate die echte Position berechnet
-  // statt auf 100% zu pinnen. User kann mit goLive() zurueckspringen.
+  // statt auf 100% zu pinnen. User kann mit goLive() zurückspringen.
   if (_appState.playerMode === 'hls') {
     _appState.isLive = false;
   }
@@ -262,7 +262,7 @@ export async function stop() {
   if (!_appState) return;
   _generation++; // Alle laufenden Operationen abbrechen
 
-  // 1. HLS zerstoeren (loest MediaSource VOR Audio-Cleanup)
+  // 1. HLS zerstören (löst MediaSource VOR Audio-Cleanup)
   _destroyHLS();
   _stopHLSPolling();
 
@@ -279,7 +279,7 @@ export async function stop() {
     await _stopRecordingInternal();
   }
 
-  // 5. State zuruecksetzen
+  // 5. State zurücksetzen
   _appState.isPlaying = false;
   _appState.isPaused = false;
   _appState.hlsActive = false;
@@ -297,7 +297,7 @@ export async function stop() {
 }
 
 /**
- * Setzt die Lautstaerke.
+ * Setzt die Lautstärke.
  */
 export function setVolume(vol) {
   if (!_appState) return;
@@ -311,7 +311,7 @@ export function setVolume(vol) {
 
 /**
  * Seeked zu einer Position (0-100%).
- * Im HLS-Modus: Mappt auf Segment-Nummern fuer exaktes Seeking.
+ * Im HLS-Modus: Mappt auf Segment-Nummern für exaktes Seeking.
  */
 export function seek(position) {
   if (!_audioEl) return;
@@ -422,7 +422,7 @@ export function goLive() {
 }
 
 /**
- * Prueft ob Seeking moeglich ist.
+ * Prüft ob Seeking möglich ist.
  */
 export function canSeek() {
   if (!_appState) return false;
@@ -435,7 +435,7 @@ export function canSeek() {
 
 /**
  * Wechselt zwischen Direct (Original) und HLS (re-encoded) Modus.
- * Nur moeglich wenn der Zielmodus verfuegbar ist.
+ * Nur möglich wenn der Zielmodus verfügbar ist.
  */
 export function toggleStreamMode() {
   if (!_appState || !_audioEl) return;
@@ -482,14 +482,14 @@ export function toggleStreamMode() {
 }
 
 /**
- * Wechselt von HLS zurueck zu Direct Stream.
+ * Wechselt von HLS zurück zu Direct Stream.
  * HLS-Polling + Backend-Buffer laufen weiter, damit
- * spaeteres Zurueckschalten sofort moeglich ist.
+ * späteres Zurückschalten sofort möglich ist.
  */
 function _switchToDirect() {
   if (!_audioEl || !_appState?.currentStation) return;
 
-  // HLS.js Instanz zerstoeren, aber Backend-Buffer + Polling behalten
+  // HLS.js Instanz zerstören, aber Backend-Buffer + Polling behalten
   _destroyHLS();
 
   const url = _appState.currentStation.url_resolved || _appState.currentStation.url;
@@ -501,11 +501,11 @@ function _switchToDirect() {
   _appState.isLive = true;
   _appState.currentSegment = null;
   _lastSeekPosition = 100;
-  console.log('Wechsel zu Direct-Modus (Original-Qualitaet)');
+  console.log('Wechsel zu Direct-Modus (Original-Qualität)');
 }
 
 /**
- * Prueft ob der Stream-Modus gewechselt werden kann.
+ * Prüft ob der Stream-Modus gewechselt werden kann.
  */
 export function canToggleMode() {
   if (!_appState) return false;
@@ -514,7 +514,7 @@ export function canToggleMode() {
 }
 
 /**
- * Startet HLS-Session neu (z.B. nach Bitrate-Override-Aenderung).
+ * Startet HLS-Session neu (z.B. nach Bitrate-Override-Änderung).
  * Backend-Buffer wird gestoppt und mit neuen Parametern gestartet.
  */
 export async function restartHLS() {
@@ -603,7 +603,7 @@ async function _stopRecordingInternal() {
 /**
  * Berechnet Seek-Position und Live-Status.
  * Im HLS-Modus: Segment-basiert mit Anti-Jitter.
- * Gibt { currentTime, duration, seekPosition } zurueck.
+ * Gibt { currentTime, duration, seekPosition } zurück.
  */
 export function handleTimeUpdate() {
   if (!_audioEl || !_appState) return null;
@@ -623,7 +623,7 @@ export function handleTimeUpdate() {
         if (_appState.isLive) {
           // Live-Modus: Position an rechten Rand pinnen.
           // Kein Neuberechnen -- verhindert Pendeln an der Live-Kante.
-          // isLive wird nur durch seek/skip/goLive geaendert.
+          // isLive wird nur durch seek/skip/goLive geändert.
           _appState.currentSegment = lastSeg;
           seekPosition = 100;
           _lastSeekPosition = 100;
@@ -636,13 +636,13 @@ export function handleTimeUpdate() {
           const fraction = seekRange > 0 ? (currentTime - seekStart) / seekRange : 0;
           const currentSeg = Math.round(firstSeg + fraction * segRange);
 
-          // Anti-Jitter: Nur updaten wenn sich Segment aendert
+          // Anti-Jitter: Nur updaten wenn sich Segment ändert
           if (_appState.currentSegment !== currentSeg) {
             _appState.currentSegment = currentSeg;
             seekPosition = ((currentSeg - firstSeg) / segRange) * 100;
             _lastSeekPosition = seekPosition;
           }
-          // isLive wird hier NICHT gesetzt -- nur seek/skip/goLive aendern das
+          // isLive wird hier NICHT gesetzt -- nur seek/skip/goLive ändern das
         }
       }
     }
@@ -667,7 +667,7 @@ export function handleEnded() {
  * Audio-Error Handler.
  *
  * Error Code 4 (SRC_NOT_SUPPORTED) wird ignoriert:
- * - Tritt bei Source-Wechseln auf wenn die alte blob-URL ungueltig wird
+ * - Tritt bei Source-Wechseln auf wenn die alte blob-URL ungültig wird
  * - Echte Format-Fehler werden durch play()-Promise und HLS-Error-Handler gefangen
  */
 export function handleError(event) {
@@ -684,7 +684,7 @@ export function handleError(event) {
   // Dekodierungsfehler im Direct-Modus: Codec nicht abspielbar
   if (error.code === 3 && _appState.playerMode === 'direct') {
     _appState.canPlayDirect = false;
-    // Automatisch zu HLS wechseln wenn verfuegbar
+    // Automatisch zu HLS wechseln wenn verfügbar
     if (_appState.canPlayHLS === true) {
       console.log('Direct-Codec nicht abspielbar, wechsle zu HLS');
       _switchToHLS(_generation);
@@ -716,7 +716,7 @@ async function _startHLSBackground(station, gen) {
     if (_generation !== gen) return;
     console.error('HLS start failed:', e);
     _appState.canPlayHLS = false;
-    // Direct Stream laeuft weiter - HLS ist optional
+    // Direct Stream läuft weiter - HLS ist optional
   }
 }
 
@@ -761,7 +761,7 @@ function _stopHLSPolling() {
 }
 
 async function _waitForHLSSegments(gen) {
-  // Alle 500ms pruefen, max 15 Sekunden warten
+  // Alle 500ms prüfen, max 15 Sekunden warten
   for (let i = 0; i < 30; i++) {
     await new Promise(r => setTimeout(r, 500));
     if (_generation !== gen) return;
@@ -811,7 +811,7 @@ function _switchToHLS(gen) {
         console.log('HLS Media Error - Recovery');
         _hlsInstance?.recoverMediaError();
       } else {
-        // Fatal: Zurueck zu Direct Stream
+        // Fatal: Zurück zu Direct Stream
         console.log('Fataler HLS Error - Fallback zu Direct Stream');
         _destroyHLS();
         _appState.playerMode = 'direct';
@@ -842,28 +842,28 @@ function _playDirectFallback(gen) {
  * Verhindert Audio-Bleed bei Senderwechsel.
  *
  * WICHTIG: _destroyHLS() MUSS vorher aufgerufen werden!
- * Wenn HLS.js eine MediaSource haelt, kann removeAttribute('src')
- * den alten Stream nicht korrekt loesen.
+ * Wenn HLS.js eine MediaSource hält, kann removeAttribute('src')
+ * den alten Stream nicht korrekt lösen.
  */
 function _silenceAudio() {
   if (!_audioEl) return;
   _audioEl.pause();
-  _audioEl.srcObject = null;      // MediaSource-Referenz loesen
+  _audioEl.srcObject = null;      // MediaSource-Referenz lösen
   _audioEl.removeAttribute('src');
   // KEIN load() hier - das feuert Error Code 4 (SRC_NOT_SUPPORTED) async.
-  // Der naechste src-Zuweisung + load() bricht den alten Request automatisch ab.
+  // Der nächste src-Zuweisung + load() bricht den alten Request automatisch ab.
 }
 
 
 /**
- * HLS.js-Instanz zerstoeren.
+ * HLS.js-Instanz zerstören.
  * Muss VOR _silenceAudio() aufgerufen werden,
- * damit die MediaSource sauber geloest wird.
+ * damit die MediaSource sauber gelöst wird.
  */
 function _destroyHLS() {
   if (_hlsInstance) {
-    // Audio-Element VOR destroy() vom Blob-URL loesen,
-    // damit kein Error Code 4 feuert wenn MediaSource wegfaellt
+    // Audio-Element VOR destroy() vom Blob-URL lösen,
+    // damit kein Error Code 4 feuert wenn MediaSource wegfällt
     if (_audioEl) {
       _audioEl.pause();
       _audioEl.removeAttribute('src');
@@ -879,7 +879,7 @@ function _destroyHLS() {
 // ============================================================
 
 /**
- * Fuer Tests: Setzt alle internen State-Variablen zurueck.
+ * Für Tests: Setzt alle internen State-Variablen zurück.
  */
 export function _resetForTest() {
   _destroyHLS();
@@ -899,7 +899,7 @@ export function _resetForTest() {
 }
 
 /**
- * Fuer Tests: Zugriff auf interne HLS-Instanz.
+ * Für Tests: Zugriff auf interne HLS-Instanz.
  */
 export function _getHLSInstance() {
   return _hlsInstance;

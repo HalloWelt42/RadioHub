@@ -68,10 +68,10 @@ get_pid_on_port() {
 
 start_backend() {
     if is_running "$BACKEND_PID"; then
-        echo -e "  Backend: ${YELLOW}laeuft bereits${NC} (PID $(cat "$BACKEND_PID"))"
+        echo -e "  Backend: ${YELLOW}läuft bereits${NC} (PID $(cat "$BACKEND_PID"))"
         return 0
     fi
-    # Pruefen ob Port belegt
+    # Prüfen ob Port belegt
     local existing_pid
     existing_pid=$(get_pid_on_port $BACKEND_PORT)
     if [ -n "$existing_pid" ]; then
@@ -98,7 +98,7 @@ start_backend() {
 
 start_frontend() {
     if is_running "$FRONTEND_PID"; then
-        echo -e "  Frontend: ${YELLOW}laeuft bereits${NC} (PID $(cat "$FRONTEND_PID"))"
+        echo -e "  Frontend: ${YELLOW}läuft bereits${NC} (PID $(cat "$FRONTEND_PID"))"
         return 0
     fi
     local existing_pid
@@ -163,7 +163,7 @@ stop_process() {
         rm -f "$pidfile"
         echo -e "  $name: ${GREEN}gestoppt${NC}"
     else
-        # Pruefen ob trotzdem was auf dem Port laeuft
+        # Prüfen ob trotzdem was auf dem Port läuft
         local existing_pid
         existing_pid=$(get_pid_on_port "$port")
         if [ -n "$existing_pid" ]; then
@@ -172,7 +172,7 @@ stop_process() {
             sleep 1
             echo -e "  $name: ${GREEN}gestoppt${NC}"
         else
-            echo -e "  $name: ${YELLOW}laeuft nicht${NC}"
+            echo -e "  $name: ${YELLOW}läuft nicht${NC}"
         fi
         rm -f "$pidfile"
     fi
@@ -307,8 +307,8 @@ cmd_restore() {
     local backup_file="${1:-}"
 
     if [ -z "$backup_file" ]; then
-        # Zeige verfuegbare Backups
-        echo "  Verfuegbare Backups:"
+        # Zeige verfügbare Backups
+        echo "  Verfügbare Backups:"
         echo ""
         local i=1
         while IFS= read -r f; do
@@ -341,7 +341,7 @@ cmd_restore() {
         return 1
     fi
 
-    echo -e "  ${YELLOW}ACHTUNG: Die aktuelle Datenbank wird ueberschrieben!${NC}"
+    echo -e "  ${YELLOW}ACHTUNG: Die aktuelle Datenbank wird überschrieben!${NC}"
     echo -n "  Fortfahren? (j/N) "
     read -r confirm
     if [[ "$confirm" != "j" && "$confirm" != "J" ]]; then
@@ -449,16 +449,16 @@ cmd_help() {
     echo -e "    backup                 Datenbank-Backup erstellen"
     echo -e "    restore [datei]        Backup wiederherstellen"
     echo -e "    build                  Frontend bauen"
-    echo -e "    test                   Tests ausfuehren"
+    echo -e "    test                   Tests ausführen"
     echo ""
-    echo -e "  ${BOLD}Kuerzel:${NC} be = backend, fe = frontend"
+    echo -e "  ${BOLD}Kürzel:${NC} be = backend, fe = frontend"
     echo ""
     echo -e "  ${BOLD}Beispiele:${NC}"
     echo -e "    $0 start               Alles starten"
     echo -e "    $0 restart be           Nur Backend neustarten"
     echo -e "    $0 logs be 50           Letzte 50 Backend-Log-Zeilen"
     echo -e "    $0 backup               DB-Backup erstellen"
-    echo -e "    $0 restore              Verfuegbare Backups anzeigen"
+    echo -e "    $0 restore              Verfügbare Backups anzeigen"
 }
 
 # ============================================================

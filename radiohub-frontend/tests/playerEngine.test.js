@@ -5,11 +5,11 @@
  * - Case A: Radio Direct Stream
  * - Case B: Radio mit HLS Timeshift
  * - Case C: Podcast
- * - Uebergaenge zwischen Cases
+ * - Übergänge zwischen Cases
  * - Fehlerszenarien
  * - Recording
  *
- * Ausfuehren: npm test
+ * Ausführen: npm test
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
@@ -215,7 +215,7 @@ describe('PlayerEngine', () => {
       expect(api.startHLS).toHaveBeenCalledWith(STATION_A);
     });
 
-    it('TC-A4: Stop setzt alles zurueck', async () => {
+    it('TC-A4: Stop setzt alles zurück', async () => {
       await engine.playStation(STATION_A);
       await engine.stop();
 
@@ -277,7 +277,7 @@ describe('PlayerEngine', () => {
   describe('Case B: HLS Timeshift', () => {
     it('TC-B1: HLS wird als aktiv markiert nach Start', async () => {
       // HLS-Start ist fire-and-forget, der API-Mock resolved sofort
-      vi.useRealTimers(); // Brauchen echte Timers fuer async polling
+      vi.useRealTimers(); // Brauchen echte Timers für async polling
       await engine.playStation(STATION_A);
 
       // Kurz warten bis der async HLS-Start-Call resolved
@@ -285,7 +285,7 @@ describe('PlayerEngine', () => {
 
       expect(state.hlsActive).toBe(true);
       expect(state.hlsStatus).toBeTruthy();
-      vi.useFakeTimers(); // Zurueck zu Fake-Timers fuer andere Tests
+      vi.useFakeTimers(); // Zurück zu Fake-Timers für andere Tests
     });
 
     it('TC-B2: Seeking ist im HLS-Modus aktiv', async () => {
@@ -378,7 +378,7 @@ describe('PlayerEngine', () => {
       expect(audioEl.currentTime).toBeCloseTo(90, 0);
     });
 
-    it('TC-B10: Session-ID wird in Playlist-URL unterstuetzt', () => {
+    it('TC-B10: Session-ID wird in Playlist-URL unterstützt', () => {
       const url = api.getHLSPlaylistUrl('test123');
       expect(url).toContain('sid=test123');
 
@@ -522,9 +522,9 @@ describe('PlayerEngine', () => {
   });
 
   // ----------------------------------------------------------
-  //  Uebergaenge Radio <-> Podcast
+  //  Übergänge Radio <-> Podcast
   // ----------------------------------------------------------
-  describe('Uebergaenge Radio <-> Podcast', () => {
+  describe('Übergänge Radio <-> Podcast', () => {
     it('TC-T1: Radio -> Podcast: HLS wird gestoppt', async () => {
       await engine.playStation(STATION_A);
       state.hlsActive = true;
@@ -585,7 +585,7 @@ describe('PlayerEngine', () => {
       expect(state.recordingSession).toBe('rec1');
     });
 
-    it('TC-R2: Aufnahme ohne Station schlaegt fehl', async () => {
+    it('TC-R2: Aufnahme ohne Station schlägt fehl', async () => {
       state.currentStation = null;
       const result = await engine.startRecording();
 
@@ -593,7 +593,7 @@ describe('PlayerEngine', () => {
       expect(state.isRecording).toBe(false);
     });
 
-    it('TC-R3: Aufnahme stoppen raeumt auf', async () => {
+    it('TC-R3: Aufnahme stoppen räumt auf', async () => {
       state.currentStation = STATION_A;
       await engine.startRecording();
 
@@ -695,7 +695,7 @@ describe('PlayerEngine', () => {
 
       const result = engine.handleTimeUpdate();
       expect(state.currentSegment).toBe(200);
-      // isLive wird von handleTimeUpdate NICHT geaendert
+      // isLive wird von handleTimeUpdate NICHT geändert
       expect(state.isLive).toBe(false);
     });
 
@@ -800,7 +800,7 @@ describe('PlayerEngine', () => {
       engine.toggleStreamMode();
 
       // HLS switch passiert (playerMode wird in MANIFEST_PARSED gesetzt)
-      // Wir pruefen hier nur dass kein Fehler fliegt
+      // Wir prüfen hier nur dass kein Fehler fliegt
       expect(state.canPlayHLS).toBe(true);
       vi.useFakeTimers();
     });
@@ -811,7 +811,7 @@ describe('PlayerEngine', () => {
 
       engine.toggleStreamMode();
 
-      expect(state.playerMode).toBe('direct'); // Keine Aenderung
+      expect(state.playerMode).toBe('direct'); // Keine Änderung
     });
 
     it('TC-SM4: toggleStreamMode ignoriert wenn Direct nicht abspielbar', () => {
@@ -821,10 +821,10 @@ describe('PlayerEngine', () => {
 
       engine.toggleStreamMode();
 
-      expect(state.playerMode).toBe('hls'); // Keine Aenderung
+      expect(state.playerMode).toBe('hls'); // Keine Änderung
     });
 
-    it('TC-SM5: canToggleMode gibt korrekten Wert zurueck', () => {
+    it('TC-SM5: canToggleMode gibt korrekten Wert zurück', () => {
       state.playerMode = 'hls';
       state.canPlayDirect = true;
       expect(engine.canToggleMode()).toBe(true);
@@ -842,7 +842,7 @@ describe('PlayerEngine', () => {
 
     it('TC-SM6: Dekodierungsfehler setzt canPlayDirect auf false', () => {
       state.playerMode = 'direct';
-      state.canPlayHLS = false; // HLS auch nicht verfuegbar
+      state.canPlayHLS = false; // HLS auch nicht verfügbar
 
       engine.handleError({ target: { error: { code: 3 } } });
 
@@ -850,7 +850,7 @@ describe('PlayerEngine', () => {
       expect(state.playerError).toBe('Dekodierungsfehler');
     });
 
-    it('TC-SM7: Dekodierungsfehler bei verfuegbarem HLS wechselt automatisch', () => {
+    it('TC-SM7: Dekodierungsfehler bei verfügbarem HLS wechselt automatisch', () => {
       state.playerMode = 'direct';
       state.canPlayHLS = true;
       state.currentStation = STATION_A;
@@ -887,7 +887,7 @@ describe('PlayerEngine', () => {
   //  Quality Info
   // ----------------------------------------------------------
   describe('Quality Info', () => {
-    it('TC-Q1: streamQuality wird bei playStation zurueckgesetzt', async () => {
+    it('TC-Q1: streamQuality wird bei playStation zurückgesetzt', async () => {
       state.streamQuality = { inputCodec: 'mp3', inputBitrate: 128 };
       await engine.playStation(STATION_A);
 
@@ -896,62 +896,62 @@ describe('PlayerEngine', () => {
 
     // Note: Quality wird durch HLS-Polling gesetzt.
     // Das Polling selbst ist schwer zu unit-testen (Timer-basiert).
-    // Wird im manuellen UI-Test geprueft (TC-Q2 bis TC-Q4).
+    // Wird im manuellen UI-Test geprüft (TC-Q2 bis TC-Q4).
   });
 });
 
 
 // ============================================================
-//  Zusammenfassung der Testcases (fuer manuelle Pruefung)
+//  Zusammenfassung der Testcases (für manuelle Prüfung)
 // ============================================================
 /**
  * MANUELLE TESTCASES (im Browser mit laufendem Backend):
  *
  * TC-M1: Sender anklicken
  *   Erwartung: Direct Stream spielt sofort, nach ~3-5s Wechsel zu HLS
- *   Pruefen: SOURCE zeigt "Tuner / HLS", Display zeigt Sendername
+ *   Prüfen: SOURCE zeigt "Tuner / HLS", Display zeigt Sendername
  *
- * TC-M2: Senderwechsel waehrend Wiedergabe
+ * TC-M2: Senderwechsel während Wiedergabe
  *   Erwartung: KEIN Audio-Bleed! Alter Sender stoppt sofort.
- *   Pruefen: Nur neuer Sender hoerbar, kein kurzes Ueberlappen
+ *   Prüfen: Nur neuer Sender hörbar, kein kurzes Überlappen
  *
  * TC-M3: 3x schnell hintereinander verschiedene Sender klicken
  *   Erwartung: Nur der letzte Sender spielt
- *   Pruefen: Display, Audio, kein Chaos
+ *   Prüfen: Display, Audio, kein Chaos
  *
  * TC-M4: Play -> Pause -> Play
- *   Erwartung: Gruene LED -> Gelbe LED -> Gruene LED
- *   Pruefen: Audio stoppt/startet korrekt
+ *   Erwartung: Grüne LED -> Gelbe LED -> Grüne LED
+ *   Prüfen: Audio stoppt/startet korrekt
  *
  * TC-M5: Play -> Stop
- *   Erwartung: Audio stoppt komplett, State zurueckgesetzt
- *   Pruefen: Stop-LED gelb (kurz), dann alles aus
+ *   Erwartung: Audio stoppt komplett, State zurückgesetzt
+ *   Prüfen: Stop-LED gelb (kurz), dann alles aus
  *
- * TC-M6: HLS-Seekbar zurueckziehen
- *   Erwartung: Audio springt zurueck im Buffer
- *   Pruefen: LIVE-Anzeige verschwindet, LIVE-Button wird aktiv (blau)
+ * TC-M6: HLS-Seekbar zurückziehen
+ *   Erwartung: Audio springt zurück im Buffer
+ *   Prüfen: LIVE-Anzeige verschwindet, LIVE-Button wird aktiv (blau)
  *
- * TC-M7: LIVE-Button nach Zurueckspulen
+ * TC-M7: LIVE-Button nach Zurückspulen
  *   Erwartung: Springt zur Live-Kante
- *   Pruefen: LIVE-Anzeige kommt zurueck
+ *   Prüfen: LIVE-Anzeige kommt zurück
  *
  * TC-M8: Podcast abspielen
- *   Erwartung: SOURCE "Podcast", Timer gruen, Seekbar aktiv
- *   Pruefen: Volle Dauer wird angezeigt
+ *   Erwartung: SOURCE "Podcast", Timer grün, Seekbar aktiv
+ *   Prüfen: Volle Dauer wird angezeigt
  *
  * TC-M9: Quality-Anzeige
  *   Erwartung: Unter dem Sendernamen: z.B. "MP3 192k -> HLS 128k"
- *   Pruefen: Aktualisiert sich nach HLS-Start
+ *   Prüfen: Aktualisiert sich nach HLS-Start
  *
  * TC-M10: Aufnahme starten/stoppen
  *   Erwartung: REC-LED rot + blinkt, Timer rot, Toast bei Stop
- *   Pruefen: Aufnahme-Datei wird erstellt
+ *   Prüfen: Aufnahme-Datei wird erstellt
  *
  * TC-M11: Recording bei Senderwechsel
  *   Erwartung: Aufnahme wird automatisch gestoppt
- *   Pruefen: Toast erscheint, REC-LED aus
+ *   Prüfen: Toast erscheint, REC-LED aus
  *
- * TC-M12: Error-Handling (ungueltige Stream-URL)
- *   Erwartung: Fehler-Banner erscheint ueber dem Player
- *   Pruefen: Kann mit "x" geschlossen werden
+ * TC-M12: Error-Handling (ungültige Stream-URL)
+ *   Erwartung: Fehler-Banner erscheint über dem Player
+ *   Prüfen: Kann mit "x" geschlossen werden
  */

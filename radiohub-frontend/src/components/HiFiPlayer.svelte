@@ -19,7 +19,7 @@
   let isSeeking = $state(false);
   let seekDebounceTimer = null;
 
-  // Button Press States fuer gelbe LEDs
+  // Button Press States für gelbe LEDs
   let prevPressed = $state(false);
   let nextPressed = $state(false);
   let skipBackPressed = $state(false);
@@ -133,8 +133,8 @@
   }
 
   function handleFaderEnd() {
-    // Seek sofort ausfuehren, isDragging erst danach aufheben
-    // damit handleTimeUpdate die Position nicht zuruecksetzt
+    // Seek sofort ausführen, isDragging erst danach aufheben
+    // damit handleTimeUpdate die Position nicht zurücksetzt
     if (seekDebounceTimer) clearTimeout(seekDebounceTimer);
     engine.seek(seekPosition);
     seekDebounceTimer = setTimeout(() => {
@@ -185,7 +185,7 @@
   let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls');
   let canNavigate = $derived(appState.stations?.length > 0 || isPodcast);
 
-  // Prev/Next Sendernamen fuer Tooltips
+  // Prev/Next Sendernamen für Tooltips
   let prevStationName = $derived(() => {
     if (!appState.currentStation || !appState.stations?.length) return null;
     const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
@@ -236,7 +236,7 @@
   // Timer
   // Recording: Aufnahmedauer (rot)
   // HLS Timeshift: Abstand zu Live (gelb) -- nur wenn NICHT live
-  // Podcast: aktuelle Position (gruen)
+  // Podcast: aktuelle Position (grün)
   // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
     appState.isRecording ? 'red' :
@@ -274,7 +274,7 @@
     'off'
   );
 
-  // Transport Section Label (kontextabhaengig)
+  // Transport Section Label (kontextabhängig)
   let transportLabel = $derived(
     appState.isRecording ? 'RECORDING' :
     isPodcast ? 'PODCAST' :
@@ -282,7 +282,7 @@
     'TRANSPORT'
   );
 
-  // Mode Toggle Verfuegbarkeit
+  // Mode Toggle Verfügbarkeit
   let canToggleStreamMode = $derived(
     (appState.playerMode === 'hls' && appState.canPlayDirect) ||
     (appState.playerMode === 'direct' && appState.canPlayHLS === true)
@@ -448,7 +448,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate}
-          title={!canNavigate ? 'Kein vorheriger Sender verfuegbar' : prevStationName() || 'Vorheriger Sender'}
+          title={!canNavigate ? 'Kein vorheriger Sender verfügbar' : prevStationName() || 'Vorheriger Sender'}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -464,7 +464,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek}
-          title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden zurueckspulen'}
+          title={!_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden zurückspulen'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
@@ -489,7 +489,7 @@
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewählt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
@@ -498,7 +498,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek}
-          title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
+          title={!_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
@@ -514,7 +514,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate}
-          title={!canNavigate ? 'Kein naechster Sender verfuegbar' : nextStationName() || 'Naechster Sender'}
+          title={!canNavigate ? 'Kein nächster Sender verfügbar' : nextStationName() || 'Nächster Sender'}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
@@ -530,7 +530,7 @@
         <button
           class="transport-btn live-btn"
           disabled={isLive || !isHLSMode}
-          title={isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfuegbar' : 'Zur Live-Position springen'}
+          title={isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfügbar' : 'Zur Live-Position springen'}
           onclick={() => engine.goLive()}
         >
           <HiFiLed color={liveLedColor} size="small" />
@@ -542,7 +542,7 @@
           <button
             class="transport-btn mode-btn"
             disabled={!canToggleStreamMode}
-            title={!canToggleStreamMode ? 'Moduswechsel nicht verfuegbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
+            title={!canToggleStreamMode ? 'Moduswechsel nicht verfügbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
             onclick={() => engine.toggleStreamMode()}
           >
             <HiFiLed color={modeLedColor} size="small" />
@@ -569,7 +569,7 @@
   {#if appState.playerError}
     <div class="player-error">
       <span>{appState.playerError}</span>
-      <button onclick={() => appState.playerError = null} title="Fehlermeldung schliessen">x</button>
+      <button onclick={() => appState.playerError = null} title="Fehlermeldung schließen">x</button>
     </div>
   {/if}
 </footer>

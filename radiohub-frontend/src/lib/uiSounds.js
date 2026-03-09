@@ -38,7 +38,7 @@ export function hover() {
   osc.stop(t + 0.025);
 }
 
-// Hover-Variante: Weicher mechanischer Puls -- fuer Buttons
+// Hover-Variante: Weicher mechanischer Puls -- für Buttons
 export function hoverSoft() {
   if (!enabled) return;
   const ac = getCtx();
@@ -93,7 +93,7 @@ export function click() {
   osc2.stop(t + 0.05);
 }
 
-// Select: Tiefer Doppel-Puls -- Bestaetigung
+// Select: Tiefer Doppel-Puls -- Bestätigung
 export function select() {
   if (!enabled) return;
   const ac = getCtx();
@@ -109,7 +109,7 @@ export function select() {
   g1.connect(ac.destination);
   osc1.start(t);
   osc1.stop(t + 0.04);
-  // Zweiter Puls, leicht hoeher
+  // Zweiter Puls, leicht höher
   const osc2 = ac.createOscillator();
   const g2 = ac.createGain();
   osc2.type = 'sine';
@@ -141,7 +141,7 @@ export function deselect() {
   osc.stop(t + 0.06);
 }
 
-// Sweep: Gefiltertes Rauschen -- wie Servo/Motorgeraeusch
+// Sweep: Gefiltertes Rauschen -- wie Servo/Motorgeräusch
 export function sweep() {
   if (!enabled) return;
   const ac = getCtx();

@@ -98,7 +98,7 @@
       </div>
       <button class="hifi-btn hifi-btn-primary" onclick={search} title="Podcasts suchen">SEARCH</button>
       {#if view !== 'subscriptions'}
-        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurueck zu meinen abonnierten Podcasts">MY PODCASTS</button>
+        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurück zu meinen abonnierten Podcasts">MY PODCASTS</button>
       {/if}
     </div>
   </div>
@@ -142,7 +142,7 @@
       <!-- Episode Header -->
       <div class="hifi-panel" style="margin:16px;">
         <div class="hifi-flex hifi-gap-md" style="align-items:center;">
-          <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurueck zur Podcast-Uebersicht">← BACK</button>
+          <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurück zur Podcast-Übersicht">← BACK</button>
           {#if selectedPodcast?.image_url}
             <img src={selectedPodcast.image_url} alt="" style="width:60px;height:60px;border-radius:4px;" />
           {/if}

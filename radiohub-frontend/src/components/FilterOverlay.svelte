@@ -1,9 +1,10 @@
 <script>
   import { api } from '../lib/api.js';
   import { actions } from '../lib/store.svelte.js';
+  import { translateCountry, COUNTRY_NAMES } from '../lib/countryNames.js';
   import HiFiLed from './hifi/HiFiLed.svelte';
 
-  let { open = false, onclose } = $props();
+  let { open = false, onclose, visibleCountries = $bindable([]) } = $props();
 
   // === TABS ===
   let activeTab = $state('filter');
@@ -12,6 +13,9 @@
   let languages = $state([]);
   let languageSearch = $state('');
   let excludedLanguages = $state([]);
+  let rareThreshold = $state(3);
+  let countries = $state([]);
+  let countrySearch = $state('');
   let excludedTags = $state([]);
   let tagInput = $state('');
   let minVotes = $state(0);
@@ -27,19 +31,75 @@
       : languages
   );
 
+  let rareCount = $derived(languages.filter(l => l.count <= rareThreshold).length);
+
+  // Bekannte Länder (im Mapping oder >= 20 Sender)
+  let knownCountries = $derived(
+    countries.filter(c => c.name in COUNTRY_NAMES || c.count >= 20)
+  );
+
+  let filteredCountries = $derived(() => {
+    const base = knownCountries;
+    if (!countrySearch) return base;
+    const q = countrySearch.toLowerCase();
+    return base.filter(c => {
+      const translated = translateCountry(c.name).toLowerCase();
+      return translated.includes(q) || c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q);
+    });
+  });
+
   // === GESPERRTE SENDER ===
   let blockedData = $state(null);
   let isLoadingBlocked = $state(false);
   let isReleasing = $state(false);
   let expandedReason = $state(null);
 
-  // Daten laden beim Oeffnen
+  // Filter-Zustand aus Config laden (einmalig)
+  let _filterInitialized = false;
+
+  // Daten laden beim Öffnen
   $effect(() => {
     if (open) {
       loadLanguages();
+      loadCountries();
       loadBlocked();
+      if (!_filterInitialized) loadSavedFilters();
     }
   });
+
+  async function loadSavedFilters() {
+    try {
+      const config = await api.getConfig();
+      if (config.filter_excluded_languages) {
+        const saved = typeof config.filter_excluded_languages === 'string'
+          ? JSON.parse(config.filter_excluded_languages)
+          : config.filter_excluded_languages;
+        if (Array.isArray(saved)) excludedLanguages = saved;
+      }
+      if (config.filter_excluded_tags) {
+        const saved = typeof config.filter_excluded_tags === 'string'
+          ? JSON.parse(config.filter_excluded_tags)
+          : config.filter_excluded_tags;
+        if (Array.isArray(saved)) excludedTags = saved;
+      }
+      if (config.filter_min_votes != null) {
+        minVotes = Number(config.filter_min_votes) || 0;
+      }
+      if (config.filter_rare_threshold != null) {
+        rareThreshold = Number(config.filter_rare_threshold) || 3;
+      }
+    } catch { /* ignore */ }
+    _filterInitialized = true;
+  }
+
+  function saveFilterState() {
+    api.updateConfig({
+      filter_excluded_languages: excludedLanguages,
+      filter_excluded_tags: excludedTags,
+      filter_min_votes: minVotes,
+      filter_rare_threshold: rareThreshold
+    });
+  }
 
   async function loadLanguages() {
     try {
@@ -47,6 +107,15 @@
       languages = data.languages || [];
     } catch (e) {
       console.error('Languages laden fehlgeschlagen:', e);
+    }
+  }
+
+  async function loadCountries() {
+    try {
+      const data = await api.getAvailableCountries();
+      countries = data.countries || [];
+    } catch (e) {
+      console.error('Countries laden fehlgeschlagen:', e);
     }
   }
 
@@ -69,16 +138,42 @@
       excludedLanguages = [...excludedLanguages, langName];
     }
     previewCount = null;
+    saveFilterState();
   }
 
   function selectAllLanguages() {
     excludedLanguages = [];
     previewCount = null;
+    saveFilterState();
   }
 
   function selectNoLanguages() {
     excludedLanguages = languages.map(l => l.name);
     previewCount = null;
+    saveFilterState();
+  }
+
+  function selectRareLanguages() {
+    const rare = languages.filter(l => l.count <= rareThreshold).map(l => l.name);
+    excludedLanguages = [...new Set([...excludedLanguages, ...rare])];
+    previewCount = null;
+    saveFilterState();
+  }
+
+  function toggleCountry(code) {
+    if (visibleCountries.includes(code)) {
+      visibleCountries = visibleCountries.filter(c => c !== code);
+    } else {
+      visibleCountries = [...visibleCountries, code];
+    }
+  }
+
+  function selectAllCountries() {
+    visibleCountries = [];
+  }
+
+  function selectNoCountries() {
+    visibleCountries = countries.map(c => c.code);
   }
 
   function addTag(tag) {
@@ -86,6 +181,7 @@
     if (tag && !excludedTags.includes(tag)) {
       excludedTags = [...excludedTags, tag];
       previewCount = null;
+      saveFilterState();
     }
     tagInput = '';
   }
@@ -93,6 +189,7 @@
   function removeTag(tag) {
     excludedTags = excludedTags.filter(t => t !== tag);
     previewCount = null;
+    saveFilterState();
   }
 
   function handleTagKeydown(e) {
@@ -131,9 +228,6 @@
         min_votes: minVotes
       });
       actions.showToast(`${data.hidden_count} Sender blockiert (${data.total_hidden} gesamt)`);
-      excludedLanguages = [];
-      excludedTags = [];
-      minVotes = 0;
       previewCount = null;
       await loadBlocked();
     } catch (e) {
@@ -201,9 +295,38 @@
     if (e.target === e.currentTarget) close();
   }
 
+  function isAdReason(reason) {
+    return reason?.startsWith('ad:');
+  }
+
   function formatReason(reason) {
     if (!reason || reason === 'manual') return 'Manuell blockiert';
-    return reason;
+
+    // Ad-Detection Reasons
+    if (reason === 'ad:manual') return 'Werbung (manuell gemeldet)';
+    if (reason === 'ad:URL_KNOWN_AD_NETWORK') return 'Werbung (Werbenetzwerk)';
+    if (reason === 'ad:URL_SSAI_DOMAIN') return 'Werbung (SSAI-Domain)';
+    if (reason === 'ad:URL_AD_PATH_PATTERN') return 'Werbung (Ad-URL-Muster)';
+    if (reason === 'ad:URL_AGGREGATOR_RELAY') return 'Werbung (Aggregator-Relay)';
+    if (reason === 'ad:URL_TRACKING_REDIRECT') return 'Werbung (Tracking-Redirect)';
+    if (reason === 'ad:DOMAIN_BLACKLIST_MATCH') return 'Werbung (Domain-Blacklist)';
+    if (reason?.startsWith('ad:')) return `Werbung (${reason.slice(3)})`;
+
+    // Filter-Reasons
+    const parts = reason.split(', ');
+    const types = {};
+    for (const p of parts) {
+      const [type] = p.split(':');
+      types[type] = (types[type] || 0) + 1;
+    }
+    const labels = [];
+    if (types.language) labels.push(`${types.language} Sprache${types.language > 1 ? 'n' : ''}`);
+    if (types.country) labels.push(`${types.country} Land/Länder`);
+    if (types.tag) labels.push(`${types.tag} Tag${types.tag > 1 ? 's' : ''}`);
+    for (const p of parts) {
+      if (p.startsWith('votes<')) labels.push(`Votes < ${p.split('<')[1]}`);
+    }
+    return labels.length > 0 ? labels.join(', ') : reason;
   }
 </script>
 
@@ -222,6 +345,17 @@
         </button>
         <button
           class="tab-btn"
+          class:active={activeTab === 'laender'}
+          onclick={() => activeTab = 'laender'}
+        >
+          <HiFiLed color={activeTab === 'laender' ? 'green' : 'off'} size="small" />
+          LÄNDER
+          {#if visibleCountries.length > 0}
+            <span class="tab-badge-green">{visibleCountries.length}</span>
+          {/if}
+        </button>
+        <button
+          class="tab-btn"
           class:active={activeTab === 'gesperrt'}
           onclick={() => activeTab = 'gesperrt'}
         >
@@ -232,7 +366,7 @@
           {/if}
         </button>
       </div>
-      <button class="filter-close" onclick={close} title="Schliessen">
+      <button class="filter-close" onclick={close} title="Schließen">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -250,6 +384,11 @@
                 <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
                 <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
               </div>
+            </div>
+            <div class="rare-filter-row">
+              <span class="rare-label">&le;</span>
+              <input type="number" min="1" max="999" bind:value={rareThreshold} class="filter-input rare-input" onchange={saveFilterState} />
+              <button class="mini-btn" onclick={selectRareLanguages}>SELTENE ({rareCount})</button>
             </div>
             <input
               type="text"
@@ -287,7 +426,7 @@
               <input
                 type="text"
                 class="filter-input tag-input"
-                placeholder="Tag hinzufuegen..."
+                placeholder="Tag hinzufügen..."
                 bind:value={tagInput}
                 onkeydown={handleTagKeydown}
               />
@@ -308,14 +447,14 @@
               class="filter-input votes-input"
               min="0"
               bind:value={minVotes}
-              onchange={() => previewCount = null}
+              onchange={() => { previewCount = null; saveFilterState(); }}
             />
           </div>
 
           <!-- Vorschau + Blockieren -->
           <div class="filter-action-row">
             <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
-              {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
+              {isPreviewing ? 'ZÄHLE...' : 'VORSCHAU'}
             </button>
             {#if previewCount !== null}
               <span class="preview-count">{previewCount} Sender</span>
@@ -327,6 +466,44 @@
             >
               {isPushing ? 'BLOCKIERE...' : 'BLOCKIEREN'}
             </button>
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    <!-- TAB: Länder -->
+    {#if activeTab === 'laender'}
+      <div class="filter-content">
+        <div class="filter-section-box">
+          <div class="filter-group">
+            <div class="group-header">
+              <span class="group-label">SICHTBARE LÄNDER</span>
+              <div class="group-actions">
+                <button class="mini-btn" onclick={selectAllCountries}>Alle</button>
+                <button class="mini-btn" onclick={selectNoCountries}>Keine</button>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              class="filter-input"
+              placeholder="Land suchen..."
+              bind:value={countrySearch}
+            />
+
+            <div class="country-list">
+              {#each filteredCountries() as country}
+                <button
+                  class="lang-item"
+                  class:active={visibleCountries.includes(country.code)}
+                  onclick={() => toggleCountry(country.code)}
+                >
+                  <HiFiLed color={visibleCountries.includes(country.code) ? 'green' : 'off'} size="small" />
+                  <span class="lang-name">{translateCountry(country.name)}</span>
+                  <span class="lang-count">{country.count}</span>
+                </button>
+              {/each}
+            </div>
           </div>
         </div>
       </div>
@@ -356,11 +533,11 @@
             {:else if blockedData && Object.keys(blockedData.reasons).length > 0}
               {#each Object.entries(blockedData.reasons) as [reason, count]}
                 <div class="reason-group">
-                  <div class="reason-row" onclick={() => toggleReason(reason)} role="button" tabindex="0">
+                  <div class="reason-row" onclick={() => toggleReason(reason)} tabindex="0">
                     <span class="reason-arrow" class:open={expandedReason === reason}>
                       <i class="fa-solid fa-chevron-right"></i>
                     </span>
-                    <HiFiLed color="red" size="small" />
+                    <HiFiLed color={isAdReason(reason) ? 'amber' : 'red'} size="small" />
                     <span class="reason-label">{formatReason(reason)}</span>
                     <span class="reason-count">({count})</span>
                     <button
@@ -474,12 +651,19 @@
     border-bottom-color: var(--hifi-accent);
   }
 
-  .tab-badge {
+  .tab-badge, .tab-badge-green {
     font-family: var(--hifi-font-family);
     font-size: 9px;
     font-weight: 500;
-    color: var(--hifi-led-red);
     margin-left: 2px;
+  }
+
+  .tab-badge {
+    color: var(--hifi-led-red);
+  }
+
+  .tab-badge-green {
+    color: var(--hifi-led-green, #4caf50);
   }
 
   .filter-close {
@@ -522,7 +706,7 @@
   .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
   }
 
   .group-header {
@@ -594,6 +778,24 @@
     width: 90px;
   }
 
+  .rare-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rare-input {
+    width: 55px;
+    padding: 4px 8px;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .rare-label {
+    font-size: 12px;
+    color: var(--hifi-text-secondary);
+  }
+
   /* === Language List === */
   .language-list {
     max-height: 160px;
@@ -629,6 +831,17 @@
     opacity: 0.4;
   }
 
+  .country-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+    padding: 4px;
+  }
+
   .lang-name {
     flex: 1;
     text-transform: capitalize;
@@ -637,6 +850,9 @@
   .lang-count {
     font-size: 9px;
     color: var(--hifi-text-secondary);
+    min-width: 40px;
+    text-align: right;
+    flex-shrink: 0;
   }
 
   /* === Tags === */
@@ -804,6 +1020,8 @@
     cursor: pointer;
     width: 100%;
     text-align: left;
+    overflow: hidden;
+    min-width: 0;
     font-family: var(--hifi-font-family);
   }
 
@@ -827,6 +1045,10 @@
     flex: 1;
     font-size: 12px;
     color: var(--hifi-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .reason-count {

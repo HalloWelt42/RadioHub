@@ -155,14 +155,17 @@ class CacheService:
         with db_session() as conn:
             c = conn.cursor()
             
-            # Top Länder
-            c.execute('''SELECT countrycode, country, COUNT(*) as cnt 
+            # Top Länder (ohne geblockte Sender)
+            c.execute('''SELECT countrycode, country, COUNT(*) as cnt
                         FROM stations WHERE countrycode != ''
+                        AND uuid NOT IN (SELECT uuid FROM blocklist)
                         GROUP BY countrycode ORDER BY cnt DESC LIMIT 30''')
             countries = [{"code": r[0], "name": r[1], "count": r[2]} for r in c.fetchall()]
             
-            # Top Tags/Genres
-            c.execute("SELECT tags FROM stations WHERE tags != '' LIMIT 10000")
+            # Top Tags/Genres (ohne geblockte Sender)
+            c.execute("""SELECT tags FROM stations WHERE tags != ''
+                        AND uuid NOT IN (SELECT uuid FROM blocklist)
+                        LIMIT 10000""")
             tag_counts = {}
             for row in c.fetchall():
                 for tag in row[0].split(","):
@@ -182,8 +185,8 @@ class CacheService:
                 {"label": "> 256 kbps", "min": 256, "max": 9999}
             ]
             
-            # Max Votes für logarithmische Skala
-            c.execute("SELECT MAX(votes) FROM stations")
+            # Max Votes für logarithmische Skala (ohne geblockte)
+            c.execute("SELECT MAX(votes) FROM stations WHERE uuid NOT IN (SELECT uuid FROM blocklist)")
             max_votes_row = c.fetchone()
             max_votes = max_votes_row[0] if max_votes_row and max_votes_row[0] else 100000
             

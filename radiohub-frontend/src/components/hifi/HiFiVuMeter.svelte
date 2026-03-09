@@ -3,7 +3,7 @@
 
   let { volume = 50, active = false } = $props();
 
-  // 8 LEDs fuer das VU-Meter
+  // 8 LEDs für das VU-Meter
   let levels = $state([false, false, false, false, false, false, false, false]);
   let intervalId = null;
 
@@ -36,7 +36,7 @@
     if (active) {
       intervalId = setInterval(updateLevels, 200);
     } else {
-      // Deferred Reset: $state-Schreiben ausserhalb des synchronen $effect
+      // Deferred Reset: $state-Schreiben außerhalb des synchronen $effect
       setTimeout(() => {
         levels = [false, false, false, false, false, false, false, false];
       }, 0);
@@ -50,7 +50,7 @@
     };
   });
 
-  // Farbe je nach Position: unten gruen, mitte gelb, oben rot (180° gedreht)
+  // Farbe je nach Position: unten grün, mitte gelb, oben rot (180° gedreht)
   function getLedColor(index, isOn) {
     if (!isOn) return '';
     if (index >= 6) return 'red';

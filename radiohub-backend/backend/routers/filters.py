@@ -1,7 +1,7 @@
 """
 RadioHub - Filter Router
 
-Massen-Filter fuer Sender: Sprachen, Tags, Min-Votes.
+Massen-Filter für Sender: Sprachen, Tags, Min-Votes.
 Alle Sperren landen in der einheitlichen blocklist-Tabelle.
 """
 from typing import Optional, List
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/api/filters", tags=["filters"])
 
 class FilterCriteria(BaseModel):
     excluded_languages: List[str] = []
+    excluded_countries: List[str] = []
     excluded_tags: List[str] = []
     min_votes: int = 0
 
@@ -27,13 +28,17 @@ class ReleaseRequest(BaseModel):
 
 
 def _build_filter_query(criteria: FilterCriteria):
-    """Baut SQL-Bedingungen fuer Filter-Kriterien"""
+    """Baut SQL-Bedingungen für Filter-Kriterien"""
     conditions = []
     params = []
 
     for lang in criteria.excluded_languages:
         conditions.append("language LIKE ?")
         params.append(f"%{lang}%")
+
+    for cc in criteria.excluded_countries:
+        conditions.append("countrycode = ?")
+        params.append(cc)
 
     for tag in criteria.excluded_tags:
         conditions.append("tags LIKE ?")
@@ -48,7 +53,7 @@ def _build_filter_query(criteria: FilterCriteria):
 
 @router.post("/preview")
 async def filter_preview(criteria: FilterCriteria):
-    """Vorschau: Welche Sender wuerden blockiert?"""
+    """Vorschau: Welche Sender würden blockiert?"""
     conditions, params = _build_filter_query(criteria)
 
     if not conditions:
@@ -80,10 +85,12 @@ async def filter_push(criteria: FilterCriteria):
     if not conditions:
         return {"hidden_count": 0, "total_hidden": 0}
 
-    # Grund-Strings fuer jede Kategorie
+    # Grund-Strings für jede Kategorie
     reasons = []
     for lang in criteria.excluded_languages:
         reasons.append(f"language:{lang}")
+    for cc in criteria.excluded_countries:
+        reasons.append(f"country:{cc}")
     for tag in criteria.excluded_tags:
         reasons.append(f"tag:{tag}")
     if criteria.min_votes > 0:
@@ -131,7 +138,7 @@ async def get_hidden(reason: Optional[str] = None):
 
         stations = [dict(r) for r in c.fetchall()]
 
-        # Gruende aggregieren
+        # Gründe aggregieren
         reason_counts = {}
         c.execute("SELECT reason, COUNT(*) as cnt FROM blocklist GROUP BY reason ORDER BY cnt DESC")
         for row in c.fetchall():
@@ -170,10 +177,11 @@ async def release_stations(req: ReleaseRequest):
 
 @router.get("/languages")
 async def get_languages():
-    """Verfuegbare Sprachen mit Anzahl"""
+    """Verfügbare Sprachen mit Anzahl"""
     with db_session() as conn:
         c = conn.cursor()
-        c.execute("SELECT language FROM stations WHERE language != '' AND language IS NOT NULL")
+        c.execute("""SELECT language FROM stations WHERE language != '' AND language IS NOT NULL
+                    AND uuid NOT IN (SELECT uuid FROM blocklist)""")
 
         lang_counts = {}
         for row in c.fetchall():
@@ -186,3 +194,24 @@ async def get_languages():
         languages = [{"name": name, "count": count} for name, count in sorted_langs]
 
     return {"languages": languages}
+
+
+@router.get("/countries")
+async def get_countries():
+    """Verfügbare Länder mit Anzahl"""
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("""
+            SELECT countrycode, country, COUNT(*) as cnt
+            FROM stations
+            WHERE countrycode != '' AND countrycode IS NOT NULL
+            AND uuid NOT IN (SELECT uuid FROM blocklist)
+            GROUP BY countrycode
+            ORDER BY cnt DESC
+        """)
+        countries = [
+            {"code": row[0], "name": row[1], "count": row[2]}
+            for row in c.fetchall()
+        ]
+
+    return {"countries": countries}

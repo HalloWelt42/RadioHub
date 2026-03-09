@@ -2,7 +2,7 @@
 RadioHub - Bitrate Detector
 
 Erkennt echte Stream-Bitrate via ffprobe.
-Fallback: URL-Analyse fuer Bitrate/Codec-Hinweise.
+Fallback: URL-Analyse für Bitrate/Codec-Hinweise.
 Ergebnisse werden in detected_bitrates gecacht.
 """
 import asyncio
@@ -20,7 +20,7 @@ MAX_CONCURRENT = 5
 # Timeout pro Stream in Sekunden
 PROBE_TIMEOUT = 8.0
 
-# Bekannte Bitrate-Werte fuer URL-Matching
+# Bekannte Bitrate-Werte für URL-Matching
 KNOWN_BITRATES = {24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320}
 
 
@@ -132,7 +132,7 @@ async def probe_bitrate(stream_url: str, timeout: float = PROBE_TIMEOUT) -> Opti
 
 
 def get_cached_bitrates(uuids: List[str]) -> dict:
-    """Holt gecachte Bitrates + Codec fuer mehrere UUIDs."""
+    """Holt gecachte Bitrates + Codec für mehrere UUIDs."""
     if not uuids:
         return {}
 
@@ -161,7 +161,7 @@ def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate:
 def get_uuids_needing_probe(uuids: List[str]) -> List[str]:
     """Filtert UUIDs die noch nicht erfolgreich geprobt wurden.
 
-    Uebersprungen werden nur UUIDs mit plausiblem Ergebnis:
+    Übersprungen werden nur UUIDs mit plausiblem Ergebnis:
     - Bitrate zwischen 8 und 512 kbps
     - Codec bekannt (nicht leer, nicht UNKNOWN)
 
@@ -186,7 +186,7 @@ def get_uuids_needing_probe(uuids: List[str]) -> List[str]:
 
 async def probe_stations(stations: List[dict]):
     """
-    Probt Bitrate fuer eine Liste von Stationen im Hintergrund.
+    Probt Bitrate für eine Liste von Stationen im Hintergrund.
     Begrenzt auf MAX_CONCURRENT gleichzeitige Probes.
 
     stations: Liste mit dicts die mindestens uuid und url_resolved enthalten

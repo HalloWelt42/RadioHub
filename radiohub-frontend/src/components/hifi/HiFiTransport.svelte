@@ -19,7 +19,7 @@
   <button class="hifi-transport-btn" class:active={isPlaying} onclick={onplay} title="Abspielen">▶</button>
 
   {#if onnext}
-    <button class="hifi-transport-btn" onclick={onnext} title="Naechster Titel">⏩</button>
+    <button class="hifi-transport-btn" onclick={onnext} title="Nächster Titel">⏩</button>
   {/if}
 
   {#if onrec}

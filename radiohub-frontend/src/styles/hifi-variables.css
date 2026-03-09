@@ -50,6 +50,8 @@
     --hifi-led-red-glow: rgba(255, 51, 51, 0.8);
     --hifi-led-blue: #3399ff;
     --hifi-led-blue-glow: rgba(51, 153, 255, 0.8);
+    --hifi-led-amber: #e6a23c;
+    --hifi-led-amber-glow: rgba(230, 162, 60, 0.8);
     --hifi-led-off: #444444;
     --hifi-led-off-dim: rgba(100, 100, 100, 0.3);
 

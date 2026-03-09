@@ -42,14 +42,14 @@ export const appState = $state({
 
   // Stream Mode Capabilities
   canPlayDirect: true,   // true=ja, false=Codec nicht abspielbar
-  canPlayHLS: null,      // null=unbekannt, true=Segmente verfuegbar, false=Start fehlgeschlagen
+  canPlayHLS: null,      // null=unbekannt, true=Segmente verfügbar, false=Start fehlgeschlagen
 
   // Data
   stations: [],
   favorites: [],
   podcasts: [],
 
-  // Navigation Index (fuer Blaettern)
+  // Navigation Index (für Blättern)
   currentStationIndex: -1,
   currentEpisodeIndex: -1,
 
@@ -165,7 +165,7 @@ export const actions = {
       } else {
         await api.addFavorite(station);
         appState.favorites = [...appState.favorites, { ...station, uuid }];
-        actions.showToast('Favorit hinzugefuegt', 'success');
+        actions.showToast('Favorit hinzugefügt', 'success');
       }
     } catch (e) {
       actions.showToast('Fehler', 'error');
@@ -209,7 +209,7 @@ export const actions = {
     }
   },
 
-  // HLS Status Update - NICHT MEHR NOETIG, Engine pollt selbst
+  // HLS Status Update - NICHT MEHR NÖTIG, Engine pollt selbst
   async updateHLSStatus() {
     // Backward-Compat: wird von altem Code aufgerufen, macht jetzt nichts
   },
