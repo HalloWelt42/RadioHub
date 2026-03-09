@@ -1023,7 +1023,7 @@
     align-items: center;
     gap: 0;
     background: var(--hifi-display-bg);
-    border: 1px solid var(--hifi-display-border);
+    border: none;
     border-radius: var(--hifi-border-radius-sm);
     padding: 0 10px;
     height: 34px;
@@ -1108,14 +1108,14 @@
     align-items: center;
     flex: 1;
     height: 34px;
-    background: var(--hifi-display-bg);
-    border: 1px solid var(--hifi-display-border);
+    background: var(--hifi-bg-panel);
+    border: none;
     border-radius: var(--hifi-border-radius-sm);
     box-sizing: border-box;
     padding: 0 10px;
     gap: 8px;
     position: relative;
-    box-shadow: var(--hifi-shadow-button);
+    box-shadow: var(--hifi-shadow-inset);
   }
 
   .search-bar:focus-within {
@@ -1137,7 +1137,7 @@
     font-family: var(--hifi-font-values);
     font-size: 13px;
     font-weight: 700;
-    color: var(--hifi-display-text);
+    color: var(--hifi-text-primary);
     outline: none;
     letter-spacing: 0.5px;
   }
@@ -1341,6 +1341,7 @@
   /* Ausgewaehlter Sender: blauer Schein */
   .station-wrapper.selected {
     background: var(--hifi-bg-panel);
+    border-top: 2px solid rgba(51, 153, 255, 0.2);
     border-bottom: 2px solid rgba(51, 153, 255, 0.2);
   }
 
@@ -1364,6 +1365,7 @@
     bottom: 0;
     z-index: 10;
     background: var(--hifi-bg-panel);
+    border-top: 2px solid rgba(51, 153, 255, 0.3);
     border-bottom: 2px solid rgba(51, 153, 255, 0.3);
   }
 
@@ -1410,6 +1412,7 @@
   .block-btn {
     padding: 4px 10px;
     margin-right: 8px;
+    margin-top: 8px;
     background: var(--hifi-bg-panel);
     border: none;
     border-radius: var(--hifi-border-radius-sm);

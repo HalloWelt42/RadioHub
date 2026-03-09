@@ -319,19 +319,6 @@
     onerror={(e) => engine.handleError(e)}
   ></audio>
 
-  <!-- SOURCE -->
-  <div class="player-section source-section">
-    <div class="section-label">SOURCE</div>
-    <div class="section-content">
-      <div class="display-box source-display" class:display-inactive={!displayActive}>
-        <span class="display-text">{sourceType}</span>
-        {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : 'FILE'}</span>
-        {/if}
-      </div>
-    </div>
-  </div>
-
   <!-- DISPLAY (Scrolling Text) -->
   <div class="player-section display-section">
     <div class="section-label">DISPLAY</div>
@@ -351,32 +338,46 @@
     </div>
   </div>
 
-  <!-- VU-METER LINKS -->
-  <div class="player-section vu-section">
-    <div class="section-label">VU</div>
+  <!-- SOURCE -->
+  <div class="player-section source-section">
+    <div class="section-label">SOURCE</div>
     <div class="section-content">
-      <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+      <div class="display-box source-display" class:display-inactive={!displayActive}>
+        <span class="display-text">{sourceType}</span>
+        {#if appState.playerMode !== 'none' && displayActive}
+          <span class="source-mode">{appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : 'FILE'}</span>
+        {/if}
+      </div>
     </div>
   </div>
 
-  <!-- VOLUME (Drehregler) -->
-  <div class="player-section volume-section">
-    <div class="section-label">VOLUME</div>
-    <div class="section-content">
-      <HiFiKnob
-        bind:value={appState.volume}
-        min={0}
-        max={100}
-        onchange={(e) => engine.setVolume(e.value)}
-      />
+  <!-- VU / VOLUME / VU -->
+  <div class="center-group">
+    <div class="player-section vu-section">
+      <div class="section-label">VU</div>
+      <div class="section-content">
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+      </div>
     </div>
-  </div>
 
-  <!-- VU-METER RECHTS -->
-  <div class="player-section vu-section">
-    <div class="section-label">VU</div>
-    <div class="section-content">
-      <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+    <div class="player-section volume-section">
+      <div class="section-label">VOLUME</div>
+      <div class="section-content">
+        <HiFiKnob
+          bind:value={appState.volume}
+          min={0}
+          max={100}
+          size="large"
+          onchange={(e) => engine.setVolume(e.value)}
+        />
+      </div>
+    </div>
+
+    <div class="player-section vu-section">
+      <div class="section-label">VU</div>
+      <div class="section-content">
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+      </div>
     </div>
   </div>
 
@@ -573,10 +574,25 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px 15px 22px;
+    padding: 12px 15px 10px;
     background: var(--hifi-bg-panel);
     border-top: 1px solid var(--hifi-border-dark);
     position: relative;
+    overflow: visible;
+  }
+
+  .center-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--hifi-bg-panel);
+    padding: 6px 16px 14px;
+    border-radius: var(--hifi-border-radius-pill);
+    box-shadow: var(--hifi-shadow-button);
+    position: relative;
+    z-index: 3;
+    margin-top: -40px;
+    margin-bottom: -30px;
   }
 
   .player-section {
@@ -599,6 +615,7 @@
   .vu-section {
     width: 26px;
     min-width: 26px;
+    margin-top: 20px;
   }
 
   .section-label {
@@ -626,8 +643,9 @@
   /* Display-Box */
   .display-box {
     background: var(--hifi-display-bg);
-    border: 1px solid var(--hifi-display-border);
+    border: none;
     border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
     height: 64px;
     display: flex;
     flex-direction: column;
@@ -742,12 +760,20 @@
 
   /* VOLUME */
   .volume-section {
-    width: 55px;
-    margin: 0 12px;
+    width: 80px;
+    margin: 0 8px;
+  }
+
+  .volume-section .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
   }
 
   .volume-section .section-content {
-    margin-top: 10px;
+    margin-top: 0;
+    height: auto;
+    padding-bottom: 0;
   }
 
   /* TIMER */
@@ -934,10 +960,11 @@
     gap: 3px;
     padding: 5px 6px;
     background: var(--hifi-bg-tertiary);
-    border: 1px solid var(--hifi-border-dark);
+    border: none;
     border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
     cursor: pointer;
-    transition: background 0.1s ease;
+    transition: background 0.1s ease, box-shadow 0.1s ease;
     min-width: 34px;
   }
 
@@ -971,7 +998,6 @@
 
   .transport-btn.rec {
     background: rgba(180, 40, 40, 0.08);
-    border-color: #5a2020;
   }
 
   .transport-btn.rec:hover:not(:disabled) {

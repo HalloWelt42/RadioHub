@@ -424,9 +424,9 @@
     width: 520px;
     height: 600px;
     background: var(--hifi-bg-panel);
-    border: 1px solid var(--hifi-border-dark);
+    border: none;
     border-radius: var(--hifi-border-radius-md);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--hifi-shadow-raised), 0 8px 40px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -451,13 +451,13 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 11px 18px;
+    padding: 13px 20px;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-display);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 1.5px;
     cursor: pointer;
@@ -483,11 +483,12 @@
   }
 
   .filter-close {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     background: var(--hifi-bg-tertiary);
     border: none;
     border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
     color: var(--hifi-text-secondary);
     cursor: pointer;
     display: flex;
@@ -532,7 +533,7 @@
 
   .group-label {
     font-family: var(--hifi-font-display);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 1.5px;
     color: var(--hifi-text-secondary);
@@ -548,12 +549,13 @@
 
   /* === Mini Button === */
   .mini-btn {
-    padding: 2px 7px;
+    padding: 3px 9px;
     background: var(--hifi-bg-tertiary);
     border: none;
+    box-shadow: var(--hifi-shadow-button);
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-family);
-    font-size: 9px;
+    font-size: 10px;
     cursor: pointer;
     border-radius: var(--hifi-border-radius-sm);
   }
@@ -569,9 +571,9 @@
 
   /* === Input === */
   .filter-input {
-    padding: 5px 8px;
+    padding: 7px 10px;
     font-family: var(--hifi-font-family);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
     border: none;
@@ -598,18 +600,22 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+    padding: 4px;
   }
 
   .lang-item {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 2px 6px;
+    padding: 4px 8px;
     background: none;
     border: none;
     color: var(--hifi-text-primary);
     font-family: var(--hifi-font-family);
-    font-size: 10px;
+    font-size: 12px;
     cursor: pointer;
     text-align: left;
     border-radius: 3px;
@@ -644,10 +650,11 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 2px 6px;
+    padding: 3px 8px;
     background: var(--hifi-bg-tertiary);
-    border-radius: 3px;
-    font-size: 10px;
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
+    font-size: 11px;
     color: var(--hifi-text-primary);
   }
 
@@ -681,13 +688,14 @@
   }
 
   .suggestion-chip {
-    padding: 1px 6px;
-    background: none;
-    border: 1px dashed var(--hifi-border-dark);
-    border-radius: 3px;
+    padding: 3px 8px;
+    background: var(--hifi-bg-secondary);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-family);
-    font-size: 9px;
+    font-size: 10px;
     cursor: pointer;
   }
 
@@ -712,13 +720,14 @@
   }
 
   .action-btn {
-    padding: 6px 14px;
+    padding: 8px 16px;
     font-family: var(--hifi-font-display);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.5px;
     border: none;
     border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-button);
     cursor: pointer;
     text-transform: uppercase;
   }
@@ -773,6 +782,10 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+    padding: 6px;
   }
 
   .reason-group {
@@ -812,7 +825,7 @@
 
   .reason-label {
     flex: 1;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--hifi-text-primary);
   }
 

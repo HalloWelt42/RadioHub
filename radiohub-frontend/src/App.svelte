@@ -205,16 +205,23 @@
   .hifi-nav {
     display: flex;
     gap: 4px;
+    background: var(--hifi-bg-panel);
+    padding: 10px 16px;
+    border-radius: var(--hifi-border-radius-pill);
+    box-shadow: var(--hifi-shadow-button);
+    position: relative;
+    z-index: 2;
+    transform: translateY(20px);
   }
-  
+
   .hifi-nav-btn {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
+    padding: 8px 18px;
     background: var(--hifi-bg-tertiary);
     border: none;
-    border-radius: var(--hifi-border-radius-sm);
+    border-radius: var(--hifi-border-radius-pill);
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-values);
     font-size: 10px;
