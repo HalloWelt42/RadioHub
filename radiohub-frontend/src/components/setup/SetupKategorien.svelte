@@ -5,21 +5,10 @@
 
   // === STATE ===
   let categories = $state([]);
-  let availableTags = $state([]);
   let isLoading = $state(true);
   let editingId = $state(null);
-
-  // Form State
   let formName = $state('');
-  let formTags = $state([]);
-  let tagSearch = $state('');
   let showForm = $state(false);
-
-  let filteredTags = $derived(() => {
-    if (!tagSearch) return availableTags.slice(0, 30);
-    const q = tagSearch.toLowerCase();
-    return availableTags.filter(t => t.name.toLowerCase().includes(q)).slice(0, 30);
-  });
 
   // === INIT ===
   $effect(() => {
@@ -28,14 +17,10 @@
 
   async function loadAll() {
     try {
-      const [cats, tags] = await Promise.all([
-        api.getCategories(),
-        api.getAllTags(200)
-      ]);
+      const cats = await api.getCategories();
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
-      availableTags = Array.isArray(tags) ? tags : (tags?.tags || []);
     } catch (e) {
-      console.error('SetupKategorien: Daten laden fehlgeschlagen:', e);
+      console.error('SetupKategorien: Laden fehlgeschlagen:', e);
     }
     isLoading = false;
   }
@@ -44,16 +29,12 @@
   function startCreate() {
     editingId = null;
     formName = '';
-    formTags = [];
-    tagSearch = '';
     showForm = true;
   }
 
   function startEdit(cat) {
     editingId = cat.id;
     formName = cat.name;
-    formTags = cat.tags ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-    tagSearch = '';
     showForm = true;
   }
 
@@ -63,17 +44,19 @@
   }
 
   async function saveForm() {
-    if (!formName.trim() || formTags.length === 0) {
-      actions.showToast('Name und mindestens ein Tag erforderlich', 'error');
+    const name = formName.trim();
+    if (!name) {
+      actions.showToast('Name erforderlich', 'error');
       return;
     }
     try {
-      const tagsStr = formTags.join(',');
+      // Name = Suchbegriff, wird als tag gespeichert
+      const tag = name.toLowerCase();
       if (editingId) {
-        await api.updateCategory(editingId, { name: formName.trim(), tags: tagsStr });
+        await api.updateCategory(editingId, { name, tags: tag });
         actions.showToast('Kategorie aktualisiert');
       } else {
-        await api.createCategory(formName.trim(), tagsStr);
+        await api.createCategory(name, tag);
         actions.showToast('Kategorie erstellt');
       }
       showForm = false;
@@ -98,26 +81,13 @@
     }
   }
 
-  function toggleFormTag(tagName) {
-    if (formTags.includes(tagName)) {
-      formTags = formTags.filter(t => t !== tagName);
-    } else {
-      formTags = [...formTags, tagName];
-    }
-  }
-
-  function addCustomTag() {
-    const tag = tagSearch.trim().toLowerCase();
-    if (tag && !formTags.includes(tag)) {
-      formTags = [...formTags, tag];
-    }
-    tagSearch = '';
-  }
-
-  function handleTagKeydown(e) {
-    if (e.key === 'Enter' && tagSearch.trim()) {
+  function handleKeydown(e) {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      addCustomTag();
+      saveForm();
+    }
+    if (e.key === 'Escape') {
+      cancelForm();
     }
   }
 </script>
@@ -128,9 +98,9 @@
   </div>
 {:else}
 
-  <!-- Header + Erstellen-Button -->
+  <!-- Header -->
   <div class="kat-header">
-    <span class="hifi-font-label">BENUTZERDEFINIERTE KATEGORIEN ({categories.length})</span>
+    <span class="hifi-font-label">KATEGORIEN ({categories.length})</span>
     {#if !showForm}
       <button class="action-btn create-btn" onclick={startCreate}>
         + NEUE KATEGORIE
@@ -138,72 +108,25 @@
     {/if}
   </div>
 
-  <!-- Formular (Erstellen / Bearbeiten) -->
+  <!-- Formular -->
   {#if showForm}
     <div class="hifi-panel">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">{editingId ? 'KATEGORIE BEARBEITEN' : 'NEUE KATEGORIE'}</span>
       </div>
       <div class="form-content">
-        <!-- Name -->
         <div class="form-group">
-          <span class="form-label">NAME</span>
+          <span class="form-label">NAME (wird als Suchbegriff verwendet)</span>
           <input
             type="text"
             class="form-input"
-            placeholder="z.B. Elektronik, News, Klassik..."
+            placeholder="z.B. rock, jazz, news, classical..."
             bind:value={formName}
+            onkeydown={handleKeydown}
           />
         </div>
-
-        <!-- Ausgewaehlte Tags -->
-        <div class="form-group">
-          <span class="form-label">TAGS ({formTags.length})</span>
-          <div class="selected-tags">
-            {#each formTags as tag}
-              <button class="tag-chip selected" onclick={() => toggleFormTag(tag)}>
-                {tag}
-                <span class="tag-x">&times;</span>
-              </button>
-            {/each}
-            {#if formTags.length === 0}
-              <span class="tag-hint">Noch keine Tags ausgewaehlt</span>
-            {/if}
-          </div>
-        </div>
-
-        <!-- Tag-Suche + Auswahl -->
-        <div class="form-group">
-          <span class="form-label">TAGS SUCHEN / HINZUFUEGEN</span>
-          <div class="tag-search-row">
-            <input
-              type="text"
-              class="form-input"
-              placeholder="Tag suchen oder eingeben..."
-              bind:value={tagSearch}
-              onkeydown={handleTagKeydown}
-            />
-            {#if tagSearch.trim()}
-              <button class="mini-btn" onclick={addCustomTag}>+</button>
-            {/if}
-          </div>
-          <div class="tag-pool">
-            {#each filteredTags() as tag}
-              <button
-                class="tag-chip"
-                class:selected={formTags.includes(tag.name)}
-                onclick={() => toggleFormTag(tag.name)}
-              >
-                {tag.name}
-                <span class="tag-count">({tag.count})</span>
-              </button>
-            {/each}
-          </div>
-        </div>
-
-        <!-- Aktionen -->
         <div class="form-actions">
-          <button class="action-btn save-btn" onclick={saveForm} disabled={!formName.trim() || formTags.length === 0}>
+          <button class="action-btn save-btn" onclick={saveForm} disabled={!formName.trim()}>
             SPEICHERN
           </button>
           <button class="action-btn cancel-btn" onclick={cancelForm}>
@@ -222,15 +145,6 @@
           <div class="kat-info">
             <HiFiLed color="green" size="small" />
             <span class="kat-name">{cat.name}</span>
-            <span class="kat-tag-count">{cat.tags ? cat.tags.split(',').length : 0} Tags</span>
-          </div>
-          <div class="kat-tags">
-            {#each (cat.tags || '').split(',').map(t => t.trim()).filter(Boolean).slice(0, 8) as tag}
-              <span class="tag-chip small">{tag}</span>
-            {/each}
-            {#if cat.tags && cat.tags.split(',').length > 8}
-              <span class="tag-more">+{cat.tags.split(',').length - 8}</span>
-            {/if}
           </div>
           <div class="kat-actions">
             <button class="mini-btn" onclick={() => startEdit(cat)}>BEARBEITEN</button>
@@ -242,14 +156,13 @@
   {:else if !showForm}
     <div class="empty-state">
       <span class="hifi-font-label">Noch keine Kategorien erstellt</span>
-      <span class="empty-hint">Kategorien gruppieren Tags fuer die Sendersuche</span>
+      <span class="empty-hint">Kategorien filtern Sender in der Seitenleiste</span>
     </div>
   {/if}
 
 {/if}
 
 <style>
-  /* === Header === */
   .kat-header {
     display: flex;
     justify-content: space-between;
@@ -257,7 +170,6 @@
     margin-bottom: 12px;
   }
 
-  /* === Shared Buttons === */
   .action-btn {
     padding: 8px 16px;
     font-family: var(--hifi-font-display);
@@ -303,11 +215,9 @@
   }
 
   .mini-btn:hover { color: var(--hifi-text-primary); }
-
   .delete-btn { color: var(--hifi-led-red); }
   .delete-btn:hover { color: var(--hifi-led-red); }
 
-  /* === Form === */
   .form-content {
     display: flex;
     flex-direction: column;
@@ -350,100 +260,12 @@
     color: var(--hifi-text-secondary);
   }
 
-  .tag-search-row {
-    display: flex;
-    gap: 4px;
-  }
-
-  .tag-search-row .form-input {
-    flex: 1;
-  }
-
   .form-actions {
     display: flex;
     gap: 8px;
     padding-top: 4px;
   }
 
-  /* === Tags === */
-  .selected-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    min-height: 28px;
-    padding: 6px;
-    background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-inset);
-  }
-
-  .tag-hint {
-    font-family: var(--hifi-font-body);
-    font-size: 11px;
-    color: var(--hifi-text-secondary);
-    font-style: italic;
-  }
-
-  .tag-pool {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    max-height: 160px;
-    overflow-y: auto;
-    padding: 6px;
-    background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
-  }
-
-  .tag-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px 8px;
-    background: var(--hifi-bg-secondary);
-    border: 1px solid transparent;
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-button);
-    font-family: var(--hifi-font-body);
-    font-size: 11px;
-    color: var(--hifi-text-primary);
-    cursor: pointer;
-  }
-
-  .tag-chip:hover {
-    border-color: var(--hifi-accent);
-  }
-
-  .tag-chip.selected {
-    background: var(--hifi-accent);
-    color: #fff;
-    border-color: var(--hifi-accent);
-  }
-
-  .tag-chip.small {
-    font-size: 9px;
-    padding: 2px 6px;
-    cursor: default;
-  }
-
-  .tag-x {
-    font-size: 12px;
-    line-height: 1;
-  }
-
-  .tag-count {
-    font-size: 9px;
-    opacity: 0.6;
-  }
-
-  .tag-more {
-    font-family: var(--hifi-font-body);
-    font-size: 9px;
-    color: var(--hifi-text-secondary);
-    padding: 2px 4px;
-  }
-
-  /* === Kategorie-Liste === */
   .kat-list {
     display: flex;
     flex-direction: column;
@@ -452,9 +274,9 @@
 
   .kat-row {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
     background: var(--hifi-bg-panel);
     border: 1px solid var(--hifi-border-dark);
     border-radius: var(--hifi-border-radius-sm);
@@ -471,7 +293,6 @@
   }
 
   .kat-name {
-    flex: 1;
     font-family: var(--hifi-font-display);
     font-size: 13px;
     font-weight: 600;
@@ -479,26 +300,11 @@
     letter-spacing: 0.5px;
   }
 
-  .kat-tag-count {
-    font-family: var(--hifi-font-body);
-    font-size: 10px;
-    color: var(--hifi-text-secondary);
-  }
-
-  .kat-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    padding-left: 20px;
-  }
-
   .kat-actions {
     display: flex;
     gap: 6px;
-    padding-left: 20px;
   }
 
-  /* === Empty State === */
   .empty-state {
     display: flex;
     flex-direction: column;

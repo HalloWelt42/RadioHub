@@ -269,11 +269,11 @@
         votes_min = Math.max(votes_min ?? 0, filterMinVotes);
       }
 
-      // Kategorien -> Tag-Liste expandieren + direkte Tags mergen
-      const catTags = selectedCategories.flatMap(catId => {
+      // Kategorien: Name = Suchbegriff
+      const catTags = selectedCategories.map(catId => {
         const cat = categories.find(c => c.id === catId);
-        return cat ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-      });
+        return cat ? cat.name.toLowerCase() : null;
+      }).filter(Boolean);
       const allSearchTags = [...new Set([...catTags, ...selectedTags])];
 
       const params = {
