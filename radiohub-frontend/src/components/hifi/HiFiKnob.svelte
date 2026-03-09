@@ -29,25 +29,55 @@
     centerY = r.top + r.height / 2;
   }
   
+  let _targetValue = value;
+  let _smoothId = null;
+
   function drag(e) {
     if (!dragging) return;
     const x = (e.touches?.[0]?.clientX ?? e.clientX) - centerX;
     const y = (e.touches?.[0]?.clientY ?? e.clientY) - centerY;
     let a = Math.atan2(y, x) * 180 / Math.PI + 90;
-    if (a < -180) a += 360; 
+    if (a < -180) a += 360;
     if (a > 180) a -= 360;
     a = Math.max(startAngle, Math.min(endAngle, a));
     let v = min + ((a - startAngle) / (endAngle - startAngle)) * (max - min);
-    value = Math.max(min, Math.min(max, Math.round(v / step) * step));
+    _targetValue = Math.max(min, Math.min(max, Math.round(v / step) * step));
+    if (!_smoothId) smoothStep();
+  }
+
+  function smoothStep() {
+    const diff = _targetValue - value;
+    if (Math.abs(diff) < step) {
+      value = _targetValue;
+      onchange?.({ value });
+      _smoothId = null;
+      return;
+    }
+    // Daempfung: 5% pro Frame -- schwerer, mechanischer Widerstand
+    value = Math.round((value + diff * 0.05) / step) * step;
+    value = Math.max(min, Math.min(max, value));
     onchange?.({ value });
+    _smoothId = requestAnimationFrame(smoothStep);
   }
   
-  function end() { dragging = false; }
+  function end() {
+    dragging = false;
+    if (_smoothId) { cancelAnimationFrame(_smoothId); _smoothId = null; }
+    if (value !== _targetValue) {
+      value = _targetValue;
+      onchange?.({ value });
+    }
+  }
   
-  function wheel(e) { 
+  let _lastWheelTime = 0;
+  function wheel(e) {
     e.preventDefault();
-    value = Math.max(min, Math.min(max, value + (e.deltaY > 0 ? -step * 3 : step * 3)));
-    onchange?.({ value });
+    // Throttle: max 1 Aenderung pro 120ms -- verhindert Ueberreaktion
+    const now = Date.now();
+    if (now - _lastWheelTime < 120) return;
+    _lastWheelTime = now;
+    _targetValue = Math.max(min, Math.min(max, _targetValue + (e.deltaY > 0 ? -step : step)));
+    if (!_smoothId) smoothStep();
   }
   
   $effect(() => {

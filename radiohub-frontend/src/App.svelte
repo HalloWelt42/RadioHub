@@ -8,6 +8,7 @@
   import SettingsTab from './components/SettingsTab.svelte';
   import { appState, actions } from './lib/store.svelte.js';
   import { api } from './lib/api.js';
+  import * as sfx from './lib/uiSounds.js';
   
   let backendOnline = $state(false);
   
@@ -115,7 +116,8 @@
         <button
           class="hifi-nav-btn"
           class:active={appState.activeTab === tab.id}
-          onclick={() => actions.setTab(tab.id)}
+          onclick={() => { actions.setTab(tab.id); sfx.select(); }}
+          onmouseenter={sfx.hoverSoft}
           title={tab.label + ' anzeigen'}
         >
           <HiFiLed color={appState.activeTab === tab.id ? 'green' : 'off'} size="small" />
@@ -126,7 +128,7 @@
     
     <div class="hifi-header-right">
       <!-- Theme Switch -->
-      <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} title={appState.theme === 'dark' ? 'Zu hellem Design wechseln' : 'Zu dunklem Design wechseln'}>
+      <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? 'Zu hellem Design wechseln' : 'Zu dunklem Design wechseln'}>
         <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
         {appState.theme === 'dark' ? 'DARK' : 'LIGHT'}
       </button>

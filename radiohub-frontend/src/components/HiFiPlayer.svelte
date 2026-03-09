@@ -6,6 +6,7 @@
   import { appState, actions } from '../lib/store.svelte.js';
   import * as engine from '../lib/playerEngine.js';
   import { connect as connectAnalyser } from '../lib/audioAnalyser.js';
+  import * as sfx from '../lib/uiSounds.js';
 
   // Audio Element
   let audioEl = $state(null);
@@ -448,6 +449,7 @@
           class="transport-btn"
           disabled={!canNavigate}
           title={!canNavigate ? 'Kein vorheriger Sender verfuegbar' : prevStationName() || 'Vorheriger Sender'}
+          onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
           onmouseleave={() => prevPressed = false}
@@ -463,6 +465,7 @@
           class="transport-btn"
           disabled={!_canSeek}
           title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden zurueckspulen'}
+          onmouseenter={sfx.hover}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
           onmouseleave={() => skipBackPressed = false}
@@ -474,19 +477,19 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onclick={handleStop} title="Wiedergabe stoppen">
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title="Wiedergabe stoppen">
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onclick={handlePlayPause} title={appState.isPaused ? 'Pause' : 'Abspielen'}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} title={appState.isPaused ? 'Pause' : 'Abspielen'}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onclick={handleRec} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
@@ -496,6 +499,7 @@
           class="transport-btn"
           disabled={!_canSeek}
           title={!_canSeek ? 'Spulen nicht verfuegbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
+          onmouseenter={sfx.hover}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
           onmouseleave={() => skipFwdPressed = false}
@@ -511,6 +515,7 @@
           class="transport-btn"
           disabled={!canNavigate}
           title={!canNavigate ? 'Kein naechster Sender verfuegbar' : nextStationName() || 'Naechster Sender'}
+          onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
           onmouseleave={() => nextPressed = false}
@@ -578,7 +583,11 @@
     background: var(--hifi-bg-panel);
     border-top: 1px solid var(--hifi-border-dark);
     position: relative;
+    z-index: 30;
     overflow: visible;
+    box-shadow: 0 -4px 8px var(--hifi-shadow-dark);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .center-group {
@@ -587,7 +596,7 @@
     gap: 10px;
     background: var(--hifi-bg-panel);
     padding: 6px 16px 14px;
-    border-radius: var(--hifi-border-radius-pill);
+    border-radius: 20px 20px 0 0;
     box-shadow: var(--hifi-shadow-button);
     position: relative;
     z-index: 3;
@@ -615,7 +624,7 @@
   .vu-section {
     width: 26px;
     min-width: 26px;
-    margin-top: 20px;
+    margin-top: 30px;
   }
 
   .section-label {
@@ -771,7 +780,7 @@
   }
 
   .volume-section .section-content {
-    margin-top: 0;
+    margin-top: 5px;
     height: auto;
     padding-bottom: 0;
   }
@@ -882,6 +891,7 @@
     width: 100%;
     height: 16px;
     padding: 0 4px;
+    margin-top: -5px;
   }
 
   .transport-fader-container.disabled {

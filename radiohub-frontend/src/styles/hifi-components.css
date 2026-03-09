@@ -1244,7 +1244,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 1px;
 }
 
 .hifi-knob-container {

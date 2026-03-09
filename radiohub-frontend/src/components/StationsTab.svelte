@@ -3,6 +3,7 @@
   import FilterOverlay from './FilterOverlay.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
+  import * as sfx from '../lib/uiSounds.js';
   
   // 1000er-Trenner für Zahlen
   function formatNumber(num) {
@@ -398,16 +399,21 @@
     });
   }
 
-  function selectStation(station) {
-    // Klick spielt ab und klappt Details auf, zweiter Klick klappt zu
+  function toggleExpand(station) {
+    // Nur auf/zuklappen, kein Play
     if (selectedUuid === station.uuid) {
       selectedUuid = null;
     } else {
       selectedUuid = station.uuid;
-      _lastPlayTriggeredUuid = station.uuid;  // Effect-Race vermeiden
-      actions.playStation(station);
-      probeOnPlay(station);
     }
+  }
+
+  function playAndExpand(station, e) {
+    e.stopPropagation();
+    selectedUuid = station.uuid;
+    _lastPlayTriggeredUuid = station.uuid;
+    actions.playStation(station);
+    probeOnPlay(station);
   }
   
   function toggleFavorite(station, e) {
@@ -458,18 +464,29 @@
   async function blockStation(station, e) {
     e.stopPropagation();
     try {
+      // Index des blockierten Senders merken
+      const idx = stations.findIndex(s => s.uuid === station.uuid);
+
       await api.blockStation(station.uuid, station.name);
       actions.showToast(`${station.name} blockiert`, 'info');
-      
+
       // Aus Liste entfernen
       stations = stations.filter(s => s.uuid !== station.uuid);
-      
-      // Falls aktueller Sender blockiert wurde, stoppen
-      if (appState.currentStation?.uuid === station.uuid) {
+
+      // Zum naechsten Sender springen
+      if (stations.length > 0) {
+        const nextIdx = Math.min(idx, stations.length - 1);
+        const nextStation = stations[nextIdx];
+        selectedUuid = nextStation.uuid;
+        _lastPlayTriggeredUuid = nextStation.uuid;
+        actions.playStation(nextStation);
+        probeOnPlay(nextStation);
+      } else {
+        selectedUuid = null;
         actions.stop();
         appState.currentStation = null;
       }
-      
+
     } catch (err) {
       actions.showToast('Blockieren fehlgeschlagen', 'error');
     }
@@ -505,14 +522,14 @@
   <aside class="filter-panel">
     <!-- Action Row: Favs + Clear + Filter -->
     <div class="action-row">
-      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); }} title={showFavsOnly ? 'Alle Sender anzeigen' : 'Nur Favoriten anzeigen'}>
+      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? 'Alle Sender anzeigen' : 'Nur Favoriten anzeigen'}>
         <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
         <span>FAVORITEN</span>
       </button>
       {#if activeFilterCount > 0}
-        <button class="action-btn square" onclick={clearFilters} title="Alle Filter zuruecksetzen">&#10005;</button>
+        <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zuruecksetzen">&#10005;</button>
       {/if}
-      <button class="action-btn square" onclick={() => showFilterOverlay = true} title="Sender-Filter oeffnen">
+      <button class="action-btn square" onclick={() => { showFilterOverlay = true; sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Sender-Filter oeffnen">
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
@@ -636,7 +653,7 @@
       </div>
 
       <!-- Refresh mit Kreispfeil-Icon -->
-      <button class="refresh-btn" onclick={refreshStations} disabled={isRefreshing} title={isRefreshing ? 'Senderliste wird aktualisiert...' : 'Komplette Senderliste vom Server neu laden'}>
+      <button class="refresh-btn" onclick={() => { refreshStations(); sfx.click(); }} onmouseenter={sfx.hoverSoft} disabled={isRefreshing} title={isRefreshing ? 'Senderliste wird aktualisiert...' : 'Komplette Senderliste vom Server neu laden'}>
         <i class="fa-solid fa-arrows-rotate refresh-icon" class:spinning={isRefreshing}></i>
         <span>REFRESH</span>
       </button>
@@ -678,12 +695,13 @@
               class:playing={isPlaying}
               class:selected={isSelected && !isPlaying}
               class:focused={isFocused && !isPlaying && !isSelected}
-              onclick={() => selectStation(station)}
+              onclick={() => { toggleExpand(station); sfx.click(); }}
+              onmouseenter={sfx.hover}
             >
-              <div class="station-led">
+              <div class="station-led" onclick={(e) => playAndExpand(station, e)}>
                 <HiFiLed color={isPlaying ? 'blue' : isSelected ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
               </div>
-              <div class="station-name">{station.name}</div>
+              <div class="station-name" onclick={(e) => playAndExpand(station, e)}>{station.name}</div>
               <div class="station-country">{translateCountry(station.country) || '-'}</div>
               <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}{station.codec ? ' / ' + station.codec : ''}</div>
               <div class="station-stats">{formatNumber(votesVal)}{station.clickcount ? ' / ' + formatK(station.clickcount) : ''}</div>
@@ -778,6 +796,8 @@
     gap: 1px;
     background: var(--hifi-border-dark);
     font-family: 'Barlow', sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
   }
   
   /* Filter Panel */
@@ -1164,7 +1184,7 @@
   .station-list {
     flex: 1;
     overflow-y: auto;
-    box-shadow: var(--hifi-shadow-button);
+    background: var(--hifi-bg-panel);
   }
 
   /* Spaltenkoepfe */
@@ -1174,10 +1194,12 @@
     gap: 12px;
     padding: 6px 24px 6px 16px;
     background: var(--hifi-bg-tertiary);
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: none;
     position: sticky;
-    top: 0;
+    top: -1px;
+    padding-top: 7px;
     z-index: 20;
+    box-shadow: 0 2px 0 0 var(--hifi-bg-tertiary);
     font-family: var(--hifi-font-segment);
     font-size: 10px;
     font-weight: 700;
@@ -1260,6 +1282,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+    user-select: text;
+    -webkit-user-select: text;
   }
   
   .station-country {
