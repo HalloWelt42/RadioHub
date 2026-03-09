@@ -50,13 +50,11 @@
       return;
     }
     try {
-      // Name = Suchbegriff, wird als tag gespeichert
-      const tag = name.toLowerCase();
       if (editingId) {
-        await api.updateCategory(editingId, { name, tags: tag });
+        await api.updateCategory(editingId, { name });
         actions.showToast('Kategorie aktualisiert');
       } else {
-        await api.createCategory(name, tag);
+        await api.createCategory(name);
         actions.showToast('Kategorie erstellt');
       }
       showForm = false;
@@ -116,11 +114,11 @@
       </div>
       <div class="form-content">
         <div class="form-group">
-          <span class="form-label">NAME (wird als Suchbegriff verwendet)</span>
+          <span class="form-label">NAME</span>
           <input
             type="text"
             class="form-input"
-            placeholder="z.B. rock, jazz, news, classical..."
+            placeholder="z.B. Rock, Jazz, Nachrichten..."
             bind:value={formName}
             onkeydown={handleKeydown}
           />

@@ -89,10 +89,10 @@ class RadioHubAPI {
     return this.fetch('/api/categories');
   }
 
-  async createCategory(name, tags, sortOrder = 0) {
+  async createCategory(name, sortOrder = 0) {
     return this.fetch('/api/categories', {
       method: 'POST',
-      body: JSON.stringify({ name, tags, sort_order: sortOrder })
+      body: JSON.stringify({ name, tags: '', sort_order: sortOrder })
     });
   }
 
@@ -107,8 +107,24 @@ class RadioHubAPI {
     return this.fetch(`/api/categories/${id}`, { method: 'DELETE' });
   }
 
-  async getAllTags(limit = 100) {
-    return this.fetch(`/api/cache/tags?limit=${limit}`);
+  // === Category Station Assignments ===
+  async assignStation(categoryId, stationUuid) {
+    return this.fetch(`/api/categories/${categoryId}/stations/${stationUuid}`, {
+      method: 'POST'
+    });
+  }
+
+  async unassignStation(categoryId, stationUuid) {
+    return this.fetch(`/api/categories/${categoryId}/stations/${stationUuid}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getStationAssignments(uuids) {
+    return this.fetch('/api/categories/station-assignments', {
+      method: 'POST',
+      body: JSON.stringify({ uuids })
+    });
   }
 
   // === Favorites ===
