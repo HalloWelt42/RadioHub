@@ -1,6 +1,5 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
-  import FilterOverlay from './FilterOverlay.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
@@ -43,10 +42,10 @@
   let availableBitrates = $state([]);
   let availableVotesRanges = $state([]);
   
-  // Sichtbare Laender (im Overlay konfiguriert, in Config persistiert)
+  // Sichtbare Laender (in Setup konfiguriert, in Config persistiert)
   let visibleCountries = $state([]);
 
-  // Overlay-Suchfilter (excludedLanguages, excludedTags, minVotes)
+  // Setup-Suchfilter (excludedLanguages, excludedTags, minVotes) -- aus Config geladen
   let excludedLanguages = $state([]);
   let excludedTags = $state([]);
   let filterMinVotes = $state(0);
@@ -56,7 +55,12 @@
   let selectedBitrates = $state([]);
   let selectedVotesRanges = $state([]);
   let showFavsOnly = $state(false);
-  let showFilterOverlay = $state(false);
+
+  // Kategorien + Tags fuer Sidebar-Filter
+  let categories = $state([]);
+  let selectedCategories = $state([]);
+  let topTags = $state([]);
+  let selectedTags = $state([]);
 
   // Sortierung
   let sortBy = $state('name');
@@ -91,8 +95,60 @@
     loadFilters();
     actions.loadFavorites();
   });
-  
-  // Sync stations to appState für Navigation
+
+  // Bei Tab-Wechsel zurueck auf Radio: Config + Kategorien neu laden
+  let _prevTab = appState.activeTab;
+  $effect(() => {
+    const tab = appState.activeTab;
+    if (tab === 'radio' && _prevTab !== 'radio' && _countriesInitialized) {
+      reloadConfig();
+    }
+    _prevTab = tab;
+  });
+
+  async function reloadConfig() {
+    try {
+      const [config, cats, filters] = await Promise.all([
+        api.getConfig(),
+        api.getCategories(),
+        api.getFilters()
+      ]);
+      categories = cats || [];
+
+      // Top-Tags neu berechnen
+      const catTagSet = new Set(
+        categories.flatMap(c => (c.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean))
+      );
+      topTags = (filters.genres || [])
+        .filter(g => !catTagSet.has(g.name.toLowerCase()))
+        .slice(0, 12);
+
+      // Laender + Filter-Config aktualisieren
+      if (config.sidebar_countries) {
+        const saved = typeof config.sidebar_countries === 'string'
+          ? JSON.parse(config.sidebar_countries) : config.sidebar_countries;
+        if (Array.isArray(saved)) visibleCountries = saved;
+      }
+      if (config.filter_excluded_languages) {
+        const saved = typeof config.filter_excluded_languages === 'string'
+          ? JSON.parse(config.filter_excluded_languages) : config.filter_excluded_languages;
+        if (Array.isArray(saved)) excludedLanguages = saved;
+      }
+      if (config.filter_excluded_tags) {
+        const saved = typeof config.filter_excluded_tags === 'string'
+          ? JSON.parse(config.filter_excluded_tags) : config.filter_excluded_tags;
+        if (Array.isArray(saved)) excludedTags = saved;
+      }
+      filterMinVotes = Number(config.filter_min_votes) || 0;
+
+      availableCountries = filters.countries || [];
+      search();
+    } catch (e) {
+      console.error('Config reload fehlgeschlagen:', e);
+    }
+  }
+
+  // Sync stations to appState fuer Navigation
   $effect(() => {
     appState.stations = stations;
   });
@@ -132,15 +188,23 @@
   
   async function loadFilters() {
     try {
-      const [filters, config] = await Promise.all([
+      const [filters, config, cats] = await Promise.all([
         api.getFilters(),
-        api.getConfig()
+        api.getConfig(),
+        api.getCategories()
       ]);
 
       let allCountries = filters.countries || [];
-
-      // Alle Länder speichern (Sidebar zeigt dynamische Auswahl)
       availableCountries = allCountries;
+      categories = cats || [];
+
+      // Top-Tags aus Filtern (die nicht in Kategorien zugeordnet sind)
+      const catTagSet = new Set(
+        categories.flatMap(c => (c.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean))
+      );
+      topTags = (filters.genres || [])
+        .filter(g => !catTagSet.has(g.name.toLowerCase()))
+        .slice(0, 12);
 
       // Gespeicherte sichtbare Laender aus Config laden
       if (config.sidebar_countries && !_countriesInitialized) {
@@ -152,7 +216,7 @@
         } catch { /* ignore */ }
       }
 
-      // Overlay-Suchfilter aus Config laden
+      // Setup-Suchfilter aus Config laden
       if (!_countriesInitialized) {
         if (config.filter_excluded_languages) {
           try {
@@ -176,7 +240,6 @@
       }
       _countriesInitialized = true;
 
-      // Feste Bereiche aus Konstanten
       availableBitrates = BITRATE_RANGES;
       availableVotesRanges = VOTES_RANGES;
 
@@ -223,9 +286,17 @@
         votes_min = Math.max(votes_min ?? 0, filterMinVotes);
       }
 
+      // Kategorien -> Tag-Liste expandieren + direkte Tags mergen
+      const catTags = selectedCategories.flatMap(catId => {
+        const cat = categories.find(c => c.id === catId);
+        return cat ? cat.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      });
+      const allSearchTags = [...new Set([...catTags, ...selectedTags])];
+
       const params = {
         q: searchQuery || undefined,
         countries: selectedCountries.length > 0 ? selectedCountries : undefined,
+        tags: allSearchTags.length > 0 ? allSearchTags : undefined,
         exclude_languages: excludedLanguages.length > 0 ? excludedLanguages : undefined,
         exclude_tags: excludedTags.length > 0 ? excludedTags : undefined,
         bitrate_min: bitrate_min,
@@ -299,11 +370,13 @@
   async function refreshStations() {
     isRefreshing = true;
     try {
-      // Filter/Sortierung zurücksetzen
+      // Filter/Sortierung zuruecksetzen
       searchQuery = '';
       selectedCountries = [];
       selectedBitrates = [];
       selectedVotesRanges = [];
+      selectedCategories = [];
+      selectedTags = [];
       showFavsOnly = false;
       sortBy = 'name';
       sortOrder = 'asc';
@@ -505,17 +578,43 @@
     }
   }
 
+  function toggleCategory(catId) {
+    if (selectedCategories.includes(catId)) {
+      selectedCategories = selectedCategories.filter(c => c !== catId);
+    } else {
+      selectedCategories = [...selectedCategories, catId];
+    }
+    search();
+  }
+
+  function toggleTag(tagName) {
+    if (selectedTags.includes(tagName)) {
+      selectedTags = selectedTags.filter(t => t !== tagName);
+    } else {
+      selectedTags = [...selectedTags, tagName];
+    }
+    search();
+  }
+
+  function openSetupFilter() {
+    appState.setupSubTab = 'filter';
+    actions.setTab('settings');
+  }
+
   function clearFilters() {
     selectedCountries = [];
     selectedBitrates = [];
     selectedVotesRanges = [];
+    selectedCategories = [];
+    selectedTags = [];
     showFavsOnly = false;
     searchQuery = '';
     search();
   }
-  
+
   let activeFilterCount = $derived(
     selectedCountries.length + selectedBitrates.length + selectedVotesRanges.length
+    + selectedCategories.length + selectedTags.length
     + excludedLanguages.length + excludedTags.length
     + (filterMinVotes > 0 ? 1 : 0)
     + (showFavsOnly ? 1 : 0)
@@ -534,7 +633,7 @@
       {#if activeFilterCount > 0}
         <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zurücksetzen">&#10005;</button>
       {/if}
-      <button class="action-btn square" onclick={() => { showFilterOverlay = true; sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Sender-Filter öffnen">
+      <button class="action-btn square" onclick={() => { openSetupFilter(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Setup: Filter oeffnen">
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
@@ -565,13 +664,59 @@
           {/each}
         </div>
       {:else}
-        <div class="empty-hint" onclick={() => { showFilterOverlay = true; sfx.click(); }}>
-          Laender im Overlay konfigurieren
+        <div class="empty-hint" onclick={() => { openSetupFilter(); sfx.click(); }}>
+          Laender im Setup konfigurieren
         </div>
       {/if}
     </div>
 
     <div class="sidebar-divider"></div>
+
+    <!-- Kategorien + Tags -->
+    {#if categories.length > 0 || topTags.length > 0}
+      <div class="section-fixed">
+        {#if categories.length > 0}
+          <div class="section-header">
+            <span class="section-label">KATEGORIEN</span>
+            {#if selectedCategories.length > 0}
+              <span class="section-count">{selectedCategories.length}</span>
+            {/if}
+          </div>
+          <div class="filter-list compact">
+            {#each categories as cat (cat.id)}
+              {@const isSelected = selectedCategories.includes(cat.id)}
+              {@const hasSel = selectedCategories.length > 0}
+              <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)}>
+                <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+                <span class="filter-item-label">{cat.name}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
+
+        {#if topTags.length > 0}
+          <div class="section-header" style="margin-top: {categories.length > 0 ? '8px' : '0'}">
+            <span class="section-label">TAGS</span>
+            {#if selectedTags.length > 0}
+              <span class="section-count">{selectedTags.length}</span>
+            {/if}
+          </div>
+          <div class="filter-list compact">
+            {#each topTags as tag}
+              {@const isSelected = selectedTags.includes(tag.name)}
+              {@const hasSel = selectedTags.length > 0}
+              <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleTag(tag.name)}>
+                <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+                <span class="filter-item-label">{tag.name}</span>
+                <span class="filter-item-count">{formatNumber(tag.count)}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+
+      <div class="sidebar-divider"></div>
+    {/if}
 
     <!-- Bitrate: 2-spaltig -->
     <div class="section-fixed">
@@ -810,16 +955,7 @@
     </div>
   </main>
 
-  {#if showFilterOverlay}
-    <FilterOverlay
-      open={true}
-      bind:visibleCountries={visibleCountries}
-      bind:excludedLanguages={excludedLanguages}
-      bind:excludedTags={excludedTags}
-      bind:minVotes={filterMinVotes}
-      onclose={() => { showFilterOverlay = false; search(); }}
-    />
-  {/if}
+
 </div>
 
 <style>
@@ -951,6 +1087,11 @@
     flex-direction: column;
     overflow-y: auto;
     margin-top: 4px;
+  }
+
+  .filter-list.compact {
+    flex: none;
+    max-height: 120px;
   }
 
   /* Bitrate/Votes: feste Höhe */
