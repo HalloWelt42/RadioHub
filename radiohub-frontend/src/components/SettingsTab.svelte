@@ -1,6 +1,8 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
   import SetupAllgemein from './setup/SetupAllgemein.svelte';
+  import SetupFilter from './setup/SetupFilter.svelte';
+  import SetupSender from './setup/SetupSender.svelte';
   import SetupSystem from './setup/SetupSystem.svelte';
   import { appState } from '../lib/store.svelte.js';
 
@@ -41,13 +43,9 @@
     {#if activeTab === 'allgemein'}
       <SetupAllgemein />
     {:else if activeTab === 'filter'}
-      <div class="setup-placeholder">
-        <span class="hifi-font-label">FILTER -- wird migriert</span>
-      </div>
+      <SetupFilter />
     {:else if activeTab === 'sender'}
-      <div class="setup-placeholder">
-        <span class="hifi-font-label">SENDER -- wird migriert</span>
-      </div>
+      <SetupSender />
     {:else if activeTab === 'kategorien'}
       <div class="setup-placeholder">
         <span class="hifi-font-label">KATEGORIEN -- wird erstellt</span>
