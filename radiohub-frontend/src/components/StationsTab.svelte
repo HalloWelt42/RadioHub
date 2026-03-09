@@ -74,6 +74,9 @@
   let sortBy = $state('name');
   let sortOrder = $state('asc');
 
+  // Ad-Status Map fuer Hover-Anzeige
+  let adStatusMap = $state({});
+
   // visibleCountries persistieren (Backend-Config)
   let _countriesInitialized = false;
   $effect(() => {
@@ -117,6 +120,19 @@
   // Sync stations to appState für Navigation
   $effect(() => {
     appState.stations = stations;
+  });
+
+  // Ad-Status fuer sichtbare Sender laden
+  let _adStatusLoading = false;
+  $effect(() => {
+    const uuids = stations.map(s => s.uuid);
+    if (uuids.length === 0 || _adStatusLoading) return;
+    _adStatusLoading = true;
+    api.getAdBatchStatus(uuids).then(result => {
+      adStatusMap = result || {};
+    }).catch(() => {}).finally(() => {
+      _adStatusLoading = false;
+    });
   });
   
   // Votes-Ranges: 6 Bereiche, k-Format
@@ -491,26 +507,10 @@
   async function reportAd(station, e) {
     e.stopPropagation();
     try {
-      const idx = stations.findIndex(s => s.uuid === station.uuid);
       const streamUrl = station.url_resolved || station.url;
-
-      await api.reportAd(station.uuid, streamUrl, station.name);
-      actions.showToast(`${station.name} als Werbung gemeldet`, 'info');
-
-      stations = stations.filter(s => s.uuid !== station.uuid);
-
-      if (stations.length > 0) {
-        const nextIdx = Math.min(idx, stations.length - 1);
-        const nextStation = stations[nextIdx];
-        selectedUuid = nextStation.uuid;
-        _lastPlayTriggeredUuid = nextStation.uuid;
-        actions.playStation(nextStation);
-        probeOnPlay(nextStation);
-      } else {
-        selectedUuid = null;
-        actions.stop();
-        appState.currentStation = null;
-      }
+      await api.reportAdMarkOnly(station.uuid, streamUrl, station.name);
+      adStatusMap = { ...adStatusMap, [station.uuid]: { status: 'confirmed_ad', confidence: 1.0, user_action: null } };
+      actions.showToast(`${station.name} als Werbung markiert`, 'info');
     } catch (err) {
       actions.showToast('Werbung melden fehlgeschlagen', 'error');
     }
@@ -745,6 +745,10 @@
               >
                 <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
               </button>
+              <div class="station-hover-actions">
+                <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
+                <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
+              </div>
             </div>
 
             {#if isExpanded}
@@ -793,14 +797,21 @@
                         <span class="detail-value url">{station.url_resolved}</span>
                       </div>
                     {/if}
-                  </div>
-                  <div class="details-actions">
-                    <button class="ad-btn" onclick={(e) => reportAd(station, e)} title="Sender als Werbung melden und blockieren">
-                      WERBUNG
-                    </button>
-                    <button class="block-btn" onclick={(e) => blockStation(station, e)} title="Sender dauerhaft aus der Liste entfernen">
-                      BLOCK
-                    </button>
+                    {#if adStatusMap[station.uuid]}
+                      {@const ad = adStatusMap[station.uuid]}
+                      <div class="detail-row">
+                        <span class="detail-label">AD-STATUS</span>
+                        <span class="detail-value">
+                          {#if ad.user_action === 'blocked'}
+                            <span class="ad-badge ad-badge-blocked">gesperrt</span>
+                          {:else if ad.user_action === 'allowed'}
+                            <span class="ad-badge ad-badge-ok">freigegeben</span>
+                          {:else}
+                            <span class="ad-badge {ad.confidence > 0 ? 'ad-badge-suspect' : 'ad-badge-clean'}">{Math.round(ad.confidence * 100)}% nach Pruefung</span>
+                          {/if}
+                        </span>
+                      </div>
+                    {/if}
                   </div>
                 </div>
               </div>
@@ -1318,6 +1329,7 @@
     cursor: pointer;
     border-bottom: 1px solid var(--hifi-border-dark);
     transition: background 0.1s ease;
+    position: relative;
   }
   
   .station-row:hover {
@@ -1380,7 +1392,101 @@
     cursor: pointer;
     padding: 4px;
   }
-  
+
+  .station-hover-actions {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .station-row:hover .station-hover-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ad-badge {
+    font-family: var(--hifi-font-family);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .ad-badge-clean {
+    color: var(--hifi-led-green, #4caf50);
+    background: rgba(76, 175, 80, 0.12);
+  }
+
+  .ad-badge-suspect {
+    color: var(--hifi-led-amber, #e5a00d);
+    background: rgba(229, 160, 13, 0.15);
+  }
+
+  .ad-badge-blocked {
+    color: var(--hifi-led-red, #e53935);
+    background: rgba(229, 57, 53, 0.12);
+  }
+
+  .ad-badge-ok {
+    color: var(--hifi-led-green, #4caf50);
+    background: rgba(76, 175, 80, 0.12);
+  }
+
+  .ad-hover-btn {
+    font-family: var(--hifi-font-family);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 6px;
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--hifi-bg-tertiary);
+    color: var(--hifi-text-secondary);
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .ad-hover-btn:hover {
+    background: var(--hifi-led-amber, #e5a00d);
+    color: #000;
+    border-color: var(--hifi-led-amber, #e5a00d);
+  }
+
+  .ad-hover-hide {
+    color: var(--hifi-led-red, #e53935);
+  }
+
+  .ad-hover-hide:hover {
+    background: var(--hifi-led-red, #e53935);
+    color: #fff;
+    border-color: var(--hifi-led-red, #e53935);
+  }
+
+  .ad-hover-block:hover {
+    background: var(--hifi-led-red, #e53935);
+    color: #fff;
+    border-color: var(--hifi-led-red, #e53935);
+  }
+
+  .ad-hover-allow:hover {
+    background: var(--hifi-led-green, #4caf50);
+    color: #fff;
+    border-color: var(--hifi-led-green, #4caf50);
+  }
+
   .loading, .empty {
     display: flex;
     align-items: center;
@@ -1484,57 +1590,6 @@
     flex-direction: column;
     gap: 3px;
     flex: 1;
-  }
-  
-  .details-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  
-  .block-btn {
-    padding: 4px 10px;
-    margin-right: 8px;
-    margin-top: 8px;
-    background: var(--hifi-bg-panel);
-    border: none;
-    border-radius: var(--hifi-border-radius-sm);
-    color: var(--hifi-led-red);
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    box-shadow: var(--hifi-shadow-button);
-  }
-
-  .block-btn:hover {
-    background: var(--hifi-led-red);
-    color: white;
-  }
-
-  .ad-btn {
-    padding: 4px 10px;
-    margin-right: 8px;
-    margin-top: 8px;
-    background: var(--hifi-bg-panel);
-    border: none;
-    border-radius: var(--hifi-border-radius-sm);
-    color: var(--hifi-led-amber, #e6a23c);
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    box-shadow: var(--hifi-shadow-button);
-  }
-
-  .ad-btn:hover {
-    background: var(--hifi-led-amber, #e6a23c);
-    color: white;
   }
   
   .detail-row {

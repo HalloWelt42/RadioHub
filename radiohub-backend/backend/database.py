@@ -181,25 +181,25 @@ def init_db():
         uuid TEXT PRIMARY KEY,
         name TEXT,
         reason TEXT,
+        category TEXT DEFAULT 'manual',
         blocked_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
-    
-    # === Migration: hidden_stations -> blocklist ===
-    # Daten übernehmen, dann Tabelle löschen
+
+    # === Migration: category-Spalte hinzufuegen (idempotent) ===
     try:
-        c.execute("SELECT uuid, name, reason, hidden_at FROM hidden_stations")
-        hidden_rows = c.fetchall()
-        for row in hidden_rows:
-            c.execute(
-                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, blocked_at) VALUES (?, ?, ?, ?)",
-                (row[0], row[1], row[2], row[3])
-            )
-        if hidden_rows:
-            print(f"  {len(hidden_rows)} Sender von hidden_stations nach blocklist migriert")
-        c.execute("DROP TABLE IF EXISTS hidden_stations")
+        c.execute("ALTER TABLE blocklist ADD COLUMN category TEXT DEFAULT 'manual'")
+        # Bestehende Eintraege migrieren
+        c.execute("UPDATE blocklist SET category = 'ad' WHERE reason LIKE 'ad:%'")
+        ad_count = c.rowcount
+        c.execute("""UPDATE blocklist SET category = 'filter'
+                     WHERE category = 'manual'
+                     AND (reason LIKE '%language:%' OR reason LIKE '%country:%'
+                          OR reason LIKE '%tag:%' OR reason LIKE '%votes<%')""")
+        filter_count = c.rowcount
+        if ad_count or filter_count:
+            print(f"  Blocklist-Migration: {ad_count} ad, {filter_count} filter kategorisiert")
     except Exception:
-        # Tabelle existiert nicht (mehr) -- OK
-        pass
+        pass  # Spalte existiert bereits
 
     # === Detected Bitrates (ffprobe-Ergebnisse) ===
     c.execute('''CREATE TABLE IF NOT EXISTS detected_bitrates (
@@ -229,10 +229,17 @@ def init_db():
         blocked_at TEXT,
         manually_set INTEGER DEFAULT 0,
         manual_note TEXT,
+        user_action TEXT,
         ad_detections INTEGER DEFAULT 0,
         false_positives INTEGER DEFAULT 0,
         check_count INTEGER DEFAULT 0
     )''')
+
+    # Migration: user_action Spalte (idempotent)
+    try:
+        c.execute("ALTER TABLE station_ad_status ADD COLUMN user_action TEXT")
+    except Exception:
+        pass
 
     # === Ad-Detection: Erkennungs-Log ===
     c.execute('''CREATE TABLE IF NOT EXISTS ad_detections_log (
@@ -263,6 +270,7 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast ON podcast_episodes(podcast_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_published ON podcast_episodes(published_at DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_blocklist_reason ON blocklist(reason)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_blocklist_category ON blocklist(category)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_ad_status_block ON station_ad_status(block_status)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_ad_log_station ON ad_detections_log(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_domain_blacklist_cat ON domain_blacklist(category)")

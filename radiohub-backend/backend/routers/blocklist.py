@@ -36,8 +36,10 @@ async def block_station(req: BlockRequest):
     with db_session() as conn:
         c = conn.cursor()
         c.execute(
-            "INSERT OR REPLACE INTO blocklist (uuid, name, reason, blocked_at) VALUES (?, ?, ?, ?)",
-            (req.uuid, req.name, req.reason, datetime.now().isoformat())
+            "INSERT OR REPLACE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, ?, ?)",
+            (req.uuid, req.name, req.reason,
+             'ad' if (req.reason or '').startswith('ad:') else 'manual',
+             datetime.now().isoformat())
         )
     
     return {"success": True, "blocked": req.uuid}

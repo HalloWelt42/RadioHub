@@ -332,6 +332,13 @@ class RadioHubAPI {
     });
   }
 
+  async reportAdMarkOnly(uuid, streamUrl, name, note = null) {
+    return this.fetch('/api/ad-detection/report-mark', {
+      method: 'POST',
+      body: JSON.stringify({ uuid, stream_url: streamUrl, name, note })
+    });
+  }
+
   async markFalsePositive(uuid) {
     return this.fetch('/api/ad-detection/false-positive', {
       method: 'POST',
@@ -341,6 +348,32 @@ class RadioHubAPI {
 
   async getAdSummary() {
     return this.fetch('/api/ad-detection/summary/overview');
+  }
+
+  async getAdSuspects(minConfidence = 0) {
+    const params = minConfidence > 0 ? `?min_confidence=${minConfidence}` : '';
+    return this.fetch(`/api/ad-detection/suspects${params}`);
+  }
+
+  async decideAd(uuid, action) {
+    return this.fetch('/api/ad-detection/decide', {
+      method: 'POST',
+      body: JSON.stringify({ uuid, action })
+    });
+  }
+
+  async scanAds(batchSize = 50) {
+    return this.fetch('/api/ad-detection/scan', {
+      method: 'POST',
+      body: JSON.stringify({ batch_size: batchSize })
+    });
+  }
+
+  async getAdBatchStatus(uuids) {
+    return this.fetch('/api/ad-detection/batch-status', {
+      method: 'POST',
+      body: JSON.stringify({ uuids })
+    });
   }
 }
 

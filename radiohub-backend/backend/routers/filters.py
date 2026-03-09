@@ -112,7 +112,7 @@ async def filter_push(criteria: FilterCriteria):
         now = datetime.now().isoformat()
         for row in to_block:
             c.execute(
-                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, blocked_at) VALUES (?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, 'filter', ?)",
                 (row["uuid"], row["name"], reason_str, now)
             )
 
@@ -123,8 +123,8 @@ async def filter_push(criteria: FilterCriteria):
 
 
 @router.get("/hidden")
-async def get_hidden(reason: Optional[str] = None):
-    """Alle blockierten Sender (manual + filter)"""
+async def get_hidden(reason: Optional[str] = None, category: Optional[str] = None):
+    """Alle blockierten Sender, nach Kategorien gruppiert"""
     with db_session() as conn:
         c = conn.cursor()
 
@@ -133,21 +133,36 @@ async def get_hidden(reason: Optional[str] = None):
                 "SELECT * FROM blocklist WHERE reason LIKE ? ORDER BY blocked_at DESC",
                 (f"%{reason}%",)
             )
+        elif category:
+            c.execute(
+                "SELECT * FROM blocklist WHERE category = ? ORDER BY blocked_at DESC",
+                (category,)
+            )
         else:
             c.execute("SELECT * FROM blocklist ORDER BY blocked_at DESC")
 
         stations = [dict(r) for r in c.fetchall()]
 
-        # Gründe aggregieren
-        reason_counts = {}
-        c.execute("SELECT reason, COUNT(*) as cnt FROM blocklist GROUP BY reason ORDER BY cnt DESC")
+        # Nach Kategorien gruppieren
+        categories = {}
+        c.execute("""
+            SELECT COALESCE(category, 'manual') as cat, reason, COUNT(*) as cnt
+            FROM blocklist
+            GROUP BY cat, reason
+            ORDER BY cnt DESC
+        """)
         for row in c.fetchall():
-            reason_counts[row["reason"] or "manual"] = row["cnt"]
+            cat = row[0] or 'manual'
+            reason_key = row[1] or 'manual'
+            if cat not in categories:
+                categories[cat] = {'count': 0, 'reasons': {}}
+            categories[cat]['count'] += row[2]
+            categories[cat]['reasons'][reason_key] = row[2]
 
     return {
         "count": len(stations),
+        "categories": categories,
         "stations": stations,
-        "reasons": reason_counts
     }
 
 
