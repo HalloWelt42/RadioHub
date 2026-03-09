@@ -25,7 +25,7 @@ export const appState = $state({
   volume: 70,
 
   // Player - Mode & Quality
-  playerMode: 'none',      // 'none' | 'direct' | 'hls' | 'podcast'
+  playerMode: 'none',      // 'none' | 'direct' | 'hls' | 'podcast' | 'recording'
   streamQuality: null,      // { inputCodec, inputBitrate, outputBitrate, sampleRate }
   playerError: null,        // Fehlermeldung oder null
 
@@ -33,6 +33,7 @@ export const appState = $state({
   isRecording: false,
   recordingSession: null,
   recordingElapsed: 0,
+  currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
 
   // HLS Buffer
   hlsActive: false,
@@ -52,6 +53,12 @@ export const appState = $state({
   // Navigation Index (für Blättern)
   currentStationIndex: -1,
   currentEpisodeIndex: -1,
+
+  // ICY Now Playing
+  streamTitle: null,   // Aktueller ICY-StreamTitle (Musiktitel)
+
+  // Setup Deep-Link
+  setupSubTab: null,   // Wechsel zu Sub-Tab in Setup: 'filter', 'kategorien', etc.
 
   // UI
   isLoading: false,
@@ -121,6 +128,11 @@ export const actions = {
 
   setVolume(vol) {
     engine.setVolume(vol);
+  },
+
+  // Recording-Wiedergabe
+  async playRecording(recording) {
+    await engine.playRecording(recording);
   },
 
   // Recording (delegiert an Engine)

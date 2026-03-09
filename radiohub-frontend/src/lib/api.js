@@ -72,6 +72,45 @@ class RadioHubAPI {
     });
   }
 
+  // === Now Playing (ICY Title) ===
+  async getNowPlaying(uuid) {
+    return this.fetch(`/api/stations/${uuid}/now-playing`);
+  }
+
+  async setIcyQuality(uuid, quality) {
+    return this.fetch(`/api/stations/${uuid}/icy-quality`, {
+      method: 'PUT',
+      body: JSON.stringify({ quality })
+    });
+  }
+
+  // === Categories ===
+  async getCategories() {
+    return this.fetch('/api/categories');
+  }
+
+  async createCategory(name, tags, sortOrder = 0) {
+    return this.fetch('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name, tags, sort_order: sortOrder })
+    });
+  }
+
+  async updateCategory(id, updates) {
+    return this.fetch(`/api/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  }
+
+  async deleteCategory(id) {
+    return this.fetch(`/api/categories/${id}`, { method: 'DELETE' });
+  }
+
+  async getAllTags(limit = 100) {
+    return this.fetch(`/api/cache/tags?limit=${limit}`);
+  }
+
   // === Favorites ===
   async getFavorites() {
     return this.fetch('/api/favorites');
@@ -122,8 +161,48 @@ class RadioHubAPI {
     return this.fetch('/api/recording/sessions');
   }
 
+  async getSession(id) {
+    return this.fetch(`/api/recording/sessions/${id}`);
+  }
+
   async deleteSession(id) {
     return this.fetch(`/api/recording/sessions/${id}`, { method: 'DELETE' });
+  }
+
+  getSessionDownloadUrl(filename) {
+    return `${this.baseUrl}/api/recording/download/${encodeURIComponent(filename)}`;
+  }
+
+  async getSessionMetadata(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/metadata`);
+  }
+
+  async getSegments(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/segments`);
+  }
+
+  async deleteSegment(sessionId, segmentId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/segments/${segmentId}`, { method: 'DELETE' });
+  }
+
+  getSegmentPlayUrl(segmentId) {
+    return `${this.baseUrl}/api/recording/segments/${segmentId}/play`;
+  }
+
+  getSegmentDownloadUrl(segmentId) {
+    return `${this.baseUrl}/api/recording/segments/${segmentId}/download`;
+  }
+
+  getFullDownloadUrl(sessionId) {
+    return `${this.baseUrl}/api/recording/sessions/${sessionId}/download-full`;
+  }
+
+  getZipDownloadUrl(sessionId) {
+    return `${this.baseUrl}/api/recording/sessions/${sessionId}/download-zip`;
+  }
+
+  async splitSession(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/split`, { method: 'POST' });
   }
 
   // === Recordings Explorer ===
