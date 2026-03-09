@@ -3,6 +3,7 @@
   import SetupAllgemein from './setup/SetupAllgemein.svelte';
   import SetupFilter from './setup/SetupFilter.svelte';
   import SetupSender from './setup/SetupSender.svelte';
+  import SetupKategorien from './setup/SetupKategorien.svelte';
   import SetupSystem from './setup/SetupSystem.svelte';
   import { appState } from '../lib/store.svelte.js';
 
@@ -47,9 +48,7 @@
     {:else if activeTab === 'sender'}
       <SetupSender />
     {:else if activeTab === 'kategorien'}
-      <div class="setup-placeholder">
-        <span class="hifi-font-label">KATEGORIEN -- wird erstellt</span>
-      </div>
+      <SetupKategorien />
     {:else if activeTab === 'system'}
       <SetupSystem />
     {/if}
@@ -114,11 +113,4 @@
     width: 100%;
   }
 
-  .setup-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 60px;
-    color: var(--hifi-text-muted);
-  }
 </style>
