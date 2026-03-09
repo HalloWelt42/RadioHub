@@ -113,7 +113,7 @@
         api.getCategories().catch(() => []),
         api.getFilters()
       ]);
-      categories = cats || [];
+      categories = Array.isArray(cats) ? cats : (cats?.categories || []);
 
       // Top-Tags neu berechnen
       const catTagSet = new Set(
@@ -196,7 +196,7 @@
 
       let allCountries = filters.countries || [];
       availableCountries = allCountries;
-      categories = cats || [];
+      categories = Array.isArray(cats) ? cats : (cats?.categories || []);
 
       // Top-Tags aus Filtern (die nicht in Kategorien zugeordnet sind)
       const catTagSet = new Set(
