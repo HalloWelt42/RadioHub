@@ -297,6 +297,9 @@
               {/if}
               <span class="session-duration">{isActive ? formatDuration(recStatus?.duration || 0) : formatDuration(session.duration)}</span>
               <span class="session-size">{formatSize(session.file_size)}</span>
+              {#if session.bitrate}
+                <span class="session-bitrate">{session.bitrate} kbps</span>
+              {/if}
               <span class="session-codec">{codecBadge(session)}</span>
             </div>
 
@@ -555,6 +558,15 @@
     font-size: 11px;
     color: var(--hifi-text-secondary);
     min-width: 60px;
+    text-align: right;
+  }
+
+  .session-bitrate {
+    font-family: var(--hifi-font-values);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    min-width: 50px;
     text-align: right;
   }
 
