@@ -11,6 +11,7 @@ from .buffer import router as buffer_router
 from .hls import router as hls_router
 from .filters import router as filters_router
 from .ad_detection import router as ad_detection_router
+from .categories import router as categories_router
 
 __all__ = [
     "stations_router",
@@ -24,5 +25,6 @@ __all__ = [
     "buffer_router",
     "hls_router",
     "filters_router",
-    "ad_detection_router"
+    "ad_detection_router",
+    "categories_router"
 ]

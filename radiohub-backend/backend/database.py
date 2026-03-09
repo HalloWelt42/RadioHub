@@ -262,7 +262,55 @@ def init_db():
         added_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
-    # === Indices für Performance ===
+    # === Segments (atomare Audio-Segmente pro Session) ===
+    c.execute('''CREATE TABLE IF NOT EXISTS segments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE,
+        segment_index INTEGER,
+        title TEXT,
+        start_ms INTEGER,
+        end_ms INTEGER,
+        duration_ms INTEGER,
+        file_path TEXT,
+        file_size INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(session_id, segment_index)
+    )''')
+
+    # === Migration: detected_bitrates um icy-Spalte erweitern ===
+    try:
+        c.execute("ALTER TABLE detected_bitrates ADD COLUMN icy INTEGER DEFAULT 0")
+    except Exception:
+        pass
+
+    # === Migration: detected_bitrates um icy_quality erweitern ===
+    # Werte: NULL=nicht bewertet, 'good'=genaue Cuts, 'poor'=ungenaue Cuts
+    try:
+        c.execute("ALTER TABLE detected_bitrates ADD COLUMN icy_quality TEXT")
+    except Exception:
+        pass
+
+    # === Migration: Sessions-Tabelle erweitern (codec, file_format, meta_file_path) ===
+    for col, typedef in [
+        ("codec", "TEXT"),
+        ("file_format", "TEXT"),
+        ("meta_file_path", "TEXT"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE sessions ADD COLUMN {col} {typedef}")
+        except Exception:
+            pass  # Spalte existiert bereits
+
+    # === Benutzerdefinierte Kategorien (Tag-Gruppen) ===
+    c.execute('''CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        tags TEXT NOT NULL,
+        sort_order INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
+    # === Indices fuer Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_name ON stations(name)")
@@ -274,6 +322,8 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_ad_status_block ON station_ad_status(block_status)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_ad_log_station ON ad_detections_log(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_domain_blacklist_cat ON domain_blacklist(category)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_segments_session ON segments(session_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order)")
 
     conn.commit()
     conn.close()

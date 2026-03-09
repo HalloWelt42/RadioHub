@@ -197,6 +197,23 @@ class CacheService:
                 "max_votes": max_votes
             }
     
+    def get_tags(self, limit: int = 100) -> list:
+        """Holt alle verfuegbaren Tags mit Counts (fuer Kategorie-Verwaltung)."""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("""SELECT tags FROM stations WHERE tags != ''
+                        AND uuid NOT IN (SELECT uuid FROM blocklist)
+                        LIMIT 20000""")
+            tag_counts = {}
+            for row in c.fetchall():
+                for tag in row[0].split(","):
+                    tag = tag.strip().lower()
+                    if tag and len(tag) > 2:
+                        tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+            top_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
+            return [{"name": t[0], "count": t[1]} for t in top_tags]
+
     def search_stations(self, q: str = None, countries: List[str] = None,
                        tags: List[str] = None, exclude_languages: List[str] = None,
                        exclude_tags: List[str] = None, bitrate_min: int = None,

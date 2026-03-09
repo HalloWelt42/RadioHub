@@ -10,7 +10,8 @@ from pydantic import BaseModel
 
 from ..services.cache import cache_service
 from ..services.bitrate_detector import (
-    get_uuids_needing_probe, get_cached_bitrates, probe_stations
+    get_uuids_needing_probe, get_cached_bitrates, probe_stations,
+    fetch_icy_title, set_icy_quality
 )
 
 router = APIRouter(prefix="/api", tags=["stations"])
@@ -54,6 +55,13 @@ async def cache_filters():
     return cache_service.get_filters()
 
 
+@router.get("/cache/tags")
+async def cache_tags(limit: int = Query(100)):
+    """Erweiterte Tag-Liste mit Counts (fuer Kategorie-Verwaltung)."""
+    tags = cache_service.get_tags(limit)
+    return {"tags": tags}
+
+
 # === Stations ===
 
 @router.post("/stations/search")
@@ -82,12 +90,18 @@ async def search_stations(req: StationSearchRequest):
         detected = get_cached_bitrates(uuids)
         for s in stations:
             det = detected.get(s.get("uuid"))
-            if det and det["bitrate"] > 0:
-                # Nur überschreiben wenn Original-Wert fehlt oder 0
-                if not s.get("bitrate") or s["bitrate"] == 0:
-                    s["bitrate"] = det["bitrate"]
-                if det.get("codec") and (not s.get("codec") or s["codec"] == ""):
-                    s["codec"] = det["codec"].upper()
+            if det:
+                if det["bitrate"] > 0:
+                    # Nur ueberschreiben wenn Original-Wert fehlt oder 0
+                    if not s.get("bitrate") or s["bitrate"] == 0:
+                        s["bitrate"] = det["bitrate"]
+                    if det.get("codec") and (not s.get("codec") or s["codec"] == ""):
+                        s["codec"] = det["codec"].upper()
+                # ICY-Status immer mitgeben
+                if det.get("icy"):
+                    s["icy"] = True
+                    if det.get("icy_quality"):
+                        s["icy_quality"] = det["icy_quality"]
 
     return {"count": len(stations), "stations": stations}
 
@@ -153,3 +167,50 @@ async def get_bitrates(req: VerifyBitrateRequest):
     """Holt gecachte erkannte Bitrates für gegebene UUIDs."""
     cached = get_cached_bitrates(req.uuids)
     return {"bitrates": cached}
+
+
+# === Now Playing (ICY Title) ===
+
+@router.get("/stations/{uuid}/now-playing")
+async def now_playing(uuid: str):
+    """Holt aktuellen ICY-StreamTitle fuer einen Sender.
+
+    One-Shot: Verbindet, liest ersten Metadata-Block, schliesst.
+    Fuer Polling im Frontend (alle ~15s).
+    """
+    from ..database import db_session
+
+    # URL aus DB holen
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT url, url_resolved FROM stations WHERE uuid = ?", (uuid,))
+        row = c.fetchone()
+
+    if not row:
+        return {"title": None}
+
+    stream_url = row["url_resolved"] or row["url"]
+    if not stream_url:
+        return {"title": None}
+
+    title = await fetch_icy_title(stream_url)
+    return {"title": title}
+
+
+# === ICY Quality Rating ===
+
+class IcyQualityRequest(BaseModel):
+    quality: Optional[str] = None  # 'good', 'poor', oder null (reset)
+
+
+@router.put("/stations/{uuid}/icy-quality")
+async def set_station_icy_quality(uuid: str, req: IcyQualityRequest):
+    """Setzt die ICY-Cut-Qualitaetsbewertung fuer einen Sender.
+
+    quality: 'good' = genaue Schnitte, 'poor' = ungenaue Schnitte, null = zuruecksetzen
+    """
+    if req.quality and req.quality not in ('good', 'poor'):
+        return {"error": "quality muss 'good', 'poor' oder null sein"}
+
+    set_icy_quality(uuid, req.quality)
+    return {"uuid": uuid, "icy_quality": req.quality}
