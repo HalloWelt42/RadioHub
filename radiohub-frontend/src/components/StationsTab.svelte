@@ -934,22 +934,25 @@
                   </div>
                   <div class="details-actions">
                     {#if categories.length > 0}
-                      <div class="category-assign-row">
+                      <div class="category-assign-list" class:scrollable={categories.length > 4}>
                         {#each categories as cat (cat.id)}
                           {@const isAssigned = (categoryAssignments[station.uuid] || []).includes(cat.id)}
                           <button
-                            class="cat-assign-btn"
+                            class="category-assign-item"
                             class:assigned={isAssigned}
                             onclick={(e) => toggleCategoryAssignment(station.uuid, cat.id, e)}
                             title={isAssigned ? cat.name + ' entfernen' : cat.name + ' zuordnen'}
                           >
-                            {cat.name}
+                            <HiFiLed color={isAssigned ? 'green' : 'off'} size="small" />
+                            <span class="category-assign-label">{cat.name}</span>
                           </button>
                         {/each}
                       </div>
                     {/if}
-                    <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
-                    <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
+                    <div class="details-actions-btns">
+                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
+                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1578,46 +1581,60 @@
 
   .details-actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
     padding: 8px 0 0 0;
     border-top: 1px solid var(--hifi-border-dark);
     margin-top: 8px;
   }
 
-  .category-assign-row {
+  .category-assign-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    flex-direction: column;
     width: 100%;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
 
-  .cat-assign-btn {
-    font-family: var(--hifi-font-family);
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    padding: 2px 8px;
-    border-radius: var(--hifi-border-radius-sm);
-    border: 1px solid var(--hifi-border-dark);
-    background: var(--hifi-bg-tertiary);
+  .category-assign-list.scrollable {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  .category-assign-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    background: none;
+    border: none;
     color: var(--hifi-text-secondary);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
     cursor: pointer;
-    transition: background 0.1s, color 0.1s;
+    text-align: left;
+    border-radius: var(--hifi-border-radius-sm);
   }
 
-  .cat-assign-btn:hover {
+  .category-assign-item:hover {
+    background: var(--hifi-row-hover);
     color: var(--hifi-text-primary);
-    border-color: var(--hifi-accent);
   }
 
-  .cat-assign-btn.assigned {
-    background: var(--hifi-accent);
-    color: #fff;
-    border-color: var(--hifi-accent);
+  .category-assign-item.assigned {
+    color: var(--hifi-text-primary);
+  }
+
+  .category-assign-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .details-actions-btns {
+    display: flex;
+    gap: 6px;
   }
 
   .ad-badge-clean {
