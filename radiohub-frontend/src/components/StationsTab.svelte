@@ -58,6 +58,11 @@
   // Sichtbare Laender (im Overlay konfiguriert, in Config persistiert)
   let visibleCountries = $state([]);
 
+  // Overlay-Suchfilter (excludedLanguages, excludedTags, minVotes)
+  let excludedLanguages = $state([]);
+  let excludedTags = $state([]);
+  let filterMinVotes = $state(0);
+
   // Aktive Filter (in Sidebar angeklickt = Suchfilter)
   let selectedCountries = $state([]);
   let selectedBitrates = $state([]);
@@ -155,6 +160,29 @@
           if (Array.isArray(saved)) visibleCountries = saved;
         } catch { /* ignore */ }
       }
+
+      // Overlay-Suchfilter aus Config laden
+      if (!_countriesInitialized) {
+        if (config.filter_excluded_languages) {
+          try {
+            const saved = typeof config.filter_excluded_languages === 'string'
+              ? JSON.parse(config.filter_excluded_languages)
+              : config.filter_excluded_languages;
+            if (Array.isArray(saved)) excludedLanguages = saved;
+          } catch { /* ignore */ }
+        }
+        if (config.filter_excluded_tags) {
+          try {
+            const saved = typeof config.filter_excluded_tags === 'string'
+              ? JSON.parse(config.filter_excluded_tags)
+              : config.filter_excluded_tags;
+            if (Array.isArray(saved)) excludedTags = saved;
+          } catch { /* ignore */ }
+        }
+        if (config.filter_min_votes != null) {
+          filterMinVotes = Number(config.filter_min_votes) || 0;
+        }
+      }
       _countriesInitialized = true;
 
       // Feste Bereiche aus Konstanten
@@ -199,9 +227,16 @@
         if (votes_max >= 999999999) votes_max = undefined;
       }
       
+      // filterMinVotes als Floor fuer votes_min (max aus Sidebar-Range und Overlay-Wert)
+      if (filterMinVotes > 0) {
+        votes_min = Math.max(votes_min ?? 0, filterMinVotes);
+      }
+
       const params = {
         q: searchQuery || undefined,
         countries: selectedCountries.length > 0 ? selectedCountries : undefined,
+        exclude_languages: excludedLanguages.length > 0 ? excludedLanguages : undefined,
+        exclude_tags: excludedTags.length > 0 ? excludedTags : undefined,
         bitrate_min: bitrate_min,
         bitrate_max: bitrate_max,
         votes_min: votes_min,
@@ -218,18 +253,18 @@
       
       const result = await api.searchStations(params);
       const newStations = result.stations || [];
-      
+
       if (append) {
-        // Deduplizierung: nur Sender hinzufügen die noch nicht in der Liste sind
+        // Deduplizierung: nur Sender hinzufuegen die noch nicht in der Liste sind
         const existingUuids = new Set(stations.map(s => s.uuid));
         const uniqueNew = newStations.filter(s => !existingUuids.has(s.uuid));
         stations = [...stations, ...uniqueNew];
       } else {
         stations = newStations;
       }
-      
+
       hasMore = newStations.length === limit;
-      offset = stations.length;
+      offset = append ? offset + newStations.length : newStations.length;
 
     } catch (e) {
       actions.showToast('Suche fehlgeschlagen', 'error');
@@ -500,7 +535,10 @@
   }
   
   let activeFilterCount = $derived(
-    selectedCountries.length + selectedBitrates.length + selectedVotesRanges.length + (showFavsOnly ? 1 : 0)
+    selectedCountries.length + selectedBitrates.length + selectedVotesRanges.length
+    + excludedLanguages.length + excludedTags.length
+    + (filterMinVotes > 0 ? 1 : 0)
+    + (showFavsOnly ? 1 : 0)
   );
 </script>
 
@@ -783,7 +821,10 @@
     <FilterOverlay
       open={true}
       bind:visibleCountries={visibleCountries}
-      onclose={() => { showFilterOverlay = false; loadFilters(); search(); }}
+      bind:excludedLanguages={excludedLanguages}
+      bind:excludedTags={excludedTags}
+      bind:minVotes={filterMinVotes}
+      onclose={() => { showFilterOverlay = false; search(); }}
     />
   {/if}
 </div>

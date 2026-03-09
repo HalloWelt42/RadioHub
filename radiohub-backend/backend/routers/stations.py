@@ -20,6 +20,8 @@ class StationSearchRequest(BaseModel):
     q: Optional[str] = None
     countries: Optional[List[str]] = None
     tags: Optional[List[str]] = None
+    exclude_languages: Optional[List[str]] = None
+    exclude_tags: Optional[List[str]] = None
     bitrate_min: Optional[int] = None
     bitrate_max: Optional[int] = None
     votes_min: Optional[int] = None
@@ -61,6 +63,8 @@ async def search_stations(req: StationSearchRequest):
         q=req.q,
         countries=req.countries,
         tags=req.tags,
+        exclude_languages=req.exclude_languages,
+        exclude_tags=req.exclude_tags,
         bitrate_min=req.bitrate_min,
         bitrate_max=req.bitrate_max,
         votes_min=req.votes_min,

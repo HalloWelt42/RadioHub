@@ -180,8 +180,7 @@ async def get_languages():
     """Verfügbare Sprachen mit Anzahl"""
     with db_session() as conn:
         c = conn.cursor()
-        c.execute("""SELECT language FROM stations WHERE language != '' AND language IS NOT NULL
-                    AND uuid NOT IN (SELECT uuid FROM blocklist)""")
+        c.execute("""SELECT language FROM stations WHERE language != '' AND language IS NOT NULL""")
 
         lang_counts = {}
         for row in c.fetchall():

@@ -4,7 +4,14 @@
   import { translateCountry, COUNTRY_NAMES } from '../lib/countryNames.js';
   import HiFiLed from './hifi/HiFiLed.svelte';
 
-  let { open = false, onclose, visibleCountries = $bindable([]) } = $props();
+  let {
+    open = false,
+    onclose,
+    visibleCountries = $bindable([]),
+    excludedLanguages = $bindable([]),
+    excludedTags = $bindable([]),
+    minVotes = $bindable(0)
+  } = $props();
 
   // === TABS ===
   let activeTab = $state('filter');
@@ -12,13 +19,10 @@
   // === MASSENFILTER ===
   let languages = $state([]);
   let languageSearch = $state('');
-  let excludedLanguages = $state([]);
   let rareThreshold = $state(3);
   let countries = $state([]);
   let countrySearch = $state('');
-  let excludedTags = $state([]);
   let tagInput = $state('');
-  let minVotes = $state(0);
   let previewCount = $state(null);
   let isPreviewing = $state(false);
   let isPushing = $state(false);
@@ -54,37 +58,22 @@
   let isReleasing = $state(false);
   let expandedReason = $state(null);
 
-  // Filter-Zustand aus Config laden (einmalig)
+  // rareThreshold aus Config laden (einmalig)
   let _filterInitialized = false;
 
-  // Daten laden beim Öffnen
+  // Daten laden beim Oeffnen
   $effect(() => {
     if (open) {
       loadLanguages();
       loadCountries();
       loadBlocked();
-      if (!_filterInitialized) loadSavedFilters();
+      if (!_filterInitialized) loadRareThreshold();
     }
   });
 
-  async function loadSavedFilters() {
+  async function loadRareThreshold() {
     try {
       const config = await api.getConfig();
-      if (config.filter_excluded_languages) {
-        const saved = typeof config.filter_excluded_languages === 'string'
-          ? JSON.parse(config.filter_excluded_languages)
-          : config.filter_excluded_languages;
-        if (Array.isArray(saved)) excludedLanguages = saved;
-      }
-      if (config.filter_excluded_tags) {
-        const saved = typeof config.filter_excluded_tags === 'string'
-          ? JSON.parse(config.filter_excluded_tags)
-          : config.filter_excluded_tags;
-        if (Array.isArray(saved)) excludedTags = saved;
-      }
-      if (config.filter_min_votes != null) {
-        minVotes = Number(config.filter_min_votes) || 0;
-      }
       if (config.filter_rare_threshold != null) {
         rareThreshold = Number(config.filter_rare_threshold) || 3;
       }
@@ -374,12 +363,18 @@
     <!-- TAB: Filter -->
     {#if activeTab === 'filter'}
       <div class="filter-content">
-        <div class="filter-section-box">
+
+        <!-- ZONE 1: SUCHFILTER -->
+        <div class="filter-zone">
+          <div class="zone-header">
+            <span class="zone-label">SUCHFILTER</span>
+            <span class="zone-hint">beeinflusst Suchergebnisse</span>
+          </div>
 
           <!-- Sprachen -->
           <div class="filter-group">
             <div class="group-header">
-              <span class="group-label">SPRACHEN</span>
+              <span class="group-label">SPRACHEN AUSSCHLIESSEN</span>
               <div class="group-actions">
                 <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
                 <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
@@ -426,7 +421,7 @@
               <input
                 type="text"
                 class="filter-input tag-input"
-                placeholder="Tag hinzufügen..."
+                placeholder="Tag hinzufuegen..."
                 bind:value={tagInput}
                 onkeydown={handleTagKeydown}
               />
@@ -450,11 +445,20 @@
               onchange={() => { previewCount = null; saveFilterState(); }}
             />
           </div>
+        </div>
 
-          <!-- Vorschau + Blockieren -->
+        <!-- Trennlinie -->
+        <div class="zone-divider"></div>
+
+        <!-- ZONE 2: MASSENBLOCKIERUNG -->
+        <div class="block-zone">
+          <div class="zone-header">
+            <span class="zone-label zone-label-block">MASSENBLOCKIERUNG</span>
+            <span class="zone-hint">Sender mit obigen Filtern permanent sperren</span>
+          </div>
           <div class="filter-action-row">
             <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
-              {isPreviewing ? 'ZÄHLE...' : 'VORSCHAU'}
+              {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
             </button>
             {#if previewCount !== null}
               <span class="preview-count">{previewCount} Sender</span>
@@ -468,6 +472,7 @@
             </button>
           </div>
         </div>
+
       </div>
     {/if}
 
@@ -693,6 +698,55 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+  }
+
+  /* === Zonen === */
+  .filter-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .zone-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .zone-label {
+    font-family: var(--hifi-font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--hifi-accent);
+    text-transform: uppercase;
+  }
+
+  .zone-label-block {
+    color: var(--hifi-led-red);
+  }
+
+  .zone-hint {
+    font-family: var(--hifi-font-family);
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    font-style: italic;
+  }
+
+  .zone-divider {
+    height: 1px;
+    background: var(--hifi-border-dark);
+    margin: 16px 0;
+  }
+
+  .block-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 60, 60, 0.25);
+    border-radius: var(--hifi-border-radius-sm);
+    background: rgba(255, 60, 60, 0.04);
   }
 
   /* === Section Box === */

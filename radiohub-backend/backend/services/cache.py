@@ -198,7 +198,8 @@ class CacheService:
             }
     
     def search_stations(self, q: str = None, countries: List[str] = None,
-                       tags: List[str] = None, bitrate_min: int = None,
+                       tags: List[str] = None, exclude_languages: List[str] = None,
+                       exclude_tags: List[str] = None, bitrate_min: int = None,
                        bitrate_max: int = None, votes_min: int = None,
                        votes_max: int = None, sort_by: str = 'votes',
                        sort_order: str = 'desc', limit: int = 100,
@@ -218,66 +219,65 @@ class CacheService:
         
         with db_session() as conn:
             c = conn.cursor()
-            
-            # Blockierte UUIDs holen (einheitliche blocklist)
-            c.execute("SELECT uuid FROM blocklist")
-            blocked_uuids = {row[0] for row in c.fetchall()}
-            
+
             if favs_only:
                 # Nur Favoriten mit Sortierung
                 sql = f"SELECT * FROM favorites ORDER BY {sort_field} {order_dir}"
                 c.execute(sql)
             else:
                 # Normale Suche mit Sortierung
-                conditions = []
+                conditions = ["uuid NOT IN (SELECT uuid FROM blocklist)"]
                 params = []
-                
+
                 if q:
                     conditions.append("(name LIKE ? OR tags LIKE ?)")
                     params.extend([f"%{q}%", f"%{q}%"])
-                
+
                 if countries:
                     placeholders = ",".join("?" * len(countries))
                     conditions.append(f"countrycode IN ({placeholders})")
                     params.extend(countries)
-                
+
                 if tags:
                     tag_conditions = []
                     for tag in tags:
                         tag_conditions.append("tags LIKE ?")
                         params.append(f"%{tag}%")
                     conditions.append(f"({' OR '.join(tag_conditions)})")
-                
+
+                if exclude_languages:
+                    for lang in exclude_languages:
+                        conditions.append("NOT (language LIKE ?)")
+                        params.append(f"%{lang}%")
+
+                if exclude_tags:
+                    for tag in exclude_tags:
+                        conditions.append("NOT (tags LIKE ?)")
+                        params.append(f"%{tag}%")
+
                 if bitrate_min is not None:
                     conditions.append("bitrate >= ?")
                     params.append(bitrate_min)
-                
+
                 if bitrate_max is not None:
                     conditions.append("bitrate <= ?")
                     params.append(bitrate_max)
-                
+
                 if votes_min is not None:
                     conditions.append("votes >= ?")
                     params.append(votes_min)
-                
+
                 if votes_max is not None:
                     conditions.append("votes <= ?")
                     params.append(votes_max)
-                
-                where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+                where = f"WHERE {' AND '.join(conditions)}"
                 sql = f"SELECT * FROM stations {where} ORDER BY {sort_field} {order_dir} LIMIT ? OFFSET ?"
-                params.extend([limit + len(blocked_uuids), offset])  # Mehr laden für Filter
-                
+                params.extend([limit, offset])
+
                 c.execute(sql, params)
-            
-            # Blockierte Sender filtern
-            results = []
-            for row in c.fetchall():
-                station = dict(row)
-                if station.get('uuid') not in blocked_uuids:
-                    results.append(station)
-                    if len(results) >= limit:
-                        break
+
+            results = [dict(row) for row in c.fetchall()]
 
             # Detected bitrates mergen (immer Vorrang vor API-Werten)
             if results:
