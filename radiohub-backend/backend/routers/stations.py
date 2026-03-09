@@ -32,6 +32,7 @@ class StationSearchRequest(BaseModel):
     offset: int = 0
     limit: int = 100
     favs_only: bool = False
+    category_ids: Optional[List[int]] = None
 
 
 # === Cache ===
@@ -81,7 +82,8 @@ async def search_stations(req: StationSearchRequest):
         sort_order=req.sort_order,
         limit=req.limit,
         offset=req.offset,
-        favs_only=req.favs_only
+        favs_only=req.favs_only,
+        category_ids=req.category_ids
     )
 
     # Erkannte Bitrates/Codecs mergen -- nur fehlende Werte ergänzen

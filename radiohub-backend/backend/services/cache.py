@@ -220,7 +220,8 @@ class CacheService:
                        bitrate_max: int = None, votes_min: int = None,
                        votes_max: int = None, sort_by: str = 'votes',
                        sort_order: str = 'desc', limit: int = 100,
-                       offset: int = 0, favs_only: bool = False) -> List[dict]:
+                       offset: int = 0, favs_only: bool = False,
+                       category_ids: List[int] = None) -> List[dict]:
         """Sucht Sender mit Filtern und Sortierung (ohne blockierte Sender)"""
         
         # Mapping für Sortierfelder
@@ -287,6 +288,13 @@ class CacheService:
                 if votes_max is not None:
                     conditions.append("votes <= ?")
                     params.append(votes_max)
+
+                if category_ids:
+                    placeholders = ",".join("?" * len(category_ids))
+                    conditions.append(
+                        f"uuid IN (SELECT station_uuid FROM category_stations WHERE category_id IN ({placeholders}))"
+                    )
+                    params.extend(category_ids)
 
                 where = f"WHERE {' AND '.join(conditions)}"
                 sql = f"SELECT * FROM stations {where} ORDER BY {sort_field} {order_dir} LIMIT ? OFFSET ?"
