@@ -1,6 +1,7 @@
 <script>
   import { appState, actions } from '../lib/store.svelte.js';
-  
+  import { formatTimeShort as formatTime } from '../lib/formatters.js';
+
   let audioEl = $state(null);
   let currentTime = $state(0);
   let duration = $state(0);
@@ -43,12 +44,6 @@
     } else {
       actions.startRecording();
     }
-  }
-  
-  function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
   }
   
   function handleTimeUpdate() {

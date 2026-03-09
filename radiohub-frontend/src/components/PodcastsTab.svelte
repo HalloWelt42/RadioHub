@@ -3,7 +3,8 @@
   import HiFiDisplay from './hifi/HiFiDisplay.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
-  
+  import { formatDurationHuman as formatDuration } from '../lib/formatters.js';
+
   let view = $state('subscriptions');
   let searchQuery = $state('');
   let searchResults = $state([]);
@@ -75,12 +76,6 @@
     if (e.key === 'Enter') search();
   }
   
-  function formatDuration(seconds) {
-    if (!seconds) return '';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m} min`;
-  }
 </script>
 
 <div class="podcasts-tab">
@@ -212,6 +207,7 @@
     flex-direction: column;
     height: 100%;
     font-family: var(--hifi-font-values);
+    font-weight: 700;
   }
   
   .podcast-content {

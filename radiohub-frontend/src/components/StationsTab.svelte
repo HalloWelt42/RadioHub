@@ -5,19 +5,7 @@
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
   import { translateCountry } from '../lib/countryNames.js';
-
-  // 1000er-Trenner für Zahlen
-  function formatNumber(num) {
-    return num?.toLocaleString('de-DE') ?? '-';
-  }
-
-  // k-Format: 1234 -> "1.2k", 12345 -> "12.3k", 999 -> "999"
-  function formatK(num) {
-    if (num == null) return '-';
-    if (num < 1000) return String(num);
-    const k = num / 1000;
-    return k >= 100 ? Math.round(k) + 'k' : k.toFixed(1).replace('.', ',') + 'k';
-  }
+  import { formatNumber, formatK } from '../lib/formatters.js';
 
   
   let searchQuery = $state('');
@@ -96,19 +84,6 @@
     return availableCountries.filter(c => visSet.has(c.code));
   });
 
-  // Aktive Filter-Chips (abgeleitete Liste aller aktiven Filter)
-  let activeChips = $derived(() => {
-    const chips = [];
-    // Country-Chips entfallen -- Sidebar zeigt Laender direkt mit LED an
-    for (const b of selectedBitrates) {
-      chips.push({ type: 'bitrate', label: b.label, ref: b });
-    }
-    for (const v of selectedVotesRanges) {
-      chips.push({ type: 'votes', label: v.label, ref: v });
-    }
-    return chips;
-  });
-  
   // Search debounce
   let searchTimeout;
   
@@ -432,6 +407,20 @@
     e.stopPropagation();
     actions.toggleFavorite(station);
   }
+
+  async function toggleIcyQuality(station, e) {
+    e.stopPropagation();
+    // Zyklus: null -> good -> poor -> null
+    const current = station.icy_quality || null;
+    const next = current === null ? 'good' : current === 'good' ? 'poor' : null;
+    try {
+      await api.setIcyQuality(station.uuid, next);
+      station.icy_quality = next;
+    } catch (err) {
+      console.error('ICY Quality Fehler:', err);
+      actions.showToast(`ICY-Bewertung fehlgeschlagen: ${err.message}`, 'error');
+    }
+  }
   
   function toggleCountry(code) {
     if (selectedCountries.includes(code)) {
@@ -516,15 +505,6 @@
     }
   }
 
-  function removeChip(chip) {
-    if (chip.type === 'bitrate') {
-      selectedBitrates = selectedBitrates.filter(b => b.label !== chip.ref.label);
-    } else if (chip.type === 'votes') {
-      selectedVotesRanges = selectedVotesRanges.filter(r => r.label !== chip.ref.label);
-    }
-    search();
-  }
-
   function clearFilters() {
     selectedCountries = [];
     selectedBitrates = [];
@@ -558,16 +538,6 @@
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
-
-    <!-- Active Filter Chips -->
-    {#if activeChips().length > 0}
-      <div class="sidebar-divider"></div>
-      <div class="active-chips">
-        {#each activeChips() as chip}
-          <button class="filter-chip" onclick={() => removeChip(chip)} title="Filter entfernen: {chip.label}">{chip.label}</button>
-        {/each}
-      </div>
-    {/if}
 
     <div class="sidebar-divider"></div>
 
@@ -698,9 +668,10 @@
       <div class="column-headers">
         <div class="col-led"></div>
         <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>NAME {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-badges"></div>
         <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')}>COUNTRY {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
-        <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>KBPS / CODEC {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
-        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>VOTES / ZUHOERER {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>KBPS {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>VOTES {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-fav"></div>
       </div>
 
@@ -732,12 +703,38 @@
               onmouseenter={sfx.hover}
             >
               <div class="station-led" onclick={(e) => playAndExpand(station, e)}>
-                <HiFiLed color={isPlaying ? 'blue' : isSelected ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
+                <HiFiLed color={isPlaying ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
               </div>
-              <div class="station-name" onclick={(e) => playAndExpand(station, e)}>{station.name}</div>
+              <div class="station-name" onclick={(e) => playAndExpand(station, e)}>
+                <i class="fa-solid fa-play hover-play-icon"></i>
+                <span class="station-name-text">{station.name}</span>
+              </div>
+              <div class="station-badges">
+                {#if station.icy}
+                  <button
+                    class="info-badge icy-badge"
+                    class:icy-good={station.icy_quality === 'good'}
+                    class:icy-poor={station.icy_quality === 'poor'}
+                    onclick={(e) => toggleIcyQuality(station, e)}
+                    title={station.icy_quality === 'good' ? 'ICY: Genaue Schnitte (Klick: wechseln)' : station.icy_quality === 'poor' ? 'ICY: Ungenaue Schnitte (Klick: wechseln)' : 'ICY Metadata (Klick: Qualitaet bewerten)'}
+                  >ICY</button>
+                {/if}
+                {#if adStatusMap[station.uuid]}
+                  {@const ad = adStatusMap[station.uuid]}
+                  {#if ad.user_action === 'blocked'}
+                    <span class="info-badge ad-badge-blocked" title="Werbung: Als Werbung markiert">AD</span>
+                  {:else if ad.user_action === 'allowed'}
+                    <span class="info-badge ad-badge-ok" title="Werbung: Manuell freigegeben">OK</span>
+                  {:else if ad.confidence > 0}
+                    <span class="info-badge ad-badge-suspect" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht nach Pruefung">{Math.round(ad.confidence * 100)}% AD</span>
+                  {:else}
+                    <span class="info-badge ad-badge-clean" title="Werbung: 0% -- Kein Verdacht nach Pruefung">0% AD</span>
+                  {/if}
+                {/if}
+              </div>
               <div class="station-country">{translateCountry(station.country) || '-'}</div>
               <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}{station.codec ? ' / ' + station.codec : ''}</div>
-              <div class="station-stats">{formatNumber(votesVal)}{station.clickcount ? ' / ' + formatK(station.clickcount) : ''}</div>
+              <div class="station-stats">{formatK(votesVal)}</div>
               <button
                 class="station-fav"
                 onclick={(e) => toggleFavorite(station, e)}
@@ -745,10 +742,6 @@
               >
                 <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
               </button>
-              <div class="station-hover-actions">
-                <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
-                <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
-              </div>
             </div>
 
             {#if isExpanded}
@@ -797,21 +790,10 @@
                         <span class="detail-value url">{station.url_resolved}</span>
                       </div>
                     {/if}
-                    {#if adStatusMap[station.uuid]}
-                      {@const ad = adStatusMap[station.uuid]}
-                      <div class="detail-row">
-                        <span class="detail-label">AD-STATUS</span>
-                        <span class="detail-value">
-                          {#if ad.user_action === 'blocked'}
-                            <span class="ad-badge ad-badge-blocked">gesperrt</span>
-                          {:else if ad.user_action === 'allowed'}
-                            <span class="ad-badge ad-badge-ok">freigegeben</span>
-                          {:else}
-                            <span class="ad-badge {ad.confidence > 0 ? 'ad-badge-suspect' : 'ad-badge-clean'}">{Math.round(ad.confidence * 100)}% nach Pruefung</span>
-                          {/if}
-                        </span>
-                      </div>
-                    {/if}
+                  </div>
+                  <div class="details-actions">
+                    <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
+                    <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
                   </div>
                 </div>
               </div>
@@ -883,7 +865,7 @@
     color: var(--hifi-text-primary);
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
     box-shadow: var(--hifi-shadow-button);
@@ -910,32 +892,6 @@
   .sidebar-divider {
     height: 1px;
     background: var(--hifi-border-dark);
-  }
-
-  /* Active Filter Chips */
-  .active-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .filter-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    background: rgba(74,144,217,0.15);
-    border: 1px solid rgba(74,144,217,0.3);
-    border-radius: 4px;
-    font-size: 10px;
-    color: var(--hifi-accent);
-    cursor: pointer;
-    font-family: var(--hifi-font-values);
-    font-weight: 600;
-    letter-spacing: 1px;
-  }
-
-  .filter-chip:hover {
-    background: rgba(74,144,217,0.25);
   }
 
   /* Section Headers */
@@ -1018,7 +974,7 @@
   .grid-label {
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 700;
   }
 
   .filter-item {
@@ -1083,7 +1039,7 @@
   .filter-item-count {
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--hifi-text-secondary);
     text-align: right;
     min-width: 46px;
@@ -1160,7 +1116,7 @@
     color: var(--hifi-text-primary);
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
@@ -1299,19 +1255,24 @@
     flex: 1;
   }
 
+  .col-badges {
+    width: 72px;
+    flex-shrink: 0;
+  }
+
   .col-country {
-    width: 224px;
-    padding: 0 16px;
+    width: 160px;
+    padding: 0 8px;
   }
 
   .col-bitrate {
-    width: 120px;
+    width: 90px;
     text-align: right;
     padding-right: 8px;
   }
 
   .col-votes {
-    width: 140px;
+    width: 60px;
     text-align: right;
     padding-right: 8px;
   }
@@ -1356,21 +1317,91 @@
     cursor: pointer;
     user-select: text;
     -webkit-user-select: text;
+    display: flex;
+    align-items: center;
+    gap: 0;
   }
-  
-  .station-country {
-    width: 224px;
-    font-size: 11px;
-    color: var(--hifi-text-secondary);
-    text-align: left;
-    padding: 0 16px;
-    white-space: nowrap;
+
+  .hover-play-icon {
+    font-size: 10px;
+    color: var(--hifi-display-amber);
+    width: 0;
+    opacity: 0;
+    transition: width 0.15s, opacity 0.15s, margin-right 0.15s;
+    flex-shrink: 0;
+    margin-right: 0;
+  }
+
+  .station-name:hover .hover-play-icon,
+  .station-led:hover + .station-name .hover-play-icon {
+    width: 12px;
+    opacity: 1;
+    margin-right: 4px;
+  }
+
+  .station-name-text {
     overflow: hidden;
     text-overflow: ellipsis;
   }
   
+  .station-badges {
+    width: 72px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .info-badge {
+    font-family: var(--hifi-font-values);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    cursor: default;
+    white-space: nowrap;
+  }
+
+  .icy-badge {
+    color: #5ba8d9;
+    background: rgba(91, 168, 217, 0.15);
+    border: 1px solid rgba(91, 168, 217, 0.3);
+    cursor: pointer;
+  }
+
+  .icy-badge:hover {
+    background: rgba(91, 168, 217, 0.25);
+  }
+
+  .icy-badge.icy-good {
+    color: #4caf50;
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+  }
+
+  .icy-badge.icy-poor {
+    color: #e09040;
+    background: rgba(224, 144, 64, 0.15);
+    border-color: rgba(224, 144, 64, 0.3);
+  }
+
+  .station-country {
+    width: 160px;
+    font-size: 11px;
+    color: var(--hifi-text-secondary);
+    text-align: left;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .station-bitrate {
-    width: 120px;
+    width: 90px;
     font-size: 11px;
     color: var(--hifi-text-secondary);
     text-align: right;
@@ -1378,7 +1409,7 @@
   }
 
   .station-stats {
-    width: 140px;
+    width: 60px;
     font-family: 'Barlow', sans-serif;
     font-size: 10px;
     color: var(--hifi-text-secondary);
@@ -1393,55 +1424,37 @@
     padding: 4px;
   }
 
-  .station-hover-actions {
-    position: absolute;
-    right: 50px;
-    top: 50%;
-    transform: translateY(-50%);
+  .details-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .station-row:hover .station-hover-actions {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .ad-badge {
-    font-family: var(--hifi-font-family);
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    display: inline-flex;
-    align-items: center;
+    gap: 6px;
+    padding: 8px 0 0 0;
+    border-top: 1px solid var(--hifi-border-dark);
+    margin-top: 8px;
   }
 
   .ad-badge-clean {
     color: var(--hifi-led-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
+    border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   .ad-badge-suspect {
     color: var(--hifi-led-amber, #e5a00d);
-    background: rgba(229, 160, 13, 0.15);
+    background: rgba(229, 160, 13, 0.12);
+    border: 1px solid rgba(229, 160, 13, 0.25);
   }
 
   .ad-badge-blocked {
     color: var(--hifi-led-red, #e53935);
     background: rgba(229, 57, 53, 0.12);
+    border: 1px solid rgba(229, 57, 53, 0.25);
   }
 
   .ad-badge-ok {
     color: var(--hifi-led-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
+    border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   .ad-hover-btn {
@@ -1601,7 +1614,7 @@
   .detail-label {
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    font-weight: 400;
+    font-weight: 700;
     letter-spacing: 1px;
     color: var(--hifi-text-secondary);
     min-width: 80px;
@@ -1663,7 +1676,7 @@
     color: var(--hifi-text-primary);
     font-family: var(--hifi-font-values);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.5px;
     cursor: pointer;
     text-align: left;
@@ -1689,7 +1702,7 @@
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
     text-align: center;

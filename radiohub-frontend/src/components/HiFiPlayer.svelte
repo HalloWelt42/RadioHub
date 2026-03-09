@@ -4,9 +4,11 @@
   import HiFiVuMeter from './hifi/HiFiVuMeter.svelte';
   import HiFiBitrateLed from './hifi/HiFiBitrateLed.svelte';
   import { appState, actions } from '../lib/store.svelte.js';
+  import { api } from '../lib/api.js';
   import * as engine from '../lib/playerEngine.js';
   import { connect as connectAnalyser } from '../lib/audioAnalyser.js';
   import * as sfx from '../lib/uiSounds.js';
+  import { formatTime, formatTimeShort } from '../lib/formatters.js';
 
   // Audio Element
   let audioEl = $state(null);
@@ -43,17 +45,55 @@
     }
   });
 
+  // === ICY Now-Playing Polling ===
+  let icyPollTimer = null;
+
+  $effect(() => {
+    const station = appState.currentStation;
+    const playing = appState.isPlaying;
+
+    // Polling starten wenn Station spielt und ICY unterstuetzt
+    if (playing && station?.icy && station?.uuid) {
+      // Sofort ersten Titel holen
+      fetchIcyTitle(station.uuid);
+      // Dann alle 15 Sekunden
+      icyPollTimer = setInterval(() => fetchIcyTitle(station.uuid), 15000);
+    } else {
+      appState.streamTitle = null;
+    }
+
+    return () => {
+      if (icyPollTimer) {
+        clearInterval(icyPollTimer);
+        icyPollTimer = null;
+      }
+    };
+  });
+
+  async function fetchIcyTitle(uuid) {
+    try {
+      const result = await api.getNowPlaying(uuid);
+      if (result?.title) {
+        appState.streamTitle = result.title;
+      }
+    } catch (e) {
+      // Stilles Fehlen -- kein Titel verfuegbar
+    }
+  }
+
   // === Handlers ===
   function handlePlayPause() {
     if (appState.isPlaying && !appState.isPaused) {
       engine.togglePause();
     } else if (appState.isPaused) {
       engine.resume();
-    } else if (appState.currentStation || appState.currentEpisode) {
+    } else if (appState.currentStation || appState.currentEpisode || appState.currentRecording) {
       if (appState.currentStation) {
         engine.playStation(appState.currentStation);
       } else if (appState.currentEpisode) {
         engine.playPodcast(appState.currentEpisode, appState.currentEpisode?.podcast);
+      } else if (appState.currentRecording) {
+        engine.playRecording(appState.currentRecording);
       }
     }
   }
@@ -89,25 +129,7 @@
     isSeeking = false;
   }
 
-  // === Format ===
-  function formatTime(seconds) {
-    if (!seconds || !isFinite(seconds)) return '00:00:00';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  }
-
-  function formatTimeShort(seconds) {
-    if (!seconds || !isFinite(seconds)) return '0:00';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (h > 0) {
-      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
+  // === Format (aus shared formatters.js) ===
 
   // === Skip ===
   function handleSkip(seconds) {
@@ -147,9 +169,11 @@
   }
 
   // === Derived States ===
+  let isRecordingPlayback = $derived(appState.playerMode === 'recording');
+
   let displayName = $derived(
     appState.isPlaying || appState.isPaused
-      ? (appState.currentStation?.name || appState.currentEpisode?.title || '')
+      ? (appState.streamTitle || appState.currentStation?.name || appState.currentEpisode?.title || appState.currentRecording?.name || '')
       : ''
   );
 
@@ -161,11 +185,11 @@
 
   let sourceType = $derived(
     appState.isPlaying || appState.isPaused
-      ? (appState.currentStation ? 'Tuner' : appState.currentEpisode ? 'Podcast' : '---')
+      ? (appState.currentStation ? 'Tuner' : appState.currentEpisode ? 'Podcast' : appState.currentRecording ? 'Aufnahme' : '---')
       : '---'
   );
 
-  let hasSource = $derived(appState.currentStation || appState.currentEpisode);
+  let hasSource = $derived(appState.currentStation || appState.currentEpisode || appState.currentRecording);
   let isPodcast = $derived(!!appState.currentEpisode);
   let isStation = $derived(!!appState.currentStation);
   let isHLSMode = $derived(appState.playerMode === 'hls');
@@ -182,7 +206,7 @@
   );
   let displayActive = $derived((appState.isPlaying || appState.isPaused) && hasSource);
 
-  let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls');
+  let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls' || appState.playerMode === 'recording');
   let canNavigate = $derived(appState.stations?.length > 0 || isPodcast);
 
   // Prev/Next Sendernamen für Tooltips
@@ -240,6 +264,7 @@
   // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
     appState.isRecording ? 'red' :
+    isRecordingPlayback ? 'green' :
     isHLSMode && !isLive ? 'yellow' :
     isPodcast ? 'green' :
     'default'
@@ -247,6 +272,7 @@
 
   let timerDisplayTime = $derived(
     appState.isRecording ? appState.recordingElapsed :
+    isRecordingPlayback ? currentTime :
     isHLSMode && !isLive ? secondsBehindLive :
     isPodcast ? currentTime :
     0
@@ -254,6 +280,7 @@
 
   let timerActive = $derived(
     appState.isRecording ||
+    isRecordingPlayback ||
     (isHLSMode && !isLive) ||
     isPodcast
   );
@@ -277,6 +304,7 @@
   // Transport Section Label (kontextabhängig)
   let transportLabel = $derived(
     appState.isRecording ? 'RECORDING' :
+    isRecordingPlayback ? 'PLAYBACK' :
     isPodcast ? 'PODCAST' :
     isHLSMode ? 'TIMESHIFT' :
     'TRANSPORT'
@@ -311,6 +339,7 @@
 <footer class="hifi-player">
   <audio
     bind:this={audioEl}
+    crossorigin="anonymous"
     ontimeupdate={handleTimeUpdate}
     onloadedmetadata={handleTimeUpdate}
     ondurationchange={handleTimeUpdate}
@@ -346,7 +375,7 @@
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
         {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : 'FILE'}</span>
+          <span class="source-mode">{appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
         {/if}
       </div>
     </div>
@@ -401,7 +430,9 @@
   <div class="player-section transport-section">
     <div class="transport-header">
       <span class="transport-time">
-        {#if isPodcast}
+        {#if isRecordingPlayback}
+          {formatTimeShort(currentTime)}
+        {:else if isPodcast}
           {formatTimeShort(currentTime)}
         {:else if isHLSMode && appState.hlsStatus}
           {#if appState.isLive}
@@ -413,7 +444,9 @@
       </span>
       <span class="section-label">{transportLabel}</span>
       <span class="transport-time" class:time-blue={isHLSMode && appState.hlsStatus?.buffered_seconds}>
-        {#if isPodcast && duration > 0}
+        {#if isRecordingPlayback && duration > 0}
+          {formatTimeShort(duration)}
+        {:else if isPodcast && duration > 0}
           {formatTimeShort(duration)}
         {:else if isHLSMode && appState.hlsStatus?.buffered_seconds}
           {formatTimeShort(appState.hlsStatus.buffered_seconds)}
@@ -489,7 +522,7 @@
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation} title={!isStation ? 'Kein Sender ausgewählt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation || isRecordingPlayback} title={isRecordingPlayback ? 'Nicht bei Aufnahme-Wiedergabe' : !isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
@@ -630,7 +663,7 @@
   .section-label {
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 1px;
     color: var(--hifi-text-secondary);
     text-transform: uppercase;
@@ -685,7 +718,7 @@
   .source-display .display-text {
     font-family: var(--hifi-font-values);
     font-size: 11px;
-    font-weight: 400;
+    font-weight: 700;
     color: var(--hifi-display-blue);
     text-shadow: 0 0 8px var(--hifi-display-blue);
   }
@@ -699,7 +732,7 @@
   .source-mode {
     font-family: var(--hifi-font-values);
     font-size: 7px;
-    font-weight: 400;
+    font-weight: 700;
     color: var(--hifi-display-text);
     text-shadow: 0 0 4px var(--hifi-display-text);
     opacity: 0.7;
@@ -840,7 +873,7 @@
   .transport-time {
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 400;
+    font-weight: 700;
     color: var(--hifi-text-secondary);
     min-width: 50px;
   }
