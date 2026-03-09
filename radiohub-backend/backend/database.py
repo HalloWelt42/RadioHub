@@ -301,13 +301,22 @@ def init_db():
         except Exception:
             pass  # Spalte existiert bereits
 
-    # === Benutzerdefinierte Kategorien (Tag-Gruppen) ===
+    # === Benutzerdefinierte Kategorien ===
     c.execute('''CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        tags TEXT NOT NULL,
+        tags TEXT NOT NULL DEFAULT '',
         sort_order INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
+    # === Kategorie-Sender-Zuordnung ===
+    c.execute('''CREATE TABLE IF NOT EXISTS category_stations (
+        category_id INTEGER NOT NULL,
+        station_uuid TEXT NOT NULL,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (category_id, station_uuid),
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     )''')
 
     # === Indices fuer Performance ===
@@ -324,6 +333,8 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_domain_blacklist_cat ON domain_blacklist(category)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_segments_session ON segments(session_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_uuid ON category_stations(station_uuid)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_cat ON category_stations(category_id)")
 
     conn.commit()
     conn.close()
