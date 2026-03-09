@@ -110,7 +110,7 @@
     try {
       const [config, cats, filters] = await Promise.all([
         api.getConfig(),
-        api.getCategories(),
+        api.getCategories().catch(() => []),
         api.getFilters()
       ]);
       categories = cats || [];
@@ -191,7 +191,7 @@
       const [filters, config, cats] = await Promise.all([
         api.getFilters(),
         api.getConfig(),
-        api.getCategories()
+        api.getCategories().catch(() => [])
       ]);
 
       let allCountries = filters.countries || [];
