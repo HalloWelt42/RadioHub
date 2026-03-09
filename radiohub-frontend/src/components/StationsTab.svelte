@@ -59,7 +59,6 @@
   // Kategorien + Tags fuer Sidebar-Filter
   let categories = $state([]);
   let selectedCategories = $state([]);
-  let topTags = $state([]);
   let selectedTags = $state([]);
 
   // Sortierung
@@ -114,14 +113,6 @@
         api.getFilters()
       ]);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
-
-      // Top-Tags neu berechnen
-      const catTagSet = new Set(
-        categories.flatMap(c => (c.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean))
-      );
-      topTags = (filters.genres || [])
-        .filter(g => !catTagSet.has(g.name.toLowerCase()))
-        .slice(0, 12);
 
       // Laender + Filter-Config aktualisieren
       if (config.sidebar_countries) {
@@ -197,14 +188,6 @@
       let allCountries = filters.countries || [];
       availableCountries = allCountries;
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
-
-      // Top-Tags aus Filtern (die nicht in Kategorien zugeordnet sind)
-      const catTagSet = new Set(
-        categories.flatMap(c => (c.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean))
-      );
-      topTags = (filters.genres || [])
-        .filter(g => !catTagSet.has(g.name.toLowerCase()))
-        .slice(0, 12);
 
       // Gespeicherte sichtbare Laender aus Config laden
       if (config.sidebar_countries && !_countriesInitialized) {
@@ -587,14 +570,6 @@
     search();
   }
 
-  function toggleTag(tagName) {
-    if (selectedTags.includes(tagName)) {
-      selectedTags = selectedTags.filter(t => t !== tagName);
-    } else {
-      selectedTags = [...selectedTags, tagName];
-    }
-    search();
-  }
 
   function openSetupFilter() {
     appState.setupSubTab = 'filter';
@@ -672,51 +647,35 @@
 
     <div class="sidebar-divider"></div>
 
-    <!-- Kategorien + Tags -->
-    {#if categories.length > 0 || topTags.length > 0}
-      <div class="section-fixed">
-        {#if categories.length > 0}
-          <div class="section-header">
-            <span class="section-label">KATEGORIEN</span>
-            {#if selectedCategories.length > 0}
-              <span class="section-count">{selectedCategories.length}</span>
-            {/if}
-          </div>
-          <div class="filter-list compact">
-            {#each categories as cat (cat.id)}
-              {@const isSelected = selectedCategories.includes(cat.id)}
-              {@const hasSel = selectedCategories.length > 0}
-              <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)}>
-                <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
-                <span class="filter-item-label">{cat.name}</span>
-              </button>
-            {/each}
-          </div>
-        {/if}
-
-        {#if topTags.length > 0}
-          <div class="section-header" style="margin-top: {categories.length > 0 ? '8px' : '0'}">
-            <span class="section-label">TAGS</span>
-            {#if selectedTags.length > 0}
-              <span class="section-count">{selectedTags.length}</span>
-            {/if}
-          </div>
-          <div class="filter-list compact">
-            {#each topTags as tag}
-              {@const isSelected = selectedTags.includes(tag.name)}
-              {@const hasSel = selectedTags.length > 0}
-              <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleTag(tag.name)}>
-                <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
-                <span class="filter-item-label">{tag.name}</span>
-                <span class="filter-item-count">{formatNumber(tag.count)}</span>
-              </button>
-            {/each}
-          </div>
+    <!-- Kategorien -->
+    <div class="section-fixed">
+      <div class="section-header">
+        <span class="section-label">KATEGORIEN</span>
+        {#if selectedCategories.length > 0}
+          <span class="section-count">{selectedCategories.length}/{categories.length}</span>
+        {:else if categories.length > 0}
+          <span class="section-count dim">{categories.length}</span>
         {/if}
       </div>
+      {#if categories.length > 0}
+        <div class="filter-list compact">
+          {#each categories as cat (cat.id)}
+            {@const isSelected = selectedCategories.includes(cat.id)}
+            {@const hasSel = selectedCategories.length > 0}
+            <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)}>
+              <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
+              <span class="filter-item-label">{cat.name}</span>
+            </button>
+          {/each}
+        </div>
+      {:else}
+        <div class="empty-hint" onclick={() => { appState.setupSubTab = 'kategorien'; actions.setTab('settings'); sfx.click(); }}>
+          Kategorien im Setup erstellen
+        </div>
+      {/if}
+    </div>
 
-      <div class="sidebar-divider"></div>
-    {/if}
+    <div class="sidebar-divider"></div>
 
     <!-- Bitrate: 2-spaltig -->
     <div class="section-fixed">
