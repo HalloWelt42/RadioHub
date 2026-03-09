@@ -56,10 +56,11 @@
   let selectedVotesRanges = $state([]);
   let showFavsOnly = $state(false);
 
-  // Kategorien + Tags fuer Sidebar-Filter
+  // Kategorien
   let categories = $state([]);
   let selectedCategories = $state([]);
   let selectedTags = $state([]);
+  let categoryAssignments = $state({}); // Map<uuid, [categoryId, ...]>
 
   // Sortierung
   let sortBy = $state('name');
@@ -269,17 +270,11 @@
         votes_min = Math.max(votes_min ?? 0, filterMinVotes);
       }
 
-      // Kategorien: Name = Suchbegriff
-      const catTags = selectedCategories.map(catId => {
-        const cat = categories.find(c => c.id === catId);
-        return cat ? cat.name.toLowerCase() : null;
-      }).filter(Boolean);
-      const allSearchTags = [...new Set([...catTags, ...selectedTags])];
-
       const params = {
         q: searchQuery || undefined,
         countries: selectedCountries.length > 0 ? selectedCountries : undefined,
-        tags: allSearchTags.length > 0 ? allSearchTags : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        category_ids: selectedCategories.length > 0 ? selectedCategories : undefined,
         exclude_languages: excludedLanguages.length > 0 ? excludedLanguages : undefined,
         exclude_tags: excludedTags.length > 0 ? excludedTags : undefined,
         bitrate_min: bitrate_min,
@@ -310,6 +305,11 @@
 
       hasMore = newStations.length === limit;
       offset = append ? offset + newStations.length : newStations.length;
+
+      // Kategorie-Zuordnungen fuer geladene Sender holen
+      if (categories.length > 0 && newStations.length > 0) {
+        loadCategoryAssignments(newStations);
+      }
 
     } catch (e) {
       actions.showToast('Suche fehlgeschlagen', 'error');
@@ -574,6 +574,43 @@
   function openSetupFilter() {
     appState.setupSubTab = 'filter';
     actions.setTab('settings');
+  }
+
+  async function loadCategoryAssignments(stationList) {
+    if (!stationList.length || !categories.length) return;
+    try {
+      const uuids = stationList.map(s => s.uuid);
+      const result = await api.getStationAssignments(uuids);
+      const data = result?.assignments || {};
+      categoryAssignments = { ...categoryAssignments, ...data };
+    } catch { /* ignore */ }
+  }
+
+  async function toggleCategoryAssignment(stationUuid, categoryId, e) {
+    e.stopPropagation();
+    const current = categoryAssignments[stationUuid] || [];
+    const isAssigned = current.includes(categoryId);
+
+    // Optimistisches Update
+    if (isAssigned) {
+      categoryAssignments[stationUuid] = current.filter(id => id !== categoryId);
+    } else {
+      categoryAssignments[stationUuid] = [...current, categoryId];
+    }
+    categoryAssignments = { ...categoryAssignments };
+
+    try {
+      if (isAssigned) {
+        await api.unassignStation(categoryId, stationUuid);
+      } else {
+        await api.assignStation(categoryId, stationUuid);
+      }
+    } catch {
+      // Rollback
+      categoryAssignments[stationUuid] = current;
+      categoryAssignments = { ...categoryAssignments };
+      actions.showToast('Zuordnung fehlgeschlagen', 'error');
+    }
   }
 
   function clearFilters() {
@@ -896,6 +933,21 @@
                     {/if}
                   </div>
                   <div class="details-actions">
+                    {#if categories.length > 0}
+                      <div class="category-assign-row">
+                        {#each categories as cat (cat.id)}
+                          {@const isAssigned = (categoryAssignments[station.uuid] || []).includes(cat.id)}
+                          <button
+                            class="cat-assign-btn"
+                            class:assigned={isAssigned}
+                            onclick={(e) => toggleCategoryAssignment(station.uuid, cat.id, e)}
+                            title={isAssigned ? cat.name + ' entfernen' : cat.name + ' zuordnen'}
+                          >
+                            {cat.name}
+                          </button>
+                        {/each}
+                      </div>
+                    {/if}
                     <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
                     <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
                   </div>
@@ -1526,11 +1578,46 @@
 
   .details-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
     padding: 8px 0 0 0;
     border-top: 1px solid var(--hifi-border-dark);
     margin-top: 8px;
+  }
+
+  .category-assign-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  .cat-assign-btn {
+    font-family: var(--hifi-font-family);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 8px;
+    border-radius: var(--hifi-border-radius-sm);
+    border: 1px solid var(--hifi-border-dark);
+    background: var(--hifi-bg-tertiary);
+    color: var(--hifi-text-secondary);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .cat-assign-btn:hover {
+    color: var(--hifi-text-primary);
+    border-color: var(--hifi-accent);
+  }
+
+  .cat-assign-btn.assigned {
+    background: var(--hifi-accent);
+    color: #fff;
+    border-color: var(--hifi-accent);
   }
 
   .ad-badge-clean {
