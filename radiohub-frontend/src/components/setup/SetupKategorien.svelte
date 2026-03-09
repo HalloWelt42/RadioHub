@@ -32,8 +32,8 @@
         api.getCategories(),
         api.getAllTags(200)
       ]);
-      categories = cats;
-      availableTags = tags;
+      categories = Array.isArray(cats) ? cats : (cats?.categories || []);
+      availableTags = Array.isArray(tags) ? tags : (tags?.tags || []);
     } catch (e) {
       console.error('SetupKategorien: Daten laden fehlgeschlagen:', e);
     }
@@ -79,7 +79,7 @@
       showForm = false;
       editingId = null;
       const cats = await api.getCategories();
-      categories = cats;
+      categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
       console.error('SetupKategorien: Speichern fehlgeschlagen:', e);
       actions.showToast('Speichern fehlgeschlagen', 'error');
