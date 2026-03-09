@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/blocklist", tags=["blocklist"])
 class BlockRequest(BaseModel):
     uuid: str
     name: str
-    reason: Optional[str] = None
+    reason: Optional[str] = "manual"
 
 
 @router.get("")

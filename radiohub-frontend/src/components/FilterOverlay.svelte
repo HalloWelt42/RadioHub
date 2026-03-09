@@ -1,13 +1,14 @@
 <script>
   import { api } from '../lib/api.js';
   import { actions } from '../lib/store.svelte.js';
+  import HiFiLed from './hifi/HiFiLed.svelte';
 
   let { open = false, onclose } = $props();
 
-  // Tabs
-  let activeTab = $state('filter'); // 'filter' | 'release' | 'options'
+  // === TABS ===
+  let activeTab = $state('filter');
 
-  // === FILTER TAB ===
+  // === MASSENFILTER ===
   let languages = $state([]);
   let languageSearch = $state('');
   let excludedLanguages = $state([]);
@@ -18,51 +19,25 @@
   let isPreviewing = $state(false);
   let isPushing = $state(false);
 
-  // Vorschlaege fuer Tags
   const tagSuggestions = ['tv', 'television', 'test', 'webcam', 'video'];
 
-  // Gefilterte Sprachen (Suchfeld)
   let filteredLanguages = $derived(
     languageSearch
       ? languages.filter(l => l.name.includes(languageSearch.toLowerCase()))
       : languages
   );
 
-  // === RELEASE TAB ===
-  let hiddenData = $state(null);
-  let isLoadingHidden = $state(false);
+  // === GESPERRTE SENDER ===
+  let blockedData = $state(null);
+  let isLoadingBlocked = $state(false);
   let isReleasing = $state(false);
-
-  // === OPTIONS TAB ===
-  let allCountries = $state([]);
-  let visibleCountryCodes = $state([]);
-  let countrySearch = $state('');
-  let isSavingOptions = $state(false);
-
-  let filteredCountries = $derived(
-    countrySearch
-      ? allCountries.filter(c =>
-          c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-          c.code.toLowerCase().includes(countrySearch.toLowerCase()))
-      : allCountries
-  );
+  let expandedReason = $state(null);
 
   // Daten laden beim Oeffnen
   $effect(() => {
     if (open) {
       loadLanguages();
-    }
-  });
-
-  $effect(() => {
-    if (open && activeTab === 'release') {
-      loadHidden();
-    }
-  });
-
-  $effect(() => {
-    if (open && activeTab === 'options') {
-      loadSidebarConfig();
+      loadBlocked();
     }
   });
 
@@ -75,14 +50,14 @@
     }
   }
 
-  async function loadHidden() {
-    isLoadingHidden = true;
+  async function loadBlocked() {
+    isLoadingBlocked = true;
     try {
-      hiddenData = await api.getHiddenStations();
+      blockedData = await api.getHiddenStations();
     } catch (e) {
-      console.error('Hidden stations laden fehlgeschlagen:', e);
+      console.error('Blocklist laden fehlgeschlagen:', e);
     }
-    isLoadingHidden = false;
+    isLoadingBlocked = false;
   }
 
   // === Filter-Aktionen ===
@@ -155,15 +130,14 @@
         excluded_tags: excludedTags,
         min_votes: minVotes
       });
-      actions.showToast(`${data.hidden_count} Sender ausgeblendet (${data.total_hidden} gesamt)`);
-      // Reset
+      actions.showToast(`${data.hidden_count} Sender blockiert (${data.total_hidden} gesamt)`);
       excludedLanguages = [];
       excludedTags = [];
       minVotes = 0;
       previewCount = null;
-      onclose?.();
+      await loadBlocked();
     } catch (e) {
-      actions.showToast('Push fehlgeschlagen', 'error');
+      actions.showToast('Blockieren fehlgeschlagen', 'error');
       console.error('Push fehlgeschlagen:', e);
     }
     isPushing = false;
@@ -176,7 +150,7 @@
     try {
       const data = await api.releaseStations({ reason });
       actions.showToast(`${data.released_count} Sender freigegeben`);
-      await loadHidden();
+      await loadBlocked();
     } catch (e) {
       actions.showToast('Freigabe fehlgeschlagen', 'error');
     }
@@ -188,58 +162,35 @@
     try {
       const data = await api.releaseStations({ all: true });
       actions.showToast(`${data.released_count} Sender freigegeben`);
-      await loadHidden();
+      await loadBlocked();
     } catch (e) {
       actions.showToast('Freigabe fehlgeschlagen', 'error');
     }
     isReleasing = false;
   }
 
-  // === Options-Aktionen ===
-
-  async function loadSidebarConfig() {
+  async function releaseSingle(uuid) {
+    isReleasing = true;
     try {
-      // Laender vom Cache-Filter laden
-      const filters = await api.getFilters();
-      allCountries = filters.countries || [];
-
-      // Gespeicherte sichtbare Laender laden
-      const config = await api.getConfig();
-      if (config.sidebar_countries) {
-        visibleCountryCodes = JSON.parse(config.sidebar_countries);
-      } else {
-        // Default: Top 10
-        visibleCountryCodes = allCountries.slice(0, 10).map(c => c.code);
-      }
+      const data = await api.releaseStations({ uuids: [uuid] });
+      actions.showToast(`Sender freigegeben`);
+      await loadBlocked();
     } catch (e) {
-      console.error('Sidebar-Config laden fehlgeschlagen:', e);
+      actions.showToast('Freigabe fehlgeschlagen', 'error');
     }
+    isReleasing = false;
   }
 
-  function toggleCountryVisible(code) {
-    if (visibleCountryCodes.includes(code)) {
-      visibleCountryCodes = visibleCountryCodes.filter(c => c !== code);
-    } else {
-      visibleCountryCodes = [...visibleCountryCodes, code];
-    }
+  function toggleReason(reason) {
+    expandedReason = expandedReason === reason ? null : reason;
   }
 
-  function selectTopCountries(n) {
-    visibleCountryCodes = allCountries.slice(0, n).map(c => c.code);
-  }
-
-  async function saveSidebarConfig() {
-    isSavingOptions = true;
-    try {
-      await api.updateConfig({
-        sidebar_countries: JSON.stringify(visibleCountryCodes)
-      });
-      actions.showToast('Sidebar-Einstellungen gespeichert');
-      onclose?.();
-    } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
-    }
-    isSavingOptions = false;
+  function stationsForReason(reason) {
+    if (!blockedData?.stations) return [];
+    return blockedData.stations.filter(s => {
+      const r = s.reason || 'manual';
+      return r === reason;
+    });
   }
 
   function close() {
@@ -249,317 +200,362 @@
   function handleOverlayClick(e) {
     if (e.target === e.currentTarget) close();
   }
+
+  function formatReason(reason) {
+    if (!reason || reason === 'manual') return 'Manuell blockiert';
+    return reason;
+  }
 </script>
 
-<div class="hifi-modal-overlay" class:visible={open} onclick={handleOverlayClick}>
-  <div class="hifi-modal filter-modal">
-    <!-- Header -->
-    <div class="hifi-modal-header">
-      <div class="modal-header-left">
-        <span class="hifi-modal-title">SENDER-FILTER</span>
-        <div class="tab-bar">
-          <button
-            class="tab-btn"
-            class:active={activeTab === 'filter'}
-            onclick={() => activeTab = 'filter'}
-            title="Sender nach Sprache, Tags oder Votes ausblenden"
-          >FILTER</button>
-          <button
-            class="tab-btn"
-            class:active={activeTab === 'release'}
-            onclick={() => activeTab = 'release'}
-            title="Ausgeblendete Sender wieder freigeben"
-          >FREIGEBEN</button>
-          <button
-            class="tab-btn"
-            class:active={activeTab === 'options'}
-            onclick={() => activeTab = 'options'}
-            title="Sidebar-Anzeige konfigurieren"
-          >OPTIONEN</button>
-        </div>
+<div class="filter-overlay-bg" class:visible={open} onclick={handleOverlayClick}>
+  <div class="filter-panel">
+    <!-- Header mit Tabs -->
+    <div class="filter-header">
+      <div class="tab-bar">
+        <button
+          class="tab-btn"
+          class:active={activeTab === 'filter'}
+          onclick={() => activeTab = 'filter'}
+        >
+          <HiFiLed color={activeTab === 'filter' ? 'green' : 'off'} size="small" />
+          FILTER
+        </button>
+        <button
+          class="tab-btn"
+          class:active={activeTab === 'gesperrt'}
+          onclick={() => activeTab = 'gesperrt'}
+        >
+          <HiFiLed color={activeTab === 'gesperrt' ? 'red' : 'off'} size="small" />
+          GESPERRT
+          {#if blockedData?.count > 0}
+            <span class="tab-badge">{blockedData.count}</span>
+          {/if}
+        </button>
       </div>
-      <button class="hifi-modal-close" onclick={close} title="Filter-Dialog schliessen">
+      <button class="filter-close" onclick={close} title="Schliessen">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <!-- Body -->
-    <div class="hifi-modal-body filter-body">
+    <!-- TAB: Filter -->
+    {#if activeTab === 'filter'}
+      <div class="filter-content">
+        <div class="filter-section-box">
 
-      {#if activeTab === 'filter'}
-        <!-- FILTER TAB -->
-
-        <!-- Sprachen -->
-        <div class="filter-section">
-          <div class="section-header">
-            <span class="section-label">SPRACHEN</span>
-            <div class="section-actions">
-              <button class="mini-btn" onclick={selectAllLanguages} title="Alle Sprachen einschliessen">Alle</button>
-              <button class="mini-btn" onclick={selectNoLanguages} title="Alle Sprachen ausschliessen">Keine</button>
+          <!-- Sprachen -->
+          <div class="filter-group">
+            <div class="group-header">
+              <span class="group-label">SPRACHEN</span>
+              <div class="group-actions">
+                <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
+                <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
+              </div>
+            </div>
+            <input
+              type="text"
+              class="filter-input"
+              placeholder="Sprache suchen..."
+              bind:value={languageSearch}
+            />
+            <div class="language-list">
+              {#each filteredLanguages as lang}
+                <button
+                  class="lang-item"
+                  class:excluded={excludedLanguages.includes(lang.name)}
+                  onclick={() => toggleLanguage(lang.name)}
+                >
+                  <HiFiLed color={!excludedLanguages.includes(lang.name) ? 'green' : 'off'} size="small" />
+                  <span class="lang-name">{lang.name}</span>
+                  <span class="lang-count">{lang.count}</span>
+                </button>
+              {/each}
             </div>
           </div>
 
-          <input
-            type="text"
-            class="filter-search"
-            placeholder="Sprache suchen..."
-            bind:value={languageSearch}
-          />
-
-          <div class="language-list">
-            {#each filteredLanguages as lang}
-              <button
-                class="lang-item"
-                class:excluded={excludedLanguages.includes(lang.name)}
-                onclick={() => toggleLanguage(lang.name)}
-              >
-                <span class="toggle-switch" class:on={!excludedLanguages.includes(lang.name)}><span class="toggle-knob"></span></span>
-                <span class="lang-name">{lang.name}</span>
-                <span class="lang-count">{lang.count}</span>
-              </button>
-            {/each}
+          <!-- Tags -->
+          <div class="filter-group">
+            <span class="group-label">TAGS AUSSCHLIESSEN</span>
+            <div class="tag-chips">
+              {#each excludedTags as tag}
+                <span class="tag-chip">
+                  {tag}
+                  <button class="tag-remove" onclick={() => removeTag(tag)}>&times;</button>
+                </span>
+              {/each}
+            </div>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                class="filter-input tag-input"
+                placeholder="Tag hinzufuegen..."
+                bind:value={tagInput}
+                onkeydown={handleTagKeydown}
+              />
+              <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()}>+</button>
+            </div>
+            <div class="tag-suggestions">
+              {#each tagSuggestions.filter(s => !excludedTags.includes(s)) as suggestion}
+                <button class="suggestion-chip" onclick={() => addTag(suggestion)}>{suggestion}</button>
+              {/each}
+            </div>
           </div>
-        </div>
 
-        <!-- Tags -->
-        <div class="filter-section">
-          <span class="section-label">TAGS AUSSCHLIESSEN</span>
-          <div class="tag-chips">
-            {#each excludedTags as tag}
-              <span class="tag-chip">
-                {tag}
-                <button class="tag-remove" onclick={() => removeTag(tag)} title="Tag '{tag}' aus Ausschlussliste entfernen">&times;</button>
-              </span>
-            {/each}
-          </div>
-          <div class="tag-input-row">
+          <!-- Min Votes -->
+          <div class="filter-group">
+            <span class="group-label">MIN VOTES</span>
             <input
-              type="text"
-              class="filter-search tag-input"
-              placeholder="Tag hinzufuegen..."
-              bind:value={tagInput}
-              onkeydown={handleTagKeydown}
+              type="number"
+              class="filter-input votes-input"
+              min="0"
+              bind:value={minVotes}
+              onchange={() => previewCount = null}
             />
-            <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()} title={!tagInput.trim() ? 'Tag-Name eingeben' : 'Tag zur Ausschlussliste hinzufuegen'}>+</button>
           </div>
-          <div class="tag-suggestions">
-            {#each tagSuggestions.filter(s => !excludedTags.includes(s)) as suggestion}
-              <button class="suggestion-chip" onclick={() => addTag(suggestion)} title="Klicken um '{suggestion}' auszuschliessen">{suggestion}</button>
-            {/each}
+
+          <!-- Vorschau + Blockieren -->
+          <div class="filter-action-row">
+            <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
+              {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
+            </button>
+            {#if previewCount !== null}
+              <span class="preview-count">{previewCount} Sender</span>
+            {/if}
+            <button
+              class="action-btn block-btn"
+              onclick={push}
+              disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
+            >
+              {isPushing ? 'BLOCKIERE...' : 'BLOCKIEREN'}
+            </button>
           </div>
         </div>
+      </div>
+    {/if}
 
-        <!-- Min Votes -->
-        <div class="filter-section">
-          <span class="section-label">MIN VOTES</span>
-          <input
-            type="number"
-            class="filter-search votes-input"
-            min="0"
-            bind:value={minVotes}
-            onchange={() => previewCount = null}
-          />
-        </div>
-
-        <!-- Preview + Push -->
-        <div class="filter-actions">
-          <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing} title="Zeigt wie viele Sender mit diesen Filtern ausgeblendet wuerden">
-            {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
-          </button>
-          {#if previewCount !== null}
-            <span class="preview-count">{previewCount} Sender wuerden ausgeblendet</span>
-          {/if}
-        </div>
-
-      {:else if activeTab === 'release'}
-        <!-- RELEASE TAB -->
-
-        {#if isLoadingHidden}
-          <div class="loading-text">Lade...</div>
-        {:else if hiddenData}
-          <div class="release-header">
-            <span class="release-total">{hiddenData.count} Sender ausgeblendet</span>
-            {#if hiddenData.count > 0}
-              <button class="action-btn release-all-btn" onclick={releaseAll} disabled={isReleasing} title={isReleasing ? 'Freigabe laeuft...' : 'Alle ausgeblendeten Sender wieder sichtbar machen'}>
+    <!-- TAB: Gesperrt -->
+    {#if activeTab === 'gesperrt'}
+      <div class="filter-content">
+        <div class="blocked-section">
+          <div class="blocked-header">
+            <span class="group-label">
+              GESPERRTE SENDER
+              {#if blockedData}
+                <span class="blocked-count">({blockedData.count})</span>
+              {/if}
+            </span>
+            {#if blockedData?.count > 0}
+              <button class="action-btn release-all-btn" onclick={releaseAll} disabled={isReleasing}>
                 ALLE FREIGEBEN
               </button>
             {/if}
           </div>
 
-          {#if Object.keys(hiddenData.reasons).length > 0}
-            <div class="reason-list">
-              {#each Object.entries(hiddenData.reasons) as [reason, count]}
-                <div class="reason-item">
-                  <span class="reason-label">{reason}</span>
-                  <span class="reason-count">({count})</span>
-                  <button
-                    class="mini-btn release-btn"
-                    onclick={() => releaseByReason(reason)}
-                    disabled={isReleasing}
-                    title={isReleasing ? 'Freigabe laeuft...' : 'Diese Gruppe wieder sichtbar machen'}
-                  >FREIGEBEN</button>
+          <div class="blocked-list">
+            {#if isLoadingBlocked}
+              <div class="status-text">Lade...</div>
+            {:else if blockedData && Object.keys(blockedData.reasons).length > 0}
+              {#each Object.entries(blockedData.reasons) as [reason, count]}
+                <div class="reason-group">
+                  <div class="reason-row" onclick={() => toggleReason(reason)} role="button" tabindex="0">
+                    <span class="reason-arrow" class:open={expandedReason === reason}>
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </span>
+                    <HiFiLed color="red" size="small" />
+                    <span class="reason-label">{formatReason(reason)}</span>
+                    <span class="reason-count">({count})</span>
+                    <button
+                      class="mini-btn release-btn"
+                      onclick={(e) => { e.stopPropagation(); releaseByReason(reason); }}
+                      disabled={isReleasing}
+                    >FREIGEBEN</button>
+                  </div>
+                  {#if expandedReason === reason}
+                    <div class="station-sublist">
+                      {#each stationsForReason(reason) as station (station.uuid)}
+                        <div class="station-row-blocked">
+                          <HiFiLed color="off" size="small" />
+                          <span class="station-name-blocked">{station.name}</span>
+                          <button
+                            class="unblock-btn"
+                            onclick={() => releaseSingle(station.uuid)}
+                            disabled={isReleasing}
+                            title="Sender freigeben"
+                          >
+                            <i class="fa-solid fa-xmark"></i>
+                          </button>
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
                 </div>
               {/each}
-            </div>
-          {:else}
-            <div class="empty-text">Keine ausgeblendeten Sender</div>
-          {/if}
-        {/if}
-
-      {:else if activeTab === 'options'}
-        <!-- OPTIONS TAB -->
-
-        <div class="filter-section">
-          <div class="section-header">
-            <span class="section-label">SIDEBAR-LAENDER</span>
-            <div class="section-actions">
-              <button class="mini-btn" onclick={() => selectTopCountries(10)} title="Die 10 Laender mit den meisten Sendern anzeigen">Top 10</button>
-              <button class="mini-btn" onclick={() => selectTopCountries(20)} title="Die 20 Laender mit den meisten Sendern anzeigen">Top 20</button>
-              <button class="mini-btn" onclick={() => visibleCountryCodes = allCountries.map(c => c.code)} title="Alle Laender in der Sidebar anzeigen">Alle</button>
-            </div>
-          </div>
-
-          <input
-            type="text"
-            class="filter-search"
-            placeholder="Land suchen..."
-            bind:value={countrySearch}
-          />
-
-          <div class="language-list">
-            {#each filteredCountries as country}
-              <button
-                class="lang-item"
-                class:excluded={!visibleCountryCodes.includes(country.code)}
-                onclick={() => toggleCountryVisible(country.code)}
-              >
-                <span class="toggle-switch" class:on={visibleCountryCodes.includes(country.code)}><span class="toggle-knob"></span></span>
-                <span class="lang-name">{country.name}</span>
-                <span class="lang-count">{country.count}</span>
-              </button>
-            {/each}
-          </div>
-
-          <div class="options-info">
-            {visibleCountryCodes.length} von {allCountries.length} Laendern sichtbar
+            {:else}
+              <div class="status-text">Keine gesperrten Sender</div>
+            {/if}
           </div>
         </div>
-      {/if}
-    </div>
-
-    <!-- Footer -->
-    {#if activeTab === 'filter'}
-      <div class="hifi-modal-footer">
-        <button class="action-btn cancel-btn" onclick={close}>ABBRECHEN</button>
-        <button
-          class="action-btn push-btn"
-          onclick={push}
-          disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
-          title={isPushing ? 'Sender werden ausgeblendet...' : (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0) ? 'Mindestens einen Filter setzen (Sprache, Tag oder Votes)' : 'Gefilterte Sender dauerhaft ausblenden (kumulativ)'}
-        >
-          {isPushing ? 'AUSBLENDEN...' : 'PUSH - AUSBLENDEN'}
-        </button>
-      </div>
-    {:else if activeTab === 'options'}
-      <div class="hifi-modal-footer">
-        <button class="action-btn cancel-btn" onclick={close}>ABBRECHEN</button>
-        <button
-          class="action-btn push-btn"
-          onclick={saveSidebarConfig}
-          disabled={isSavingOptions}
-          title={isSavingOptions ? 'Einstellungen werden gespeichert...' : 'Sidebar-Laender Konfiguration speichern'}
-        >
-          {isSavingOptions ? 'SPEICHERE...' : 'SPEICHERN'}
-        </button>
-      </div>
-    {:else}
-      <div class="hifi-modal-footer">
-        <button class="action-btn cancel-btn" onclick={close}>SCHLIESSEN</button>
       </div>
     {/if}
   </div>
 </div>
 
 <style>
-  .filter-modal {
-    width: 520px;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-header-left {
+  /* === Overlay Background === */
+  .filter-overlay-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
     display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .filter-overlay-bg.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* === Panel === */
+  .filter-panel {
+    width: 520px;
+    height: 600px;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: var(--hifi-border-radius-md);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* === Header mit Tabs === */
+  .filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px 0 0;
+    border-bottom: 1px solid var(--hifi-border-dark);
+    flex-shrink: 0;
   }
 
   .tab-bar {
     display: flex;
-    gap: 2px;
+    gap: 0;
   }
 
   .tab-btn {
-    padding: 5px 12px;
-    background: var(--hifi-bg-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 18px;
+    background: none;
     border: none;
+    border-bottom: 2px solid transparent;
     color: var(--hifi-text-secondary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    font-family: var(--hifi-font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
     cursor: pointer;
-    border-radius: var(--hifi-border-radius-sm);
+    text-transform: uppercase;
+    transition: color 0.15s, border-color 0.15s;
   }
 
-  .tab-btn.active {
-    background: var(--hifi-accent);
+  .tab-btn:hover {
     color: var(--hifi-text-primary);
   }
 
-  .filter-body {
+  .tab-btn.active {
+    color: var(--hifi-text-primary);
+    border-bottom-color: var(--hifi-accent);
+  }
+
+  .tab-badge {
+    font-family: var(--hifi-font-family);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--hifi-led-red);
+    margin-left: 2px;
+  }
+
+  .filter-close {
+    width: 28px;
+    height: 28px;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    color: var(--hifi-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .filter-close:hover {
+    color: var(--hifi-text-primary);
+  }
+
+  /* === Content === */
+  .filter-content {
     flex: 1;
     overflow-y: auto;
+    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
   }
 
-  .filter-section {
+  /* === Section Box === */
+  .filter-section-box {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 12px;
   }
 
-  .section-header {
+  /* === Filter Group === */
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .group-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  .section-label {
+  .group-label {
+    font-family: var(--hifi-font-display);
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     color: var(--hifi-text-secondary);
     text-transform: uppercase;
   }
 
-  .section-actions {
+  .group-actions {
     display: flex;
     gap: 4px;
   }
 
+  /* (LEDs via HiFiLed component) */
+
+  /* === Mini Button === */
   .mini-btn {
-    padding: 3px 8px;
+    padding: 2px 7px;
     background: var(--hifi-bg-tertiary);
     border: none;
     color: var(--hifi-text-secondary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 10px;
+    font-family: var(--hifi-font-family);
+    font-size: 9px;
     cursor: pointer;
     border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-button);
   }
 
   .mini-btn:hover {
@@ -571,9 +567,10 @@
     cursor: default;
   }
 
-  .filter-search {
-    padding: 7px 10px;
-    font-family: 'Barlow', sans-serif;
+  /* === Input === */
+  .filter-input {
+    padding: 5px 8px;
+    font-family: var(--hifi-font-family);
     font-size: 11px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
@@ -583,21 +580,21 @@
     box-shadow: var(--hifi-shadow-inset);
   }
 
-  .filter-search:focus {
+  .filter-input:focus {
     box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
   }
 
-  .filter-search::placeholder {
+  .filter-input::placeholder {
     color: var(--hifi-text-secondary);
   }
 
   .votes-input {
-    width: 100px;
+    width: 90px;
   }
 
-  /* Language List */
+  /* === Language List === */
   .language-list {
-    max-height: 240px;
+    max-height: 160px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -606,16 +603,16 @@
   .lang-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
+    gap: 6px;
+    padding: 2px 6px;
     background: none;
     border: none;
     color: var(--hifi-text-primary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 11px;
+    font-family: var(--hifi-font-family);
+    font-size: 10px;
     cursor: pointer;
     text-align: left;
-    border-radius: var(--hifi-border-radius-sm);
+    border-radius: 3px;
   }
 
   .lang-item:hover {
@@ -623,39 +620,7 @@
   }
 
   .lang-item.excluded {
-    opacity: 0.5;
-  }
-
-  .toggle-switch {
-    width: 28px;
-    height: 14px;
-    border-radius: 7px;
-    background: var(--hifi-bg-tertiary);
-    border: 1px solid var(--hifi-border-dark);
-    position: relative;
-    flex-shrink: 0;
-    transition: background 0.2s, border-color 0.2s;
-  }
-
-  .toggle-switch.on {
-    background: var(--hifi-led-green);
-    border-color: var(--hifi-led-green);
-  }
-
-  .toggle-knob {
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--hifi-text-secondary);
-    transition: transform 0.2s, background 0.2s;
-  }
-
-  .toggle-switch.on .toggle-knob {
-    transform: translateX(14px);
-    background: #fff;
+    opacity: 0.4;
   }
 
   .lang-name {
@@ -664,26 +629,25 @@
   }
 
   .lang-count {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--hifi-text-secondary);
-    font-family: var(--hifi-font-values);
   }
 
-  /* Tags */
+  /* === Tags === */
   .tag-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 3px;
   }
 
   .tag-chip {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
+    gap: 3px;
+    padding: 2px 6px;
     background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
-    font-size: 11px;
+    border-radius: 3px;
+    font-size: 10px;
     color: var(--hifi-text-primary);
   }
 
@@ -692,8 +656,8 @@
     border: none;
     color: var(--hifi-text-secondary);
     cursor: pointer;
-    font-size: 14px;
-    padding: 0 2px;
+    font-size: 12px;
+    padding: 0 1px;
     line-height: 1;
   }
 
@@ -713,17 +677,17 @@
   .tag-suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 3px;
   }
 
   .suggestion-chip {
-    padding: 2px 8px;
+    padding: 1px 6px;
     background: none;
     border: 1px dashed var(--hifi-border-dark);
-    border-radius: var(--hifi-border-radius-sm);
+    border-radius: 3px;
     color: var(--hifi-text-secondary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 10px;
+    font-family: var(--hifi-font-family);
+    font-size: 9px;
     cursor: pointer;
   }
 
@@ -732,28 +696,31 @@
     color: var(--hifi-text-primary);
   }
 
-  /* Actions */
-  .filter-actions {
+  /* === Filter Actions === */
+  .filter-action-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    padding-top: 4px;
   }
 
   .preview-count {
-    font-size: 11px;
+    font-family: var(--hifi-font-display);
+    font-size: 10px;
     color: var(--hifi-accent);
+    flex: 1;
   }
 
   .action-btn {
-    padding: 8px 16px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 11px;
+    padding: 6px 14px;
+    font-family: var(--hifi-font-display);
+    font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.5px;
     border: none;
     border-radius: var(--hifi-border-radius-sm);
     cursor: pointer;
-    box-shadow: var(--hifi-shadow-button);
+    text-transform: uppercase;
   }
 
   .action-btn:disabled {
@@ -766,77 +733,160 @@
     color: var(--hifi-text-primary);
   }
 
-  .push-btn {
+  .block-btn {
     background: var(--hifi-accent);
-    color: var(--hifi-text-primary);
+    color: #fff;
   }
 
-  .cancel-btn {
-    background: var(--hifi-bg-tertiary);
-    color: var(--hifi-text-secondary);
+  /* === Blocked Section === */
+  .blocked-section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  /* Release Tab */
-  .release-header {
+  .blocked-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  .release-total {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--hifi-text-primary);
+  .blocked-count {
+    color: var(--hifi-text-secondary);
+    font-family: var(--hifi-font-family);
+    font-weight: 400;
+    font-size: 10px;
   }
 
   .release-all-btn {
     background: var(--hifi-led-red);
     color: #fff;
-    font-size: 10px;
+    font-size: 9px;
+    padding: 4px 10px;
   }
 
-  .reason-list {
+  .blocked-list {
+    flex: 1;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
 
-  .reason-item {
+  .reason-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reason-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 6px;
+    padding: 6px 8px;
     background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: var(--hifi-font-family);
+  }
+
+  .reason-row:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .reason-arrow {
+    font-size: 8px;
+    color: var(--hifi-text-secondary);
+    transition: transform 0.15s;
+    width: 10px;
+    flex-shrink: 0;
+  }
+
+  .reason-arrow.open {
+    transform: rotate(90deg);
   }
 
   .reason-label {
     flex: 1;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--hifi-text-primary);
-    font-family: var(--hifi-font-values);
   }
 
   .reason-count {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--hifi-text-secondary);
   }
 
   .release-btn {
     color: var(--hifi-led-red);
+    font-size: 9px;
   }
 
-  .options-info {
-    font-size: 10px;
+  /* === Station Subliste (wie Radioliste) === */
+  .station-sublist {
+    display: flex;
+    flex-direction: column;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+
+  .station-row-blocked {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px 5px 24px;
+    cursor: default;
+    border-bottom: 1px solid var(--hifi-border-dark);
+    transition: background 0.1s ease;
+  }
+
+  .station-row-blocked:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .station-name-blocked {
+    flex: 1;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--hifi-text-primary);
+  }
+
+  .unblock-btn {
+    background: none;
+    border: none;
     color: var(--hifi-text-secondary);
-    text-align: center;
-    padding: 4px;
-  }
-
-  .loading-text, .empty-text {
+    cursor: pointer;
+    padding: 4px 6px;
     font-size: 11px;
+    border-radius: var(--hifi-border-radius-sm);
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .unblock-btn:hover {
+    color: var(--hifi-led-red);
+    background: rgba(255, 60, 60, 0.1);
+  }
+
+  .unblock-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .status-text {
+    font-family: var(--hifi-font-display);
+    font-size: 10px;
+    letter-spacing: 1px;
     color: var(--hifi-text-secondary);
     text-align: center;
-    padding: 20px;
+    padding: 12px;
   }
 </style>

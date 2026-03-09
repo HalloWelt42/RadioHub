@@ -2,10 +2,8 @@
 RadioHub - Filter Router
 
 Massen-Filter fuer Sender: Sprachen, Tags, Min-Votes.
-Filter selektieren nur -- erst ein Push blendet Sender dauerhaft aus.
-Ausblendungen sind kumulativ. Freigabe ueber separaten Endpoint.
+Alle Sperren landen in der einheitlichen blocklist-Tabelle.
 """
-import json
 from typing import Optional, List
 from datetime import datetime
 from fastapi import APIRouter
@@ -50,7 +48,7 @@ def _build_filter_query(criteria: FilterCriteria):
 
 @router.post("/preview")
 async def filter_preview(criteria: FilterCriteria):
-    """Vorschau: Welche Sender wuerden ausgeblendet?"""
+    """Vorschau: Welche Sender wuerden blockiert?"""
     conditions, params = _build_filter_query(criteria)
 
     if not conditions:
@@ -59,13 +57,11 @@ async def filter_preview(criteria: FilterCriteria):
     with db_session() as conn:
         c = conn.cursor()
 
-        # Nur Sender die noch NICHT ausgeblendet sind
         where = " OR ".join(conditions)
         sql = f"""
             SELECT uuid, name, country, language, tags, votes
             FROM stations
             WHERE ({where})
-            AND uuid NOT IN (SELECT uuid FROM hidden_stations)
             AND uuid NOT IN (SELECT uuid FROM blocklist)
             ORDER BY votes DESC
         """
@@ -78,7 +74,7 @@ async def filter_preview(criteria: FilterCriteria):
 
 @router.post("/push")
 async def filter_push(criteria: FilterCriteria):
-    """Sender ausblenden (kumulativ)"""
+    """Sender blockieren (kumulativ) -- alles in blocklist"""
     conditions, params = _build_filter_query(criteria)
 
     if not conditions:
@@ -101,46 +97,45 @@ async def filter_push(criteria: FilterCriteria):
         sql = f"""
             SELECT uuid, name FROM stations
             WHERE ({where})
-            AND uuid NOT IN (SELECT uuid FROM hidden_stations)
             AND uuid NOT IN (SELECT uuid FROM blocklist)
         """
         c.execute(sql, params)
-        to_hide = c.fetchall()
+        to_block = c.fetchall()
 
         now = datetime.now().isoformat()
-        for row in to_hide:
+        for row in to_block:
             c.execute(
-                "INSERT OR IGNORE INTO hidden_stations (uuid, name, reason, hidden_at) VALUES (?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, blocked_at) VALUES (?, ?, ?, ?)",
                 (row["uuid"], row["name"], reason_str, now)
             )
 
-        c.execute("SELECT COUNT(*) FROM hidden_stations")
+        c.execute("SELECT COUNT(*) FROM blocklist")
         total = c.fetchone()[0]
 
-    return {"hidden_count": len(to_hide), "total_hidden": total}
+    return {"hidden_count": len(to_block), "total_hidden": total}
 
 
 @router.get("/hidden")
 async def get_hidden(reason: Optional[str] = None):
-    """Alle ausgeblendeten Sender"""
+    """Alle blockierten Sender (manual + filter)"""
     with db_session() as conn:
         c = conn.cursor()
 
         if reason:
             c.execute(
-                "SELECT * FROM hidden_stations WHERE reason LIKE ? ORDER BY hidden_at DESC",
+                "SELECT * FROM blocklist WHERE reason LIKE ? ORDER BY blocked_at DESC",
                 (f"%{reason}%",)
             )
         else:
-            c.execute("SELECT * FROM hidden_stations ORDER BY hidden_at DESC")
+            c.execute("SELECT * FROM blocklist ORDER BY blocked_at DESC")
 
         stations = [dict(r) for r in c.fetchall()]
 
         # Gruende aggregieren
         reason_counts = {}
-        c.execute("SELECT reason, COUNT(*) as cnt FROM hidden_stations GROUP BY reason ORDER BY cnt DESC")
+        c.execute("SELECT reason, COUNT(*) as cnt FROM blocklist GROUP BY reason ORDER BY cnt DESC")
         for row in c.fetchall():
-            reason_counts[row["reason"]] = row["cnt"]
+            reason_counts[row["reason"] or "manual"] = row["cnt"]
 
     return {
         "count": len(stations),
@@ -151,17 +146,20 @@ async def get_hidden(reason: Optional[str] = None):
 
 @router.post("/release")
 async def release_stations(req: ReleaseRequest):
-    """Sender freigeben"""
+    """Sender freigeben (aus blocklist entfernen)"""
     with db_session() as conn:
         c = conn.cursor()
 
         if req.all:
-            c.execute("DELETE FROM hidden_stations")
+            c.execute("DELETE FROM blocklist")
         elif req.reason:
-            c.execute("DELETE FROM hidden_stations WHERE reason LIKE ?", (f"%{req.reason}%",))
+            if req.reason == "manual":
+                c.execute("DELETE FROM blocklist WHERE reason IS NULL OR reason = 'manual'")
+            else:
+                c.execute("DELETE FROM blocklist WHERE reason LIKE ?", (f"%{req.reason}%",))
         elif req.uuids:
             placeholders = ",".join("?" * len(req.uuids))
-            c.execute(f"DELETE FROM hidden_stations WHERE uuid IN ({placeholders})", req.uuids)
+            c.execute(f"DELETE FROM blocklist WHERE uuid IN ({placeholders})", req.uuids)
         else:
             return {"released_count": 0}
 

@@ -77,8 +77,15 @@ def init_db():
         clickcount INTEGER,
         homepage TEXT,
         lastcheck TEXT,
-        cached_at TEXT
+        cached_at TEXT,
+        last_seen TEXT
     )''')
+
+    # Migration: last_seen Spalte hinzufuegen falls nicht vorhanden
+    try:
+        c.execute("ALTER TABLE stations ADD COLUMN last_seen TEXT")
+    except Exception:
+        pass  # Spalte existiert bereits
     
     # === Favorites ===
     c.execute('''CREATE TABLE IF NOT EXISTS favorites (
@@ -177,13 +184,22 @@ def init_db():
         blocked_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
     
-    # === Hidden Stations (Massen-Filter) ===
-    c.execute('''CREATE TABLE IF NOT EXISTS hidden_stations (
-        uuid TEXT PRIMARY KEY,
-        name TEXT,
-        reason TEXT,
-        hidden_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )''')
+    # === Migration: hidden_stations -> blocklist ===
+    # Daten uebernehmen, dann Tabelle loeschen
+    try:
+        c.execute("SELECT uuid, name, reason, hidden_at FROM hidden_stations")
+        hidden_rows = c.fetchall()
+        for row in hidden_rows:
+            c.execute(
+                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, blocked_at) VALUES (?, ?, ?, ?)",
+                (row[0], row[1], row[2], row[3])
+            )
+        if hidden_rows:
+            print(f"  {len(hidden_rows)} Sender von hidden_stations nach blocklist migriert")
+        c.execute("DROP TABLE IF EXISTS hidden_stations")
+    except Exception:
+        # Tabelle existiert nicht (mehr) -- OK
+        pass
 
     # === Detected Bitrates (ffprobe-Ergebnisse) ===
     c.execute('''CREATE TABLE IF NOT EXISTS detected_bitrates (
@@ -207,7 +223,7 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast ON podcast_episodes(podcast_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_published ON podcast_episodes(published_at DESC)")
-    c.execute("CREATE INDEX IF NOT EXISTS idx_hidden_stations_reason ON hidden_stations(reason)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_blocklist_reason ON blocklist(reason)")
     
     conn.commit()
     conn.close()

@@ -95,11 +95,17 @@
   // Ausgewaehlter Sender (Details sichtbar)
   let selectedUuid = $state(null);
 
-  // selectedUuid folgt dem aktuell spielenden Sender (z.B. bei Prev/Next Navigation)
+  // selectedUuid folgt dem aktuell spielenden Sender nur bei externer Navigation
+  // (z.B. Prev/Next Buttons), nicht bei eigenem selectStation()-Klick
+  let _lastPlayTriggeredUuid = null;
   $effect(() => {
     const playingUuid = appState.currentStation?.uuid ?? null;
-    if (playingUuid) {
+    if (playingUuid && playingUuid !== _lastPlayTriggeredUuid) {
+      // Externer Senderwechsel (Prev/Next) -> selectedUuid nachziehen
       selectedUuid = playingUuid;
+    }
+    if (!playingUuid) {
+      _lastPlayTriggeredUuid = null;
     }
   });
 
@@ -258,7 +264,10 @@
       const newStations = result.stations || [];
       
       if (append) {
-        stations = [...stations, ...newStations];
+        // Deduplizierung: nur Sender hinzufuegen die noch nicht in der Liste sind
+        const existingUuids = new Set(stations.map(s => s.uuid));
+        const uniqueNew = newStations.filter(s => !existingUuids.has(s.uuid));
+        stations = [...stations, ...uniqueNew];
       } else {
         stations = newStations;
       }
@@ -352,13 +361,50 @@
       search(true);
     }
   }
-  
+
+  // Tastatur-Navigation in Stationsliste
+  let focusedIndex = $state(-1);
+
+  function handleListKeydown(e) {
+    if (!stations.length) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        e.stopPropagation();
+        focusedIndex = Math.min(focusedIndex + 1, stations.length - 1);
+        scrollToFocused();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        e.stopPropagation();
+        focusedIndex = Math.max(focusedIndex - 1, 0);
+        scrollToFocused();
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (focusedIndex >= 0 && focusedIndex < stations.length) {
+          selectStation(stations[focusedIndex]);
+        }
+        break;
+    }
+  }
+
+  function scrollToFocused() {
+    requestAnimationFrame(() => {
+      const list = document.querySelector('.station-list');
+      const row = list?.querySelectorAll('.station-wrapper')[focusedIndex];
+      if (row) row.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
   function selectStation(station) {
     // Klick spielt ab und klappt Details auf, zweiter Klick klappt zu
     if (selectedUuid === station.uuid) {
       selectedUuid = null;
     } else {
       selectedUuid = station.uuid;
+      _lastPlayTriggeredUuid = station.uuid;  // Effect-Race vermeiden
       actions.playStation(station);
       probeOnPlay(station);
     }
@@ -589,19 +635,15 @@
         {/if}
       </div>
 
-      <!-- Refresh mit Spinner-Platz -->
+      <!-- Refresh mit Kreispfeil-Icon -->
       <button class="refresh-btn" onclick={refreshStations} disabled={isRefreshing} title={isRefreshing ? 'Senderliste wird aktualisiert...' : 'Komplette Senderliste vom Server neu laden'}>
-        <span class="refresh-spinner-slot">
-          {#if isRefreshing}
-            <div class="btn-spinner"></div>
-          {/if}
-        </span>
+        <i class="fa-solid fa-arrows-rotate refresh-icon" class:spinning={isRefreshing}></i>
         <span>REFRESH</span>
       </button>
     </div>
 
     <!-- Liste (scrollbar, alle Sender) -->
-    <div class="station-list" onscroll={handleScroll}>
+    <div class="station-list" onscroll={handleScroll} onkeydown={handleListKeydown} tabindex="0">
       <!-- Spaltenkoepfe (sticky) -->
       <div class="column-headers">
         <div class="col-led"></div>
@@ -621,23 +663,25 @@
           <div class="empty-display">NO STATIONS FOUND</div>
         </div>
       {:else}
-        {#each stations as station}
+        {#each stations as station, idx (station.uuid)}
           {@const isPlaying = appState.currentStation?.uuid === station.uuid}
           {@const isSelected = selectedUuid === station.uuid}
-          {@const isExpanded = isPlaying || isSelected}
+          {@const isFocused = focusedIndex === idx}
+          {@const isExpanded = isSelected}
           {@const isFav = actions.isFavorite(station.uuid)}
           {@const bitrateVal = typeof station.bitrate === 'object' ? station.bitrate?.value : station.bitrate}
           {@const votesVal = station.votes ?? 0}
 
-          <div class="station-wrapper" class:playing={isPlaying} class:selected={isSelected && !isPlaying}>
+          <div class="station-wrapper" class:playing={isPlaying} class:selected={isSelected && !isPlaying} class:focused={isFocused && !isPlaying && !isSelected}>
             <div
               class="station-row"
               class:playing={isPlaying}
               class:selected={isSelected && !isPlaying}
+              class:focused={isFocused && !isPlaying && !isSelected}
               onclick={() => selectStation(station)}
             >
               <div class="station-led">
-                <HiFiLed color={isPlaying ? 'blue' : isSelected ? 'blue' : 'off'} size="small" />
+                <HiFiLed color={isPlaying ? 'blue' : isSelected ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
               </div>
               <div class="station-name">{station.name}</div>
               <div class="station-country">{translateCountry(station.country) || '-'}</div>
@@ -722,7 +766,7 @@
   {#if showFilterOverlay}
     <FilterOverlay
       open={true}
-      onclose={() => { showFilterOverlay = false; loadFilters(); }}
+      onclose={() => { showFilterOverlay = false; loadFilters(); search(); }}
     />
   {/if}
 </div>
@@ -986,6 +1030,7 @@
     box-sizing: border-box;
     width: 160px;
     flex-shrink: 0;
+    box-shadow: var(--hifi-shadow-button);
   }
 
   .count-zeros {
@@ -1042,21 +1087,15 @@
     cursor: wait;
   }
   
-  .refresh-spinner-slot {
-    width: 14px;
-    height: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .refresh-icon {
+    font-size: 12px;
+    color: var(--hifi-accent);
+    transition: color 0.15s;
   }
-  
-  .btn-spinner {
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--hifi-text-secondary);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+
+  .refresh-icon.spinning {
+    animation: spin 1s linear infinite;
+    color: var(--hifi-display-blue);
   }
   
   @keyframes spin {
@@ -1076,6 +1115,7 @@
     padding: 0 10px;
     gap: 8px;
     position: relative;
+    box-shadow: var(--hifi-shadow-button);
   }
 
   .search-bar:focus-within {
@@ -1124,6 +1164,7 @@
   .station-list {
     flex: 1;
     overflow-y: auto;
+    box-shadow: var(--hifi-shadow-button);
   }
 
   /* Spaltenkoepfe */
@@ -1131,7 +1172,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 6px 16px;
+    padding: 6px 24px 6px 16px;
     background: var(--hifi-bg-tertiary);
     border-bottom: 1px solid var(--hifi-border-dark);
     position: sticky;
@@ -1192,7 +1233,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 6px 16px;
+    padding: 6px 24px 6px 16px;
     cursor: pointer;
     border-bottom: 1px solid var(--hifi-border-dark);
     transition: background 0.1s ease;
@@ -1279,6 +1320,24 @@
     padding: 20px;
   }
   
+  /* Fokussierter Sender (Tastatur-Navigation): gelber Schein */
+  .station-wrapper.focused {
+    background: var(--hifi-bg-panel);
+  }
+
+  .station-row.focused {
+    background: rgba(255, 204, 0, 0.06);
+    box-shadow: inset 0 0 16px rgba(255, 204, 0, 0.04);
+  }
+
+  .station-row.focused:hover {
+    background: rgba(255, 204, 0, 0.10);
+  }
+
+  .station-row.focused .station-name {
+    color: var(--hifi-led-yellow);
+  }
+
   /* Ausgewaehlter Sender: blauer Schein */
   .station-wrapper.selected {
     background: var(--hifi-bg-panel);
@@ -1349,13 +1408,14 @@
   }
   
   .block-btn {
-    padding: 8px 16px;
+    padding: 4px 10px;
+    margin-right: 8px;
     background: var(--hifi-bg-panel);
     border: none;
     border-radius: var(--hifi-border-radius-sm);
     color: var(--hifi-led-red);
     font-family: var(--hifi-font-values);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;

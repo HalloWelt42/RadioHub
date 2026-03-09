@@ -102,30 +102,30 @@ class CacheService:
         return all_stations
     
     def _save_stations(self, stations: List[dict]) -> int:
-        """Speichert Sender in DB"""
+        """Speichert Sender in DB mit last_seen Tracking"""
         now = datetime.now().isoformat()
         count = 0
-        
+
         with db_session() as conn:
             c = conn.cursor()
-            
+
             for s in stations:
                 try:
-                    c.execute('''INSERT OR REPLACE INTO stations 
+                    c.execute('''INSERT OR REPLACE INTO stations
                         (uuid, name, url, url_resolved, favicon, country, countrycode,
                          language, tags, codec, bitrate, votes, clickcount, homepage,
-                         lastcheck, cached_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                         lastcheck, cached_at, last_seen)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                         (s.get("stationuuid"), s.get("name"), s.get("url"),
                          s.get("url_resolved"), s.get("favicon"), s.get("country"),
                          s.get("countrycode"), s.get("language"), s.get("tags"),
                          s.get("codec"), s.get("bitrate", 0), s.get("votes", 0),
                          s.get("clickcount", 0), s.get("homepage"), s.get("lastcheckok"),
-                         now))
+                         now, now))
                     count += 1
                 except Exception as e:
                     print(f"✗ Station speichern fehlgeschlagen: {e}")
-        
+
         print(f"✓ {count} Sender gespeichert")
         return count
     
@@ -216,11 +216,9 @@ class CacheService:
         with db_session() as conn:
             c = conn.cursor()
             
-            # Blockierte + ausgeblendete UUIDs holen
+            # Blockierte UUIDs holen (einheitliche blocklist)
             c.execute("SELECT uuid FROM blocklist")
             blocked_uuids = {row[0] for row in c.fetchall()}
-            c.execute("SELECT uuid FROM hidden_stations")
-            blocked_uuids |= {row[0] for row in c.fetchall()}
             
             if favs_only:
                 # Nur Favoriten mit Sortierung
@@ -278,19 +276,21 @@ class CacheService:
                     if len(results) >= limit:
                         break
 
-            # Detected bitrates mergen (ueberschreibt 0/null Werte)
+            # Detected bitrates mergen (immer Vorrang vor API-Werten)
             if results:
                 uuids = [s['uuid'] for s in results]
                 placeholders = ",".join("?" * len(uuids))
                 c.execute(
-                    f"SELECT uuid, bitrate FROM detected_bitrates WHERE uuid IN ({placeholders}) AND bitrate > 0",
+                    f"SELECT uuid, bitrate, codec FROM detected_bitrates WHERE uuid IN ({placeholders}) AND bitrate > 0",
                     uuids
                 )
-                detected = {row[0]: row[1] for row in c.fetchall()}
+                detected = {row[0]: (row[1], row[2]) for row in c.fetchall()}
                 for station in results:
                     det = detected.get(station['uuid'])
-                    if det and (not station.get('bitrate') or station['bitrate'] == 0):
-                        station['bitrate'] = det
+                    if det:
+                        station['bitrate'] = det[0]
+                        if det[1]:
+                            station['codec'] = det[1]
 
             return results
 
