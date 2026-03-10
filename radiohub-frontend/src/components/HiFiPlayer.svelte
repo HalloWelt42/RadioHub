@@ -333,8 +333,10 @@
 
   // Mode Toggle Verfügbarkeit
   let canToggleStreamMode = $derived(
-    (appState.playerMode === 'hls' && appState.canPlayDirect) ||
-    (appState.playerMode === 'direct' && appState.canPlayHLS === true)
+    !appState.isRecording && (
+      (appState.playerMode === 'hls' && appState.canPlayDirect) ||
+      (appState.playerMode === 'direct' && appState.canPlayHLS === true)
+    )
   );
 
   // Bitrate Override (persistent via localStorage)
@@ -480,7 +482,7 @@
     </div>
     <div class="section-content transport-content">
       <!-- Fader (horizontal) -->
-      <div class="transport-fader-container" class:disabled={!_canSeek} class:seeking={isSeeking}>
+      <div class="transport-fader-container" class:disabled={!_canSeek || appState.isRecording} class:seeking={isSeeking}>
         <div class="transport-fader-track">
           <input
             type="range"
@@ -489,7 +491,7 @@
             max="100"
             step={isHLSMode && hlsSegRange > 0 && !isLive ? (100 / hlsSegRange) : 0.1}
             value={seekPosition}
-            disabled={!_canSeek || isSeeking}
+            disabled={!_canSeek || isSeeking || appState.isRecording}
             oninput={handleFaderInput}
             onmousedown={handleFaderStart}
             ontouchstart={handleFaderStart}
@@ -505,8 +507,8 @@
         <!-- Prev Track -->
         <button
           class="transport-btn"
-          disabled={!canNavigate}
-          title={!canNavigate ? 'Kein vorheriger Sender verfügbar' : prevStationName() || 'Vorheriger Sender'}
+          disabled={!canNavigate || appState.isRecording}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? 'Kein vorheriger Sender verfügbar' : prevStationName() || 'Vorheriger Sender'}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -521,8 +523,8 @@
         <!-- -10s -->
         <button
           class="transport-btn"
-          disabled={!_canSeek}
-          title={!_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden zurückspulen'}
+          disabled={!_canSeek || appState.isRecording}
+          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden zurückspulen'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
@@ -535,13 +537,13 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title="Wiedergabe stoppen">
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? 'Aufnahme läuft -- erst REC stoppen' : 'Wiedergabe stoppen'}>
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} title={appState.isPaused ? 'Pause' : 'Abspielen'}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? 'Aufnahme läuft' : appState.isPaused ? 'Pause' : 'Abspielen'}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
@@ -555,8 +557,8 @@
         <!-- +10s -->
         <button
           class="transport-btn"
-          disabled={!_canSeek}
-          title={!_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
+          disabled={!_canSeek || appState.isRecording}
+          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
@@ -571,8 +573,8 @@
         <!-- Next Track -->
         <button
           class="transport-btn"
-          disabled={!canNavigate}
-          title={!canNavigate ? 'Kein nächster Sender verfügbar' : nextStationName() || 'Nächster Sender'}
+          disabled={!canNavigate || appState.isRecording}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? 'Kein nächster Sender verfügbar' : nextStationName() || 'Nächster Sender'}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
@@ -587,8 +589,8 @@
         <!-- Live -->
         <button
           class="transport-btn live-btn"
-          disabled={isLive || !isHLSMode}
-          title={isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfügbar' : 'Zur Live-Position springen'}
+          disabled={isLive || !isHLSMode || appState.isRecording}
+          title={appState.isRecording ? 'Aufnahme läuft' : isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfügbar' : 'Zur Live-Position springen'}
           onclick={() => engine.goLive()}
         >
           <HiFiLed color={liveLedColor} size="small" />
