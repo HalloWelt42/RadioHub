@@ -190,7 +190,8 @@ class HLSRecorderService:
                  start_time, file_path, status, codec, file_format,
                  meta_file_path, rec_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                (session_id, station_uuid, station_name, stream_url, 0,
+                (session_id, station_uuid, station_name, stream_url,
+                 hls_status.get("output_bitrate", 0),
                  session.start_time.isoformat(), str(ts_dir.parent),
                  "recording", "aac", ".aac", None, "hls-rec"))
 

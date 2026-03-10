@@ -23,13 +23,24 @@
     return () => stopPolling();
   });
 
+  let wasRecording = false;
+
   function startPolling() {
     pollInterval = setInterval(async () => {
       try {
-        recStatus = await api.getRecordingStatus();
-        // Live-Session aktualisieren
-        if (recStatus?.recording) {
+        // appState.isRecording deckt beide Typen ab (Direct + HLS-REC)
+        if (appState.isRecording) {
+          wasRecording = true;
+          recStatus = { recording: true, station_name: appState.currentStation?.name, duration: appState.recordingElapsed };
           loadSessions();
+        } else if (wasRecording) {
+          // Recording gerade beendet -- finales Reload
+          wasRecording = false;
+          recStatus = null;
+          loadSessions();
+          loadStats();
+        } else {
+          recStatus = null;
         }
       } catch (e) {}
     }, 3000);
@@ -244,11 +255,11 @@
       <span class="stat-label">GB FREI</span>
     </div>
 
-    {#if recStatus?.recording}
+    {#if appState.isRecording}
       <div class="stat-item stat-active">
-        <HiFiLed color="red" size="small" blink={true} />
-        <span class="stat-value">{recStatus.station_name || 'Aufnahme'}</span>
-        <span class="stat-label">{formatDuration(recStatus.duration)}</span>
+        <HiFiLed color={appState.recordingType === 'hls-rec' ? 'amber' : 'red'} size="small" blink={true} />
+        <span class="stat-value">{appState.currentStation?.name || 'Aufnahme'}</span>
+        <span class="stat-label">{formatDuration(appState.recordingElapsed)}</span>
       </div>
     {/if}
 
@@ -292,14 +303,10 @@
             </div>
 
             <div class="session-meta">
-              {#if session.segment_count > 0}
-                <span class="session-tracks">{session.segment_count}</span>
-              {/if}
-              <span class="session-duration">{isActive ? formatDuration(recStatus?.duration || 0) : formatDuration(session.duration)}</span>
-              <span class="session-size">{formatSize(session.file_size)}</span>
-              {#if session.bitrate}
-                <span class="session-bitrate">{session.bitrate} kbps</span>
-              {/if}
+              <span class="session-tracks">{session.segment_count > 0 ? session.segment_count : '--'}</span>
+              <span class="session-duration">{isActive ? formatDuration(appState.recordingElapsed) : formatDuration(session.duration)}</span>
+              <span class="session-size">{session.file_size ? formatSize(session.file_size) : '--'}</span>
+              <span class="session-bitrate">{session.bitrate || (session.duration > 0 ? Math.round((session.file_size * 8) / (session.duration * 1000)) : '--')} kbps</span>
               <span class="session-codec">{codecBadge(session)}</span>
             </div>
 
@@ -555,8 +562,9 @@
     font-size: 12px;
     font-weight: 700;
     color: var(--hifi-display-amber);
-    min-width: 20px;
+    width: 24px;
     text-align: right;
+    flex-shrink: 0;
   }
 
   .session-duration {
@@ -564,16 +572,18 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--hifi-display-text);
-    min-width: 48px;
+    width: 48px;
     text-align: right;
+    flex-shrink: 0;
   }
 
   .session-size {
     font-family: var(--hifi-font-body);
     font-size: 11px;
     color: var(--hifi-text-secondary);
-    min-width: 60px;
+    width: 64px;
     text-align: right;
+    flex-shrink: 0;
   }
 
   .session-bitrate {
@@ -581,8 +591,9 @@
     font-size: 10px;
     font-weight: 700;
     color: var(--hifi-text-secondary);
-    min-width: 50px;
+    width: 60px;
     text-align: right;
+    flex-shrink: 0;
   }
 
   .session-codec {
