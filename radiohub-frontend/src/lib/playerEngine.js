@@ -32,6 +32,7 @@ let _recordingPollInterval = null;
 let _hlsSessionId = null;
 let _lastSeekPosition = 0;
 let _userModeOverride = false;
+let _podcastPositionInterval = null;
 
 // === Initialisierung ===
 
@@ -214,14 +215,27 @@ export async function playPodcast(episode, podcast) {
   }
 
 
-  _audioEl.src = episode.audio_url;
+  // Lokale URL bevorzugen, sonst Remote
+  const audioSrc = (episode.is_downloaded && episode.id)
+    ? api.getEpisodePlayUrl(episode.id)
+    : episode.audio_url;
+
+  _audioEl.src = audioSrc;
+  _audioEl.playbackRate = _appState.podcastSpeed || 1.0;
   _audioEl.load();
 
   try {
     await _audioEl.play();
+    // Resume-Position setzen (nach play, damit duration geladen ist)
+    if (episode.resume_position > 0) {
+      _audioEl.currentTime = episode.resume_position;
+    }
   } catch (e) {
     console.warn('Podcast autoplay blocked:', e.message);
   }
+
+  // Periodische Position-Speicherung starten
+  _startPodcastPositionSave();
 }
 
 // ============================================================
@@ -300,6 +314,10 @@ export function pause() {
   if (!_audioEl || !_appState?.isPlaying || _appState.isPaused) return;
   _audioEl.pause();
   _appState.isPaused = true;
+  // Podcast: Position sofort speichern
+  if (_appState.playerMode === 'podcast') {
+    _savePodcastPosition();
+  }
 }
 
 /**
@@ -359,6 +377,12 @@ export async function stop() {
     await _stopRecordingInternal();
   }
 
+  // 4b. Podcast: Position speichern + Intervall stoppen
+  if (_appState.playerMode === 'podcast') {
+    _savePodcastPosition();
+    _stopPodcastPositionSave();
+  }
+
   // 5. State zuruecksetzen
   _appState.isPlaying = false;
   _appState.isPaused = false;
@@ -373,6 +397,8 @@ export async function stop() {
   _appState.canPlayHLS = null;
   _appState.currentRecording = null;
   _appState.recordingPlaylist = [];
+  _appState.podcastPlaylist = [];
+  _appState.podcastPlaylistPodcast = null;
   _hlsSessionId = null;
   _lastSeekPosition = 0;
   _userModeOverride = false;
@@ -879,7 +905,85 @@ export function handleEnded() {
     }
     stop();
   } else if (_appState?.playerMode === 'podcast') {
+    // Episode als gehoert markieren
+    if (_appState.currentEpisode?.id) {
+      api.markEpisodePlayed(_appState.currentEpisode.id).catch(() => {});
+      api.updateEpisodePosition(_appState.currentEpisode.id, 0).catch(() => {});
+    }
+    _stopPodcastPositionSave();
+
+    const playlist = _appState.podcastPlaylist;
+    const mode = _appState.playMode || 'linear';
+    const podcast = _appState.podcastPlaylistPodcast;
+
+    if (playlist?.length > 0) {
+      const idx = _appState.currentEpisodeIndex;
+
+      if (mode === 'shuffle') {
+        const candidates = playlist.length > 1
+          ? playlist.filter((_, i) => i !== idx) : playlist;
+        const next = candidates[Math.floor(Math.random() * candidates.length)];
+        _appState.currentEpisodeIndex = playlist.indexOf(next);
+        playPodcast(next, podcast);
+        return;
+      }
+
+      if (mode === 'loop') {
+        if (idx >= 0 && idx < playlist.length - 1) {
+          _appState.currentEpisodeIndex = idx + 1;
+          playPodcast(playlist[idx + 1], podcast);
+        } else {
+          _appState.currentEpisodeIndex = 0;
+          playPodcast(playlist[0], podcast);
+        }
+        return;
+      }
+
+      // linear: naechster Track, am Ende stoppen
+      if (idx >= 0 && idx < playlist.length - 1) {
+        _appState.currentEpisodeIndex = idx + 1;
+        playPodcast(playlist[idx + 1], podcast);
+        return;
+      }
+    }
     stop();
+  }
+}
+
+// ============================================================
+//  Podcast Position-Speicherung (alle 15s)
+// ============================================================
+
+function _startPodcastPositionSave() {
+  _stopPodcastPositionSave();
+  _podcastPositionInterval = setInterval(() => {
+    _savePodcastPosition();
+  }, 15000);
+}
+
+function _stopPodcastPositionSave() {
+  if (_podcastPositionInterval) {
+    clearInterval(_podcastPositionInterval);
+    _podcastPositionInterval = null;
+  }
+}
+
+function _savePodcastPosition() {
+  if (!_appState?.currentEpisode?.id || !_audioEl) return;
+  if (_appState.playerMode !== 'podcast') return;
+  const pos = Math.floor(_audioEl.currentTime || 0);
+  if (pos > 0) {
+    api.updateEpisodePosition(_appState.currentEpisode.id, pos).catch(() => {});
+  }
+}
+
+// ============================================================
+//  Playback Rate
+// ============================================================
+
+export function setPlaybackRate(rate) {
+  if (_audioEl) {
+    _audioEl.playbackRate = rate;
   }
 }
 

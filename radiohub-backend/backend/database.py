@@ -320,6 +320,28 @@ def init_db():
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     )''')
 
+    # === Migration: podcast_subscriptions erweitern ===
+    for col, typedef in [
+        ("local_image_path", "TEXT"),
+        ("categories", "TEXT DEFAULT ''"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE podcast_subscriptions ADD COLUMN {col} {typedef}")
+        except Exception:
+            pass
+
+    # === Migration: podcast_episodes erweitern ===
+    for col, typedef in [
+        ("is_played", "INTEGER DEFAULT 0"),
+        ("file_size", "INTEGER DEFAULT 0"),
+        ("image_url", "TEXT"),
+        ("local_image_path", "TEXT"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE podcast_episodes ADD COLUMN {col} {typedef}")
+        except Exception:
+            pass
+
     # === Indices fuer Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")
@@ -336,6 +358,8 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_uuid ON category_stations(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_cat ON category_stations(category_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(is_downloaded)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played)")
 
     conn.commit()
     conn.close()

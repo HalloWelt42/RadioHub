@@ -40,6 +40,11 @@ export const appState = $state({
   recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste fuer Prev/Next
   playMode: 'linear',       // 'linear' | 'loop' | 'shuffle' -- Wiedergabe-Modus fuer Playlists
 
+  // Podcast-Playlist
+  podcastPlaylist: [],          // [{id, title, audio_url, ...}, ...]
+  podcastPlaylistPodcast: null, // Podcast-Objekt fuer die aktuelle Playlist
+  podcastSpeed: 1.0,            // 0.75 | 1.0 | 1.25 | 1.5 | 1.75 | 2.0
+
   // HLS Buffer
   hlsActive: false,
   hlsStatus: null,
@@ -116,6 +121,18 @@ export const actions = {
 
   playEpisode(episode, podcast) {
     engine.playPodcast(episode, podcast);
+  },
+
+  playEpisodeFromList(episode, podcast, playlist) {
+    appState.podcastPlaylist = playlist || [];
+    appState.podcastPlaylistPodcast = podcast || null;
+    appState.currentEpisodeIndex = playlist ? playlist.findIndex(e => e.id === episode.id) : -1;
+    engine.playPodcast(episode, podcast);
+  },
+
+  setPodcastSpeed(speed) {
+    appState.podcastSpeed = speed;
+    engine.setPlaybackRate(speed);
   },
 
   stop() {
@@ -208,6 +225,30 @@ export const actions = {
 
   // Navigation durch Sender oder Recording-Segmente
   navigatePrev() {
+    // Podcast-Modus: durch Playlist navigieren
+    if (appState.playerMode === 'podcast' && appState.podcastPlaylist.length > 0) {
+      const playlist = appState.podcastPlaylist;
+      const idx = appState.currentEpisodeIndex;
+      const podcast = appState.podcastPlaylistPodcast;
+
+      if (appState.playMode === 'shuffle') {
+        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
+        const next = candidates[Math.floor(Math.random() * candidates.length)];
+        appState.currentEpisodeIndex = playlist.indexOf(next);
+        engine.playPodcast(next, podcast);
+        return;
+      }
+
+      if (idx > 0) {
+        appState.currentEpisodeIndex = idx - 1;
+        engine.playPodcast(playlist[idx - 1], podcast);
+      } else {
+        appState.currentEpisodeIndex = playlist.length - 1;
+        engine.playPodcast(playlist[playlist.length - 1], podcast);
+      }
+      return;
+    }
+
     // Recording-Modus: durch Playlist navigieren
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
       const playlist = appState.recordingPlaylist;
@@ -237,6 +278,30 @@ export const actions = {
   },
 
   navigateNext() {
+    // Podcast-Modus: durch Playlist navigieren
+    if (appState.playerMode === 'podcast' && appState.podcastPlaylist.length > 0) {
+      const playlist = appState.podcastPlaylist;
+      const idx = appState.currentEpisodeIndex;
+      const podcast = appState.podcastPlaylistPodcast;
+
+      if (appState.playMode === 'shuffle') {
+        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
+        const next = candidates[Math.floor(Math.random() * candidates.length)];
+        appState.currentEpisodeIndex = playlist.indexOf(next);
+        engine.playPodcast(next, podcast);
+        return;
+      }
+
+      if (idx >= 0 && idx < playlist.length - 1) {
+        appState.currentEpisodeIndex = idx + 1;
+        engine.playPodcast(playlist[idx + 1], podcast);
+      } else {
+        appState.currentEpisodeIndex = 0;
+        engine.playPodcast(playlist[0], podcast);
+      }
+      return;
+    }
+
     // Recording-Modus: durch Playlist navigieren
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
       const playlist = appState.recordingPlaylist;

@@ -286,8 +286,19 @@ class RadioHubAPI {
     return this.fetch(`/api/podcasts/${id}/refresh`, { method: 'POST' });
   }
 
-  async getEpisodes(podcastId, limit = 50, offset = 0) {
-    return this.fetch(`/api/podcasts/${podcastId}/episodes?limit=${limit}&offset=${offset}`);
+  async getEpisodes(podcastId, limit = 50, offset = 0, filterStatus = 'all', sortBy = 'published_at', sortOrder = 'desc') {
+    const params = `limit=${limit}&offset=${offset}&filter_status=${filterStatus}&sort_by=${sortBy}&sort_order=${sortOrder}`;
+    return this.fetch(`/api/podcasts/${podcastId}/episodes?${params}`);
+  }
+
+  async getAllEpisodes({ limit = 50, offset = 0, filterStatus = 'all', sortBy = 'published_at', sortOrder = 'desc', podcastIds = null } = {}) {
+    let params = `limit=${limit}&offset=${offset}&filter_status=${filterStatus}&sort_by=${sortBy}&sort_order=${sortOrder}`;
+    if (podcastIds?.length) params += `&podcast_ids=${podcastIds.join(',')}`;
+    return this.fetch(`/api/podcasts/episodes/all?${params}`);
+  }
+
+  async getEpisode(episodeId) {
+    return this.fetch(`/api/podcasts/episodes/${episodeId}`);
   }
 
   async updateEpisodePosition(episodeId, positionSeconds) {
@@ -295,6 +306,71 @@ class RadioHubAPI {
       method: 'PUT',
       body: JSON.stringify({ position_seconds: positionSeconds })
     });
+  }
+
+  async markEpisodePlayed(episodeId) {
+    return this.fetch(`/api/podcasts/episodes/${episodeId}/played`, { method: 'PUT' });
+  }
+
+  async markEpisodeUnplayed(episodeId) {
+    return this.fetch(`/api/podcasts/episodes/${episodeId}/unplayed`, { method: 'PUT' });
+  }
+
+  async markAllPlayed(podcastId) {
+    return this.fetch(`/api/podcasts/${podcastId}/mark-all-played`, { method: 'PUT' });
+  }
+
+  async downloadEpisode(episodeId) {
+    return this.fetch(`/api/podcasts/episodes/${episodeId}/download`, { method: 'POST' });
+  }
+
+  async downloadEpisodesBatch(podcastId, episodeIds) {
+    return this.fetch(`/api/podcasts/${podcastId}/download-batch`, {
+      method: 'POST',
+      body: JSON.stringify({ episode_ids: episodeIds })
+    });
+  }
+
+  async deleteEpisodeDownload(episodeId) {
+    return this.fetch(`/api/podcasts/episodes/${episodeId}/download`, { method: 'DELETE' });
+  }
+
+  async deletePlayedDownloads(podcastId) {
+    return this.fetch(`/api/podcasts/${podcastId}/played-downloads`, { method: 'DELETE' });
+  }
+
+  async refreshAllPodcasts() {
+    return this.fetch('/api/podcasts/refresh-all', { method: 'POST' });
+  }
+
+  async getPodcastStats() {
+    return this.fetch('/api/podcasts/stats');
+  }
+
+  async updatePodcastCategories(podcastId, categories) {
+    return this.fetch(`/api/podcasts/${podcastId}/categories`, {
+      method: 'PUT',
+      body: JSON.stringify({ categories })
+    });
+  }
+
+  async setAutoDownload(podcastId, enabled) {
+    return this.fetch(`/api/podcasts/${podcastId}/auto-download`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled })
+    });
+  }
+
+  getEpisodePlayUrl(episodeId) {
+    return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/play`;
+  }
+
+  getPodcastImageUrl(podcastId) {
+    return `${this.baseUrl}/api/podcasts/${podcastId}/image`;
+  }
+
+  getEpisodeImageUrl(episodeId) {
+    return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/image`;
   }
 
   // === Timeshift Buffer (Legacy) ===
