@@ -6,7 +6,6 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import CoverArt from '../shared/CoverArt.svelte';
   import { api } from '../../lib/api.js';
-  import { formatSize } from '../../lib/formatters.js';
   import * as sfx from '../../lib/uiSounds.js';
 
   let hoverPodcast = $state(null);
@@ -183,24 +182,6 @@
     </div>
   </div>
 
-  <div class="sidebar-divider"></div>
-
-  <!-- Speicher-Info -->
-  <div class="section-fixed">
-    <div class="section-header">
-      <span class="section-label">SPEICHER</span>
-    </div>
-    <div class="storage-info">
-      <div class="storage-row">
-        <span class="storage-label">Downloads</span>
-        <span class="storage-value">{stats.total_downloaded || 0}</span>
-      </div>
-      <div class="storage-row">
-        <span class="storage-label">Belegt</span>
-        <span class="storage-value">{formatSize(stats.storage_bytes || 0)}</span>
-      </div>
-    </div>
-  </div>
 
   <!-- Hover Preview -->
   {#if hoverPodcast}
@@ -510,27 +491,4 @@
     letter-spacing: 0.3px;
   }
 
-  .storage-info {
-    padding: 2px 10px 8px;
-  }
-
-  .storage-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 0;
-  }
-
-  .storage-label {
-    font-family: 'Barlow', sans-serif;
-    font-size: 10px;
-    font-weight: 400;
-    color: var(--hifi-text-secondary);
-  }
-
-  .storage-value {
-    font-family: var(--hifi-font-values, 'Orbitron', monospace);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--hifi-text-primary);
-  }
 </style>
