@@ -457,7 +457,10 @@ class HLSBufferService:
             "min_bitrate": self.session.min_bitrate,
             "max_bitrate": self.session.max_bitrate,
             "sample_rate": self.session.sample_rate,
-            "error": self.session.error
+            "error": self.session.error,
+            # Aktueller ICY-Titel (letzter erkannter)
+            "icy_title": (self._icy_logger.entries[-1].get("title", "")
+                          if self._icy_logger and self._icy_logger.entries else None)
         }
     
     def _get_segment_info(self) -> dict:

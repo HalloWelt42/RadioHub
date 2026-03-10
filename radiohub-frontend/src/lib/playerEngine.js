@@ -926,6 +926,11 @@ function _startHLSPolling(gen) {
         };
       }
 
+      // ICY-Titel aus HLS-Buffer propagieren
+      if (status.icy_title) {
+        _appState.streamTitle = status.icy_title;
+      }
+
       // Wenn Live, Position an rechten Rand pinnen
       if (_appState.isLive && status.last_segment != null) {
         _appState.currentSegment = status.last_segment;
