@@ -42,15 +42,15 @@
 
   <div class="setup-content">
     {#if activeTab === 'allgemein'}
-      <SetupAllgemein />
+      <div class="setup-scroll-wrapper"><SetupAllgemein /></div>
     {:else if activeTab === 'filter'}
       <SetupFilter />
     {:else if activeTab === 'sender'}
       <SetupSender />
     {:else if activeTab === 'kategorien'}
-      <SetupKategorien />
+      <div class="setup-scroll-wrapper"><SetupKategorien /></div>
     {:else if activeTab === 'system'}
-      <SetupSystem />
+      <div class="setup-scroll-wrapper"><SetupSystem /></div>
     {/if}
   </div>
 </div>
@@ -106,11 +106,16 @@
 
   .setup-content {
     flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 24px;
+  }
+
+  .setup-scroll-wrapper {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    padding: 16px;
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
   }
 
 </style>

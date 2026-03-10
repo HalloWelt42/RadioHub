@@ -143,7 +143,7 @@
 
     async function finishScan() {
       if (totalChecked > 0) {
-        actions.showToast(`${totalChecked} Sender geprueft, ${totalSuspects} verdaechtig`);
+        actions.showToast(`${totalChecked} Sender geprüft, ${totalSuspects} verdächtig`);
       } else {
         actions.showToast('Scan beendet', 'info');
       }
@@ -285,20 +285,60 @@
     if (reason === 'ad:URL_TRACKING_REDIRECT') return 'Werbung (Tracking-Redirect)';
     if (reason === 'ad:DOMAIN_BLACKLIST_MATCH') return 'Werbung (Domain-Blacklist)';
     if (reason?.startsWith('ad:')) return `Werbung (${reason.slice(3)})`;
-    const parts = reason.split(', ');
-    const types = {};
-    for (const p of parts) {
-      const [type] = p.split(':');
-      types[type] = (types[type] || 0) + 1;
+    return reason;
+  }
+
+  // Filter-Reasons nach Typ-Kombination aggregieren
+  // Statt 12 einzelner "language:x, language:y, tag:z"-Einträge -> 3-4 Gruppen
+  function aggregateFilterReasons(reasons) {
+    const groups = {};
+    for (const [reason, count] of Object.entries(reasons)) {
+      const parts = reason.split(', ');
+      const typeSet = new Set();
+      for (const p of parts) {
+        if (p.startsWith('language:')) typeSet.add('language');
+        else if (p.startsWith('tag:')) typeSet.add('tag');
+        else if (p.startsWith('votes<')) typeSet.add('votes');
+        else if (p.startsWith('country:')) typeSet.add('country');
+      }
+      const key = [...typeSet].sort().join('+') || 'other';
+      if (!groups[key]) groups[key] = { count: 0, reasons: [] };
+      groups[key].count += count;
+      groups[key].reasons.push(reason);
     }
-    const labels = [];
-    if (types.language) labels.push(`${types.language} Sprache${types.language > 1 ? 'n' : ''}`);
-    if (types.country) labels.push(`${types.country} Land/Laender`);
-    if (types.tag) labels.push(`${types.tag} Tag${types.tag > 1 ? 's' : ''}`);
-    for (const p of parts) {
-      if (p.startsWith('votes<')) labels.push(`Votes < ${p.split('<')[1]}`);
+    return Object.entries(groups).sort((a, b) => b[1].count - a[1].count);
+  }
+
+  const filterGroupLabels = {
+    'language': 'Sprach-Filter',
+    'tag': 'Tag-Filter',
+    'votes': 'Votes-Filter',
+    'country': 'Land-Filter',
+    'language+tag': 'Sprach- + Tag-Filter',
+    'language+votes': 'Sprach- + Votes-Filter',
+    'language+tag+votes': 'Sprach- + Tag- + Votes-Filter',
+    'tag+votes': 'Tag- + Votes-Filter',
+    'other': 'Sonstige'
+  };
+
+  function filterGroupLabel(key) {
+    return filterGroupLabels[key] || key;
+  }
+
+  async function releaseFilterGroup(reasons) {
+    isReleasing = true;
+    try {
+      let total = 0;
+      for (const reason of reasons) {
+        const data = await api.releaseStations({ reason });
+        total += data.released_count;
+      }
+      actions.showToast(`${total} Sender freigegeben`);
+      await loadBlocked();
+    } catch (e) {
+      actions.showToast('Freigabe fehlgeschlagen', 'error');
     }
-    return labels.length > 0 ? labels.join(', ') : reason;
+    isReleasing = false;
   }
 </script>
 
@@ -308,6 +348,7 @@
   </div>
 {:else}
 
+<div class="sender-root">
   <!-- Sub-Tab: Werbung / Gesperrt -->
   <div class="sub-tab-bar">
     <button class="sub-tab-btn" class:active={subTab === 'werbung'} onclick={() => subTab = 'werbung'}>
@@ -331,14 +372,14 @@
     <div class="ad-zone">
       <div class="zone-header">
         <span class="zone-label zone-label-ad">WERBEERKENNUNG</span>
-        <span class="zone-hint">Sender auf Werbung pruefen und entscheiden</span>
+        <span class="zone-hint">Sender auf Werbung prüfen und entscheiden</span>
       </div>
 
       <!-- Status Grid -->
       <div class="ad-status-grid">
         <div class="ad-stat">
           <span class="ad-stat-value">{adSummary?.total_checked ?? 0}</span>
-          <span class="ad-stat-label">geprueft</span>
+          <span class="ad-stat-label">geprüft</span>
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-clean">{adSummary?.clean ?? 0}</span>
@@ -346,7 +387,7 @@
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-suspect">{adSummary?.suspect ?? 0}</span>
-          <span class="ad-stat-label">verdaechtig</span>
+          <span class="ad-stat-label">verdächtig</span>
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-blocked">{(adSummary?.manual_blocked ?? 0) + (adSummary?.auto_blocked ?? 0)}</span>
@@ -366,7 +407,7 @@
           >ALLE SCANNEN</button>
         {/if}
         {#if !isScanning && adSummary?.remaining != null}
-          <span class="scan-remaining">{adSummary.remaining} noch nicht geprueft</span>
+          <span class="scan-remaining">{adSummary.remaining} noch nicht geprüft</span>
         {/if}
       </div>
       {#if scanProgress}
@@ -378,11 +419,11 @@
         </div>
       {/if}
 
-      <!-- Verdaechtige Sender (inline) -->
+      <!-- Verdächtige Sender (inline) -->
       {#if suspects.length > 0}
         <div class="suspects-section">
           <div class="suspects-header">
-            <span class="ad-sub-label">VERDAECHTIG ({suspects.length})</span>
+            <span class="ad-sub-label">VERDÄCHTIG ({suspects.length})</span>
             <div class="suspects-batch-actions">
               <button class="mini-btn suspect-block" onclick={decideAllSuspects('block')}>ALLE AUSBLENDEN</button>
               <button class="mini-btn suspect-allow" onclick={decideAllSuspects('allow')}>ALLE OK</button>
@@ -424,7 +465,7 @@
         {#if adEnabled}
           <div class="ad-toggle-row">
             <div class="ad-toggle-group">
-              <span class="ad-toggle-label">Adress-Pruefung</span>
+              <span class="ad-toggle-label">Adress-Prüfung</span>
               <span class="ad-toggle-hint">Erkennt Werbe-Begriffe in der Stream-URL</span>
             </div>
             <button
@@ -438,7 +479,7 @@
           </div>
           <div class="ad-toggle-row">
             <div class="ad-toggle-group">
-              <span class="ad-toggle-label">Server-Pruefung</span>
+              <span class="ad-toggle-label">Server-Prüfung</span>
               <span class="ad-toggle-hint">Erkennt Werbe-Server anhand der Antwort-Daten</span>
             </div>
             <button
@@ -451,7 +492,7 @@
             </button>
           </div>
           <div class="ad-threshold">
-            <span class="ad-sub-label">AB WANN VERDAECHTIG?</span>
+            <span class="ad-sub-label">AB WANN VERDÄCHTIG?</span>
             <span class="ad-threshold-hint">Sender unter diesem Wert werden ignoriert</span>
             <div class="threshold-row">
               <input
@@ -509,40 +550,59 @@
 
               {#if expandedCategory === cat}
                 <div class="category-reasons">
-                  {#each Object.entries(catData.reasons) as [reason, count]}
-                    <div class="reason-group">
-                      <div class="reason-row" onclick={() => toggleReason(reason)} tabindex="0">
-                        <span class="reason-arrow sub" class:open={expandedReason === reason}>
-                          <i class="fa-solid fa-chevron-right"></i>
-                        </span>
-                        <span class="reason-label">{formatReason(reason)}</span>
-                        <span class="reason-count">({count})</span>
-                        <button
-                          class="mini-btn release-btn"
-                          onclick={(e) => { e.stopPropagation(); releaseByReason(reason); }}
-                          disabled={isReleasing}
-                        >FREIGEBEN</button>
-                      </div>
-                      {#if expandedReason === reason}
-                        <div class="station-sublist">
-                          {#each stationsForReason(reason) as station (station.uuid)}
-                            <div class="station-row-blocked">
-                              <HiFiLed color="off" size="small" />
-                              <span class="station-name-blocked">{station.name}</span>
-                              <button
-                                class="unblock-btn"
-                                onclick={() => releaseSingle(station.uuid)}
-                                disabled={isReleasing}
-                                title="Sender freigeben"
-                              >
-                                <i class="fa-solid fa-xmark"></i>
-                              </button>
-                            </div>
-                          {/each}
+                  {#if cat === 'filter'}
+                    <!-- Filter-Reasons nach Typ aggregiert -->
+                    {#each aggregateFilterReasons(catData.reasons) as [groupKey, groupData]}
+                      <div class="reason-group">
+                        <div class="reason-row">
+                          <span class="reason-label">{filterGroupLabel(groupKey)}</span>
+                          <span class="reason-count">({groupData.count})</span>
+                          <span class="reason-detail">{groupData.reasons.length} Durchläufe</span>
+                          <button
+                            class="mini-btn release-btn"
+                            onclick={(e) => { e.stopPropagation(); releaseFilterGroup(groupData.reasons); }}
+                            disabled={isReleasing}
+                          >FREIGEBEN</button>
                         </div>
-                      {/if}
-                    </div>
-                  {/each}
+                      </div>
+                    {/each}
+                  {:else}
+                    <!-- Andere Kategorien: einzelne Reasons -->
+                    {#each Object.entries(catData.reasons) as [reason, count]}
+                      <div class="reason-group">
+                        <div class="reason-row" onclick={() => toggleReason(reason)} tabindex="0">
+                          <span class="reason-arrow sub" class:open={expandedReason === reason}>
+                            <i class="fa-solid fa-chevron-right"></i>
+                          </span>
+                          <span class="reason-label">{formatReason(reason)}</span>
+                          <span class="reason-count">({count})</span>
+                          <button
+                            class="mini-btn release-btn"
+                            onclick={(e) => { e.stopPropagation(); releaseByReason(reason); }}
+                            disabled={isReleasing}
+                          >FREIGEBEN</button>
+                        </div>
+                        {#if expandedReason === reason}
+                          <div class="station-sublist">
+                            {#each stationsForReason(reason) as station (station.uuid)}
+                              <div class="station-row-blocked">
+                                <HiFiLed color="off" size="small" />
+                                <span class="station-name-blocked">{station.name}</span>
+                                <button
+                                  class="unblock-btn"
+                                  onclick={() => releaseSingle(station.uuid)}
+                                  disabled={isReleasing}
+                                  title="Sender freigeben"
+                                >
+                                  <i class="fa-solid fa-xmark"></i>
+                                </button>
+                              </div>
+                            {/each}
+                          </div>
+                        {/if}
+                      </div>
+                    {/each}
+                  {/if}
                 </div>
               {/if}
             </div>
@@ -553,10 +613,20 @@
       </div>
     </div>
   {/if}
+</div>
 
 {/if}
 
 <style>
+  /* === Root: füllt verfügbaren Platz === */
+  .sender-root {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
   /* === Sub-Tab Bar === */
   .sub-tab-bar {
     display: flex;
@@ -965,7 +1035,8 @@
 
   .blocked-list {
     overflow-y: auto;
-    max-height: 500px;
+    flex: 1;
+    min-height: 120px;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -1062,6 +1133,13 @@
   .reason-count {
     font-size: 9px;
     color: var(--hifi-text-secondary);
+  }
+
+  .reason-detail {
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.6;
+    margin-left: auto;
   }
 
   .release-btn {

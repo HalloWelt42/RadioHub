@@ -33,7 +33,7 @@
   let tagInput = $state('');
   const tagSuggestions = ['tv', 'television', 'test', 'webcam', 'video'];
 
-  // === LAENDER ===
+  // === LÄNDER ===
   let countries = $state([]);
   let countrySearch = $state('');
   let visibleCountries = $state([]);
@@ -170,7 +170,7 @@
     }
   }
 
-  // === LAENDER-AKTIONEN ===
+  // === LÄNDER-AKTIONEN ===
   function toggleCountry(code) {
     if (visibleCountries.includes(code)) {
       visibleCountries = visibleCountries.filter(c => c !== code);
@@ -235,7 +235,8 @@
   </div>
 {:else}
 
-  <!-- Sub-Tab: Filter / Laender -->
+<div class="filter-root">
+  <!-- Sub-Tab-Bar mit integrierter Summary -->
   <div class="sub-tab-bar">
     <button class="sub-tab-btn" class:active={subTab === 'filter'} onclick={() => subTab = 'filter'}>
       <HiFiLed color={subTab === 'filter' ? 'green' : 'off'} size="small" />
@@ -243,172 +244,193 @@
     </button>
     <button class="sub-tab-btn" class:active={subTab === 'laender'} onclick={() => subTab = 'laender'}>
       <HiFiLed color={subTab === 'laender' ? 'green' : 'off'} size="small" />
-      LAENDER
+      LÄNDER
       {#if visibleCountries.length > 0}
         <span class="sub-tab-badge">{visibleCountries.length}</span>
       {/if}
     </button>
+    {#if subTab === 'filter' && activeFilterSummary().length > 0}
+      <span class="filter-summary">
+        <HiFiLed color="amber" size="small" />
+        Aktiv: {activeFilterSummary().join(', ')}
+      </span>
+    {/if}
   </div>
 
   {#if subTab === 'filter'}
-    <!-- Aktive Filter-Zusammenfassung -->
-    {#if activeFilterSummary().length > 0}
-      <div class="active-filter-summary">
-        <HiFiLed color="amber" size="small" />
-        <span class="summary-text">Aktiv: {activeFilterSummary().join(', ')} ausgeschlossen</span>
-      </div>
-    {/if}
+    <!-- === 2-Spalten-Layout === -->
+    <div class="filter-columns">
 
-    <!-- Sprachen -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">SPRACHEN AUSSCHLIESSEN</span>
-        <div class="group-actions">
-          <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
-          <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
+      <!-- Linke Spalte: Sprachen -->
+      <div class="filter-col-main">
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <span class="filter-section-label">SPRACHEN AUSSCHLIESSEN</span>
+            <div class="filter-bulk-actions">
+              <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
+              <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
+            </div>
+          </div>
+          <div class="filter-toolbar">
+            <span class="rare-label">&le;</span>
+            <input type="number" min="1" max="999" bind:value={rareThreshold} class="filter-input rare-input" onchange={saveFilterState} />
+            <button class="mini-btn" onclick={selectRareLanguages}>SELTENE ({rareCount})</button>
+            <div class="toolbar-spacer"></div>
+            <input
+              type="text"
+              class="filter-input search-input"
+              placeholder="Sprache suchen..."
+              bind:value={languageSearch}
+            />
+          </div>
+          <div class="filter-list">
+            {#each filteredLanguages as lang}
+              <button
+                class="filter-list-item"
+                class:excluded={excludedLanguages.includes(lang.name)}
+                onclick={() => toggleLanguage(lang.name)}
+              >
+                <HiFiLed color={!excludedLanguages.includes(lang.name) ? 'green' : 'off'} size="small" />
+                <span class="filter-list-name">{lang.name}</span>
+                <span class="filter-list-count">{lang.count}</span>
+              </button>
+            {/each}
+          </div>
         </div>
       </div>
-      <div class="filter-content">
-        <div class="rare-filter-row">
-          <span class="rare-label">&le;</span>
-          <input type="number" min="1" max="999" bind:value={rareThreshold} class="filter-input rare-input" onchange={saveFilterState} />
-          <button class="mini-btn" onclick={selectRareLanguages}>SELTENE ({rareCount})</button>
+
+      <!-- Rechte Spalte: Tags + Votes + Block -->
+      <div class="filter-col-side">
+
+        <!-- Tags -->
+        <div class="filter-section side-section">
+          <div class="filter-section-header">
+            <span class="filter-section-label">TAGS AUSSCHLIESSEN</span>
+          </div>
+          <div class="side-content">
+            {#if excludedTags.length > 0}
+              <div class="tag-chips">
+                {#each excludedTags as tag}
+                  <span class="tag-chip">
+                    {tag}
+                    <button class="tag-remove" onclick={() => removeTag(tag)}>&times;</button>
+                  </span>
+                {/each}
+              </div>
+            {/if}
+            <div class="tag-input-row">
+              <input
+                type="text"
+                class="filter-input tag-input"
+                placeholder="Tag hinzufügen..."
+                bind:value={tagInput}
+                onkeydown={handleTagKeydown}
+              />
+              <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()}>+</button>
+            </div>
+            <div class="tag-suggestions">
+              {#each tagSuggestions.filter(s => !excludedTags.includes(s)) as suggestion}
+                <button class="suggestion-chip" onclick={() => addTag(suggestion)}>{suggestion}</button>
+              {/each}
+            </div>
+          </div>
         </div>
-        <input
-          type="text"
-          class="filter-input"
-          placeholder="Sprache suchen..."
-          bind:value={languageSearch}
-        />
-        <div class="language-list">
-          {#each filteredLanguages as lang}
-            <button
-              class="lang-item"
-              class:excluded={excludedLanguages.includes(lang.name)}
-              onclick={() => toggleLanguage(lang.name)}
-            >
-              <HiFiLed color={!excludedLanguages.includes(lang.name) ? 'green' : 'off'} size="small" />
-              <span class="lang-name">{lang.name}</span>
-              <span class="lang-count">{lang.count}</span>
+
+        <!-- Min Votes -->
+        <div class="filter-section side-section">
+          <div class="filter-section-header">
+            <span class="filter-section-label">MIN VOTES</span>
+          </div>
+          <div class="side-content">
+            <input
+              type="number"
+              class="filter-input votes-input"
+              min="0"
+              bind:value={minVotes}
+              onchange={() => { previewCount = null; saveFilterState(); }}
+            />
+          </div>
+        </div>
+
+        <!-- Permanent Ausblenden -->
+        <div class="block-zone">
+          <span class="block-zone-label">PERMANENT AUSBLENDEN</span>
+          <span class="block-zone-hint">Sender mit obigen Kriterien dauerhaft entfernen</span>
+          <div class="block-actions">
+            <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
+              {isPreviewing ? 'ZÄHLE...' : 'VORSCHAU'}
             </button>
-          {/each}
+            {#if previewCount !== null}
+              <span class="preview-count">{previewCount} betroffen</span>
+            {/if}
+            <button
+              class="action-btn block-btn"
+              onclick={push}
+              disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
+            >
+              {isPushing ? 'BLENDE AUS...' : 'AUSBLENDEN'}
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Tags -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">TAGS AUSSCHLIESSEN</span>
-      </div>
-      <div class="filter-content">
-        <div class="tag-chips">
-          {#each excludedTags as tag}
-            <span class="tag-chip">
-              {tag}
-              <button class="tag-remove" onclick={() => removeTag(tag)}>&times;</button>
-            </span>
-          {/each}
-        </div>
-        <div class="tag-input-row">
-          <input
-            type="text"
-            class="filter-input tag-input"
-            placeholder="Tag hinzufuegen..."
-            bind:value={tagInput}
-            onkeydown={handleTagKeydown}
-          />
-          <button class="mini-btn" onclick={() => addTag(tagInput)} disabled={!tagInput.trim()}>+</button>
-        </div>
-        <div class="tag-suggestions">
-          {#each tagSuggestions.filter(s => !excludedTags.includes(s)) as suggestion}
-            <button class="suggestion-chip" onclick={() => addTag(suggestion)}>{suggestion}</button>
-          {/each}
-        </div>
-      </div>
-    </div>
-
-    <!-- Min Votes -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">MIN VOTES</span>
-      </div>
-      <div class="filter-content">
-        <input
-          type="number"
-          class="filter-input votes-input"
-          min="0"
-          bind:value={minVotes}
-          onchange={() => { previewCount = null; saveFilterState(); }}
-        />
-      </div>
-    </div>
-
-    <!-- Permanent Ausblenden -->
-    <div class="block-zone">
-      <div class="zone-header">
-        <span class="zone-label zone-label-block">PERMANENT AUSBLENDEN</span>
-      </div>
-      <span class="zone-hint">Sender mit obigen Kriterien dauerhaft entfernen</span>
-      <div class="filter-action-row">
-        <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
-          {isPreviewing ? 'ZAEHLE...' : 'VORSCHAU'}
-        </button>
-        {#if previewCount !== null}
-          <span class="preview-count">{previewCount} Sender betroffen</span>
-        {/if}
-        <button
-          class="action-btn block-btn"
-          onclick={push}
-          disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
-        >
-          {isPushing ? 'BLENDE AUS...' : 'AUSBLENDEN'}
-        </button>
       </div>
     </div>
 
   {:else if subTab === 'laender'}
-    <!-- Laender-Konfiguration -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">SICHTBARE LAENDER</span>
-        <div class="group-actions">
-          <button class="mini-btn" onclick={selectAllCountries}>Alle</button>
-          <button class="mini-btn" onclick={selectNoCountries}>Keine</button>
+    <!-- === Länder: Volle Höhe === -->
+    <div class="filter-full">
+      <div class="filter-section">
+        <div class="filter-section-header">
+          <span class="filter-section-label">SICHTBARE LÄNDER</span>
+          <div class="filter-bulk-actions">
+            <button class="mini-btn" onclick={selectAllCountries}>Alle</button>
+            <button class="mini-btn" onclick={selectNoCountries}>Keine</button>
+          </div>
         </div>
-      </div>
-      <div class="filter-content">
-        <input
-          type="text"
-          class="filter-input"
-          placeholder="Land suchen..."
-          bind:value={countrySearch}
-        />
-        <div class="country-list">
+        <div class="filter-toolbar">
+          <input
+            type="text"
+            class="filter-input search-input search-full"
+            placeholder="Land suchen..."
+            bind:value={countrySearch}
+          />
+        </div>
+        <div class="filter-list">
           {#each filteredCountries() as country}
             <button
-              class="lang-item"
+              class="filter-list-item"
               class:active={visibleCountries.includes(country.code)}
               onclick={() => toggleCountry(country.code)}
             >
               <HiFiLed color={visibleCountries.includes(country.code) ? 'green' : 'off'} size="small" />
-              <span class="lang-name">{translateCountry(country.name)}</span>
-              <span class="lang-count">{country.count}</span>
+              <span class="filter-list-name">{translateCountry(country.name)}</span>
+              <span class="filter-list-count">{country.count}</span>
             </button>
           {/each}
         </div>
       </div>
     </div>
   {/if}
+</div>
 
 {/if}
 
 <style>
+  /* === Root: füllt verfügbaren Platz === */
+  .filter-root {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
   /* === Sub-Tab Bar === */
   .sub-tab-bar {
     display: flex;
+    align-items: center;
     gap: 2px;
     margin-bottom: 12px;
+    flex-shrink: 0;
   }
 
   .sub-tab-btn {
@@ -444,38 +466,173 @@
     color: var(--hifi-led-green, #4caf50);
   }
 
-  /* === Filter Content (innerhalb Panels) === */
-  .filter-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 16px;
-  }
-
-  /* === Active Filter Summary === */
-  .active-filter-summary {
+  .filter-summary {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    background: rgba(229, 160, 13, 0.08);
-    border: 1px solid rgba(229, 160, 13, 0.2);
-    border-radius: var(--hifi-border-radius-sm);
-    margin-bottom: 8px;
-  }
-
-  .summary-text {
+    gap: 5px;
+    margin-left: auto;
     font-family: var(--hifi-font-body);
-    font-size: 11px;
+    font-size: 10px;
     color: var(--hifi-led-amber, #e5a00d);
+    padding: 4px 10px;
+    background: rgba(229, 160, 13, 0.08);
+    border-radius: var(--hifi-border-radius-sm);
   }
 
-  /* === Shared Buttons === */
-  .group-actions {
+  /* === 2-Spalten Layout (Suchfilter) === */
+  .filter-columns {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
+  }
+
+  .filter-col-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-col-side {
+    width: 260px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  /* === Volle Höhe (Länder) === */
+  .filter-full {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === Filter Section (leichter Container) === */
+  .filter-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: var(--hifi-border-radius-sm);
+  }
+
+  .side-section {
+    flex: none;
+  }
+
+  .filter-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--hifi-border-dark);
+    flex-shrink: 0;
+  }
+
+  .filter-section-label {
+    font-family: var(--hifi-font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--hifi-text-secondary);
+    text-transform: uppercase;
+  }
+
+  .filter-bulk-actions {
     display: flex;
     gap: 4px;
   }
 
+  /* === Toolbar (Seltene + Suche) === */
+  .filter-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--hifi-border-dark);
+    flex-shrink: 0;
+  }
+
+  .toolbar-spacer {
+    flex: 1;
+  }
+
+  .search-input {
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .search-full {
+    width: 100%;
+    flex-shrink: 1;
+  }
+
+  /* === Filter-Liste (gemeinsam für Sprachen + Länder) === */
+  .filter-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+  }
+
+  .filter-list-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: var(--hifi-text-primary);
+    font-family: var(--hifi-font-body);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .filter-list-item:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .filter-list-item.excluded {
+    opacity: 0.4;
+  }
+
+  .filter-list-name {
+    flex: 1;
+    text-transform: capitalize;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .filter-list-count {
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+    min-width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* === Side Content === */
+  .side-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  /* === Shared Buttons === */
   .mini-btn {
     padding: 3px 9px;
     background: var(--hifi-bg-tertiary);
@@ -499,7 +656,7 @@
 
   /* === Inputs === */
   .filter-input {
-    padding: 7px 10px;
+    padding: 6px 10px;
     font-family: var(--hifi-font-body);
     font-size: 12px;
     color: var(--hifi-text-primary);
@@ -522,12 +679,6 @@
     width: 90px;
   }
 
-  .rare-filter-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
   .rare-input {
     width: 55px;
     padding: 4px 8px;
@@ -538,64 +689,6 @@
   .rare-label {
     font-size: 12px;
     color: var(--hifi-text-secondary);
-  }
-
-  /* === Language/Country List === */
-  .language-list {
-    max-height: 200px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-inset);
-    padding: 4px;
-  }
-
-  .country-list {
-    max-height: 400px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    background: var(--hifi-bg-tertiary);
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-inset);
-    padding: 4px;
-  }
-
-  .lang-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background: none;
-    border: none;
-    color: var(--hifi-text-primary);
-    font-family: var(--hifi-font-body);
-    font-size: 12px;
-    cursor: pointer;
-    text-align: left;
-    border-radius: 3px;
-  }
-
-  .lang-item:hover {
-    background: var(--hifi-row-hover);
-  }
-
-  .lang-item.excluded {
-    opacity: 0.4;
-  }
-
-  .lang-name {
-    flex: 1;
-    text-transform: capitalize;
-  }
-
-  .lang-count {
-    font-size: 9px;
-    color: var(--hifi-text-secondary);
-    min-width: 40px;
-    text-align: right;
     flex-shrink: 0;
   }
 
@@ -667,44 +760,34 @@
   .block-zone {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px;
+    gap: 6px;
+    padding: 10px 12px;
     border: 1px solid rgba(255, 60, 60, 0.25);
     border-radius: var(--hifi-border-radius-sm);
     background: rgba(255, 60, 60, 0.04);
-    margin-top: 8px;
   }
 
-  .zone-header {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-
-  .zone-label {
+  .block-zone-label {
     font-family: var(--hifi-font-display);
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: var(--hifi-accent);
+    color: var(--hifi-led-red);
     text-transform: uppercase;
   }
 
-  .zone-label-block {
-    color: var(--hifi-led-red);
-  }
-
-  .zone-hint {
+  .block-zone-hint {
     font-family: var(--hifi-font-body);
     font-size: 10px;
     color: var(--hifi-text-secondary);
     font-style: italic;
   }
 
-  .filter-action-row {
+  .block-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
   }
 
   .preview-count {
@@ -715,9 +798,9 @@
   }
 
   .action-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     font-family: var(--hifi-font-display);
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.5px;
     border: none;
