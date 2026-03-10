@@ -1,5 +1,5 @@
 /**
- * RadioHub Player Engine v1.0.0
+ * RadioHub Player Engine v1.1.0
  *
  * Zentrale Playback-Steuerung mit State-Machine.
  * Löst die Probleme:
@@ -28,6 +28,7 @@ let _hlsPollInterval = null;
 let _generation = 0;
 let _recordingInterval = null;
 let _recordingStartTime = null;
+let _recordingPollInterval = null;
 let _hlsSessionId = null;
 let _lastSeekPosition = 0;
 let _userModeOverride = false;
@@ -498,9 +499,13 @@ export function canSeek() {
 /**
  * Wechselt zwischen Direct (Original) und HLS (re-encoded) Modus.
  * Nur möglich wenn der Zielmodus verfügbar ist.
+ * Blockiert während aktiver Aufnahme (Mode-Wechsel würde Aufnahme stören).
  */
 export function toggleStreamMode() {
   if (!_appState || !_audioEl) return;
+
+  // Guard: Kein Mode-Wechsel während Aufnahme
+  if (_appState.isRecording) return;
 
   if (_appState.playerMode === 'hls' && _appState.canPlayDirect) {
     _switchToDirect();
@@ -568,9 +573,11 @@ function _switchToDirect() {
 
 /**
  * Prüft ob der Stream-Modus gewechselt werden kann.
+ * Blockiert während aktiver Aufnahme.
  */
 export function canToggleMode() {
   if (!_appState) return false;
+  if (_appState.isRecording) return false;
   return (_appState.playerMode === 'hls' && _appState.canPlayDirect) ||
          (_appState.playerMode === 'direct' && _appState.canPlayHLS === true);
 }
@@ -628,6 +635,7 @@ async function _startDirectRecording() {
       _recordingInterval = setInterval(() => {
         _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
       }, 1000);
+      _startRecordingPoll();
     }
     return result;
   } catch (e) {
@@ -651,11 +659,63 @@ async function _startHlsRecording() {
       _recordingInterval = setInterval(() => {
         _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
       }, 1000);
+      _startRecordingPoll();
     }
     return result;
   } catch (e) {
     console.error('HLS-REC start error:', e);
     return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Pollt Backend-Recording-Status alle 5 Sekunden.
+ * Erkennt Backend-Neustart/Crash: Wenn Backend keine aktive Aufnahme
+ * meldet aber Frontend denkt es läuft eine, wird State zurückgesetzt.
+ */
+function _startRecordingPoll() {
+  _stopRecordingPoll();
+  _recordingPollInterval = setInterval(async () => {
+    if (!_appState?.isRecording) {
+      _stopRecordingPoll();
+      return;
+    }
+    try {
+      const recType = _appState.recordingType;
+      const status = recType === 'hls-rec'
+        ? await api.getHlsRecordingStatus()
+        : await api.getRecordingStatus();
+
+      if (!status?.recording) {
+        // Backend sagt: keine Aufnahme. Frontend-State zurücksetzen.
+        console.warn('Recording-Status-Poll: Backend hat keine aktive Aufnahme, setze State zurück');
+        _resetRecordingState();
+      }
+    } catch (e) {
+      // Netzwerkfehler: nicht sofort reagieren, naechster Poll klaert
+    }
+  }, 5000);
+}
+
+function _stopRecordingPoll() {
+  if (_recordingPollInterval) {
+    clearInterval(_recordingPollInterval);
+    _recordingPollInterval = null;
+  }
+}
+
+function _resetRecordingState() {
+  if (_recordingInterval) {
+    clearInterval(_recordingInterval);
+    _recordingInterval = null;
+  }
+  _stopRecordingPoll();
+  _recordingStartTime = null;
+  if (_appState) {
+    _appState.isRecording = false;
+    _appState.recordingType = 'none';
+    _appState.recordingSession = null;
+    _appState.recordingElapsed = 0;
   }
 }
 
@@ -675,6 +735,7 @@ async function _stopRecordingInternal() {
     clearInterval(_recordingInterval);
     _recordingInterval = null;
   }
+  _stopRecordingPoll();
   _recordingStartTime = null;
 
   try {
@@ -988,6 +1049,7 @@ export function _resetForTest() {
     clearInterval(_recordingInterval);
     _recordingInterval = null;
   }
+  _stopRecordingPoll();
   _audioEl = null;
   _appState = null;
   _generation = 0;

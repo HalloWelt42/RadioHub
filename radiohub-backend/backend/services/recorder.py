@@ -1,11 +1,13 @@
 """
-RadioHub v0.2.0 - Recorder Service
+RadioHub v0.2.1 - Recorder Service
 
 Stream-Aufnahme mit FFmpeg: Stream-Copy (kein Re-Encoding),
 automatische Codec-Erkennung via ffprobe, Fallback auf MP3.
+Disk-Space-Guard gegen vollaufende Platte.
 """
 import asyncio
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from datetime import datetime
@@ -14,6 +16,9 @@ from typing import Optional
 from ..database import db_session
 from ..config import get_radio_recordings_dir
 from .icy_metadata import IcyMetadataLogger
+
+# Minimaler freier Speicherplatz (100 MB)
+MIN_FREE_DISK_MB = 100
 
 
 # Codec -> Dateiendung
@@ -140,6 +145,17 @@ class RecorderManager:
                 "error": "Aufnahme laeuft bereits",
                 "session_id": self.active_session.id
             }
+
+        # Disk-Space pruefen
+        rec_dir = get_radio_recordings_dir()
+        try:
+            stat = shutil.disk_usage(str(rec_dir))
+            free_mb = stat.free / (1024 * 1024)
+            if free_mb < MIN_FREE_DISK_MB:
+                return {"success": False,
+                        "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
+        except Exception:
+            pass  # Im Zweifel nicht blockieren
 
         # Codec erkennen
         codec, ext = await self._detect_codec(stream_url)

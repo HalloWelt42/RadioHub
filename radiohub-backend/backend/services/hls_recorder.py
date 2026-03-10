@@ -1,9 +1,14 @@
 """
-RadioHub v0.2.3 - HLS Recorder Service
+RadioHub v0.2.4 - HLS Recorder Service
 
 Aufnahme aus dem HLS-Buffer mit konfigurierbarem Lookback.
 Kopiert .ts Segmente, konkateniert per ffmpeg Stream-Copy zu .aac.
 Nutzt ICY-Metadata aus dem HLS-Buffer fuer Segment-Split.
+
+Edge-Case-Haertung:
+- Stale-Session-Cleanup bei Server-Neustart
+- Auto-Finalisierung wenn HLS-Buffer waehrend Aufnahme stirbt
+- Disk-Space-Guard vor Start und waehrend Aufnahme
 """
 import asyncio
 import json
@@ -16,6 +21,9 @@ from ..database import db_session
 from ..config import get_radio_recordings_dir
 from .hls_buffer import hls_buffer
 from .recorder import rec_manager
+
+# Minimaler freier Speicherplatz (100 MB)
+MIN_FREE_DISK_MB = 100
 
 
 class HLSRecSession:
@@ -44,12 +52,59 @@ class HLSRecSession:
         return float(len(self.collected_segments))
 
 
+def _check_disk_space(path: Path) -> bool:
+    """Prueft ob genug Speicherplatz vorhanden ist."""
+    try:
+        stat = shutil.disk_usage(str(path))
+        free_mb = stat.free / (1024 * 1024)
+        return free_mb >= MIN_FREE_DISK_MB
+    except Exception:
+        return True  # Im Zweifel nicht blockieren
+
+
 class HLSRecorderService:
     """Aufnahme aus dem HLS-Buffer mit Lookback."""
 
     def __init__(self):
         self.active_session: Optional[HLSRecSession] = None
         self._collector_task: Optional[asyncio.Task] = None
+        self._cleanup_stale_sessions()
+
+    def _cleanup_stale_sessions(self):
+        """Beim Start: Verwaiste HLS-REC-Sessions bereinigen.
+
+        Nach Server-Neustart existiert kein Collector-Task mehr,
+        aber die DB hat noch status='recording' mit rec_type='hls-rec'.
+        Ausserdem .ts Verzeichnisse von abgebrochenen Sessions aufraeumen.
+        """
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute(
+                "SELECT id, file_path FROM sessions "
+                "WHERE status = 'recording' AND rec_type = 'hls-rec'"
+            )
+            stale = c.fetchall()
+            for row in stale:
+                sid = row[0]
+                fp = row[1]
+                file_size = 0
+                if fp:
+                    p = Path(fp)
+                    # HLS-REC speichert Session-Dir als file_path waehrend Aufnahme
+                    if p.is_dir():
+                        # .ts Verzeichnis aufraeumen
+                        ts_dir = p / "ts"
+                        if ts_dir.exists():
+                            shutil.rmtree(ts_dir, ignore_errors=True)
+                    elif p.is_file():
+                        file_size = p.stat().st_size
+                c.execute(
+                    "UPDATE sessions SET status = 'interrupted', file_size = ? "
+                    "WHERE id = ?",
+                    (file_size, sid)
+                )
+            if stale:
+                print(f"  {len(stale)} verwaiste HLS-REC-Session(s) bereinigt")
 
     async def start(self, lookback_seconds: int = 300) -> dict:
         """Startet HLS-REC.
@@ -68,6 +123,12 @@ class HLSRecorderService:
 
         if rec_manager.active_session:
             return {"success": False, "error": "Direkt-Aufnahme laeuft bereits"}
+
+        # Disk-Space pruefen
+        rec_dir = get_radio_recordings_dir()
+        if not _check_disk_space(rec_dir):
+            return {"success": False,
+                    "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
 
         # HLS-Status holen
         hls_status = hls_buffer.get_status()
@@ -144,8 +205,15 @@ class HLSRecorderService:
         }
 
     async def _collect_segments(self, session: HLSRecSession):
-        """Kopiert periodisch neue HLS-Segmente in das Recording-Verzeichnis."""
+        """Kopiert periodisch neue HLS-Segmente in das Recording-Verzeichnis.
+
+        Bricht automatisch ab wenn:
+        - HLS-Buffer nicht mehr aktiv
+        - Speicherplatz unter Minimum faellt
+        """
         last_copied = max(session.collected_segments) if session.collected_segments else 0
+        disk_check_counter = 0
+        buffer_dead = False
 
         try:
             while True:
@@ -153,7 +221,17 @@ class HLSRecorderService:
 
                 if not hls_buffer.is_active():
                     print("  HLS-REC: Buffer gestoppt, beende Collector")
+                    buffer_dead = True
                     break
+
+                # Disk-Space alle 30 Zyklen pruefen (~15 Sekunden)
+                disk_check_counter += 1
+                if disk_check_counter >= 30:
+                    disk_check_counter = 0
+                    if not _check_disk_space(session.ts_dir):
+                        print("  HLS-REC: Speicherplatz knapp, beende Collector")
+                        buffer_dead = True  # Triggert Auto-Finalisierung
+                        break
 
                 status = hls_buffer.get_status()
                 current_last = status.get("last_segment", 0)
@@ -177,6 +255,12 @@ class HLSRecorderService:
                         dst = session.ts_dir / f"segment_{seg_num}.ts"
                         shutil.copy2(str(src), str(dst))
                         session.collected_segments.append(seg_num)
+            return
+
+        # Buffer-Tod oder Disk-Space: Automatisch finalisieren
+        if buffer_dead and self.active_session:
+            print("  HLS-REC: Auto-Finalisierung nach Collector-Abbruch")
+            asyncio.create_task(self._auto_finalize())
 
     async def stop(self) -> dict:
         """Stoppt HLS-REC und finalisiert die Aufnahme.
@@ -408,12 +492,40 @@ class HLSRecorderService:
         self.active_session = None
         self._collector_task = None
 
+    async def _auto_finalize(self):
+        """Automatische Finalisierung wenn Collector unerwartet endet.
+
+        Versucht die bisherigen Segmente zu retten (concat -> .aac),
+        anstatt die Aufnahme zu verwerfen.
+        """
+        try:
+            result = await self.stop()
+            if result.get("success"):
+                print(f"  HLS-REC Auto-Finalisierung erfolgreich: {result.get('session_id')}")
+            else:
+                print(f"  HLS-REC Auto-Finalisierung fehlgeschlagen: {result.get('error')}")
+        except Exception as e:
+            print(f"  HLS-REC Auto-Finalisierung Fehler: {e}")
+            # Im schlimmsten Fall: Session aufräumen
+            if self.active_session:
+                self._cleanup(self.active_session)
+
     def get_status(self) -> dict:
-        """Aktueller HLS-REC Status."""
+        """Aktueller HLS-REC Status.
+
+        Prueft auch ob Collector-Task noch lebt.
+        """
         if not self.active_session:
             return {"recording": False}
 
         session = self.active_session
+
+        # Collector-Health-Check: Task tot aber Session noch aktiv?
+        collector_alive = (
+            self._collector_task is not None
+            and not self._collector_task.done()
+        )
+
         return {
             "recording": True,
             "session_id": session.id,
@@ -422,7 +534,8 @@ class HLSRecorderService:
             "duration": session.duration,
             "lookback_seconds": session.lookback_seconds,
             "collected_segments": len(session.collected_segments),
-            "total_seconds": session.total_seconds
+            "total_seconds": session.total_seconds,
+            "collector_alive": collector_alive
         }
 
 
