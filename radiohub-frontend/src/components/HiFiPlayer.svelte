@@ -286,6 +286,19 @@
     isPodcast
   );
 
+  // Recording-Bitrate Anzeige (Output-Bitrate bei HLS-REC, Input-Bitrate bei Direct-REC)
+  let recordingBitrateLabel = $derived(() => {
+    if (!appState.isRecording) return null;
+    const q = appState.streamQuality;
+    if (appState.recordingType === 'hls-rec' && q?.outputBitrate) {
+      return `${q.outputBitrate} kbps`;
+    }
+    if (appState.recordingType === 'direct' && q?.inputBitrate) {
+      return `${q.inputBitrate} kbps`;
+    }
+    return null;
+  });
+
   // === LED States ===
   let playPauseLedColor = $derived(
     appState.isPaused ? 'yellow' :
@@ -425,9 +438,13 @@
         class:timer-red={timerColor === 'red'}
         class:timer-yellow={timerColor === 'yellow'}
         class:timer-green={timerColor === 'green'}
+        class:timer-amber={timerColor === 'amber'}
         class:timer-inactive={!timerActive}
       >
         <span class="timer-text">{timerActive ? formatTime(timerDisplayTime) : '00:00:00'}</span>
+        {#if appState.isRecording && recordingBitrateLabel()}
+          <span class="timer-kbps">{recordingBitrateLabel()}</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -861,6 +878,28 @@
   .timer-display.timer-green .timer-text {
     color: var(--hifi-display-text);
     text-shadow: 0 0 8px var(--hifi-display-text);
+  }
+
+  .timer-display.timer-amber .timer-text {
+    color: var(--hifi-led-amber);
+    text-shadow: none;
+  }
+
+  .timer-kbps {
+    font-family: var(--hifi-font-body);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
+  .timer-display.timer-red .timer-kbps {
+    color: var(--hifi-led-red);
+  }
+
+  .timer-display.timer-amber .timer-kbps {
+    color: var(--hifi-led-amber);
   }
 
   /* TRANSPORT */
