@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     if rec_manager.active_session:
-        rec_manager.stop()
+        await rec_manager.stop()
     await buffer_manager.stop_buffering()
     await timeshift_buffer.stop_buffering()
     await hls_buffer.stop()  # HLS Buffer stoppen

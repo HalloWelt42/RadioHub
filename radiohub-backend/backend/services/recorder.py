@@ -70,6 +70,30 @@ class RecorderManager:
     def __init__(self):
         self.active_session: Optional[RecordingSession] = None
         self._monitor_task: Optional[asyncio.Task] = None
+        self._cleanup_stale_sessions()
+
+    def _cleanup_stale_sessions(self):
+        """Beim Start: Verwaiste 'recording'-Sessions in DB bereinigen.
+        Nach Server-Neustart existiert kein FFmpeg-Prozess mehr,
+        aber die DB hat noch status='recording'."""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("SELECT id, file_path FROM sessions WHERE status = 'recording'")
+            stale = c.fetchall()
+            for row in stale:
+                sid = row[0]
+                fp = row[1]
+                file_size = 0
+                if fp:
+                    p = Path(fp)
+                    file_size = p.stat().st_size if p.exists() else 0
+                # Als abgebrochen markieren mit tatsächlicher Dateigröße
+                c.execute(
+                    "UPDATE sessions SET status = 'interrupted', file_size = ? WHERE id = ?",
+                    (file_size, sid)
+                )
+            if stale:
+                print(f"  {len(stale)} verwaiste Recording-Session(s) bereinigt")
 
     async def _detect_codec(self, stream_url: str) -> tuple[str, str]:
         """Erkennt Audio-Codec via ffprobe. Gibt (codec_name, extension) zurueck."""
@@ -356,11 +380,16 @@ class RecorderManager:
 
         session = self.active_session
 
-        # Pruefen ob FFmpeg noch laeuft
+        # Prüfen ob FFmpeg noch läuft
         alive = session.process and session.process.returncode is None
 
+        if not alive:
+            # FFmpeg ist gestorben -- Session bereinigen
+            self._finalize_session(session, "interrupted")
+            return {"recording": False}
+
         status = {
-            "recording": alive,
+            "recording": True,
             "session_id": session.id,
             "station_name": session.station_name,
             "station_uuid": session.station_uuid,
@@ -370,7 +399,7 @@ class RecorderManager:
             "file_format": session.file_format
         }
 
-        # ICY-Titel mitliefern wenn Logger laeuft
+        # ICY-Titel mitliefern wenn Logger läuft
         if session.icy_logger and session.icy_logger.entries:
             status["icy_title"] = session.icy_logger.entries[-1].get("title", "")
 
@@ -391,9 +420,19 @@ class RecorderManager:
         # Verwaiste Sessions entfernen (Datei fehlt, nicht aktiv)
         orphans = []
         valid = []
+        active_id = self.active_session.id if self.active_session else None
         for row in rows:
             if row.get("status") == "recording":
-                valid.append(row)
+                if row["id"] == active_id:
+                    valid.append(row)
+                else:
+                    # Verwaiste recording-Session: Prozess existiert nicht mehr
+                    row["status"] = "interrupted"
+                    with db_session() as conn2:
+                        conn2.cursor().execute(
+                            "UPDATE sessions SET status = 'interrupted' WHERE id = ?",
+                            (row["id"],))
+                    valid.append(row)
                 continue
             fp = row.get("file_path")
             if fp:
