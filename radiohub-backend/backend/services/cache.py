@@ -4,7 +4,6 @@ RadioHub v0.1.9 - Cache Service
 Lädt Sender von radio-browser.info und cached sie lokal.
 Mit Sortierung nach name, country, bitrate, votes
 """
-import json
 import httpx
 from datetime import datetime
 from typing import List, Optional

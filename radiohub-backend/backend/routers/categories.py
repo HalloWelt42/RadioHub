@@ -4,7 +4,7 @@ RadioHub v0.1.0 - Categories Router
 Benutzerdefinierte Kategorien mit direkter Sender-Zuordnung.
 """
 from typing import Optional, List
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..database import db_session
@@ -66,14 +66,17 @@ async def get_categories():
 @router.post("")
 async def create_category(body: CategoryCreate):
     """Neue Kategorie anlegen."""
+    name = body.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Name darf nicht leer sein")
     with db_session() as conn:
         c = conn.cursor()
         c.execute(
             "INSERT INTO categories (name, tags, sort_order) VALUES (?, ?, ?)",
-            (body.name.strip(), body.tags.strip(), body.sort_order)
+            (name, body.tags.strip(), body.sort_order)
         )
         cat_id = c.lastrowid
-    return {"id": cat_id, "name": body.name, "sort_order": body.sort_order}
+    return {"id": cat_id, "name": name, "sort_order": body.sort_order}
 
 
 @router.put("/{cat_id}")
@@ -93,11 +96,11 @@ async def update_category(cat_id: int, body: CategoryUpdate):
             updates.append("sort_order = ?")
             params.append(body.sort_order)
         if not updates:
-            return {"error": "Keine Aenderungen"}
+            raise HTTPException(status_code=400, detail="Keine Aenderungen")
         params.append(cat_id)
         c.execute(f"UPDATE categories SET {', '.join(updates)} WHERE id = ?", params)
         if c.rowcount == 0:
-            return {"error": "Kategorie nicht gefunden"}
+            raise HTTPException(status_code=404, detail="Kategorie nicht gefunden")
     return {"id": cat_id, "updated": True}
 
 
@@ -108,7 +111,7 @@ async def delete_category(cat_id: int):
         c = conn.cursor()
         c.execute("DELETE FROM categories WHERE id = ?", (cat_id,))
         if c.rowcount == 0:
-            return {"error": "Kategorie nicht gefunden"}
+            raise HTTPException(status_code=404, detail="Kategorie nicht gefunden")
     return {"deleted": True}
 
 
@@ -119,6 +122,9 @@ async def assign_station(cat_id: int, station_uuid: str):
     """Sender einer Kategorie zuordnen."""
     with db_session() as conn:
         c = conn.cursor()
+        c.execute("SELECT id FROM categories WHERE id = ?", (cat_id,))
+        if not c.fetchone():
+            raise HTTPException(status_code=404, detail="Kategorie nicht gefunden")
         c.execute(
             "INSERT OR IGNORE INTO category_stations (category_id, station_uuid) VALUES (?, ?)",
             (cat_id, station_uuid)

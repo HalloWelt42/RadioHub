@@ -92,7 +92,7 @@ class RadioHubAPI {
   async createCategory(name, sortOrder = 0) {
     return this.fetch('/api/categories', {
       method: 'POST',
-      body: JSON.stringify({ name, tags: '', sort_order: sortOrder })
+      body: JSON.stringify({ name, sort_order: sortOrder })
     });
   }
 

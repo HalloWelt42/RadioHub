@@ -17,9 +17,6 @@
   let searchHistory = $state(JSON.parse(localStorage.getItem('radiohub_search_history') || '[]'));
   let showSearchHistory = $state(false);
   
-  // Aktuell spielender Sender
-  let currentPlayingStation = $derived(appState.currentStation);
-
   // Ausgewählter Sender (Details sichtbar)
   let selectedUuid = $state(null);
 
@@ -59,7 +56,6 @@
   // Kategorien
   let categories = $state([]);
   let selectedCategories = $state([]);
-  let selectedTags = $state([]);
   let categoryAssignments = $state({}); // Map<uuid, [categoryId, ...]>
 
   // Sortierung
@@ -273,7 +269,6 @@
       const params = {
         q: searchQuery || undefined,
         countries: selectedCountries.length > 0 ? selectedCountries : undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
         category_ids: selectedCategories.length > 0 ? selectedCategories : undefined,
         exclude_languages: excludedLanguages.length > 0 ? excludedLanguages : undefined,
         exclude_tags: excludedTags.length > 0 ? excludedTags : undefined,
@@ -359,7 +354,6 @@
       selectedBitrates = [];
       selectedVotesRanges = [];
       selectedCategories = [];
-      selectedTags = [];
       showFavsOnly = false;
       sortBy = 'name';
       sortOrder = 'asc';
@@ -428,7 +422,7 @@
       case 'Enter':
         e.preventDefault();
         if (focusedIndex >= 0 && focusedIndex < stations.length) {
-          selectStation(stations[focusedIndex]);
+          toggleExpand(stations[focusedIndex]);
         }
         break;
     }
@@ -583,19 +577,20 @@
       const result = await api.getStationAssignments(uuids);
       const data = result?.assignments || {};
       categoryAssignments = { ...categoryAssignments, ...data };
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.error('Kategorie-Zuordnungen laden fehlgeschlagen:', e);
+    }
   }
 
   async function toggleCategoryAssignment(stationUuid, categoryId, e) {
     e.stopPropagation();
-    const current = categoryAssignments[stationUuid] || [];
-    const isAssigned = current.includes(categoryId);
+    const isAssigned = (categoryAssignments[stationUuid] || []).includes(categoryId);
 
     // Optimistisches Update
     if (isAssigned) {
-      categoryAssignments[stationUuid] = current.filter(id => id !== categoryId);
+      categoryAssignments[stationUuid] = (categoryAssignments[stationUuid] || []).filter(id => id !== categoryId);
     } else {
-      categoryAssignments[stationUuid] = [...current, categoryId];
+      categoryAssignments[stationUuid] = [...(categoryAssignments[stationUuid] || []), categoryId];
     }
     categoryAssignments = { ...categoryAssignments };
 
@@ -606,8 +601,17 @@
         await api.assignStation(categoryId, stationUuid);
       }
     } catch {
-      // Rollback
-      categoryAssignments[stationUuid] = current;
+      // Rollback: gezielt nur diese categoryId korrigieren
+      const live = categoryAssignments[stationUuid] || [];
+      if (isAssigned) {
+        // War vorher drin, API-Remove fehlgeschlagen -> wieder hinzufuegen
+        if (!live.includes(categoryId)) {
+          categoryAssignments[stationUuid] = [...live, categoryId];
+        }
+      } else {
+        // War vorher nicht drin, API-Add fehlgeschlagen -> wieder entfernen
+        categoryAssignments[stationUuid] = live.filter(id => id !== categoryId);
+      }
       categoryAssignments = { ...categoryAssignments };
       actions.showToast('Zuordnung fehlgeschlagen', 'error');
     }
@@ -618,7 +622,6 @@
     selectedBitrates = [];
     selectedVotesRanges = [];
     selectedCategories = [];
-    selectedTags = [];
     showFavsOnly = false;
     searchQuery = '';
     search();
@@ -626,7 +629,7 @@
 
   let activeFilterCount = $derived(
     selectedCountries.length + selectedBitrates.length + selectedVotesRanges.length
-    + selectedCategories.length + selectedTags.length
+    + selectedCategories.length
     + excludedLanguages.length + excludedTags.length
     + (filterMinVotes > 0 ? 1 : 0)
     + (showFavsOnly ? 1 : 0)
@@ -1690,18 +1693,6 @@
     background: var(--hifi-led-red, #e53935);
     color: #fff;
     border-color: var(--hifi-led-red, #e53935);
-  }
-
-  .ad-hover-block:hover {
-    background: var(--hifi-led-red, #e53935);
-    color: #fff;
-    border-color: var(--hifi-led-red, #e53935);
-  }
-
-  .ad-hover-allow:hover {
-    background: var(--hifi-led-green, #4caf50);
-    color: #fff;
-    border-color: var(--hifi-led-green, #4caf50);
   }
 
   .loading, .empty {

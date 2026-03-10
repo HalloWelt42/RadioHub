@@ -21,6 +21,7 @@
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
       console.error('SetupKategorien: Laden fehlgeschlagen:', e);
+      actions.showToast('Kategorien laden fehlgeschlagen', 'error');
     }
     isLoading = false;
   }
@@ -71,11 +72,11 @@
     try {
       await api.deleteCategory(id);
       categories = categories.filter(c => c.id !== id);
-      actions.showToast('Kategorie geloescht');
+      actions.showToast('Kategorie gelöscht');
       if (editingId === id) cancelForm();
     } catch (e) {
-      console.error('SetupKategorien: Loeschen fehlgeschlagen:', e);
-      actions.showToast('Loeschen fehlgeschlagen', 'error');
+      console.error('SetupKategorien: Löschen fehlgeschlagen:', e);
+      actions.showToast('Löschen fehlgeschlagen', 'error');
     }
   }
 
@@ -146,7 +147,7 @@
           </div>
           <div class="kat-actions">
             <button class="mini-btn" onclick={() => startEdit(cat)}>BEARBEITEN</button>
-            <button class="mini-btn delete-btn" onclick={() => deleteCategory(cat.id)}>LOESCHEN</button>
+            <button class="mini-btn delete-btn" onclick={() => deleteCategory(cat.id)}>LÖSCHEN</button>
           </div>
         </div>
       {/each}
