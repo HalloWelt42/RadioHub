@@ -360,6 +360,7 @@
   const playModeLabels = { linear: 'Linear (einmal)', loop: 'Endlosschleife', shuffle: 'Zufall' };
   let playModeLedColor = $derived(
     !canTogglePlayMode ? 'off' :
+    appState.playMode === 'linear' ? 'white' :
     appState.playMode === 'loop' ? 'green' :
     appState.playMode === 'shuffle' ? 'yellow' :
     'off'

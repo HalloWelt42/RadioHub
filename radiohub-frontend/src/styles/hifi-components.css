@@ -975,6 +975,10 @@
     background: var(--hifi-led-amber);
     box-shadow: 0 0 8px var(--hifi-led-amber-glow), inset 0 0 4px rgba(255,255,255,0.3);
 }
+.hifi-led.on-white {
+    background: #e8e8e8;
+    box-shadow: 0 0 8px rgba(255,255,255,0.6), inset 0 0 4px rgba(255,255,255,0.4);
+}
 
 .hifi-led.blink { animation: hifi-blink 1s infinite; }
 .hifi-led.pulse { animation: hifi-pulse 2s infinite; }

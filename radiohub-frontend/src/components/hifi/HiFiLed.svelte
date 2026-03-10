@@ -1,6 +1,6 @@
 <script>
   let {
-    color = 'off',   // green | yellow | red | blue | amber | off
+    color = 'off',   // green | yellow | red | blue | amber | white | off
     blink = false,
     pulse = false,
     size = 'default' // small | large
@@ -14,6 +14,7 @@
   class:on-red={color === 'red'}
   class:on-blue={color === 'blue'}
   class:on-amber={color === 'amber'}
+  class:on-white={color === 'white'}
   class:blink
   class:pulse
   class:hifi-led-small={size === 'small'}
