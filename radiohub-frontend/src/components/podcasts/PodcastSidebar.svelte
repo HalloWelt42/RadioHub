@@ -38,11 +38,22 @@
     onresize = () => {}
   } = $props();
 
+  let totalEpisodes = $derived(subscriptions.reduce((sum, s) => sum + (s.episode_count || 0), 0));
+  let totalUnplayed = $derived(subscriptions.reduce((sum, s) => sum + (s.unplayed_count || 0), 0));
+  let totalDownloaded = $derived(stats.total_downloaded || 0);
+
   const filters = [
-    { key: 'all', label: 'Alle', icon: 'fa-list' },
-    { key: 'unplayed', label: 'Ungehört', icon: 'fa-circle' },
-    { key: 'downloaded', label: 'Downloads', icon: 'fa-download' }
+    { key: 'all', label: 'Alle' },
+    { key: 'unplayed', label: 'Ungehört' },
+    { key: 'downloaded', label: 'Downloads' }
   ];
+
+  function getFilterCount(key) {
+    if (key === 'all') return totalEpisodes;
+    if (key === 'unplayed') return totalUnplayed;
+    if (key === 'downloaded') return totalDownloaded;
+    return 0;
+  }
 
   // === Resize Handle ===
   let isDragging = $state(false);
@@ -158,6 +169,7 @@
     <div class="filter-list">
       {#each filters as f}
         {@const isActive = filterStatus === f.key}
+        {@const count = getFilterCount(f.key)}
         <button
           class="filter-item"
           class:selected={isActive}
@@ -165,6 +177,7 @@
         >
           <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" />
           <span class="filter-label">{f.label}</span>
+          <span class="filter-count">{count}</span>
         </button>
       {/each}
     </div>
@@ -457,7 +470,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 6px;
+    padding: 5px 10px 5px 6px;
     background: none;
     border: none;
     border-radius: var(--hifi-border-radius-sm, 4px);
@@ -480,9 +493,21 @@
   }
 
   .filter-label {
+    flex: 1;
     font-size: inherit;
     font-weight: inherit;
     color: inherit;
+  }
+
+  .filter-count {
+    margin-left: auto;
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-accent);
+    text-align: right;
+    min-width: 46px;
+    letter-spacing: 0.3px;
   }
 
   .storage-info {
