@@ -207,10 +207,17 @@
   let displayActive = $derived((appState.isPlaying || appState.isPaused) && hasSource);
 
   let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls' || appState.playerMode === 'recording');
-  let canNavigate = $derived(appState.stations?.length > 0 || isPodcast);
+  let canNavigate = $derived(appState.stations?.length > 0 || isPodcast || (isRecordingPlayback && appState.recordingPlaylist?.length > 1));
 
   // Prev/Next Sendernamen für Tooltips
   let prevStationName = $derived(() => {
+    // Recording-Modus: vorheriger Track
+    if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx > 0) return appState.recordingPlaylist[idx - 1].name;
+      if (idx === 0) return appState.recordingPlaylist[appState.recordingPlaylist.length - 1].name;
+      return null;
+    }
     if (!appState.currentStation || !appState.stations?.length) return null;
     const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
     if (idx > 0) return appState.stations[idx - 1].name;
@@ -219,6 +226,13 @@
   });
 
   let nextStationName = $derived(() => {
+    // Recording-Modus: nächster Track
+    if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx >= 0 && idx < appState.recordingPlaylist.length - 1) return appState.recordingPlaylist[idx + 1].name;
+      if (idx === appState.recordingPlaylist.length - 1) return appState.recordingPlaylist[0].name;
+      return null;
+    }
     if (!appState.currentStation || !appState.stations?.length) return null;
     const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
     if (idx >= 0 && idx < appState.stations.length - 1) return appState.stations[idx + 1].name;

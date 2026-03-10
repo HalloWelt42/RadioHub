@@ -372,6 +372,7 @@ export async function stop() {
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
   _appState.currentRecording = null;
+  _appState.recordingPlaylist = [];
   _hlsSessionId = null;
   _lastSeekPosition = 0;
   _userModeOverride = false;
@@ -840,9 +841,20 @@ export function handleTimeUpdate() {
 
 /**
  * Audio-Ende Handler.
+ * Bei Recording-Playlist: automatisch nächsten Track abspielen.
  */
 export function handleEnded() {
-  if (_appState?.playerMode === 'podcast' || _appState?.playerMode === 'recording') {
+  if (_appState?.playerMode === 'recording') {
+    const playlist = _appState.recordingPlaylist;
+    if (playlist?.length > 1 && _appState.currentRecording) {
+      const idx = playlist.findIndex(s => s.path === _appState.currentRecording.path);
+      if (idx >= 0 && idx < playlist.length - 1) {
+        playRecording(playlist[idx + 1]);
+        return;
+      }
+    }
+    stop();
+  } else if (_appState?.playerMode === 'podcast') {
     stop();
   }
 }

@@ -170,6 +170,17 @@
   }
 
   function playSegment(segment) {
+    // Playlist aus allen Segmenten setzen (fuer Prev/Next)
+    if (segments.length > 0) {
+      appState.recordingPlaylist = segments.map(s => ({
+        path: s.file_path,
+        name: s.title || `Segment ${s.segment_index}`,
+        session_id: s.session_id,
+        station_name: s.title,
+        duration: s.duration_ms / 1000,
+        playUrl: api.getSegmentPlayUrl(s.id)
+      }));
+    }
     const playUrl = api.getSegmentPlayUrl(segment.id);
     actions.playRecording({
       path: segment.file_path,
@@ -237,6 +248,8 @@
 
   // Ist diese Session gerade im Player aktiv?
   let activeSessionId = $derived(appState.currentRecording?.session_id || null);
+  // Welcher Dateipfad wird gerade abgespielt? (fuer Segment-Highlight)
+  let playingPath = $derived(appState.currentRecording?.path || null);
 </script>
 
 <div class="recordings-tab">
@@ -358,7 +371,7 @@
                 <div class="meta-list">
                   <div class="meta-header">SEGMENTE ({segments.length} Tracks)</div>
                   {#each segments as seg}
-                    <div class="segment-entry" role="button" tabindex="0" onclick={() => playSegment(seg)}>
+                    <div class="segment-entry" class:playing={playingPath === seg.file_path} role="button" tabindex="0" onclick={() => playSegment(seg)}>
                       <span class="meta-time">[{formatMetaTime(seg.start_ms)}]</span>
                       <span class="meta-title">{seg.title}</span>
                       <span class="segment-duration">{formatDurationMs(seg.duration_ms)}</span>
@@ -780,6 +793,11 @@
 
   .segment-entry:hover {
     background: var(--hifi-bg-secondary);
+  }
+
+  .segment-entry.playing {
+    background: rgba(40, 180, 40, 0.08);
+    border-left: 2px solid rgba(40, 180, 40, 0.5);
   }
 
   .segment-entry .meta-time {

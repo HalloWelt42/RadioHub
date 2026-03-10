@@ -37,6 +37,7 @@ export const appState = $state({
   recordingIcyCount: 0,     // Anzahl erkannter Titelwechsel (live)
   recordingIcyEntries: [],  // [{title, t}] live ICY-Eintraege
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
+  recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste fuer Prev/Next
 
   // HLS Buffer
   hlsActive: false,
@@ -204,8 +205,18 @@ export const actions = {
     }
   },
 
-  // Navigation durch Sender
+  // Navigation durch Sender oder Recording-Segmente
   navigatePrev() {
+    // Recording-Modus: durch Playlist navigieren
+    if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx > 0) {
+        engine.playRecording(appState.recordingPlaylist[idx - 1]);
+      } else if (idx === 0) {
+        engine.playRecording(appState.recordingPlaylist[appState.recordingPlaylist.length - 1]);
+      }
+      return;
+    }
     if (appState.currentStation && appState.stations.length > 0) {
       const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
       if (idx > 0) {
@@ -217,6 +228,16 @@ export const actions = {
   },
 
   navigateNext() {
+    // Recording-Modus: durch Playlist navigieren
+    if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx >= 0 && idx < appState.recordingPlaylist.length - 1) {
+        engine.playRecording(appState.recordingPlaylist[idx + 1]);
+      } else {
+        engine.playRecording(appState.recordingPlaylist[0]);
+      }
+      return;
+    }
     if (appState.currentStation && appState.stations.length > 0) {
       const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
       if (idx < appState.stations.length - 1) {
