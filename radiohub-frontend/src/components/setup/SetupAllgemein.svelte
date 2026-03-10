@@ -14,6 +14,10 @@
   async function loadConfig() {
     try {
       config = await api.getConfig();
+      // HLS-REC Lookback in globalen State uebernehmen
+      if (config.hls_rec_lookback_minutes) {
+        appState.hlsRecLookbackMinutes = config.hls_rec_lookback_minutes;
+      }
     } catch (e) {
       console.error('SetupAllgemein: Config laden fehlgeschlagen:', e);
     }
@@ -114,6 +118,30 @@
     <div style="padding:0 16px 16px; text-align:center;">
       <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
         Output-Bitrate wird automatisch an Input angepasst (nicht hoeher als Quelle)
+      </span>
+    </div>
+  </div>
+
+  <!-- HLS-REC -->
+  <div class="hifi-panel">
+    <div class="hifi-panel-header">
+      <span class="hifi-font-label">HLS-REC</span>
+      <span class="hifi-font-small" style="color:var(--hifi-led-amber);">BUFFER-AUFNAHME</span>
+    </div>
+    <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
+      <HiFiKnob
+        value={appState.hlsRecLookbackMinutes}
+        min={1}
+        max={120}
+        step={1}
+        unit="min"
+        label="LOOKBACK"
+        onchange={(e) => { appState.hlsRecLookbackMinutes = e.value; saveConfig('hls_rec_lookback_minutes', e.value); }}
+      />
+    </div>
+    <div style="padding:0 16px 16px; text-align:center;">
+      <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
+        Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurueckgreifen?
       </span>
     </div>
   </div>

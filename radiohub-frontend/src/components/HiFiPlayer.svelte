@@ -263,7 +263,8 @@
   // Podcast: aktuelle Position (grün)
   // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
-    appState.isRecording ? 'red' :
+    appState.recordingType === 'hls-rec' ? 'amber' :
+    appState.recordingType === 'direct' ? 'red' :
     isRecordingPlayback ? 'green' :
     isHLSMode && !isLive ? 'yellow' :
     isPodcast ? 'green' :
@@ -291,7 +292,11 @@
     appState.isPlaying ? 'green' : 'off'
   );
   let stopLedColor = $derived(!appState.isPlaying && !appState.isPaused && hasSource ? 'yellow' : 'off');
-  let recLedColor = $derived(appState.isRecording ? 'red' : 'off');
+  let recLedColor = $derived(
+    appState.recordingType === 'direct' ? 'red' :
+    appState.recordingType === 'hls-rec' ? 'amber' :
+    'off'
+  );
   let liveLedColor = $derived(isHLSMode && !isLive ? 'blue' : 'off');
 
   // Mode LED (zeigt aktuellen Modus)
@@ -303,7 +308,8 @@
 
   // Transport Section Label (kontextabhängig)
   let transportLabel = $derived(
-    appState.isRecording ? 'RECORDING' :
+    appState.recordingType === 'hls-rec' ? 'HLS-REC' :
+    appState.recordingType === 'direct' ? 'RECORDING' :
     isRecordingPlayback ? 'PLAYBACK' :
     isPodcast ? 'PODCAST' :
     isHLSMode ? 'TIMESHIFT' :
@@ -375,7 +381,7 @@
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
         {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
+          <span class="source-mode">{appState.recordingType === 'hls-rec' ? 'HLS-REC' : appState.recordingType === 'direct' ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
         {/if}
       </div>
     </div>

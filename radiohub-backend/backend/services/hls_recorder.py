@@ -1,0 +1,430 @@
+"""
+RadioHub v0.2.3 - HLS Recorder Service
+
+Aufnahme aus dem HLS-Buffer mit konfigurierbarem Lookback.
+Kopiert .ts Segmente, konkateniert per ffmpeg Stream-Copy zu .aac.
+Nutzt ICY-Metadata aus dem HLS-Buffer fuer Segment-Split.
+"""
+import asyncio
+import json
+import shutil
+from pathlib import Path
+from datetime import datetime
+from typing import Optional
+
+from ..database import db_session
+from ..config import get_radio_recordings_dir
+from .hls_buffer import hls_buffer
+from .recorder import rec_manager
+
+
+class HLSRecSession:
+    """Aktive HLS-REC Session."""
+
+    def __init__(self, session_id: str, station_uuid: str, station_name: str,
+                 stream_url: str, lookback_seconds: int):
+        self.id = session_id
+        self.station_uuid = station_uuid
+        self.station_name = station_name
+        self.stream_url = stream_url
+        self.lookback_seconds = lookback_seconds
+        self.start_time = datetime.now()
+        self.ts_dir: Optional[Path] = None
+        self.collected_segments: list[int] = []
+        self.start_segment: int = 0
+        self.icy_start_index: int = 0  # Index in ICY-Entries bei REC-Start
+
+    @property
+    def duration(self) -> float:
+        return (datetime.now() - self.start_time).total_seconds()
+
+    @property
+    def total_seconds(self) -> float:
+        """Geschaetzte Gesamtdauer inkl. Lookback (1 Segment = 1 Sekunde)."""
+        return float(len(self.collected_segments))
+
+
+class HLSRecorderService:
+    """Aufnahme aus dem HLS-Buffer mit Lookback."""
+
+    def __init__(self):
+        self.active_session: Optional[HLSRecSession] = None
+        self._collector_task: Optional[asyncio.Task] = None
+
+    async def start(self, lookback_seconds: int = 300) -> dict:
+        """Startet HLS-REC.
+
+        1. Prueft ob HLS-Buffer aktiv und keine andere Aufnahme laeuft
+        2. Kopiert Lookback-Segmente aus dem Buffer
+        3. Startet Collector-Task fuer neue Segmente
+        """
+        # Guards
+        if not hls_buffer.is_active():
+            return {"success": False, "error": "HLS-Buffer nicht aktiv"}
+
+        if self.active_session:
+            return {"success": False, "error": "HLS-REC laeuft bereits",
+                    "session_id": self.active_session.id}
+
+        if rec_manager.active_session:
+            return {"success": False, "error": "Direkt-Aufnahme laeuft bereits"}
+
+        # HLS-Status holen
+        hls_status = hls_buffer.get_status()
+        if not hls_status.get("active"):
+            return {"success": False, "error": "HLS-Buffer nicht aktiv"}
+
+        first_seg = hls_status.get("first_segment")
+        last_seg = hls_status.get("last_segment")
+        if first_seg is None or last_seg is None:
+            return {"success": False, "error": "Keine HLS-Segmente verfuegbar"}
+
+        station_uuid = hls_status.get("station_uuid", "")
+        station_name = hls_status.get("station_name", "")
+        stream_url = hls_buffer.session.stream_url if hls_buffer.session else ""
+
+        # Session erstellen
+        session_id = f"hlsrec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        ts_dir = get_radio_recordings_dir() / session_id / "ts"
+        ts_dir.mkdir(parents=True, exist_ok=True)
+
+        session = HLSRecSession(
+            session_id=session_id,
+            station_uuid=station_uuid,
+            station_name=station_name,
+            stream_url=stream_url,
+            lookback_seconds=lookback_seconds
+        )
+        session.ts_dir = ts_dir
+
+        # Lookback: Segmente aus Buffer kopieren
+        start_seg = max(first_seg, last_seg - lookback_seconds)
+        session.start_segment = start_seg
+
+        copied = 0
+        for seg_num in range(start_seg, last_seg + 1):
+            src = hls_buffer.get_segment_path(seg_num)
+            if src and src.exists():
+                dst = ts_dir / f"segment_{seg_num}.ts"
+                shutil.copy2(str(src), str(dst))
+                session.collected_segments.append(seg_num)
+                copied += 1
+
+        # ICY-Snapshot: Merke Position in ICY-Entries
+        icy_entries = hls_buffer.get_icy_entries()
+        session.icy_start_index = len(icy_entries)
+
+        self.active_session = session
+
+        # Collector-Task starten
+        self._collector_task = asyncio.create_task(
+            self._collect_segments(session)
+        )
+
+        # In DB speichern
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO sessions
+                (id, station_uuid, station_name, stream_url, bitrate,
+                 start_time, file_path, status, codec, file_format,
+                 meta_file_path, rec_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (session_id, station_uuid, station_name, stream_url, 0,
+                 session.start_time.isoformat(), str(ts_dir.parent),
+                 "recording", "aac", ".aac", None, "hls-rec"))
+
+        print(f"HLS-REC gestartet: {session_id} "
+              f"(Lookback: {copied} Segmente / {lookback_seconds}s)")
+
+        return {
+            "success": True,
+            "session_id": session_id,
+            "lookback_segments": copied,
+            "lookback_seconds": lookback_seconds
+        }
+
+    async def _collect_segments(self, session: HLSRecSession):
+        """Kopiert periodisch neue HLS-Segmente in das Recording-Verzeichnis."""
+        last_copied = max(session.collected_segments) if session.collected_segments else 0
+
+        try:
+            while True:
+                await asyncio.sleep(0.5)
+
+                if not hls_buffer.is_active():
+                    print("  HLS-REC: Buffer gestoppt, beende Collector")
+                    break
+
+                status = hls_buffer.get_status()
+                current_last = status.get("last_segment", 0)
+
+                for seg_num in range(last_copied + 1, current_last + 1):
+                    src = hls_buffer.get_segment_path(seg_num)
+                    if src and src.exists():
+                        dst = session.ts_dir / f"segment_{seg_num}.ts"
+                        shutil.copy2(str(src), str(dst))
+                        session.collected_segments.append(seg_num)
+                        last_copied = seg_num
+
+        except asyncio.CancelledError:
+            # Finaler Sweep: letzte Segmente noch holen
+            if hls_buffer.is_active():
+                status = hls_buffer.get_status()
+                current_last = status.get("last_segment", 0)
+                for seg_num in range(last_copied + 1, current_last + 1):
+                    src = hls_buffer.get_segment_path(seg_num)
+                    if src and src.exists():
+                        dst = session.ts_dir / f"segment_{seg_num}.ts"
+                        shutil.copy2(str(src), str(dst))
+                        session.collected_segments.append(seg_num)
+
+    async def stop(self) -> dict:
+        """Stoppt HLS-REC und finalisiert die Aufnahme.
+
+        1. Collector stoppen + finaler Sweep
+        2. .ts Segmente konkatenieren -> .aac
+        3. ICY-Metadata filtern und speichern
+        4. Segment-Split ausloesen
+        """
+        if not self.active_session:
+            return {"success": False, "error": "Keine aktive HLS-Aufnahme"}
+
+        session = self.active_session
+
+        # Collector stoppen
+        if self._collector_task and not self._collector_task.done():
+            self._collector_task.cancel()
+            try:
+                await self._collector_task
+            except asyncio.CancelledError:
+                pass
+
+        total_segments = len(session.collected_segments)
+        if total_segments == 0:
+            self._cleanup(session)
+            return {"success": False, "error": "Keine Segmente gesammelt"}
+
+        # Segmente sortieren
+        session.collected_segments.sort()
+
+        # Concat-Liste schreiben
+        session_dir = session.ts_dir.parent
+        concat_file = session_dir / "concat.txt"
+        with open(concat_file, "w", encoding="utf-8") as f:
+            for seg_num in session.collected_segments:
+                ts_path = session.ts_dir / f"segment_{seg_num}.ts"
+                if ts_path.exists():
+                    safe_path = str(ts_path).replace("'", "'\\''")
+                    f.write(f"file '{safe_path}'\n")
+
+        # ffmpeg: .ts -> .aac (Stream-Copy, kein Re-Encoding)
+        safe_name = "".join(
+            c if c.isalnum() or c in " -_" else "_"
+            for c in session.station_name
+        )[:50]
+        output_file = session_dir / f"{session.id}_{safe_name}.aac"
+
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "concat",
+            "-safe", "0",
+            "-i", str(concat_file),
+            "-c:a", "copy",
+            str(output_file)
+        ]
+
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.PIPE
+            )
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+
+            if proc.returncode != 0:
+                err = stderr.decode("utf-8", errors="replace")[-300:]
+                print(f"  HLS-REC Concat-Fehler: {err}")
+                self._cleanup(session)
+                return {"success": False, "error": f"Concat fehlgeschlagen: {err[:100]}"}
+
+        except asyncio.TimeoutError:
+            print("  HLS-REC Concat-Timeout")
+            self._cleanup(session)
+            return {"success": False, "error": "Concat Timeout"}
+
+        # Audio-Dauer per ffprobe
+        real_duration = await self._probe_duration(output_file)
+        file_size = output_file.stat().st_size if output_file.exists() else 0
+
+        # ICY-Metadata filtern und speichern
+        meta_file = session_dir / f"{session.id}.meta.json"
+        meta_count = self._save_icy_metadata(session, meta_file, real_duration)
+
+        # .ts Verzeichnis + concat-Datei aufraeumen
+        if concat_file.exists():
+            concat_file.unlink()
+        if session.ts_dir.exists():
+            shutil.rmtree(session.ts_dir, ignore_errors=True)
+
+        # DB finalisieren
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''UPDATE sessions SET
+                end_time = ?, duration = ?, file_size = ?, file_path = ?,
+                meta_file_path = ?, status = ?
+                WHERE id = ?''',
+                (datetime.now().isoformat(), real_duration, file_size,
+                 str(output_file), str(meta_file) if meta_count > 0 else None,
+                 "completed", session.id))
+
+        print(f"HLS-REC gestoppt: {session.id} "
+              f"({total_segments} Segmente, {real_duration:.0f}s, "
+              f"{file_size / 1024 / 1024:.1f}MB, {meta_count} ICY-Eintraege)")
+
+        result = {
+            "success": True,
+            "session_id": session.id,
+            "duration": real_duration,
+            "file_size": file_size,
+            "file_path": str(output_file),
+            "codec": "aac",
+            "file_format": ".aac",
+            "meta_count": meta_count,
+            "total_segments": total_segments
+        }
+
+        # Segment-Split wenn Metadata vorhanden
+        if meta_count > 0 and meta_file.exists():
+            from .segment_splitter import splitter
+            try:
+                segments = await splitter.split_session(
+                    session.id, output_file, meta_file,
+                    real_duration, ".aac"
+                )
+                if segments:
+                    result["segments"] = len(segments)
+            except Exception as e:
+                print(f"  HLS-REC Split-Fehler: {e}")
+
+        self.active_session = None
+        self._collector_task = None
+
+        return result
+
+    def _save_icy_metadata(self, session: HLSRecSession,
+                           meta_file: Path, total_duration: float) -> int:
+        """Filtert ICY-Eintraege auf das Aufnahme-Zeitfenster und speichert sie."""
+        all_entries = hls_buffer.get_icy_entries()
+        if not all_entries:
+            return 0
+
+        # Lookback-Zeitfenster berechnen
+        lookback_ms = session.lookback_seconds * 1000
+        rec_elapsed_ms = int(session.duration * 1000)
+        total_window_ms = lookback_ms + rec_elapsed_ms
+
+        # Letzte ICY-Zeit als Referenz
+        last_icy_t = all_entries[-1].get("t", 0)
+        # Start des Aufnahme-Fensters in ICY-Zeit
+        window_start_t = max(0, last_icy_t - total_window_ms)
+
+        filtered = []
+        for entry in all_entries:
+            t = entry.get("t", 0)
+            if t >= window_start_t:
+                # Timestamp relativ zum Aufnahme-Start umrechnen
+                relative_t = t - window_start_t
+                filtered.append({
+                    "t": relative_t,
+                    "b": entry.get("b", 0),
+                    "title": entry.get("title", ""),
+                    "raw": entry.get("raw", "")
+                })
+
+        if not filtered:
+            return 0
+
+        # Byte-Positionen relativ machen
+        if filtered[0].get("b", 0) > 0:
+            base_bytes = filtered[0]["b"]
+            total_bytes = all_entries[-1].get("b", 0)
+            relative_total = total_bytes - base_bytes
+            for entry in filtered:
+                entry["b"] = entry["b"] - base_bytes
+        else:
+            relative_total = 0
+
+        meta = {
+            "metaint": 0,
+            "total_audio_bytes": relative_total if relative_total > 0 else 0,
+            "entries": filtered
+        }
+
+        try:
+            meta_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(meta_file, "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"  HLS-REC Meta-Speichern fehlgeschlagen: {e}")
+            return 0
+
+        return len(filtered)
+
+    async def _probe_duration(self, file_path: Path) -> float:
+        """Ermittelt Audio-Dauer per ffprobe."""
+        if not file_path or not file_path.exists():
+            return 0.0
+        cmd = [
+            "ffprobe", "-v", "quiet",
+            "-print_format", "json",
+            "-show_format",
+            str(file_path)
+        ]
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+            data = json.loads(stdout)
+            dur = float(data.get("format", {}).get("duration", 0))
+            if dur > 0:
+                return dur
+        except Exception as e:
+            print(f"  HLS-REC ffprobe-Fehler: {e}")
+        return 0.0
+
+    def _cleanup(self, session: HLSRecSession):
+        """Bereinigt bei Fehler: Session-Dir + DB-Eintrag."""
+        session_dir = session.ts_dir.parent if session.ts_dir else None
+        if session_dir and session_dir.exists():
+            shutil.rmtree(session_dir, ignore_errors=True)
+
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("DELETE FROM sessions WHERE id = ?", (session.id,))
+
+        self.active_session = None
+        self._collector_task = None
+
+    def get_status(self) -> dict:
+        """Aktueller HLS-REC Status."""
+        if not self.active_session:
+            return {"recording": False}
+
+        session = self.active_session
+        return {
+            "recording": True,
+            "session_id": session.id,
+            "station_name": session.station_name,
+            "station_uuid": session.station_uuid,
+            "duration": session.duration,
+            "lookback_seconds": session.lookback_seconds,
+            "collected_segments": len(session.collected_segments),
+            "total_seconds": session.total_seconds
+        }
+
+
+# Singleton
+hls_recorder = HLSRecorderService()

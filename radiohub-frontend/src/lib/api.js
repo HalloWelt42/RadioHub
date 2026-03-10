@@ -173,6 +173,22 @@ class RadioHubAPI {
     return this.fetch('/api/recording/status');
   }
 
+  // === HLS-REC ===
+  async startHlsRecording(lookbackSeconds = 300) {
+    return this.fetch('/api/recording/hls-start', {
+      method: 'POST',
+      body: JSON.stringify({ lookback_seconds: lookbackSeconds })
+    });
+  }
+
+  async stopHlsRecording() {
+    return this.fetch('/api/recording/hls-stop', { method: 'POST' });
+  }
+
+  async getHlsRecordingStatus() {
+    return this.fetch('/api/recording/hls-status');
+  }
+
   async getSessions() {
     return this.fetch('/api/recording/sessions');
   }

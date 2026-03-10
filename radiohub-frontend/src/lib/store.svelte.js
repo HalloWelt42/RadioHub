@@ -31,6 +31,7 @@ export const appState = $state({
 
   // Recording
   isRecording: false,
+  recordingType: 'none',    // 'none' | 'direct' | 'hls-rec'
   recordingSession: null,
   recordingElapsed: 0,
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
@@ -59,6 +60,9 @@ export const appState = $state({
 
   // Setup Deep-Link
   setupSubTab: null,   // Wechsel zu Sub-Tab in Setup: 'filter', 'kategorien', etc.
+
+  // HLS-REC Config
+  hlsRecLookbackMinutes: 5,  // Lookback in Minuten (1-120)
 
   // UI
   isLoading: false,

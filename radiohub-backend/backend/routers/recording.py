@@ -1,8 +1,9 @@
 """
-RadioHub v0.2.1 - Recording Router
+RadioHub v0.2.3 - Recording Router
 
 Aufnahme starten/stoppen, Sessions verwalten, Segment-Verwaltung.
 Async start/stop, dynamischer Media-Type.
+HLS-REC: Aufnahme aus HLS-Buffer mit Lookback.
 """
 import json
 import os
@@ -13,6 +14,7 @@ from pydantic import BaseModel
 from pathlib import Path
 
 from ..services.recorder import rec_manager, EXTENSION_MIMETYPES
+from ..services.hls_recorder import hls_recorder
 from ..services.segment_splitter import splitter
 from ..config import RADIO_RECORDINGS_DIR
 
@@ -348,3 +350,33 @@ async def download_zip_session(session_id: str, background_tasks: BackgroundTask
         media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{zip_name}"'}
     )
+
+
+# === HLS-REC Endpoints ===
+
+class HLSRecStartRequest(BaseModel):
+    lookback_seconds: int = 300  # Default 5 Minuten
+
+
+@router.post("/hls-start")
+async def start_hls_recording(req: HLSRecStartRequest):
+    """Startet HLS-REC (Aufnahme aus HLS-Buffer mit Lookback)"""
+    result = await hls_recorder.start(lookback_seconds=req.lookback_seconds)
+    if not result.get("success"):
+        raise HTTPException(400, result.get("error", "Fehler"))
+    return result
+
+
+@router.post("/hls-stop")
+async def stop_hls_recording():
+    """Stoppt HLS-REC"""
+    result = await hls_recorder.stop()
+    if not result.get("success"):
+        raise HTTPException(400, result.get("error", "Keine aktive HLS-Aufnahme"))
+    return result
+
+
+@router.get("/hls-status")
+async def hls_recording_status():
+    """Status der HLS-Aufnahme"""
+    return hls_recorder.get_status()

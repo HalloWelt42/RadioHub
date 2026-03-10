@@ -1,9 +1,9 @@
 """
-RadioHub HLS Buffer Service v1.1.0
+RadioHub HLS Buffer Service v1.2.0
 
 HLS (HTTP Live Streaming) basierter Timeshift Buffer.
 Nutzt ffmpeg um Radio-Streams in seekbare Segmente zu konvertieren.
-Mit adaptiver Bitrate-Anpassung.
+Mit adaptiver Bitrate-Anpassung und ICY-Metadata-Tracking.
 
 © HalloWelt42 - Nur für private Nutzung
 """
@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from dataclasses import dataclass, field
+
+from .icy_metadata import IcyMetadataLogger
 
 
 # Standard-Bitrate-Stufen (kbps)
@@ -75,6 +77,8 @@ class HLSBufferService:
         self.session: Optional[HLSSession] = None
         self._ffmpeg_process: Optional[asyncio.subprocess.Process] = None
         self._monitor_task: Optional[asyncio.Task] = None
+        self._icy_logger: Optional[IcyMetadataLogger] = None
+        self._icy_task: Optional[asyncio.Task] = None
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
@@ -298,7 +302,10 @@ class HLSBufferService:
             
             # Monitor-Task starten
             self._monitor_task = asyncio.create_task(self._monitor_ffmpeg())
-            
+
+            # ICY-Metadata-Logger parallel starten
+            self._start_icy_tracking(stream_url)
+
             return {
                 "status": "started",
                 "session_id": session_id,
@@ -318,6 +325,41 @@ class HLSBufferService:
             print(f"✗ HLS Start Fehler: {e}")
             return {"status": "error", "error": str(e)}
     
+    def _start_icy_tracking(self, stream_url: str):
+        """Startet ICY-Metadata-Logger parallel zum HLS-Buffer."""
+        self._icy_logger = IcyMetadataLogger()
+        icy_path = self.buffer_dir / "icy_metadata.json"
+        self._icy_task = asyncio.create_task(
+            self._icy_logger.run(stream_url, icy_path)
+        )
+        print("  ICY-Tracking gestartet (parallel zum HLS-Buffer)")
+
+    def _stop_icy_tracking(self):
+        """Stoppt ICY-Metadata-Logger."""
+        if self._icy_logger:
+            self._icy_logger.stop()
+        if self._icy_task and not self._icy_task.done():
+            self._icy_task.cancel()
+            try:
+                self._icy_task.result()
+            except (asyncio.CancelledError, asyncio.InvalidStateError):
+                pass
+        entries = len(self._icy_logger.entries) if self._icy_logger else 0
+        if entries > 0:
+            print(f"  ICY-Tracking gestoppt ({entries} Titelwechsel)")
+        self._icy_logger = None
+        self._icy_task = None
+
+    def get_icy_entries(self) -> list[dict]:
+        """Aktuelle ICY-Metadata-Eintraege aus Memory."""
+        if self._icy_logger:
+            return list(self._icy_logger.entries)
+        return []
+
+    def get_icy_logger(self) -> Optional[IcyMetadataLogger]:
+        """ICY-Logger-Referenz (oder None wenn inaktiv)."""
+        return self._icy_logger
+
     async def _monitor_ffmpeg(self):
         """Überwacht ffmpeg Prozess im Hintergrund"""
         if not self._ffmpeg_process:
@@ -349,7 +391,10 @@ class HLSBufferService:
             return {"status": "not_active"}
         
         station_name = self.session.station_name
-        
+
+        # ICY-Logger stoppen
+        self._stop_icy_tracking()
+
         # ffmpeg beenden
         if self._ffmpeg_process and self._ffmpeg_process.returncode is None:
             try:

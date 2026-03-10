@@ -14,6 +14,7 @@ from .config import DATA_DIR, VERSION
 from .database import init_db, check_db_health
 from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
+from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
 
 
@@ -32,6 +33,8 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
+    if hls_recorder.active_session:
+        await hls_recorder.stop()
     if rec_manager.active_session:
         await rec_manager.stop()
     await buffer_manager.stop_buffering()

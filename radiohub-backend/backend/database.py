@@ -290,11 +290,12 @@ def init_db():
     except Exception:
         pass
 
-    # === Migration: Sessions-Tabelle erweitern (codec, file_format, meta_file_path) ===
+    # === Migration: Sessions-Tabelle erweitern (codec, file_format, meta_file_path, rec_type) ===
     for col, typedef in [
         ("codec", "TEXT"),
         ("file_format", "TEXT"),
         ("meta_file_path", "TEXT"),
+        ("rec_type", "TEXT DEFAULT 'direct'"),
     ]:
         try:
             c.execute(f"ALTER TABLE sessions ADD COLUMN {col} {typedef}")

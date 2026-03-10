@@ -595,15 +595,22 @@ export async function restartHLS() {
 }
 
 // ============================================================
-//  Recording
+//  Recording (modus-abhaengig: Direct-REC vs HLS-REC)
 // ============================================================
 
 /**
- * Startet Aufnahme.
+ * Startet Aufnahme. Im HLS-Modus: HLS-REC mit Lookback, sonst Direct-REC.
  */
 export async function startRecording() {
   if (!_appState?.currentStation) return { success: false };
 
+  if (_appState.playerMode === 'hls') {
+    return _startHlsRecording();
+  }
+  return _startDirectRecording();
+}
+
+async function _startDirectRecording() {
   try {
     const result = await api.startRecording({
       station_uuid: _appState.currentStation.uuid,
@@ -614,6 +621,7 @@ export async function startRecording() {
 
     if (result.success) {
       _appState.isRecording = true;
+      _appState.recordingType = 'direct';
       _appState.recordingSession = result.session_id;
       _recordingStartTime = Date.now();
       _appState.recordingElapsed = 0;
@@ -623,13 +631,36 @@ export async function startRecording() {
     }
     return result;
   } catch (e) {
-    console.error('Recording start error:', e);
+    console.error('Direct-REC start error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
+async function _startHlsRecording() {
+  try {
+    // Lookback aus Config (Default 5 Minuten = 300s)
+    const lookbackMinutes = _appState.hlsRecLookbackMinutes || 5;
+    const result = await api.startHlsRecording(lookbackMinutes * 60);
+
+    if (result.success) {
+      _appState.isRecording = true;
+      _appState.recordingType = 'hls-rec';
+      _appState.recordingSession = result.session_id;
+      _recordingStartTime = Date.now();
+      _appState.recordingElapsed = 0;
+      _recordingInterval = setInterval(() => {
+        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+      }, 1000);
+    }
+    return result;
+  } catch (e) {
+    console.error('HLS-REC start error:', e);
     return { success: false, error: e.message };
   }
 }
 
 /**
- * Stoppt Aufnahme.
+ * Stoppt Aufnahme (automatisch den richtigen Modus).
  */
 export async function stopRecording() {
   return _stopRecordingInternal();
@@ -638,6 +669,8 @@ export async function stopRecording() {
 async function _stopRecordingInternal() {
   if (!_appState) return { success: false };
 
+  const recType = _appState.recordingType;
+
   if (_recordingInterval) {
     clearInterval(_recordingInterval);
     _recordingInterval = null;
@@ -645,13 +678,17 @@ async function _stopRecordingInternal() {
   _recordingStartTime = null;
 
   try {
-    const result = await api.stopRecording();
+    const result = recType === 'hls-rec'
+      ? await api.stopHlsRecording()
+      : await api.stopRecording();
     _appState.isRecording = false;
+    _appState.recordingType = 'none';
     _appState.recordingSession = null;
     _appState.recordingElapsed = 0;
     return result;
   } catch (e) {
     _appState.isRecording = false;
+    _appState.recordingType = 'none';
     _appState.recordingSession = null;
     _appState.recordingElapsed = 0;
     return { success: false, error: e.message };
