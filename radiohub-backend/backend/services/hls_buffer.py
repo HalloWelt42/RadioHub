@@ -347,8 +347,26 @@ class HLSBufferService:
         entries = len(self._icy_logger.entries) if self._icy_logger else 0
         if entries > 0:
             print(f"  ICY-Tracking gestoppt ({entries} Titelwechsel)")
+            # DB aktualisieren: icy=1 wenn Probe das nicht erkannt hatte
+            if self.session and self.session.station_uuid:
+                self._update_icy_flag(self.session.station_uuid)
         self._icy_logger = None
         self._icy_task = None
+
+    def _update_icy_flag(self, uuid: str):
+        """Setzt icy=1 in detected_bitrates falls noch nicht gesetzt."""
+        try:
+            from .db import db_session
+            with db_session() as conn:
+                c = conn.cursor()
+                c.execute(
+                    "UPDATE detected_bitrates SET icy = 1 WHERE uuid = ? AND icy = 0",
+                    (uuid,)
+                )
+                if c.rowcount > 0:
+                    print(f"  ICY-Flag in DB korrigiert fuer {uuid[:12]}")
+        except Exception as e:
+            print(f"  ICY-Flag Update fehlgeschlagen: {e}")
 
     def get_icy_entries(self) -> list[dict]:
         """Aktuelle ICY-Metadata-Eintraege aus Memory."""
