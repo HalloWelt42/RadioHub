@@ -353,6 +353,23 @@
     )
   );
 
+  // Play-Modus: linear -> loop -> shuffle -> linear
+  let canTogglePlayMode = $derived(isRecordingPlayback && appState.recordingPlaylist?.length > 0);
+  const playModeOrder = ['linear', 'loop', 'shuffle'];
+  const playModeIcons = { linear: 'fa-arrow-right', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
+  const playModeLabels = { linear: 'Linear (einmal)', loop: 'Endlosschleife', shuffle: 'Zufall' };
+  let playModeLedColor = $derived(
+    !canTogglePlayMode ? 'off' :
+    appState.playMode === 'loop' ? 'green' :
+    appState.playMode === 'shuffle' ? 'yellow' :
+    'off'
+  );
+
+  function cyclePlayMode() {
+    const idx = playModeOrder.indexOf(appState.playMode);
+    appState.playMode = playModeOrder[(idx + 1) % playModeOrder.length];
+  }
+
   // Bitrate Override (persistent via localStorage)
   let bitrateOverride = $state(JSON.parse(localStorage.getItem('radiohub_bitrate_override') || 'null'));
 
@@ -522,7 +539,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? 'Kein vorheriger Sender verfügbar' : prevStationName() || 'Vorheriger Sender'}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isRecordingPlayback ? 'Kein vorheriger Titel' : 'Kein vorheriger Sender verfügbar') : prevStationName() || (isRecordingPlayback ? 'Vorheriger Titel' : 'Vorheriger Sender')}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -588,7 +605,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? 'Kein nächster Sender verfügbar' : nextStationName() || 'Nächster Sender'}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isRecordingPlayback ? 'Kein nächster Titel' : 'Kein nächster Sender verfügbar') : nextStationName() || (isRecordingPlayback ? 'Nächster Titel' : 'Nächster Sender')}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
@@ -611,18 +628,28 @@
           <i class="fa-solid fa-tower-broadcast transport-icon"></i>
         </button>
 
-        <!-- Mode Toggle (Original/HLS) -->
-        {#if isStation}
-          <button
-            class="transport-btn mode-btn"
-            disabled={!canToggleStreamMode}
-            title={!canToggleStreamMode ? 'Moduswechsel nicht verfügbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
-            onclick={() => engine.toggleStreamMode()}
-          >
-            <HiFiLed color={modeLedColor} size="small" />
-            <i class="fa-solid {appState.playerMode === 'hls' ? 'fa-arrows-rotate' : 'fa-wave-square'} transport-icon"></i>
-          </button>
-        {/if}
+        <!-- Mode Toggle (Original/HLS) -- immer sichtbar, disabled wenn nicht nutzbar -->
+        <button
+          class="transport-btn mode-btn"
+          disabled={!canToggleStreamMode}
+          title={appState.isRecording ? 'Aufnahme läuft -- kein Moduswechsel' : !canToggleStreamMode ? 'Moduswechsel nicht verfügbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
+          onclick={() => engine.toggleStreamMode()}
+        >
+          <HiFiLed color={modeLedColor} size="small" />
+          <i class="fa-solid {appState.playerMode === 'hls' ? 'fa-arrows-rotate' : 'fa-wave-square'} transport-icon"></i>
+        </button>
+
+        <!-- Play-Modus (Linear/Loop/Shuffle) -->
+        <button
+          class="transport-btn mode-btn"
+          disabled={!canTogglePlayMode}
+          title={!canTogglePlayMode ? 'Wiedergabe-Modus (nur bei Aufnahme-Wiedergabe)' : playModeLabels[appState.playMode]}
+          onmouseenter={sfx.hover}
+          onclick={() => { cyclePlayMode(); sfx.click(); }}
+        >
+          <HiFiLed color={playModeLedColor} size="small" />
+          <i class="fa-solid {playModeIcons[appState.playMode]} transport-icon"></i>
+        </button>
       </div>
 
       <!-- Bitrate LED Selector (nur bei HLS sichtbar) -->

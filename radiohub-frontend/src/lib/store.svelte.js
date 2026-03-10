@@ -1,5 +1,5 @@
 /**
- * RadioHub App Store v0.5.0
+ * RadioHub App Store v0.5.1
  * Globaler State mit Svelte 5 Runes
  *
  * v0.5.0: Player-Logik delegiert an playerEngine.js
@@ -38,6 +38,7 @@ export const appState = $state({
   recordingIcyEntries: [],  // [{title, t}] live ICY-Eintraege
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
   recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste fuer Prev/Next
+  playMode: 'linear',       // 'linear' | 'loop' | 'shuffle' -- Wiedergabe-Modus fuer Playlists
 
   // HLS Buffer
   hlsActive: false,
@@ -209,11 +210,19 @@ export const actions = {
   navigatePrev() {
     // Recording-Modus: durch Playlist navigieren
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
-      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      const playlist = appState.recordingPlaylist;
+      const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
+
+      if (appState.playMode === 'shuffle') {
+        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
+        engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
+        return;
+      }
+
       if (idx > 0) {
-        engine.playRecording(appState.recordingPlaylist[idx - 1]);
+        engine.playRecording(playlist[idx - 1]);
       } else if (idx === 0) {
-        engine.playRecording(appState.recordingPlaylist[appState.recordingPlaylist.length - 1]);
+        engine.playRecording(playlist[playlist.length - 1]);
       }
       return;
     }
@@ -230,11 +239,19 @@ export const actions = {
   navigateNext() {
     // Recording-Modus: durch Playlist navigieren
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
-      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
-      if (idx >= 0 && idx < appState.recordingPlaylist.length - 1) {
-        engine.playRecording(appState.recordingPlaylist[idx + 1]);
+      const playlist = appState.recordingPlaylist;
+      const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
+
+      if (appState.playMode === 'shuffle') {
+        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
+        engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
+        return;
+      }
+
+      if (idx >= 0 && idx < playlist.length - 1) {
+        engine.playRecording(playlist[idx + 1]);
       } else {
-        engine.playRecording(appState.recordingPlaylist[0]);
+        engine.playRecording(playlist[0]);
       }
       return;
     }

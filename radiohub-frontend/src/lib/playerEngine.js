@@ -1,5 +1,5 @@
 /**
- * RadioHub Player Engine v1.1.0
+ * RadioHub Player Engine v1.1.1
  *
  * Zentrale Playback-Steuerung mit State-Machine.
  * Löst die Probleme:
@@ -846,8 +846,32 @@ export function handleTimeUpdate() {
 export function handleEnded() {
   if (_appState?.playerMode === 'recording') {
     const playlist = _appState.recordingPlaylist;
-    if (playlist?.length > 1 && _appState.currentRecording) {
+    const mode = _appState.playMode || 'linear';
+
+    if (playlist?.length > 0 && _appState.currentRecording) {
       const idx = playlist.findIndex(s => s.path === _appState.currentRecording.path);
+
+      if (mode === 'shuffle') {
+        // Zufaellig, aber nicht denselben Track
+        const candidates = playlist.length > 1
+          ? playlist.filter((_, i) => i !== idx)
+          : playlist;
+        const next = candidates[Math.floor(Math.random() * candidates.length)];
+        playRecording(next);
+        return;
+      }
+
+      if (mode === 'loop') {
+        // Naechster Track, am Ende zurueck zum Anfang
+        if (idx >= 0 && idx < playlist.length - 1) {
+          playRecording(playlist[idx + 1]);
+        } else {
+          playRecording(playlist[0]);
+        }
+        return;
+      }
+
+      // linear: naechster Track, am Ende stoppen
       if (idx >= 0 && idx < playlist.length - 1) {
         playRecording(playlist[idx + 1]);
         return;
