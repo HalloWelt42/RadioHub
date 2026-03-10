@@ -116,7 +116,7 @@
   .br-value {
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--hifi-led-green);
     text-shadow: 0 0 4px var(--hifi-led-green-glow);
     margin-left: 3px;

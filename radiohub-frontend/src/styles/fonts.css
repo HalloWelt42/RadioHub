@@ -11,9 +11,7 @@
 @import '@fontsource/barlow/600.css';
 @import '@fontsource/barlow/700.css';
 
-/* Orbitron - UI-Labels, Werte, Segment-Anzeigen */
-@import '@fontsource/orbitron/400.css';
-@import '@fontsource/orbitron/500.css';
+/* Orbitron - UI-Labels, Werte, Segment-Anzeigen (nur Bold+) */
 @import '@fontsource/orbitron/700.css';
 @import '@fontsource/orbitron/900.css';
 
@@ -44,7 +42,7 @@ body {
 /* Utility class für Orbitron (UI-Labels) */
 .hifi-value {
   font-family: var(--hifi-font-values);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.5px;
 }
 
@@ -57,3 +55,6 @@ body {
 .hifi-mono {
   font-family: var(--hifi-font-mono);
 }
+
+/* Orbitron global bold -- bessere Lesbarkeit auf allen Displays */
+

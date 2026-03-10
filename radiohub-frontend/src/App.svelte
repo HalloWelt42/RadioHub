@@ -156,10 +156,10 @@
   
   <!-- Player -->
   <HiFiPlayer />
-  
-  <!-- Toast -->
-  <HiFiToast />
 </div>
+
+<!-- Toast ausserhalb hifi-app fuer korrektes z-index Stacking -->
+<HiFiToast />
 
 <style>
   .hifi-app {
@@ -227,7 +227,7 @@
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-values);
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.15s ease;

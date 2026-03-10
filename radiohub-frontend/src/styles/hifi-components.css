@@ -312,6 +312,7 @@
     text-align: center;
     font-family: var(--hifi-font-segment);
     font-size: 14px;
+    font-weight: 700;
     background: var(--hifi-bg-tertiary);
     border-radius: var(--hifi-border-radius-sm);
     box-shadow: var(--hifi-shadow-inset);
@@ -364,6 +365,7 @@
     margin-top: 8px;
     font-size: var(--hifi-font-size-sm);
     font-family: var(--hifi-font-segment);
+    font-weight: 700;
     color: var(--hifi-text-secondary);
 }
 
@@ -1061,6 +1063,7 @@
 .hifi-time-colon {
     font-family: var(--hifi-font-segment);
     font-size: var(--hifi-font-size-xxl);
+    font-weight: 700;
     color: var(--hifi-display-text);
     text-shadow: 0 0 10px var(--hifi-display-text);
 }
@@ -1400,6 +1403,7 @@
 .hifi-fader-value {
     font-family: var(--hifi-font-segment);
     font-size: var(--hifi-font-size-sm);
+    font-weight: 700;
 }
 
 /* Transport Controls */
