@@ -34,6 +34,8 @@ export const appState = $state({
   recordingType: 'none',    // 'none' | 'direct' | 'hls-rec'
   recordingSession: null,
   recordingElapsed: 0,
+  recordingIcyCount: 0,     // Anzahl erkannter Titelwechsel (live)
+  recordingIcyEntries: [],  // [{title, t}] live ICY-Eintraege
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
 
   // HLS Buffer

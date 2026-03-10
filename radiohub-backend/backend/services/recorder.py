@@ -415,9 +415,14 @@ class RecorderManager:
             "file_format": session.file_format
         }
 
-        # ICY-Titel mitliefern wenn Logger läuft
+        # ICY-Daten mitliefern wenn Logger läuft
         if session.icy_logger and session.icy_logger.entries:
             status["icy_title"] = session.icy_logger.entries[-1].get("title", "")
+            status["icy_count"] = session.icy_logger.entry_count
+            status["icy_entries"] = [
+                {"title": e.get("title", ""), "t": e.get("t", 0)}
+                for e in session.icy_logger.entries
+            ]
 
         return status
 

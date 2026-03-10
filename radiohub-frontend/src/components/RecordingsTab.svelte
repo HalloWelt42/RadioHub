@@ -280,7 +280,7 @@
           <button class="session-header" onclick={() => toggleSession(session)}>
             <div class="session-led">
               <HiFiLed
-                color={isActive ? 'red' : isPlaying ? 'green' : 'off'}
+                color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isPlaying ? 'green' : 'off'}
                 size="small"
                 blink={isActive}
               />
@@ -329,7 +329,22 @@
           <!-- Expandierter Detail-Bereich -->
           {#if isExpanded}
             <div class="session-detail">
-              {#if metadataLoading}
+              {#if isActive}
+                <!-- Live-Titelliste während Aufnahme -->
+                {#if appState.recordingIcyEntries.length > 0}
+                  <div class="meta-list">
+                    <div class="meta-header">ERKANNTE TITEL ({appState.recordingIcyEntries.length})</div>
+                    {#each appState.recordingIcyEntries as entry}
+                      <div class="meta-entry live-entry">
+                        <span class="meta-time">[{formatMetaTime(entry.t)}]</span>
+                        <span class="meta-title">{entry.title}</span>
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <div class="meta-empty">Noch keine Titelwechsel erkannt</div>
+                {/if}
+              {:else if metadataLoading}
                 <div class="meta-loading">Lade Metadaten...</div>
               {:else if segments.length > 0}
                 <!-- Segmente: Atomare Tracks mit Play/Download/Delete -->

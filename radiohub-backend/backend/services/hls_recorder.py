@@ -526,7 +526,7 @@ class HLSRecorderService:
             and not self._collector_task.done()
         )
 
-        return {
+        status = {
             "recording": True,
             "session_id": session.id,
             "station_name": session.station_name,
@@ -537,6 +537,18 @@ class HLSRecorderService:
             "total_seconds": session.total_seconds,
             "collector_alive": collector_alive
         }
+
+        # ICY-Daten seit REC-Start
+        icy_entries_raw = hls_buffer.get_icy_entries()
+        rec_entries = icy_entries_raw[session.icy_start_index:]
+        if rec_entries:
+            status["icy_count"] = len(rec_entries)
+            status["icy_entries"] = [
+                {"title": e.get("title", ""), "t": e.get("t", 0)}
+                for e in rec_entries
+            ]
+
+        return status
 
 
 # Singleton

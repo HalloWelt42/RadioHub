@@ -286,17 +286,19 @@
     isPodcast
   );
 
-  // Recording-Bitrate Anzeige (Output-Bitrate bei HLS-REC, Input-Bitrate bei Direct-REC)
+  // Recording-Bitrate + ICY-Count Anzeige
   let recordingBitrateLabel = $derived(() => {
     if (!appState.isRecording) return null;
     const q = appState.streamQuality;
+    let bitrate = null;
     if (appState.recordingType === 'hls-rec' && q?.outputBitrate) {
-      return `${q.outputBitrate} kbps`;
+      bitrate = `${q.outputBitrate} kbps`;
+    } else if (appState.recordingType === 'direct' && q?.inputBitrate) {
+      bitrate = `${q.inputBitrate} kbps`;
     }
-    if (appState.recordingType === 'direct' && q?.inputBitrate) {
-      return `${q.inputBitrate} kbps`;
-    }
-    return null;
+    if (!bitrate) return null;
+    const count = appState.recordingIcyCount || 0;
+    return count > 0 ? `${bitrate} / ${count}` : bitrate;
   });
 
   // === LED States ===

@@ -101,9 +101,15 @@ export async function playStation(station) {
   }
   if (_generation !== gen) return; // Abgebrochen durch neueren Aufruf
 
-  // --- Phase 3: Recording stoppen falls aktiv ---
+  // --- Phase 3: Bei aktiver Aufnahme blockieren ---
   if (_appState.isRecording) {
-    await _stopRecordingInternal();
+    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    setTimeout(() => {
+      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+        _appState.playerError = null;
+      }
+    }, 3000);
+    return;
   }
   if (_generation !== gen) return;
 
@@ -178,7 +184,13 @@ export async function playPodcast(episode, podcast) {
   }
 
   if (_appState.isRecording) {
-    await _stopRecordingInternal();
+    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    setTimeout(() => {
+      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+        _appState.playerError = null;
+      }
+    }, 3000);
+    return;
   }
   if (_generation !== gen) return;
 
@@ -237,7 +249,13 @@ export async function playRecording(recording) {
   }
 
   if (_appState.isRecording) {
-    await _stopRecordingInternal();
+    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    setTimeout(() => {
+      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+        _appState.playerError = null;
+      }
+    }, 3000);
+    return;
   }
   if (_generation !== gen) return;
 
@@ -690,6 +708,10 @@ function _startRecordingPoll() {
         // Backend sagt: keine Aufnahme. Frontend-State zurücksetzen.
         console.warn('Recording-Status-Poll: Backend hat keine aktive Aufnahme, setze State zurück');
         _resetRecordingState();
+      } else {
+        // ICY-Daten aus Status in State übernehmen
+        _appState.recordingIcyCount = status.icy_count || 0;
+        _appState.recordingIcyEntries = status.icy_entries || [];
       }
     } catch (e) {
       // Netzwerkfehler: nicht sofort reagieren, naechster Poll klaert
@@ -716,6 +738,8 @@ function _resetRecordingState() {
     _appState.recordingType = 'none';
     _appState.recordingSession = null;
     _appState.recordingElapsed = 0;
+    _appState.recordingIcyCount = 0;
+    _appState.recordingIcyEntries = [];
   }
 }
 
