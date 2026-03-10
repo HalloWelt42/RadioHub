@@ -354,7 +354,7 @@
   );
 
   // Play-Modus: linear -> loop -> shuffle -> linear
-  let canTogglePlayMode = $derived(isRecordingPlayback && appState.recordingPlaylist?.length > 0);
+  let canTogglePlayMode = $derived(isRecordingPlayback || appState.activeTab === 'recordings');
   const playModeOrder = ['linear', 'loop', 'shuffle'];
   const playModeIcons = { linear: 'fa-arrow-right', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
   const playModeLabels = { linear: 'Linear (einmal)', loop: 'Endlosschleife', shuffle: 'Zufall' };

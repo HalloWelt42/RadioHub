@@ -135,6 +135,13 @@ async def download_recording(filename: str):
 
 # === Segment-Endpoints ===
 
+@router.get("/segments")
+async def get_all_segments():
+    """Alle Segmente aller Sessions"""
+    segments = splitter.get_all_segments()
+    return {"count": len(segments), "segments": segments}
+
+
 @router.get("/sessions/{session_id}/segments")
 async def get_segments(session_id: str):
     """Alle Segmente einer Session"""

@@ -213,6 +213,10 @@ class RadioHubAPI {
     return this.fetch(`/api/recording/sessions/${sessionId}/segments`);
   }
 
+  async getAllSegments() {
+    return this.fetch('/api/recording/segments');
+  }
+
   async deleteSegment(sessionId, segmentId) {
     return this.fetch(`/api/recording/sessions/${sessionId}/segments/${segmentId}`, { method: 'DELETE' });
   }

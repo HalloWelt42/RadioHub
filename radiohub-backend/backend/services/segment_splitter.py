@@ -265,6 +265,13 @@ class SegmentSplitter:
                 WHERE session_id = ? ORDER BY segment_index''', (session_id,))
             return [dict(row) for row in c.fetchall()]
 
+    def get_all_segments(self) -> list[dict]:
+        """Alle Segmente aller Sessions aus DB, sortiert nach Session und Index."""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT * FROM segments ORDER BY session_id DESC, segment_index''')
+            return [dict(row) for row in c.fetchall()]
+
     def get_segment(self, segment_id: int) -> Optional[dict]:
         """Einzelnes Segment aus DB."""
         with db_session() as conn:

@@ -2,6 +2,7 @@
   import HiFiLed from './hifi/HiFiLed.svelte';
   import HiFiDisplay from './hifi/HiFiDisplay.svelte';
   import { api } from '../lib/api.js';
+  import { tick } from 'svelte';
   import { appState, actions } from '../lib/store.svelte.js';
   import { formatDuration, formatSize, formatDate, formatMetaTime, formatDurationMs } from '../lib/formatters.js';
 
@@ -22,6 +23,49 @@
     startPolling();
     return () => stopPolling();
   });
+
+  // Auto-Expand: Session des aktuell spielenden Segments oeffnen + hinscollen
+  $effect(() => {
+    const rec = appState.currentRecording;
+    if (rec?.session_id && appState.playerMode === 'recording') {
+      const needExpand = expandedSession !== rec.session_id;
+      if (needExpand) {
+        expandSession(rec.session_id).then(async () => {
+          await tick();
+          scrollToPlayingSegment();
+        });
+      } else {
+        // Gleiche Session, aber anderes Segment -- nur scrollen
+        tick().then(() => scrollToPlayingSegment());
+      }
+    }
+  });
+
+  function scrollToPlayingSegment() {
+    const el = document.querySelector('.segment-entry.playing');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  async function expandSession(sessionId) {
+    expandedSession = sessionId;
+    metadata = [];
+    segments = [];
+    metadataLoading = true;
+    try {
+      const session = sessions.find(s => s.id === sessionId);
+      const [segResult, metaResult] = await Promise.all([
+        api.getSegments(sessionId).catch(() => ({ segments: [] })),
+        session?.meta_file_path
+          ? api.getSessionMetadata(sessionId).catch(() => ({ entries: [] }))
+          : Promise.resolve({ entries: [] })
+      ]);
+      segments = segResult.segments || [];
+      metadata = metaResult.entries || [];
+    } catch (e) {}
+    metadataLoading = false;
+  }
 
   let wasRecording = false;
 
@@ -79,25 +123,7 @@
       segments = [];
       return;
     }
-
-    expandedSession = session.id;
-    metadata = [];
-    segments = [];
-    metadataLoading = true;
-
-    try {
-      // Segmente und Metadata parallel laden
-      const [segResult, metaResult] = await Promise.all([
-        api.getSegments(session.id).catch(() => ({ segments: [] })),
-        session.meta_file_path
-          ? api.getSessionMetadata(session.id).catch(() => ({ entries: [] }))
-          : Promise.resolve({ entries: [] })
-      ]);
-      segments = segResult.segments || [];
-      metadata = metaResult.entries || [];
-    } catch (e) {}
-
-    metadataLoading = false;
+    await expandSession(session.id);
   }
 
   function playSession(session) {
@@ -169,18 +195,36 @@
     window.open(url, '_blank');
   }
 
-  function playSegment(segment) {
-    // Playlist aus allen Segmenten setzen (fuer Prev/Next)
-    if (segments.length > 0) {
-      appState.recordingPlaylist = segments.map(s => ({
-        path: s.file_path,
-        name: s.title || `Segment ${s.segment_index}`,
-        session_id: s.session_id,
-        station_name: s.title,
-        duration: s.duration_ms / 1000,
-        playUrl: api.getSegmentPlayUrl(s.id)
-      }));
+  function mapSegmentToPlaylistEntry(s) {
+    return {
+      path: s.file_path,
+      name: s.title || `Segment ${s.segment_index}`,
+      session_id: s.session_id,
+      station_name: s.title,
+      duration: s.duration_ms / 1000,
+      playUrl: api.getSegmentPlayUrl(s.id)
+    };
+  }
+
+  async function playSegment(segment) {
+    // Shuffle: Playlist aus ALLEN Segmenten, sonst nur aktuelle Session
+    if (appState.playMode === 'shuffle') {
+      try {
+        const result = await api.getAllSegments();
+        const all = result.segments || [];
+        if (all.length > 0) {
+          appState.recordingPlaylist = all.map(mapSegmentToPlaylistEntry);
+        }
+      } catch (e) {
+        // Fallback: nur aktuelle Session-Segmente
+        if (segments.length > 0) {
+          appState.recordingPlaylist = segments.map(mapSegmentToPlaylistEntry);
+        }
+      }
+    } else if (segments.length > 0) {
+      appState.recordingPlaylist = segments.map(mapSegmentToPlaylistEntry);
     }
+
     const playUrl = api.getSegmentPlayUrl(segment.id);
     actions.playRecording({
       path: segment.file_path,
