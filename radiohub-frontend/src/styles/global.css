@@ -83,6 +83,16 @@ html, body {
   background: var(--text-muted);
 }
 
+/* === Focus: dezent, nur bei Keyboard === */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 1px solid rgba(255,255,255,0.25);
+  outline-offset: 2px;
+}
+
 /* === Buttons === */
 button {
   font-family: inherit;

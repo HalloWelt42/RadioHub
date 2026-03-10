@@ -82,18 +82,21 @@
   <!-- Control Panel -->
   <div class="hifi-panel" style="margin:16px; margin-bottom:0;">
     <div class="hifi-flex hifi-gap-md" style="align-items:center;">
-      <div class="hifi-input-group" style="flex:1;">
-        <input 
-          type="text" 
-          class="hifi-input"
-          placeholder="Search podcasts..." 
+      <div class="hifi-search" class:has-value={!!searchQuery} style="flex:1;">
+        <i class="fa-solid fa-magnifying-glass hifi-search-icon"></i>
+        <input
+          type="text"
+          placeholder="Podcasts suchen..."
           bind:value={searchQuery}
           onkeydown={handleKeydown}
         />
+        {#if searchQuery}
+          <button class="hifi-search-clear" onclick={() => { searchQuery = ''; }} title="Suche leeren">&times;</button>
+        {/if}
       </div>
       <button class="hifi-btn hifi-btn-primary" onclick={search} title="Podcasts suchen">SEARCH</button>
       {#if view !== 'subscriptions'}
-        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zurück zu meinen abonnierten Podcasts">MY PODCASTS</button>
+        <button class="hifi-btn" onclick={() => { view = 'subscriptions'; selectedPodcast = null; }} title="Zu meinen abonnierten Podcasts">MY PODCASTS</button>
       {/if}
     </div>
   </div>

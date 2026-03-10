@@ -420,10 +420,19 @@
         scrollToFocused();
         break;
       case 'Enter':
+      case ' ':
         e.preventDefault();
         if (focusedIndex >= 0 && focusedIndex < stations.length) {
-          toggleExpand(stations[focusedIndex]);
+          const station = stations[focusedIndex];
+          selectedUuid = station.uuid;
+          _lastPlayTriggeredUuid = station.uuid;
+          actions.playStation(station);
+          probeOnPlay(station);
         }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        selectedUuid = null;
         break;
     }
   }
