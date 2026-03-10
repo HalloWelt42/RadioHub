@@ -15,6 +15,7 @@
  *   'direct'  - Direkter Stream (kein Timeshift)
  *   'hls'     - HLS-Buffer (seekbar, Timeshift)
  *   'podcast' - Podcast-Episode (seekbar, feste Dauer)
+ *   'recording' - Aufnahme-Wiedergabe (seekbar, feste Dauer)
  */
 import Hls from 'hls.js';
 import { api } from './api.js';
@@ -108,6 +109,7 @@ export async function playStation(station) {
   // --- Phase 4: State setzen ---
   _appState.currentStation = station;
   _appState.currentEpisode = null;
+  _appState.currentRecording = null;
   _appState.isPlaying = true;
   _appState.isPaused = false;
   _appState.isLive = true;
@@ -182,6 +184,7 @@ export async function playPodcast(episode, podcast) {
   // State setzen
   _appState.currentEpisode = { ...episode, podcast };
   _appState.currentStation = null;
+  _appState.currentRecording = null;
   _appState.isPlaying = true;
   _appState.isPaused = false;
   _appState.isLive = true;
@@ -205,6 +208,64 @@ export async function playPodcast(episode, podcast) {
     await _audioEl.play();
   } catch (e) {
     console.warn('Podcast autoplay blocked:', e.message);
+  }
+}
+
+// ============================================================
+//  CASE D: Aufnahme abspielen
+// ============================================================
+
+/**
+ * Spielt eine Aufnahme ab.
+ * recording = { path, name, session_id, station_name, date, duration, playUrl }
+ */
+export async function playRecording(recording) {
+  if (!_appState) return;
+  const gen = ++_generation;
+
+  // Sofortige Stille + Cleanup
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+
+  if (_appState.hlsActive) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+    api.stopHLS().catch(() => {});
+  }
+
+  if (_appState.isRecording) {
+    await _stopRecordingInternal();
+  }
+  if (_generation !== gen) return;
+
+  // State setzen
+  _appState.currentRecording = recording;
+  _appState.currentStation = null;
+  _appState.currentEpisode = null;
+  _appState.isPlaying = true;
+  _appState.isPaused = false;
+  _appState.isLive = false;
+  _appState.playerMode = 'recording';
+  _appState.streamQuality = null;
+  _appState.playerError = null;
+  _appState.currentSegment = null;
+  _lastSeekPosition = 0;
+
+  if (!_audioEl) {
+    _appState.playerError = 'Kein Audio-Element';
+    _appState.isPlaying = false;
+    return;
+  }
+
+  _audioEl.src = recording.playUrl;
+  _audioEl.load();
+
+  try {
+    await _audioEl.play();
+  } catch (e) {
+    console.warn('Recording autoplay blocked:', e.message);
   }
 }
 
@@ -279,7 +340,7 @@ export async function stop() {
     await _stopRecordingInternal();
   }
 
-  // 5. State zurücksetzen
+  // 5. State zuruecksetzen
   _appState.isPlaying = false;
   _appState.isPaused = false;
   _appState.hlsActive = false;
@@ -291,6 +352,7 @@ export async function stop() {
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
+  _appState.currentRecording = null;
   _hlsSessionId = null;
   _lastSeekPosition = 0;
   _userModeOverride = false;
@@ -352,7 +414,7 @@ export function seek(position) {
         _audioEl.currentTime = seekStart + fraction * seekRange;
       }
     }
-  } else if (_appState?.playerMode === 'podcast') {
+  } else if (_appState?.playerMode === 'podcast' || _appState?.playerMode === 'recording') {
     const dur = _audioEl.duration || 0;
     if (dur > 0) {
       _audioEl.currentTime = (position / 100) * dur;
@@ -367,7 +429,7 @@ export function seek(position) {
 export function skip(seconds) {
   if (!_audioEl || !_appState) return;
   const mode = _appState.playerMode;
-  if (mode !== 'hls' && mode !== 'podcast') return;
+  if (mode !== 'hls' && mode !== 'podcast' && mode !== 'recording') return;
 
   if (mode === 'hls') {
     const hs = _appState.hlsStatus;
@@ -426,7 +488,7 @@ export function goLive() {
  */
 export function canSeek() {
   if (!_appState) return false;
-  return _appState.playerMode === 'podcast' || _appState.playerMode === 'hls';
+  return _appState.playerMode === 'podcast' || _appState.playerMode === 'hls' || _appState.playerMode === 'recording';
 }
 
 // ============================================================
@@ -646,7 +708,7 @@ export function handleTimeUpdate() {
         }
       }
     }
-  } else if (duration > 0 && _appState.playerMode === 'podcast') {
+  } else if (duration > 0 && (_appState.playerMode === 'podcast' || _appState.playerMode === 'recording')) {
     seekPosition = (currentTime / duration) * 100;
     _lastSeekPosition = seekPosition;
   }
@@ -658,7 +720,7 @@ export function handleTimeUpdate() {
  * Audio-Ende Handler.
  */
 export function handleEnded() {
-  if (_appState?.playerMode === 'podcast') {
+  if (_appState?.playerMode === 'podcast' || _appState?.playerMode === 'recording') {
     stop();
   }
 }

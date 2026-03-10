@@ -2,6 +2,7 @@
 RadioHub - Bitrate Detector
 
 Erkennt echte Stream-Bitrate via ffprobe.
+ICY-Metadata-Support via Raw-TCP HEAD-Check.
 Fallback: URL-Analyse für Bitrate/Codec-Hinweise.
 Ergebnisse werden in detected_bitrates gecacht.
 """
@@ -10,7 +11,7 @@ import json
 import re
 from datetime import datetime
 from typing import Optional, List
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 from ..database import db_session
 
@@ -131,8 +132,141 @@ async def probe_bitrate(stream_url: str, timeout: float = PROBE_TIMEOUT) -> Opti
     return hints
 
 
+async def check_icy_support(stream_url: str, timeout: float = 5.0) -> bool:
+    """Prueft via Raw-TCP ob ein Stream ICY-Metadata unterstuetzt.
+
+    Sendet HTTP GET mit Icy-MetaData:1 und prueft ob icy-metaint
+    im Response-Header vorkommt.
+    """
+    try:
+        parsed = urlparse(stream_url)
+        host = parsed.hostname
+        port = parsed.port or 80
+        path = parsed.path or "/"
+        if parsed.query:
+            path += f"?{parsed.query}"
+
+        if not host:
+            return False
+
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port),
+            timeout=timeout
+        )
+
+        request = (
+            f"GET {path} HTTP/1.0\r\n"
+            f"Host: {host}\r\n"
+            f"Icy-MetaData: 1\r\n"
+            f"User-Agent: RadioHub/0.2\r\n"
+            f"Connection: close\r\n"
+            f"\r\n"
+        )
+        writer.write(request.encode())
+        await writer.drain()
+
+        # Nur Header lesen (max 4KB)
+        header_data = await asyncio.wait_for(reader.read(4096), timeout=timeout)
+        header_str = header_data.decode("utf-8", errors="replace").lower()
+
+        writer.close()
+
+        return "icy-metaint" in header_str
+
+    except Exception:
+        return False
+
+
+async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str]:
+    """Holt den aktuellen ICY-StreamTitle via One-Shot Raw-TCP.
+
+    Verbindet sich, liest Header fuer metaint, dann genau einen
+    Metadata-Block, und schliesst sofort. Gibt den Titel zurueck
+    oder None bei Fehler / kein ICY.
+    """
+    reader = None
+    writer = None
+    try:
+        parsed = urlparse(stream_url)
+        host = parsed.hostname
+        port = parsed.port or 80
+        path = parsed.path or "/"
+        if parsed.query:
+            path += f"?{parsed.query}"
+
+        if not host:
+            return None
+
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port),
+            timeout=timeout
+        )
+
+        request = (
+            f"GET {path} HTTP/1.0\r\n"
+            f"Host: {host}\r\n"
+            f"Icy-MetaData: 1\r\n"
+            f"User-Agent: RadioHub/0.2\r\n"
+            f"Connection: close\r\n"
+            f"\r\n"
+        )
+        writer.write(request.encode())
+        await writer.drain()
+
+        # Header lesen, metaint extrahieren
+        metaint = 0
+        while True:
+            line = await asyncio.wait_for(reader.readline(), timeout=timeout)
+            line_str = line.decode("utf-8", errors="replace").strip()
+            if not line_str:
+                break
+            if line_str.lower().startswith("icy-metaint:"):
+                try:
+                    metaint = int(line_str.split(":", 1)[1].strip())
+                except ValueError:
+                    pass
+
+        if not metaint:
+            return None
+
+        # Audio-Bytes ueberspringen bis zum ersten Metadata-Block
+        remaining = metaint
+        while remaining > 0:
+            chunk = await asyncio.wait_for(reader.read(min(remaining, 8192)), timeout=timeout)
+            if not chunk:
+                return None
+            remaining -= len(chunk)
+
+        # Metadata-Laenge (1 Byte)
+        length_byte = await asyncio.wait_for(reader.readexactly(1), timeout=timeout)
+        meta_length = length_byte[0] * 16
+
+        if meta_length == 0:
+            return None  # Kein Titel in diesem Block
+
+        # Metadata lesen und StreamTitle parsen
+        meta_data = await asyncio.wait_for(reader.readexactly(meta_length), timeout=timeout)
+        meta_str = meta_data.decode("utf-8", errors="replace").rstrip("\x00")
+
+        match = re.search(r"StreamTitle='([^']*)'", meta_str)
+        if match:
+            title = match.group(1).strip()
+            return title if title else None
+
+        return None
+
+    except Exception:
+        return None
+    finally:
+        if writer:
+            try:
+                writer.close()
+            except Exception:
+                pass
+
+
 def get_cached_bitrates(uuids: List[str]) -> dict:
-    """Holt gecachte Bitrates + Codec für mehrere UUIDs."""
+    """Holt gecachte Bitrates + Codec + ICY + icy_quality fuer mehrere UUIDs."""
     if not uuids:
         return {}
 
@@ -140,22 +274,44 @@ def get_cached_bitrates(uuids: List[str]) -> dict:
         c = conn.cursor()
         placeholders = ",".join("?" * len(uuids))
         c.execute(
-            f"SELECT uuid, bitrate, codec FROM detected_bitrates WHERE uuid IN ({placeholders})",
+            f"SELECT uuid, bitrate, codec, icy, icy_quality FROM detected_bitrates WHERE uuid IN ({placeholders})",
             uuids
         )
-        return {row[0]: {"bitrate": row[1], "codec": row[2] or ""} for row in c.fetchall()}
+        return {row[0]: {"bitrate": row[1], "codec": row[2] or "", "icy": bool(row[3]), "icy_quality": row[4]} for row in c.fetchall()}
 
 
-def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate: int = 0):
-    """Speichert erkannte Bitrate in DB."""
+def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate: int = 0, icy: bool = False):
+    """Speichert erkannte Bitrate + ICY-Status in DB."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute(
             """INSERT OR REPLACE INTO detected_bitrates
-               (uuid, bitrate, codec, sample_rate, detected_at)
-               VALUES (?, ?, ?, ?, ?)""",
-            (uuid, bitrate, codec, sample_rate, datetime.now().isoformat())
+               (uuid, bitrate, codec, sample_rate, icy, detected_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (uuid, bitrate, codec, sample_rate, int(icy), datetime.now().isoformat())
         )
+
+
+def set_icy_quality(uuid: str, quality: Optional[str]):
+    """Setzt die ICY-Qualitaetsbewertung fuer einen Sender.
+
+    quality: 'good', 'poor', oder None (zuruecksetzen)
+    Legt ggf. einen Minimal-Eintrag an falls der Sender noch nicht geprobt wurde.
+    """
+    with db_session() as conn:
+        c = conn.cursor()
+        # Erst versuchen bestehenden Eintrag zu updaten
+        c.execute(
+            "UPDATE detected_bitrates SET icy_quality = ? WHERE uuid = ?",
+            (quality, uuid)
+        )
+        if c.rowcount == 0:
+            # Kein Eintrag vorhanden -> Minimal-Eintrag anlegen
+            c.execute(
+                """INSERT INTO detected_bitrates (uuid, bitrate, codec, sample_rate, icy, icy_quality, detected_at)
+                   VALUES (?, 0, '', 0, 1, ?, ?)""",
+                (uuid, quality, datetime.now().isoformat())
+            )
 
 
 def get_uuids_needing_probe(uuids: List[str]) -> List[str]:
@@ -201,17 +357,23 @@ async def probe_stations(stations: List[dict]):
                 save_detected_bitrate(uuid, 0)
                 return
 
-            result = await probe_bitrate(url)
+            # Bitrate + ICY parallel pruefen
+            bitrate_task = probe_bitrate(url)
+            icy_task = check_icy_support(url)
+            result, has_icy = await asyncio.gather(bitrate_task, icy_task)
+
             if result and (result["bitrate"] > 0 or result.get("codec")):
                 save_detected_bitrate(
                     uuid,
                     result["bitrate"],
                     result.get("codec", ""),
-                    result.get("sample_rate", 0)
+                    result.get("sample_rate", 0),
+                    icy=has_icy
                 )
-                print(f"  Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']}kbps/{result.get('codec', '?')}")
+                icy_tag = " [ICY]" if has_icy else ""
+                print(f"  Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']}kbps/{result.get('codec', '?')}{icy_tag}")
             else:
-                save_detected_bitrate(uuid, 0)
+                save_detected_bitrate(uuid, 0, icy=has_icy)
 
     tasks = [probe_one(s) for s in stations]
     await asyncio.gather(*tasks, return_exceptions=True)
