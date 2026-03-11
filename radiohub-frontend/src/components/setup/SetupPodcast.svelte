@@ -115,23 +115,23 @@
   .toggle-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 6px;
+    padding: 8px 18px;
     background: var(--hifi-bg-tertiary);
-    border: 1px solid var(--hifi-border-dark);
-    border-radius: var(--hifi-border-radius-md);
+    border: none;
+    border-radius: var(--hifi-border-radius-pill);
     color: var(--hifi-text-secondary);
-    font-family: var(--hifi-font-body);
-    font-size: 12px;
-    font-weight: 600;
+    font-family: var(--hifi-font-values);
+    font-size: 10px;
+    font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.15s ease;
-    box-shadow: var(--hifi-shadow-outset);
   }
 
   .toggle-btn:hover {
     background: var(--hifi-bg-secondary);
+    color: var(--hifi-text-primary);
   }
 
   .toggle-btn.active {

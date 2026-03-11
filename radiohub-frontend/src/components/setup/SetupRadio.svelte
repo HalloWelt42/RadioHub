@@ -56,28 +56,29 @@
   .sub-tab-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 14px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--hifi-border-radius-sm);
+    gap: 6px;
+    padding: 8px 18px;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: var(--hifi-border-radius-pill);
     color: var(--hifi-text-secondary);
     font-family: var(--hifi-font-values);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
+    transition: all 0.15s ease;
   }
 
   .sub-tab-btn:hover {
-    background: var(--hifi-bg-tertiary);
+    background: var(--hifi-bg-secondary);
     color: var(--hifi-text-primary);
   }
 
   .sub-tab-btn.active {
-    background: var(--hifi-bg-tertiary);
-    border-color: var(--hifi-border-dark);
+    background: var(--hifi-bg-panel);
     color: var(--hifi-accent);
+    box-shadow: var(--hifi-shadow-inset);
   }
 
   .radio-content {

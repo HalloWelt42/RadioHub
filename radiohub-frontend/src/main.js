@@ -1,9 +1,10 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
 
-// Font Awesome (nur solid + base)
+// Font Awesome (solid + brands + base)
 import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 import '@fortawesome/fontawesome-free/css/solid.min.css';
+import '@fortawesome/fontawesome-free/css/brands.min.css';
 
 // HiFi UI Framework CSS
 import './styles/fonts.css';
