@@ -4,10 +4,12 @@
   import { api } from '../../lib/api.js';
   import { appState, actions } from '../../lib/store.svelte.js';
   import * as sfx from '../../lib/uiSounds.js';
+  import { currentLanguage, setLanguage, availableLanguages } from '../../lib/i18n.js';
 
   let config = $state({});
   let isLoading = $state(true);
   let clickSoundsEnabled = $state(true);
+  let activeLang = $state(currentLanguage());
 
   $effect(() => {
     loadConfig();
@@ -22,6 +24,10 @@
       }
       // Click-Sounds Status
       clickSoundsEnabled = config.ui_click_sounds !== false;
+      // Sprache
+      if (config.language) {
+        activeLang = config.language;
+      }
     } catch (e) {
       // Netzwerkfehler ignorieren
     }
@@ -44,6 +50,12 @@
     if (clickSoundsEnabled) {
       sfx.click(); // Feedback: Sound ist an
     }
+  }
+
+  function switchLanguage(code) {
+    activeLang = code;
+    setLanguage(code);
+    saveConfig('language', code);
   }
 </script>
 
@@ -78,12 +90,14 @@
       </div>
     </div>
 
-    <!-- Click-Sounds -->
+    <!-- Click-Sounds + Sprache -->
     <div class="hifi-panel">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">UI SOUNDS</span>
+        <span style="margin-left:auto;"></span>
+        <span class="hifi-font-label">SPRACHE</span>
       </div>
-      <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
+      <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center; flex-wrap:wrap;">
         <button
           class="theme-btn"
           class:active={clickSoundsEnabled}
@@ -92,6 +106,17 @@
           <HiFiLed color={clickSoundsEnabled ? 'green' : 'off'} />
           <span>CLICK-SOUNDS</span>
         </button>
+        <span style="flex:1;"></span>
+        {#each availableLanguages as lang}
+          <button
+            class="theme-btn"
+            class:active={activeLang === lang.code}
+            onclick={() => switchLanguage(lang.code)}
+          >
+            <HiFiLed color={activeLang === lang.code ? 'green' : 'off'} />
+            <span>{lang.flag}</span>
+          </button>
+        {/each}
       </div>
     </div>
 

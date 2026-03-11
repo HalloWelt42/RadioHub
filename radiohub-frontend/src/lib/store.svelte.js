@@ -113,6 +113,11 @@ export const actions = {
       if (config.ui_click_sounds !== undefined) {
         setEnabled(config.ui_click_sounds);
       }
+      // Sprache aus Config initialisieren
+      if (config.language) {
+        const { setLanguage } = await import('./i18n.js');
+        setLanguage(config.language);
+      }
     } catch (e) {
       // Config nicht geladen - Defaults nutzen
     }
