@@ -3,6 +3,7 @@
   import HiFiDisplay from './hifi/HiFiDisplay.svelte';
   import FileExplorer from './shared/FileExplorer.svelte';
   import RecordingSidebar from './recordings/RecordingSidebar.svelte';
+  import CutterView from './recordings/CutterView.svelte';
   import { api } from '../lib/api.js';
   import { tick } from 'svelte';
   import { appState, actions } from '../lib/store.svelte.js';
@@ -18,14 +19,19 @@
   let segments = $state([]);
   let metadataLoading = $state(false);
 
-  // View: aus Route abgeleitet ('details' | 'file-explorer')
+  // View: aus Route abgeleitet ('details' | 'file-explorer' | 'cutter')
   let view = $derived.by(() => {
     if (appState.activeTab !== 'recordings') return 'details';
-    return appState.routeSegments?.[0] === 'files' ? 'file-explorer' : 'details';
+    const seg = appState.routeSegments?.[0];
+    if (seg === 'files') return 'file-explorer';
+    if (seg === 'cutter') return 'cutter';
+    return 'details';
   });
 
   function setView(v) {
-    actions.navigateTo(v === 'file-explorer' ? '/recorder/files' : '/recorder');
+    if (v === 'file-explorer') actions.navigateTo('/recorder/files');
+    else if (v === 'cutter') actions.navigateTo('/recorder/cutter');
+    else actions.navigateTo('/recorder');
   }
 
   // Sidebar
@@ -393,12 +399,25 @@
   }
 
   function handleCutter() {
-    // Cutter: Wenn eine Session ausgewählt ist, diese splitten
     if (selectedSession && selectedSession.status !== 'recording') {
-      splitSession(selectedSession);
+      setView('cutter');
     } else {
       actions.showToast(t('recordings.bitteAufnahmeAuswaehlen'), 'info');
     }
+  }
+
+  function handleCutterClose() {
+    setView('details');
+  }
+
+  async function handleCutterSplit() {
+    // Nach Schnitt: Segmente + Sessions neu laden, zurueck zur Detail-Ansicht
+    await Promise.all([loadSessions(), loadStats()]);
+    if (selectedSession) {
+      const segResult = await api.getSegments(selectedSession.id).catch(() => ({ segments: [] }));
+      segments = segResult.segments || [];
+    }
+    setView('details');
   }
 
   function handleSidebarResize(newWidth) {
@@ -436,7 +455,14 @@
   />
 
   <div class="recording-content">
-    {#if view === 'file-explorer'}
+    {#if view === 'cutter' && selectedSession}
+      <CutterView
+        session={selectedSession}
+        {metadata}
+        onclose={handleCutterClose}
+        onsplit={handleCutterSplit}
+      />
+    {:else if view === 'file-explorer'}
       <FileExplorer
         type="recording"
         folders={fileExplorerFolders}

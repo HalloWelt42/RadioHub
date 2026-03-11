@@ -16,7 +16,7 @@ from pathlib import Path
 from ..services.recorder import rec_manager, EXTENSION_MIMETYPES
 from ..services.hls_recorder import hls_recorder
 from ..services.segment_splitter import splitter
-from ..config import RADIO_RECORDINGS_DIR
+from ..config import RADIO_RECORDINGS_DIR, get_cache_dir
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
@@ -245,6 +245,78 @@ async def split_session(session_id: str):
 
     segments = await splitter.split_session(
         session_id, audio_file, meta_file, duration, file_format
+    )
+
+    if not segments:
+        raise HTTPException(500, "Split fehlgeschlagen")
+
+    return {"success": True, "segments": len(segments)}
+
+
+class CustomSplitRequest(BaseModel):
+    cut_points: list[float]
+
+
+@router.post("/sessions/{session_id}/custom-split")
+async def custom_split_session(session_id: str, req: CustomSplitRequest):
+    """Manueller Schnitt an expliziten Zeitpunkten (vom Cutter-UI)."""
+    session = rec_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(404, "Session nicht gefunden")
+
+    if session.get("status") == "recording":
+        raise HTTPException(400, "Aufnahme laeuft noch")
+
+    if not req.cut_points or len(req.cut_points) == 0:
+        raise HTTPException(400, "Keine Schnittpunkte angegeben")
+
+    # Audio-Datei pruefen (auch segmentierte Sessions unterstuetzen)
+    file_path = session.get("file_path", "")
+    if not file_path:
+        raise HTTPException(400, "Keine Audio-Datei vorhanden")
+    audio_file = Path(file_path)
+
+    if audio_file.is_dir():
+        # Segmentierte Session -> erst zusammenbauen
+        segments = splitter.get_segments(session_id)
+        if not segments:
+            raise HTTPException(404, "Keine Segmente gefunden")
+        ext = Path(segments[0]["file_path"]).suffix
+        cache_dir = get_cache_dir()
+        cached = cache_dir / f"{session_id}_peaks_source{ext}"
+        if cached.exists() and cached.stat().st_size > 0:
+            audio_file = cached
+        else:
+            result = await splitter.concat_session(session_id)
+            if not result or not result.exists():
+                raise HTTPException(500, "Zusammenbau fehlgeschlagen")
+            result.rename(cached)
+            audio_file = cached
+    elif not audio_file.is_file():
+        raise HTTPException(400, "Audio-Datei nicht gefunden")
+
+    duration = session.get("duration", 0)
+    file_format = session.get("file_format", ".mp3")
+
+    # Meta-Entries laden (optional, fuer Titel-Zuordnung)
+    meta_entries = None
+    meta_path = session.get("meta_file_path")
+    if meta_path:
+        meta_file = Path(meta_path)
+        if meta_file.exists():
+            try:
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    raw = json.load(f)
+                if isinstance(raw, dict):
+                    meta_entries = raw.get("entries", [])
+                else:
+                    meta_entries = raw
+            except Exception:
+                pass
+
+    segments = await splitter.split_at_times(
+        session_id, audio_file, req.cut_points, duration, file_format,
+        meta_entries=meta_entries
     )
 
     if not segments:

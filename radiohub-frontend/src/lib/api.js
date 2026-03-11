@@ -282,6 +282,24 @@ class RadioHubAPI {
     return this.fetch(`/api/recording/sessions/${sessionId}/split`, { method: 'POST' });
   }
 
+  async customSplit(sessionId, cutPoints) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/custom-split`, {
+      method: 'POST',
+      body: JSON.stringify({ cut_points: cutPoints })
+    });
+  }
+
+  async getPeaksInfo(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/peaks/info`);
+  }
+
+  async getPeaksChunk(sessionId, start = 0, duration = 300) {
+    const url = `${this.baseUrl}/api/recording/sessions/${sessionId}/peaks?start=${start}&duration=${duration}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Peaks Error: ${response.status}`);
+    return response.arrayBuffer();
+  }
+
   // === Recordings Explorer ===
   async getRecordingsStats() {
     return this.fetch('/api/recordings/stats');

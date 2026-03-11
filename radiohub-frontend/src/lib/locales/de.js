@@ -288,7 +288,8 @@ export default {
     laden: 'Laden...',
     fehler: 'Fehler',
     themeLight: 'Zu hellem Design wechseln',
-    themeDark: 'Zu dunklem Design wechseln'
+    themeDark: 'Zu dunklem Design wechseln',
+    schliessen: 'SCHLIESSEN'
   },
 
   // === Toast-Meldungen ===
@@ -463,6 +464,27 @@ export default {
     dateienLabel: 'Dateien',
     gbFrei: 'GB frei',
     breiteAnpassen: 'Breite anpassen'
+  },
+
+  // === Cutter ===
+  cutter: {
+    zoomRein: 'Hineinzoomen',
+    zoomRaus: 'Herauszoomen',
+    allesAnzeigen: 'Gesamte Aufnahme anzeigen',
+    marker: 'MARKER',
+    markerSetzen: 'Marker an aktueller Position setzen',
+    markerAusMetadata: 'Marker aus ICY-Titelwechseln setzen',
+    alleMarkerEntfernen: 'Alle Marker entfernen',
+    schneiden: 'SCHNEIDEN',
+    teile: 'Teile',
+    autoSplit: 'Auto-Split nach ICY-Titeln',
+    schnittpunkte: 'Schnittpunkte',
+    bestehendeSegmente: 'Bestehende Segmente',
+    ladePeaks: 'Lade Waveform-Daten...',
+    keineMarker: 'Bitte mindestens einen Marker setzen',
+    schnittErfolgreich: '{count} Segmente erzeugt',
+    schnittFehler: 'Schnitt fehlgeschlagen',
+    keineMetadaten: 'Keine ICY-Metadaten vorhanden'
   },
 
   // === FileExplorer ===

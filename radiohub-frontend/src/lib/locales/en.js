@@ -288,7 +288,8 @@ export default {
     laden: 'Loading...',
     fehler: 'Error',
     themeLight: 'Switch to light theme',
-    themeDark: 'Switch to dark theme'
+    themeDark: 'Switch to dark theme',
+    schliessen: 'CLOSE'
   },
 
   // === Toast Messages ===
@@ -463,6 +464,27 @@ export default {
     dateienLabel: 'Files',
     gbFrei: 'GB free',
     breiteAnpassen: 'Adjust width'
+  },
+
+  // === Cutter ===
+  cutter: {
+    zoomRein: 'Zoom in',
+    zoomRaus: 'Zoom out',
+    allesAnzeigen: 'Show entire recording',
+    marker: 'MARKER',
+    markerSetzen: 'Place marker at current position',
+    markerAusMetadata: 'Set markers from ICY title changes',
+    alleMarkerEntfernen: 'Remove all markers',
+    schneiden: 'CUT',
+    teile: 'parts',
+    autoSplit: 'Auto-split by ICY titles',
+    schnittpunkte: 'Cut points',
+    bestehendeSegmente: 'Existing segments',
+    ladePeaks: 'Loading waveform data...',
+    keineMarker: 'Please set at least one marker',
+    schnittErfolgreich: '{count} segments created',
+    schnittFehler: 'Cut failed',
+    keineMetadaten: 'No ICY metadata available'
   },
 
   // === FileExplorer ===

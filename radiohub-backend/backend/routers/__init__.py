@@ -17,6 +17,7 @@ from .recording_folders import router as recording_folders_router
 from .storage import router as storage_router
 from .services import router as services_router
 from .favicons import router as favicons_router
+from .peaks import router as peaks_router
 
 __all__ = [
     "stations_router",
@@ -37,4 +38,5 @@ __all__ = [
     "storage_router",
     "services_router",
     "favicons_router",
+    "peaks_router",
 ]
