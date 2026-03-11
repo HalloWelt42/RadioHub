@@ -3,8 +3,8 @@
  * Kommunikation mit Backend
  */
 
-// API Base URL - wird beim Build/Docker überschrieben
-const API_BASE = window.RADIOHUB_API_URL || 'http://localhost:9091';
+// API Base URL - relativ fuer Vite-Proxy, ueberschreibbar fuer Docker/Produktion
+const API_BASE = window.RADIOHUB_API_URL || '';
 
 class RadioHubAPI {
   constructor(baseUrl) {

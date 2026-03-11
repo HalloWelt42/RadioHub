@@ -78,6 +78,65 @@ async def create_folder(body: FolderCreate):
     return {"id": folder_id, "name": name, "path": safe_path}
 
 
+@router.delete("/{folder_id}")
+async def delete_folder(folder_id: int):
+    """Ordner loeschen (nur wenn keine Sessions zugewiesen)."""
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM recording_folders WHERE id = ?", (folder_id,))
+        folder = c.fetchone()
+        if not folder:
+            raise HTTPException(404, "Ordner nicht gefunden")
+
+        c.execute("SELECT COUNT(*) FROM sessions WHERE folder_id = ?", (folder_id,))
+        count = c.fetchone()[0]
+        if count > 0:
+            raise HTTPException(400, f"Ordner enthaelt noch {count} Aufnahmen")
+
+        # Physisches Verzeichnis loeschen (nur wenn leer)
+        folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
+        if folder_dir.exists():
+            try:
+                folder_dir.rmdir()
+            except OSError:
+                raise HTTPException(400, "Ordner ist nicht leer auf der Festplatte")
+
+        c.execute("DELETE FROM recording_folders WHERE id = ?", (folder_id,))
+        conn.commit()
+
+    return {"success": True}
+
+
+# === Aktivierung ===
+
+@router.put("/deactivate")
+async def deactivate_folder():
+    """Aktiven Ordner zuruecksetzen (Aufnahmen gehen in Root)."""
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("UPDATE recording_folders SET is_active = 0 WHERE is_active = 1")
+        conn.commit()
+
+    return {"activated": False}
+
+
+@router.put("/{folder_id}/activate")
+async def activate_folder(folder_id: int):
+    """Ordner als aktiven Aufnahmeordner setzen."""
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT name FROM recording_folders WHERE id = ?", (folder_id,))
+        folder = c.fetchone()
+        if not folder:
+            raise HTTPException(404, "Ordner nicht gefunden")
+
+        c.execute("UPDATE recording_folders SET is_active = 0 WHERE is_active = 1")
+        c.execute("UPDATE recording_folders SET is_active = 1 WHERE id = ?", (folder_id,))
+        conn.commit()
+
+    return {"activated": True, "folder_id": folder_id, "name": folder["name"]}
+
+
 @router.put("/{folder_id}")
 async def update_folder(folder_id: int, body: FolderUpdate):
     """Ordner umbenennen oder Sortierung aendern."""
@@ -137,65 +196,6 @@ async def update_folder(folder_id: int, body: FolderUpdate):
             conn.commit()
 
     return {"success": True}
-
-
-@router.delete("/{folder_id}")
-async def delete_folder(folder_id: int):
-    """Ordner loeschen (nur wenn keine Sessions zugewiesen)."""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM recording_folders WHERE id = ?", (folder_id,))
-        folder = c.fetchone()
-        if not folder:
-            raise HTTPException(404, "Ordner nicht gefunden")
-
-        c.execute("SELECT COUNT(*) FROM sessions WHERE folder_id = ?", (folder_id,))
-        count = c.fetchone()[0]
-        if count > 0:
-            raise HTTPException(400, f"Ordner enthaelt noch {count} Aufnahmen")
-
-        # Physisches Verzeichnis loeschen (nur wenn leer)
-        folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
-        if folder_dir.exists():
-            try:
-                folder_dir.rmdir()
-            except OSError:
-                raise HTTPException(400, "Ordner ist nicht leer auf der Festplatte")
-
-        c.execute("DELETE FROM recording_folders WHERE id = ?", (folder_id,))
-        conn.commit()
-
-    return {"success": True}
-
-
-# === Aktivierung ===
-
-@router.put("/{folder_id}/activate")
-async def activate_folder(folder_id: int):
-    """Ordner als aktiven Aufnahmeordner setzen."""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("SELECT name FROM recording_folders WHERE id = ?", (folder_id,))
-        folder = c.fetchone()
-        if not folder:
-            raise HTTPException(404, "Ordner nicht gefunden")
-
-        c.execute("UPDATE recording_folders SET is_active = 0 WHERE is_active = 1")
-        c.execute("UPDATE recording_folders SET is_active = 1 WHERE id = ?", (folder_id,))
-        conn.commit()
-
-    return {"activated": True, "folder_id": folder_id, "name": folder["name"]}
-
-
-@router.put("/deactivate")
-async def deactivate_folder():
-    """Aktiven Ordner zuruecksetzen (Aufnahmen gehen in Root)."""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("UPDATE recording_folders SET is_active = 0 WHERE is_active = 1")
-        conn.commit()
-
-    return {"activated": False}
 
 
 # === Session verschieben ===
