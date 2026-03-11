@@ -15,6 +15,7 @@ from typing import Optional
 
 from ..database import db_session
 from ..config import get_radio_recordings_dir, get_active_recording_dir
+from .config_service import config_service
 from .icy_metadata import IcyMetadataLogger
 
 # Minimaler freier Speicherplatz (100 MB)
@@ -194,7 +195,8 @@ class RecorderManager:
             ]
         else:
             # Fallback: Re-Encoding zu MP3
-            br = f"{bitrate}k" if bitrate > 0 else "192k"
+            configured_bitrate = config_service.get("recording_bitrate", 192)
+            br = f"{bitrate}k" if bitrate > 0 else f"{configured_bitrate}k"
             cmd = [
                 "ffmpeg", "-y",
                 "-reconnect", "1",

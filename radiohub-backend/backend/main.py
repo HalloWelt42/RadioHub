@@ -21,22 +21,20 @@ from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
 
 
-PODCAST_REFRESH_INTERVAL = podcast_service.REFRESH_INTERVAL
-
-
 async def _podcast_refresh_loop():
     """Periodischer Feed-Refresh fuer alle Podcast-Abos"""
     podcast_service.set_next_refresh(datetime.now() + timedelta(seconds=60))
     await asyncio.sleep(60)  # 1 Min nach Start warten
     while True:
-        try:
-            result = await podcast_service.refresh_all()
-            print(f"✓ Podcast-Refresh: {result.get('refreshed', 0)}/{result.get('total', 0)} Feeds, "
-                  f"{result.get('new_episodes', 0)} neue Episoden")
-        except Exception as e:
-            print(f"✗ Podcast-Refresh fehlgeschlagen: {e}")
+        if podcast_service.auto_refresh_enabled:
+            try:
+                result = await podcast_service.refresh_all()
+                print(f"✓ Podcast-Refresh: {result.get('refreshed', 0)}/{result.get('total', 0)} Feeds, "
+                      f"{result.get('new_episodes', 0)} neue Episoden")
+            except Exception as e:
+                print(f"✗ Podcast-Refresh fehlgeschlagen: {e}")
         podcast_service.reset_refresh_timer()
-        await asyncio.sleep(PODCAST_REFRESH_INTERVAL)
+        await asyncio.sleep(podcast_service.refresh_interval)
 
 
 @asynccontextmanager
@@ -58,7 +56,9 @@ async def lifespan(app: FastAPI):
         writable = "OK" if info["writable"] else "FEHLER"
         print(f"  Zone {name}: {info['path']} [{writable}]")
     print(f"✓ HLS Buffer verfügbar: /api/hls/")
-    print(f"✓ Podcast-Refresh alle {PODCAST_REFRESH_INTERVAL // 3600}h aktiv")
+    refresh_h = podcast_service.refresh_interval // 3600
+    refresh_status = "aktiv" if podcast_service.auto_refresh_enabled else "deaktiviert"
+    print(f"✓ Podcast-Refresh alle {refresh_h}h {refresh_status}")
 
     yield
 

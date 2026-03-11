@@ -49,17 +49,29 @@ class PodcastSearchResult:
 
 
 class PodcastService:
-    REFRESH_INTERVAL = 6 * 3600  # 6 Stunden
+    REFRESH_INTERVAL = 6 * 3600  # 6 Stunden (Fallback)
 
     def __init__(self):
         self.client: Optional[httpx.AsyncClient] = None
         self._next_refresh_at: Optional[datetime] = None
 
+    @property
+    def refresh_interval(self) -> int:
+        """Refresh-Intervall aus Config oder Fallback"""
+        return config_service.get("podcast_refresh_interval", self.REFRESH_INTERVAL)
+
+    @property
+    def auto_refresh_enabled(self) -> bool:
+        """Auto-Refresh aus Config"""
+        return config_service.get("podcast_auto_refresh", True)
+
     def get_refresh_status(self) -> dict:
         """Refresh-Timer Status fuer Frontend"""
+        interval = self.refresh_interval
         return {
             "next_refresh_at": self._next_refresh_at.isoformat() if self._next_refresh_at else None,
-            "interval_hours": self.REFRESH_INTERVAL // 3600
+            "interval_hours": interval // 3600,
+            "auto_refresh": self.auto_refresh_enabled
         }
 
     def set_next_refresh(self, dt: datetime):
@@ -67,7 +79,7 @@ class PodcastService:
 
     def reset_refresh_timer(self):
         from datetime import timedelta
-        self._next_refresh_at = datetime.now() + timedelta(seconds=self.REFRESH_INTERVAL)
+        self._next_refresh_at = datetime.now() + timedelta(seconds=self.refresh_interval)
 
     async def _get_client(self) -> httpx.AsyncClient:
         if not self.client:

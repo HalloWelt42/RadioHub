@@ -1,5 +1,5 @@
 """
-RadioHub v0.1.8 - Config Service
+RadioHub v0.2.5 - Config Service
 
 Globale App-Einstellungen in der Datenbank speichern.
 """
@@ -8,26 +8,26 @@ from typing import Any, Optional
 
 from ..database import db_session
 
-# Standard-Einstellungen
+# Standard-Einstellungen (thematisch gruppiert)
 DEFAULT_CONFIG = {
-    "volume": 70,
-    "theme": "dark",
+    # --- UI ---
     "language": "de",
-    "buffer_enabled": True,
-    "buffer_size_seconds": 600,
+    "ui_click_sounds": True,
+    # --- Audio / Aufnahme ---
     "recording_format": "mp3",
     "recording_bitrate": 192,
-    "podcast_auto_refresh": True,
-    "podcast_refresh_interval": 3600,  # Sekunden
-    "last_station_uuid": None,
-    "last_station_name": None,
-    # HLS Buffer Qualitäts-Einstellungen
     "hls_min_bitrate": 32,    # Minimum kbps
     "hls_max_bitrate": 320,   # Maximum kbps
     "hls_sample_rate": 44100, # Sample Rate (Hz)
-    # Sidebar-Filter Konfiguration
+    # --- Podcast ---
+    "podcast_auto_refresh": True,
+    "podcast_refresh_interval": 21600,  # 6 Stunden in Sekunden
+    # --- Session ---
+    "last_station_uuid": None,
+    "last_station_name": None,
+    # --- Filter ---
     "sidebar_countries": None, # JSON-Array mit sichtbaren Country-Codes
-    # Externe Dienste - Endpunkte
+    # --- Externe Dienste ---
     "service_radio_browser_servers": [
         "https://de1.api.radio-browser.info",
         "https://at1.api.radio-browser.info",

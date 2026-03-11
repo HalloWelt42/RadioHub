@@ -17,10 +17,11 @@
     actions.initTheme();
   });
   
-  // Health Check
+  // Health Check + Config Init
   $effect(() => {
     api.health().then(() => {
       backendOnline = true;
+      actions.initConfig();
     }).catch(() => {
       actions.showToast('Backend nicht erreichbar', 'error');
       backendOnline = false;

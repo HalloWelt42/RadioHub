@@ -105,6 +105,19 @@ export const actions = {
     }
   },
 
+  async initConfig() {
+    try {
+      const config = await api.getConfig();
+      // Click-Sounds aus Config initialisieren
+      const { setEnabled } = await import('./uiSounds.js');
+      if (config.ui_click_sounds !== undefined) {
+        setEnabled(config.ui_click_sounds);
+      }
+    } catch (e) {
+      // Config nicht geladen - Defaults nutzen
+    }
+  },
+
   // Toast
   showToast(message, type = 'info') {
     appState.toast = { message, type };

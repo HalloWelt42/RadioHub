@@ -54,7 +54,7 @@ async def start_hls_buffer(request: HLSStartRequest):
     # Config-Werte laden
     config = get_config_service()
     min_bitrate = config.get("hls_min_bitrate", 32)
-    max_bitrate = config.get("hls_max_bitrate", 256)
+    max_bitrate = config.get("hls_max_bitrate", 320)
     sample_rate = config.get("hls_sample_rate", 44100)
     
     result = await hls_buffer.start(
