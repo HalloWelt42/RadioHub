@@ -39,6 +39,7 @@
   let newFolderName = $state('');
   let renamingFolderId = $state(null);
   let renameFolderName = $state('');
+  let moveMenuSessionId = $state(null);
 
   // Zugeklappte Ordner (persistiert)
   let collapsedFolders = $state(
@@ -70,6 +71,24 @@
       showNewFolder = false;
     }
     if (e.key === 'Escape') { showNewFolder = false; newFolderName = ''; }
+  }
+
+  function toggleMoveMenu(sessionId, e) {
+    e.stopPropagation();
+    moveMenuSessionId = moveMenuSessionId === sessionId ? null : sessionId;
+  }
+
+  function handleMoveToFolder(sessionId, folderId, e) {
+    e.stopPropagation();
+    onmovesession(sessionId, folderId);
+    moveMenuSessionId = null;
+  }
+
+  // Klick außerhalb schließt Move-Menü
+  function handleGlobalClick(e) {
+    if (moveMenuSessionId && !e.target.closest('.session-move-menu') && !e.target.closest('.session-move-btn')) {
+      moveMenuSessionId = null;
+    }
   }
 
   function startRenaming(folder) {
@@ -139,36 +158,67 @@
   {@const isSelected = selectedSessionId === session.id}
   {@const isPlaying = activeSessionId === session.id}
   {@const isActive = session.status === 'recording'}
-  <button
-    class="session-item"
-    class:selected={isSelected}
-    class:playing={isPlaying}
-    class:active={isActive}
-    data-session-id={session.id}
-    onclick={() => { onselectsession(session); sfx.click(); }}
-  >
-    <HiFiLed
-      color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
-      size="small"
-      blink={isActive}
-      pulse={isPlaying}
-      title={isActive ? (appState.recordingType === 'hls-rec' ? 'HLS-Buffer-Aufnahme läuft' : 'Aufnahme läuft') : isPlaying ? 'Wird abgespielt' : isSelected ? 'Ausgewählt' : 'Inaktiv'}
-    />
-    <div class="session-info">
-      <div class="session-name">{session.station_name || session.id}</div>
-      <div class="session-meta">
-        {formatDate(session.start_time)}
-        {#if session.segment_count > 0}
-          -- {session.segment_count} Seg.
-        {/if}
+  {@const showMoveMenu = moveMenuSessionId === session.id}
+  <div class="session-item-wrapper">
+    <button
+      class="session-item"
+      class:selected={isSelected}
+      class:playing={isPlaying}
+      class:active={isActive}
+      data-session-id={session.id}
+      onclick={() => { onselectsession(session); sfx.click(); }}
+    >
+      <HiFiLed
+        color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
+        size="small"
+        blink={isActive}
+        pulse={isPlaying}
+        title={isActive ? (appState.recordingType === 'hls-rec' ? 'HLS-Buffer-Aufnahme läuft' : 'Aufnahme läuft') : isPlaying ? 'Wird abgespielt' : isSelected ? 'Ausgewählt' : 'Inaktiv'}
+      />
+      <div class="session-info">
+        <div class="session-name">{session.station_name || session.id}</div>
+        <div class="session-meta">
+          {formatDate(session.start_time)}
+          {#if session.segment_count > 0}
+            -- {session.segment_count} Seg.
+          {/if}
+        </div>
       </div>
-    </div>
-    <div class="session-right">
-      <span class="session-duration">{isActive ? formatDuration(appState.recordingElapsed) : formatDuration(session.duration)}</span>
-      <span class="session-codec">{codecBadge(session)}</span>
-    </div>
-  </button>
+      <div class="session-right">
+        <span class="session-duration">{isActive ? formatDuration(appState.recordingElapsed) : formatDuration(session.duration)}</span>
+        <span class="session-codec">{codecBadge(session)}</span>
+      </div>
+    </button>
+    {#if folders.length > 0 && !isActive}
+      <button
+        class="session-move-btn"
+        class:visible={showMoveMenu}
+        onclick={(e) => toggleMoveMenu(session.id, e)}
+        title="In Ordner verschieben"
+      >
+        <i class="fa-solid fa-folder-open"></i>
+      </button>
+    {/if}
+    {#if showMoveMenu}
+      <div class="session-move-menu">
+        {#if session.folder_id}
+          <button class="move-option" onclick={(e) => handleMoveToFolder(session.id, null, e)}>
+            <i class="fa-solid fa-arrow-up"></i> Kein Ordner
+          </button>
+        {/if}
+        {#each folders as folder}
+          {#if folder.id !== session.folder_id}
+            <button class="move-option" onclick={(e) => handleMoveToFolder(session.id, folder.id, e)}>
+              <i class="fa-solid fa-folder"></i> {folder.name}
+            </button>
+          {/if}
+        {/each}
+      </div>
+    {/if}
+  </div>
 {/snippet}
+
+<svelte:window onclick={handleGlobalClick} />
 
 <aside class="recording-sidebar" style="width: {width}px; min-width: {width}px;">
   <!-- Action Row -->
@@ -619,6 +669,10 @@
   }
 
   /* Session Items */
+  .session-item-wrapper {
+    position: relative;
+  }
+
   .session-item {
     display: flex;
     align-items: center;
@@ -633,7 +687,7 @@
     width: 100%;
   }
 
-  .session-item:hover {
+  .session-item-wrapper:hover .session-item {
     background: var(--hifi-row-hover);
   }
 
@@ -649,6 +703,78 @@
   .session-item.active {
     background: rgba(255, 50, 50, 0.08);
     border-left: 2px solid rgba(255, 50, 50, 0.5);
+  }
+
+  /* Session Move Button (erscheint bei Hover) */
+  .session-move-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hifi-bg-tertiary);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: 3px;
+    color: var(--hifi-text-secondary);
+    cursor: pointer;
+    font-size: 9px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    z-index: 5;
+  }
+
+  .session-item-wrapper:hover .session-move-btn,
+  .session-move-btn.visible {
+    opacity: 1;
+  }
+
+  .session-move-btn:hover {
+    color: var(--hifi-accent);
+    background: var(--hifi-bg-panel);
+  }
+
+  /* Session Move Menu (Dropdown) */
+  .session-move-menu {
+    position: absolute;
+    right: 4px;
+    top: 100%;
+    min-width: 140px;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: 4px;
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    padding: 3px 0;
+  }
+
+  .move-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background: none;
+    border: none;
+    color: var(--hifi-text-primary);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .move-option:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .move-option i {
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+    width: 12px;
+    text-align: center;
   }
 
   .session-info {
