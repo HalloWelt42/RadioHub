@@ -7,6 +7,7 @@
   import SetupSystem from './setup/SetupSystem.svelte';
   import SetupSpeicher from './setup/SetupSpeicher.svelte';
   import SetupDienste from './setup/SetupDienste.svelte';
+  import SetupInfo from './setup/SetupInfo.svelte';
   import { appState } from '../lib/store.svelte.js';
 
   let activeTab = $state('allgemein');
@@ -18,7 +19,8 @@
     { id: 'aufnahmen', label: 'AUFNAHMEN' },
     { id: 'speicher', label: 'SPEICHER' },
     { id: 'dienste', label: 'DIENSTE' },
-    { id: 'system', label: 'SYSTEM' }
+    { id: 'system', label: 'SYSTEM' },
+    { id: 'info', label: 'INFO' }
   ];
 
   // Deep-Link: Anderer Tab kann setupSubTab setzen um direkt zu einem Sub-Tab zu springen
@@ -63,6 +65,8 @@
       <div class="setup-scroll-wrapper"><SetupDienste /></div>
     {:else if activeTab === 'system'}
       <div class="setup-scroll-wrapper"><SetupSystem /></div>
+    {:else if activeTab === 'info'}
+      <div class="setup-scroll-wrapper"><SetupInfo /></div>
     {/if}
   </div>
 </div>
