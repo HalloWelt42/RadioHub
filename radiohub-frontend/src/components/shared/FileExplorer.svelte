@@ -92,7 +92,7 @@
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.error('ZIP-Download fehlgeschlagen:', e);
+      // Fehler bei ZIP-Download wird über UI angezeigt
     }
     isDownloading = false;
   }

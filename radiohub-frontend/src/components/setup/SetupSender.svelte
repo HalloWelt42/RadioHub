@@ -48,7 +48,7 @@
         adThreshold = Number(config.ad_detection_threshold) || 0.80;
       }
     } catch (e) {
-      console.error('SetupSender: Config laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isLoading = false;
     loadSuspects();
@@ -79,7 +79,7 @@
     try {
       suspects = await api.getAdSuspects(adThreshold);
     } catch (e) {
-      console.error('SetupSender: Suspects laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       suspects = [];
     }
     isLoadingSuspects = false;
@@ -90,7 +90,7 @@
     try {
       blockedData = await api.getHiddenStations();
     } catch (e) {
-      console.error('SetupSender: Blocklist laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isLoadingBlocked = false;
   }
@@ -99,7 +99,7 @@
     try {
       adSummary = await api.getAdSummary();
     } catch (e) {
-      console.error('SetupSender: Ad-Summary laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 

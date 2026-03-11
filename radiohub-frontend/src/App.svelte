@@ -19,10 +19,9 @@
   
   // Health Check
   $effect(() => {
-    api.health().then(h => {
-      console.log('RadioHub Backend:', h);
+    api.health().then(() => {
       backendOnline = true;
-    }).catch(e => {
+    }).catch(() => {
       actions.showToast('Backend nicht erreichbar', 'error');
       backendOnline = false;
     });

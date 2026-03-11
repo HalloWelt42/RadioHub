@@ -628,7 +628,7 @@ function _switchToDirect() {
   _appState.isLive = true;
   _appState.currentSegment = null;
   _lastSeekPosition = 100;
-  console.log('Wechsel zu Direct-Modus (Original-Qualität)');
+  // Wechsel zu Direct-Modus
 }
 
 /**
@@ -1042,7 +1042,7 @@ export function handleError(event) {
     _appState.canPlayDirect = false;
     // Automatisch zu HLS wechseln wenn verfügbar
     if (_appState.canPlayHLS === true) {
-      console.log('Direct-Codec nicht abspielbar, wechsle zu HLS');
+      // Direct-Codec nicht abspielbar, wechsle zu HLS
       _switchToHLS(_generation);
       return;
     }
@@ -1138,7 +1138,7 @@ async function _waitForHLSSegments(gen) {
       return;
     }
   }
-  console.log('HLS-Segmente nicht rechtzeitig bereit, bleibe auf Direct Stream');
+  // HLS-Segmente nicht rechtzeitig bereit
 }
 
 function _switchToHLS(gen) {
@@ -1158,7 +1158,7 @@ function _switchToHLS(gen) {
     if (_generation !== gen) return;
     _appState.playerMode = 'hls';
     _audioEl.play().catch(e => console.error('HLS play error:', e));
-    console.log('Nahtloser Wechsel zu HLS-Modus');
+    // Nahtloser Wechsel zu HLS-Modus
   });
 
   _hlsInstance.on(Hls.Events.ERROR, (event, data) => {
@@ -1167,14 +1167,14 @@ function _switchToHLS(gen) {
     if (data.fatal) {
       console.error('HLS Fatal Error:', data.type, data.details);
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-        console.log('HLS Network Error - Reconnect in 3s');
+        // HLS Network Error - Reconnect in 3s
         setTimeout(() => _hlsInstance?.startLoad(), 3000);
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-        console.log('HLS Media Error - Recovery');
+        // HLS Media Error - Recovery
         _hlsInstance?.recoverMediaError();
       } else {
         // Fatal: Zurück zu Direct Stream
-        console.log('Fataler HLS Error - Fallback zu Direct Stream');
+        // Fataler HLS Error - Fallback zu Direct Stream
         _destroyHLS();
         _appState.playerMode = 'direct';
         _playDirectFallback(gen);

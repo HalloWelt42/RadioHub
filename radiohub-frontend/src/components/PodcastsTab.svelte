@@ -107,7 +107,7 @@
         if (fresh) selectedPodcast = fresh;
       }
     } catch (e) {
-      console.error('Abonnements laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 
@@ -115,7 +115,7 @@
     try {
       stats = await api.getPodcastStats();
     } catch (e) {
-      console.error('Stats laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 
@@ -143,7 +143,7 @@
       hasMore = newEpisodes.length >= 100;
       offset += newEpisodes.length;
     } catch (e) {
-      console.error('Episoden laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
 
     isLoading = false;
@@ -176,7 +176,7 @@
       hasMore = newEpisodes.length >= 100;
       offset += newEpisodes.length;
     } catch (e) {
-      console.error('Alle Episoden laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
 
     isLoading = false;
@@ -228,7 +228,6 @@
       fileExplorerTotalSize = result.total_size || 0;
       fileExplorerTotalFiles = result.total_files || 0;
     } catch (e) {
-      console.error('Podcast-Dateien laden fehlgeschlagen:', e);
       actions.showToast('Dateien laden fehlgeschlagen', 'error');
     }
     fileExplorerLoading = false;

@@ -19,7 +19,7 @@
         appState.hlsRecLookbackMinutes = config.hls_rec_lookback_minutes;
       }
     } catch (e) {
-      console.error('SetupAllgemein: Config laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isLoading = false;
   }
@@ -29,7 +29,7 @@
       await api.updateConfig({ [key]: value });
       config[key] = value;
     } catch (e) {
-      console.error('SetupAllgemein: Speichern fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       actions.showToast('Speichern fehlgeschlagen', 'error');
     }
   }

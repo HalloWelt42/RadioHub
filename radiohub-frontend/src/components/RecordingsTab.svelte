@@ -359,7 +359,7 @@
       fileExplorerTotalSize = result.total_size || 0;
       fileExplorerTotalFiles = result.total_files || 0;
     } catch (e) {
-      console.error('Aufnahme-Dateien laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     fileExplorerLoading = false;
   }

@@ -18,7 +18,7 @@
         audioEl.src = url;
         audioEl.load();
       }
-      audioEl.play().catch(console.error);
+      audioEl.play().catch(() => {});
     } else {
       audioEl.pause();
     }

@@ -132,7 +132,7 @@
       availableCountries = filters.countries || [];
       search();
     } catch (e) {
-      console.error('Config reload fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 
@@ -225,7 +225,7 @@
 
       search();
     } catch (e) {
-      console.error('Filter laden fehlgeschlagen:', e);
+      // Netzwerkfehler bei Seitenlade ignorieren
       search();
     }
   }
@@ -476,7 +476,6 @@
       await api.setIcyQuality(station.uuid, next);
       station.icy_quality = next;
     } catch (err) {
-      console.error('ICY Quality Fehler:', err);
       actions.showToast(`ICY-Bewertung fehlgeschlagen: ${err.message}`, 'error');
     }
   }
@@ -587,7 +586,7 @@
       const data = result?.assignments || {};
       categoryAssignments = { ...categoryAssignments, ...data };
     } catch (e) {
-      console.error('Kategorie-Zuordnungen laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 

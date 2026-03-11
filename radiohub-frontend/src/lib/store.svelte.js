@@ -186,7 +186,7 @@ export const actions = {
       const favs = await api.getFavoritesAll();
       appState.favorites = favs;
     } catch (e) {
-      console.error('Favorites laden fehlgeschlagen:', e);
+      // Netzwerkfehler bei Seitenlade ignorieren
     }
   },
 
@@ -219,7 +219,7 @@ export const actions = {
       const result = await api.getSubscriptions();
       appState.podcasts = result.subscriptions || [];
     } catch (e) {
-      console.error('Podcasts laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   },
 

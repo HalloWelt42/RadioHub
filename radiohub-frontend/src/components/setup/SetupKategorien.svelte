@@ -20,7 +20,7 @@
       const cats = await api.getCategories();
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      console.error('SetupKategorien: Laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       actions.showToast('Kategorien laden fehlgeschlagen', 'error');
     }
     isLoading = false;
@@ -63,7 +63,7 @@
       const cats = await api.getCategories();
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      console.error('SetupKategorien: Speichern fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       actions.showToast('Speichern fehlgeschlagen', 'error');
     }
   }
@@ -75,7 +75,7 @@
       actions.showToast('Kategorie gelöscht');
       if (editingId === id) cancelForm();
     } catch (e) {
-      console.error('SetupKategorien: Löschen fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       actions.showToast('Löschen fehlgeschlagen', 'error');
     }
   }

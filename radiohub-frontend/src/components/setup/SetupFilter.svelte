@@ -98,7 +98,7 @@
       languages = langData.languages || [];
       countries = countryData.countries || [];
     } catch (e) {
-      console.error('SetupFilter: Daten laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isLoading = false;
   }
@@ -205,7 +205,7 @@
       });
       previewCount = data.count;
     } catch (e) {
-      console.error('SetupFilter: Preview fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isPreviewing = false;
   }
@@ -223,7 +223,7 @@
       previewCount = null;
     } catch (e) {
       actions.showToast('Ausblenden fehlgeschlagen', 'error');
-      console.error('SetupFilter: Push fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
     isPushing = false;
   }

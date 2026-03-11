@@ -15,7 +15,7 @@
     try {
       cacheStats = await api.getCacheStats();
     } catch (e) {
-      console.error('SetupSystem: Cache-Stats laden fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
   }
 
@@ -26,7 +26,7 @@
       actions.showToast(`${result.count} Sender geladen`, 'success');
       loadCacheStats();
     } catch (e) {
-      console.error('SetupSystem: Sync fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
       actions.showToast('Sync fehlgeschlagen', 'error');
     }
     isSyncing = false;

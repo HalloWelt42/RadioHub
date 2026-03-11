@@ -76,7 +76,7 @@
         externResults = result.results || [];
       }
     } catch (e) {
-      console.error('Suche fehlgeschlagen:', e);
+      // Netzwerkfehler ignorieren
     }
 
     isSearching = false;
