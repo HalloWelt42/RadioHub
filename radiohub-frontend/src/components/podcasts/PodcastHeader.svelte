@@ -108,7 +108,7 @@
       onclick={onautodownloadtoggle}
       title={podcast?.auto_download ? 'Auto-Download deaktivieren: Neue Episoden werden nicht automatisch heruntergeladen' : 'Auto-Download aktivieren: Neue Episoden werden automatisch heruntergeladen'}
     >
-      <i class="fa-solid fa-arrows-rotate"></i>
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
     </button>
     <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={onunsubscribe} title="Podcast-Abo entfernen (lokale Dateien bleiben erhalten)">
       <i class="fa-solid fa-trash"></i>
