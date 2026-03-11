@@ -33,6 +33,19 @@ let _hlsSessionId = null;
 let _lastSeekPosition = 0;
 let _userModeOverride = false;
 let _podcastPositionInterval = null;
+let _errorTimer = null;
+
+/**
+ * Setzt playerError mit Auto-Dismiss nach 5s.
+ */
+function _showPlayerError(msg) {
+  if (!_appState) return;
+  clearTimeout(_errorTimer);
+  _appState.playerError = msg;
+  _errorTimer = setTimeout(() => {
+    if (_appState) _appState.playerError = null;
+  }, 5000);
+}
 
 // === Initialisierung ===
 
@@ -132,7 +145,7 @@ export async function playStation(station) {
 
   // --- Phase 5: Direct Stream starten ---
   if (!_audioEl) {
-    _appState.playerError = 'Kein Audio-Element';
+    _showPlayerError('Kein Audio-Element');
     _appState.isPlaying = false;
     return;
   }
@@ -209,7 +222,7 @@ export async function playPodcast(episode, podcast) {
   _lastSeekPosition = 0;
 
   if (!_audioEl) {
-    _appState.playerError = 'Kein Audio-Element';
+    _showPlayerError('Kein Audio-Element');
     _appState.isPlaying = false;
     return;
   }
@@ -287,7 +300,7 @@ export async function playRecording(recording) {
   _lastSeekPosition = 0;
 
   if (!_audioEl) {
-    _appState.playerError = 'Kein Audio-Element';
+    _showPlayerError('Kein Audio-Element');
     _appState.isPlaying = false;
     return;
   }
@@ -335,8 +348,10 @@ export function resume() {
   }
 
   _audioEl.play().catch(e => {
-    console.error('Resume error:', e);
-    _appState.playerError = 'Wiedergabe konnte nicht fortgesetzt werden';
+    if (_audioEl.src) {
+      console.error('Resume error:', e);
+      _showPlayerError('Wiedergabe konnte nicht fortgesetzt werden');
+    }
   });
   _appState.isPaused = false;
 }
@@ -887,6 +902,14 @@ export function handleEnded() {
         return;
       }
 
+      if (mode === 'reverse') {
+        // Rueckwaerts: vorheriger Track, am Anfang stoppen
+        if (idx > 0) {
+          playRecording(playlist[idx - 1]);
+        }
+        return;
+      }
+
       if (mode === 'loop') {
         // Naechster Track, am Ende zurueck zum Anfang
         if (idx >= 0 && idx < playlist.length - 1) {
@@ -925,6 +948,15 @@ export function handleEnded() {
         const next = candidates[Math.floor(Math.random() * candidates.length)];
         _appState.currentEpisodeIndex = playlist.indexOf(next);
         playPodcast(next, podcast);
+        return;
+      }
+
+      if (mode === 'reverse') {
+        // Rueckwaerts: vorherige Episode, am Anfang stoppen
+        if (idx > 0) {
+          _appState.currentEpisodeIndex = idx - 1;
+          playPodcast(playlist[idx - 1], podcast);
+        }
         return;
       }
 
@@ -1016,8 +1048,9 @@ export function handleError(event) {
     }
   }
 
-  _appState.playerError = messages[error.code] || 'Wiedergabefehler';
-  console.error('Audio error:', error.code, _appState.playerError);
+  const msg = messages[error.code] || 'Wiedergabefehler';
+  _showPlayerError(msg);
+  console.error('Audio error:', error.code, msg);
 }
 
 // ============================================================

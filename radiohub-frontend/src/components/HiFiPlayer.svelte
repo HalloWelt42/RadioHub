@@ -209,8 +209,14 @@
   let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls' || appState.playerMode === 'recording');
   let canNavigate = $derived(appState.stations?.length > 0 || isPodcast || (isRecordingPlayback && appState.recordingPlaylist?.length > 1));
 
-  // Prev/Next Sendernamen für Tooltips
+  // Prev/Next Namen für Tooltips
   let prevStationName = $derived(() => {
+    // Podcast-Modus: vorherige Episode
+    if (isPodcast && appState.podcastPlaylist?.length > 1) {
+      const idx = appState.currentEpisodeIndex ?? -1;
+      if (idx > 0) return appState.podcastPlaylist[idx - 1]?.episode?.title;
+      return null;
+    }
     // Recording-Modus: vorheriger Track
     if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
       const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
@@ -226,6 +232,12 @@
   });
 
   let nextStationName = $derived(() => {
+    // Podcast-Modus: nächste Episode
+    if (isPodcast && appState.podcastPlaylist?.length > 1) {
+      const idx = appState.currentEpisodeIndex ?? -1;
+      if (idx >= 0 && idx < appState.podcastPlaylist.length - 1) return appState.podcastPlaylist[idx + 1]?.episode?.title;
+      return null;
+    }
     // Recording-Modus: nächster Track
     if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
       const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
@@ -353,14 +365,15 @@
     )
   );
 
-  // Play-Modus: linear -> loop -> shuffle -> linear
-  let canTogglePlayMode = $derived(isRecordingPlayback || appState.activeTab === 'recordings');
-  const playModeOrder = ['linear', 'loop', 'shuffle'];
-  const playModeIcons = { linear: 'fa-arrow-right', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
-  const playModeLabels = { linear: 'Linear (einmal)', loop: 'Endlosschleife', shuffle: 'Zufall' };
+  // Play-Modus: linear -> reverse -> loop -> shuffle -> linear
+  let canTogglePlayMode = $derived(isRecordingPlayback || appState.playerMode === 'podcast' || appState.activeTab === 'recordings');
+  const playModeOrder = ['linear', 'reverse', 'loop', 'shuffle'];
+  const playModeIcons = { linear: 'fa-arrow-right', reverse: 'fa-arrow-left', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
+  const playModeLabels = { linear: 'Linear (vorwaerts)', reverse: 'Rueckwaerts', loop: 'Endlosschleife', shuffle: 'Zufall' };
   let playModeLedColor = $derived(
     !canTogglePlayMode ? 'off' :
     appState.playMode === 'linear' ? 'white' :
+    appState.playMode === 'reverse' ? 'amber' :
     appState.playMode === 'loop' ? 'green' :
     appState.playMode === 'shuffle' ? 'yellow' :
     'off'
@@ -540,7 +553,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isRecordingPlayback ? 'Kein vorheriger Titel' : 'Kein vorheriger Sender verfügbar') : prevStationName() || (isRecordingPlayback ? 'Vorheriger Titel' : 'Vorheriger Sender')}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isPodcast ? 'Keine vorherige Episode' : isRecordingPlayback ? 'Kein vorheriger Titel' : 'Kein vorheriger Sender') : prevStationName() || (isPodcast ? 'Vorherige Episode' : isRecordingPlayback ? 'Vorheriger Titel' : 'Vorheriger Sender')}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -556,7 +569,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden zurückspulen'}
+          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar' : '10 Sekunden zurück'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
@@ -590,7 +603,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar (nur im HLS-Modus)' : '10 Sekunden vorspulen'}
+          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar' : '10 Sekunden vor'}
           onmouseenter={sfx.hover}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
@@ -606,7 +619,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isRecordingPlayback ? 'Kein nächster Titel' : 'Kein nächster Sender verfügbar') : nextStationName() || (isRecordingPlayback ? 'Nächster Titel' : 'Nächster Sender')}
+          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isPodcast ? 'Keine nächste Episode' : isRecordingPlayback ? 'Kein nächster Titel' : 'Kein nächster Sender') : nextStationName() || (isPodcast ? 'Nächste Episode' : isRecordingPlayback ? 'Nächster Titel' : 'Nächster Sender')}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
@@ -615,7 +628,7 @@
           ontouchend={() => { nextPressed = false; navigateNext(); }}
         >
           <HiFiLed color={nextPressed ? 'yellow' : 'off'} size="small" />
-          <i class="fa-solid fa-forward-step transport-icon"></i>
+          <i class="fa-solid fa-forward-step transport-icon" class:reversed={appState.playMode === 'reverse'}></i>
         </button>
 
         <!-- Live -->
@@ -927,7 +940,7 @@
   }
 
   .timer-display.timer-amber .timer-text {
-    color: var(--hifi-led-amber);
+    color: var(--hifi-text-amber);
     text-shadow: none;
   }
 
@@ -945,7 +958,7 @@
   }
 
   .timer-display.timer-amber .timer-kbps {
-    color: var(--hifi-led-amber);
+    color: var(--hifi-text-amber);
   }
 
   /* TRANSPORT */
@@ -1119,6 +1132,11 @@
     font-size: 12px;
     color: var(--hifi-text-primary);
     line-height: 1;
+    transition: transform 0.2s;
+  }
+
+  .transport-icon.reversed {
+    transform: scaleX(-1);
   }
 
   .transport-btn.live-btn .transport-icon {

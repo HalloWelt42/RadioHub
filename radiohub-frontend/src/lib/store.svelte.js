@@ -38,7 +38,7 @@ export const appState = $state({
   recordingIcyEntries: [],  // [{title, t}] live ICY-Eintraege
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
   recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste fuer Prev/Next
-  playMode: 'linear',       // 'linear' | 'loop' | 'shuffle' -- Wiedergabe-Modus fuer Playlists
+  playMode: 'linear',       // 'linear' | 'reverse' | 'loop' | 'shuffle' -- Wiedergabe-Modus fuer Playlists
 
   // Podcast-Playlist
   podcastPlaylist: [],          // [{id, title, audio_url, ...}, ...]
