@@ -1,6 +1,5 @@
 <script>
   import HiFiLed from '../hifi/HiFiLed.svelte';
-  import HiFiKnob from '../hifi/HiFiKnob.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
@@ -11,34 +10,20 @@
   let editingId = $state(null);
   let formName = $state('');
   let showForm = $state(false);
-  let config = $state({});
 
   // === INIT ===
   $effect(() => {
-    loadAll();
+    loadFolders();
   });
 
-  async function loadAll() {
+  async function loadFolders() {
     try {
-      const [folderData, configData] = await Promise.all([
-        api.getRecordingFolders(),
-        api.getConfig()
-      ]);
-      folders = folderData.folders || [];
-      config = configData;
+      const data = await api.getRecordingFolders();
+      folders = data.folders || [];
     } catch (e) {
       actions.showToast(t('toast.ladenFehler'), 'error');
     }
     isLoading = false;
-  }
-
-  async function saveConfig(key, value) {
-    try {
-      await api.updateConfig({ [key]: value });
-      config[key] = value;
-    } catch (e) {
-      actions.showToast(t('toast.speichernFehler'), 'error');
-    }
   }
 
   // === ORDNER CRUD ===
@@ -75,8 +60,7 @@
       }
       showForm = false;
       editingId = null;
-      const data = await api.getRecordingFolders();
-      folders = data.folders || [];
+      await loadFolders();
     } catch (e) {
       actions.showToast(t('toast.speichernFehler'), 'error');
     }
@@ -131,31 +115,8 @@
   </div>
 {:else}
   <div class="aufnahmen-grid">
-    <!-- Aufnahme-Einstellungen -->
+    <!-- Ordner-Verwaltung -->
     <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">{t('aufnahmen.aufnahmeFormat')}</span>
-      </div>
-      <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
-        <HiFiKnob
-          bind:value={config.recording_bitrate}
-          min={64}
-          max={320}
-          step={32}
-          unit="kbps"
-          label={t('aufnahmen.bitrate')}
-          onchange={(e) => saveConfig('recording_bitrate', e.value)}
-        />
-      </div>
-      <div style="padding:0 16px 16px; text-align:center;">
-        <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-          Format: {config.recording_format?.toUpperCase() || 'MP3'}
-        </span>
-      </div>
-    </div>
-
-    <!-- Ordner-Verwaltung (volle Breite) -->
-    <div class="hifi-panel span-full">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">{t('aufnahmen.ordner')} ({folders.length})</span>
         {#if !showForm}
@@ -237,13 +198,9 @@
 
 <style>
   .aufnahmen-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-  }
-
-  .span-full {
-    grid-column: 1 / -1;
   }
 
   .folder-content {
