@@ -14,6 +14,7 @@ from .ad_detection import router as ad_detection_router
 from .categories import router as categories_router
 from .file_explorer import router as file_explorer_router
 from .recording_folders import router as recording_folders_router
+from .storage import router as storage_router
 
 __all__ = [
     "stations_router",
@@ -30,5 +31,6 @@ __all__ = [
     "ad_detection_router",
     "categories_router",
     "file_explorer_router",
-    "recording_folders_router"
+    "recording_folders_router",
+    "storage_router",
 ]

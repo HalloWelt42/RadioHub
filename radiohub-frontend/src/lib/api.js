@@ -645,6 +645,23 @@ class RadioHubAPI {
       body: JSON.stringify({ uuids })
     });
   }
+
+  // === Storage Zones ===
+
+  async getStorageZones() {
+    return this.fetch('/api/storage/zones');
+  }
+
+  async updateStorageZone(zone, path) {
+    return this.fetch(`/api/storage/zones/${zone}`, {
+      method: 'PUT',
+      body: JSON.stringify({ path })
+    });
+  }
+
+  async validateStoragePath(path) {
+    return this.fetch(`/api/storage/validate?path=${encodeURIComponent(path)}`);
+  }
 }
 
 export const api = new RadioHubAPI(API_BASE);

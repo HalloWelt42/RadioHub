@@ -63,7 +63,7 @@
     </div>
     <div style="display:flex; gap:16px;">
       <HiFiLed color="green" />
-      <span class="hifi-font-label">BACKEND v0.2.3</span>
+      <span class="hifi-font-label">BACKEND v0.2.4</span>
     </div>
     <div style="margin-top:16px; color:var(--hifi-text-secondary); font-size:11px;">
       HalloWelt42 - Private Use Only

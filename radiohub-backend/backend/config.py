@@ -1,60 +1,70 @@
 """
-RadioHub v0.1.0 - Konfiguration
+RadioHub v0.2.4 - Konfiguration
 
 Daten-Verzeichnis wird per Environment-Variable gesetzt.
 Docker mounted externes Verzeichnis nach /data.
+
+Pfade werden jetzt ueber Storage-Zonen aufgeloest (storage.py).
+Alle Konstanten und Funktionen bleiben als Wrapper erhalten,
+damit bestehende Imports nicht geaendert werden muessen.
 """
 import os
 from pathlib import Path
+from .storage import get_zone_path, get_data_dir as _get_data_dir
 
 # === Version ===
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
-# === Pfade ===
-# Daten-Verzeichnis (Docker: /data, Lokal: ./data)
-DATA_DIR = Path(os.getenv("DATA_PATH", str(Path(__file__).resolve().parent.parent / "data")))
+# === Pfade (delegiert an Storage-Zonen) ===
+# Basis-Verzeichnis (Docker: /data, Lokal: ./data)
+DATA_DIR = _get_data_dir()
 
-# Datenbank
-DB_PATH = DATA_DIR / "radiohub.db"
+# Datenbank (Zone: database)
+DB_PATH = get_zone_path("database") / "radiohub.db"
 
 # Aufnahmen
+# RECORDINGS_DIR bleibt als Eltern-Verzeichnis fuer Sicherheitschecks
 RECORDINGS_DIR = DATA_DIR / "recordings"
-RADIO_RECORDINGS_DIR = RECORDINGS_DIR / "radio"
-PODCAST_RECORDINGS_DIR = RECORDINGS_DIR / "podcasts"
+RADIO_RECORDINGS_DIR = get_zone_path("recordings")
+PODCAST_RECORDINGS_DIR = get_zone_path("podcasts")
 
-# Cache
-CACHE_DIR = DATA_DIR / "cache"
+# Cache (Zone: cache)
+CACHE_DIR = get_zone_path("cache")
 
 
 def ensure_directories():
-    """Erstellt alle benötigten Verzeichnisse"""
-    for dir_path in [DATA_DIR, RECORDINGS_DIR, RADIO_RECORDINGS_DIR, 
-                     PODCAST_RECORDINGS_DIR, CACHE_DIR]:
-        dir_path.mkdir(parents=True, exist_ok=True)
+    """Erstellt alle benoetigten Verzeichnisse.
+    Storage-Zonen erstellen ihre Verzeichnisse automatisch,
+    RECORDINGS_DIR wird hier extra angelegt fuer Abwaertskompatibilitaet."""
+    RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_radio_recordings_dir() -> Path:
-    """Radio-Aufnahmen Verzeichnis"""
-    RADIO_RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-    return RADIO_RECORDINGS_DIR
+    """Radio-Aufnahmen Verzeichnis (aus Storage-Zone)"""
+    path = get_zone_path("recordings")
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def get_podcast_recordings_dir() -> Path:
-    """Podcast-Aufnahmen Verzeichnis"""
-    PODCAST_RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-    return PODCAST_RECORDINGS_DIR
+    """Podcast-Aufnahmen Verzeichnis (aus Storage-Zone)"""
+    path = get_zone_path("podcasts")
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def get_cache_dir() -> Path:
-    """Cache Verzeichnis"""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR
+    """Cache Verzeichnis (aus Storage-Zone)"""
+    path = get_zone_path("cache")
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def get_active_recording_dir() -> tuple[Path, int | None]:
     """Aktives Aufnahme-Verzeichnis (Ordner oder Root).
     Returns: (Pfad, folder_id oder None)"""
     import sqlite3
+    rec_dir = get_zone_path("recordings")
     try:
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
@@ -63,10 +73,10 @@ def get_active_recording_dir() -> tuple[Path, int | None]:
         row = c.fetchone()
         conn.close()
         if row:
-            active_dir = RADIO_RECORDINGS_DIR / row["path"]
+            active_dir = rec_dir / row["path"]
             active_dir.mkdir(parents=True, exist_ok=True)
             return active_dir, row["id"]
     except Exception:
         pass
-    RADIO_RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-    return RADIO_RECORDINGS_DIR, None
+    rec_dir.mkdir(parents=True, exist_ok=True)
+    return rec_dir, None
