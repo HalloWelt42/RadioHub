@@ -1,9 +1,9 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
   import SetupAllgemein from './setup/SetupAllgemein.svelte';
-  import SetupFilter from './setup/SetupFilter.svelte';
-  import SetupSender from './setup/SetupSender.svelte';
-  import SetupKategorien from './setup/SetupKategorien.svelte';
+  import SetupRadio from './setup/SetupRadio.svelte';
+  import SetupPodcast from './setup/SetupPodcast.svelte';
+  import SetupAufnahmen from './setup/SetupAufnahmen.svelte';
   import SetupSystem from './setup/SetupSystem.svelte';
   import SetupSpeicher from './setup/SetupSpeicher.svelte';
   import SetupDienste from './setup/SetupDienste.svelte';
@@ -13,18 +13,22 @@
 
   const tabs = [
     { id: 'allgemein', label: 'ALLGEMEIN' },
-    { id: 'filter', label: 'FILTER' },
-    { id: 'sender', label: 'SENDER' },
-    { id: 'kategorien', label: 'KATEGORIEN' },
+    { id: 'radio', label: 'RADIO' },
+    { id: 'podcast', label: 'PODCAST' },
+    { id: 'aufnahmen', label: 'AUFNAHMEN' },
     { id: 'speicher', label: 'SPEICHER' },
     { id: 'dienste', label: 'DIENSTE' },
     { id: 'system', label: 'SYSTEM' }
   ];
 
   // Deep-Link: Anderer Tab kann setupSubTab setzen um direkt zu einem Sub-Tab zu springen
+  // Alte IDs (filter, sender, kategorien) werden auf 'radio' gemappt
+  const subTabMapping = { filter: 'radio', sender: 'radio', kategorien: 'radio' };
+
   $effect(() => {
     if (appState.setupSubTab) {
-      activeTab = appState.setupSubTab;
+      const target = subTabMapping[appState.setupSubTab] || appState.setupSubTab;
+      activeTab = target;
       appState.setupSubTab = null;
     }
   });
@@ -47,12 +51,12 @@
   <div class="setup-content">
     {#if activeTab === 'allgemein'}
       <div class="setup-scroll-wrapper"><SetupAllgemein /></div>
-    {:else if activeTab === 'filter'}
-      <SetupFilter />
-    {:else if activeTab === 'sender'}
-      <SetupSender />
-    {:else if activeTab === 'kategorien'}
-      <div class="setup-scroll-wrapper"><SetupKategorien /></div>
+    {:else if activeTab === 'radio'}
+      <SetupRadio />
+    {:else if activeTab === 'podcast'}
+      <div class="setup-scroll-wrapper"><SetupPodcast /></div>
+    {:else if activeTab === 'aufnahmen'}
+      <div class="setup-scroll-wrapper"><SetupAufnahmen /></div>
     {:else if activeTab === 'speicher'}
       <div class="setup-scroll-wrapper"><SetupSpeicher /></div>
     {:else if activeTab === 'dienste'}

@@ -95,26 +95,8 @@
       </div>
     </div>
 
-    <!-- Audio -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">AUDIO SETTINGS</span>
-      </div>
-      <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
-        <HiFiKnob
-          bind:value={config.recording_bitrate}
-          min={64}
-          max={320}
-          step={32}
-          unit="kbps"
-          label="REC BITRATE"
-          onchange={(e) => saveConfig('recording_bitrate', e.value)}
-        />
-      </div>
-    </div>
-
-    <!-- Timeshift Buffer -->
-    <div class="hifi-panel">
+    <!-- Timeshift Buffer (volle Breite) -->
+    <div class="hifi-panel span-full">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">TIMESHIFT BUFFER</span>
       </div>

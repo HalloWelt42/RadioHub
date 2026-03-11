@@ -1,0 +1,154 @@
+<script>
+  import HiFiKnob from '../hifi/HiFiKnob.svelte';
+  import HiFiLed from '../hifi/HiFiLed.svelte';
+  import { api } from '../../lib/api.js';
+  import { actions } from '../../lib/store.svelte.js';
+
+  let config = $state({});
+  let isLoading = $state(true);
+  let autoRefresh = $state(true);
+  let refreshHours = $state(6);
+
+  $effect(() => {
+    loadConfig();
+  });
+
+  async function loadConfig() {
+    try {
+      config = await api.getConfig();
+      autoRefresh = config.podcast_auto_refresh !== false;
+      // Sekunden -> Stunden
+      const secs = Number(config.podcast_refresh_interval) || 21600;
+      refreshHours = Math.round(secs / 3600);
+    } catch (e) {
+      // Netzwerkfehler ignorieren
+    }
+    isLoading = false;
+  }
+
+  async function saveConfig(key, value) {
+    try {
+      await api.updateConfig({ [key]: value });
+      config[key] = value;
+    } catch (e) {
+      actions.showToast('Speichern fehlgeschlagen', 'error');
+    }
+  }
+
+  function toggleAutoRefresh() {
+    autoRefresh = !autoRefresh;
+    saveConfig('podcast_auto_refresh', autoRefresh);
+  }
+
+  function handleRefreshChange(e) {
+    refreshHours = e.value;
+    // Stunden -> Sekunden
+    saveConfig('podcast_refresh_interval', e.value * 3600);
+  }
+</script>
+
+{#if isLoading}
+  <div class="hifi-flex" style="justify-content:center; padding:60px;">
+    <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
+  </div>
+{:else}
+  <div class="podcast-grid">
+    <!-- Auto-Refresh -->
+    <div class="hifi-panel">
+      <div class="hifi-panel-header">
+        <span class="hifi-font-label">AUTO-REFRESH</span>
+      </div>
+      <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
+        <button
+          class="toggle-btn"
+          class:active={autoRefresh}
+          onclick={toggleAutoRefresh}
+        >
+          <HiFiLed color={autoRefresh ? 'green' : 'off'} />
+          <span>{autoRefresh ? 'AKTIV' : 'AUS'}</span>
+        </button>
+      </div>
+      <div style="padding:0 16px 16px; text-align:center;">
+        <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
+          Podcast-Feeds werden automatisch auf neue Episoden geprüft
+        </span>
+      </div>
+    </div>
+
+    <!-- Refresh-Intervall -->
+    <div class="hifi-panel">
+      <div class="hifi-panel-header">
+        <span class="hifi-font-label">REFRESH-INTERVALL</span>
+      </div>
+      <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
+        <HiFiKnob
+          value={refreshHours}
+          min={1}
+          max={48}
+          step={1}
+          unit="h"
+          label="INTERVALL"
+          onchange={handleRefreshChange}
+        />
+      </div>
+      <div style="padding:0 16px 16px; text-align:center;">
+        <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
+          Alle {refreshHours} Stunden werden abonnierte Feeds aktualisiert
+        </span>
+      </div>
+    </div>
+
+    <!-- Kategorien Platzhalter -->
+    <div class="hifi-panel span-full">
+      <div class="hifi-panel-header">
+        <span class="hifi-font-label">PODCAST-KATEGORIEN</span>
+        <span class="hifi-font-small" style="color:var(--hifi-text-amber); margin-left:8px;">IN VORBEREITUNG</span>
+      </div>
+      <div style="padding:24px; text-align:center;">
+        <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
+          Kategorien für Podcasts werden in einem zukünftigen Update verfügbar sein.
+        </span>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<style>
+  .podcast-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .span-full {
+    grid-column: 1 / -1;
+  }
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--hifi-bg-tertiary);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: var(--hifi-border-radius-md);
+    color: var(--hifi-text-secondary);
+    font-family: var(--hifi-font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: var(--hifi-shadow-outset);
+  }
+
+  .toggle-btn:hover {
+    background: var(--hifi-bg-secondary);
+  }
+
+  .toggle-btn.active {
+    background: var(--hifi-bg-panel);
+    color: var(--hifi-accent);
+    box-shadow: var(--hifi-shadow-inset);
+  }
+</style>
