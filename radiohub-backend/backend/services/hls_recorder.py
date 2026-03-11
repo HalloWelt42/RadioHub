@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Optional
 
 from ..database import db_session
-from ..config import get_radio_recordings_dir
+from ..config import get_radio_recordings_dir, get_active_recording_dir
 from .hls_buffer import hls_buffer
 from .recorder import rec_manager
 
@@ -124,9 +124,11 @@ class HLSRecorderService:
         if rec_manager.active_session:
             return {"success": False, "error": "Direkt-Aufnahme laeuft bereits"}
 
+        # Aktiven Aufnahmeordner bestimmen
+        active_dir, folder_id = get_active_recording_dir()
+
         # Disk-Space pruefen
-        rec_dir = get_radio_recordings_dir()
-        if not _check_disk_space(rec_dir):
+        if not _check_disk_space(active_dir):
             return {"success": False,
                     "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
 
@@ -146,7 +148,7 @@ class HLSRecorderService:
 
         # Session erstellen
         session_id = f"hlsrec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        ts_dir = get_radio_recordings_dir() / session_id / "ts"
+        ts_dir = active_dir / session_id / "ts"
         ts_dir.mkdir(parents=True, exist_ok=True)
 
         session = HLSRecSession(
@@ -188,12 +190,12 @@ class HLSRecorderService:
             c.execute('''INSERT INTO sessions
                 (id, station_uuid, station_name, stream_url, bitrate,
                  start_time, file_path, status, codec, file_format,
-                 meta_file_path, rec_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                 meta_file_path, rec_type, folder_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                 (session_id, station_uuid, station_name, stream_url,
                  hls_status.get("output_bitrate", 0),
                  session.start_time.isoformat(), str(ts_dir.parent),
-                 "recording", "aac", ".aac", None, "hls-rec"))
+                 "recording", "aac", ".aac", None, "hls-rec", folder_id))
 
         print(f"HLS-REC gestartet: {session_id} "
               f"(Lookback: {copied} Segmente / {lookback_seconds}s)")

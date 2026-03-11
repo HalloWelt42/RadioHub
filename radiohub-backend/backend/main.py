@@ -5,6 +5,8 @@ Internet Radio & Podcast Player mit HLS-basiertem Time-Shift
 © HalloWelt42 - Nur für private Nutzung
 """
 import os
+import asyncio
+from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -12,10 +14,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import DATA_DIR, VERSION
 from .database import init_db, check_db_health
-from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router
+from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router, file_explorer_router, recording_folders_router
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
 from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
+
+
+PODCAST_REFRESH_INTERVAL = podcast_service.REFRESH_INTERVAL
+
+
+async def _podcast_refresh_loop():
+    """Periodischer Feed-Refresh fuer alle Podcast-Abos"""
+    podcast_service.set_next_refresh(datetime.now() + timedelta(seconds=60))
+    await asyncio.sleep(60)  # 1 Min nach Start warten
+    while True:
+        try:
+            result = await podcast_service.refresh_all()
+            print(f"✓ Podcast-Refresh: {result.get('refreshed', 0)}/{result.get('total', 0)} Feeds, "
+                  f"{result.get('new_episodes', 0)} neue Episoden")
+        except Exception as e:
+            print(f"✗ Podcast-Refresh fehlgeschlagen: {e}")
+        podcast_service.reset_refresh_timer()
+        await asyncio.sleep(PODCAST_REFRESH_INTERVAL)
 
 
 @asynccontextmanager
@@ -26,13 +46,19 @@ async def lifespan(app: FastAPI):
     init_db()
     get_config_service()  # Config initialisieren
     seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befuellen
+
+    # Periodischer Podcast-Refresh
+    refresh_task = asyncio.create_task(_podcast_refresh_loop())
+
     print(f"✓ RadioHub Backend v{VERSION} gestartet")
     print(f"✓ Daten-Verzeichnis: {DATA_DIR}")
     print(f"✓ HLS Buffer verfügbar: /api/hls/")
-    
+    print(f"✓ Podcast-Refresh alle {PODCAST_REFRESH_INTERVAL // 3600}h aktiv")
+
     yield
-    
+
     # Shutdown
+    refresh_task.cancel()
     if hls_recorder.active_session:
         await hls_recorder.stop()
     if rec_manager.active_session:
@@ -76,6 +102,8 @@ app.include_router(hls_router)  # HLS Buffer
 app.include_router(filters_router)
 app.include_router(ad_detection_router)  # Ad-Detection
 app.include_router(categories_router)  # Kategorien
+app.include_router(file_explorer_router)  # File Explorer
+app.include_router(recording_folders_router)  # Aufnahme-Ordner
 
 
 @app.get("/")

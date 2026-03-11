@@ -127,12 +127,6 @@ def init_db():
         last_updated TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         auto_download INTEGER DEFAULT 0,
-        download_schedule TEXT DEFAULT 'daily',
-        download_time TEXT DEFAULT '08:00',
-        download_day INTEGER DEFAULT 1,
-        max_episodes INTEGER DEFAULT 100,
-        max_size_mb INTEGER DEFAULT 5000,
-        auto_delete_old INTEGER DEFAULT 1,
         last_auto_download TEXT
     )''')
     
@@ -262,6 +256,16 @@ def init_db():
         added_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
+    # === Recording Folders (Ordner fuer Aufnahmen) ===
+    c.execute('''CREATE TABLE IF NOT EXISTS recording_folders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        path TEXT NOT NULL UNIQUE,
+        is_active INTEGER DEFAULT 0,
+        sort_order INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     # === Segments (atomare Audio-Segmente pro Session) ===
     c.execute('''CREATE TABLE IF NOT EXISTS segments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -290,12 +294,13 @@ def init_db():
     except Exception:
         pass
 
-    # === Migration: Sessions-Tabelle erweitern (codec, file_format, meta_file_path, rec_type) ===
+    # === Migration: Sessions-Tabelle erweitern ===
     for col, typedef in [
         ("codec", "TEXT"),
         ("file_format", "TEXT"),
         ("meta_file_path", "TEXT"),
         ("rec_type", "TEXT DEFAULT 'direct'"),
+        ("folder_id", "INTEGER REFERENCES recording_folders(id) ON DELETE SET NULL"),
     ]:
         try:
             c.execute(f"ALTER TABLE sessions ADD COLUMN {col} {typedef}")
@@ -336,6 +341,8 @@ def init_db():
         ("file_size", "INTEGER DEFAULT 0"),
         ("image_url", "TEXT"),
         ("local_image_path", "TEXT"),
+        ("transcript_url", "TEXT"),
+        ("transcript", "TEXT"),
     ]:
         try:
             c.execute(f"ALTER TABLE podcast_episodes ADD COLUMN {col} {typedef}")
@@ -355,11 +362,29 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_ad_log_station ON ad_detections_log(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_domain_blacklist_cat ON domain_blacklist(category)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_segments_session ON segments(session_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_sessions_folder ON sessions(folder_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_rec_folders_active ON recording_folders(is_active)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_uuid ON category_stations(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_cat ON category_stations(category_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(is_downloaded)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played)")
+
+    # === Migration: published_at RFC 2822 -> ISO 8601 ===
+    try:
+        from email.utils import parsedate_to_datetime
+        rows = c.execute("SELECT id, published_at FROM podcast_episodes WHERE published_at LIKE '%,%'").fetchall()
+        for row in rows:
+            try:
+                dt = parsedate_to_datetime(row[1])
+                iso = dt.strftime("%Y-%m-%dT%H:%M:%S")
+                c.execute("UPDATE podcast_episodes SET published_at = ? WHERE id = ?", (iso, row[0]))
+            except Exception:
+                pass
+        if rows:
+            print(f"  → {len(rows)} Episoden-Daten auf ISO 8601 migriert")
+    except Exception:
+        pass
 
     conn.commit()
     conn.close()

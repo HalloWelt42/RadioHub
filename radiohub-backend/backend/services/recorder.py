@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Optional
 
 from ..database import db_session
-from ..config import get_radio_recordings_dir
+from ..config import get_radio_recordings_dir, get_active_recording_dir
 from .icy_metadata import IcyMetadataLogger
 
 # Minimaler freier Speicherplatz (100 MB)
@@ -160,11 +160,14 @@ class RecorderManager:
         # Codec erkennen
         codec, ext = await self._detect_codec(stream_url)
 
+        # Aktiven Aufnahmeordner bestimmen
+        active_dir, folder_id = get_active_recording_dir()
+
         # Session erstellen
         session_id = f"rec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         safe_name = "".join(c if c.isalnum() or c in " -_" else "_" for c in station_name)[:50]
         filename = f"{session_id}_{safe_name}{ext}"
-        file_path = get_radio_recordings_dir() / filename
+        file_path = active_dir / filename
 
         session = RecordingSession(
             session_id=session_id,
@@ -227,11 +230,11 @@ class RecorderManager:
                 c = conn.cursor()
                 c.execute('''INSERT INTO sessions
                     (id, station_uuid, station_name, stream_url, bitrate,
-                     start_time, file_path, status, codec, file_format, meta_file_path)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     start_time, file_path, status, codec, file_format, meta_file_path, folder_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (session_id, station_uuid, station_name, stream_url, bitrate,
                      session.start_time.isoformat(), str(file_path), "recording",
-                     codec, ext, str(meta_path)))
+                     codec, ext, str(meta_path), folder_id))
 
             mode = "Stream-Copy" if codec else "MP3-Encoding"
             print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'})")

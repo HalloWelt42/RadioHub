@@ -49,3 +49,24 @@ def get_cache_dir() -> Path:
     """Cache Verzeichnis"""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     return CACHE_DIR
+
+
+def get_active_recording_dir() -> tuple[Path, int | None]:
+    """Aktives Aufnahme-Verzeichnis (Ordner oder Root).
+    Returns: (Pfad, folder_id oder None)"""
+    import sqlite3
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT id, path FROM recording_folders WHERE is_active = 1 LIMIT 1")
+        row = c.fetchone()
+        conn.close()
+        if row:
+            active_dir = RADIO_RECORDINGS_DIR / row["path"]
+            active_dir.mkdir(parents=True, exist_ok=True)
+            return active_dir, row["id"]
+    except Exception:
+        pass
+    RADIO_RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+    return RADIO_RECORDINGS_DIR, None

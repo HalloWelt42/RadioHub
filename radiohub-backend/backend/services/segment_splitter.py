@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..database import db_session
-from ..config import get_radio_recordings_dir, get_cache_dir
+from ..config import get_cache_dir
 
 
 # Dateiendung -> MIME-Type (wiederverwendet aus recorder.py)
@@ -79,8 +79,8 @@ class SegmentSplitter:
         else:
             print("  Split: Wallclock-Fallback (Legacy-Metadata)")
 
-        # Session-Verzeichnis anlegen
-        session_dir = get_radio_recordings_dir() / session_id
+        # Session-Verzeichnis anlegen (im selben Ordner wie die Audio-Datei)
+        session_dir = audio_path.parent / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
 
         ext = file_format if file_format.startswith(".") else f".{file_format}"
@@ -311,7 +311,8 @@ class SegmentSplitter:
                                   (new_idx, seg["id"]))
         else:
             # Keine Segmente mehr -> Session-Verzeichnis und Session loeschen
-            session_dir = get_radio_recordings_dir() / session_id
+            # Verzeichnis aus dem Segment-Pfad ableiten (parent = session_dir)
+            session_dir = Path(segment["file_path"]).parent
             self._cleanup_dir(session_dir)
 
             with db_session() as conn:

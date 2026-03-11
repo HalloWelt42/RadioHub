@@ -297,6 +297,15 @@ class RadioHubAPI {
     return this.fetch(`/api/podcasts/episodes/all?${params}`);
   }
 
+  async searchEpisodes(query, limit = 50, offset = 0, searchIn = 'all') {
+    const params = `q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}&search_in=${searchIn}`;
+    return this.fetch(`/api/podcasts/episodes/search?${params}`);
+  }
+
+  async searchSubscriptions(query) {
+    return this.fetch(`/api/podcasts/subscriptions/search?q=${encodeURIComponent(query)}`);
+  }
+
   async getEpisode(episodeId) {
     return this.fetch(`/api/podcasts/episodes/${episodeId}`);
   }
@@ -359,6 +368,76 @@ class RadioHubAPI {
       method: 'PUT',
       body: JSON.stringify({ enabled })
     });
+  }
+
+  async getRefreshStatus() {
+    return this.fetch('/api/podcasts/refresh-status');
+  }
+
+  // === Recording Folders ===
+  async getRecordingFolders() {
+    return this.fetch('/api/recording/folders');
+  }
+
+  async createRecordingFolder(name) {
+    return this.fetch('/api/recording/folders', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    });
+  }
+
+  async updateRecordingFolder(id, updates) {
+    return this.fetch(`/api/recording/folders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  }
+
+  async deleteRecordingFolder(id) {
+    return this.fetch(`/api/recording/folders/${id}`, { method: 'DELETE' });
+  }
+
+  async activateRecordingFolder(id) {
+    return this.fetch(`/api/recording/folders/${id}/activate`, { method: 'PUT' });
+  }
+
+  async deactivateRecordingFolder() {
+    return this.fetch('/api/recording/folders/deactivate', { method: 'PUT' });
+  }
+
+  async moveSession(sessionId, folderId) {
+    return this.fetch(`/api/recording/folders/move-session/${sessionId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ folder_id: folderId })
+    });
+  }
+
+  // === File Explorer ===
+  async getPodcastFiles() {
+    return this.fetch('/api/files/podcasts');
+  }
+
+  async getRecordingFiles() {
+    return this.fetch('/api/files/recordings');
+  }
+
+  async deleteFileExplorer(path) {
+    return this.fetch(`/api/files/delete?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+  }
+
+  getFilesZipDownloadUrl() {
+    return `${this.baseUrl}/api/files/download-zip`;
+  }
+
+  async downloadFilesZip(files, includePlaylist = true) {
+    const url = `${this.baseUrl}/api/files/download-zip`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files, include_playlist: includePlaylist })
+    });
+    if (!response.ok) throw new Error(`ZIP-Download fehlgeschlagen: ${response.status}`);
+    return response;
   }
 
   getEpisodePlayUrl(episodeId) {
