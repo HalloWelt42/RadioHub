@@ -9,9 +9,10 @@ from datetime import datetime
 from typing import List, Optional
 
 from ..database import db_session
+from .config_service import config_service
 
-# Radio-Browser API Server
-API_SERVERS = [
+# Fallback falls Config nicht geladen
+_DEFAULT_API_SERVERS = [
     "https://de1.api.radio-browser.info",
     "https://at1.api.radio-browser.info",
     "https://nl1.api.radio-browser.info"
@@ -20,9 +21,17 @@ API_SERVERS = [
 CACHE_MAX_AGE_HOURS = 24
 
 
+def _get_api_servers() -> list:
+    """Radio-Browser API Server aus Config laden"""
+    servers = config_service.get("service_radio_browser_servers")
+    if servers and isinstance(servers, list) and len(servers) > 0:
+        return servers
+    return _DEFAULT_API_SERVERS
+
+
 class CacheService:
     def __init__(self):
-        self.api_base = API_SERVERS[0]
+        self.api_base = _get_api_servers()[0]
     
     async def sync_stations(self, force: bool = False) -> dict:
         """Synchronisiert Sender-Cache mit radio-browser.info"""

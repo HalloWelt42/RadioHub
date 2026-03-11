@@ -662,6 +662,23 @@ class RadioHubAPI {
   async validateStoragePath(path) {
     return this.fetch(`/api/storage/validate?path=${encodeURIComponent(path)}`);
   }
+
+  // === Externe Dienste ===
+
+  async getServices() {
+    return this.fetch('/api/services');
+  }
+
+  async updateServiceUrl(serviceId, value) {
+    return this.fetch(`/api/services/${serviceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value })
+    });
+  }
+
+  async resetServiceUrl(serviceId) {
+    return this.fetch(`/api/services/${serviceId}/reset`, { method: 'POST' });
+  }
 }
 
 export const api = new RadioHubAPI(API_BASE);

@@ -15,6 +15,7 @@ from .categories import router as categories_router
 from .file_explorer import router as file_explorer_router
 from .recording_folders import router as recording_folders_router
 from .storage import router as storage_router
+from .services import router as services_router
 
 __all__ = [
     "stations_router",
@@ -33,4 +34,5 @@ __all__ = [
     "file_explorer_router",
     "recording_folders_router",
     "storage_router",
+    "services_router",
 ]

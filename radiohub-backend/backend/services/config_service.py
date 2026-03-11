@@ -27,6 +27,14 @@ DEFAULT_CONFIG = {
     "hls_sample_rate": 44100, # Sample Rate (Hz)
     # Sidebar-Filter Konfiguration
     "sidebar_countries": None, # JSON-Array mit sichtbaren Country-Codes
+    # Externe Dienste - Endpunkte
+    "service_radio_browser_servers": [
+        "https://de1.api.radio-browser.info",
+        "https://at1.api.radio-browser.info",
+        "https://nl1.api.radio-browser.info"
+    ],
+    "service_itunes_search_url": "https://itunes.apple.com/search",
+    "service_fyyd_search_url": "https://api.fyyd.de/0.2/search/podcast",
 }
 
 

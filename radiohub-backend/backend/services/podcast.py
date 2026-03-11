@@ -17,6 +17,7 @@ from xml.etree import ElementTree as ET
 
 from ..database import db_session
 from ..config import get_podcast_recordings_dir, DATA_DIR, PODCAST_RECORDINGS_DIR
+from .config_service import config_service
 
 
 EXTENSION_MIMETYPES = {
@@ -105,8 +106,9 @@ class PodcastService:
     async def _search_itunes(self, query: str, limit: int) -> List[PodcastSearchResult]:
         try:
             client = await self._get_client()
+            itunes_url = config_service.get("service_itunes_search_url", "https://itunes.apple.com/search")
             resp = await client.get(
-                "https://itunes.apple.com/search",
+                itunes_url,
                 params={"term": query, "media": "podcast", "limit": limit}
             )
             if resp.status_code != 200:
@@ -130,8 +132,9 @@ class PodcastService:
     async def _search_fyyd(self, query: str, limit: int) -> List[PodcastSearchResult]:
         try:
             client = await self._get_client()
+            fyyd_url = config_service.get("service_fyyd_search_url", "https://api.fyyd.de/0.2/search/podcast")
             resp = await client.get(
-                "https://api.fyyd.de/0.2/search/podcast",
+                fyyd_url,
                 params={"title": query, "count": limit}
             )
             if resp.status_code != 200:

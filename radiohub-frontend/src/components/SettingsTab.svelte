@@ -6,6 +6,7 @@
   import SetupKategorien from './setup/SetupKategorien.svelte';
   import SetupSystem from './setup/SetupSystem.svelte';
   import SetupSpeicher from './setup/SetupSpeicher.svelte';
+  import SetupDienste from './setup/SetupDienste.svelte';
   import { appState } from '../lib/store.svelte.js';
 
   let activeTab = $state('allgemein');
@@ -16,6 +17,7 @@
     { id: 'sender', label: 'SENDER' },
     { id: 'kategorien', label: 'KATEGORIEN' },
     { id: 'speicher', label: 'SPEICHER' },
+    { id: 'dienste', label: 'DIENSTE' },
     { id: 'system', label: 'SYSTEM' }
   ];
 
@@ -53,6 +55,8 @@
       <div class="setup-scroll-wrapper"><SetupKategorien /></div>
     {:else if activeTab === 'speicher'}
       <div class="setup-scroll-wrapper"><SetupSpeicher /></div>
+    {:else if activeTab === 'dienste'}
+      <div class="setup-scroll-wrapper"><SetupDienste /></div>
     {:else if activeTab === 'system'}
       <div class="setup-scroll-wrapper"><SetupSystem /></div>
     {/if}
