@@ -34,7 +34,7 @@
     return () => stopPolling();
   });
 
-  // Auto-Expand: Session des aktuell spielenden Segments oeffnen + hinscollen
+  // Auto-Expand: Session des aktuell spielenden Segments öffnen + hinscrollen
   $effect(() => {
     const rec = appState.currentRecording;
     if (rec?.session_id && appState.playerMode === 'recording') {

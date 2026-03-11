@@ -1,7 +1,7 @@
 /**
  * RadioHub - Shared Formatters v0.1.0
  *
- * Zentrale Format-Funktionen fuer Zeit, Groesse, Datum, Zahlen.
+ * Zentrale Format-Funktionen für Zeit, Größe, Datum, Zahlen.
  * Alle Komponenten importieren hieraus statt eigene zu definieren.
  */
 
@@ -9,7 +9,7 @@
 
 /**
  * Formatiert Sekunden als HH:MM:SS (immer mit Stunden).
- * Fuer Transport-Timer, Aufnahme-Anzeigen.
+ * Für Transport-Timer, Aufnahme-Anzeigen.
  */
 export function formatTime(seconds) {
   if (!seconds || !isFinite(seconds)) return '00:00:00';
@@ -20,8 +20,8 @@ export function formatTime(seconds) {
 }
 
 /**
- * Formatiert Sekunden kompakt: H:MM:SS oder M:SS (ohne fuehrende Null-Stunden).
- * Fuer Seekbar-Labels, kurze Zeitangaben.
+ * Formatiert Sekunden kompakt: H:MM:SS oder M:SS (ohne führende Null-Stunden).
+ * Für Seekbar-Labels, kurze Zeitangaben.
  */
 export function formatTimeShort(seconds) {
   if (!seconds || !isFinite(seconds)) return '0:00';
@@ -36,7 +36,7 @@ export function formatTimeShort(seconds) {
 
 /**
  * Formatiert Sekunden als Dauer (kompakt wie formatTimeShort, aber '--:--' bei invalid).
- * Fuer Aufnahme-Dauern, Session-Laengen.
+ * Für Aufnahme-Dauern, Session-Längen.
  */
 export function formatDuration(seconds) {
   if (!seconds || seconds <= 0) return '--:--';
@@ -45,7 +45,7 @@ export function formatDuration(seconds) {
 
 /**
  * Formatiert Sekunden als Dauer-Text: "1h 23m" oder "45 min".
- * Fuer Podcast-Episoden, laengere Dauern.
+ * Für Podcast-Episoden, längere Dauern.
  */
 export function formatDurationHuman(seconds) {
   if (!seconds) return '';
@@ -60,7 +60,7 @@ export function formatDurationHuman(seconds) {
 
 /**
  * Formatiert Millisekunden als M:SS.HH (mit Hundertstel).
- * Fuer ICY-Metadata Zeitstempel, Segment-Positionen.
+ * Für ICY-Metadata Zeitstempel, Segment-Positionen.
  */
 export function formatMetaTime(ms) {
   const totalSec = Math.floor(ms / 1000);
@@ -80,7 +80,7 @@ export function formatDurationMs(ms) {
 
 /**
  * Formatiert Sekunden als Gesamtdauer: HHH:MM:SS (ohne Padding der Stunden).
- * Fuer Gesamtspieldauer von Podcasts.
+ * Für Gesamtspieldauer von Podcasts.
  */
 export function formatTotalDuration(seconds) {
   if (!seconds || seconds <= 0) return '0:00:00';
@@ -90,7 +90,7 @@ export function formatTotalDuration(seconds) {
   return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// === Groessen-Formatierung ===
+// === Größen-Formatierung ===
 
 /**
  * Formatiert Bytes als KB/MB/GB.

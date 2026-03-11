@@ -236,10 +236,10 @@
   async function handleFileDelete(file) {
     try {
       await api.deleteFileExplorer(file.path);
-      actions.showToast('Datei geloescht', 'success');
+      actions.showToast('Datei gelöscht', 'success');
       await loadFileExplorer();
     } catch (e) {
-      actions.showToast('Loeschen fehlgeschlagen', 'error');
+      actions.showToast('Löschen fehlgeschlagen', 'error');
     }
   }
 

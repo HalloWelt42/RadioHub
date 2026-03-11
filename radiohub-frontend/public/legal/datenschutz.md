@@ -4,15 +4,15 @@ RadioHub ist eine lokal betriebene Anwendung.
 
 ## Datenverarbeitung
 
-- RadioHub speichert alle Daten ausschliesslich lokal auf Ihrem Geraet
-- Es werden keine personenbezogenen Daten an externe Server uebermittelt
+- RadioHub speichert alle Daten ausschließlich lokal auf Ihrem Gerät
+- Es werden keine personenbezogenen Daten an externe Server übermittelt
 - Radiostreams werden direkt von den jeweiligen Sendern geladen
 
 ## Externe Dienste
 
 RadioHub nutzt folgende externe Dienste:
 
-- **Radio Browser API** -- Oeffentliche Senderdatenbank (radio-browser.info)
+- **Radio Browser API** -- Öffentliche Senderdatenbank (radio-browser.info)
 - **iTunes Search API** -- Podcast-Suche (Apple)
 - **Fyyd API** -- Podcast-Suche (fyyd.de)
 

@@ -43,7 +43,7 @@
   }
 
   /**
-   * Einfacher Markdown-Parser (h1-h3, Listen, Absaetze, Bold, Links, Code)
+   * Einfacher Markdown-Parser (h1-h3, Listen, Absätze, Bold, Links, Code)
    */
   function parseMarkdown(md) {
     const lines = md.split('\n');

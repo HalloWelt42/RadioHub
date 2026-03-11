@@ -27,16 +27,16 @@
 <div class="hifi-panel">
   <div class="hifi-panel-header">
     <i class="fa-solid fa-mug-hot header-icon"></i>
-    <span class="hifi-font-label">RADIOHUB UNTERSTUETZEN</span>
+    <span class="hifi-font-label">RADIOHUB UNTERSTÜTZEN</span>
   </div>
   <div class="donate-section">
     <p class="donate-text">
       RadioHub ist ein nicht-kommerzielles Open-Source-Projekt.
-      Wenn dir die Software gefaellt, freue ich mich ueber eine kleine Unterstuetzung.
+      Wenn dir die Software gefällt, freue ich mich über eine kleine Unterstützung.
     </p>
     <a href="https://ko-fi.com/HalloWelt42" target="_blank" rel="noopener" class="kofi-btn">
       <i class="fa-solid fa-mug-hot"></i>
-      <span>Unterstuetze mich auf Ko-fi</span>
+      <span>Unterstütze mich auf Ko-fi</span>
     </a>
   </div>
 </div>
@@ -45,7 +45,7 @@
 <div class="hifi-panel">
   <div class="hifi-panel-header">
     <i class="fa-solid fa-coins header-icon"></i>
-    <span class="hifi-font-label">KRYPTOWAEHRUNG</span>
+    <span class="hifi-font-label">KRYPTOWÄHRUNG</span>
   </div>
   <div class="crypto-section">
     <!-- Crypto Tabs -->
@@ -90,7 +90,7 @@
 <!-- Footer -->
 <div class="donate-footer">
   <i class="fa-solid fa-heart"></i>
-  Vielen Dank fuer deine Unterstuetzung!
+  Vielen Dank für deine Unterstützung!
 </div>
 
 <style>

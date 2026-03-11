@@ -158,7 +158,7 @@
   <HiFiPlayer />
 </div>
 
-<!-- Toast ausserhalb hifi-app fuer korrektes z-index Stacking -->
+<!-- Toast außerhalb hifi-app für korrektes z-index Stacking -->
 <HiFiToast />
 
 <style>

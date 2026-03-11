@@ -911,7 +911,7 @@ export function handleEnded() {
       }
 
       if (mode === 'loop') {
-        // Naechster Track, am Ende zurueck zum Anfang
+        // Nächster Track, am Ende zurück zum Anfang
         if (idx >= 0 && idx < playlist.length - 1) {
           playRecording(playlist[idx + 1]);
         } else {

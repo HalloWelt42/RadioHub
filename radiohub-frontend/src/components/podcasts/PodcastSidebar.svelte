@@ -130,7 +130,7 @@
       class="action-btn"
       class:active={fileExplorerActive}
       onclick={() => { onfileexplorer(); sfx.click(); }}
-      title={fileExplorerActive ? 'Datei-Explorer schliessen' : 'Datei-Explorer oeffnen'}
+      title={fileExplorerActive ? 'Datei-Explorer schließen' : 'Datei-Explorer öffnen'}
     >
       <i class="fa-solid fa-folder-tree"></i>
     </button>

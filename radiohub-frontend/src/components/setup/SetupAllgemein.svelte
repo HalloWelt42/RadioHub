@@ -14,7 +14,7 @@
   let activeLang = $state(currentLanguage());
   let activeSubTab = $state('einstellungen');
 
-  // Markdown-Inhalte fuer Lizenz / Recht
+  // Markdown-Inhalte für Lizenz / Recht
   let lizenzContent = $state('');
   let rechtContent = $state('');
 

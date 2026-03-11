@@ -2,7 +2,7 @@
   /**
    * SetupSpeicher - Storage-Zone-Konfiguration
    * Zeigt alle Zonen mit Pfad, Speicherplatz, Status.
-   * Erlaubt Pfad-Aenderungen fuer jede Zone.
+   * Erlaubt Pfad-Änderungen für jede Zone.
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
@@ -118,7 +118,7 @@
           {#if !isEditing}
             <div class="zone-path-row">
               <code class="zone-path">{zone.path}</code>
-              <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(name)} title="Pfad aendern">
+              <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(name)} title="Pfad ändern">
                 <i class="fa-solid fa-pen"></i>
               </button>
             </div>
@@ -188,7 +188,7 @@
 
   <div class="zone-hint">
     <i class="fa-solid fa-circle-info"></i>
-    Pfad-Aenderungen verschieben keine Daten. Bestehende Dateien bleiben am alten Speicherort erhalten.
+    Pfad-Änderungen verschieben keine Daten. Bestehende Dateien bleiben am alten Speicherort erhalten.
   </div>
 </div>
 

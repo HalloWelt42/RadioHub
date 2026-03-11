@@ -77,7 +77,7 @@
         appState.streamTitle = result.title;
       }
     } catch (e) {
-      // Stilles Fehlen -- kein Titel verfuegbar
+      // Stilles Fehlen -- kein Titel verfügbar
     }
   }
 

@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-RadioHub-NC-1.0
 
 Copyright (c) 2025-2026 HalloWelt42
 
-Dieses Werk ist lizenziert unter der Creative Commons Namensnennung - Nicht kommerziell - Keine Bearbeitungen 4.0 International Lizenz (CC BY-NC-ND 4.0), ergaenzt durch die nachstehenden Zusatzbestimmungen.
+Dieses Werk ist lizenziert unter der Creative Commons Namensnennung - Nicht kommerziell - Keine Bearbeitungen 4.0 International Lizenz (CC BY-NC-ND 4.0), ergänzt durch die nachstehenden Zusatzbestimmungen.
 
 [Volltext CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de)
 
@@ -14,46 +14,46 @@ Dieses Werk ist lizenziert unter der Creative Commons Namensnennung - Nicht komm
 
 ### 1. Private Modifikation
 
-Abweichend von der ND-Klausel der CC BY-NC-ND 4.0 wird hiermit die Erlaubnis erteilt, die Software fuer den eigenen, privaten und nicht-kommerziellen Gebrauch anzupassen und zu modifizieren:
+Abweichend von der ND-Klausel der CC BY-NC-ND 4.0 wird hiermit die Erlaubnis erteilt, die Software für den eigenen, privaten und nicht-kommerziellen Gebrauch anzupassen und zu modifizieren:
 
-- Die Modifikation darf ausschliesslich fuer den persoenlichen Gebrauch des Modifizierenden erfolgen
-- Modifizierte Versionen duerfen nicht oeffentlich verbreitet, gehostet oder Dritten zugaenglich gemacht werden
-- Alle Copyright-Hinweise und Lizenzangaben muessen vollstaendig und unveraendert erhalten bleiben
+- Die Modifikation darf ausschließlich für den persönlichen Gebrauch des Modifizierenden erfolgen
+- Modifizierte Versionen dürfen nicht öffentlich verbreitet, gehostet oder Dritten zugänglich gemacht werden
+- Alle Copyright-Hinweise und Lizenzangaben müssen vollständig und unverändert erhalten bleiben
 
 ### 2. Fork-Regelung
 
 Das Erstellen von Forks ist unter folgenden Bedingungen gestattet:
 
-- Forks duerfen ausschliesslich fuer private, nicht-kommerzielle Zwecke genutzt werden
-- Forks duerfen nicht als eigenstaendiges Projekt veroeffentlicht, beworben oder unter eigenem Namen vertrieben werden
-- Forks duerfen keine Copyright-Hinweise, Autorenangaben oder Verweise auf das Original-Repository entfernen
-- Pull Requests an das Original-Repository sind ausdruecklich erwuenscht und willkommen
+- Forks dürfen ausschließlich für private, nicht-kommerzielle Zwecke genutzt werden
+- Forks dürfen nicht als eigenständiges Projekt veröffentlicht, beworben oder unter eigenem Namen vertrieben werden
+- Forks dürfen keine Copyright-Hinweise, Autorenangaben oder Verweise auf das Original-Repository entfernen
+- Pull Requests an das Original-Repository sind ausdrücklich erwünscht und willkommen
 - Bei Unsicherheit ist vorab die schriftliche Genehmigung des Rechteinhabers einzuholen
 
 ### 3. Terminierung
 
-- Bei Verstoss gegen eine der Bestimmungen erlischt die Nutzungsberechtigung automatisch und sofort
-- Nach Erloeschen sind alle Kopien unverzueglich zu loeschen
-- Der Rechteinhaber behaelt sich weitergehende rechtliche Schritte vor
+- Bei Verstoß gegen eine der Bestimmungen erlischt die Nutzungsberechtigung automatisch und sofort
+- Nach Erlöschen sind alle Kopien unverzüglich zu löschen
+- Der Rechteinhaber behält sich weitergehende rechtliche Schritte vor
 
 ### 4. Contributor License Agreement (CLA)
 
-Mit dem Einreichen eines Beitrags erklaert der Beitragende:
+Mit dem Einreichen eines Beitrags erklärt der Beitragende:
 
 - Der Beitrag ist ein Originalwerk des Beitragenden
-- Der Beitragende uebertraegt dem Rechteinhaber (HalloWelt42) ein unwiderrufliches, weltweites, gebuehrenfreies Nutzungsrecht
-- Der Beitrag unterliegt vollstaendig dieser Lizenz
+- Der Beitragende überträgt dem Rechteinhaber (HalloWelt42) ein unwiderrufliches, weltweites, gebührenfreies Nutzungsrecht
+- Der Beitrag unterliegt vollständig dieser Lizenz
 
 ### 5. Copyright-Schutz
 
-- Alle Copyright-Hinweise, Autorenangaben und SPDX-Identifier duerfen nicht entfernt oder veraendert werden
-- Dies gilt insbesondere fuer die LICENSE-Datei, Copyright-Header in Quelldateien und Konfigurationsdateien
+- Alle Copyright-Hinweise, Autorenangaben und SPDX-Identifier dürfen nicht entfernt oder verändert werden
+- Dies gilt insbesondere für die LICENSE-Datei, Copyright-Header in Quelldateien und Konfigurationsdateien
 
 ---
 
 ## Haftungsausschluss
 
-DIE SOFTWARE WIRD "WIE SIE IST" BEREITGESTELLT, OHNE JEGLICHE GEWAEHRLEISTUNG, WEDER AUSDRUECKLICH NOCH STILLSCHWEIGEND.
+DIE SOFTWARE WIRD "WIE SIE IST" BEREITGESTELLT, OHNE JEGLICHE GEWÄHRLEISTUNG, WEDER AUSDRÜCKLICH NOCH STILLSCHWEIGEND.
 
 ---
 
@@ -65,13 +65,13 @@ DIE SOFTWARE WIRD "WIE SIE IST" BEREITGESTELLT, OHNE JEGLICHE GEWAEHRLEISTUNG, W
 - Private Modifikation
 - Private Forks
 - Pull Requests an das Original
-- Teilen des unveraenderten Originals
+- Teilen des unveränderten Originals
 
 **Verboten:**
 - Kommerzielle Nutzung
 - Verkauf, Vermietung, Unterlizenzierung
-- Veroeffentlichung modifizierter Versionen
-- Forks als eigenstaendiges Projekt
+- Veröffentlichung modifizierter Versionen
+- Forks als eigenständiges Projekt
 - Entfernung von Copyright-Hinweisen
 - Weiterverbreitung unter anderer Lizenz
 

@@ -72,8 +72,8 @@ export default {
   filter: {
     suchfilter: 'SUCHFILTER',
     laender: 'LÄNDER',
-    sprachenAusschliessen: 'SPRACHEN AUSSCHLIESSEN',
-    tagsAusschliessen: 'TAGS AUSSCHLIESSEN',
+    sprachenAusschliessen: 'SPRACHEN AUSSCHLIEßEN',
+    tagsAusschliessen: 'TAGS AUSSCHLIEßEN',
     minVotes: 'MIN VOTES',
     permanentAusblenden: 'PERMANENT AUSBLENDEN',
     permanentHint: 'Sender mit obigen Kriterien dauerhaft entfernen',

@@ -1,6 +1,6 @@
 /**
- * Einfacher Markdown-Parser (h1-h3, Listen, Absaetze, Bold, Links, Code, HR)
- * Wird von SetupAllgemein fuer Lizenz-/Rechtstexte verwendet.
+ * Einfacher Markdown-Parser (h1-h3, Listen, Absätze, Bold, Links, Code, HR)
+ * Wird von SetupAllgemein für Lizenz-/Rechtstexte verwendet.
  */
 
 function esc(s) {

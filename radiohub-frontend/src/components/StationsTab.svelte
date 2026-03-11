@@ -62,7 +62,7 @@
   let sortBy = $state('name');
   let sortOrder = $state('asc');
 
-  // Ad-Status Map fuer Hover-Anzeige
+  // Ad-Status Map für Hover-Anzeige
   let adStatusMap = $state({});
 
   // visibleCountries persistieren (Backend-Config)
@@ -92,7 +92,7 @@
     actions.loadFavorites();
   });
 
-  // Bei Tab-Wechsel zurueck auf Radio: Config + Kategorien neu laden
+  // Bei Tab-Wechsel zurück auf Radio: Config + Kategorien neu laden
   let _prevTab = appState.activeTab;
   $effect(() => {
     const tab = appState.activeTab;
@@ -136,12 +136,12 @@
     }
   }
 
-  // Sync stations to appState fuer Navigation
+  // Sync stations to appState für Navigation
   $effect(() => {
     appState.stations = stations;
   });
 
-  // Ad-Status fuer sichtbare Sender laden
+  // Ad-Status für sichtbare Sender laden
   let _adStatusLoading = false;
   $effect(() => {
     const uuids = stations.map(s => s.uuid);
@@ -261,7 +261,7 @@
         if (votes_max >= 999999999) votes_max = undefined;
       }
       
-      // filterMinVotes als Floor fuer votes_min (max aus Sidebar-Range und Overlay-Wert)
+      // filterMinVotes als Floor für votes_min (max aus Sidebar-Range und Overlay-Wert)
       if (filterMinVotes > 0) {
         votes_min = Math.max(votes_min ?? 0, filterMinVotes);
       }
@@ -301,7 +301,7 @@
       hasMore = newStations.length === limit;
       offset = append ? offset + newStations.length : newStations.length;
 
-      // Kategorie-Zuordnungen fuer geladene Sender holen
+      // Kategorie-Zuordnungen für geladene Sender holen
       if (categories.length > 0 && newStations.length > 0) {
         loadCategoryAssignments(newStations);
       }
@@ -348,7 +348,7 @@
   async function refreshStations() {
     isRefreshing = true;
     try {
-      // Filter/Sortierung zuruecksetzen
+      // Filter/Sortierung zurücksetzen
       searchQuery = '';
       selectedCountries = [];
       selectedBitrates = [];
@@ -656,7 +656,7 @@
       {#if activeFilterCount > 0}
         <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zurücksetzen">&#10005;</button>
       {/if}
-      <button class="action-btn square" onclick={() => { openSetupFilter(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Setup: Filter oeffnen">
+      <button class="action-btn square" onclick={() => { openSetupFilter(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Setup: Filter öffnen">
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>

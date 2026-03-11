@@ -265,7 +265,7 @@
       <div class="filter-col-main">
         <div class="filter-section">
           <div class="filter-section-header">
-            <span class="filter-section-label">SPRACHEN AUSSCHLIESSEN</span>
+            <span class="filter-section-label">SPRACHEN AUSSCHLIEßEN</span>
             <div class="filter-bulk-actions">
               <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
               <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
@@ -305,7 +305,7 @@
         <!-- Tags -->
         <div class="filter-section side-section">
           <div class="filter-section-header">
-            <span class="filter-section-label">TAGS AUSSCHLIESSEN</span>
+            <span class="filter-section-label">TAGS AUSSCHLIEßEN</span>
           </div>
           <div class="side-content">
             {#if excludedTags.length > 0}

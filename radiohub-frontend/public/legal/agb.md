@@ -2,17 +2,17 @@
 
 ## Geltungsbereich
 
-Diese Bedingungen gelten fuer die Nutzung der RadioHub Software.
+Diese Bedingungen gelten für die Nutzung der RadioHub Software.
 
 ## Nutzung
 
-- RadioHub ist ausschliesslich fuer den privaten, nicht-kommerziellen Gebrauch bestimmt
+- RadioHub ist ausschließlich für den privaten, nicht-kommerziellen Gebrauch bestimmt
 - Die Nutzung erfolgt auf eigene Verantwortung
 
 ## Haftung
 
-Der Entwickler uebernimmt keine Haftung fuer Schaeden, die durch die Nutzung der Software entstehen.
+Der Entwickler übernimmt keine Haftung für Schäden, die durch die Nutzung der Software entstehen.
 
 ## Inhalte
 
-RadioHub stellt keine eigenen Inhalte bereit. Alle Radiosender und Podcasts werden von Dritten betrieben. Fuer deren Inhalte sind die jeweiligen Anbieter verantwortlich.
+RadioHub stellt keine eigenen Inhalte bereit. Alle Radiosender und Podcasts werden von Dritten betrieben. Für deren Inhalte sind die jeweiligen Anbieter verantwortlich.

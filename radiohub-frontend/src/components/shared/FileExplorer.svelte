@@ -1,6 +1,6 @@
 <script>
   /**
-   * FileExplorer - Einheitlicher Datei-Explorer fuer Podcasts und Aufnahmen
+   * FileExplorer - Einheitlicher Datei-Explorer für Podcasts und Aufnahmen
    * Ordner-Baum mit Dateien, Multi-Select, ZIP-Download.
    */
   import InfoBadge from './InfoBadge.svelte';
@@ -192,7 +192,7 @@
                     <button class="action-btn" onclick={() => onplay(file)} title="Datei abspielen">
                       <i class="fa-solid fa-play"></i>
                     </button>
-                    <button class="action-btn action-btn-danger" onclick={() => handleDelete(file)} title="Datei endgueltig loeschen">
+                    <button class="action-btn action-btn-danger" onclick={() => handleDelete(file)} title="Datei endgültig löschen">
                       <i class="fa-solid fa-trash"></i>
                     </button>
                   </div>

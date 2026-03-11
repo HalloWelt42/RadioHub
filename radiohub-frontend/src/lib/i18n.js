@@ -13,10 +13,10 @@ import de from './locales/de.js';
 import en from './locales/en.js';
 
 // Locale-Dateien werden lazy geladen. Nur DE + EN sind initial da.
-// Weitere Sprachen koennen spaeter als Dateien ergaenzt werden.
+// Weitere Sprachen können später als Dateien ergänzt werden.
 const locales = { de, en };
 
-// Reaktiver State (kein Svelte-Import noetig - einfaches Observer-Pattern)
+// Reaktiver State (kein Svelte-Import nötig - einfaches Observer-Pattern)
 let _lang = 'de';
 let _translations = locales.de;
 const _listeners = new Set();
@@ -47,7 +47,7 @@ export function setLanguage(lang) {
 }
 
 /**
- * Listener fuer Sprachwechsel registrieren
+ * Listener für Sprachwechsel registrieren
  * @returns Unsubscribe-Funktion
  */
 export function onLanguageChange(fn) {
@@ -75,7 +75,7 @@ function resolve(obj, parts) {
  * Fallback-Kette: aktuelle Sprache -> EN -> DE -> Key
  *
  * @param {string} key - z.B. 'nav.tuner' oder 'toast.recGestartet'
- * @param {Object} params - Optionale Platzhalter {hours: 6} fuer '{hours}'
+ * @param {Object} params - Optionale Platzhalter {hours: 6} für '{hours}'
  * @returns {string}
  */
 export function t(key, params = null) {
@@ -91,7 +91,7 @@ export function t(key, params = null) {
   if (result === undefined && _lang !== 'de') {
     result = resolve(locales.de, parts);
   }
-  // 4. Key zurueckgeben
+  // 4. Key zurückgeben
   if (result === undefined) return key;
 
   // Platzhalter ersetzen
@@ -105,7 +105,7 @@ export function t(key, params = null) {
 }
 
 /**
- * Locale-Datei nachtraeglich registrieren (fuer lazy loading)
+ * Locale-Datei nachträglich registrieren (für lazy loading)
  */
 export function registerLocale(code, translations) {
   locales[code] = translations;
@@ -115,7 +115,7 @@ export function registerLocale(code, translations) {
 }
 
 /**
- * Verfuegbare Sprachen - 20 Sprachen mit Flaggen
+ * Verfügbare Sprachen - 20 Sprachen mit Flaggen
  */
 export const availableLanguages = [
   { code: 'de', label: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}' },
