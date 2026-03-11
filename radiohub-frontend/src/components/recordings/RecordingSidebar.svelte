@@ -8,6 +8,7 @@
   import { appState } from '../../lib/store.svelte.js';
   import { tick } from 'svelte';
   import * as sfx from '../../lib/uiSounds.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     sessions = [],
@@ -173,7 +174,7 @@
         size="small"
         blink={isActive}
         pulse={isPlaying}
-        title={isActive ? (appState.recordingType === 'hls-rec' ? 'HLS-Buffer-Aufnahme läuft' : 'Aufnahme läuft') : isPlaying ? 'Wird abgespielt' : isSelected ? 'Ausgewählt' : 'Inaktiv'}
+        title={isActive ? (appState.recordingType === 'hls-rec' ? t('recordings.hlsBufferLaeuft') : t('recordings.aufnahmeLaeuft')) : isPlaying ? t('recordings.wirdAbgespielt') : isSelected ? t('recordings.ausgewaehltStatus') : t('recordings.inaktiv')}
       />
       <div class="session-info">
         <div class="session-name">{session.station_name || session.id}</div>
@@ -194,7 +195,7 @@
         class="session-move-btn"
         class:visible={showMoveMenu}
         onclick={(e) => toggleMoveMenu(session.id, e)}
-        title="In Ordner verschieben"
+        title={t('recordings.inOrdnerVerschiebenTitle')}
       >
         <i class="fa-solid fa-folder-open"></i>
       </button>
@@ -203,7 +204,7 @@
       <div class="session-move-menu">
         {#if session.folder_id}
           <button class="move-option" onclick={(e) => handleMoveToFolder(session.id, null, e)}>
-            <i class="fa-solid fa-arrow-up"></i> Kein Ordner
+            <i class="fa-solid fa-arrow-up"></i> {t('recordings.keinOrdner')}
           </button>
         {/if}
         {#each folders as folder}
@@ -227,14 +228,14 @@
       class="action-btn"
       class:active={showSearch}
       onclick={() => { showSearch = !showSearch; if (!showSearch) { localQuery = ''; onsearch(''); } sfx.click(); }}
-      title={showSearch ? 'Suche schließen' : 'Aufnahmen durchsuchen'}
+      title={showSearch ? t('recordings.sucheSchliessen') : t('recordings.aufnahmenDurchsuchen')}
     >
       <i class="fa-solid {showSearch ? 'fa-xmark' : 'fa-magnifying-glass'}"></i>
     </button>
     <button
       class="action-btn"
       onclick={() => { oncutter(); sfx.click(); }}
-      title="Aufnahmen schneiden (Segmente erzeugen)"
+      title={t('recordings.aufnahmenSchneiden')}
     >
       <i class="fa-solid fa-scissors"></i>
     </button>
@@ -242,7 +243,7 @@
       class="action-btn"
       class:active={fileExplorerActive}
       onclick={() => { onfileexplorer(); sfx.click(); }}
-      title={fileExplorerActive ? 'Datei-Explorer schließen' : 'Datei-Explorer öffnen'}
+      title={fileExplorerActive ? t('recordings.dateiExplorerSchliessen') : t('recordings.dateiExplorerOeffnen')}
     >
       <i class="fa-solid fa-folder-tree"></i>
     </button>
@@ -250,14 +251,14 @@
       class="action-btn"
       class:active={showNewFolder}
       onclick={() => { showNewFolder = !showNewFolder; if (!showNewFolder) newFolderName = ''; sfx.click(); }}
-      title={showNewFolder ? 'Abbrechen' : 'Neuen Ordner erstellen'}
+      title={showNewFolder ? t('common.abbrechen') : t('recordings.neuenOrdnerErstellen')}
     >
       <i class="fa-solid {showNewFolder ? 'fa-xmark' : 'fa-folder-plus'}"></i>
     </button>
     <button
       class="action-btn"
       onclick={() => { onrefresh(); sfx.click(); }}
-      title="Session-Liste aktualisieren"
+      title={t('recordings.sessionListeAktualisieren')}
     >
       <i class="fa-solid fa-arrows-rotate"></i>
     </button>
@@ -270,7 +271,7 @@
       <input
         type="text"
         class="search-input"
-        placeholder="Neuer Ordnername..."
+        placeholder={t('recordings.neuerOrdnername')}
         bind:value={newFolderName}
         onkeydown={handleNewFolderKey}
       />
@@ -283,7 +284,7 @@
       <input
         type="text"
         class="search-input"
-        placeholder="Sendername..."
+        placeholder={t('recordings.sendername')}
         bind:value={localQuery}
         oninput={handleSearch}
         onkeydown={handleSearchKey}
@@ -295,12 +296,12 @@
   <!-- Session-Liste mit Ordner-Gruppen -->
   <div class="section-scrollable">
     <div class="section-header">
-      <span class="section-label">AUFNAHMEN</span>
+      <span class="section-label">{t('recordings.aufnahmen')}</span>
       <span class="section-count">{sessions.length}</span>
     </div>
 
     {#if sessions.length === 0 && folders.length === 0}
-      <div class="empty-hint">Keine Aufnahmen vorhanden</div>
+      <div class="empty-hint">{t('recordings.keineAufnahmen')}</div>
     {:else}
       <div class="session-list">
         <!-- Ordner-Gruppen -->
@@ -318,7 +319,7 @@
               <HiFiLed
                 color={folder.is_active ? 'green' : 'off'}
                 size="small"
-                title={folder.is_active ? 'Aktiver Aufnahmeordner' : 'Inaktiver Ordner'}
+                title={folder.is_active ? t('recordings.aktiverOrdner') : t('recordings.inaktiverOrdner')}
               />
               {#if renamingFolderId === folder.id}
                 <input
@@ -336,21 +337,21 @@
                 <button
                   class="folder-action-btn"
                   onclick={() => { folder.is_active ? ondeactivatefolder() : onactivatefolder(folder.id); sfx.click(); }}
-                  title={folder.is_active ? 'Aufnahmeordner deaktivieren' : 'Als Aufnahmeordner aktivieren'}
+                  title={folder.is_active ? t('recordings.ordnerDeaktivieren') : t('recordings.alsAufnahmeordner')}
                 >
                   <i class="fa-solid {folder.is_active ? 'fa-circle-check' : 'fa-circle'}"></i>
                 </button>
                 <button
                   class="folder-action-btn"
                   onclick={() => { startRenaming(folder); sfx.click(); }}
-                  title="Ordner umbenennen"
+                  title={t('recordings.ordnerUmbenennen')}
                 >
                   <i class="fa-solid fa-pen"></i>
                 </button>
                 <button
                   class="folder-action-btn delete"
                   onclick={() => { ondeletefolder(folder.id); sfx.click(); }}
-                  title="Ordner löschen (nur wenn leer)"
+                  title={t('recordings.ordnerLoeschenHint')}
                 >
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
@@ -358,7 +359,7 @@
             </div>
             {#if !isCollapsed}
               {#if fSessions.length === 0}
-                <div class="empty-hint folder-empty">Leer</div>
+                <div class="empty-hint folder-empty">{t('recordings.leer')}</div>
               {:else}
                 {#each fSessions as session (session.id)}
                   {@render sessionItem(session)}
@@ -372,7 +373,7 @@
         {#if rootSessions.length > 0}
           {#if folders.length > 0}
             <div class="root-separator">
-              <span class="section-label">UNZUGEORDNET</span>
+              <span class="section-label">{t('recordings.unzugeordnet')}</span>
               <span class="section-count">{rootSessions.length}</span>
             </div>
           {/if}
@@ -390,19 +391,19 @@
   <div class="section-fixed">
     <div class="stats-row">
       <div class="stat-item">
-        <HiFiLed color="blue" size="small" title="Anzahl Aufnahme-Dateien" />
+        <HiFiLed color="blue" size="small" title={t('recordings.anzahlDateien')} />
         <span class="stat-label">{stats.file_count || 0}</span>
-        <span class="stat-unit">Dateien</span>
+        <span class="stat-unit">{t('recordings.dateienLabel')}</span>
       </div>
       <div class="stat-item">
-        <HiFiLed color="amber" size="small" title="Belegter Speicherplatz" />
+        <HiFiLed color="amber" size="small" title={t('recordings.belegterSpeicher')} />
         <span class="stat-label">{stats.used_mb?.toFixed(0) || '0'}</span>
         <span class="stat-unit">MB</span>
       </div>
       <div class="stat-item">
-        <HiFiLed color="green" size="small" title="Freier Speicherplatz" />
+        <HiFiLed color="green" size="small" title={t('recordings.freierSpeicher')} />
         <span class="stat-label">{stats.disk_free_gb?.toFixed(1) || '0'}</span>
-        <span class="stat-unit">GB frei</span>
+        <span class="stat-unit">{t('recordings.gbFrei')}</span>
       </div>
     </div>
   </div>
@@ -412,7 +413,7 @@
     class="resize-handle"
     class:active={isDragging}
     onmousedown={handleResizeStart}
-    title="Breite anpassen"
+    title={t('recordings.breiteAnpassen')}
   ></div>
 </aside>
 

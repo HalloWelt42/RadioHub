@@ -9,6 +9,7 @@
   import { connect as connectAnalyser } from '../lib/audioAnalyser.js';
   import * as sfx from '../lib/uiSounds.js';
   import { formatTime, formatTimeShort } from '../lib/formatters.js';
+  import { t } from '../lib/i18n.svelte.js';
 
   // Audio Element
   let audioEl = $state(null);
@@ -185,7 +186,7 @@
 
   let sourceType = $derived(
     appState.isPlaying || appState.isPaused
-      ? (appState.currentStation ? 'Tuner' : appState.currentEpisode ? 'Podcast' : appState.currentRecording ? 'Aufnahme' : '---')
+      ? (appState.currentStation ? t('player.tuner') : appState.currentEpisode ? 'Podcast' : appState.currentRecording ? t('player.aufnahme') : '---')
       : '---'
   );
 
@@ -369,7 +370,7 @@
   let canTogglePlayMode = $derived(isRecordingPlayback || appState.playerMode === 'podcast' || appState.activeTab === 'recordings');
   const playModeOrder = ['linear', 'reverse', 'loop', 'shuffle'];
   const playModeIcons = { linear: 'fa-arrow-right', reverse: 'fa-arrow-left', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
-  const playModeLabels = { linear: 'Linear (vorwaerts)', reverse: 'Rueckwaerts', loop: 'Endlosschleife', shuffle: 'Zufall' };
+  const playModeLabels = { linear: 'player.linear', reverse: 'player.rueckwaerts', loop: 'player.endlosschleife', shuffle: 'player.zufall' };
   let playModeLedColor = $derived(
     !canTogglePlayMode ? 'off' :
     appState.playMode === 'linear' ? 'white' :
@@ -553,7 +554,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isPodcast ? 'Keine vorherige Episode' : isRecordingPlayback ? 'Kein vorheriger Titel' : 'Kein vorheriger Sender') : prevStationName() || (isPodcast ? 'Vorherige Episode' : isRecordingPlayback ? 'Vorheriger Titel' : 'Vorheriger Sender')}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keinePrevEpisode') : isRecordingPlayback ? t('player.keinePrevTitel') : t('player.keinPrev')) : prevStationName() || (isPodcast ? t('player.prevEpisode') : isRecordingPlayback ? t('player.prevTitel') : t('player.prevSender'))}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -569,7 +570,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar' : '10 Sekunden zurück'}
+          title={appState.isRecording ? t('player.recLaeuft') : !_canSeek ? t('player.spulenNicht') : t('player.skipBack')}
           onmouseenter={sfx.hover}
           onmousedown={() => skipBackPressed = true}
           onmouseup={() => { skipBackPressed = false; handleSkip(-10); }}
@@ -582,19 +583,19 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? 'Aufnahme läuft -- erst REC stoppen' : 'Wiedergabe stoppen'}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuftStoppen') : t('player.stop')}>
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? 'Aufnahme läuft' : appState.isPaused ? 'Pause' : 'Abspielen'}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : appState.isPaused ? t('player.pause') : t('player.play')}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation || isRecordingPlayback} title={isRecordingPlayback ? 'Nicht bei Aufnahme-Wiedergabe' : !isStation ? 'Kein Sender ausgewaehlt' : appState.isRecording ? 'Aufnahme stoppen' : 'Aufnahme starten'}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={!isStation || isRecordingPlayback} title={isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : appState.isRecording ? t('player.recStop') : t('player.recStart')}>
           <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
@@ -603,7 +604,7 @@
         <button
           class="transport-btn"
           disabled={!_canSeek || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !_canSeek ? 'Spulen nicht verfügbar' : '10 Sekunden vor'}
+          title={appState.isRecording ? t('player.recLaeuft') : !_canSeek ? t('player.spulenNicht') : t('player.skipForward')}
           onmouseenter={sfx.hover}
           onmousedown={() => skipFwdPressed = true}
           onmouseup={() => { skipFwdPressed = false; handleSkip(10); }}
@@ -619,7 +620,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : !canNavigate ? (isPodcast ? 'Keine nächste Episode' : isRecordingPlayback ? 'Kein nächster Titel' : 'Kein nächster Sender') : nextStationName() || (isPodcast ? 'Nächste Episode' : isRecordingPlayback ? 'Nächster Titel' : 'Nächster Sender')}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keineNextEpisode') : isRecordingPlayback ? t('player.keineNextTitel') : t('player.keinNext')) : nextStationName() || (isPodcast ? t('player.nextEpisode') : isRecordingPlayback ? t('player.nextTitel') : t('player.nextSender'))}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
@@ -635,7 +636,7 @@
         <button
           class="transport-btn live-btn"
           disabled={isLive || !isHLSMode || appState.isRecording}
-          title={appState.isRecording ? 'Aufnahme läuft' : isLive ? 'Bereits live' : !isHLSMode ? 'Live nur im HLS-Modus verfügbar' : 'Zur Live-Position springen'}
+          title={appState.isRecording ? t('player.recLaeuft') : isLive ? t('player.bereitsLive') : !isHLSMode ? t('player.liveNurHls') : t('player.goLive')}
           onclick={() => engine.goLive()}
         >
           <HiFiLed color={liveLedColor} size="small" />
@@ -646,7 +647,7 @@
         <button
           class="transport-btn mode-btn"
           disabled={!canToggleStreamMode}
-          title={appState.isRecording ? 'Aufnahme läuft -- kein Moduswechsel' : !canToggleStreamMode ? 'Moduswechsel nicht verfügbar' : appState.playerMode === 'hls' ? 'Zu Original-Stream wechseln (Direct)' : 'Zu HLS-Stream wechseln (zeitversetzt)'}
+          title={appState.isRecording ? t('player.recModuswechsel') : !canToggleStreamMode ? t('player.moduswechselNicht') : appState.playerMode === 'hls' ? t('player.directMode') : t('player.hlsMode')}
           onclick={() => engine.toggleStreamMode()}
         >
           <HiFiLed color={modeLedColor} size="small" />
@@ -657,7 +658,7 @@
         <button
           class="transport-btn mode-btn"
           disabled={!canTogglePlayMode}
-          title={!canTogglePlayMode ? 'Wiedergabe-Modus (nur bei Aufnahme-Wiedergabe)' : playModeLabels[appState.playMode]}
+          title={!canTogglePlayMode ? t('player.wiedergabeModus') : t(playModeLabels[appState.playMode])}
           onmouseenter={sfx.hover}
           onclick={() => { cyclePlayMode(); sfx.click(); }}
         >
@@ -684,7 +685,7 @@
   {#if appState.playerError}
     <div class="player-error">
       <span>{appState.playerError}</span>
-      <button onclick={() => appState.playerError = null} title="Fehlermeldung schließen">x</button>
+      <button onclick={() => appState.playerError = null} title={t('player.fehlerSchliessen')}>x</button>
     </div>
   {/if}
 </footer>

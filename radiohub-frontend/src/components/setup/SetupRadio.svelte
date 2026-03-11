@@ -3,14 +3,34 @@
   import SetupFilter from './SetupFilter.svelte';
   import SetupSender from './SetupSender.svelte';
   import SetupKategorien from './SetupKategorien.svelte';
-
-  let subTab = $state('filter');
+  import { appState, actions } from '../../lib/store.svelte.js';
+  import * as router from '../../lib/router.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   const subTabs = [
     { id: 'filter', label: 'FILTER' },
     { id: 'sender', label: 'SENDER' },
     { id: 'kategorien', label: 'KATEGORIEN' }
   ];
+
+  // Sub-Tab aus Route-Segmenten ableiten
+  let subTab = $derived.by(() => {
+    if (appState.activeTab !== 'settings') return 'filter';
+    const seg = appState.routeSegments;
+    if (seg?.[0] !== 'radio') return 'filter';
+    const subId = seg[1] || 'filter';
+    return subTabs.some(t => t.id === subId) ? subId : 'filter';
+  });
+
+  // Redirect wenn nur /setup/radio ohne Sub-Tab
+  $effect(() => {
+    if (appState.activeTab === 'settings'
+        && appState.routeSegments?.[0] === 'radio'
+        && !appState.routeSegments[1]) {
+      router.navigate('/setup/radio/filter', { replace: true });
+      appState.routeSegments = ['radio', 'filter'];
+    }
+  });
 </script>
 
 <div class="radio-setup">
@@ -19,10 +39,10 @@
       <button
         class="sub-tab-btn"
         class:active={subTab === tab.id}
-        onclick={() => subTab = tab.id}
+        onclick={() => actions.navigateTo('/setup/radio/' + tab.id)}
       >
         <HiFiLed color={subTab === tab.id ? 'green' : 'off'} size="small" />
-        {tab.label}
+        {t('setup.' + tab.id)}
       </button>
     {/each}
   </div>

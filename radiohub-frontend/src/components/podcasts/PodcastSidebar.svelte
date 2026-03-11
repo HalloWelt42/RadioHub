@@ -9,6 +9,7 @@
   import { api } from '../../lib/api.js';
   import { tick } from 'svelte';
   import * as sfx from '../../lib/uiSounds.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let showSearch = $state(false);
 
@@ -53,11 +54,11 @@
   let totalUnplayed = $derived(subscriptions.reduce((sum, s) => sum + (s.unplayed_count || 0), 0));
   let totalDownloaded = $derived(stats.downloaded || 0);
 
-  const filters = [
-    { key: 'all', label: 'Alle' },
-    { key: 'unplayed', label: 'Ungehört' },
-    { key: 'downloaded', label: 'Downloads' }
-  ];
+  let filters = $derived([
+    { key: 'all', label: t('podcasts.alle') },
+    { key: 'unplayed', label: t('podcasts.ungehoert') },
+    { key: 'downloaded', label: t('podcasts.downloadsFilter') }
+  ]);
 
   function getFilterCount(key) {
     if (key === 'all') return totalEpisodes;
@@ -115,14 +116,14 @@
       class="action-btn"
       class:active={showSearch}
       onclick={() => { showSearch = !showSearch; sfx.click(); }}
-      title={showSearch ? 'Suche schließen' : 'Suchen'}
+      title={showSearch ? t('podcasts.sucheSchliessen') : t('podcasts.suchen')}
     >
       <i class="fa-solid {showSearch ? 'fa-xmark' : 'fa-magnifying-glass'}"></i>
     </button>
     <button
       class="action-btn"
       onclick={() => { onallepisodesclick(); sfx.click(); }}
-      title="Alle Episoden anzeigen"
+      title={t('podcasts.alleEpisodenAnzeigen')}
     >
       <i class="fa-solid fa-layer-group"></i>
     </button>
@@ -130,14 +131,14 @@
       class="action-btn"
       class:active={fileExplorerActive}
       onclick={() => { onfileexplorer(); sfx.click(); }}
-      title={fileExplorerActive ? 'Datei-Explorer schließen' : 'Datei-Explorer öffnen'}
+      title={fileExplorerActive ? t('podcasts.dateiExplorerSchliessen') : t('podcasts.dateiExplorerOeffnen')}
     >
       <i class="fa-solid fa-folder-tree"></i>
     </button>
     <button
       class="action-btn"
       onclick={() => { onrefreshall(); sfx.click(); }}
-      title="Alle Feeds vom Server holen"
+      title={t('podcasts.alleFeedsHolen')}
     >
       <i class="fa-solid fa-cloud-arrow-down"></i>
     </button>
@@ -158,13 +159,13 @@
     <!-- Abo-Liste -->
     <div class="section-scrollable">
       <div class="section-header">
-        <span class="section-label">ABONNEMENTS</span>
+        <span class="section-label">{t('podcasts.abonnements')}</span>
         <span class="section-count">{subscriptions.length}</span>
       </div>
 
       {#if subscriptions.length === 0}
         <div class="empty-hint" onclick={() => { showSearch = true; sfx.click(); }}>
-          Podcasts suchen und abonnieren
+          {t('podcasts.podcastsSuchenAbonnieren')}
         </div>
       {:else}
         <div class="sub-list">
@@ -199,12 +200,12 @@
               <i
                 class="fa-solid fa-cloud-arrow-down sub-fetch-icon"
                 class:has-episodes={(podcast.episode_count || 0) > 0}
-                title="Episoden vom Server laden"
+                title={t('podcasts.episodenLaden')}
                 onclick={(e) => { e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); }}
                 role="button"
                 tabindex="-1"
               ></i>
-              <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? 'Wird abgespielt' : isSelected ? 'Ausgewählt' : hasUnplayed ? 'Neue Episoden vorhanden' : 'Keine neuen Episoden'} />
+              <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? t('podcasts.wirdAbgespielt') : isSelected ? t('podcasts.ausgewaehltStatus') : hasUnplayed ? t('podcasts.neueEpisoden') : t('podcasts.keineNeuen')} />
             </button>
           {/each}
         </div>
@@ -216,7 +217,7 @@
     <!-- Status-Filter -->
     <div class="section-fixed">
       <div class="section-header">
-        <span class="section-label">FILTER</span>
+        <span class="section-label">{t('podcasts.filterLabel')}</span>
       </div>
       <div class="filter-list">
         {#each filters as f}
@@ -227,7 +228,7 @@
             class:selected={isActive}
             onclick={() => { onfilterchange(f.key); sfx.click(); }}
           >
-            <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" title={isActive ? 'Filter aktiv' : 'Filter inaktiv'} />
+            <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" title={isActive ? t('podcasts.filterAktiv') : t('podcasts.filterInaktiv')} />
             <span class="filter-label">{f.label}</span>
             <span class="filter-count">{count}</span>
           </button>
@@ -239,7 +240,7 @@
 
   <!-- Refresh Timer -->
   {#if refreshCountdown}
-    <div class="refresh-timer" title="Naechster automatischer Feed-Refresh">
+    <div class="refresh-timer" title={t('podcasts.naechsterRefresh')}>
       <i class="fa-solid fa-clock"></i>
       <span class="timer-label">REFRESH</span>
       <span class="timer-value">{refreshCountdown}</span>
@@ -260,7 +261,7 @@
           <div class="preview-author">{hoverPodcast.author}</div>
         {/if}
         <div class="preview-stats">
-          {hoverPodcast.episode_count || 0} Episoden
+          {hoverPodcast.episode_count || 0} {t('podcasts.episodenLabel')}
           {#if (hoverPodcast.unplayed_count || 0) > 0}
             -- {hoverPodcast.unplayed_count} neu
           {/if}
@@ -274,7 +275,7 @@
     class="resize-handle"
     class:active={isDragging}
     onmousedown={handleResizeStart}
-    title="Breite anpassen"
+    title={t('podcasts.breiteAnpassen')}
   ></div>
 </aside>
 

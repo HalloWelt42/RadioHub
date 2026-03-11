@@ -4,15 +4,34 @@
   import SetupSpende from './SetupSpende.svelte';
   import { api } from '../../lib/api.js';
   import { appState, actions } from '../../lib/store.svelte.js';
+  import * as router from '../../lib/router.js';
   import * as sfx from '../../lib/uiSounds.js';
-  import { currentLanguage, setLanguage, availableLanguages } from '../../lib/i18n.js';
+  import { t, currentLanguage, setLanguage, availableLanguages } from '../../lib/i18n.svelte.js';
   import { parseMarkdown } from '../../lib/markdown.js';
 
   let config = $state({});
   let isLoading = $state(true);
   let clickSoundsEnabled = $state(true);
   let activeLang = $state(currentLanguage());
-  let activeSubTab = $state('einstellungen');
+
+  // Sub-Tab aus Route-Segmenten ableiten
+  let activeSubTab = $derived.by(() => {
+    if (appState.activeTab !== 'settings') return 'einstellungen';
+    const seg = appState.routeSegments;
+    if (seg?.[0] !== 'allgemein') return 'einstellungen';
+    const subId = seg[1] || 'einstellungen';
+    return subTabs.some(t => t.id === subId) ? subId : 'einstellungen';
+  });
+
+  // Redirect wenn nur /setup/allgemein ohne Sub-Tab
+  $effect(() => {
+    if (appState.activeTab === 'settings'
+        && appState.routeSegments?.[0] === 'allgemein'
+        && !appState.routeSegments[1]) {
+      router.navigate('/setup/allgemein/einstellungen', { replace: true });
+      appState.routeSegments = ['allgemein', 'einstellungen'];
+    }
+  });
 
   // Markdown-Inhalte für Lizenz / Recht
   let lizenzContent = $state('');
@@ -50,7 +69,7 @@
       await api.updateConfig({ [key]: value });
       config[key] = value;
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -108,11 +127,11 @@
         class="pill-btn"
         class:active={activeSubTab === tab.id}
         class:bedanken={tab.special === 'bedanken'}
-        onclick={() => activeSubTab = tab.id}
+        onclick={() => actions.navigateTo('/setup/allgemein/' + tab.id)}
       >
         <HiFiLed color={activeSubTab === tab.id ? (tab.special === 'bedanken' ? 'amber' : 'green') : 'off'} size="small" />
         <i class="fa-solid {tab.icon}" class:heart-icon={tab.special === 'bedanken'}></i>
-        <span>{tab.label}</span>
+        <span>{t('setup.' + tab.id)}</span>
       </button>
     {/each}
   </div>
@@ -124,16 +143,16 @@
       <div class="hifi-panel">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-palette header-icon"></i>
-          <span class="hifi-font-label">DISPLAY THEME</span>
+          <span class="hifi-font-label">{t('allgemein.displayTheme')}</span>
         </div>
         <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
           <button class="pill-btn" class:active={appState.theme === 'dark'} onclick={() => actions.setTheme('dark')}>
             <HiFiLed color={appState.theme === 'dark' ? 'green' : 'off'} />
-            <span>DARK</span>
+            <span>{t('allgemein.dark')}</span>
           </button>
           <button class="pill-btn" class:active={appState.theme === 'light'} onclick={() => actions.setTheme('light')}>
             <HiFiLed color={appState.theme === 'light' ? 'green' : 'off'} />
-            <span>LIGHT</span>
+            <span>{t('allgemein.light')}</span>
           </button>
         </div>
       </div>
@@ -142,12 +161,12 @@
       <div class="hifi-panel">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-volume-high header-icon"></i>
-          <span class="hifi-font-label">UI SOUNDS</span>
+          <span class="hifi-font-label">{t('allgemein.uiSounds')}</span>
         </div>
         <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
           <button class="pill-btn" class:active={clickSoundsEnabled} onclick={toggleClickSounds}>
             <HiFiLed color={clickSoundsEnabled ? 'green' : 'off'} />
-            <span>CLICK-SOUNDS</span>
+            <span>{t('allgemein.clickSounds')}</span>
           </button>
         </div>
       </div>
@@ -156,7 +175,7 @@
       <div class="hifi-panel span-full">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-globe header-icon"></i>
-          <span class="hifi-font-label">SPRACHE</span>
+          <span class="hifi-font-label">{t('allgemein.language')}</span>
           <span class="hifi-font-small" style="color:var(--hifi-text-muted); margin-left:8px;">
             {availableLanguages.find(l => l.code === activeLang)?.label || ''}
           </span>
@@ -180,25 +199,25 @@
       <div class="hifi-panel span-full">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-clock-rotate-left header-icon"></i>
-          <span class="hifi-font-label">TIMESHIFT BUFFER</span>
+          <span class="hifi-font-label">{t('allgemein.timeshiftBuffer')}</span>
         </div>
         <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
           <HiFiKnob
             bind:value={config.hls_min_bitrate}
             min={32} max={128} step={16}
-            unit="kbps" label="MIN BITRATE"
+            unit="kbps" label={t('allgemein.minBitrate')}
             onchange={(e) => saveConfig('hls_min_bitrate', e.value)}
           />
           <HiFiKnob
             bind:value={config.hls_max_bitrate}
             min={64} max={320} step={32}
-            unit="kbps" label="MAX BITRATE"
+            unit="kbps" label={t('allgemein.maxBitrate')}
             onchange={(e) => saveConfig('hls_max_bitrate', e.value)}
           />
         </div>
         <div style="padding:0 16px 16px; text-align:center;">
           <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-            Output-Bitrate wird automatisch an Input angepasst (nicht hoeher als Quelle)
+            {t('allgemein.timeshiftHint')}
           </span>
         </div>
       </div>
@@ -207,20 +226,20 @@
       <div class="hifi-panel span-full">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-backward header-icon"></i>
-          <span class="hifi-font-label">HLS-REC</span>
-          <span class="hifi-font-small" style="color:var(--hifi-text-amber); margin-left:8px;">BUFFER-AUFNAHME</span>
+          <span class="hifi-font-label">{t('allgemein.hlsRec')}</span>
+          <span class="hifi-font-small" style="color:var(--hifi-text-amber); margin-left:8px;">{t('allgemein.bufferAufnahme')}</span>
         </div>
         <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
           <HiFiKnob
             value={appState.hlsRecLookbackMinutes}
             min={1} max={120} step={1}
-            unit="min" label="LOOKBACK"
+            unit="min" label={t('allgemein.lookback')}
             onchange={(e) => { appState.hlsRecLookbackMinutes = e.value; saveConfig('hls_rec_lookback_minutes', e.value); }}
           />
         </div>
         <div style="padding:0 16px 16px; text-align:center;">
           <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-            Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurueckgreifen?
+            {t('allgemein.lookbackHint')}
           </span>
         </div>
       </div>
@@ -232,37 +251,41 @@
 
   <!-- === LIZENZ === -->
   {:else if activeSubTab === 'lizenz'}
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <i class="fa-solid fa-scale-balanced header-icon"></i>
-        <span class="hifi-font-label">LIZENZ</span>
-      </div>
-      <div class="md-body">
-        {#if lizenzContent}
-          {@html lizenzContent}
-        {:else}
-          <div class="hifi-flex" style="justify-content:center; padding:40px;">
-            <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
-          </div>
-        {/if}
+    <div class="md-fill">
+      <div class="hifi-panel md-panel">
+        <div class="hifi-panel-header">
+          <i class="fa-solid fa-scale-balanced header-icon"></i>
+          <span class="hifi-font-label">{t('setup.lizenz')}</span>
+        </div>
+        <div class="md-body">
+          {#if lizenzContent}
+            {@html lizenzContent}
+          {:else}
+            <div class="hifi-flex" style="justify-content:center; padding:40px;">
+              <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
 
   <!-- === RECHT === -->
   {:else if activeSubTab === 'recht'}
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <i class="fa-solid fa-shield-halved header-icon"></i>
-        <span class="hifi-font-label">DATENSCHUTZ & NUTZUNGSBEDINGUNGEN</span>
-      </div>
-      <div class="md-body">
-        {#if rechtContent}
-          {@html rechtContent}
-        {:else}
-          <div class="hifi-flex" style="justify-content:center; padding:40px;">
-            <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
-          </div>
-        {/if}
+    <div class="md-fill">
+      <div class="hifi-panel md-panel">
+        <div class="hifi-panel-header">
+          <i class="fa-solid fa-shield-halved header-icon"></i>
+          <span class="hifi-font-label">{t('allgemein.datenschutzNutzung')}</span>
+        </div>
+        <div class="md-body">
+          {#if rechtContent}
+            {@html rechtContent}
+          {:else}
+            <div class="hifi-flex" style="justify-content:center; padding:40px;">
+              <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
   {/if}
@@ -383,45 +406,63 @@
     color: var(--hifi-accent);
   }
 
-  /* === Markdown Viewer === */
-  .md-body {
-    padding: 16px 20px;
+  /* === Markdown Fill Container (füllt verfügbaren Platz) === */
+  .md-fill {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+  }
+
+  .md-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === Markdown Viewer (Inner-Scroll) === */
+  .md-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .md-body :global(.md-h2) {
     font-family: var(--hifi-font-display);
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--hifi-text-primary);
-    margin: 0 0 4px 0;
+    margin: 0 0 6px 0;
     letter-spacing: 0.5px;
   }
 
   .md-body :global(.md-h3) {
     font-family: var(--hifi-font-display);
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
-    margin: 8px 0 2px 0;
+    margin: 12px 0 4px 0;
     padding-bottom: 4px;
     border-bottom: 1px solid var(--hifi-border-dark);
   }
 
   .md-body :global(.md-h4) {
     font-family: var(--hifi-font-display);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--hifi-text-primary);
-    margin: 4px 0 2px 0;
+    margin: 8px 0 2px 0;
   }
 
   .md-body :global(.md-text) {
     font-family: var(--hifi-font-body);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.7;
     color: var(--hifi-text-secondary);
     margin: 0;
@@ -429,11 +470,11 @@
 
   .md-body :global(.md-list) {
     font-family: var(--hifi-font-body);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.8;
     color: var(--hifi-text-secondary);
     margin: 0;
-    padding-left: 20px;
+    padding-left: 24px;
   }
 
   .md-body :global(.md-list strong) {
@@ -452,7 +493,7 @@
 
   .md-body :global(.md-code) {
     font-family: var(--hifi-font-values);
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
     background: var(--hifi-bg-tertiary);
     border-radius: 3px;
@@ -462,6 +503,6 @@
   .md-body :global(.md-hr) {
     border: none;
     border-top: 1px solid var(--hifi-border-dark);
-    margin: 8px 0;
+    margin: 12px 0;
   }
 </style>

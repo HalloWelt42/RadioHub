@@ -14,10 +14,22 @@
   import SearchBarWithHistory from './shared/SearchBarWithHistory.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
+  import { t } from '../lib/i18n.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
 
-  // === View State ===
-  let view = $state('episodes');           // 'episodes' | 'search' | 'all-episodes' | 'file-explorer'
+  // === View State (aus Route abgeleitet) ===
+  const VIEW_MAP = { search: 'search', all: 'all-episodes', files: 'file-explorer' };
+  const VIEW_TO_ROUTE = { 'episodes': '/podcast', 'search': '/podcast/search', 'all-episodes': '/podcast/all', 'file-explorer': '/podcast/files' };
+
+  let view = $derived.by(() => {
+    if (appState.activeTab !== 'podcasts') return 'episodes';
+    const seg = appState.routeSegments?.[0];
+    return VIEW_MAP[seg] || 'episodes';
+  });
+
+  function setView(v) {
+    actions.navigateTo(VIEW_TO_ROUTE[v] || '/podcast');
+  }
   let selectedPodcastId = $state(null);
   let selectedPodcast = $state(null);
 
@@ -187,7 +199,7 @@
   function handleSelectPodcast(podcast) {
     selectedPodcastId = podcast.id;
     selectedPodcast = podcast;
-    view = 'episodes';
+    setView('episodes');
     loadEpisodes(podcast.id);
   }
 
@@ -207,15 +219,15 @@
   }
 
   function handleSearchClick() {
-    view = 'search';
+    setView('search');
     searchResults = [];
   }
 
   function handleFileExplorer() {
     if (view === 'file-explorer') {
-      view = 'episodes';
+      setView('episodes');
     } else {
-      view = 'file-explorer';
+      setView('file-explorer');
       loadFileExplorer();
     }
   }
@@ -228,7 +240,7 @@
       fileExplorerTotalSize = result.total_size || 0;
       fileExplorerTotalFiles = result.total_files || 0;
     } catch (e) {
-      actions.showToast('Dateien laden fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.dateienLadenFehler'), 'error');
     }
     fileExplorerLoading = false;
   }
@@ -236,10 +248,10 @@
   async function handleFileDelete(file) {
     try {
       await api.deleteFileExplorer(file.path);
-      actions.showToast('Datei gelöscht', 'success');
+      actions.showToast(t('toast.dateiGeloescht'), 'success');
       await loadFileExplorer();
     } catch (e) {
-      actions.showToast('Löschen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -255,13 +267,13 @@
   function handleAllEpisodesClick() {
     selectedPodcastId = null;
     selectedPodcast = null;
-    view = 'all-episodes';
+    setView('all-episodes');
     loadAllEpisodes();
   }
 
   async function handleRefreshAll() {
     try {
-      actions.showToast('Aktualisiere alle Feeds...', 'info');
+      actions.showToast(t('podcasts.aktualisiereFeeds'), 'info');
       await api.refreshAllPodcasts();
       await loadSubscriptions();
       await loadStats();
@@ -270,22 +282,22 @@
       } else if (view === 'all-episodes') {
         loadAllEpisodes();
       }
-      actions.showToast('Alle Feeds aktualisiert', 'success');
+      actions.showToast(t('podcasts.alleFeedsAktualisiert'), 'success');
       await loadRefreshStatus();  // Timer zuruecksetzen
     } catch (e) {
-      actions.showToast('Aktualisierung fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.aktualisiereFehler'), 'error');
     }
   }
 
   // === Search ===
   async function handleSearch(query) {
     isSearching = true;
-    view = 'search';
+    setView('search');
     try {
       const result = await api.searchPodcasts(query);
       searchResults = result.results || [];
     } catch (e) {
-      actions.showToast('Suche fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.sucheFehler'), 'error');
       searchResults = [];
     }
     isSearching = false;
@@ -299,7 +311,7 @@
       await loadSubscriptions();
       await loadStats();
     } catch (e) {
-      actions.showToast('Abonnieren fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.abonnierenFehler'), 'error');
     }
   }
 
@@ -311,9 +323,9 @@
       await api.refreshPodcast(selectedPodcastId);
       await loadEpisodes(selectedPodcastId);
       await loadSubscriptions();
-      actions.showToast('Feed aktualisiert', 'success');
+      actions.showToast(t('toast.feedAktualisiert'), 'success');
     } catch (e) {
-      actions.showToast('Aktualisierung fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.aktualisiereFehler'), 'error');
     }
     isRefreshing = false;
   }
@@ -359,7 +371,7 @@
     if (!selectedPodcastId || episodes.length === 0) return;
     const undownloaded = episodes.filter(e => !e.is_downloaded);
     if (undownloaded.length === 0) {
-      actions.showToast('Alle Episoden bereits heruntergeladen', 'info');
+      actions.showToast(t('podcasts.alleBereitsHeruntergeladen'), 'info');
       return;
     }
     batchTotal = undownloaded.length;
@@ -405,11 +417,11 @@
     await loadStats();
 
     if (wasCancelled) {
-      actions.showToast(`Download abgebrochen (${batchDone} von ${batchTotal})`, 'warning');
+      actions.showToast(t('podcasts.downloadAbgebrochen', { done: batchDone, total: batchTotal }), 'warning');
     } else if (batchFailed > 0) {
       actions.showToast(`${batchTotal - batchFailed} heruntergeladen, ${batchFailed} fehlgeschlagen`, 'warning');
     } else {
-      actions.showToast(`${batchTotal} Episoden heruntergeladen`, 'success');
+      actions.showToast(t('podcasts.episodenHeruntergeladen', { total: batchTotal }), 'success');
     }
   }
 
@@ -424,7 +436,7 @@
       }
       actions.showToast(`"${podcast.title}" aktualisiert`, 'success');
     } catch (e) {
-      actions.showToast('Aktualisierung fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.aktualisiereFehler'), 'error');
     }
   }
 
@@ -432,15 +444,15 @@
     if (!selectedPodcastId) return;
     try {
       await api.unsubscribePodcast(selectedPodcastId);
-      actions.showToast('Abo entfernt', 'success');
+      actions.showToast(t('podcasts.aboEntfernt'), 'success');
       selectedPodcastId = null;
       selectedPodcast = null;
-      view = 'episodes';
+      setView('episodes');
       episodes = [];
       await loadSubscriptions();
       await loadStats();
     } catch (e) {
-      actions.showToast('Entfernen fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.entfernenFehler'), 'error');
     }
   }
 
@@ -453,16 +465,16 @@
       subscriptions = subscriptions.map(s =>
         s.id === selectedPodcastId ? { ...s, auto_download: newVal } : s
       );
-      actions.showToast(newVal ? 'Auto-Download aktiviert' : 'Auto-Download deaktiviert', 'info');
+      actions.showToast(newVal ? t('podcasts.autoDownloadAktiviert') : t('podcasts.autoDownloadDeaktiviert'), 'info');
     } catch (e) {
-      actions.showToast('Einstellung fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.einstellungFehler'), 'error');
     }
   }
 
   function handleBack() {
     selectedPodcastId = null;
     selectedPodcast = null;
-    view = 'episodes';
+    setView('episodes');
     episodes = [];
   }
 
@@ -474,7 +486,7 @@
     if (podcast) {
       selectedPodcastId = podId;
       selectedPodcast = podcast;
-      view = 'episodes';
+      setView('episodes');
       await loadEpisodes(podId);
       // Episode aufklappen
       selectedEpisodeId = episode.id;
@@ -518,10 +530,10 @@
       );
       await loadSubscriptions();
       await loadStats();
-      actions.showToast('Episode heruntergeladen', 'success');
+      actions.showToast(t('podcasts.episodeHeruntergeladen'), 'success');
     } catch (e) {
       downloadProgress = { ...downloadProgress, [episode.id]: 'error' };
-      actions.showToast('Download fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.downloadFehler'), 'error');
     }
   }
 
@@ -533,9 +545,9 @@
       );
       await loadSubscriptions();
       await loadStats();
-      actions.showToast('Download gelöscht', 'success');
+      actions.showToast(t('podcasts.downloadGeloescht'), 'success');
     } catch (e) {
-      actions.showToast('Löschen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -551,7 +563,7 @@
       );
       await loadSubscriptions();
     } catch (e) {
-      actions.showToast('Markierung fehlgeschlagen', 'error');
+      actions.showToast(t('podcasts.markierungFehler'), 'error');
     }
   }
 
@@ -629,7 +641,7 @@
       <div class="content-toolbar">
         <div class="toolbar-title">
           <i class="fa-solid fa-folder-tree"></i>
-          <span>Podcast-Dateien</span>
+          <span>{t('podcasts.podcastDateien')}</span>
         </div>
       </div>
       <FileExplorer
@@ -647,7 +659,7 @@
       <!-- Suchleiste -->
       <div class="content-toolbar">
         <SearchBarWithHistory
-          placeholder="Podcasts suchen..."
+          placeholder={t('podcasts.podcastsSuchen')}
           storageKey="radiohub_podcast_search"
           onsearch={handleSearch}
         />
@@ -668,7 +680,7 @@
       <div class="content-toolbar">
         <div class="toolbar-title">
           <i class="fa-solid fa-layer-group"></i>
-          <span>Alle Episoden</span>
+          <span>{t('podcasts.alleEpisoden')}</span>
         </div>
       </div>
       {#if isLoading}
@@ -757,14 +769,14 @@
         <HiFiDisplay size="medium">PODCASTS</HiFiDisplay>
         <p class="welcome-hint">
           {#if subscriptions.length > 0}
-            Podcast in der Seitenleiste auswählen
+            {t('podcasts.podcastAuswaehlen')}
           {:else}
-            Podcasts suchen und abonnieren
+            {t('podcasts.podcastsSuchenAbonnieren')}
           {/if}
         </p>
         {#if subscriptions.length === 0}
-          <button class="hifi-btn hifi-btn-primary" onclick={() => { view = 'search'; sfx.click(); }}>
-            <i class="fa-solid fa-magnifying-glass"></i> Podcasts suchen
+          <button class="hifi-btn hifi-btn-primary" onclick={() => { setView('search'); sfx.click(); }}>
+            <i class="fa-solid fa-magnifying-glass"></i> {t('podcasts.podcastsSuchenBtn')}
           </button>
         {/if}
       </div>

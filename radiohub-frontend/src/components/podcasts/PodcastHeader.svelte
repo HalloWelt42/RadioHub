@@ -8,6 +8,7 @@
   import InfoBadge from '../shared/InfoBadge.svelte';
   import { api } from '../../lib/api.js';
   import { formatTotalDuration } from '../../lib/formatters.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     podcast,
@@ -36,7 +37,7 @@
 </script>
 
 <div class="podcast-header">
-  <button class="back-btn" onclick={onback} title="Zurück zur Übersicht">
+  <button class="back-btn" onclick={onback} title={t('podcasts.zurueckZurUebersicht')}>
     <i class="fa-solid fa-chevron-left"></i>
   </button>
 
@@ -58,20 +59,20 @@
       <div class="header-stats">
         <div class="stat">
           <span class="stat-value">{episodeCount}</span>
-          <span class="stat-label">Episoden</span>
+          <span class="stat-label">{t('podcasts.episodenLabel')}</span>
         </div>
         <div class="stat">
           <span class="stat-value">{unplayedCount}</span>
-          <span class="stat-label">Ungehört</span>
+          <span class="stat-label">{t('podcasts.ungehoert')}</span>
         </div>
         <div class="stat">
           <span class="stat-value">{downloadedCount}</span>
-          <span class="stat-label">Downloads</span>
+          <span class="stat-label">{t('podcasts.downloadsFilter')}</span>
         </div>
         {#if totalDuration > 0}
           <div class="stat">
             <span class="stat-value">{formatTotalDuration(totalDuration)}</span>
-            <span class="stat-label">Gesamt</span>
+            <span class="stat-label">{t('podcasts.gesamt')}</span>
           </div>
         {/if}
       </div>
@@ -85,20 +86,20 @@
       {/if}
 
       {#if podcast?.auto_download}
-        <InfoBadge type="auto" label="Auto-DL" />
+        <InfoBadge type="auto" label={t('podcasts.autoDl')} />
       {/if}
     </div>
   </div>
 
   <div class="header-actions">
-    <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isRefreshing} title="Feed vom Server holen">
+    <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isRefreshing} title={t('podcasts.feedHolen')}>
       <i class="fa-solid fa-cloud-arrow-down" class:fa-spin={isRefreshing}></i>
     </button>
     <button
       class="hifi-btn hifi-btn-small"
       onclick={ondownloadall}
       disabled={batchActive || downloadedCount >= episodeCount}
-      title={downloadedCount >= episodeCount ? 'Alle Episoden bereits lokal' : 'Alle Episoden lokal herunterladen'}
+      title={downloadedCount >= episodeCount ? t('podcasts.alleBereitsLokal') : t('podcasts.alleLokalHerunterladen')}
     >
       <i class="fa-solid fa-download"></i>
     </button>
@@ -106,11 +107,11 @@
       class="hifi-btn hifi-btn-small"
       class:active={podcast?.auto_download}
       onclick={onautodownloadtoggle}
-      title={podcast?.auto_download ? 'Auto-Download deaktivieren: Neue Episoden werden nicht automatisch heruntergeladen' : 'Auto-Download aktivieren: Neue Episoden werden automatisch heruntergeladen'}
+      title={podcast?.auto_download ? t('podcasts.autoDownloadDeaktivierenHint') : t('podcasts.autoDownloadAktivierenHint')}
     >
       <i class="fa-solid fa-wand-magic-sparkles"></i>
     </button>
-    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={onunsubscribe} title="Podcast-Abo entfernen (lokale Dateien bleiben erhalten)">
+    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={onunsubscribe} title={t('podcasts.aboEntfernenHint')}>
       <i class="fa-solid fa-trash"></i>
     </button>
   </div>

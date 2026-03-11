@@ -432,6 +432,168 @@ cmd_test() {
 }
 
 # ============================================================
+# Setup (Ersteinrichtung)
+# ============================================================
+
+check_command() {
+    local cmd="$1"
+    local label="${2:-$1}"
+    if command -v "$cmd" &>/dev/null; then
+        local version
+        version=$("$cmd" --version 2>&1 | head -1)
+        echo -e "  ${GREEN}OK${NC}  $label  ($version)"
+        return 0
+    else
+        echo -e "  ${RED}FEHLT${NC}  $label"
+        return 1
+    fi
+}
+
+cmd_setup() {
+    print_header "Ersteinrichtung"
+    local errors=0
+
+    # -- Systemvoraussetzungen pruefen --
+    echo -e "  ${BOLD}[1/4] Systemvoraussetzungen${NC}"
+    echo ""
+
+    check_command python3 "Python 3" || errors=$((errors + 1))
+    check_command node "Node.js" || errors=$((errors + 1))
+    check_command npm "npm" || errors=$((errors + 1))
+    check_command ffmpeg "FFmpeg" || errors=$((errors + 1))
+
+    echo ""
+
+    if [ $errors -gt 0 ]; then
+        echo -e "  ${RED}$errors fehlende Abhaengigkeiten.${NC}"
+        echo -e "  Bitte zuerst installieren, dann erneut ausfuehren."
+        echo ""
+        echo -e "  ${BOLD}macOS:${NC}   brew install python node ffmpeg"
+        echo -e "  ${BOLD}Debian:${NC}  sudo apt install python3 python3-venv nodejs npm ffmpeg"
+        exit 1
+    fi
+
+    # -- Python venv --
+    echo -e "  ${BOLD}[2/4] Python venv${NC}"
+    echo ""
+
+    if [ -f "$VENV_UVICORN" ]; then
+        echo -e "  ${GREEN}OK${NC}  venv existiert bereits ($BACKEND_DIR/.venv)"
+    else
+        echo -e "  ${CYAN}Erstelle venv...${NC}"
+        python3 -m venv "$BACKEND_DIR/.venv"
+        echo -e "  ${GREEN}OK${NC}  venv erstellt"
+    fi
+
+    echo -e "  ${CYAN}Installiere Python-Pakete...${NC}"
+    "$BACKEND_DIR/.venv/bin/pip" install --quiet --upgrade pip
+    "$BACKEND_DIR/.venv/bin/pip" install --quiet -r "$BACKEND_DIR/requirements.txt"
+    echo -e "  ${GREEN}OK${NC}  Python-Pakete installiert"
+    echo ""
+
+    # -- Node.js Dependencies --
+    echo -e "  ${BOLD}[3/4] Node.js Dependencies${NC}"
+    echo ""
+
+    if [ -d "$FRONTEND_DIR/node_modules" ]; then
+        echo -e "  ${GREEN}OK${NC}  node_modules vorhanden"
+    else
+        echo -e "  ${CYAN}Installiere npm-Pakete...${NC}"
+    fi
+    cd "$FRONTEND_DIR"
+    npm install --silent 2>&1 | tail -1
+    cd "$SCRIPT_DIR"
+    echo -e "  ${GREEN}OK${NC}  npm-Pakete installiert"
+    echo ""
+
+    # -- Verzeichnisse --
+    echo -e "  ${BOLD}[4/4] Verzeichnisse${NC}"
+    echo ""
+
+    ensure_dirs
+    mkdir -p "$DATA_DIR"
+    mkdir -p "$DATA_DIR/recordings"
+    mkdir -p "$DATA_DIR/podcasts"
+    mkdir -p "$DATA_DIR/cache"
+
+    echo -e "  ${GREEN}OK${NC}  .pids/  .logs/  backups/"
+    echo -e "  ${GREEN}OK${NC}  data/  data/recordings/  data/podcasts/  data/cache/"
+    echo ""
+
+    # -- Zusammenfassung --
+    echo -e "  ${GREEN}${BOLD}Setup abgeschlossen!${NC}"
+    echo ""
+    echo -e "  Starten mit: ${BOLD}$0 start${NC}"
+    echo -e "  Status:      ${BOLD}$0 status${NC}"
+    echo -e "  Frontend:    ${GREEN}http://localhost:$FRONTEND_PORT${NC}"
+    echo -e "  Backend API: ${GREEN}http://localhost:$BACKEND_PORT${NC}"
+}
+
+# ============================================================
+# Update (Abhaengigkeiten aktualisieren)
+# ============================================================
+
+cmd_update() {
+    print_header "Update"
+
+    echo -e "  ${BOLD}Python-Pakete${NC}"
+    "$BACKEND_DIR/.venv/bin/pip" install --quiet --upgrade pip
+    "$BACKEND_DIR/.venv/bin/pip" install --quiet -r "$BACKEND_DIR/requirements.txt"
+    echo -e "  ${GREEN}OK${NC}  Python-Pakete aktuell"
+    echo ""
+
+    echo -e "  ${BOLD}npm-Pakete${NC}"
+    cd "$FRONTEND_DIR"
+    npm install --silent 2>&1 | tail -1
+    cd "$SCRIPT_DIR"
+    echo -e "  ${GREEN}OK${NC}  npm-Pakete aktuell"
+    echo ""
+
+    echo -e "  ${GREEN}${BOLD}Update abgeschlossen.${NC}"
+}
+
+# ============================================================
+# Dev (Vordergrund, beide Server mit Log-Ausgabe)
+# ============================================================
+
+cmd_dev() {
+    print_header "Entwicklungsmodus"
+    ensure_dirs
+
+    # Pruefen ob schon was laeuft
+    if is_running "$BACKEND_PID" || is_running "$FRONTEND_PID"; then
+        echo -e "  ${YELLOW}Dienste laufen bereits. Erst stoppen:${NC} $0 stop"
+        exit 1
+    fi
+
+    echo -e "  Backend:  ${CYAN}http://localhost:$BACKEND_PORT${NC}"
+    echo -e "  Frontend: ${CYAN}http://localhost:$FRONTEND_PORT${NC}"
+    echo ""
+    echo -e "  ${YELLOW}Strg+C zum Beenden${NC}"
+    echo ""
+
+    # Backend starten
+    cd "$BACKEND_DIR"
+    DATA_PATH="$DATA_DIR" "$VENV_UVICORN" backend.main:app \
+        --host 0.0.0.0 --port $BACKEND_PORT --reload &
+    local be_pid=$!
+
+    # Frontend starten
+    cd "$FRONTEND_DIR"
+    npm run dev &
+    local fe_pid=$!
+    cd "$SCRIPT_DIR"
+
+    # Trap fuer sauberes Beenden
+    trap 'echo ""; echo -e "  ${CYAN}Stoppe...${NC}"; kill $be_pid $fe_pid 2>/dev/null; wait $be_pid $fe_pid 2>/dev/null; echo -e "  ${GREEN}Beendet.${NC}"; exit 0' INT TERM
+
+    # Warten bis einer der Prozesse stirbt
+    wait -n $be_pid $fe_pid 2>/dev/null || true
+    kill $be_pid $fe_pid 2>/dev/null || true
+    wait $be_pid $fe_pid 2>/dev/null || true
+}
+
+# ============================================================
 # Usage
 # ============================================================
 
@@ -440,25 +602,29 @@ cmd_help() {
     echo ""
     echo -e "  ${BOLD}Verwendung:${NC} $0 <befehl> [ziel]"
     echo ""
-    echo -e "  ${BOLD}Befehle:${NC}"
-    echo -e "    start   [be|fe|all]    Server starten (Standard: all)"
+    echo -e "  ${BOLD}Ersteinrichtung:${NC}"
+    echo -e "    setup                  Projekt einrichten (venv, npm, Verzeichnisse)"
+    echo -e "    update                 Abhaengigkeiten aktualisieren"
+    echo ""
+    echo -e "  ${BOLD}Server:${NC}"
+    echo -e "    start   [be|fe|all]    Server starten im Hintergrund (Standard: all)"
     echo -e "    stop    [be|fe|all]    Server stoppen (Standard: all)"
     echo -e "    restart [be|fe|all]    Server neustarten (Standard: all)"
+    echo -e "    dev                    Beide Server im Vordergrund (Strg+C beendet)"
     echo -e "    status                 Status aller Dienste anzeigen"
     echo -e "    logs    [be|fe|all] [n]  Logs anzeigen (Standard: 30 Zeilen)"
+    echo ""
+    echo -e "  ${BOLD}Wartung:${NC}"
     echo -e "    backup                 Datenbank-Backup erstellen"
     echo -e "    restore [datei]        Backup wiederherstellen"
     echo -e "    build                  Frontend bauen"
-    echo -e "    test                   Tests ausführen"
+    echo -e "    test                   Tests ausfuehren"
     echo ""
-    echo -e "  ${BOLD}Kürzel:${NC} be = backend, fe = frontend"
+    echo -e "  ${BOLD}Kuerzel:${NC} be = backend, fe = frontend"
     echo ""
-    echo -e "  ${BOLD}Beispiele:${NC}"
-    echo -e "    $0 start               Alles starten"
-    echo -e "    $0 restart be           Nur Backend neustarten"
-    echo -e "    $0 logs be 50           Letzte 50 Backend-Log-Zeilen"
-    echo -e "    $0 backup               DB-Backup erstellen"
-    echo -e "    $0 restore              Verfügbare Backups anzeigen"
+    echo -e "  ${BOLD}Schnellstart:${NC}"
+    echo -e "    $0 setup && $0 start   Einrichten und starten"
+    echo -e "    $0 dev                 Entwicklungsmodus (Vordergrund)"
 }
 
 # ============================================================
@@ -468,9 +634,12 @@ cmd_help() {
 ensure_dirs
 
 case "${1:-help}" in
+    setup)   cmd_setup ;;
+    update)  cmd_update ;;
     start)   cmd_start "${2:-all}" ;;
     stop)    cmd_stop "${2:-all}" ;;
     restart) cmd_restart "${2:-all}" ;;
+    dev)     cmd_dev ;;
     status)  cmd_status ;;
     logs)    cmd_logs "${2:-all}" "${3:-30}" ;;
     backup)  cmd_backup ;;

@@ -7,6 +7,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let services = $state([]);
   let isLoading = $state(true);
@@ -54,11 +55,11 @@
         value = editValue.trim();
       }
       await api.updateServiceUrl(svc.id, value);
-      actions.showToast('Endpunkt aktualisiert', 'success');
+      actions.showToast(t('toast.endpunktAktualisiert'), 'success');
       cancelEdit();
       await loadServices();
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
     isSaving = false;
   }
@@ -67,20 +68,20 @@
     isSaving = true;
     try {
       await api.resetServiceUrl(svc.id);
-      actions.showToast('Standard wiederhergestellt', 'success');
+      actions.showToast(t('toast.standardWiederhergestellt'), 'success');
       cancelEdit();
       await loadServices();
     } catch (e) {
-      actions.showToast('Zurücksetzen fehlgeschlagen', 'error');
+      actions.showToast(t('dienste.zuruecksetzenFehler'), 'error');
     }
     isSaving = false;
   }
 
   function directionLabel(dir) {
     switch (dir) {
-      case 'eingehend': return 'EINGEHEND';
-      case 'ausgehend': return 'AUSGEHEND';
-      case 'lokal': return 'LOKAL';
+      case 'eingehend': return t('dienste.eingehend');
+      case 'ausgehend': return t('dienste.ausgehend');
+      case 'lokal': return t('dienste.lokal');
       default: return dir?.toUpperCase() || '';
     }
   }
@@ -110,8 +111,8 @@
 
 <div class="hifi-panel">
   <div class="hifi-panel-header">
-    <span class="hifi-font-label">EXTERNE DIENSTE</span>
-    <button class="hifi-btn hifi-btn-small refresh-btn" onclick={loadServices} title="Aktualisieren">
+    <span class="hifi-font-label">{t('dienste.externeDienste')}</span>
+    <button class="hifi-btn hifi-btn-small refresh-btn" onclick={loadServices} title={t('common.aktualisieren')}>
       <i class="fa-solid fa-arrows-rotate" class:fa-spin={isLoading}></i>
     </button>
   </div>
@@ -157,7 +158,7 @@
                 </span>
               {/if}
               {#if svc.configurable}
-                <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(svc)} title="Endpunkt ändern">
+                <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(svc)} title={t('dienste.endpunktAendern')}>
                   <i class="fa-solid fa-pen"></i>
                 </button>
               {/if}
@@ -168,7 +169,7 @@
                 <textarea
                   class="hifi-input edit-textarea"
                   bind:value={editValue}
-                  placeholder="Eine URL pro Zeile..."
+                  placeholder={t('dienste.placeholderMulti')}
                   rows="3"
                   onkeydown={(e) => { if (e.key === 'Escape') cancelEdit(); }}
                 ></textarea>
@@ -177,21 +178,21 @@
                   type="text"
                   class="hifi-input"
                   bind:value={editValue}
-                  placeholder="URL eingeben..."
+                  placeholder={t('dienste.placeholderSingle')}
                   onkeydown={(e) => { if (e.key === 'Enter') saveService(svc); if (e.key === 'Escape') cancelEdit(); }}
                 />
               {/if}
               <div class="edit-actions">
-                <button class="hifi-btn hifi-btn-small" onclick={cancelEdit}>Abbrechen</button>
+                <button class="hifi-btn hifi-btn-small" onclick={cancelEdit}>{t('common.abbrechen')}</button>
                 <button class="hifi-btn hifi-btn-small" onclick={() => resetService(svc)} disabled={isSaving}>
-                  Standard
+                  {t('dienste.standard')}
                 </button>
                 <button
                   class="hifi-btn hifi-btn-small hifi-btn-primary"
                   onclick={() => saveService(svc)}
                   disabled={isSaving || !editValue.trim()}
                 >
-                  {isSaving ? 'Speichert...' : 'Speichern'}
+                  {isSaving ? t('speicher.speichert') : t('common.speichern')}
                 </button>
               </div>
             </div>
@@ -203,7 +204,7 @@
 
   <div class="dienste-hint">
     <i class="fa-solid fa-circle-info"></i>
-    Zeigt alle externen Datenquellen. Konfigurierbare Dienste können bei Bedarf auf eigene Instanzen umgestellt werden.
+    {t('dienste.hint')}
   </div>
 </div>
 

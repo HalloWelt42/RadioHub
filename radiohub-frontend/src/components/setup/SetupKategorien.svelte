@@ -2,6 +2,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let { scope = 'radio' } = $props();
 
@@ -12,17 +13,17 @@
   let formName = $state('');
   let showForm = $state(false);
 
-  const scopeLabels = {
-    radio: 'KATEGORIEN',
-    podcast: 'PODCAST-KATEGORIEN',
-    recording: 'AUFNAHME-KATEGORIEN'
-  };
+  let scopeLabel = $derived(
+    scope === 'podcast' ? t('kategorien.podcastKategorien') :
+    scope === 'recording' ? t('kategorien.aufnahmeKategorien') :
+    t('kategorien.kategorien')
+  );
 
-  const scopeHints = {
-    radio: 'Kategorien filtern Sender in der Seitenleiste',
-    podcast: 'Kategorien filtern Podcasts in der Seitenleiste',
-    recording: 'Kategorien filtern Aufnahmen in der Seitenleiste'
-  };
+  let scopeHint = $derived(
+    scope === 'podcast' ? t('kategorien.hintPodcast') :
+    scope === 'recording' ? t('kategorien.hintRecording') :
+    t('kategorien.hintRadio')
+  );
 
   // === INIT ===
   $effect(() => {
@@ -34,7 +35,7 @@
       const cats = await api.getCategories(scope);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      actions.showToast('Kategorien laden fehlgeschlagen', 'error');
+      actions.showToast(t('toast.kategorienLadenFehler'), 'error');
     }
     isLoading = false;
   }
@@ -60,23 +61,23 @@
   async function saveForm() {
     const name = formName.trim();
     if (!name) {
-      actions.showToast('Name erforderlich', 'error');
+      actions.showToast(t('kategorien.nameErforderlich'), 'error');
       return;
     }
     try {
       if (editingId) {
         await api.updateCategory(editingId, { name });
-        actions.showToast('Kategorie aktualisiert');
+        actions.showToast(t('toast.katAktualisiert'));
       } else {
         await api.createCategory(name, 0, scope);
-        actions.showToast('Kategorie erstellt');
+        actions.showToast(t('toast.katErstellt'));
       }
       showForm = false;
       editingId = null;
       const cats = await api.getCategories(scope);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -84,10 +85,10 @@
     try {
       await api.deleteCategory(id);
       categories = categories.filter(c => c.id !== id);
-      actions.showToast('Kategorie gelöscht');
+      actions.showToast(t('toast.katGeloescht'));
       if (editingId === id) cancelForm();
     } catch (e) {
-      actions.showToast('Löschen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -110,10 +111,10 @@
 
   <!-- Header -->
   <div class="kat-header">
-    <span class="hifi-font-label">{scopeLabels[scope] || 'KATEGORIEN'} ({categories.length})</span>
+    <span class="hifi-font-label">{scopeLabel} ({categories.length})</span>
     {#if !showForm}
       <button class="action-btn create-btn" onclick={startCreate}>
-        + NEUE KATEGORIE
+        {t('kategorien.neueKategorie')}
       </button>
     {/if}
   </div>
@@ -122,11 +123,11 @@
   {#if showForm}
     <div class="hifi-panel">
       <div class="hifi-panel-header">
-        <span class="hifi-font-label">{editingId ? 'KATEGORIE BEARBEITEN' : 'NEUE KATEGORIE'}</span>
+        <span class="hifi-font-label">{editingId ? t('kategorien.kategorieBearbeiten') : t('kategorien.neueKategorie')}</span>
       </div>
       <div class="form-content">
         <div class="form-group">
-          <span class="form-label">NAME</span>
+          <span class="form-label">{t('common.name')}</span>
           <input
             type="text"
             class="form-input"
@@ -137,10 +138,10 @@
         </div>
         <div class="form-actions">
           <button class="action-btn save-btn" onclick={saveForm} disabled={!formName.trim()}>
-            SPEICHERN
+            {t('common.speichern')}
           </button>
           <button class="action-btn cancel-btn" onclick={cancelForm}>
-            ABBRECHEN
+            {t('common.abbrechen')}
           </button>
         </div>
       </div>
@@ -157,16 +158,16 @@
             <span class="kat-name">{cat.name}</span>
           </div>
           <div class="kat-actions">
-            <button class="mini-btn" onclick={() => startEdit(cat)}>BEARBEITEN</button>
-            <button class="mini-btn delete-btn" onclick={() => deleteCategory(cat.id)}>LÖSCHEN</button>
+            <button class="mini-btn" onclick={() => startEdit(cat)}>{t('common.bearbeiten')}</button>
+            <button class="mini-btn delete-btn" onclick={() => deleteCategory(cat.id)}>{t('common.loeschen')}</button>
           </div>
         </div>
       {/each}
     </div>
   {:else if !showForm}
     <div class="empty-state">
-      <span class="hifi-font-label">Noch keine Kategorien erstellt</span>
-      <span class="empty-hint">{scopeHints[scope] || 'Kategorien helfen beim Organisieren'}</span>
+      <span class="hifi-font-label">{t('kategorien.nochKeine')}</span>
+      <span class="empty-hint">{scopeHint}</span>
     </div>
   {/if}
 

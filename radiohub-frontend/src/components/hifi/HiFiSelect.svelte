@@ -1,9 +1,11 @@
 <script>
+  import { t } from '../../lib/i18n.svelte.js';
+
   /**
    * HiFi Select - Dropdown im HiFi-Stil
    * Unterstützt Single und Multi-Select
    */
-  let { 
+  let {
     options = [],        // [{ value, label }]
     value = $bindable(), // Single: string, Multi: string[]
     multiple = false,
@@ -23,7 +25,7 @@
         const opt = options.find(o => o.value === value[0]);
         return opt?.label || value[0];
       }
-      return `${value.length} ausgewählt`;
+      return t('hifi.ausgewaehlt', { count: value.length });
     } else {
       if (!value) return placeholder;
       const opt = options.find(o => o.value === value);
@@ -80,7 +82,7 @@
     <span class="hifi-select-label">{label}</span>
   {/if}
   
-  <button class="hifi-select-trigger" class:open={isOpen} onclick={toggle} title={isOpen ? 'Auswahl schließen' : 'Auswahl öffnen'}>
+  <button class="hifi-select-trigger" class:open={isOpen} onclick={toggle} title={isOpen ? t('hifi.auswahlSchliessen') : t('hifi.auswahlOeffnen')}>
     <span class="hifi-select-value">{displayText()}</span>
     <span class="hifi-select-arrow">{isOpen ? '▲' : '▼'}</span>
   </button>
@@ -88,8 +90,8 @@
   {#if isOpen}
     <div class="hifi-select-dropdown">
       {#if multiple && value?.length > 0}
-        <button class="hifi-select-clear" onclick={clearAll} title="Gesamte Auswahl zurücksetzen">
-          ✕ Alle entfernen
+        <button class="hifi-select-clear" onclick={clearAll} title={t('hifi.auswahlZuruecksetzen')}>
+          ✕ {t('hifi.alleEntfernen')}
         </button>
       {/if}
       
@@ -99,7 +101,7 @@
             class="hifi-select-option"
             class:selected={isSelected(opt)}
             onclick={() => selectOption(opt)}
-            title={isSelected(opt) ? opt.label + ' abwählen' : opt.label + ' auswählen'}
+            title={isSelected(opt) ? t('hifi.abwaehlen', { label: opt.label }) : t('hifi.auswaehlen', { label: opt.label })}
           >
             {#if multiple}
               <span class="hifi-select-checkbox">

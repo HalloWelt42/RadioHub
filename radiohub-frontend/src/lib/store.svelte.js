@@ -8,11 +8,14 @@
 
 import { api } from './api.js';
 import * as engine from './playerEngine.js';
+import * as router from './router.js';
+import { t } from './i18n.svelte.js';
 
 // === App State ===
 export const appState = $state({
   // Navigation
   activeTab: 'radio',
+  routeSegments: [],    // Sub-Pfad-Segmente nach Tab-Prefix (z.B. ['radio', 'filter'] für /setup/radio/filter)
 
   // Theme
   theme: 'dark', // 'dark' | 'light'
@@ -84,6 +87,16 @@ export const actions = {
   // Navigation
   setTab(tab) {
     appState.activeTab = tab;
+    const path = router.getDefaultPath(tab);
+    appState.routeSegments = router.parseHash('#' + path).segments;
+    router.navigate(path);
+  },
+
+  navigateTo(path) {
+    const info = router.parseHash('#' + path);
+    appState.activeTab = info.tab;
+    appState.routeSegments = info.segments;
+    router.navigate(path);
   },
 
   // Theme
@@ -182,9 +195,9 @@ export const actions = {
   async startRecording() {
     const result = await engine.startRecording();
     if (result?.success) {
-      actions.showToast('Aufnahme gestartet', 'success');
+      actions.showToast(t('toast.recGestartet'), 'success');
     } else {
-      actions.showToast('Aufnahme fehlgeschlagen', 'error');
+      actions.showToast(t('toast.recFehler'), 'error');
     }
   },
 
@@ -192,9 +205,9 @@ export const actions = {
     const result = await engine.stopRecording();
     if (result?.success) {
       const dur = result.duration ? ` (${Math.round(result.duration)}s)` : '';
-      actions.showToast(`Aufnahme gespeichert${dur}`, 'success');
+      actions.showToast(`${t('toast.recGespeichert')}${dur}`, 'success');
     } else {
-      actions.showToast('Stoppen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.stopFehler'), 'error');
     }
   },
 
@@ -216,14 +229,14 @@ export const actions = {
       if (isFav) {
         await api.removeFavorite(uuid);
         appState.favorites = appState.favorites.filter(f => f.uuid !== uuid);
-        actions.showToast('Favorit entfernt', 'info');
+        actions.showToast(t('toast.favEntfernt'), 'info');
       } else {
         await api.addFavorite(station);
         appState.favorites = [...appState.favorites, { ...station, uuid }];
-        actions.showToast('Favorit hinzugefügt', 'success');
+        actions.showToast(t('toast.favHinzu'), 'success');
       }
     } catch (e) {
-      actions.showToast('Fehler', 'error');
+      actions.showToast(t('common.fehler'), 'error');
     }
   },
 

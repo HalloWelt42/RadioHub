@@ -7,7 +7,11 @@ export default {
     tuner: 'TUNER',
     recorder: 'RECORDER',
     podcast: 'PODCAST',
-    setup: 'SETUP'
+    setup: 'SETUP',
+    dark: 'DARK',
+    light: 'LIGHT',
+    online: 'ONLINE',
+    offline: 'OFFLINE'
   },
 
   // === Setup Tabs ===
@@ -22,7 +26,12 @@ export default {
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'SENDER',
-    kategorien: 'KATEGORIEN'
+    kategorien: 'KATEGORIEN',
+    // Allgemein Sub-Tabs
+    einstellungen: 'EINSTELLUNGEN',
+    bedanken: 'BEDANKEN',
+    lizenz: 'LIZENZ',
+    recht: 'RECHT'
   },
 
   // === Setup Allgemein ===
@@ -40,7 +49,8 @@ export default {
     bufferAufnahme: 'BUFFER-AUFNAHME',
     lookback: 'LOOKBACK',
     lookbackHint: 'Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurückgreifen?',
-    language: 'SPRACHE'
+    language: 'SPRACHE',
+    datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN'
   },
 
   // === Setup Podcast ===
@@ -65,7 +75,10 @@ export default {
     standardOrdner: 'Neue Aufnahmen gehen in den Standard-Ordner (Root)',
     aktivieren: 'AKTIVIEREN',
     root: 'ROOT',
-    aufnahmen: 'Aufnahmen'
+    aufnahmen: 'Aufnahmen',
+    nochKeineOrdner: 'Noch keine Ordner erstellt',
+    ordnerHint: 'Ordner helfen beim Organisieren von Aufnahmen',
+    ordnernameErforderlich: 'Ordnername erforderlich'
   },
 
   // === Setup Filter ===
@@ -89,7 +102,11 @@ export default {
     landSuchen: 'Land suchen...',
     sichtbareLaender: 'SICHTBARE LÄNDER',
     tagHinzufuegen: 'Tag hinzufügen...',
-    aktiv: 'Aktiv:'
+    aktiv: 'Aktiv:',
+    sprachen: 'Sprachen',
+    tags: 'Tags',
+    ausblendenFehler: 'Ausblenden fehlgeschlagen',
+    senderAusgeblendet: '{count} Sender ausgeblendet ({total} gesamt)'
   },
 
   // === Setup Sender ===
@@ -112,7 +129,22 @@ export default {
     filterLabel: 'FILTER',
     werbung: 'WERBUNG',
     ein: 'EIN',
-    ausLabel: 'AUS'
+    ausLabel: 'AUS',
+    stopp: 'STOPP',
+    ausgeblendete: 'AUSGEBLENDETE SENDER',
+    alleFreigeben: 'ALLE FREIGEBEN',
+    keineAusgeblendet: 'Keine ausgeblendeten Sender',
+    adressPruefung: 'Adress-Prüfung',
+    adressPruefungHint: 'Erkennt Werbe-Begriffe in der Stream-URL',
+    serverPruefung: 'Server-Prüfung',
+    serverPruefungHint: 'Erkennt Werbe-Server anhand der Antwort-Daten',
+    abWannVerdaechtig: 'AB WANN VERDÄCHTIG?',
+    thresholdHint: 'Sender unter diesem Wert werden ignoriert',
+    senderGeprueft: '{checked} Sender geprüft, {suspects} verdächtig',
+    entscheidungFehler: 'Entscheidung fehlgeschlagen',
+    freigabeFehler: 'Freigabe fehlgeschlagen',
+    kategorieFreigegeben: 'Kategorie freigegeben',
+    senderFreigegeben: '{count} Sender freigegeben'
   },
 
   // === Setup Kategorien ===
@@ -125,7 +157,8 @@ export default {
     nochKeine: 'Noch keine Kategorien erstellt',
     hintRadio: 'Kategorien filtern Sender in der Seitenleiste',
     hintPodcast: 'Kategorien filtern Podcasts in der Seitenleiste',
-    hintRecording: 'Kategorien filtern Aufnahmen in der Seitenleiste'
+    hintRecording: 'Kategorien filtern Aufnahmen in der Seitenleiste',
+    nameErforderlich: 'Name erforderlich'
   },
 
   // === Setup System ===
@@ -135,7 +168,40 @@ export default {
     countries: 'COUNTRIES',
     syncNow: 'SYNC NOW',
     syncing: 'SYNCING...',
-    systemInfo: 'SYSTEM INFO'
+    systemInfo: 'SYSTEM INFO',
+    syncFehler: 'Sync fehlgeschlagen'
+  },
+
+  // === Setup Speicher ===
+  speicher: {
+    speicherZonen: 'SPEICHER-ZONEN',
+    belegt: 'belegt',
+    frei: 'frei',
+    datei: 'Datei',
+    dateien: 'Dateien',
+    pfadHint: 'Pfad-Änderungen verschieben keine Daten. Bestehende Dateien bleiben am alten Speicherort erhalten.',
+    pruefen: 'Prüfen',
+    beschreibbar: 'Beschreibbar',
+    nichtBeschreibbar: 'Pfad nicht beschreibbar',
+    validierungFehler: 'Validierung fehlgeschlagen',
+    verzeichnisErstellt: 'Verzeichnis wurde erstellt',
+    pfadAendern: 'Pfad ändern',
+    speichert: 'Speichert...',
+    pfadAktualisiert: 'Speicherpfad aktualisiert'
+  },
+
+  // === Setup Dienste ===
+  dienste: {
+    externeDienste: 'EXTERNE DIENSTE',
+    hint: 'Zeigt alle externen Datenquellen. Konfigurierbare Dienste können bei Bedarf auf eigene Instanzen umgestellt werden.',
+    eingehend: 'EINGEHEND',
+    ausgehend: 'AUSGEHEND',
+    lokal: 'LOKAL',
+    endpunktAendern: 'Endpunkt ändern',
+    standard: 'Standard',
+    zuruecksetzenFehler: 'Zurücksetzen fehlgeschlagen',
+    placeholderMulti: 'Eine URL pro Zeile...',
+    placeholderSingle: 'URL eingeben...'
   },
 
   // === Player ===
@@ -166,7 +232,19 @@ export default {
     hlsMode: 'Zu HLS-Stream wechseln (zeitversetzt)',
     moduswechselNicht: 'Moduswechsel nicht verfügbar',
     recModuswechsel: 'Aufnahme läuft -- kein Moduswechsel',
-    fehlerSchliessen: 'Fehlermeldung schließen'
+    fehlerSchliessen: 'Fehlermeldung schließen',
+    nichtBeiWiedergabe: 'Nicht bei Aufnahme-Wiedergabe',
+    keinePrevEpisode: 'Keine vorherige Episode',
+    keineNextEpisode: 'Keine nächste Episode',
+    keinePrevTitel: 'Kein vorheriger Titel',
+    keineNextTitel: 'Kein nächster Titel',
+    wiedergabeModus: 'Wiedergabe-Modus (nur bei Aufnahme-Wiedergabe)',
+    linear: 'Linear (vorwärts)',
+    rueckwaerts: 'Rückwärts',
+    endlosschleife: 'Endlosschleife',
+    zufall: 'Zufall',
+    tuner: 'Tuner',
+    aufnahme: 'Aufnahme'
   },
 
   // === Stations ===
@@ -181,7 +259,22 @@ export default {
     zuFavoriten: 'Zu Favoriten hinzufügen',
     ausFavoriten: 'Aus Favoriten entfernen',
     alsWerbung: 'Als Werbung markieren',
-    senderAusblenden: 'Sender ausblenden'
+    senderAusblenden: 'Sender ausblenden',
+    laenderKonfigurieren: 'Länder im Setup konfigurieren',
+    kategorienErstellen: 'Kategorien im Setup erstellen',
+    kategorienLabel: 'KATEGORIEN'
+  },
+
+  // === HiFi UI Komponenten ===
+  hifi: {
+    keineEintraege: 'Keine Einträge',
+    ausgewaehlt: '{count} ausgewählt',
+    auswahlSchliessen: 'Auswahl schließen',
+    auswahlOeffnen: 'Auswahl öffnen',
+    auswahlZuruecksetzen: 'Gesamte Auswahl zurücksetzen',
+    alleEntfernen: 'Alle entfernen',
+    abwaehlen: '{label} abwählen',
+    auswaehlen: '{label} auswählen'
   },
 
   // === Gemeinsame Buttons ===
@@ -192,7 +285,10 @@ export default {
     bearbeiten: 'BEARBEITEN',
     aktualisieren: 'AKTUALISIEREN',
     name: 'NAME',
-    laden: 'Laden...'
+    laden: 'Laden...',
+    fehler: 'Fehler',
+    themeLight: 'Zu hellem Design wechseln',
+    themeDark: 'Zu dunklem Design wechseln'
   },
 
   // === Toast-Meldungen ===
@@ -226,6 +322,182 @@ export default {
     standardWiederhergestellt: 'Standard wiederhergestellt',
     scanBeendet: 'Scan beendet',
     senderFreigegeben: 'Sender freigegeben',
-    senderAusgeblendet: 'Sender ausgeblendet'
+    senderAusgeblendet: 'Sender ausgeblendet',
+    aktivierungFehler: 'Aktivierung fehlgeschlagen',
+    deaktivierungFehler: 'Deaktivierung fehlgeschlagen',
+    kategorienLadenFehler: 'Kategorien laden fehlgeschlagen'
+  },
+
+  // === Podcasts ===
+  podcasts: {
+    podcastDateien: 'Podcast-Dateien',
+    podcastsSuchen: 'Podcasts suchen...',
+    alleEpisoden: 'Alle Episoden',
+    podcastAuswaehlen: 'Podcast in der Seitenleiste auswählen',
+    podcastsSuchenAbonnieren: 'Podcasts suchen und abonnieren',
+    podcastsSuchenBtn: 'Podcasts suchen',
+    dateienLadenFehler: 'Dateien laden fehlgeschlagen',
+    sucheFehler: 'Suche fehlgeschlagen',
+    abonnierenFehler: 'Abonnieren fehlgeschlagen',
+    aboEntfernt: 'Abo entfernt',
+    entfernenFehler: 'Entfernen fehlgeschlagen',
+    aktualisiereFehler: 'Aktualisierung fehlgeschlagen',
+    autoDownloadAktiviert: 'Auto-Download aktiviert',
+    autoDownloadDeaktiviert: 'Auto-Download deaktiviert',
+    einstellungFehler: 'Einstellung fehlgeschlagen',
+    episodeHeruntergeladen: 'Episode heruntergeladen',
+    downloadFehler: 'Download fehlgeschlagen',
+    downloadGeloescht: 'Download gelöscht',
+    markierungFehler: 'Markierung fehlgeschlagen',
+    alleBereitsHeruntergeladen: 'Alle Episoden bereits heruntergeladen',
+    downloadAbgebrochen: 'Download abgebrochen ({done} von {total})',
+    episodenHeruntergeladen: '{total} Episoden heruntergeladen',
+    aktualisiereFeeds: 'Aktualisiere alle Feeds...',
+    alleFeedsAktualisiert: 'Alle Feeds aktualisiert',
+    abonnements: 'ABONNEMENTS',
+    ungehoert: 'Ungehört',
+    alle: 'Alle',
+    downloadsFilter: 'Downloads',
+    filterLabel: 'FILTER',
+    filterAktiv: 'Filter aktiv',
+    filterInaktiv: 'Filter inaktiv',
+    sucheSchliessen: 'Suche schließen',
+    suchen: 'Suchen',
+    alleEpisodenAnzeigen: 'Alle Episoden anzeigen',
+    dateiExplorerSchliessen: 'Datei-Explorer schließen',
+    dateiExplorerOeffnen: 'Datei-Explorer öffnen',
+    alleFeedsHolen: 'Alle Feeds vom Server holen',
+    episodenLaden: 'Episoden vom Server laden',
+    wirdAbgespielt: 'Wird abgespielt',
+    ausgewaehltStatus: 'Ausgewählt',
+    neueEpisoden: 'Neue Episoden vorhanden',
+    keineNeuen: 'Keine neuen Episoden',
+    naechsterRefresh: 'Nächster automatischer Feed-Refresh',
+    episodenLabel: 'Episoden',
+    zurueckZurUebersicht: 'Zurück zur Übersicht',
+    gesamt: 'Gesamt',
+    autoDl: 'Auto-DL',
+    feedHolen: 'Feed vom Server holen',
+    alleBereitsLokal: 'Alle Episoden bereits lokal',
+    alleLokalHerunterladen: 'Alle Episoden lokal herunterladen',
+    autoDownloadAktivierenHint: 'Auto-Download aktivieren: Neue Episoden werden automatisch heruntergeladen',
+    autoDownloadDeaktivierenHint: 'Auto-Download deaktivieren: Neue Episoden werden nicht automatisch heruntergeladen',
+    aboEntfernenHint: 'Podcast-Abo entfernen (lokale Dateien bleiben erhalten)',
+    datum: 'Datum',
+    dauer: 'Dauer',
+    groesse: 'Größe',
+    staffel: 'Staffel',
+    heruntergeladen: 'Heruntergeladen',
+    gehoert: 'Gehört',
+    fortsetzen: 'Fortsetzen',
+    fortsetzenBei: 'Fortsetzen bei {position}',
+    episodeAbspielen: 'Episode abspielen',
+    abspielen: 'Abspielen',
+    downloadLoeschen: 'Download löschen',
+    loeschenLabel: 'Löschen',
+    episodeHerunterladen: 'Episode lokal herunterladen',
+    lade: 'Lade...',
+    herunterladen: 'Herunterladen',
+    alsUngehoert: 'Als ungehört markieren',
+    alsGehoert: 'Als gehört markieren',
+    ungehoertLabel: 'Ungehört',
+    gehoertLabel: 'Gehört',
+    breiteAnpassen: 'Breite anpassen',
+    epLabel: 'Ep.',
+    neuLabel: 'neu'
+  },
+
+  // === Recordings ===
+  recordings: {
+    aufnahmen: 'AUFNAHMEN',
+    aufnahmeAuswaehlen: 'Aufnahme in der Seitenliste auswählen',
+    bitteAufnahmeAuswaehlen: 'Bitte eine Aufnahme auswählen',
+    erkannteTitle: 'ERKANNTE TITEL',
+    nochKeineTitelwechsel: 'Noch keine Titelwechsel erkannt',
+    ladeMetadaten: 'Lade Metadaten...',
+    segmente: 'SEGMENTE',
+    tracks: 'Tracks',
+    tracklist: 'TRACKLIST',
+    titel: 'Titel',
+    schneide: 'SCHNEIDE...',
+    segmenteErzeugen: 'SEGMENTE ERZEUGEN',
+    keineIcyMetadaten: 'Keine ICY-Metadaten vorhanden',
+    stoppen: 'Stoppen',
+    abspielen: 'Abspielen',
+    herunterladen: 'Herunterladen',
+    aufnahmeLoeschen: 'Aufnahme endgültig löschen',
+    aufnahmeStoppen: 'Aufnahme stoppen',
+    segmentLoeschen: 'Segment endgültig löschen',
+    inOrdnerVerschieben: 'In Ordner verschieben',
+    rootKeinOrdner: 'Root (kein Ordner)',
+    segmenteErzeugtToast: '{count} Segmente erzeugt',
+    splitFehler: 'Split fehlgeschlagen',
+    hlsBufferLaeuft: 'HLS-Buffer-Aufnahme läuft',
+    aufnahmeLaeuft: 'Aufnahme läuft',
+    wirdAbgespielt: 'Wird abgespielt',
+    ausgewaehltStatus: 'Ausgewählt',
+    inaktiv: 'Inaktiv',
+    keinOrdner: 'Kein Ordner',
+    sucheSchliessen: 'Suche schließen',
+    aufnahmenDurchsuchen: 'Aufnahmen durchsuchen',
+    aufnahmenSchneiden: 'Aufnahmen schneiden (Segmente erzeugen)',
+    dateiExplorerSchliessen: 'Datei-Explorer schließen',
+    dateiExplorerOeffnen: 'Datei-Explorer öffnen',
+    neuenOrdnerErstellen: 'Neuen Ordner erstellen',
+    sessionListeAktualisieren: 'Session-Liste aktualisieren',
+    neuerOrdnername: 'Neuer Ordnername...',
+    sendername: 'Sendername...',
+    keineAufnahmen: 'Keine Aufnahmen vorhanden',
+    aktiverOrdner: 'Aktiver Aufnahmeordner',
+    inaktiverOrdner: 'Inaktiver Ordner',
+    ordnerDeaktivieren: 'Aufnahmeordner deaktivieren',
+    alsAufnahmeordner: 'Als Aufnahmeordner aktivieren',
+    ordnerUmbenennen: 'Ordner umbenennen',
+    ordnerLoeschenHint: 'Ordner löschen (nur wenn leer)',
+    leer: 'Leer',
+    unzugeordnet: 'UNZUGEORDNET',
+    inOrdnerVerschiebenTitle: 'In Ordner verschieben',
+    anzahlDateien: 'Anzahl Aufnahme-Dateien',
+    belegterSpeicher: 'Belegter Speicherplatz',
+    freierSpeicher: 'Freier Speicherplatz',
+    dateienLabel: 'Dateien',
+    gbFrei: 'GB frei',
+    breiteAnpassen: 'Breite anpassen'
+  },
+
+  // === FileExplorer ===
+  fileExplorer: {
+    ausgewaehlt: '{count} ausgewählt ({size})',
+    alleAuswaehlen: 'Alle Dateien auswählen',
+    auswahlAufheben: 'Auswahl aufheben',
+    alsZipHerunterladen: 'Ausgewählte Dateien als ZIP herunterladen (mit M3U-Playlist)',
+    ausgewaehlteSchneiden: 'Ausgewählte Aufnahmen schneiden (Segmente erzeugen)',
+    dateilisteAktualisieren: 'Dateiliste aktualisieren',
+    ladeDateien: 'Lade Dateien...',
+    keineDateien: 'Keine Dateien vorhanden',
+    ordnerAuswaehlen: 'Alle Dateien in diesem Ordner auswählen',
+    alleAusgewaehlt: 'Alle Dateien ausgewählt',
+    teilweiseAusgewaehlt: 'Teilweise ausgewählt',
+    keineAusgewaehlt: 'Keine Dateien ausgewählt',
+    verwaist: 'Verwaist',
+    dateien: '{count} Dateien',
+    dateiAuswaehlen: 'Datei für ZIP-Download auswählen',
+    fuerDownload: 'Für Download ausgewählt',
+    nichtAusgewaehlt: 'Nicht ausgewählt',
+    dateiAbspielen: 'Datei abspielen',
+    dateiLoeschen: 'Datei endgültig löschen'
+  },
+
+  // === Spende ===
+  spende: {
+    adresseKopiert: 'Adresse kopiert',
+    kopierenFehler: 'Kopieren fehlgeschlagen',
+    unterstuetzen: 'RadioHub unterstützen',
+    introText: 'RadioHub ist ein nicht-kommerzielles Open-Source-Projekt. Wenn dir die Software gefällt, freue ich mich über eine kleine Unterstützung.',
+    kofiText: 'Unterstütze mich auf Ko-fi',
+    oderKrypto: 'ODER PER KRYPTOWÄHRUNG',
+    kopiert: 'KOPIERT',
+    adresseKopieren: 'ADRESSE KOPIEREN',
+    danke: 'Vielen Dank für deine Unterstützung!'
   }
 };

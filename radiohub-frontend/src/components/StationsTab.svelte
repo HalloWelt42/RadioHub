@@ -5,8 +5,9 @@
   import * as sfx from '../lib/uiSounds.js';
   import { translateCountry } from '../lib/countryNames.js';
   import { formatNumber, formatK } from '../lib/formatters.js';
+  import { t } from '../lib/i18n.svelte.js';
 
-  
+
   let searchQuery = $state('');
   let stations = $state([]);
   let isLoading = $state(false);
@@ -307,7 +308,7 @@
       }
 
     } catch (e) {
-      actions.showToast('Suche fehlgeschlagen', 'error');
+      actions.showToast(t('toast.ladenFehler'), 'error');
     } finally {
       isLoading = false;
       isLoadingMore = false;
@@ -360,9 +361,9 @@
 
       await api.syncCache(true);
       await loadFilters();
-      actions.showToast('Stationen aktualisiert', 'success');
+      actions.showToast(t('toast.senderGeladen'), 'success');
     } catch (e) {
-      actions.showToast('Refresh fehlgeschlagen', 'error');
+      actions.showToast(t('toast.ladenFehler'), 'error');
     }
     isRefreshing = false;
   }
@@ -527,7 +528,7 @@
       const idx = stations.findIndex(s => s.uuid === station.uuid);
 
       await api.blockStation(station.uuid, station.name);
-      actions.showToast(`${station.name} blockiert`, 'info');
+      actions.showToast(t('toast.senderAusgeblendet'), 'info');
 
       // Aus Liste entfernen
       stations = stations.filter(s => s.uuid !== station.uuid);
@@ -547,7 +548,7 @@
       }
 
     } catch (err) {
-      actions.showToast('Blockieren fehlgeschlagen', 'error');
+      actions.showToast(t('common.fehler'), 'error');
     }
   }
 
@@ -557,9 +558,9 @@
       const streamUrl = station.url_resolved || station.url;
       await api.reportAdMarkOnly(station.uuid, streamUrl, station.name);
       adStatusMap = { ...adStatusMap, [station.uuid]: { status: 'confirmed_ad', confidence: 1.0, user_action: null } };
-      actions.showToast(`${station.name} als Werbung markiert`, 'info');
+      actions.showToast(t('stations.alsWerbung'), 'info');
     } catch (err) {
-      actions.showToast('Werbung melden fehlgeschlagen', 'error');
+      actions.showToast(t('common.fehler'), 'error');
     }
   }
 
@@ -574,8 +575,7 @@
 
 
   function openSetupFilter() {
-    appState.setupSubTab = 'filter';
-    actions.setTab('settings');
+    actions.navigateTo('/setup/radio/filter');
   }
 
   async function loadCategoryAssignments(stationList) {
@@ -621,7 +621,7 @@
         categoryAssignments[stationUuid] = live.filter(id => id !== categoryId);
       }
       categoryAssignments = { ...categoryAssignments };
-      actions.showToast('Zuordnung fehlgeschlagen', 'error');
+      actions.showToast(t('common.fehler'), 'error');
     }
   }
 
@@ -649,14 +649,14 @@
   <aside class="filter-panel">
     <!-- Action Row: Favs + Clear + Filter -->
     <div class="action-row">
-      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? 'Alle Sender anzeigen' : 'Nur Favoriten anzeigen'}>
+      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? t('stations.alleSender') : t('stations.nurFavoriten')}>
         <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
         <span>FAVORITEN</span>
       </button>
       {#if activeFilterCount > 0}
-        <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Alle Filter zurücksetzen">&#10005;</button>
+        <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={t('stations.filterZuruecksetzen')}>&#10005;</button>
       {/if}
-      <button class="action-btn square" onclick={() => { openSetupFilter(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Setup: Filter öffnen">
+      <button class="action-btn square" onclick={() => { openSetupFilter(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={t('stations.setupFilter')}>
         <i class="fa-solid fa-sliders"></i>
       </button>
     </div>
@@ -688,7 +688,7 @@
         </div>
       {:else}
         <div class="empty-hint" onclick={() => { openSetupFilter(); sfx.click(); }}>
-          Laender im Setup konfigurieren
+          {t('stations.laenderKonfigurieren')}
         </div>
       {/if}
     </div>
@@ -698,7 +698,7 @@
     <!-- Kategorien -->
     <div class="section-fixed">
       <div class="section-header">
-        <span class="section-label">KATEGORIEN</span>
+        <span class="section-label">{t('stations.kategorienLabel')}</span>
         {#if selectedCategories.length > 0}
           <span class="section-count">{selectedCategories.length}/{categories.length}</span>
         {:else if categories.length > 0}
@@ -717,8 +717,8 @@
           {/each}
         </div>
       {:else}
-        <div class="empty-hint" onclick={() => { appState.setupSubTab = 'kategorien'; actions.setTab('settings'); sfx.click(); }}>
-          Kategorien im Setup erstellen
+        <div class="empty-hint" onclick={() => { actions.navigateTo('/setup/radio/kategorien'); sfx.click(); }}>
+          {t('stations.kategorienErstellen')}
         </div>
       {/if}
     </div>
@@ -783,7 +783,7 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Sender suchen..."
+          placeholder={t('stations.senderSuchen')}
           bind:value={searchQuery}
           oninput={handleSearchInput}
           onfocus={() => { if (searchHistory.length > 0 && !searchQuery) showSearchHistory = true; }}
@@ -808,7 +808,7 @@
       </div>
 
       <!-- Refresh mit Kreispfeil-Icon -->
-      <button class="refresh-btn" onclick={() => { refreshStations(); sfx.click(); }} onmouseenter={sfx.hoverSoft} disabled={isRefreshing} title={isRefreshing ? 'Senderliste wird aktualisiert...' : 'Komplette Senderliste vom Server neu laden'}>
+      <button class="refresh-btn" onclick={() => { refreshStations(); sfx.click(); }} onmouseenter={sfx.hoverSoft} disabled={isRefreshing} title={isRefreshing ? t('common.laden') : t('stations.neuLaden')}>
         <i class="fa-solid fa-arrows-rotate refresh-icon" class:spinning={isRefreshing}></i>
         <span>REFRESH</span>
       </button>
@@ -890,7 +890,7 @@
               <button
                 class="station-fav"
                 onclick={(e) => toggleFavorite(station, e)}
-                title={isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+                title={isFav ? t('stations.ausFavoriten') : t('stations.zuFavoriten')}
               >
                 <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
               </button>
@@ -961,8 +961,8 @@
                       </div>
                     {/if}
                     <div class="details-actions-btns">
-                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title="Als Werbung markieren">WERBUNG</button>
-                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title="Sender ausblenden">AUSBLENDEN</button>
+                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>WERBUNG</button>
+                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>AUSBLENDEN</button>
                     </div>
                   </div>
                 </div>

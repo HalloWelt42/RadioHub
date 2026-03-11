@@ -7,6 +7,7 @@
   import CoverArt from '../shared/CoverArt.svelte';
   import { api } from '../../lib/api.js';
   import { formatDurationHuman, formatDate } from '../../lib/formatters.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     episode,
@@ -62,9 +63,9 @@
 
   <div class="ep-badges">
     {#if episode.is_played}
-      <i class="fa-solid fa-check played-icon" title="Gehört"></i>
+      <i class="fa-solid fa-check played-icon" title={t('podcasts.gehoert')}></i>
     {:else if episode.resume_position > 0}
-      <i class="fa-solid fa-rotate-left resume-icon" title="Fortsetzen"></i>
+      <i class="fa-solid fa-rotate-left resume-icon" title={t('podcasts.fortsetzen')}></i>
     {/if}
   </div>
 

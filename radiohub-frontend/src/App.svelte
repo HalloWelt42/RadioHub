@@ -7,14 +7,34 @@
   import PodcastsTab from './components/PodcastsTab.svelte';
   import SettingsTab from './components/SettingsTab.svelte';
   import { appState, actions } from './lib/store.svelte.js';
+  import { t } from './lib/i18n.svelte.js';
   import { api } from './lib/api.js';
+  import * as router from './lib/router.js';
   import * as sfx from './lib/uiSounds.js';
-  
+
   let backendOnline = $state(false);
-  
+
   // Theme init
   $effect(() => {
     actions.initTheme();
+  });
+
+  // Router init
+  $effect(() => {
+    const initial = router.init((info) => {
+      // Hash -> State (Browser Back/Forward, manuelle URL-Eingabe)
+      appState.activeTab = info.tab;
+      appState.routeSegments = info.segments;
+    });
+
+    // Initialen Hash anwenden
+    appState.activeTab = initial.tab;
+    appState.routeSegments = initial.segments;
+
+    // Default-Hash setzen wenn keiner vorhanden
+    if (!location.hash || location.hash === '#' || location.hash === '#/') {
+      router.navigate('/tuner', { replace: true });
+    }
   });
   
   // Health Check + Config Init
@@ -23,16 +43,16 @@
       backendOnline = true;
       actions.initConfig();
     }).catch(() => {
-      actions.showToast('Backend nicht erreichbar', 'error');
+      actions.showToast(t('toast.backendOffline'), 'error');
       backendOnline = false;
     });
   });
   
   const tabs = [
-    { id: 'radio', label: 'TUNER' },
-    { id: 'recordings', label: 'RECORDER' },
-    { id: 'podcasts', label: 'PODCAST' },
-    { id: 'settings', label: 'SETUP' }
+    { id: 'radio', key: 'nav.tuner' },
+    { id: 'recordings', key: 'nav.recorder' },
+    { id: 'podcasts', key: 'nav.podcast' },
+    { id: 'settings', key: 'nav.setup' }
   ];
 
   // === Globale Tastatursteuerung ===
@@ -118,25 +138,25 @@
           class:active={appState.activeTab === tab.id}
           onclick={() => { actions.setTab(tab.id); sfx.select(); }}
           onmouseenter={sfx.hoverSoft}
-          title={tab.label + ' anzeigen'}
+          title={t(tab.key)}
         >
           <HiFiLed color={appState.activeTab === tab.id ? 'green' : 'off'} size="small" />
-          {tab.label}
+          {t(tab.key)}
         </button>
       {/each}
     </nav>
     
     <div class="hifi-header-right">
       <!-- Theme Switch -->
-      <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? 'Zu hellem Design wechseln' : 'Zu dunklem Design wechseln'}>
+      <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
         <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
-        {appState.theme === 'dark' ? 'DARK' : 'LIGHT'}
+        {appState.theme === 'dark' ? t('nav.dark') : t('nav.light')}
       </button>
       
       <!-- Status -->
       <div class="hifi-status">
         <HiFiLed color={backendOnline ? 'green' : 'red'} size="small" />
-        <span class="hifi-font-label">{backendOnline ? 'ONLINE' : 'OFFLINE'}</span>
+        <span class="hifi-font-label">{backendOnline ? t('nav.online') : t('nav.offline')}</span>
       </div>
     </div>
   </header>

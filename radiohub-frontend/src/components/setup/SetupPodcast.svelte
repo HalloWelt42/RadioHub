@@ -3,6 +3,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let config = $state({});
   let isLoading = $state(true);
@@ -31,7 +32,7 @@
       await api.updateConfig({ [key]: value });
       config[key] = value;
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -56,7 +57,7 @@
     <!-- Auto-Refresh -->
     <div class="hifi-panel">
       <div class="hifi-panel-header">
-        <span class="hifi-font-label">AUTO-REFRESH</span>
+        <span class="hifi-font-label">{t('podcast.autoRefresh')}</span>
       </div>
       <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
         <button
@@ -65,12 +66,12 @@
           onclick={toggleAutoRefresh}
         >
           <HiFiLed color={autoRefresh ? 'green' : 'off'} />
-          <span>{autoRefresh ? 'AKTIV' : 'AUS'}</span>
+          <span>{autoRefresh ? t('podcast.aktiv') : t('podcast.aus')}</span>
         </button>
       </div>
       <div style="padding:0 16px 16px; text-align:center;">
         <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-          Podcast-Feeds werden automatisch auf neue Episoden geprüft
+          {t('podcast.refreshHint')}
         </span>
       </div>
     </div>
@@ -78,7 +79,7 @@
     <!-- Refresh-Intervall -->
     <div class="hifi-panel">
       <div class="hifi-panel-header">
-        <span class="hifi-font-label">REFRESH-INTERVALL</span>
+        <span class="hifi-font-label">{t('podcast.refreshIntervall')}</span>
       </div>
       <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
         <HiFiKnob
@@ -87,13 +88,13 @@
           max={48}
           step={1}
           unit="h"
-          label="INTERVALL"
+          label={t('podcast.intervall')}
           onchange={handleRefreshChange}
         />
       </div>
       <div style="padding:0 16px 16px; text-align:center;">
         <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-          Alle {refreshHours} Stunden werden abonnierte Feeds aktualisiert
+          {t('podcast.refreshHintDynamic', { hours: refreshHours })}
         </span>
       </div>
     </div>

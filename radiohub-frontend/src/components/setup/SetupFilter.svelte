@@ -3,6 +3,7 @@
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
   import { translateCountry, COUNTRY_NAMES } from '../../lib/countryNames.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   // === FILTER STATE ===
   let excludedLanguages = $state([]);
@@ -23,8 +24,8 @@
 
   let activeFilterSummary = $derived(() => {
     const parts = [];
-    if (excludedLanguages.length > 0) parts.push(`${excludedLanguages.length} Sprachen`);
-    if (excludedTags.length > 0) parts.push(`${excludedTags.length} Tags`);
+    if (excludedLanguages.length > 0) parts.push(`${excludedLanguages.length} ${t('filter.sprachen')}`);
+    if (excludedTags.length > 0) parts.push(`${excludedTags.length} ${t('filter.tags')}`);
     if (minVotes > 0) parts.push(`Min. ${minVotes} Votes`);
     return parts;
   });
@@ -219,10 +220,10 @@
         excluded_tags: excludedTags,
         min_votes: minVotes
       });
-      actions.showToast(`${data.hidden_count} Sender ausgeblendet (${data.total_hidden} gesamt)`);
+      actions.showToast(t('filter.senderAusgeblendet', { count: data.hidden_count, total: data.total_hidden }));
       previewCount = null;
     } catch (e) {
-      actions.showToast('Ausblenden fehlgeschlagen', 'error');
+      actions.showToast(t('filter.ausblendenFehler'), 'error');
       // Netzwerkfehler ignorieren
     }
     isPushing = false;
@@ -240,11 +241,11 @@
   <div class="sub-tab-bar">
     <button class="sub-tab-btn" class:active={subTab === 'filter'} onclick={() => subTab = 'filter'}>
       <HiFiLed color={subTab === 'filter' ? 'green' : 'off'} size="small" />
-      SUCHFILTER
+      {t('filter.suchfilter')}
     </button>
     <button class="sub-tab-btn" class:active={subTab === 'laender'} onclick={() => subTab = 'laender'}>
       <HiFiLed color={subTab === 'laender' ? 'green' : 'off'} size="small" />
-      LÄNDER
+      {t('filter.laender')}
       {#if visibleCountries.length > 0}
         <span class="sub-tab-badge">{visibleCountries.length}</span>
       {/if}
@@ -252,7 +253,7 @@
     {#if subTab === 'filter' && activeFilterSummary().length > 0}
       <span class="filter-summary">
         <HiFiLed color="amber" size="small" />
-        Aktiv: {activeFilterSummary().join(', ')}
+        {t('filter.aktiv')} {activeFilterSummary().join(', ')}
       </span>
     {/if}
   </div>
@@ -265,21 +266,21 @@
       <div class="filter-col-main">
         <div class="filter-section">
           <div class="filter-section-header">
-            <span class="filter-section-label">SPRACHEN AUSSCHLIEßEN</span>
+            <span class="filter-section-label">{t('filter.sprachenAusschliessen')}</span>
             <div class="filter-bulk-actions">
-              <button class="mini-btn" onclick={selectAllLanguages}>Alle</button>
-              <button class="mini-btn" onclick={selectNoLanguages}>Keine</button>
+              <button class="mini-btn" onclick={selectAllLanguages}>{t('filter.alle')}</button>
+              <button class="mini-btn" onclick={selectNoLanguages}>{t('filter.keine')}</button>
             </div>
           </div>
           <div class="filter-toolbar">
             <span class="rare-label">&le;</span>
             <input type="number" min="1" max="999" bind:value={rareThreshold} class="filter-input rare-input" onchange={saveFilterState} />
-            <button class="mini-btn" onclick={selectRareLanguages}>SELTENE ({rareCount})</button>
+            <button class="mini-btn" onclick={selectRareLanguages}>{t('filter.seltene')} ({rareCount})</button>
             <div class="toolbar-spacer"></div>
             <input
               type="text"
               class="filter-input search-input"
-              placeholder="Sprache suchen..."
+              placeholder={t('filter.spracheSuchen')}
               bind:value={languageSearch}
             />
           </div>
@@ -305,7 +306,7 @@
         <!-- Tags -->
         <div class="filter-section side-section">
           <div class="filter-section-header">
-            <span class="filter-section-label">TAGS AUSSCHLIEßEN</span>
+            <span class="filter-section-label">{t('filter.tagsAusschliessen')}</span>
           </div>
           <div class="side-content">
             {#if excludedTags.length > 0}
@@ -322,7 +323,7 @@
               <input
                 type="text"
                 class="filter-input tag-input"
-                placeholder="Tag hinzufügen..."
+                placeholder={t('filter.tagHinzufuegen')}
                 bind:value={tagInput}
                 onkeydown={handleTagKeydown}
               />
@@ -339,7 +340,7 @@
         <!-- Min Votes -->
         <div class="filter-section side-section">
           <div class="filter-section-header">
-            <span class="filter-section-label">MIN VOTES</span>
+            <span class="filter-section-label">{t('filter.minVotes')}</span>
           </div>
           <div class="side-content">
             <input
@@ -354,21 +355,21 @@
 
         <!-- Permanent Ausblenden -->
         <div class="block-zone">
-          <span class="block-zone-label">PERMANENT AUSBLENDEN</span>
-          <span class="block-zone-hint">Sender mit obigen Kriterien dauerhaft entfernen</span>
+          <span class="block-zone-label">{t('filter.permanentAusblenden')}</span>
+          <span class="block-zone-hint">{t('filter.permanentHint')}</span>
           <div class="block-actions">
             <button class="action-btn preview-btn" onclick={preview} disabled={isPreviewing}>
-              {isPreviewing ? 'ZÄHLE...' : 'VORSCHAU'}
+              {isPreviewing ? t('filter.zaehle') : t('filter.vorschau')}
             </button>
             {#if previewCount !== null}
-              <span class="preview-count">{previewCount} betroffen</span>
+              <span class="preview-count">{previewCount} {t('filter.betroffen')}</span>
             {/if}
             <button
               class="action-btn block-btn"
               onclick={push}
               disabled={isPushing || (excludedLanguages.length === 0 && excludedTags.length === 0 && minVotes === 0)}
             >
-              {isPushing ? 'BLENDE AUS...' : 'AUSBLENDEN'}
+              {isPushing ? t('filter.blendeAus') : t('filter.ausblenden')}
             </button>
           </div>
         </div>
@@ -381,17 +382,17 @@
     <div class="filter-full">
       <div class="filter-section">
         <div class="filter-section-header">
-          <span class="filter-section-label">SICHTBARE LÄNDER</span>
+          <span class="filter-section-label">{t('filter.sichtbareLaender')}</span>
           <div class="filter-bulk-actions">
-            <button class="mini-btn" onclick={selectAllCountries}>Alle</button>
-            <button class="mini-btn" onclick={selectNoCountries}>Keine</button>
+            <button class="mini-btn" onclick={selectAllCountries}>{t('filter.alle')}</button>
+            <button class="mini-btn" onclick={selectNoCountries}>{t('filter.keine')}</button>
           </div>
         </div>
         <div class="filter-toolbar">
           <input
             type="text"
             class="filter-input search-input search-full"
-            placeholder="Land suchen..."
+            placeholder={t('filter.landSuchen')}
             bind:value={countrySearch}
           />
         </div>

@@ -7,6 +7,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let zones = $state({});
   let isLoading = $state(true);
@@ -49,7 +50,7 @@
     try {
       validationResult = await api.validateStoragePath(editPath.trim());
     } catch (e) {
-      validationResult = { error: 'Validierung fehlgeschlagen' };
+      validationResult = { error: t('speicher.validierungFehler') };
     }
     isValidating = false;
   }
@@ -59,11 +60,11 @@
     isSaving = true;
     try {
       await api.updateStorageZone(editingZone, editPath.trim());
-      actions.showToast('Speicherpfad aktualisiert', 'success');
+      actions.showToast(t('speicher.pfadAktualisiert'), 'success');
       cancelEdit();
       await loadZones();
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
     isSaving = false;
   }
@@ -83,8 +84,8 @@
 
 <div class="hifi-panel">
   <div class="hifi-panel-header">
-    <span class="hifi-font-label">SPEICHER-ZONEN</span>
-    <button class="hifi-btn hifi-btn-small refresh-btn" onclick={loadZones} title="Aktualisieren">
+    <span class="hifi-font-label">{t('speicher.speicherZonen')}</span>
+    <button class="hifi-btn hifi-btn-small refresh-btn" onclick={loadZones} title={t('common.aktualisieren')}>
       <i class="fa-solid fa-arrows-rotate" class:fa-spin={isLoading}></i>
     </button>
   </div>
@@ -118,7 +119,7 @@
           {#if !isEditing}
             <div class="zone-path-row">
               <code class="zone-path">{zone.path}</code>
-              <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(name)} title="Pfad ändern">
+              <button class="hifi-btn hifi-btn-small edit-btn" onclick={() => startEdit(name)} title={t('speicher.pfadAendern')}>
                 <i class="fa-solid fa-pen"></i>
               </button>
             </div>
@@ -133,7 +134,7 @@
                   onkeydown={(e) => { if (e.key === 'Enter') validatePath(); if (e.key === 'Escape') cancelEdit(); }}
                 />
                 <button class="hifi-btn hifi-btn-small" onclick={validatePath} disabled={isValidating || !editPath.trim()}>
-                  {isValidating ? '...' : 'Pruefen'}
+                  {isValidating ? '...' : t('speicher.pruefen')}
                 </button>
               </div>
 
@@ -143,24 +144,24 @@
                     <i class="fa-solid fa-xmark"></i> {validationResult.error}
                   {:else if validationResult.writable}
                     <i class="fa-solid fa-check"></i>
-                    Beschreibbar - {formatBytes(validationResult.free_bytes)} frei
+                    {t('speicher.beschreibbar')} - {formatBytes(validationResult.free_bytes)} {t('speicher.frei')}
                     {#if validationResult.created}
-                      (Verzeichnis wurde erstellt)
+                      ({t('speicher.verzeichnisErstellt')})
                     {/if}
                   {:else}
-                    <i class="fa-solid fa-xmark"></i> Pfad nicht beschreibbar
+                    <i class="fa-solid fa-xmark"></i> {t('speicher.nichtBeschreibbar')}
                   {/if}
                 </div>
               {/if}
 
               <div class="edit-actions">
-                <button class="hifi-btn hifi-btn-small" onclick={cancelEdit}>Abbrechen</button>
+                <button class="hifi-btn hifi-btn-small" onclick={cancelEdit}>{t('common.abbrechen')}</button>
                 <button
                   class="hifi-btn hifi-btn-small hifi-btn-primary"
                   onclick={saveZone}
                   disabled={isSaving || !validationResult?.writable}
                 >
-                  {isSaving ? 'Speichert...' : 'Speichern'}
+                  {isSaving ? t('speicher.speichert') : t('common.speichern')}
                 </button>
               </div>
             </div>
@@ -172,13 +173,13 @@
             </div>
             <div class="stat-row">
               <span class="stat-value">{formatBytes(zone.used_bytes)}</span>
-              <span class="stat-label">belegt</span>
+              <span class="stat-label">{t('speicher.belegt')}</span>
               <span class="stat-sep">|</span>
               <span class="stat-value">{formatBytes(zone.free_bytes)}</span>
-              <span class="stat-label">frei</span>
+              <span class="stat-label">{t('speicher.frei')}</span>
               <span class="stat-sep">|</span>
               <span class="stat-value">{zone.file_count}</span>
-              <span class="stat-label">{zone.file_count === 1 ? 'Datei' : 'Dateien'}</span>
+              <span class="stat-label">{zone.file_count === 1 ? t('speicher.datei') : t('speicher.dateien')}</span>
             </div>
           </div>
         </div>
@@ -188,7 +189,7 @@
 
   <div class="zone-hint">
     <i class="fa-solid fa-circle-info"></i>
-    Pfad-Änderungen verschieben keine Daten. Bestehende Dateien bleiben am alten Speicherort erhalten.
+    {t('speicher.pfadHint')}
   </div>
 </div>
 

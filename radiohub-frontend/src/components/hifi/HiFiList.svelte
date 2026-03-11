@@ -1,5 +1,7 @@
 <script>
-  let { 
+  import { t } from '../../lib/i18n.svelte.js';
+
+  let {
     items = [],
     selectedId = null,
     playingId = null,
@@ -27,6 +29,6 @@
 
 {#if items.length === 0}
   <div class="hifi-flex hifi-flex-col" style="align-items:center; padding:40px; color:var(--hifi-text-secondary);">
-    <span>Keine Einträge</span>
+    <span>{t('hifi.keineEintraege')}</span>
   </div>
 {/if}

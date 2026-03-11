@@ -7,6 +7,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { formatSize, formatDate } from '../../lib/formatters.js';
   import { api } from '../../lib/api.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     type = 'podcast',        // 'podcast' | 'recording'
@@ -124,28 +125,28 @@
 
     <div class="toolbar-actions">
       {#if selectedFiles.size > 0}
-        <span class="selection-info">{selectedFiles.size} ausgewaehlt ({formatSize(selectedSize)})</span>
+        <span class="selection-info">{t('fileExplorer.ausgewaehlt', { count: selectedFiles.size, size: formatSize(selectedSize) })}</span>
       {/if}
-      <button class="hifi-btn hifi-btn-small" onclick={selectAll} title="Alle Dateien auswaehlen">
+      <button class="hifi-btn hifi-btn-small" onclick={selectAll} title={t('fileExplorer.alleAuswaehlen')}>
         <i class="fa-solid fa-check-double"></i>
       </button>
-      <button class="hifi-btn hifi-btn-small" onclick={selectNone} disabled={selectedFiles.size === 0} title="Auswahl aufheben">
+      <button class="hifi-btn hifi-btn-small" onclick={selectNone} disabled={selectedFiles.size === 0} title={t('fileExplorer.auswahlAufheben')}>
         <i class="fa-solid fa-xmark"></i>
       </button>
       <button
         class="hifi-btn hifi-btn-small"
         onclick={downloadZip}
         disabled={selectedFiles.size === 0 || isDownloading}
-        title="Ausgewaehlte Dateien als ZIP herunterladen (mit M3U-Playlist)"
+        title={t('fileExplorer.alsZipHerunterladen')}
       >
         <i class="fa-solid fa-file-zipper" class:fa-spin={isDownloading}></i>
       </button>
       {#if oncutter}
-        <button class="hifi-btn hifi-btn-small" onclick={oncutter} disabled={selectedFiles.size === 0} title="Ausgewählte Aufnahmen schneiden (Segmente erzeugen)">
+        <button class="hifi-btn hifi-btn-small" onclick={oncutter} disabled={selectedFiles.size === 0} title={t('fileExplorer.ausgewaehlteSchneiden')}>
           <i class="fa-solid fa-scissors"></i>
         </button>
       {/if}
-      <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isLoading} title="Dateiliste aktualisieren">
+      <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isLoading} title={t('fileExplorer.dateilisteAktualisieren')}>
         <i class="fa-solid fa-arrows-rotate" class:fa-spin={isLoading}></i>
       </button>
     </div>
@@ -153,27 +154,27 @@
 
   {#if isLoading}
     <div class="explorer-loading">
-      <i class="fa-solid fa-spinner fa-spin"></i> Lade Dateien...
+      <i class="fa-solid fa-spinner fa-spin"></i> {t('fileExplorer.ladeDateien')}
     </div>
   {:else if folders.length === 0}
     <div class="explorer-empty">
       <i class="fa-solid fa-folder-open"></i>
-      <span>Keine Dateien vorhanden</span>
+      <span>{t('fileExplorer.keineDateien')}</span>
     </div>
   {:else}
     <div class="explorer-tree">
       {#each folders as folder (folder.id)}
         <div class="folder-row" class:orphaned={folder.orphaned}>
           <div class="folder-header" onclick={() => toggleFolder(folder.id)}>
-            <button class="led-toggle" onclick={(e) => { e.stopPropagation(); toggleFolderSelect(folder); }} title="Alle Dateien in diesem Ordner auswählen">
-              <HiFiLed color={isFolderSelected(folder) ? 'green' : isFolderPartial(folder) ? 'amber' : 'off'} size="small" title={isFolderSelected(folder) ? 'Alle Dateien ausgewählt' : isFolderPartial(folder) ? 'Teilweise ausgewählt' : 'Keine Dateien ausgewählt'} />
+            <button class="led-toggle" onclick={(e) => { e.stopPropagation(); toggleFolderSelect(folder); }} title={t('fileExplorer.ordnerAuswaehlen')}>
+              <HiFiLed color={isFolderSelected(folder) ? 'green' : isFolderPartial(folder) ? 'amber' : 'off'} size="small" title={isFolderSelected(folder) ? t('fileExplorer.alleAusgewaehlt') : isFolderPartial(folder) ? t('fileExplorer.teilweiseAusgewaehlt') : t('fileExplorer.keineAusgewaehlt')} />
             </button>
             <i class="fa-solid" class:fa-folder-open={expandedFolders.has(folder.id)} class:fa-folder={!expandedFolders.has(folder.id)}></i>
             <span class="folder-name">{folder.name}</span>
             {#if folder.orphaned}
-              <InfoBadge type="resume" label="Verwaist" />
+              <InfoBadge type="resume" label={t('fileExplorer.verwaist')} />
             {/if}
-            <span class="folder-count">{folder.file_count} Dateien</span>
+            <span class="folder-count">{t('fileExplorer.dateien', { count: folder.file_count })}</span>
             <span class="folder-size">{formatSize(folder.total_size)}</span>
             <i class="fa-solid fa-chevron-right chevron" class:expanded={expandedFolders.has(folder.id)}></i>
           </div>
@@ -182,17 +183,17 @@
             <div class="folder-files">
               {#each folder.files as file (file.path)}
                 <div class="file-row" class:selected={selectedFiles.has(file.path)}>
-                  <button class="led-toggle" onclick={() => toggleFile(file.path)} title="Datei für ZIP-Download auswählen">
-                    <HiFiLed color={selectedFiles.has(file.path) ? 'green' : 'off'} size="small" title={selectedFiles.has(file.path) ? 'Für Download ausgewählt' : 'Nicht ausgewählt'} />
+                  <button class="led-toggle" onclick={() => toggleFile(file.path)} title={t('fileExplorer.dateiAuswaehlen')}>
+                    <HiFiLed color={selectedFiles.has(file.path) ? 'green' : 'off'} size="small" title={selectedFiles.has(file.path) ? t('fileExplorer.fuerDownload') : t('fileExplorer.nichtAusgewaehlt')} />
                   </button>
                   <span class="file-name" title={file.name}>{file.name}</span>
                   <span class="file-size">{formatSize(file.size)}</span>
                   <span class="file-date">{formatDate(file.modified)}</span>
                   <div class="file-actions">
-                    <button class="action-btn" onclick={() => onplay(file)} title="Datei abspielen">
+                    <button class="action-btn" onclick={() => onplay(file)} title={t('fileExplorer.dateiAbspielen')}>
                       <i class="fa-solid fa-play"></i>
                     </button>
-                    <button class="action-btn action-btn-danger" onclick={() => handleDelete(file)} title="Datei endgültig löschen">
+                    <button class="action-btn action-btn-danger" onclick={() => handleDelete(file)} title={t('fileExplorer.dateiLoeschen')}>
                       <i class="fa-solid fa-trash"></i>
                     </button>
                   </div>

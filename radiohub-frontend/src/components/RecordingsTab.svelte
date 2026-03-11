@@ -6,6 +6,7 @@
   import { api } from '../lib/api.js';
   import { tick } from 'svelte';
   import { appState, actions } from '../lib/store.svelte.js';
+  import { t } from '../lib/i18n.svelte.js';
   import { formatDuration, formatSize, formatDate, formatMetaTime, formatDurationMs } from '../lib/formatters.js';
 
   let sessions = $state([]);
@@ -17,8 +18,15 @@
   let segments = $state([]);
   let metadataLoading = $state(false);
 
-  // View: 'details' | 'file-explorer'
-  let view = $state('details');
+  // View: aus Route abgeleitet ('details' | 'file-explorer')
+  let view = $derived.by(() => {
+    if (appState.activeTab !== 'recordings') return 'details';
+    return appState.routeSegments?.[0] === 'files' ? 'file-explorer' : 'details';
+  });
+
+  function setView(v) {
+    actions.navigateTo(v === 'file-explorer' ? '/recorder/files' : '/recorder');
+  }
 
   // Sidebar
   let sidebarWidth = $state(Number(localStorage.getItem('radiohub_rec_sidebar_width')) || 280);
@@ -55,7 +63,7 @@
   async function selectSession(session) {
     if (selectedSession?.id === session.id) return;
     selectedSession = session;
-    view = 'details';
+    setView('details');
     metadata = [];
     segments = [];
     metadataLoading = true;
@@ -133,9 +141,9 @@
     try {
       await api.createRecordingFolder(name);
       await loadFolders();
-      actions.showToast(`Ordner "${name}" erstellt`, 'success');
+      actions.showToast(t('toast.ordnerErstellt'), 'success');
     } catch (e) {
-      actions.showToast('Ordner erstellen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -143,9 +151,9 @@
     try {
       await api.updateRecordingFolder(id, { name: newName });
       await loadFolders();
-      actions.showToast('Ordner umbenannt', 'success');
+      actions.showToast(t('toast.ordnerUmbenannt'), 'success');
     } catch (e) {
-      actions.showToast('Umbenennen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -153,9 +161,9 @@
     try {
       await api.deleteRecordingFolder(id);
       await loadFolders();
-      actions.showToast('Ordner gelöscht', 'success');
+      actions.showToast(t('toast.ordnerGeloescht'), 'success');
     } catch (e) {
-      actions.showToast('Löschen fehlgeschlagen (Ordner nicht leer?)', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -177,9 +185,9 @@
     try {
       await api.moveSession(sessionId, folderId);
       await loadSessions();
-      actions.showToast('Aufnahme verschoben', 'success');
+      actions.showToast(t('toast.aufnahmeVerschoben'), 'success');
     } catch (e) {
-      actions.showToast('Verschieben fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -231,10 +239,10 @@
         metadata = [];
         segments = [];
       }
-      actions.showToast('Aufnahme gelöscht', 'success');
+      actions.showToast(t('toast.aufnahmeGeloescht'), 'success');
       loadStats();
     } catch (e) {
-      actions.showToast('Fehler beim Löschen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -299,10 +307,10 @@
         sessions = sessions.filter(s => s.id !== selectedSession.id);
         selectedSession = null;
       }
-      actions.showToast('Segment gelöscht', 'success');
+      actions.showToast(t('toast.segmentGeloescht'), 'success');
       loadStats();
     } catch (e) {
-      actions.showToast('Fehler beim Löschen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -313,7 +321,7 @@
     try {
       const result = await api.splitSession(session.id);
       if (result.success) {
-        actions.showToast(`${result.segments} Segmente erzeugt`, 'success');
+        actions.showToast(t('recordings.segmenteErzeugtToast', { count: result.segments }), 'success');
         const segResult = await api.getSegments(session.id);
         segments = segResult.segments || [];
         metadata = [];
@@ -321,7 +329,7 @@
         loadSessions();
       }
     } catch (e) {
-      actions.showToast('Split fehlgeschlagen', 'error');
+      actions.showToast(t('recordings.splitFehler'), 'error');
     }
     splitting = false;
   }
@@ -344,9 +352,9 @@
 
   function toggleFileExplorer() {
     if (view === 'file-explorer') {
-      view = 'details';
+      setView('details');
     } else {
-      view = 'file-explorer';
+      setView('file-explorer');
       loadFileExplorer();
     }
   }
@@ -367,11 +375,11 @@
   async function handleFileExplorerDelete(file) {
     try {
       await api.deleteFileExplorer(file.path);
-      actions.showToast('Datei gelöscht', 'success');
+      actions.showToast(t('toast.dateiGeloescht'), 'success');
       await loadFileExplorer();
       await loadStats();
     } catch (e) {
-      actions.showToast('Löschen fehlgeschlagen', 'error');
+      actions.showToast(t('toast.loeschenFehler'), 'error');
     }
   }
 
@@ -389,7 +397,7 @@
     if (selectedSession && selectedSession.status !== 'recording') {
       splitSession(selectedSession);
     } else {
-      actions.showToast('Bitte eine Aufnahme auswählen', 'info');
+      actions.showToast(t('recordings.bitteAufnahmeAuswaehlen'), 'info');
     }
   }
 
@@ -465,18 +473,18 @@
         </div>
         <div class="detail-actions">
           {#if !isActive}
-            <button class="action-btn play-btn" class:playing={isPlaying} onclick={() => playSession(session)} title={isPlaying ? 'Stoppen' : 'Abspielen'}>
+            <button class="action-btn play-btn" class:playing={isPlaying} onclick={() => playSession(session)} title={isPlaying ? t('recordings.stoppen') : t('recordings.abspielen')}>
               <i class="fa-solid {isPlaying ? 'fa-stop' : 'fa-play'}"></i>
             </button>
             {#if folders.length > 0}
               <div class="move-dropdown">
-                <button class="action-btn" title="In Ordner verschieben">
+                <button class="action-btn" title={t('recordings.inOrdnerVerschieben')}>
                   <i class="fa-solid fa-folder-open"></i>
                 </button>
                 <div class="move-menu">
                   {#if session.folder_id}
                     <button class="move-item" onclick={() => moveSessionToFolder(session.id, null)}>
-                      <i class="fa-solid fa-arrow-up"></i> Root (kein Ordner)
+                      <i class="fa-solid fa-arrow-up"></i> {t('recordings.rootKeinOrdner')}
                     </button>
                   {/if}
                   {#each folders as folder}
@@ -489,14 +497,14 @@
                 </div>
               </div>
             {/if}
-            <button class="action-btn" onclick={() => downloadSession(session)} title="Herunterladen">
+            <button class="action-btn" onclick={() => downloadSession(session)} title={t('recordings.herunterladen')}>
               <i class="fa-solid fa-download"></i>
             </button>
-            <button class="action-btn delete-btn" onclick={() => deleteSession(session)} title="Aufnahme endgültig löschen">
+            <button class="action-btn delete-btn" onclick={() => deleteSession(session)} title={t('recordings.aufnahmeLoeschen')}>
               <i class="fa-solid fa-trash-can"></i>
             </button>
           {:else}
-            <button class="action-btn rec-btn" onclick={() => actions.stopRecording()} title="Aufnahme stoppen">
+            <button class="action-btn rec-btn" onclick={() => actions.stopRecording()} title={t('recordings.aufnahmeStoppen')}>
               <i class="fa-solid fa-stop"></i>
             </button>
           {/if}
@@ -508,7 +516,7 @@
         {#if isActive}
           {#if appState.recordingIcyEntries.length > 0}
             <div class="meta-list">
-              <div class="meta-header">ERKANNTE TITEL ({appState.recordingIcyEntries.length})</div>
+              <div class="meta-header">{t('recordings.erkannteTitle')} ({appState.recordingIcyEntries.length})</div>
               {#each appState.recordingIcyEntries as entry}
                 <div class="meta-entry live-entry">
                   <span class="meta-time">[{formatMetaTime(entry.t)}]</span>
@@ -517,13 +525,13 @@
               {/each}
             </div>
           {:else}
-            <div class="meta-empty">Noch keine Titelwechsel erkannt</div>
+            <div class="meta-empty">{t('recordings.nochKeineTitelwechsel')}</div>
           {/if}
         {:else if metadataLoading}
-          <div class="meta-loading">Lade Metadaten...</div>
+          <div class="meta-loading">{t('recordings.ladeMetadaten')}</div>
         {:else if segments.length > 0}
           <div class="meta-list">
-            <div class="meta-header">SEGMENTE ({segments.length} Tracks)</div>
+            <div class="meta-header">{t('recordings.segmente')} ({segments.length} {t('recordings.tracks')})</div>
             {#each segments as seg}
               <div class="segment-entry" class:playing={playingPath === seg.file_path} role="button" tabindex="0" onclick={() => playSegment(seg)}>
                 <span class="meta-time">[{formatMetaTime(seg.start_ms)}]</span>
@@ -531,10 +539,10 @@
                 <span class="segment-duration">{formatDurationMs(seg.duration_ms)}</span>
                 <span class="segment-size">{formatSize(seg.file_size)}</span>
                 <div class="segment-actions" onclick={(e) => e.stopPropagation()}>
-                  <button class="action-btn" onclick={(e) => downloadSegment(seg, e)} title="Herunterladen">
+                  <button class="action-btn" onclick={(e) => downloadSegment(seg, e)} title={t('recordings.herunterladen')}>
                     <i class="fa-solid fa-download"></i>
                   </button>
-                  <button class="action-btn delete-btn" onclick={(e) => deleteSegment(seg, e)} title="Segment endgültig löschen">
+                  <button class="action-btn delete-btn" onclick={(e) => deleteSegment(seg, e)} title={t('recordings.segmentLoeschen')}>
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
                 </div>
@@ -544,7 +552,7 @@
         {:else if metadata.length > 0}
           <div class="meta-list">
             <div class="meta-header-row">
-              <span class="meta-header">TRACKLIST ({metadata.length} Titel)</span>
+              <span class="meta-header">{t('recordings.tracklist')} ({metadata.length} {t('recordings.titel')})</span>
               <button
                 class="split-btn"
                 onclick={() => splitSession(session)}
@@ -552,7 +560,7 @@
                 title="Tracks in einzelne Dateien schneiden"
               >
                 <i class="fa-solid {splitting ? 'fa-spinner fa-spin' : 'fa-scissors'}"></i>
-                {splitting ? 'SCHNEIDE...' : 'SEGMENTE ERZEUGEN'}
+                {splitting ? t('recordings.schneide') : t('recordings.segmenteErzeugen')}
               </button>
             </div>
             {#each metadata as entry, i}
@@ -563,15 +571,15 @@
             {/each}
           </div>
         {:else}
-          <div class="meta-empty">Keine ICY-Metadaten vorhanden</div>
+          <div class="meta-empty">{t('recordings.keineIcyMetadaten')}</div>
         {/if}
       </div>
     {:else}
       <!-- Welcome -->
       <div class="welcome-state">
         <i class="fa-solid fa-microphone welcome-icon"></i>
-        <HiFiDisplay size="medium">AUFNAHMEN</HiFiDisplay>
-        <p class="welcome-hint">Aufnahme in der Seitenliste auswählen</p>
+        <HiFiDisplay size="medium">{t('recordings.aufnahmen')}</HiFiDisplay>
+        <p class="welcome-hint">{t('recordings.aufnahmeAuswaehlen')}</p>
       </div>
     {/if}
   </div>

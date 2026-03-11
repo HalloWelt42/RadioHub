@@ -7,7 +7,11 @@ export default {
     tuner: 'TUNER',
     recorder: 'RECORDER',
     podcast: 'PODCAST',
-    setup: 'SETUP'
+    setup: 'SETUP',
+    dark: 'DARK',
+    light: 'LIGHT',
+    online: 'ONLINE',
+    offline: 'OFFLINE'
   },
 
   // === Setup Tabs ===
@@ -22,7 +26,12 @@ export default {
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'STATIONS',
-    kategorien: 'CATEGORIES'
+    kategorien: 'CATEGORIES',
+    // Allgemein Sub-Tabs
+    einstellungen: 'SETTINGS',
+    bedanken: 'DONATE',
+    lizenz: 'LICENSE',
+    recht: 'LEGAL'
   },
 
   // === Setup Allgemein ===
@@ -40,7 +49,8 @@ export default {
     bufferAufnahme: 'BUFFER RECORDING',
     lookback: 'LOOKBACK',
     lookbackHint: 'How many minutes should the HLS recording look back into the past?',
-    language: 'LANGUAGE'
+    language: 'LANGUAGE',
+    datenschutzNutzung: 'PRIVACY & TERMS OF SERVICE'
   },
 
   // === Setup Podcast ===
@@ -65,7 +75,10 @@ export default {
     standardOrdner: 'New recordings go to the default folder (Root)',
     aktivieren: 'ACTIVATE',
     root: 'ROOT',
-    aufnahmen: 'Recordings'
+    aufnahmen: 'Recordings',
+    nochKeineOrdner: 'No folders created yet',
+    ordnerHint: 'Folders help organize recordings',
+    ordnernameErforderlich: 'Folder name required'
   },
 
   // === Setup Filter ===
@@ -89,7 +102,11 @@ export default {
     landSuchen: 'Search country...',
     sichtbareLaender: 'VISIBLE COUNTRIES',
     tagHinzufuegen: 'Add tag...',
-    aktiv: 'Active:'
+    aktiv: 'Active:',
+    sprachen: 'Languages',
+    tags: 'Tags',
+    ausblendenFehler: 'Hide failed',
+    senderAusgeblendet: '{count} stations hidden ({total} total)'
   },
 
   // === Setup Sender ===
@@ -112,7 +129,22 @@ export default {
     filterLabel: 'FILTER',
     werbung: 'AD',
     ein: 'ON',
-    ausLabel: 'OFF'
+    ausLabel: 'OFF',
+    stopp: 'STOP',
+    ausgeblendete: 'HIDDEN STATIONS',
+    alleFreigeben: 'RELEASE ALL',
+    keineAusgeblendet: 'No hidden stations',
+    adressPruefung: 'URL check',
+    adressPruefungHint: 'Detects ad keywords in stream URLs',
+    serverPruefung: 'Server check',
+    serverPruefungHint: 'Detects ad servers from response data',
+    abWannVerdaechtig: 'SUSPECT THRESHOLD',
+    thresholdHint: 'Stations below this value are ignored',
+    senderGeprueft: '{checked} stations checked, {suspects} suspect',
+    entscheidungFehler: 'Decision failed',
+    freigabeFehler: 'Release failed',
+    kategorieFreigegeben: 'Category released',
+    senderFreigegeben: '{count} stations released'
   },
 
   // === Setup Kategorien ===
@@ -125,7 +157,8 @@ export default {
     nochKeine: 'No categories created yet',
     hintRadio: 'Categories filter stations in the sidebar',
     hintPodcast: 'Categories filter podcasts in the sidebar',
-    hintRecording: 'Categories filter recordings in the sidebar'
+    hintRecording: 'Categories filter recordings in the sidebar',
+    nameErforderlich: 'Name required'
   },
 
   // === Setup System ===
@@ -135,7 +168,40 @@ export default {
     countries: 'COUNTRIES',
     syncNow: 'SYNC NOW',
     syncing: 'SYNCING...',
-    systemInfo: 'SYSTEM INFO'
+    systemInfo: 'SYSTEM INFO',
+    syncFehler: 'Sync failed'
+  },
+
+  // === Setup Speicher ===
+  speicher: {
+    speicherZonen: 'STORAGE ZONES',
+    belegt: 'used',
+    frei: 'free',
+    datei: 'File',
+    dateien: 'Files',
+    pfadHint: 'Path changes do not move data. Existing files remain at their current location.',
+    pruefen: 'Check',
+    beschreibbar: 'Writable',
+    nichtBeschreibbar: 'Path not writable',
+    validierungFehler: 'Validation failed',
+    verzeichnisErstellt: 'Directory was created',
+    pfadAendern: 'Change path',
+    speichert: 'Saving...',
+    pfadAktualisiert: 'Storage path updated'
+  },
+
+  // === Setup Dienste ===
+  dienste: {
+    externeDienste: 'EXTERNAL SERVICES',
+    hint: 'Shows all external data sources. Configurable services can be redirected to custom instances if needed.',
+    eingehend: 'INCOMING',
+    ausgehend: 'OUTGOING',
+    lokal: 'LOCAL',
+    endpunktAendern: 'Change endpoint',
+    standard: 'Default',
+    zuruecksetzenFehler: 'Reset failed',
+    placeholderMulti: 'One URL per line...',
+    placeholderSingle: 'Enter URL...'
   },
 
   // === Player ===
@@ -166,7 +232,19 @@ export default {
     hlsMode: 'Switch to HLS stream (time-shifted)',
     moduswechselNicht: 'Mode switch not available',
     recModuswechsel: 'Recording in progress -- no mode switch',
-    fehlerSchliessen: 'Close error message'
+    fehlerSchliessen: 'Close error message',
+    nichtBeiWiedergabe: 'Not during recording playback',
+    keinePrevEpisode: 'No previous episode',
+    keineNextEpisode: 'No next episode',
+    keinePrevTitel: 'No previous track',
+    keineNextTitel: 'No next track',
+    wiedergabeModus: 'Playback mode (recording playback only)',
+    linear: 'Linear (forward)',
+    rueckwaerts: 'Reverse',
+    endlosschleife: 'Loop',
+    zufall: 'Shuffle',
+    tuner: 'Tuner',
+    aufnahme: 'Recording'
   },
 
   // === Stations ===
@@ -181,7 +259,22 @@ export default {
     zuFavoriten: 'Add to favorites',
     ausFavoriten: 'Remove from favorites',
     alsWerbung: 'Mark as advertisement',
-    senderAusblenden: 'Hide station'
+    senderAusblenden: 'Hide station',
+    laenderKonfigurieren: 'Configure countries in Setup',
+    kategorienErstellen: 'Create categories in Setup',
+    kategorienLabel: 'CATEGORIES'
+  },
+
+  // === HiFi UI Components ===
+  hifi: {
+    keineEintraege: 'No entries',
+    ausgewaehlt: '{count} selected',
+    auswahlSchliessen: 'Close selection',
+    auswahlOeffnen: 'Open selection',
+    auswahlZuruecksetzen: 'Reset entire selection',
+    alleEntfernen: 'Remove all',
+    abwaehlen: 'Deselect {label}',
+    auswaehlen: 'Select {label}'
   },
 
   // === Common Buttons ===
@@ -192,7 +285,10 @@ export default {
     bearbeiten: 'EDIT',
     aktualisieren: 'UPDATE',
     name: 'NAME',
-    laden: 'Loading...'
+    laden: 'Loading...',
+    fehler: 'Error',
+    themeLight: 'Switch to light theme',
+    themeDark: 'Switch to dark theme'
   },
 
   // === Toast Messages ===
@@ -226,6 +322,182 @@ export default {
     standardWiederhergestellt: 'Default restored',
     scanBeendet: 'Scan complete',
     senderFreigegeben: 'Station released',
-    senderAusgeblendet: 'Station hidden'
+    senderAusgeblendet: 'Station hidden',
+    aktivierungFehler: 'Activation failed',
+    deaktivierungFehler: 'Deactivation failed',
+    kategorienLadenFehler: 'Failed to load categories'
+  },
+
+  // === Podcasts ===
+  podcasts: {
+    podcastDateien: 'Podcast Files',
+    podcastsSuchen: 'Search podcasts...',
+    alleEpisoden: 'All Episodes',
+    podcastAuswaehlen: 'Select a podcast from the sidebar',
+    podcastsSuchenAbonnieren: 'Search and subscribe to podcasts',
+    podcastsSuchenBtn: 'Search podcasts',
+    dateienLadenFehler: 'Failed to load files',
+    sucheFehler: 'Search failed',
+    abonnierenFehler: 'Subscribe failed',
+    aboEntfernt: 'Subscription removed',
+    entfernenFehler: 'Remove failed',
+    aktualisiereFehler: 'Update failed',
+    autoDownloadAktiviert: 'Auto-download enabled',
+    autoDownloadDeaktiviert: 'Auto-download disabled',
+    einstellungFehler: 'Setting failed',
+    episodeHeruntergeladen: 'Episode downloaded',
+    downloadFehler: 'Download failed',
+    downloadGeloescht: 'Download deleted',
+    markierungFehler: 'Mark failed',
+    alleBereitsHeruntergeladen: 'All episodes already downloaded',
+    downloadAbgebrochen: 'Download cancelled ({done} of {total})',
+    episodenHeruntergeladen: '{total} episodes downloaded',
+    aktualisiereFeeds: 'Updating all feeds...',
+    alleFeedsAktualisiert: 'All feeds updated',
+    abonnements: 'SUBSCRIPTIONS',
+    ungehoert: 'Unplayed',
+    alle: 'All',
+    downloadsFilter: 'Downloads',
+    filterLabel: 'FILTER',
+    filterAktiv: 'Filter active',
+    filterInaktiv: 'Filter inactive',
+    sucheSchliessen: 'Close search',
+    suchen: 'Search',
+    alleEpisodenAnzeigen: 'Show all episodes',
+    dateiExplorerSchliessen: 'Close file explorer',
+    dateiExplorerOeffnen: 'Open file explorer',
+    alleFeedsHolen: 'Fetch all feeds from server',
+    episodenLaden: 'Fetch episodes from server',
+    wirdAbgespielt: 'Playing',
+    ausgewaehltStatus: 'Selected',
+    neueEpisoden: 'New episodes available',
+    keineNeuen: 'No new episodes',
+    naechsterRefresh: 'Next automatic feed refresh',
+    episodenLabel: 'Episodes',
+    zurueckZurUebersicht: 'Back to overview',
+    gesamt: 'Total',
+    autoDl: 'Auto-DL',
+    feedHolen: 'Fetch feed from server',
+    alleBereitsLokal: 'All episodes already local',
+    alleLokalHerunterladen: 'Download all episodes locally',
+    autoDownloadAktivierenHint: 'Enable auto-download: New episodes will be downloaded automatically',
+    autoDownloadDeaktivierenHint: 'Disable auto-download: New episodes will not be downloaded automatically',
+    aboEntfernenHint: 'Remove podcast subscription (local files are kept)',
+    datum: 'Date',
+    dauer: 'Duration',
+    groesse: 'Size',
+    staffel: 'Season',
+    heruntergeladen: 'Downloaded',
+    gehoert: 'Played',
+    fortsetzen: 'Resume',
+    fortsetzenBei: 'Resume at {position}',
+    episodeAbspielen: 'Play episode',
+    abspielen: 'Play',
+    downloadLoeschen: 'Delete download',
+    loeschenLabel: 'Delete',
+    episodeHerunterladen: 'Download episode locally',
+    lade: 'Loading...',
+    herunterladen: 'Download',
+    alsUngehoert: 'Mark as unplayed',
+    alsGehoert: 'Mark as played',
+    ungehoertLabel: 'Unplayed',
+    gehoertLabel: 'Played',
+    breiteAnpassen: 'Adjust width',
+    epLabel: 'Ep.',
+    neuLabel: 'new'
+  },
+
+  // === Recordings ===
+  recordings: {
+    aufnahmen: 'RECORDINGS',
+    aufnahmeAuswaehlen: 'Select a recording from the sidebar',
+    bitteAufnahmeAuswaehlen: 'Please select a recording',
+    erkannteTitle: 'DETECTED TITLES',
+    nochKeineTitelwechsel: 'No title changes detected yet',
+    ladeMetadaten: 'Loading metadata...',
+    segmente: 'SEGMENTS',
+    tracks: 'Tracks',
+    tracklist: 'TRACKLIST',
+    titel: 'Titles',
+    schneide: 'CUTTING...',
+    segmenteErzeugen: 'CREATE SEGMENTS',
+    keineIcyMetadaten: 'No ICY metadata available',
+    stoppen: 'Stop',
+    abspielen: 'Play',
+    herunterladen: 'Download',
+    aufnahmeLoeschen: 'Permanently delete recording',
+    aufnahmeStoppen: 'Stop recording',
+    segmentLoeschen: 'Permanently delete segment',
+    inOrdnerVerschieben: 'Move to folder',
+    rootKeinOrdner: 'Root (no folder)',
+    segmenteErzeugtToast: '{count} segments created',
+    splitFehler: 'Split failed',
+    hlsBufferLaeuft: 'HLS buffer recording in progress',
+    aufnahmeLaeuft: 'Recording in progress',
+    wirdAbgespielt: 'Playing',
+    ausgewaehltStatus: 'Selected',
+    inaktiv: 'Inactive',
+    keinOrdner: 'No folder',
+    sucheSchliessen: 'Close search',
+    aufnahmenDurchsuchen: 'Search recordings',
+    aufnahmenSchneiden: 'Cut recordings (create segments)',
+    dateiExplorerSchliessen: 'Close file explorer',
+    dateiExplorerOeffnen: 'Open file explorer',
+    neuenOrdnerErstellen: 'Create new folder',
+    sessionListeAktualisieren: 'Refresh session list',
+    neuerOrdnername: 'New folder name...',
+    sendername: 'Station name...',
+    keineAufnahmen: 'No recordings available',
+    aktiverOrdner: 'Active recording folder',
+    inaktiverOrdner: 'Inactive folder',
+    ordnerDeaktivieren: 'Deactivate recording folder',
+    alsAufnahmeordner: 'Activate as recording folder',
+    ordnerUmbenennen: 'Rename folder',
+    ordnerLoeschenHint: 'Delete folder (only if empty)',
+    leer: 'Empty',
+    unzugeordnet: 'UNASSIGNED',
+    inOrdnerVerschiebenTitle: 'Move to folder',
+    anzahlDateien: 'Number of recording files',
+    belegterSpeicher: 'Used storage',
+    freierSpeicher: 'Free storage',
+    dateienLabel: 'Files',
+    gbFrei: 'GB free',
+    breiteAnpassen: 'Adjust width'
+  },
+
+  // === FileExplorer ===
+  fileExplorer: {
+    ausgewaehlt: '{count} selected ({size})',
+    alleAuswaehlen: 'Select all files',
+    auswahlAufheben: 'Deselect all',
+    alsZipHerunterladen: 'Download selected files as ZIP (with M3U playlist)',
+    ausgewaehlteSchneiden: 'Cut selected recordings (create segments)',
+    dateilisteAktualisieren: 'Refresh file list',
+    ladeDateien: 'Loading files...',
+    keineDateien: 'No files available',
+    ordnerAuswaehlen: 'Select all files in this folder',
+    alleAusgewaehlt: 'All files selected',
+    teilweiseAusgewaehlt: 'Partially selected',
+    keineAusgewaehlt: 'No files selected',
+    verwaist: 'Orphaned',
+    dateien: '{count} files',
+    dateiAuswaehlen: 'Select file for ZIP download',
+    fuerDownload: 'Selected for download',
+    nichtAusgewaehlt: 'Not selected',
+    dateiAbspielen: 'Play file',
+    dateiLoeschen: 'Permanently delete file'
+  },
+
+  // === Donation ===
+  spende: {
+    adresseKopiert: 'Address copied',
+    kopierenFehler: 'Copy failed',
+    unterstuetzen: 'Support RadioHub',
+    introText: 'RadioHub is a non-commercial open-source project. If you enjoy the software, I would be happy about your support.',
+    kofiText: 'Support me on Ko-fi',
+    oderKrypto: 'OR VIA CRYPTOCURRENCY',
+    kopiert: 'COPIED',
+    adresseKopieren: 'COPY ADDRESS',
+    danke: 'Thank you for your support!'
   }
 };

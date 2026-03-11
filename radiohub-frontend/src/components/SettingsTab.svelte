@@ -7,30 +7,42 @@
   import SetupSpeicher from './setup/SetupSpeicher.svelte';
   import SetupDienste from './setup/SetupDienste.svelte';
   import SetupSystem from './setup/SetupSystem.svelte';
-  import { appState } from '../lib/store.svelte.js';
-
-  let activeTab = $state('allgemein');
+  import { appState, actions } from '../lib/store.svelte.js';
+  import { t } from '../lib/i18n.svelte.js';
+  import * as router from '../lib/router.js';
 
   const tabs = [
-    { id: 'allgemein', label: 'ALLGEMEIN', icon: 'fa-sliders' },
-    { id: 'radio', label: 'RADIO', icon: 'fa-tower-broadcast' },
-    { id: 'podcast', label: 'PODCAST', icon: 'fa-podcast' },
-    { id: 'aufnahmen', label: 'AUFNAHMEN', icon: 'fa-microphone' },
-    { id: 'speicher', label: 'SPEICHER', icon: 'fa-hard-drive' },
-    { id: 'dienste', label: 'DIENSTE', icon: 'fa-plug' },
-    { id: 'system', label: 'SYSTEM', icon: 'fa-terminal' }
+    { id: 'allgemein', icon: 'fa-sliders' },
+    { id: 'radio', icon: 'fa-tower-broadcast' },
+    { id: 'podcast', icon: 'fa-podcast' },
+    { id: 'aufnahmen', icon: 'fa-microphone' },
+    { id: 'speicher', icon: 'fa-hard-drive' },
+    { id: 'dienste', icon: 'fa-plug' },
+    { id: 'system', icon: 'fa-terminal' }
   ];
 
-  // Deep-Link: Anderer Tab kann setupSubTab setzen um direkt zu einem Sub-Tab zu springen
-  const subTabMapping = { filter: 'radio', sender: 'radio', kategorien: 'radio' };
+  // activeTab aus Route-Segmenten ableiten
+  let activeTab = $derived.by(() => {
+    if (appState.activeTab !== 'settings') return 'allgemein';
+    const seg = appState.routeSegments;
+    const tabId = seg?.[0] || 'allgemein';
+    // Prüfen ob Tab-ID gültig ist
+    return tabs.some(t => t.id === tabId) ? tabId : 'allgemein';
+  });
 
+  // Redirect wenn /setup ohne Sub-Tab aufgerufen wird
   $effect(() => {
-    if (appState.setupSubTab) {
-      const target = subTabMapping[appState.setupSubTab] || appState.setupSubTab;
-      activeTab = target;
-      appState.setupSubTab = null;
+    if (appState.activeTab === 'settings' && (!appState.routeSegments || appState.routeSegments.length === 0)) {
+      router.navigate('/setup/allgemein/einstellungen', { replace: true });
+      appState.routeSegments = ['allgemein', 'einstellungen'];
     }
   });
+
+  function selectSetupTab(tabId) {
+    const subDefaults = router.getSubDefault(tabId);
+    const path = router.buildPath('setup', tabId, ...subDefaults);
+    actions.navigateTo(path);
+  }
 </script>
 
 <div class="setup-layout">
@@ -40,11 +52,11 @@
       <button
         class="setup-nav-btn"
         class:active={activeTab === tab.id}
-        onclick={() => activeTab = tab.id}
+        onclick={() => selectSetupTab(tab.id)}
       >
         <HiFiLed color={activeTab === tab.id ? 'green' : 'off'} size="small" />
         <i class="fa-solid {tab.icon}"></i>
-        <span>{tab.label}</span>
+        <span>{t('setup.' + tab.id)}</span>
       </button>
     {/each}
   </nav>

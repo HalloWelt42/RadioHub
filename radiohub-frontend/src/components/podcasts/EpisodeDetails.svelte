@@ -8,6 +8,7 @@
   import InfoBadge from '../shared/InfoBadge.svelte';
   import { api } from '../../lib/api.js';
   import { formatDurationHuman, formatDate, formatSize } from '../../lib/formatters.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     episode,
@@ -36,22 +37,22 @@
 
       <div class="details-meta-grid">
         <div class="meta-item">
-          <span class="meta-label">Datum</span>
+          <span class="meta-label">{t('podcasts.datum')}</span>
           <span class="meta-value">{formatDate(episode.published_at)}</span>
         </div>
         <div class="meta-item">
-          <span class="meta-label">Dauer</span>
+          <span class="meta-label">{t('podcasts.dauer')}</span>
           <span class="meta-value">{formatDurationHuman(episode.duration)}</span>
         </div>
         {#if episode.file_size > 0}
           <div class="meta-item">
-            <span class="meta-label">Größe</span>
+            <span class="meta-label">{t('podcasts.groesse')}</span>
             <span class="meta-value">{formatSize(episode.file_size)}</span>
           </div>
         {/if}
         {#if episode.season_number}
           <div class="meta-item">
-            <span class="meta-label">Staffel</span>
+            <span class="meta-label">{t('podcasts.staffel')}</span>
             <span class="meta-value">S{episode.season_number}{episode.episode_number ? 'E' + episode.episode_number : ''}</span>
           </div>
         {/if}
@@ -59,38 +60,38 @@
 
       <div class="details-badges">
         {#if episode.is_downloaded}
-          <InfoBadge type="downloaded" label="Heruntergeladen" />
+          <InfoBadge type="downloaded" label={t('podcasts.heruntergeladen')} />
         {/if}
         {#if episode.is_played}
-          <InfoBadge type="played" label="Gehört" />
+          <InfoBadge type="played" label={t('podcasts.gehoert')} />
         {:else if episode.resume_position > 0}
-          <InfoBadge type="resume" label="Fortsetzen bei {formatDurationHuman(episode.resume_position)}" />
+          <InfoBadge type="resume" label={t('podcasts.fortsetzenBei', { position: formatDurationHuman(episode.resume_position) })} />
         {/if}
       </div>
 
       <div class="details-actions">
-        <button class="detail-action-btn" onclick={() => onplay(episode)} title="Episode abspielen">
-          <i class="fa-solid fa-play action-icon-play"></i> Abspielen
+        <button class="detail-action-btn" onclick={() => onplay(episode)} title={t('podcasts.episodeAbspielen')}>
+          <i class="fa-solid fa-play action-icon-play"></i> {t('podcasts.abspielen')}
         </button>
 
         {#if episode.is_downloaded}
-          <button class="detail-action-btn" onclick={() => ondeletedownload(episode)} title="Download löschen">
-            <i class="fa-solid fa-trash action-icon-delete"></i> Löschen
+          <button class="detail-action-btn" onclick={() => ondeletedownload(episode)} title={t('podcasts.downloadLoeschen')}>
+            <i class="fa-solid fa-trash action-icon-delete"></i> {t('podcasts.loeschenLabel')}
           </button>
         {:else}
-          <button class="detail-action-btn" onclick={() => ondownload(episode)} disabled={isDownloading} title="Episode lokal herunterladen">
+          <button class="detail-action-btn" onclick={() => ondownload(episode)} disabled={isDownloading} title={t('podcasts.episodeHerunterladen')}>
             <i class="fa-solid {isDownloading ? 'fa-spinner fa-spin' : 'fa-arrow-down'}"></i>
-            {isDownloading ? 'Lade...' : 'Herunterladen'}
+            {isDownloading ? t('podcasts.lade') : t('podcasts.herunterladen')}
           </button>
         {/if}
 
         <button
           class="detail-action-btn"
           onclick={() => ontoggleplayed(episode)}
-          title={episode.is_played ? 'Als ungehört markieren' : 'Als gehört markieren'}
+          title={episode.is_played ? t('podcasts.alsUngehoert') : t('podcasts.alsGehoert')}
         >
           <i class="fa-solid {episode.is_played ? 'fa-eye-slash' : 'fa-check'}"></i>
-          {episode.is_played ? 'Ungehört' : 'Gehört'}
+          {episode.is_played ? t('podcasts.ungehoertLabel') : t('podcasts.gehoertLabel')}
         </button>
       </div>
     </div>

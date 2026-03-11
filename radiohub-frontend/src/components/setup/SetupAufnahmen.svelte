@@ -3,6 +3,7 @@
   import HiFiKnob from '../hifi/HiFiKnob.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   // === STATE ===
   let folders = $state([]);
@@ -26,7 +27,7 @@
       folders = folderData.folders || [];
       config = configData;
     } catch (e) {
-      actions.showToast('Laden fehlgeschlagen', 'error');
+      actions.showToast(t('toast.ladenFehler'), 'error');
     }
     isLoading = false;
   }
@@ -36,7 +37,7 @@
       await api.updateConfig({ [key]: value });
       config[key] = value;
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -61,23 +62,23 @@
   async function saveForm() {
     const name = formName.trim();
     if (!name) {
-      actions.showToast('Ordnername erforderlich', 'error');
+      actions.showToast(t('aufnahmen.ordnernameErforderlich'), 'error');
       return;
     }
     try {
       if (editingId) {
         await api.updateRecordingFolder(editingId, { name });
-        actions.showToast('Ordner umbenannt');
+        actions.showToast(t('toast.ordnerUmbenannt'));
       } else {
         await api.createRecordingFolder(name);
-        actions.showToast('Ordner erstellt');
+        actions.showToast(t('toast.ordnerErstellt'));
       }
       showForm = false;
       editingId = null;
       const data = await api.getRecordingFolders();
       folders = data.folders || [];
     } catch (e) {
-      actions.showToast('Speichern fehlgeschlagen', 'error');
+      actions.showToast(t('toast.speichernFehler'), 'error');
     }
   }
 
@@ -85,10 +86,10 @@
     try {
       await api.deleteRecordingFolder(id);
       folders = folders.filter(f => f.id !== id);
-      actions.showToast('Ordner gelöscht');
+      actions.showToast(t('toast.ordnerGeloescht'));
       if (editingId === id) cancelForm();
     } catch (e) {
-      const msg = e.message || 'Löschen fehlgeschlagen';
+      const msg = e.message || t('toast.loeschenFehler');
       actions.showToast(msg, 'error');
     }
   }
@@ -97,9 +98,9 @@
     try {
       await api.activateRecordingFolder(id);
       folders = folders.map(f => ({ ...f, is_active: f.id === id ? 1 : 0 }));
-      actions.showToast('Aufnahmeordner aktiviert');
+      actions.showToast(t('toast.ordnerAktiviert'));
     } catch (e) {
-      actions.showToast('Aktivierung fehlgeschlagen', 'error');
+      actions.showToast(t('toast.aktivierungFehler'), 'error');
     }
   }
 
@@ -107,9 +108,9 @@
     try {
       await api.deactivateRecordingFolder();
       folders = folders.map(f => ({ ...f, is_active: 0 }));
-      actions.showToast('Standard-Ordner aktiv (Root)');
+      actions.showToast(t('toast.standardOrdner'));
     } catch (e) {
-      actions.showToast('Deaktivierung fehlgeschlagen', 'error');
+      actions.showToast(t('toast.deaktivierungFehler'), 'error');
     }
   }
 
@@ -133,7 +134,7 @@
     <!-- Aufnahme-Einstellungen -->
     <div class="hifi-panel">
       <div class="hifi-panel-header">
-        <span class="hifi-font-label">AUFNAHME-FORMAT</span>
+        <span class="hifi-font-label">{t('aufnahmen.aufnahmeFormat')}</span>
       </div>
       <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
         <HiFiKnob
@@ -142,7 +143,7 @@
           max={320}
           step={32}
           unit="kbps"
-          label="BITRATE"
+          label={t('aufnahmen.bitrate')}
           onchange={(e) => saveConfig('recording_bitrate', e.value)}
         />
       </div>
@@ -156,10 +157,10 @@
     <!-- Ordner-Verwaltung (volle Breite) -->
     <div class="hifi-panel span-full">
       <div class="hifi-panel-header">
-        <span class="hifi-font-label">AUFNAHME-ORDNER ({folders.length})</span>
+        <span class="hifi-font-label">{t('aufnahmen.ordner')} ({folders.length})</span>
         {#if !showForm}
           <button class="action-btn create-btn" onclick={startCreate}>
-            + NEUER ORDNER
+            {t('aufnahmen.neuerOrdner')}
           </button>
         {/if}
       </div>
@@ -169,7 +170,7 @@
         {#if showForm}
           <div class="folder-form">
             <div class="form-group">
-              <span class="form-label">ORDNERNAME</span>
+              <span class="form-label">{t('aufnahmen.ordnername')}</span>
               <input
                 type="text"
                 class="form-input"
@@ -180,10 +181,10 @@
             </div>
             <div class="form-actions">
               <button class="action-btn save-btn" onclick={saveForm} disabled={!formName.trim()}>
-                SPEICHERN
+                {t('common.speichern')}
               </button>
               <button class="action-btn cancel-btn" onclick={cancelForm}>
-                ABBRECHEN
+                {t('common.abbrechen')}
               </button>
             </div>
           </div>
@@ -193,13 +194,13 @@
         {#if folders.some(f => f.is_active)}
           <div class="active-hint">
             <HiFiLed color="green" size="small" />
-            <span>Neue Aufnahmen gehen in: <strong>{folders.find(f => f.is_active)?.name}</strong></span>
-            <button class="mini-btn" onclick={deactivateAll}>ROOT</button>
+            <span>{t('aufnahmen.neueAufnahmenIn')} <strong>{folders.find(f => f.is_active)?.name}</strong></span>
+            <button class="mini-btn" onclick={deactivateAll}>{t('aufnahmen.root')}</button>
           </div>
         {:else}
           <div class="active-hint">
             <HiFiLed color="amber" size="small" />
-            <span>Neue Aufnahmen gehen in den Standard-Ordner (Root)</span>
+            <span>{t('aufnahmen.standardOrdner')}</span>
           </div>
         {/if}
 
@@ -211,22 +212,22 @@
                 <div class="folder-info">
                   <HiFiLed color={folder.is_active ? 'green' : 'off'} size="small" />
                   <span class="folder-name">{folder.name}</span>
-                  <span class="folder-count">{folder.session_count || 0} Aufnahmen</span>
+                  <span class="folder-count">{folder.session_count || 0} {t('aufnahmen.aufnahmen')}</span>
                 </div>
                 <div class="folder-actions">
                   {#if !folder.is_active}
-                    <button class="mini-btn" onclick={() => activateFolder(folder.id)}>AKTIVIEREN</button>
+                    <button class="mini-btn" onclick={() => activateFolder(folder.id)}>{t('aufnahmen.aktivieren')}</button>
                   {/if}
-                  <button class="mini-btn" onclick={() => startEdit(folder)}>BEARBEITEN</button>
-                  <button class="mini-btn delete-btn" onclick={() => deleteFolder(folder.id)}>LÖSCHEN</button>
+                  <button class="mini-btn" onclick={() => startEdit(folder)}>{t('common.bearbeiten')}</button>
+                  <button class="mini-btn delete-btn" onclick={() => deleteFolder(folder.id)}>{t('common.loeschen')}</button>
                 </div>
               </div>
             {/each}
           </div>
         {:else if !showForm}
           <div class="empty-state">
-            <span class="hifi-font-label">Noch keine Ordner erstellt</span>
-            <span class="empty-hint">Ordner helfen beim Organisieren von Aufnahmen</span>
+            <span class="hifi-font-label">{t('aufnahmen.nochKeineOrdner')}</span>
+            <span class="empty-hint">{t('aufnahmen.ordnerHint')}</span>
           </div>
         {/if}
       </div>

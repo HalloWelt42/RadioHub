@@ -2,6 +2,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   // === SUB-TAB ===
   let subTab = $state('werbung');
@@ -143,9 +144,9 @@
 
     async function finishScan() {
       if (totalChecked > 0) {
-        actions.showToast(`${totalChecked} Sender geprüft, ${totalSuspects} verdächtig`);
+        actions.showToast(t('senderSetup.senderGeprueft', { checked: totalChecked, suspects: totalSuspects }));
       } else {
-        actions.showToast('Scan beendet', 'info');
+        actions.showToast(t('toast.scanBeendet'), 'info');
       }
       scanProgress = null;
       isScanning = false;
@@ -167,13 +168,13 @@
       await api.decideAd(uuid, action);
       suspects = suspects.filter(s => s.uuid !== uuid);
       if (action === 'block') {
-        actions.showToast('Sender ausgeblendet', 'info');
+        actions.showToast(t('toast.senderAusgeblendet'), 'info');
         loadBlocked();
       } else {
-        actions.showToast('Sender freigegeben', 'info');
+        actions.showToast(t('toast.senderFreigegeben'), 'info');
       }
     } catch (e) {
-      actions.showToast('Entscheidung fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.entscheidungFehler'), 'error');
     }
   }
 
@@ -186,10 +187,10 @@
       }
       suspects = [];
       if (action === 'block') {
-        actions.showToast(`${count} Sender ausgeblendet`, 'info');
+        actions.showToast(t('toast.senderAusgeblendet'), 'info');
         loadBlocked();
       } else {
-        actions.showToast(`${count} Sender freigegeben`, 'info');
+        actions.showToast(t('senderSetup.senderFreigegeben', { count }), 'info');
       }
       await loadAdSummary();
     };
@@ -200,10 +201,10 @@
     isReleasing = true;
     try {
       const data = await api.releaseStations({ reason });
-      actions.showToast(`${data.released_count} Sender freigegeben`);
+      actions.showToast(t('senderSetup.senderFreigegeben', { count: data.released_count }));
       await loadBlocked();
     } catch (e) {
-      actions.showToast('Freigabe fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.freigabeFehler'), 'error');
     }
     isReleasing = false;
   }
@@ -212,10 +213,10 @@
     isReleasing = true;
     try {
       const data = await api.releaseStations({ all: true });
-      actions.showToast(`${data.released_count} Sender freigegeben`);
+      actions.showToast(t('senderSetup.senderFreigegeben', { count: data.released_count }));
       await loadBlocked();
     } catch (e) {
-      actions.showToast('Freigabe fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.freigabeFehler'), 'error');
     }
     isReleasing = false;
   }
@@ -224,10 +225,10 @@
     isReleasing = true;
     try {
       await api.releaseStations({ uuids: [uuid] });
-      actions.showToast('Sender freigegeben');
+      actions.showToast(t('toast.senderFreigegeben'));
       await loadBlocked();
     } catch (e) {
-      actions.showToast('Freigabe fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.freigabeFehler'), 'error');
     }
     isReleasing = false;
   }
@@ -241,10 +242,10 @@
           await api.releaseStations({ reason });
         }
       }
-      actions.showToast('Kategorie freigegeben');
+      actions.showToast(t('senderSetup.kategorieFreigegeben'));
       await loadBlocked();
     } catch (e) {
-      actions.showToast('Freigabe fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.freigabeFehler'), 'error');
     }
     isReleasing = false;
   }
@@ -264,9 +265,9 @@
   }
 
   function categoryLabel(cat) {
-    if (cat === 'manual') return 'MANUELL';
-    if (cat === 'filter') return 'FILTER';
-    if (cat === 'ad') return 'WERBUNG';
+    if (cat === 'manual') return t('senderSetup.manuell');
+    if (cat === 'filter') return t('senderSetup.filterLabel');
+    if (cat === 'ad') return t('senderSetup.werbung');
     return cat.toUpperCase();
   }
 
@@ -333,10 +334,10 @@
         const data = await api.releaseStations({ reason });
         total += data.released_count;
       }
-      actions.showToast(`${total} Sender freigegeben`);
+      actions.showToast(t('senderSetup.senderFreigegeben', { count: total }));
       await loadBlocked();
     } catch (e) {
-      actions.showToast('Freigabe fehlgeschlagen', 'error');
+      actions.showToast(t('senderSetup.freigabeFehler'), 'error');
     }
     isReleasing = false;
   }
@@ -353,14 +354,14 @@
   <div class="sub-tab-bar">
     <button class="sub-tab-btn" class:active={subTab === 'werbung'} onclick={() => subTab = 'werbung'}>
       <HiFiLed color={subTab === 'werbung' ? 'amber' : 'off'} size="small" />
-      AD-BLOCKER
+      {t('senderSetup.adBlocker')}
       {#if suspects.length > 0}
         <span class="sub-tab-badge-warn">{suspects.length}</span>
       {/if}
     </button>
     <button class="sub-tab-btn" class:active={subTab === 'gesperrt'} onclick={() => subTab = 'gesperrt'}>
       <HiFiLed color={subTab === 'gesperrt' ? 'red' : 'off'} size="small" />
-      AUSGEBLENDET
+      {t('senderSetup.ausgeblendet')}
       {#if blockedData?.count > 0}
         <span class="sub-tab-badge-warn">{blockedData.count}</span>
       {/if}
@@ -371,43 +372,43 @@
     <!-- Werbeerkennung -->
     <div class="ad-zone">
       <div class="zone-header">
-        <span class="zone-label zone-label-ad">WERBEERKENNUNG</span>
-        <span class="zone-hint">Sender auf Werbung prüfen und entscheiden</span>
+        <span class="zone-label zone-label-ad">{t('senderSetup.werbeerkennung')}</span>
+        <span class="zone-hint">{t('senderSetup.werbeHint')}</span>
       </div>
 
       <!-- Status Grid -->
       <div class="ad-status-grid">
         <div class="ad-stat">
           <span class="ad-stat-value">{adSummary?.total_checked ?? 0}</span>
-          <span class="ad-stat-label">geprüft</span>
+          <span class="ad-stat-label">{t('senderSetup.geprueft')}</span>
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-clean">{adSummary?.clean ?? 0}</span>
-          <span class="ad-stat-label">sauber</span>
+          <span class="ad-stat-label">{t('senderSetup.sauber')}</span>
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-suspect">{adSummary?.suspect ?? 0}</span>
-          <span class="ad-stat-label">verdächtig</span>
+          <span class="ad-stat-label">{t('senderSetup.verdaechtig')}</span>
         </div>
         <div class="ad-stat">
           <span class="ad-stat-value ad-stat-blocked">{(adSummary?.manual_blocked ?? 0) + (adSummary?.auto_blocked ?? 0)}</span>
-          <span class="ad-stat-label">ausgeblendet</span>
+          <span class="ad-stat-label">{t('senderSetup.ausgeblendetLabel')}</span>
         </div>
       </div>
 
       <!-- Scan -->
       <div class="ad-scan-row">
         {#if isScanning}
-          <button class="action-btn scan-btn scan-stop" onclick={stopScan}>STOPP</button>
+          <button class="action-btn scan-btn scan-stop" onclick={stopScan}>{t('senderSetup.stopp')}</button>
         {:else}
           <button
             class="action-btn scan-btn"
             onclick={runScan}
             disabled={!adEnabled || (adSummary?.remaining ?? 0) === 0}
-          >ALLE SCANNEN</button>
+          >{t('senderSetup.alleScannen')}</button>
         {/if}
         {#if !isScanning && adSummary?.remaining != null}
-          <span class="scan-remaining">{adSummary.remaining} noch nicht geprüft</span>
+          <span class="scan-remaining">{adSummary.remaining} {t('senderSetup.nochNichtGeprueft')}</span>
         {/if}
       </div>
       {#if scanProgress}
@@ -423,10 +424,10 @@
       {#if suspects.length > 0}
         <div class="suspects-section">
           <div class="suspects-header">
-            <span class="ad-sub-label">VERDÄCHTIG ({suspects.length})</span>
+            <span class="ad-sub-label">{t('senderSetup.verdaechtig')} ({suspects.length})</span>
             <div class="suspects-batch-actions">
-              <button class="mini-btn suspect-block" onclick={decideAllSuspects('block')}>ALLE AUSBLENDEN</button>
-              <button class="mini-btn suspect-allow" onclick={decideAllSuspects('allow')}>ALLE OK</button>
+              <button class="mini-btn suspect-block" onclick={decideAllSuspects('block')}>{t('senderSetup.alleAusblenden')}</button>
+              <button class="mini-btn suspect-allow" onclick={decideAllSuspects('allow')}>{t('senderSetup.alleOk')}</button>
             </div>
           </div>
           <div class="suspects-list">
@@ -438,8 +439,8 @@
                   <span class="suspect-conf">{Math.round(suspect.confidence * 100)}%</span>
                 </div>
                 <div class="suspect-actions">
-                  <button class="mini-btn suspect-block" onclick={() => decideSuspect(suspect.uuid, 'block')}>AUSBLENDEN</button>
-                  <button class="mini-btn suspect-allow" onclick={() => decideSuspect(suspect.uuid, 'allow')}>OK</button>
+                  <button class="mini-btn suspect-block" onclick={() => decideSuspect(suspect.uuid, 'block')}>{t('filter.ausblenden')}</button>
+                  <button class="mini-btn suspect-allow" onclick={() => decideSuspect(suspect.uuid, 'allow')}>{t('senderSetup.ok')}</button>
                 </div>
               </div>
             {/each}
@@ -451,22 +452,22 @@
       <div class="zone-divider"></div>
       <div class="ad-settings">
         <div class="ad-toggle-row">
-          <span class="ad-toggle-label">Werbeerkennung</span>
+          <span class="ad-toggle-label">{t('senderSetup.werbeerkennung')}</span>
           <button
             class="toggle-btn"
             class:active={adEnabled}
             onclick={() => { adEnabled = !adEnabled; saveAdSettings(); }}
           >
             <HiFiLed color={adEnabled ? 'green' : 'off'} size="small" />
-            {adEnabled ? 'EIN' : 'AUS'}
+            {adEnabled ? t('senderSetup.ein') : t('senderSetup.ausLabel')}
           </button>
         </div>
 
         {#if adEnabled}
           <div class="ad-toggle-row">
             <div class="ad-toggle-group">
-              <span class="ad-toggle-label">Adress-Prüfung</span>
-              <span class="ad-toggle-hint">Erkennt Werbe-Begriffe in der Stream-URL</span>
+              <span class="ad-toggle-label">{t('senderSetup.adressPruefung')}</span>
+              <span class="ad-toggle-hint">{t('senderSetup.adressPruefungHint')}</span>
             </div>
             <button
               class="toggle-btn"
@@ -474,13 +475,13 @@
               onclick={() => toggleAdMethod('url_check')}
             >
               <HiFiLed color={adMethods.includes('url_check') ? 'green' : 'off'} size="small" />
-              {adMethods.includes('url_check') ? 'EIN' : 'AUS'}
+              {adMethods.includes('url_check') ? t('senderSetup.ein') : t('senderSetup.ausLabel')}
             </button>
           </div>
           <div class="ad-toggle-row">
             <div class="ad-toggle-group">
-              <span class="ad-toggle-label">Server-Prüfung</span>
-              <span class="ad-toggle-hint">Erkennt Werbe-Server anhand der Antwort-Daten</span>
+              <span class="ad-toggle-label">{t('senderSetup.serverPruefung')}</span>
+              <span class="ad-toggle-hint">{t('senderSetup.serverPruefungHint')}</span>
             </div>
             <button
               class="toggle-btn"
@@ -488,12 +489,12 @@
               onclick={() => toggleAdMethod('header_check')}
             >
               <HiFiLed color={adMethods.includes('header_check') ? 'green' : 'off'} size="small" />
-              {adMethods.includes('header_check') ? 'EIN' : 'AUS'}
+              {adMethods.includes('header_check') ? t('senderSetup.ein') : t('senderSetup.ausLabel')}
             </button>
           </div>
           <div class="ad-threshold">
-            <span class="ad-sub-label">AB WANN VERDÄCHTIG?</span>
-            <span class="ad-threshold-hint">Sender unter diesem Wert werden ignoriert</span>
+            <span class="ad-sub-label">{t('senderSetup.abWannVerdaechtig')}</span>
+            <span class="ad-threshold-hint">{t('senderSetup.thresholdHint')}</span>
             <div class="threshold-row">
               <input
                 type="range"
@@ -516,21 +517,21 @@
     <div class="hifi-panel">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">
-          AUSGEBLENDETE SENDER
+          {t('senderSetup.ausgeblendete')}
           {#if blockedData}
             <span class="blocked-count">({blockedData.count})</span>
           {/if}
         </span>
         {#if blockedData?.count > 0}
           <button class="action-btn release-all-btn" onclick={releaseAll} disabled={isReleasing}>
-            ALLE FREIGEBEN
+            {t('senderSetup.alleFreigeben')}
           </button>
         {/if}
       </div>
 
       <div class="blocked-list">
         {#if isLoadingBlocked}
-          <div class="status-text">Lade...</div>
+          <div class="status-text">{t('common.laden')}</div>
         {:else if blockedData?.categories && Object.keys(blockedData.categories).length > 0}
           {#each Object.entries(blockedData.categories) as [cat, catData]}
             <div class="category-group">
@@ -545,7 +546,7 @@
                   class="mini-btn release-btn"
                   onclick={(e) => { e.stopPropagation(); releaseByCategory(cat); }}
                   disabled={isReleasing}
-                >FREIGEBEN</button>
+                >{t('senderSetup.freigeben')}</button>
               </div>
 
               {#if expandedCategory === cat}
@@ -562,7 +563,7 @@
                             class="mini-btn release-btn"
                             onclick={(e) => { e.stopPropagation(); releaseFilterGroup(groupData.reasons); }}
                             disabled={isReleasing}
-                          >FREIGEBEN</button>
+                          >{t('senderSetup.freigeben')}</button>
                         </div>
                       </div>
                     {/each}
@@ -580,7 +581,7 @@
                             class="mini-btn release-btn"
                             onclick={(e) => { e.stopPropagation(); releaseByReason(reason); }}
                             disabled={isReleasing}
-                          >FREIGEBEN</button>
+                          >{t('senderSetup.freigeben')}</button>
                         </div>
                         {#if expandedReason === reason}
                           <div class="station-sublist">
@@ -592,7 +593,7 @@
                                   class="unblock-btn"
                                   onclick={() => releaseSingle(station.uuid)}
                                   disabled={isReleasing}
-                                  title="Sender freigeben"
+                                  title={t('senderSetup.freigeben')}
                                 >
                                   <i class="fa-solid fa-xmark"></i>
                                 </button>
@@ -608,7 +609,7 @@
             </div>
           {/each}
         {:else}
-          <div class="status-text">Keine ausgeblendeten Sender</div>
+          <div class="status-text">{t('senderSetup.keineAusgeblendet')}</div>
         {/if}
       </div>
     </div>
