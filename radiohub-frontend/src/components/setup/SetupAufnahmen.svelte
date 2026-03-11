@@ -153,19 +153,6 @@
       </div>
     </div>
 
-    <!-- Kategorien Platzhalter -->
-    <div class="hifi-panel">
-      <div class="hifi-panel-header">
-        <span class="hifi-font-label">AUFNAHME-KATEGORIEN</span>
-        <span class="hifi-font-small" style="color:var(--hifi-text-amber); margin-left:8px;">IN VORBEREITUNG</span>
-      </div>
-      <div style="padding:24px; text-align:center;">
-        <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
-          Kategorien für Aufnahmen werden in einem zukünftigen Update verfügbar sein.
-        </span>
-      </div>
-    </div>
-
     <!-- Ordner-Verwaltung (volle Breite) -->
     <div class="hifi-panel span-full">
       <div class="hifi-panel-header">

@@ -312,6 +312,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         tags TEXT NOT NULL DEFAULT '',
+        scope TEXT NOT NULL DEFAULT 'radio',
         sort_order INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
@@ -324,6 +325,32 @@ def init_db():
         PRIMARY KEY (category_id, station_uuid),
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     )''')
+
+    # === Kategorie-Podcast-Zuordnung ===
+    c.execute('''CREATE TABLE IF NOT EXISTS category_podcasts (
+        category_id INTEGER NOT NULL,
+        podcast_id INTEGER NOT NULL,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (category_id, podcast_id),
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+        FOREIGN KEY (podcast_id) REFERENCES podcast_subscriptions(id) ON DELETE CASCADE
+    )''')
+
+    # === Kategorie-Aufnahme-Zuordnung ===
+    c.execute('''CREATE TABLE IF NOT EXISTS category_sessions (
+        category_id INTEGER NOT NULL,
+        session_id TEXT NOT NULL,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (category_id, session_id),
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+        FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+    )''')
+
+    # === Migration: categories scope-Spalte (idempotent) ===
+    try:
+        c.execute("ALTER TABLE categories ADD COLUMN scope TEXT NOT NULL DEFAULT 'radio'")
+    except Exception:
+        pass  # Spalte existiert bereits
 
     # === Migration: podcast_subscriptions erweitern ===
     for col, typedef in [
@@ -365,8 +392,13 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_sessions_folder ON sessions(folder_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_rec_folders_active ON recording_folders(is_active)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_categories_scope ON categories(scope)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_uuid ON category_stations(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_stations_cat ON category_stations(category_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_podcasts_pod ON category_podcasts(podcast_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_podcasts_cat ON category_podcasts(category_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_sessions_ses ON category_sessions(session_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_cat_sessions_cat ON category_sessions(category_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(is_downloaded)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played)")
 

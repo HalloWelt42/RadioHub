@@ -3,12 +3,26 @@
   import { api } from '../../lib/api.js';
   import { actions } from '../../lib/store.svelte.js';
 
+  let { scope = 'radio' } = $props();
+
   // === STATE ===
   let categories = $state([]);
   let isLoading = $state(true);
   let editingId = $state(null);
   let formName = $state('');
   let showForm = $state(false);
+
+  const scopeLabels = {
+    radio: 'KATEGORIEN',
+    podcast: 'PODCAST-KATEGORIEN',
+    recording: 'AUFNAHME-KATEGORIEN'
+  };
+
+  const scopeHints = {
+    radio: 'Kategorien filtern Sender in der Seitenleiste',
+    podcast: 'Kategorien filtern Podcasts in der Seitenleiste',
+    recording: 'Kategorien filtern Aufnahmen in der Seitenleiste'
+  };
 
   // === INIT ===
   $effect(() => {
@@ -17,10 +31,9 @@
 
   async function loadAll() {
     try {
-      const cats = await api.getCategories();
+      const cats = await api.getCategories(scope);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      // Netzwerkfehler ignorieren
       actions.showToast('Kategorien laden fehlgeschlagen', 'error');
     }
     isLoading = false;
@@ -55,15 +68,14 @@
         await api.updateCategory(editingId, { name });
         actions.showToast('Kategorie aktualisiert');
       } else {
-        await api.createCategory(name);
+        await api.createCategory(name, 0, scope);
         actions.showToast('Kategorie erstellt');
       }
       showForm = false;
       editingId = null;
-      const cats = await api.getCategories();
+      const cats = await api.getCategories(scope);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
     } catch (e) {
-      // Netzwerkfehler ignorieren
       actions.showToast('Speichern fehlgeschlagen', 'error');
     }
   }
@@ -75,7 +87,6 @@
       actions.showToast('Kategorie gelöscht');
       if (editingId === id) cancelForm();
     } catch (e) {
-      // Netzwerkfehler ignorieren
       actions.showToast('Löschen fehlgeschlagen', 'error');
     }
   }
@@ -99,7 +110,7 @@
 
   <!-- Header -->
   <div class="kat-header">
-    <span class="hifi-font-label">KATEGORIEN ({categories.length})</span>
+    <span class="hifi-font-label">{scopeLabels[scope] || 'KATEGORIEN'} ({categories.length})</span>
     {#if !showForm}
       <button class="action-btn create-btn" onclick={startCreate}>
         + NEUE KATEGORIE
@@ -155,7 +166,7 @@
   {:else if !showForm}
     <div class="empty-state">
       <span class="hifi-font-label">Noch keine Kategorien erstellt</span>
-      <span class="empty-hint">Kategorien filtern Sender in der Seitenleiste</span>
+      <span class="empty-hint">{scopeHints[scope] || 'Kategorien helfen beim Organisieren'}</span>
     </div>
   {/if}
 

@@ -85,14 +85,15 @@ class RadioHubAPI {
   }
 
   // === Categories ===
-  async getCategories() {
-    return this.fetch('/api/categories');
+  async getCategories(scope = null) {
+    const url = scope ? `/api/categories?scope=${scope}` : '/api/categories';
+    return this.fetch(url);
   }
 
-  async createCategory(name, sortOrder = 0) {
+  async createCategory(name, sortOrder = 0, scope = 'radio') {
     return this.fetch('/api/categories', {
       method: 'POST',
-      body: JSON.stringify({ name, sort_order: sortOrder })
+      body: JSON.stringify({ name, sort_order: sortOrder, scope })
     });
   }
 
@@ -124,6 +125,46 @@ class RadioHubAPI {
     return this.fetch('/api/categories/station-assignments', {
       method: 'POST',
       body: JSON.stringify({ uuids })
+    });
+  }
+
+  // === Category Podcast Assignments ===
+  async assignPodcast(categoryId, podcastId) {
+    return this.fetch(`/api/categories/${categoryId}/podcasts/${podcastId}`, {
+      method: 'POST'
+    });
+  }
+
+  async unassignPodcast(categoryId, podcastId) {
+    return this.fetch(`/api/categories/${categoryId}/podcasts/${podcastId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getPodcastAssignments(ids) {
+    return this.fetch('/api/categories/podcast-assignments', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+  }
+
+  // === Category Session Assignments ===
+  async assignSession(categoryId, sessionId) {
+    return this.fetch(`/api/categories/${categoryId}/sessions/${sessionId}`, {
+      method: 'POST'
+    });
+  }
+
+  async unassignSession(categoryId, sessionId) {
+    return this.fetch(`/api/categories/${categoryId}/sessions/${sessionId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getSessionAssignments(ids) {
+    return this.fetch('/api/categories/session-assignments', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
     });
   }
 
