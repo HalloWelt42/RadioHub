@@ -17,21 +17,23 @@
 <style>
   .hifi-toast {
     position: fixed;
-    bottom: 110px;
+    bottom: 140px;
     left: 50%;
     transform: translateX(-50%) !important;
     z-index: 5000;
-    padding: 12px 24px;
-    background: var(--hifi-bg-panel);
+    padding: 8px 20px;
+    background: var(--hifi-bg-tertiary);
     border: 1px solid var(--hifi-border-dark);
-    border-radius: var(--hifi-border-radius-md);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    font-size: var(--hifi-font-size-md);
-    font-weight: 600;
+    border-radius: var(--hifi-border-radius-sm, 4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--hifi-text-primary);
-    min-width: 200px;
+    min-width: 160px;
     text-align: center;
     animation: slideUp 0.3s ease;
+    pointer-events: none;
   }
 
   .hifi-toast.success {

@@ -3,7 +3,8 @@
     color = 'off',   // green | yellow | red | blue | amber | white | off
     blink = false,
     pulse = false,
-    size = 'default' // small | large
+    size = 'default', // small | large
+    title = ''
   } = $props();
 </script>
 
@@ -19,4 +20,5 @@
   class:pulse
   class:hifi-led-small={size === 'small'}
   class:hifi-led-large={size === 'large'}
+  {title}
 ></div>

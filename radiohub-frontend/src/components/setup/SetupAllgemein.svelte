@@ -126,7 +126,7 @@
   <div class="hifi-panel">
     <div class="hifi-panel-header">
       <span class="hifi-font-label">HLS-REC</span>
-      <span class="hifi-font-small" style="color:var(--hifi-led-amber);">BUFFER-AUFNAHME</span>
+      <span class="hifi-font-small" style="color:var(--hifi-text-amber);">BUFFER-AUFNAHME</span>
     </div>
     <div class="hifi-flex hifi-gap-xl" style="padding:24px; justify-content:center;">
       <HiFiKnob

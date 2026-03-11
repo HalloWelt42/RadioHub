@@ -118,8 +118,10 @@
    ========================================== */
 .hifi-input {
     padding: 12px 16px;
-    font-family: inherit;
-    font-size: 14px;
+    font-family: var(--hifi-font-values);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
     border: none;
@@ -136,6 +138,7 @@
 
 .hifi-input::placeholder {
     color: var(--hifi-text-secondary);
+    opacity: 0.4;
 }
 
 .hifi-textarea {
@@ -434,7 +437,10 @@
     border: none;
     border-radius: var(--hifi-border-radius-pill);
     box-shadow: var(--hifi-shadow-inset);
-    font-size: 14px;
+    font-family: var(--hifi-font-values);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
     outline: none;
 }
@@ -820,7 +826,7 @@
 .hifi-toast-icon { font-size: 20px; }
 .hifi-toast-message { flex: 1; font-size: var(--hifi-font-size-md); }
 
-.hifi-toast.success .hifi-toast-icon { color: var(--hifi-led-green); }
+.hifi-toast.success .hifi-toast-icon { color: var(--hifi-text-green); }
 .hifi-toast.error .hifi-toast-icon { color: var(--hifi-led-red); }
 .hifi-toast.warning .hifi-toast-icon { color: var(--hifi-led-yellow); }
 .hifi-toast.info .hifi-toast-icon { color: var(--hifi-led-blue); }

@@ -1650,13 +1650,13 @@
   }
 
   .ad-badge-clean {
-    color: var(--hifi-led-green, #4caf50);
+    color: var(--hifi-text-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
     border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   .ad-badge-suspect {
-    color: var(--hifi-led-amber, #e5a00d);
+    color: var(--hifi-text-amber, #e5a00d);
     background: rgba(229, 160, 13, 0.12);
     border: 1px solid rgba(229, 160, 13, 0.25);
   }
@@ -1668,7 +1668,7 @@
   }
 
   .ad-badge-ok {
-    color: var(--hifi-led-green, #4caf50);
+    color: var(--hifi-text-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
     border: 1px solid rgba(76, 175, 80, 0.25);
   }

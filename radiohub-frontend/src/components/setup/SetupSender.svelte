@@ -712,7 +712,7 @@
     text-transform: uppercase;
   }
 
-  .zone-label-ad { color: var(--hifi-led-amber, #e5a00d); }
+  .zone-label-ad { color: var(--hifi-text-amber, #e5a00d); }
 
   .zone-hint {
     font-family: var(--hifi-font-body);
@@ -770,8 +770,8 @@
     color: var(--hifi-text-primary);
   }
 
-  .ad-stat-clean { color: var(--hifi-led-green, #4caf50); }
-  .ad-stat-suspect { color: var(--hifi-led-amber, #e5a00d); }
+  .ad-stat-clean { color: var(--hifi-text-green, #4caf50); }
+  .ad-stat-suspect { color: var(--hifi-text-amber, #e5a00d); }
   .ad-stat-blocked { color: var(--hifi-led-red); }
 
   .ad-stat-label {
@@ -901,7 +901,7 @@
   .suspect-conf {
     font-family: var(--hifi-font-display);
     font-size: 10px;
-    color: var(--hifi-led-amber, #e5a00d);
+    color: var(--hifi-text-amber, #e5a00d);
     font-weight: 700;
   }
 
@@ -1013,7 +1013,7 @@
     font-family: var(--hifi-font-display);
     font-size: 12px;
     font-weight: 700;
-    color: var(--hifi-led-amber, #e5a00d);
+    color: var(--hifi-text-amber, #e5a00d);
     min-width: 36px;
     text-align: right;
   }

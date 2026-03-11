@@ -241,8 +241,10 @@
 
   .form-input {
     padding: 8px 10px;
-    font-family: var(--hifi-font-body);
+    font-family: var(--hifi-font-values);
     font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
     border: none;
@@ -252,7 +254,7 @@
   }
 
   .form-input:focus {
-    box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
+    box-shadow: var(--hifi-shadow-inset), 0 0 0 1px rgba(255,255,255,0.15);
   }
 
   .form-input::placeholder {

@@ -33,19 +33,19 @@
   }
 
   .badge-played {
-    color: var(--hifi-led-green, #4caf50);
+    color: var(--hifi-text-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
     border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   .badge-resume {
-    color: var(--hifi-led-amber, #e5a00d);
+    color: var(--hifi-text-amber, #e5a00d);
     background: rgba(229, 160, 13, 0.12);
     border: 1px solid rgba(229, 160, 13, 0.25);
   }
 
   .badge-new {
-    color: var(--hifi-led-green, #4caf50);
+    color: var(--hifi-text-green, #4caf50);
     background: rgba(76, 175, 80, 0.12);
     border: 1px solid rgba(76, 175, 80, 0.25);
   }

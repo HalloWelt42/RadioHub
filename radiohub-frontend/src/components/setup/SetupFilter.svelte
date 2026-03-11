@@ -463,7 +463,7 @@
   .sub-tab-badge {
     font-family: var(--hifi-font-values);
     font-size: 9px;
-    color: var(--hifi-led-green, #4caf50);
+    color: var(--hifi-text-green, #4caf50);
   }
 
   .filter-summary {
@@ -473,7 +473,7 @@
     margin-left: auto;
     font-family: var(--hifi-font-body);
     font-size: 10px;
-    color: var(--hifi-led-amber, #e5a00d);
+    color: var(--hifi-text-amber, #e5a00d);
     padding: 4px 10px;
     background: rgba(229, 160, 13, 0.08);
     border-radius: var(--hifi-border-radius-sm);
@@ -657,8 +657,10 @@
   /* === Inputs === */
   .filter-input {
     padding: 6px 10px;
-    font-family: var(--hifi-font-body);
+    font-family: var(--hifi-font-values);
     font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
     background: var(--hifi-bg-tertiary);
     border: none;
@@ -668,7 +670,7 @@
   }
 
   .filter-input:focus {
-    box-shadow: var(--hifi-shadow-inset), 0 0 0 2px var(--hifi-accent);
+    box-shadow: var(--hifi-shadow-inset), 0 0 0 1px rgba(255,255,255,0.15);
   }
 
   .filter-input::placeholder {
