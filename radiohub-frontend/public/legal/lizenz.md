@@ -96,4 +96,3 @@ DIE SOFTWARE WIRD "WIE SIE IST" BEREITGESTELLT, OHNE JEGLICHE GEWÄHRLEISTUNG, W
 - **FFmpeg** -- LGPL 2.1+ -- [ffmpeg.org](https://ffmpeg.org)
 - **aiohttp** -- Apache 2.0 -- [aiohttp.readthedocs.io](https://aiohttp.readthedocs.io)
 - **aiosqlite** -- MIT License
-- **Mutagen** -- GPL 2.0
