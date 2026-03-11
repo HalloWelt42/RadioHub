@@ -9,6 +9,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from ..services.cache import cache_service
+from ..services.favicon_cache import cache_batch as favicon_cache_batch
 from ..services.bitrate_detector import (
     get_uuids_needing_probe, get_cached_bitrates, probe_stations,
     fetch_icy_title, set_icy_quality
@@ -104,6 +105,10 @@ async def search_stations(req: StationSearchRequest):
                     s["icy"] = True
                     if det.get("icy_quality"):
                         s["icy_quality"] = det["icy_quality"]
+
+    # Favicons im Hintergrund cachen
+    if stations:
+        asyncio.create_task(favicon_cache_batch(stations))
 
     return {"count": len(stations), "stations": stations}
 

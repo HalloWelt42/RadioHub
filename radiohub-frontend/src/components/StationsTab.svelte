@@ -859,6 +859,7 @@
               </div>
               <div class="station-name" onclick={(e) => playAndExpand(station, e)}>
                 <i class="fa-solid fa-play hover-play-icon"></i>
+                <img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-music station-favicon-fallback' })); }} />
                 <span class="station-name-text">{station.name}</span>
               </div>
               <div class="station-badges">
@@ -899,7 +900,16 @@
             {#if isExpanded}
               <div class="station-details">
                 <div class="details-content">
+                  <div class="details-favicon">
+                    <img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { e.target.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-music details-favicon-fallback' })); }} />
+                  </div>
                   <div class="details-grid">
+                    {#if isPlaying && appState.streamTitle}
+                      <div class="detail-row icy-now-playing">
+                        <span class="detail-label">NOW PLAYING</span>
+                        <span class="detail-value icy-title">{appState.streamTitle}</span>
+                      </div>
+                    {/if}
                     {#if station.homepage}
                       <div class="detail-row">
                         <span class="detail-label">HOMEPAGE</span>
@@ -944,6 +954,10 @@
                     {/if}
                   </div>
                   <div class="details-actions">
+                    <div class="details-actions-btns">
+                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>WERBUNG</button>
+                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>AUSBLENDEN</button>
+                    </div>
                     {#if categories.length > 0}
                       <div class="category-assign-list" class:scrollable={categories.length > 4}>
                         {#each categories as cat (cat.id)}
@@ -960,10 +974,6 @@
                         {/each}
                       </div>
                     {/if}
-                    <div class="details-actions-btns">
-                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>WERBUNG</button>
-                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>AUSBLENDEN</button>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1505,6 +1515,30 @@
     margin-right: 4px;
   }
 
+  .station-favicon {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+
+  :global(.station-favicon-fallback) {
+    width: 18px;
+    min-width: 18px;
+    height: 18px;
+    min-height: 18px;
+    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--hifi-text-muted);
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+
   .station-name-text {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1592,23 +1626,20 @@
 
   .details-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
-    gap: 6px;
-    padding: 8px 0 0 0;
-    border-top: 1px solid var(--hifi-border-dark);
-    margin-top: 8px;
+    gap: 10px;
+    margin-left: auto;
   }
 
   .category-assign-list {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    margin-bottom: 4px;
+    flex: 1;
   }
 
   .category-assign-list.scrollable {
-    max-height: 100px;
+    max-height: 96px;
     overflow-y: auto;
   }
 
@@ -1645,7 +1676,9 @@
 
   .details-actions-btns {
     display: flex;
-    gap: 6px;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
   }
 
   .ad-badge-clean {
@@ -1792,13 +1825,48 @@
   /* Station Details (kompakt) */
   .station-details {
     background: var(--hifi-bg-tertiary);
-    padding: 6px 16px 6px 40px;
+    padding: 6px 16px 6px 16px;
     border-top: 1px solid var(--hifi-border-dark);
   }
 
   .details-content {
     display: flex;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .details-favicon {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .details-favicon img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: contain;
+    image-rendering: auto;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-border-dark);
+  }
+
+  :global(.details-favicon-fallback) {
+    width: 96px;
+    min-width: 96px;
+    height: 96px;
+    min-height: 96px;
+    box-sizing: border-box;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--hifi-text-muted);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
   }
 
   .details-grid {
@@ -1915,5 +1983,17 @@
   .history-clear:hover {
     color: var(--hifi-text-primary);
     background: var(--hifi-row-hover);
+  }
+
+  /* === ICY Now Playing === */
+  .icy-now-playing {
+    border-bottom: 1px solid var(--hifi-border-dark);
+    padding-bottom: 4px;
+    margin-bottom: 2px;
+  }
+
+  .icy-title {
+    color: var(--hifi-accent);
+    font-weight: 600;
   }
 </style>
