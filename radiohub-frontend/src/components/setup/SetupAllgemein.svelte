@@ -90,14 +90,12 @@
       </div>
     </div>
 
-    <!-- Click-Sounds + Sprache -->
+    <!-- UI Sounds -->
     <div class="hifi-panel">
       <div class="hifi-panel-header">
         <span class="hifi-font-label">UI SOUNDS</span>
-        <span style="margin-left:auto;"></span>
-        <span class="hifi-font-label">SPRACHE</span>
       </div>
-      <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center; flex-wrap:wrap;">
+      <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
         <button
           class="theme-btn"
           class:active={clickSoundsEnabled}
@@ -106,15 +104,32 @@
           <HiFiLed color={clickSoundsEnabled ? 'green' : 'off'} />
           <span>CLICK-SOUNDS</span>
         </button>
-        <span style="flex:1;"></span>
+      </div>
+    </div>
+
+    <!-- Sprache (volle Breite) -->
+    <div class="hifi-panel span-full">
+      <div class="hifi-panel-header">
+        <svg class="lang-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span class="hifi-font-label">SPRACHE</span>
+        <span class="hifi-font-small" style="color:var(--hifi-text-muted); margin-left:8px;">
+          {availableLanguages.find(l => l.code === activeLang)?.label || ''}
+        </span>
+      </div>
+      <div class="lang-grid">
         {#each availableLanguages as lang}
           <button
-            class="theme-btn"
+            class="lang-btn"
             class:active={activeLang === lang.code}
             onclick={() => switchLanguage(lang.code)}
+            title={lang.label}
           >
-            <HiFiLed color={activeLang === lang.code ? 'green' : 'off'} />
-            <span>{lang.flag}</span>
+            <span class="lang-flag">{lang.flag}</span>
+            <span class="lang-code">{lang.code.toUpperCase()}</span>
           </button>
         {/each}
       </div>
@@ -215,5 +230,64 @@
     background: var(--hifi-bg-panel);
     color: var(--hifi-accent);
     box-shadow: var(--hifi-shadow-inset);
+  }
+
+  /* === Sprach-Icon === */
+  .lang-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--hifi-accent);
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  /* === Sprach-Grid === */
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .lang-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 4px;
+    background: var(--hifi-bg-tertiary);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: var(--hifi-border-radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: var(--hifi-shadow-outset);
+  }
+
+  .lang-btn:hover {
+    background: var(--hifi-bg-secondary);
+    border-color: var(--hifi-border-light, rgba(255,255,255,0.1));
+  }
+
+  .lang-btn.active {
+    background: var(--hifi-bg-panel);
+    border-color: var(--hifi-accent);
+    box-shadow: var(--hifi-shadow-inset);
+  }
+
+  .lang-flag {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .lang-code {
+    font-family: var(--hifi-font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--hifi-text-secondary);
+  }
+
+  .lang-btn.active .lang-code {
+    color: var(--hifi-accent);
   }
 </style>
