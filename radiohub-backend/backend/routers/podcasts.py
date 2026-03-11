@@ -59,6 +59,24 @@ async def search_podcasts(
     }
 
 
+@router.get("/episodes/search")
+async def search_episodes(
+    q: str = Query(..., min_length=2, description="Suchbegriff"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    search_in: str = Query("all", description="all, title, description, transcript")
+):
+    return await podcast_service.search_episodes(q, limit, offset, search_in)
+
+
+@router.get("/subscriptions/search")
+async def search_subscriptions(
+    q: str = Query(..., min_length=2, description="Suchbegriff")
+):
+    results = await podcast_service.search_subscriptions(q)
+    return {"subscriptions": results, "count": len(results)}
+
+
 # === Statistiken ===
 
 @router.get("/stats")
@@ -89,9 +107,16 @@ async def subscribe(req: SubscribeRequest):
     return {"success": True, "podcast": result}
 
 
+@router.get("/refresh-status")
+async def refresh_status():
+    """Naechster automatischer Refresh-Zeitpunkt"""
+    return podcast_service.get_refresh_status()
+
+
 @router.post("/refresh-all")
 async def refresh_all():
     result = await podcast_service.refresh_all()
+    podcast_service.reset_refresh_timer()
     return result
 
 
@@ -304,6 +329,15 @@ async def delete_download(episode_id: int):
     if not success:
         raise HTTPException(404, "Episode nicht gefunden")
     return {"success": True}
+
+
+@router.get("/episodes/{episode_id}/transcript")
+async def get_transcript(episode_id: int):
+    """Transkript einer Episode holen (aus Feed oder Cache)"""
+    transcript = await podcast_service.get_transcript(episode_id)
+    if transcript is None:
+        return {"available": False, "text": None}
+    return {"available": True, "text": transcript}
 
 
 @router.delete("/{podcast_id}/played-downloads")

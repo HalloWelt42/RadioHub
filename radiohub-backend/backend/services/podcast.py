@@ -10,6 +10,7 @@ import shutil
 import re
 from pathlib import Path
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree as ET
@@ -47,8 +48,25 @@ class PodcastSearchResult:
 
 
 class PodcastService:
+    REFRESH_INTERVAL = 6 * 3600  # 6 Stunden
+
     def __init__(self):
         self.client: Optional[httpx.AsyncClient] = None
+        self._next_refresh_at: Optional[datetime] = None
+
+    def get_refresh_status(self) -> dict:
+        """Refresh-Timer Status fuer Frontend"""
+        return {
+            "next_refresh_at": self._next_refresh_at.isoformat() if self._next_refresh_at else None,
+            "interval_hours": self.REFRESH_INTERVAL // 3600
+        }
+
+    def set_next_refresh(self, dt: datetime):
+        self._next_refresh_at = dt
+
+    def reset_refresh_timer(self):
+        from datetime import timedelta
+        self._next_refresh_at = datetime.now() + timedelta(seconds=self.REFRESH_INTERVAL)
 
     async def _get_client(self) -> httpx.AsyncClient:
         if not self.client:
@@ -162,15 +180,16 @@ class PodcastService:
                           (",".join(feed_data["categories"]), podcast_id))
 
             # Episoden speichern
-            for ep in feed_data.get("episodes", [])[:100]:
+            for ep in feed_data.get("episodes", []):
                 c.execute('''INSERT OR IGNORE INTO podcast_episodes
                     (podcast_id, guid, title, description, audio_url, duration,
-                     published_at, image_url)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                     published_at, image_url, transcript_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (podcast_id, ep["guid"], ep["title"],
-                     ep["description"][:1000] if ep["description"] else "",
+                     ep["description"][:2000] if ep["description"] else "",
                      ep["audio_url"], ep.get("duration", 0),
-                     ep.get("published_at"), ep.get("image_url", "")))
+                     ep.get("published_at"), ep.get("image_url", ""),
+                     ep.get("transcript_url", "")))
 
         # Cover-Art async herunterladen
         if feed_data.get("image_url"):
@@ -182,17 +201,10 @@ class PodcastService:
         return {"id": podcast_id, "title": feed_data["title"], "feed_url": feed_url}
 
     async def unsubscribe(self, podcast_id: int) -> bool:
-        """Podcast-Abo entfernen + lokale Dateien loeschen"""
-        # Lokale Dateien loeschen
-        audio_dir = PODCAST_RECORDINGS_DIR / "audio" / str(podcast_id)
-        image_dir = PODCAST_RECORDINGS_DIR / "images" / str(podcast_id)
-        if audio_dir.exists():
-            shutil.rmtree(audio_dir, ignore_errors=True)
-        if image_dir.exists():
-            shutil.rmtree(image_dir, ignore_errors=True)
-
+        """Podcast-Abo entfernen (lokale Dateien bleiben erhalten)"""
         with db_session() as conn:
             c = conn.cursor()
+            c.execute("DELETE FROM podcast_episodes WHERE podcast_id = ?", (podcast_id,))
             c.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (podcast_id,))
             return c.rowcount > 0
 
@@ -203,7 +215,8 @@ class PodcastService:
             c.execute('''SELECT ps.*,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
+                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
                 FROM podcast_subscriptions ps ORDER BY title''')
             return [dict(row) for row in c.fetchall()]
 
@@ -213,7 +226,8 @@ class PodcastService:
             c.execute('''SELECT ps.*,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
+                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
                 FROM podcast_subscriptions ps WHERE ps.id = ?''', (podcast_id,))
             row = c.fetchone()
             return dict(row) if row else None
@@ -246,15 +260,16 @@ class PodcastService:
                           (",".join(feed_data["categories"]), podcast_id))
 
             # Neue Episoden einfuegen
-            for ep in feed_data.get("episodes", [])[:100]:
+            for ep in feed_data.get("episodes", []):
                 c.execute('''INSERT OR IGNORE INTO podcast_episodes
                     (podcast_id, guid, title, description, audio_url, duration,
-                     published_at, image_url)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                     published_at, image_url, transcript_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (podcast_id, ep["guid"], ep["title"],
-                     ep["description"][:1000] if ep["description"] else "",
+                     ep["description"][:2000] if ep["description"] else "",
                      ep["audio_url"], ep.get("duration", 0),
-                     ep.get("published_at"), ep.get("image_url", "")))
+                     ep.get("published_at"), ep.get("image_url", ""),
+                     ep.get("transcript_url", "")))
                 if c.rowcount > 0:
                     new_episodes += 1
 
@@ -384,6 +399,108 @@ class PodcastService:
             total = c.fetchone()[0]
 
         return {"episodes": episodes, "total": total}
+
+    async def search_episodes(self, query: str, limit: int = 50, offset: int = 0,
+                               search_in: str = "all") -> dict:
+        """Volltextsuche ueber Episoden (Titel, Beschreibung, Transkript).
+        search_in: 'all' | 'title' | 'description' | 'transcript'
+        Gibt Ergebnisse mit Kontext-Snippets zurueck.
+        """
+        if not query or len(query) < 2:
+            return {"episodes": [], "total": 0}
+
+        like_pattern = f"%{query}%"
+
+        # Suchfelder je nach Scope
+        fields = []
+        if search_in in ("all", "title"):
+            fields.append("pe.title LIKE ?")
+        if search_in in ("all", "description"):
+            fields.append("pe.description LIKE ?")
+        if search_in in ("all", "transcript"):
+            fields.append("pe.transcript LIKE ?")
+
+        if not fields:
+            fields = ["pe.title LIKE ?"]
+
+        where_clause = " OR ".join(fields)
+        params = [like_pattern] * len(fields)
+
+        with db_session() as conn:
+            c = conn.cursor()
+
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url
+                FROM podcast_episodes pe
+                JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
+                WHERE ({where_clause})
+                ORDER BY pe.published_at DESC
+                LIMIT ? OFFSET ?''',
+                params + [limit, offset])
+            episodes = [dict(row) for row in c.fetchall()]
+
+            c.execute(f'''SELECT COUNT(*) FROM podcast_episodes pe
+                JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
+                WHERE ({where_clause})''', params)
+            total = c.fetchone()[0]
+
+        # Kontext-Snippets extrahieren
+        for ep in episodes:
+            ep["match_context"] = self._extract_match_context(ep, query)
+
+        return {"episodes": episodes, "total": total}
+
+    def _extract_match_context(self, episode: dict, query: str) -> dict:
+        """Extrahiert Treffer-Kontext aus Titel, Beschreibung, Transkript."""
+        context = {"title": False, "description": None, "transcript": None}
+        q_lower = query.lower()
+
+        if q_lower in (episode.get("title") or "").lower():
+            context["title"] = True
+
+        desc = episode.get("description") or ""
+        if q_lower in desc.lower():
+            # HTML-Tags entfernen fuer Snippet
+            import re
+            clean = re.sub(r'<[^>]+>', ' ', desc)
+            clean = re.sub(r'\s+', ' ', clean).strip()
+            idx = clean.lower().find(q_lower)
+            if idx >= 0:
+                start = max(0, idx - 80)
+                end = min(len(clean), idx + len(query) + 80)
+                snippet = clean[start:end]
+                if start > 0:
+                    snippet = "..." + snippet
+                if end < len(clean):
+                    snippet = snippet + "..."
+                context["description"] = snippet
+
+        transcript = episode.get("transcript") or ""
+        if q_lower in transcript.lower():
+            idx = transcript.lower().find(q_lower)
+            if idx >= 0:
+                start = max(0, idx - 80)
+                end = min(len(transcript), idx + len(query) + 80)
+                snippet = transcript[start:end]
+                if start > 0:
+                    snippet = "..." + snippet
+                if end < len(transcript):
+                    snippet = snippet + "..."
+                context["transcript"] = snippet
+
+        return context
+
+    async def search_subscriptions(self, query: str) -> list:
+        """Sucht in lokalen Podcast-Abos (Titel, Autor)."""
+        if not query or len(query) < 2:
+            return []
+        like_pattern = f"%{query}%"
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT * FROM podcast_subscriptions
+                WHERE title LIKE ? OR author LIKE ?
+                ORDER BY title''',
+                (like_pattern, like_pattern))
+            return [dict(row) for row in c.fetchall()]
 
     async def get_episode(self, episode_id: int) -> Optional[dict]:
         with db_session() as conn:
@@ -609,7 +726,7 @@ class PodcastService:
             c = conn.cursor()
             c.execute('''SELECT id FROM podcast_episodes
                 WHERE podcast_id = ? AND is_downloaded = 0 AND is_played = 0
-                ORDER BY published_at DESC LIMIT 5''', (podcast_id,))
+                ORDER BY published_at DESC''', (podcast_id,))
             episode_ids = [row[0] for row in c.fetchall()]
 
         if episode_ids:
@@ -641,6 +758,85 @@ class PodcastService:
                     WHERE id = ?''', (row[0],))
 
         return deleted
+
+    # =========================================================================
+    # Transkription
+    # =========================================================================
+
+    async def get_transcript(self, episode_id: int) -> Optional[str]:
+        """Transkript einer Episode holen -- aus Cache oder von URL laden"""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("SELECT transcript, transcript_url FROM podcast_episodes WHERE id = ?",
+                      (episode_id,))
+            row = c.fetchone()
+            if not row:
+                return None
+
+            # Bereits gecacht
+            if row[0]:
+                return row[0]
+
+            # Kein Transkript verfuegbar
+            transcript_url = row[1]
+            if not transcript_url:
+                return None
+
+        # Von URL herunterladen und cachen
+        try:
+            client = await self._get_client()
+            resp = await client.get(transcript_url)
+            if resp.status_code != 200:
+                return None
+
+            content_type = resp.headers.get("content-type", "")
+            text = resp.text
+
+            # SRT/VTT zu reinem Text konvertieren
+            if any(x in transcript_url.lower() for x in [".srt", ".vtt"]) or \
+               any(x in content_type for x in ["srt", "vtt"]):
+                text = self._subtitle_to_text(text)
+
+            # HTML-Tags entfernen falls noetig
+            if "<" in text and ">" in text:
+                text = re.sub(r'<[^>]+>', '', text)
+
+            text = text.strip()
+            if not text:
+                return None
+
+            # In DB cachen
+            with db_session() as conn:
+                c = conn.cursor()
+                c.execute("UPDATE podcast_episodes SET transcript = ? WHERE id = ?",
+                          (text, episode_id))
+
+            return text
+
+        except Exception as e:
+            print(f"Transkript-Download fehlgeschlagen: {e}")
+            return None
+
+    def _subtitle_to_text(self, content: str) -> str:
+        """SRT/VTT Untertitel zu reinem Text konvertieren"""
+        lines = content.strip().split("\n")
+        text_lines = []
+        for line in lines:
+            line = line.strip()
+            # Zeitstempel und Nummern ueberspringen
+            if not line:
+                continue
+            if re.match(r'^\d+$', line):
+                continue
+            if re.match(r'[\d:.,\-\s>]+$', line):
+                continue
+            if line.startswith("WEBVTT") or line.startswith("NOTE"):
+                continue
+            # HTML-Tags entfernen
+            line = re.sub(r'<[^>]+>', '', line)
+            if line:
+                text_lines.append(line)
+        return "\n".join(text_lines)
 
     # =========================================================================
     # Statistiken
@@ -705,6 +901,7 @@ class PodcastService:
                 return None
 
             itunes_ns = "{http://www.itunes.com/dtds/podcast-1.0.dtd}"
+            podcast_ns = "{https://podcastindex.org/namespace/1.0}"
 
             # Podcast-Info
             title = self._get_text(channel, "title")
@@ -747,7 +944,7 @@ class PodcastService:
                 guid = self._get_text(item, "guid") or audio_url
                 ep_title = self._get_text(item, "title")
                 ep_desc = self._get_text(item, "description") or self._get_text(item, "itunes:summary")
-                pub_date = self._get_text(item, "pubDate")
+                pub_date = self._parse_pub_date(self._get_text(item, "pubDate"))
 
                 # Episode-Bild
                 ep_image = ""
@@ -761,6 +958,19 @@ class PodcastService:
                 if dur_text:
                     duration = self._parse_duration(dur_text)
 
+                # Transkript-URL (podcast:transcript oder podlove:transcript)
+                transcript_url = ""
+                for transcript_tag in item.findall(f"{podcast_ns}transcript"):
+                    url = transcript_tag.get("url", "")
+                    mime = transcript_tag.get("type", "")
+                    # Bevorzuge text/plain, text/html, application/srt, text/vtt
+                    if url and mime in ("text/plain", "text/html", "text/vtt",
+                                        "application/srt", "application/x-subrip"):
+                        transcript_url = url
+                        break
+                    elif url and not transcript_url:
+                        transcript_url = url
+
                 episodes.append({
                     "guid": guid,
                     "title": ep_title,
@@ -769,6 +979,7 @@ class PodcastService:
                     "duration": duration,
                     "published_at": pub_date,
                     "image_url": ep_image,
+                    "transcript_url": transcript_url,
                 })
 
             return {
@@ -808,6 +1019,17 @@ class PodcastService:
                 return int(parts[0])
         except:
             return 0
+
+    def _parse_pub_date(self, date_str: str) -> str:
+        """RFC 2822 pubDate nach ISO 8601 konvertieren fuer korrekte Sortierung."""
+        if not date_str:
+            return ""
+        try:
+            dt = parsedate_to_datetime(date_str)
+            return dt.strftime("%Y-%m-%dT%H:%M:%S")
+        except Exception:
+            # Fallback: Original-String zurueckgeben
+            return date_str
 
 
 # Singleton

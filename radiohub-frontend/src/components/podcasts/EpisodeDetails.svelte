@@ -69,23 +69,23 @@
       </div>
 
       <div class="details-actions">
-        <button class="hifi-btn hifi-btn-success hifi-btn-small" onclick={() => onplay(episode)} title="Episode abspielen">
-          <i class="fa-solid fa-play"></i> Abspielen
+        <button class="detail-action-btn" onclick={() => onplay(episode)} title="Episode abspielen">
+          <i class="fa-solid fa-play action-icon-play"></i> Abspielen
         </button>
 
         {#if episode.is_downloaded}
-          <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={() => ondeletedownload(episode)} title="Download löschen">
-            <i class="fa-solid fa-trash"></i> Löschen
+          <button class="detail-action-btn" onclick={() => ondeletedownload(episode)} title="Download löschen">
+            <i class="fa-solid fa-trash action-icon-delete"></i> Löschen
           </button>
         {:else}
-          <button class="hifi-btn hifi-btn-small" onclick={() => ondownload(episode)} disabled={isDownloading} title="Episode herunterladen">
-            <i class="fa-solid {isDownloading ? 'fa-spinner fa-spin' : 'fa-download'}"></i>
-            {isDownloading ? 'Lade...' : 'Download'}
+          <button class="detail-action-btn" onclick={() => ondownload(episode)} disabled={isDownloading} title="Episode lokal herunterladen">
+            <i class="fa-solid {isDownloading ? 'fa-spinner fa-spin' : 'fa-arrow-down'}"></i>
+            {isDownloading ? 'Lade...' : 'Herunterladen'}
           </button>
         {/if}
 
         <button
-          class="hifi-btn hifi-btn-small"
+          class="detail-action-btn"
           onclick={() => ontoggleplayed(episode)}
           title={episode.is_played ? 'Als ungehört markieren' : 'Als gehört markieren'}
         >
@@ -176,19 +176,49 @@
     margin-top: 8px;
   }
 
-  .details-actions :global(.hifi-btn) {
-    box-shadow: none;
-    border: 1px solid var(--hifi-border-dark);
+  .detail-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--hifi-border-radius-sm, 4px);
+    background: var(--hifi-bg-panel);
+    color: var(--hifi-text-secondary);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--hifi-shadow-button);
   }
 
-  .details-actions :global(.hifi-btn:hover) {
-    box-shadow: none;
+  .detail-action-btn:hover {
+    color: var(--hifi-text-primary);
     background: var(--hifi-bg-secondary);
-    border-color: rgba(255, 255, 255, 0.15);
   }
 
-  .details-actions :global(.hifi-btn:active) {
+  .detail-action-btn:active {
     box-shadow: var(--hifi-shadow-inset);
+  }
+
+  .detail-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .detail-action-btn i {
+    font-size: 10px;
+  }
+
+  .action-icon-play {
+    color: var(--hifi-text-green, #33cc33);
+  }
+
+  .action-icon-delete {
+    color: var(--hifi-led-red, #ff3333);
+    opacity: 0.6;
   }
 
   .details-description {

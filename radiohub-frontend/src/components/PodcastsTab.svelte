@@ -8,13 +8,16 @@
   import PodcastSearchView from './podcasts/PodcastSearchView.svelte';
   import PodcastHeader from './podcasts/PodcastHeader.svelte';
   import EpisodeList from './podcasts/EpisodeList.svelte';
+  import DownloadJobPanel from './podcasts/DownloadJobPanel.svelte';
+  import FileExplorer from './shared/FileExplorer.svelte';
+  import HiFiDisplay from './hifi/HiFiDisplay.svelte';
   import SearchBarWithHistory from './shared/SearchBarWithHistory.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
 
   // === View State ===
-  let view = $state('episodes');           // 'episodes' | 'search' | 'all-episodes'
+  let view = $state('episodes');           // 'episodes' | 'search' | 'all-episodes' | 'file-explorer'
   let selectedPodcastId = $state(null);
   let selectedPodcast = $state(null);
 
@@ -45,10 +48,52 @@
   let subscribedFeedUrls = $derived(new Set(subscriptions.map(s => s.feed_url)));
   let podcastMap = $derived(Object.fromEntries(subscriptions.map(s => [s.id, s])));
 
+  // === File Explorer ===
+  let fileExplorerFolders = $state([]);
+  let fileExplorerTotalSize = $state(0);
+  let fileExplorerTotalFiles = $state(0);
+  let fileExplorerLoading = $state(false);
+
+  // === Refresh Timer ===
+  let refreshCountdown = $state('');
+  let nextRefreshAt = $state(null);
+  let timerInterval = null;
+
+  function updateCountdown() {
+    if (!nextRefreshAt) { refreshCountdown = ''; return; }
+    const now = Date.now();
+    const target = new Date(nextRefreshAt).getTime();
+    const diff = Math.max(0, Math.floor((target - now) / 1000));
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    const s = diff % 60;
+    refreshCountdown = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  async function loadRefreshStatus() {
+    try {
+      const status = await api.getRefreshStatus();
+      nextRefreshAt = status.next_refresh_at;
+      updateCountdown();
+    } catch (e) {
+      // Kein Fehler anzeigen - Timer ist optional
+    }
+  }
+
+  // === Aktuell spielender Podcast ===
+  let currentlyPlayingPodcastId = $derived(
+    appState.playerMode === 'podcast' && appState.podcastPlaylistPodcast
+      ? appState.podcastPlaylistPodcast.id
+      : null
+  );
+
   // === Init ===
   $effect(() => {
     loadSubscriptions();
     loadStats();
+    loadRefreshStatus();
+    timerInterval = setInterval(updateCountdown, 1000);
+    return () => { if (timerInterval) clearInterval(timerInterval); };
   });
 
   // === Daten laden ===
@@ -56,6 +101,11 @@
     try {
       const result = await api.getSubscriptions();
       subscriptions = result.subscriptions || [];
+      // selectedPodcast mit frischen Daten synchronisieren
+      if (selectedPodcastId) {
+        const fresh = subscriptions.find(s => s.id === selectedPodcastId);
+        if (fresh) selectedPodcast = fresh;
+      }
     } catch (e) {
       console.error('Abonnements laden fehlgeschlagen:', e);
     }
@@ -161,6 +211,48 @@
     searchResults = [];
   }
 
+  function handleFileExplorer() {
+    if (view === 'file-explorer') {
+      view = 'episodes';
+    } else {
+      view = 'file-explorer';
+      loadFileExplorer();
+    }
+  }
+
+  async function loadFileExplorer() {
+    fileExplorerLoading = true;
+    try {
+      const result = await api.getPodcastFiles();
+      fileExplorerFolders = result.folders || [];
+      fileExplorerTotalSize = result.total_size || 0;
+      fileExplorerTotalFiles = result.total_files || 0;
+    } catch (e) {
+      console.error('Podcast-Dateien laden fehlgeschlagen:', e);
+      actions.showToast('Dateien laden fehlgeschlagen', 'error');
+    }
+    fileExplorerLoading = false;
+  }
+
+  async function handleFileDelete(file) {
+    try {
+      await api.deleteFileExplorer(file.path);
+      actions.showToast('Datei geloescht', 'success');
+      await loadFileExplorer();
+    } catch (e) {
+      actions.showToast('Loeschen fehlgeschlagen', 'error');
+    }
+  }
+
+  function handleFilePlay(file) {
+    // Datei als Recording abspielen
+    actions.playRecording({
+      path: file.path,
+      name: file.name,
+      playUrl: api.getPlayUrl(file.path.replace(/^.*\/recordings\//, ''))
+    });
+  }
+
   function handleAllEpisodesClick() {
     selectedPodcastId = null;
     selectedPodcast = null;
@@ -180,6 +272,7 @@
         loadAllEpisodes();
       }
       actions.showToast('Alle Feeds aktualisiert', 'success');
+      await loadRefreshStatus();  // Timer zuruecksetzen
     } catch (e) {
       actions.showToast('Aktualisierung fehlgeschlagen', 'error');
     }
@@ -226,39 +319,113 @@
     isRefreshing = false;
   }
 
+  // Download-Batch State
+  let batchTotal = $state(0);
+  let batchDone = $state(0);
+  let batchFailed = $state(0);
+  let batchActive = $state(false);
+  let batchPaused = $state(false);
+  let batchCancelled = $state(false);
+  let batchCurrentName = $state('');
+
+  // Pause/Resume Promise-Paar
+  let pauseResolve = null;
+
+  function waitForResume() {
+    return new Promise(resolve => { pauseResolve = resolve; });
+  }
+
+  function handleBatchPause() {
+    batchPaused = true;
+  }
+
+  function handleBatchResume() {
+    batchPaused = false;
+    if (pauseResolve) {
+      pauseResolve();
+      pauseResolve = null;
+    }
+  }
+
+  function handleBatchCancel() {
+    batchCancelled = true;
+    batchPaused = false;
+    if (pauseResolve) {
+      pauseResolve();
+      pauseResolve = null;
+    }
+  }
+
   async function handleDownloadAll() {
     if (!selectedPodcastId || episodes.length === 0) return;
-    const undownloaded = episodes.filter(e => !e.is_downloaded).map(e => e.id);
+    const undownloaded = episodes.filter(e => !e.is_downloaded);
     if (undownloaded.length === 0) {
       actions.showToast('Alle Episoden bereits heruntergeladen', 'info');
       return;
     }
-    try {
-      actions.showToast(`Lade ${undownloaded.length} Episoden herunter...`, 'info');
-      for (const id of undownloaded) {
-        downloadProgress = { ...downloadProgress, [id]: 'downloading' };
+    batchTotal = undownloaded.length;
+    batchDone = 0;
+    batchFailed = 0;
+    batchActive = true;
+    batchPaused = false;
+    batchCancelled = false;
+    batchCurrentName = '';
+
+    for (const ep of undownloaded) {
+      if (batchCancelled) break;
+
+      // Bei Pause warten
+      if (batchPaused) {
+        await waitForResume();
+        if (batchCancelled) break;
       }
-      await api.downloadEpisodesBatch(selectedPodcastId, undownloaded);
-      for (const id of undownloaded) {
-        downloadProgress = { ...downloadProgress, [id]: 'done' };
+
+      batchCurrentName = ep.title || `Episode ${ep.id}`;
+      downloadProgress = { ...downloadProgress, [ep.id]: 'downloading' };
+
+      try {
+        await api.downloadEpisode(ep.id);
+        downloadProgress = { ...downloadProgress, [ep.id]: 'done' };
+        batchDone++;
+        // Episode in der Liste aktualisieren
+        episodes = episodes.map(e =>
+          e.id === ep.id ? { ...e, is_downloaded: true } : e
+        );
+      } catch {
+        downloadProgress = { ...downloadProgress, [ep.id]: 'error' };
+        batchFailed++;
+        batchDone++;
       }
-      await loadEpisodes(selectedPodcastId);
-      await loadStats();
-      actions.showToast(`${undownloaded.length} Episoden heruntergeladen`, 'success');
-    } catch (e) {
-      actions.showToast('Batch-Download fehlgeschlagen', 'error');
+    }
+
+    const wasCancelled = batchCancelled;
+    batchActive = false;
+    batchCurrentName = '';
+    downloadProgress = {};
+    await loadSubscriptions();
+    await loadStats();
+
+    if (wasCancelled) {
+      actions.showToast(`Download abgebrochen (${batchDone} von ${batchTotal})`, 'warning');
+    } else if (batchFailed > 0) {
+      actions.showToast(`${batchTotal - batchFailed} heruntergeladen, ${batchFailed} fehlgeschlagen`, 'warning');
+    } else {
+      actions.showToast(`${batchTotal} Episoden heruntergeladen`, 'success');
     }
   }
 
-  async function handleMarkAllPlayed() {
-    if (!selectedPodcastId) return;
+  async function handleRefreshSinglePodcast(podcast) {
     try {
-      await api.markAllPlayed(selectedPodcastId);
-      await loadEpisodes(selectedPodcastId);
+      actions.showToast(`Lade "${podcast.title}" vom Server...`, 'info');
+      await api.refreshPodcast(podcast.id);
       await loadSubscriptions();
-      actions.showToast('Alle als gehört markiert', 'success');
+      // Wenn dieser Podcast gerade angezeigt wird, Episoden neu laden
+      if (selectedPodcastId === podcast.id) {
+        await loadEpisodes(podcast.id);
+      }
+      actions.showToast(`"${podcast.title}" aktualisiert`, 'success');
     } catch (e) {
-      actions.showToast('Markierung fehlgeschlagen', 'error');
+      actions.showToast('Aktualisierung fehlgeschlagen', 'error');
     }
   }
 
@@ -300,6 +467,26 @@
     episodes = [];
   }
 
+  // === Search Episode Select ===
+  async function handleSearchEpisodeSelect(episode) {
+    // Zum Podcast der Episode wechseln
+    const podId = episode.podcast_id;
+    const podcast = subscriptions.find(s => s.id === podId);
+    if (podcast) {
+      selectedPodcastId = podId;
+      selectedPodcast = podcast;
+      view = 'episodes';
+      await loadEpisodes(podId);
+      // Episode aufklappen
+      selectedEpisodeId = episode.id;
+      // Zum Eintrag scrollen
+      setTimeout(() => {
+        const el = document.querySelector(`.episode-row[data-id="${episode.id}"]`);
+        if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 200);
+    }
+  }
+
   // === Episode Callbacks ===
   function handleEpisodeSelect(episode) {
     selectedEpisodeId = selectedEpisodeId === episode.id ? null : episode.id;
@@ -330,6 +517,7 @@
       episodes = episodes.map(e =>
         e.id === episode.id ? { ...e, is_downloaded: true } : e
       );
+      await loadSubscriptions();
       await loadStats();
       actions.showToast('Episode heruntergeladen', 'success');
     } catch (e) {
@@ -344,6 +532,7 @@
       episodes = episodes.map(e =>
         e.id === episode.id ? { ...e, is_downloaded: false, file_size: 0 } : e
       );
+      await loadSubscriptions();
       await loadStats();
       actions.showToast('Download gelöscht', 'success');
     } catch (e) {
@@ -417,18 +606,45 @@
     {selectedPodcastId}
     {filterStatus}
     {stats}
+    {subscribedFeedUrls}
     width={sidebarWidth}
+    fileExplorerActive={view === 'file-explorer'}
+    {refreshCountdown}
+    {currentlyPlayingPodcastId}
     onselectpodcast={handleSelectPodcast}
     onfilterchange={handleFilterChange}
     onsearchclick={handleSearchClick}
     onallepisodesclick={handleAllEpisodesClick}
     onrefreshall={handleRefreshAll}
+    onrefreshpodcast={handleRefreshSinglePodcast}
+    onselectepisode={handleSearchEpisodeSelect}
+    onsubscribe={handleSubscribe}
+    onfileexplorer={handleFileExplorer}
     onresize={handleSidebarResize}
   />
 
   <!-- Content (rechts) -->
   <main class="podcast-content">
-    {#if view === 'search'}
+    {#if view === 'file-explorer'}
+      <!-- Datei-Explorer -->
+      <div class="content-toolbar">
+        <div class="toolbar-title">
+          <i class="fa-solid fa-folder-tree"></i>
+          <span>Podcast-Dateien</span>
+        </div>
+      </div>
+      <FileExplorer
+        type="podcast"
+        folders={fileExplorerFolders}
+        totalSize={fileExplorerTotalSize}
+        totalFiles={fileExplorerTotalFiles}
+        isLoading={fileExplorerLoading}
+        onplay={handleFilePlay}
+        ondelete={handleFileDelete}
+        onrefresh={loadFileExplorer}
+      />
+
+    {:else if view === 'search'}
       <!-- Suchleiste -->
       <div class="content-toolbar">
         <SearchBarWithHistory
@@ -489,12 +705,27 @@
         episodeCount={selectedPodcast?.episode_count || episodes.length}
         unplayedCount={selectedPodcast?.unplayed_count || 0}
         downloadedCount={selectedPodcast?.downloaded_count || 0}
+        totalDuration={selectedPodcast?.total_duration || 0}
         {isRefreshing}
+        {batchActive}
+        {batchTotal}
+        {batchDone}
         onrefresh={handleRefreshPodcast}
         ondownloadall={handleDownloadAll}
         onunsubscribe={handleUnsubscribe}
         onautodownloadtoggle={handleAutoDownloadToggle}
         onback={handleBack}
+      />
+      <DownloadJobPanel
+        active={batchActive}
+        total={batchTotal}
+        done={batchDone}
+        failed={batchFailed}
+        currentName={batchCurrentName}
+        paused={batchPaused}
+        onpause={handleBatchPause}
+        onresume={handleBatchResume}
+        oncancel={handleBatchCancel}
       />
       {#if isLoading}
         <div class="loading-center">
@@ -522,16 +753,16 @@
 
     {:else}
       <!-- Willkommen / Kein Podcast ausgewählt -->
-      <div class="welcome-center">
+      <div class="welcome-state">
         <i class="fa-solid fa-podcast welcome-icon"></i>
-        <div class="welcome-title">Podcast-Bibliothek</div>
-        <div class="welcome-hint">
+        <HiFiDisplay size="medium">PODCASTS</HiFiDisplay>
+        <p class="welcome-hint">
           {#if subscriptions.length > 0}
             Podcast in der Seitenleiste auswählen
           {:else}
             Podcasts suchen und abonnieren
           {/if}
-        </div>
+        </p>
         {#if subscriptions.length === 0}
           <button class="hifi-btn hifi-btn-primary" onclick={() => { view = 'search'; sfx.click(); }}>
             <i class="fa-solid fa-magnifying-glass"></i> Podcasts suchen
@@ -566,7 +797,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 16px;
+    padding: 10px 10px;
     background: var(--hifi-bg-panel);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     flex-shrink: 0;
@@ -591,35 +822,24 @@
     justify-content: center;
   }
 
-  .welcome-center {
-    flex: 1;
+  .welcome-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    height: 100%;
     gap: 12px;
-    padding: 40px;
+    color: var(--hifi-text-secondary);
   }
 
   .welcome-icon {
-    font-size: 48px;
-    color: var(--hifi-text-secondary);
-    opacity: 0.2;
-  }
-
-  .welcome-title {
-    font-family: var(--hifi-font-segment, 'Orbitron', monospace);
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--hifi-text-secondary);
-    opacity: 0.5;
+    font-size: 40px;
+    opacity: 0.15;
   }
 
   .welcome-hint {
-    font-family: var(--hifi-font-family, 'Barlow', sans-serif);
-    font-size: 13px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
     color: var(--hifi-text-secondary);
     opacity: 0.5;
   }

@@ -117,6 +117,7 @@
         {isPlaying}
         {isFocused}
         {isSelected}
+        isDownloading={downloadProgress[episode.id] === 'downloading'}
         {showPodcastColumn}
         podcastTitle={podcastMap[episode.podcast_id]?.title || ''}
         onclick={(ep) => onselect(ep)}

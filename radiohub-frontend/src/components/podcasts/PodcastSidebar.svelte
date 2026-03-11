@@ -5,8 +5,12 @@
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import CoverArt from '../shared/CoverArt.svelte';
+  import PodcastSearch from './PodcastSearch.svelte';
   import { api } from '../../lib/api.js';
+  import { tick } from 'svelte';
   import * as sfx from '../../lib/uiSounds.js';
+
+  let showSearch = $state(false);
 
   let hoverPodcast = $state(null);
   let hoverY = $state(0);
@@ -29,17 +33,25 @@
     filterStatus = 'all',
     stats = {},
     width = 280,
+    subscribedFeedUrls = new Set(),
+    fileExplorerActive = false,
+    refreshCountdown = '',
+    currentlyPlayingPodcastId = null,
     onselectpodcast = () => {},
     onfilterchange = () => {},
     onsearchclick = () => {},
     onallepisodesclick = () => {},
     onrefreshall = () => {},
+    onrefreshpodcast = () => {},
+    onselectepisode = () => {},
+    onsubscribe = () => {},
+    onfileexplorer = () => {},
     onresize = () => {}
   } = $props();
 
   let totalEpisodes = $derived(subscriptions.reduce((sum, s) => sum + (s.episode_count || 0), 0));
   let totalUnplayed = $derived(subscriptions.reduce((sum, s) => sum + (s.unplayed_count || 0), 0));
-  let totalDownloaded = $derived(stats.total_downloaded || 0);
+  let totalDownloaded = $derived(stats.downloaded || 0);
 
   const filters = [
     { key: 'all', label: 'Alle' },
@@ -84,6 +96,16 @@
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
   }
+
+  // Spielenden Podcast in Sicht scrollen
+  $effect(() => {
+    if (currentlyPlayingPodcastId) {
+      tick().then(() => {
+        const el = document.querySelector(`.sub-item[data-podcast-id="${currentlyPlayingPodcastId}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  });
 </script>
 
 <aside class="podcast-sidebar" style="width: {width}px; min-width: {width}px;">
@@ -91,10 +113,11 @@
   <div class="sidebar-actions">
     <button
       class="action-btn"
-      onclick={() => { onsearchclick(); sfx.click(); }}
-      title="Neue Podcasts suchen"
+      class:active={showSearch}
+      onclick={() => { showSearch = !showSearch; sfx.click(); }}
+      title={showSearch ? 'Suche schließen' : 'Suchen'}
     >
-      <i class="fa-solid fa-magnifying-glass"></i>
+      <i class="fa-solid {showSearch ? 'fa-xmark' : 'fa-magnifying-glass'}"></i>
     </button>
     <button
       class="action-btn"
@@ -105,83 +128,123 @@
     </button>
     <button
       class="action-btn"
-      onclick={() => { onrefreshall(); sfx.click(); }}
-      title="Alle Feeds aktualisieren"
+      class:active={fileExplorerActive}
+      onclick={() => { onfileexplorer(); sfx.click(); }}
+      title={fileExplorerActive ? 'Datei-Explorer schliessen' : 'Datei-Explorer oeffnen'}
     >
-      <i class="fa-solid fa-arrows-rotate"></i>
+      <i class="fa-solid fa-folder-tree"></i>
+    </button>
+    <button
+      class="action-btn"
+      onclick={() => { onrefreshall(); sfx.click(); }}
+      title="Alle Feeds vom Server holen"
+    >
+      <i class="fa-solid fa-cloud-arrow-down"></i>
     </button>
   </div>
 
   <div class="sidebar-divider"></div>
 
-  <!-- Abo-Liste -->
-  <div class="section-scrollable">
-    <div class="section-header">
-      <span class="section-label">ABONNEMENTS</span>
-      <span class="section-count">{subscriptions.length}</span>
+  {#if showSearch}
+    <!-- Suche -->
+    <PodcastSearch
+      {subscribedFeedUrls}
+      onselectepisode={(ep) => { showSearch = false; onselectepisode(ep); }}
+      onselectpodcast={(p) => { showSearch = false; onselectpodcast(p); }}
+      onsubscribe={onsubscribe}
+      onclose={() => { showSearch = false; }}
+    />
+  {:else}
+    <!-- Abo-Liste -->
+    <div class="section-scrollable">
+      <div class="section-header">
+        <span class="section-label">ABONNEMENTS</span>
+        <span class="section-count">{subscriptions.length}</span>
+      </div>
+
+      {#if subscriptions.length === 0}
+        <div class="empty-hint" onclick={() => { showSearch = true; sfx.click(); }}>
+          Podcasts suchen und abonnieren
+        </div>
+      {:else}
+        <div class="sub-list">
+          {#each subscriptions as podcast (podcast.id)}
+            {@const isSelected = selectedPodcastId === podcast.id}
+            {@const isPlaying = currentlyPlayingPodcastId === podcast.id}
+            {@const hasUnplayed = (podcast.unplayed_count || 0) > 0}
+            {@const hasDownloads = (podcast.downloaded_count || 0) > 0}
+            <button
+              class="sub-item"
+              class:selected={isSelected}
+              class:playing={isPlaying}
+              data-podcast-id={podcast.id}
+              onclick={() => { onselectpodcast(podcast); sfx.click(); }}
+              onmouseenter={(e) => { handleSubMouseEnter(e, podcast); sfx.hover(); }}
+              onmouseleave={handleSubMouseLeave}
+            >
+              <CoverArt
+                src={podcast.id ? api.getPodcastImageUrl(podcast.id) : podcast.image_url}
+                alt={podcast.title}
+                size="sm"
+              />
+              <div class="sub-info">
+                <div class="sub-title">{podcast.title}</div>
+                <div class="sub-meta">
+                  {podcast.episode_count || 0} Ep.
+                  {#if hasUnplayed}
+                    <span class="unplayed-count">{podcast.unplayed_count} neu</span>
+                  {/if}
+                </div>
+              </div>
+              <i
+                class="fa-solid fa-cloud-arrow-down sub-fetch-icon"
+                class:has-episodes={(podcast.episode_count || 0) > 0}
+                title="Episoden vom Server laden"
+                onclick={(e) => { e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); }}
+                role="button"
+                tabindex="-1"
+              ></i>
+              <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? 'Wird abgespielt' : isSelected ? 'Ausgewählt' : hasUnplayed ? 'Neue Episoden vorhanden' : 'Keine neuen Episoden'} />
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
 
-    {#if subscriptions.length === 0}
-      <div class="empty-hint" onclick={() => { onsearchclick(); sfx.click(); }}>
-        Podcasts suchen und abonnieren
+    <div class="sidebar-divider"></div>
+
+    <!-- Status-Filter -->
+    <div class="section-fixed">
+      <div class="section-header">
+        <span class="section-label">FILTER</span>
       </div>
-    {:else}
-      <div class="sub-list">
-        {#each subscriptions as podcast (podcast.id)}
-          {@const isSelected = selectedPodcastId === podcast.id}
-          {@const hasUnplayed = (podcast.unplayed_count || 0) > 0}
+      <div class="filter-list">
+        {#each filters as f}
+          {@const isActive = filterStatus === f.key}
+          {@const count = getFilterCount(f.key)}
           <button
-            class="sub-item"
-            class:selected={isSelected}
-            onclick={() => { onselectpodcast(podcast); sfx.click(); }}
-            onmouseenter={(e) => { handleSubMouseEnter(e, podcast); sfx.hover(); }}
-            onmouseleave={handleSubMouseLeave}
+            class="filter-item"
+            class:selected={isActive}
+            onclick={() => { onfilterchange(f.key); sfx.click(); }}
           >
-            <CoverArt
-              src={podcast.id ? api.getPodcastImageUrl(podcast.id) : podcast.image_url}
-              alt={podcast.title}
-              size="sm"
-            />
-            <div class="sub-info">
-              <div class="sub-title">{podcast.title}</div>
-              <div class="sub-meta">
-                {podcast.episode_count || 0} Ep.
-                {#if hasUnplayed}
-                  <span class="unplayed-count">{podcast.unplayed_count} neu</span>
-                {/if}
-              </div>
-            </div>
-            <HiFiLed color={isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" />
+            <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" title={isActive ? 'Filter aktiv' : 'Filter inaktiv'} />
+            <span class="filter-label">{f.label}</span>
+            <span class="filter-count">{count}</span>
           </button>
         {/each}
       </div>
-    {/if}
-  </div>
-
-  <div class="sidebar-divider"></div>
-
-  <!-- Status-Filter -->
-  <div class="section-fixed">
-    <div class="section-header">
-      <span class="section-label">FILTER</span>
     </div>
-    <div class="filter-list">
-      {#each filters as f}
-        {@const isActive = filterStatus === f.key}
-        {@const count = getFilterCount(f.key)}
-        <button
-          class="filter-item"
-          class:selected={isActive}
-          onclick={() => { onfilterchange(f.key); sfx.click(); }}
-        >
-          <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" />
-          <span class="filter-label">{f.label}</span>
-          <span class="filter-count">{count}</span>
-        </button>
-      {/each}
-    </div>
-  </div>
+  {/if}
 
+
+  <!-- Refresh Timer -->
+  {#if refreshCountdown}
+    <div class="refresh-timer" title="Naechster automatischer Feed-Refresh">
+      <i class="fa-solid fa-clock"></i>
+      <span class="timer-label">REFRESH</span>
+      <span class="timer-value">{refreshCountdown}</span>
+    </div>
+  {/if}
 
   <!-- Hover Preview -->
   {#if hoverPodcast}
@@ -298,7 +361,7 @@
   .sidebar-actions {
     display: flex;
     gap: 4px;
-    padding: 10px 10px 6px;
+    padding: 10px 10px;
   }
 
   .action-btn {
@@ -306,10 +369,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    height: 34px;
+    padding: 0;
     background: var(--hifi-bg-panel);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--hifi-border-radius-sm, 4px);
     color: var(--hifi-text-secondary);
     cursor: pointer;
     font-size: 12px;
@@ -324,6 +388,11 @@
   }
 
   .action-btn:active {
+    box-shadow: var(--hifi-shadow-inset);
+  }
+
+  .action-btn.active {
+    color: var(--hifi-accent);
     box-shadow: var(--hifi-shadow-inset);
   }
 
@@ -409,6 +478,11 @@
     background: rgba(51, 153, 255, 0.08);
   }
 
+  .sub-item.playing {
+    background: rgba(76, 175, 80, 0.08);
+    border-left: 2px solid rgba(76, 175, 80, 0.5);
+  }
+
   .sub-info {
     flex: 1;
     min-width: 0;
@@ -436,8 +510,30 @@
   }
 
   .unplayed-count {
-    color: var(--hifi-led-green);
+    color: var(--hifi-text-green);
     opacity: 1;
+  }
+
+  .sub-fetch-icon {
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .sub-fetch-icon.has-episodes {
+    opacity: 0.4;
+    color: var(--hifi-text-secondary);
+  }
+
+  .sub-item:hover .sub-fetch-icon {
+    opacity: 1;
+  }
+
+  .sub-fetch-icon:hover {
+    color: var(--hifi-accent) !important;
   }
 
   .filter-list {
@@ -489,6 +585,39 @@
     text-align: right;
     min-width: 46px;
     letter-spacing: 0.3px;
+  }
+
+  /* Refresh Timer */
+  .refresh-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--hifi-border-dark);
+    flex-shrink: 0;
+  }
+
+  .refresh-timer i {
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+  }
+
+  .timer-label {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+  }
+
+  .timer-value {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    margin-left: auto;
   }
 
 </style>

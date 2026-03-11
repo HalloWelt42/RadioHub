@@ -7,13 +7,18 @@
   import SanitizedHtml from '../shared/SanitizedHtml.svelte';
   import InfoBadge from '../shared/InfoBadge.svelte';
   import { api } from '../../lib/api.js';
+  import { formatTotalDuration } from '../../lib/formatters.js';
 
   let {
     podcast,
     episodeCount = 0,
     unplayedCount = 0,
     downloadedCount = 0,
+    totalDuration = 0,
     isRefreshing = false,
+    batchActive = false,
+    batchTotal = 0,
+    batchDone = 0,
     onrefresh = () => {},
     ondownloadall = () => {},
     onunsubscribe = () => {},
@@ -63,6 +68,12 @@
           <span class="stat-value">{downloadedCount}</span>
           <span class="stat-label">Downloads</span>
         </div>
+        {#if totalDuration > 0}
+          <div class="stat">
+            <span class="stat-value">{formatTotalDuration(totalDuration)}</span>
+            <span class="stat-label">Gesamt</span>
+          </div>
+        {/if}
       </div>
 
       {#if categories.length > 0}
@@ -80,24 +91,38 @@
   </div>
 
   <div class="header-actions">
-    <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isRefreshing} title="Feed aktualisieren">
-      <i class="fa-solid fa-arrows-rotate" class:fa-spin={isRefreshing}></i>
+    <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isRefreshing} title="Feed vom Server holen">
+      <i class="fa-solid fa-cloud-arrow-down" class:fa-spin={isRefreshing}></i>
     </button>
-    <button class="hifi-btn hifi-btn-small" onclick={ondownloadall} title="Alle Episoden herunterladen">
+    <button
+      class="hifi-btn hifi-btn-small"
+      onclick={ondownloadall}
+      disabled={batchActive || downloadedCount >= episodeCount}
+      title={downloadedCount >= episodeCount ? 'Alle Episoden bereits lokal' : 'Alle Episoden lokal herunterladen'}
+    >
       <i class="fa-solid fa-download"></i>
     </button>
     <button
       class="hifi-btn hifi-btn-small"
       class:active={podcast?.auto_download}
       onclick={onautodownloadtoggle}
-      title={podcast?.auto_download ? 'Auto-Download deaktivieren' : 'Auto-Download aktivieren'}
+      title={podcast?.auto_download ? 'Auto-Download deaktivieren: Neue Episoden werden nicht automatisch heruntergeladen' : 'Auto-Download aktivieren: Neue Episoden werden automatisch heruntergeladen'}
     >
-      <i class="fa-solid fa-bolt"></i>
+      <i class="fa-solid fa-arrows-rotate"></i>
     </button>
-    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={onunsubscribe} title="Podcast-Abo entfernen">
+    <button class="hifi-btn hifi-btn-danger hifi-btn-small" onclick={onunsubscribe} title="Podcast-Abo entfernen (lokale Dateien bleiben erhalten)">
       <i class="fa-solid fa-trash"></i>
     </button>
   </div>
+
+  {#if batchActive}
+    <div class="batch-progress">
+      <div class="batch-bar">
+        <div class="batch-fill" style="width: {batchTotal > 0 ? (batchDone / batchTotal * 100) : 0}%"></div>
+      </div>
+      <span class="batch-label">{batchDone} / {batchTotal}</span>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -234,8 +259,46 @@
     box-shadow: var(--hifi-shadow-inset);
   }
 
+  .header-actions :global(.hifi-btn:disabled) {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
   .hifi-btn.active {
     background: var(--hifi-accent);
     color: white;
+  }
+
+  .batch-progress {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0 0;
+    width: 100%;
+  }
+
+  .batch-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--hifi-border-dark);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .batch-fill {
+    height: 100%;
+    background: var(--hifi-accent, #3399ff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .batch-label {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    white-space: nowrap;
   }
 </style>

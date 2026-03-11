@@ -5,7 +5,6 @@
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import CoverArt from '../shared/CoverArt.svelte';
-  import InfoBadge from '../shared/InfoBadge.svelte';
   import { api } from '../../lib/api.js';
   import { formatDurationHuman, formatDate } from '../../lib/formatters.js';
 
@@ -14,6 +13,7 @@
     isPlaying = false,
     isFocused = false,
     isSelected = false,
+    isDownloading = false,
     showPodcast = false,
     podcastTitle = '',
     onclick = () => {},
@@ -37,19 +37,20 @@
   class:playing={isPlaying}
   class:selected={isSelected && !isPlaying}
   class:focused={isFocused && !isPlaying && !isSelected}
+  data-id={episode.id}
   onclick={() => onclick(episode)}
   role="button"
   tabindex="-1"
 >
   <div class="ep-led" onclick={handlePlayClick}>
-    <HiFiLed color={isPlaying ? 'green' : isFocused ? 'yellow' : 'off'} size="small" />
+    <HiFiLed color={isPlaying ? 'green' : isFocused ? 'yellow' : episode.is_downloaded ? 'blue' : 'off'} size="small" />
   </div>
 
   <div class="ep-cover" onclick={handlePlayClick}>
     <CoverArt src={imageUrl} alt={episode.title} size="sm" />
   </div>
 
-  <div class="ep-info" onclick={handlePlayClick}>
+  <div class="ep-info">
     <div class="ep-title">
       <i class="fa-solid fa-play hover-play-icon"></i>
       <span>{episode.title}</span>
@@ -60,18 +61,21 @@
   </div>
 
   <div class="ep-badges">
-    {#if episode.is_downloaded}
-      <InfoBadge type="downloaded" label="DL" />
-    {/if}
     {#if episode.is_played}
-      <i class="fa-solid fa-headphones played-icon" title="Gehört"></i>
+      <i class="fa-solid fa-check played-icon" title="Gehört"></i>
     {:else if episode.resume_position > 0}
-      <InfoBadge type="resume" label="RES" />
+      <i class="fa-solid fa-rotate-left resume-icon" title="Fortsetzen"></i>
     {/if}
   </div>
 
   <div class="ep-date">{formatDate(episode.published_at)}</div>
   <div class="ep-duration">{formatDurationHuman(episode.duration)}</div>
+
+  {#if isDownloading}
+    <div class="ep-progress">
+      <div class="ep-progress-bar"></div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -161,8 +165,14 @@
   }
 
   .played-icon {
-    font-size: 11px;
-    color: var(--hifi-led-green, #4caf50);
+    font-size: 10px;
+    color: var(--hifi-text-green, #33cc33);
+    opacity: 0.5;
+  }
+
+  .resume-icon {
+    font-size: 10px;
+    color: var(--hifi-led-yellow, #ffcc00);
     opacity: 0.6;
   }
 
@@ -182,5 +192,24 @@
     color: var(--hifi-text-secondary);
     text-align: right;
     white-space: nowrap;
+  }
+
+  .ep-progress {
+    grid-column: 1 / -1;
+    height: 2px;
+    background: var(--hifi-border-dark);
+    overflow: hidden;
+  }
+
+  .ep-progress-bar {
+    height: 100%;
+    width: 30%;
+    background: var(--hifi-accent, #3399ff);
+    animation: progress-slide 1.2s ease-in-out infinite;
+  }
+
+  @keyframes progress-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
   }
 </style>
