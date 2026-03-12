@@ -15,17 +15,6 @@ from ..database import db_session
 from ..config import get_cache_dir, RADIO_RECORDINGS_DIR
 
 
-# Dateiendung -> MIME-Type (wiederverwendet aus recorder.py)
-EXTENSION_MIMETYPES = {
-    ".mp3": "audio/mpeg",
-    ".aac": "audio/aac",
-    ".opus": "audio/opus",
-    ".ogg": "audio/ogg",
-    ".flac": "audio/flac",
-    ".wav": "audio/wav",
-}
-
-
 def _safe_filename(title: str, max_len: int = 80) -> str:
     """Erzeugt einen sicheren Dateinamen aus einem Titel."""
     safe = re.sub(r'[^\w\s\-]', '_', title)

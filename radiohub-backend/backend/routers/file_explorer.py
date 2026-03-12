@@ -14,12 +14,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 
-from ..config import RECORDINGS_DIR, PODCAST_RECORDINGS_DIR, RADIO_RECORDINGS_DIR, get_cache_dir
+from ..config import RECORDINGS_DIR, PODCAST_RECORDINGS_DIR, RADIO_RECORDINGS_DIR, get_cache_dir, AUDIO_EXTENSIONS
 from ..database import db_session
 
 router = APIRouter(prefix="/api/files", tags=["file-explorer"])
-
-AUDIO_EXTENSIONS = {".mp3", ".m4a", ".ogg", ".opus", ".wav", ".flac", ".aac"}
 
 
 def _safe_path(base_dir: Path, rel_path: str) -> Path:
@@ -311,8 +309,7 @@ async def delete_orphaned_folders():
             skipped.append(item.name)
             continue
         # Sicherheitscheck: Nur löschen wenn keine Audio-Dateien enthalten
-        audio_exts = {".mp3", ".aac", ".m4a", ".ogg", ".opus", ".flac", ".wav"}
-        has_audio = any(f.suffix.lower() in audio_exts for f in item.rglob("*") if f.is_file())
+        has_audio = any(f.suffix.lower() in AUDIO_EXTENSIONS for f in item.rglob("*") if f.is_file())
         if has_audio:
             skipped.append(item.name)
             continue

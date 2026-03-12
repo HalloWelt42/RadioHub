@@ -21,6 +21,7 @@ from ..database import db_session
 from ..config import get_radio_recordings_dir, get_active_recording_dir
 from .hls_buffer import hls_buffer
 from .recorder import rec_manager
+from .audio_utils import probe_duration
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
@@ -344,7 +345,7 @@ class HLSRecorderService:
             return {"success": False, "error": "Concat Timeout"}
 
         # Audio-Dauer per ffprobe
-        real_duration = await self._probe_duration(output_file)
+        real_duration = await probe_duration(output_file)
         file_size = output_file.stat().st_size if output_file.exists() else 0
 
         # ICY-Metadata filtern und speichern
@@ -461,31 +462,6 @@ class HLSRecorderService:
             return 0
 
         return len(filtered)
-
-    async def _probe_duration(self, file_path: Path) -> float:
-        """Ermittelt Audio-Dauer per ffprobe."""
-        if not file_path or not file_path.exists():
-            return 0.0
-        cmd = [
-            "ffprobe", "-v", "quiet",
-            "-print_format", "json",
-            "-show_format",
-            str(file_path)
-        ]
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-            data = json.loads(stdout)
-            dur = float(data.get("format", {}).get("duration", 0))
-            if dur > 0:
-                return dur
-        except Exception as e:
-            print(f"  HLS-REC ffprobe-Fehler: {e}")
-        return 0.0
 
     def _cleanup(self, session: HLSRecSession):
         """Bereinigt bei Fehler: Session-Dir + DB-Eintrag."""

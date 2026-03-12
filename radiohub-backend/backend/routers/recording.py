@@ -6,17 +6,16 @@ Async start/stop, dynamischer Media-Type.
 HLS-REC: Aufnahme aus HLS-Buffer mit Lookback.
 """
 import json
-import os
 import zipfile
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from pathlib import Path
 
-from ..services.recorder import rec_manager, EXTENSION_MIMETYPES
+from ..services.recorder import rec_manager
 from ..services.hls_recorder import hls_recorder
 from ..services.segment_splitter import splitter
-from ..config import RADIO_RECORDINGS_DIR, get_cache_dir
+from ..config import RADIO_RECORDINGS_DIR, get_cache_dir, AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
@@ -124,7 +123,7 @@ async def download_recording(filename: str):
 
     # Dynamischer MIME-Type basierend auf Dateiendung
     ext = file_path.suffix.lower()
-    media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
 
     return FileResponse(
         path=file_path,
@@ -165,7 +164,7 @@ async def play_segment(segment_id: int):
         raise HTTPException(404, "Segment-Datei nicht gefunden")
 
     ext = file_path.suffix.lower()
-    media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
 
     return FileResponse(
         path=file_path,
@@ -190,7 +189,7 @@ async def download_segment(segment_id: int):
         raise HTTPException(404, "Segment-Datei nicht gefunden")
 
     ext = file_path.suffix.lower()
-    media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
 
     return FileResponse(
         path=file_path,
@@ -364,7 +363,7 @@ async def download_full_session(session_id: str, background_tasks: BackgroundTas
             file_path = Path(fp)
             if file_path.is_file():
                 ext = file_path.suffix.lower()
-                media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+                media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
                 return FileResponse(
                     path=file_path,
                     filename=file_path.name,
@@ -379,7 +378,7 @@ async def download_full_session(session_id: str, background_tasks: BackgroundTas
         raise HTTPException(500, "Reassembly fehlgeschlagen")
 
     ext = output_path.suffix.lower()
-    media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
 
     # Dateiname: Station_Datum.ext
     station = session.get("station_name", session_id)

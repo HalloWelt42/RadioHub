@@ -356,7 +356,7 @@ class HLSBufferService:
     def _update_icy_flag(self, uuid: str):
         """Setzt icy=1 in detected_bitrates falls noch nicht gesetzt."""
         try:
-            from .db import db_session
+            from ..database import db_session
             with db_session() as conn:
                 c = conn.cursor()
                 c.execute(

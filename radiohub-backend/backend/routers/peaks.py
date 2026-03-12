@@ -12,7 +12,7 @@ from pathlib import Path
 from ..services.recorder import rec_manager
 from ..services.segment_splitter import splitter
 from ..services.peaks_generator import peaks_gen, SAMPLE_RATE
-from ..config import get_cache_dir
+from ..config import get_cache_dir, AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/recording", tags=["peaks"])
 
@@ -71,13 +71,9 @@ async def get_session_audio(session_id: str):
     """
     audio = await _get_audio_path(session_id)
     ext = audio.suffix.lower()
-    content_types = {
-        ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".ogg": "audio/ogg",
-        ".opus": "audio/opus", ".aac": "audio/aac", ".wav": "audio/wav"
-    }
     return FileResponse(
         path=audio,
-        media_type=content_types.get(ext, "audio/mpeg"),
+        media_type=AUDIO_MIMETYPES.get(ext, "audio/mpeg"),
         filename=f"{session_id}{ext}",
         headers={"Accept-Ranges": "bytes"}
     )

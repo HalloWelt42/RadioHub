@@ -116,16 +116,6 @@ export function t(key, params = null) {
 }
 
 /**
- * Locale-Datei nachträglich registrieren (für lazy loading)
- */
-export function registerLocale(code, translations) {
-  locales[code] = translations;
-  if (code === _lang) {
-    _translations = translations;
-  }
-}
-
-/**
  * Verfügbare Sprachen - 20 Sprachen mit Flaggen
  */
 export const availableLanguages = [

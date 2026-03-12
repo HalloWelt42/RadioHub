@@ -9,7 +9,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 
-from ..services.podcast import podcast_service, EXTENSION_MIMETYPES
+from ..services.podcast import podcast_service
+from ..config import AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/podcasts", tags=["podcasts"])
 
@@ -258,7 +259,7 @@ async def play_episode(episode_id: int):
         raise HTTPException(404, "Episode nicht lokal vorhanden")
 
     ext = path.suffix.lower()
-    media_type = EXTENSION_MIMETYPES.get(ext, "audio/mpeg")
+    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
 
     return FileResponse(
         path=path,

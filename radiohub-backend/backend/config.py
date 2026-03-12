@@ -8,7 +8,6 @@ Pfade werden jetzt über Storage-Zonen aufgelöst (storage.py).
 Alle Konstanten und Funktionen bleiben als Wrapper erhalten,
 damit bestehende Imports nicht geändert werden müssen.
 """
-import os
 from pathlib import Path
 from .storage import get_zone_path, get_data_dir as _get_data_dir
 
@@ -30,13 +29,6 @@ PODCAST_RECORDINGS_DIR = get_zone_path("podcasts")
 
 # Cache (Zone: cache)
 CACHE_DIR = get_zone_path("cache")
-
-
-def ensure_directories():
-    """Erstellt alle benötigten Verzeichnisse.
-    Storage-Zonen erstellen ihre Verzeichnisse automatisch,
-    RECORDINGS_DIR wird hier extra angelegt für Abwärtskompatibilität."""
-    RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_radio_recordings_dir() -> Path:
@@ -80,3 +72,17 @@ def get_active_recording_dir() -> tuple[Path, int | None]:
         pass
     rec_dir.mkdir(parents=True, exist_ok=True)
     return rec_dir, None
+
+
+# Zentrale Audio-Konstanten
+AUDIO_EXTENSIONS = {".mp3", ".m4a", ".ogg", ".opus", ".wav", ".flac", ".aac"}
+
+AUDIO_MIMETYPES = {
+    ".mp3": "audio/mpeg",
+    ".ogg": "audio/ogg",
+    ".opus": "audio/ogg",
+    ".aac": "audio/aac",
+    ".m4a": "audio/mp4",
+    ".wav": "audio/wav",
+    ".flac": "audio/flac",
+}

@@ -17,6 +17,7 @@ from ..database import db_session
 from ..config import get_radio_recordings_dir, get_active_recording_dir
 from .config_service import config_service
 from .icy_metadata import IcyMetadataLogger
+from .audio_utils import probe_duration
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
@@ -32,17 +33,6 @@ CODEC_EXTENSIONS = {
     "pcm_s16le": ".wav",
     "pcm_s16be": ".wav",
 }
-
-# Dateiendung -> MIME-Type
-EXTENSION_MIMETYPES = {
-    ".mp3": "audio/mpeg",
-    ".aac": "audio/aac",
-    ".opus": "audio/opus",
-    ".ogg": "audio/ogg",
-    ".flac": "audio/flac",
-    ".wav": "audio/wav",
-}
-
 
 class RecordingSession:
     def __init__(self, session_id: str, station_uuid: str, station_name: str,
@@ -280,31 +270,6 @@ class RecorderManager:
         except asyncio.CancelledError:
             pass
 
-    async def _probe_duration(self, file_path: Path) -> float:
-        """Ermittelt die echte Audio-Dauer per ffprobe."""
-        if not file_path or not file_path.exists():
-            return 0.0
-        cmd = [
-            "ffprobe", "-v", "quiet",
-            "-print_format", "json",
-            "-show_format",
-            str(file_path)
-        ]
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-            data = json.loads(stdout)
-            dur = float(data.get("format", {}).get("duration", 0))
-            if dur > 0:
-                return dur
-        except Exception as e:
-            print(f"  ffprobe Duration-Fehler: {e}")
-        return 0.0
-
     def _finalize_session(self, session: RecordingSession, status: str,
                           real_duration: float = 0):
         """Finalisiert Session in DB"""
@@ -358,7 +323,7 @@ class RecorderManager:
                 await session.process.wait()
 
         # Echte Audio-Dauer per ffprobe ermitteln
-        real_duration = await self._probe_duration(session.file_path)
+        real_duration = await probe_duration(session.file_path)
         duration = real_duration if real_duration > 0 else session.duration
         file_size = session.file_size
         self._finalize_session(session, "completed", real_duration=real_duration)

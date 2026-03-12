@@ -6,7 +6,6 @@ Ermöglicht Frontend-Konfiguration der Speicherpfade.
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional
 
 from ..storage import get_all_zones, update_zone, validate_path, reload as reload_storage
 

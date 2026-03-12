@@ -5,7 +5,7 @@ Globale Einstellungen lesen/schreiben
 """
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional, Any, Dict
+from typing import Any, Dict
 
 from ..services.config_service import config_service
 

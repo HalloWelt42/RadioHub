@@ -9,6 +9,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 from ..services.timeshift_buffer import timeshift_buffer
+from ..config import AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/buffer", tags=["buffer"])
 
@@ -131,14 +132,9 @@ async def get_buffer_stream(position: float = Query(0, description="Start-Positi
     status = timeshift_buffer.get_status()
     
     # Content-Type basierend auf Format
-    content_types = {
-        "mp3": "audio/mpeg",
-        "aac": "audio/aac",
-        "ogg": "audio/ogg",
-        "flac": "audio/flac"
-    }
-    content_type = content_types.get(status.get("format", "mp3"), "audio/mpeg")
-    
+    fmt = status.get("format", "mp3")
+    content_type = AUDIO_MIMETYPES.get(f".{fmt}", "audio/mpeg")
+
     return Response(
         content=data,
         media_type=content_type,
@@ -163,14 +159,9 @@ async def get_current_chunk():
         raise HTTPException(404, "Kein Chunk verfügbar")
     
     status = timeshift_buffer.get_status()
-    content_types = {
-        "mp3": "audio/mpeg",
-        "aac": "audio/aac",
-        "ogg": "audio/ogg",
-        "flac": "audio/flac"
-    }
-    content_type = content_types.get(status.get("format", "mp3"), "audio/mpeg")
-    
+    fmt = status.get("format", "mp3")
+    content_type = AUDIO_MIMETYPES.get(f".{fmt}", "audio/mpeg")
+
     return Response(
         content=data,
         media_type=content_type,

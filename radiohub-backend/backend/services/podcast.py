@@ -16,19 +16,8 @@ from typing import List, Optional
 from xml.etree import ElementTree as ET
 
 from ..database import db_session
-from ..config import get_podcast_recordings_dir, DATA_DIR, PODCAST_RECORDINGS_DIR
+from ..config import get_podcast_recordings_dir, DATA_DIR, PODCAST_RECORDINGS_DIR, AUDIO_MIMETYPES
 from .config_service import config_service
-
-
-EXTENSION_MIMETYPES = {
-    ".mp3": "audio/mpeg",
-    ".aac": "audio/aac",
-    ".m4a": "audio/mp4",
-    ".opus": "audio/opus",
-    ".ogg": "audio/ogg",
-    ".flac": "audio/flac",
-    ".wav": "audio/wav",
-}
 
 
 def _sanitize_filename(name: str) -> str:
@@ -650,7 +639,7 @@ class PodcastService:
         # Dateiendung aus URL ableiten
         url_path = audio_url.split("?")[0]
         ext = Path(url_path).suffix.lower()
-        if ext not in EXTENSION_MIMETYPES:
+        if ext not in AUDIO_MIMETYPES:
             ext = ".mp3"
 
         safe_title = _sanitize_filename(episode.get("title", "episode"))

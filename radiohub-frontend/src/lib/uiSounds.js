@@ -123,67 +123,6 @@ export function select() {
   osc2.stop(t + 0.09);
 }
 
-// Deselect: Einzelner abfallender Puls
-export function deselect() {
-  if (!enabled) return;
-  const ac = getCtx();
-  const t = ac.currentTime;
-  const osc = ac.createOscillator();
-  const g = ac.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(400, t);
-  osc.frequency.exponentialRampToValueAtTime(180, t + 0.06);
-  g.gain.setValueAtTime(masterVolume * 0.5, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-  osc.connect(g);
-  g.connect(ac.destination);
-  osc.start(t);
-  osc.stop(t + 0.06);
-}
-
-// Sweep: Gefiltertes Rauschen -- wie Servo/Motorgeräusch
-export function sweep() {
-  if (!enabled) return;
-  const ac = getCtx();
-  const t = ac.currentTime;
-  const osc = ac.createOscillator();
-  const filter = ac.createBiquadFilter();
-  const g = ac.createGain();
-  filter.type = 'bandpass';
-  filter.frequency.setValueAtTime(200, t);
-  filter.frequency.exponentialRampToValueAtTime(1200, t + 0.12);
-  filter.Q.value = 3;
-  osc.type = 'sawtooth';
-  osc.frequency.value = 80;
-  g.gain.setValueAtTime(masterVolume * 0.4, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-  osc.connect(filter);
-  filter.connect(g);
-  g.connect(ac.destination);
-  osc.start(t);
-  osc.stop(t + 0.15);
-}
-
-// Deny: Tiefer Brumm-Impuls
-export function deny() {
-  if (!enabled) return;
-  const ac = getCtx();
-  const t = ac.currentTime;
-  const osc = ac.createOscillator();
-  const g = ac.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(100, t);
-  osc.frequency.exponentialRampToValueAtTime(50, t + 0.08);
-  g.gain.setValueAtTime(masterVolume * 0.6, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-  osc.connect(g);
-  g.connect(ac.destination);
-  osc.start(t);
-  osc.stop(t + 0.1);
-}
-
 // -- Steuerung --
 
 export function setEnabled(val) { enabled = val; }
-export function isEnabled() { return enabled; }
-export function setVolume(vol) { masterVolume = Math.max(0, Math.min(0.3, vol)); }

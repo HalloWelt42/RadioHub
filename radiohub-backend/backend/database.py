@@ -5,7 +5,6 @@ SQLite mit WAL-Modus für bessere Concurrency.
 Nur Core-Tabellen (keine Alarms, Export, Waveform).
 """
 import sqlite3
-from pathlib import Path
 from datetime import datetime
 from contextlib import contextmanager
 

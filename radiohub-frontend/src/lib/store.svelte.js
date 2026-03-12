@@ -64,21 +64,15 @@ export const appState = $state({
   podcasts: [],
 
   // Navigation Index (für Blättern)
-  currentStationIndex: -1,
   currentEpisodeIndex: -1,
 
   // ICY Now Playing
   streamTitle: null,   // Aktueller ICY-StreamTitle (Musiktitel)
 
-  // Setup Deep-Link
-  setupSubTab: null,   // Wechsel zu Sub-Tab in Setup: 'filter', 'kategorien', etc.
-
   // HLS-REC Config
   hlsRecLookbackMinutes: 5,  // Lookback in Minuten (1-120)
 
   // UI
-  isLoading: false,
-  error: null,
   toast: null
 });
 
@@ -361,18 +355,8 @@ export const actions = {
     }
   },
 
-  // HLS Status Update - NICHT MEHR NÖTIG, Engine pollt selbst
-  async updateHLSStatus() {
-    // Backward-Compat: wird von altem Code aufgerufen, macht jetzt nichts
-  },
-
   // Stream-Modus wechseln (Original/HLS)
   toggleStreamMode() {
     engine.toggleStreamMode();
-  },
-
-  // Live-Modus setzen
-  setLive(isLive) {
-    appState.isLive = isLive;
   }
 };

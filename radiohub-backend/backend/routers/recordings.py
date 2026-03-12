@@ -8,14 +8,11 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse
 
-from ..config import RECORDINGS_DIR
+from ..config import RECORDINGS_DIR, AUDIO_EXTENSIONS, AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/recordings", tags=["recordings"])
-
-# Erlaubte Audio-Erweiterungen
-AUDIO_EXTENSIONS = {".mp3", ".m4a", ".ogg", ".opus", ".wav", ".flac", ".aac"}
 
 
 def get_safe_path(rel_path: str) -> Path:
@@ -186,21 +183,12 @@ async def play_file(path: str = Query(..., description="Dateipfad")):
     
     # Content-Type ermitteln
     ext = file_path.suffix.lower()
-    content_types = {
-        ".mp3": "audio/mpeg",
-        ".m4a": "audio/mp4",
-        ".ogg": "audio/ogg",
-        ".opus": "audio/opus",
-        ".wav": "audio/wav",
-        ".flac": "audio/flac",
-        ".aac": "audio/aac"
-    }
-    
+
     file_size = file_path.stat().st_size
-    
+
     return FileResponse(
         path=file_path,
-        media_type=content_types.get(ext, "audio/mpeg"),
+        media_type=AUDIO_MIMETYPES.get(ext, "audio/mpeg"),
         filename=file_path.name,
         headers={
             "Accept-Ranges": "bytes",

@@ -178,12 +178,6 @@
       : ''
   );
 
-  let nowPlayingMeta = $derived(
-    appState.isPlaying || appState.isPaused
-      ? (appState.currentStation?.tags?.split(',')[0] || appState.currentEpisode?.podcast?.title || '')
-      : ''
-  );
-
   let sourceType = $derived(
     appState.isPlaying || appState.isPaused
       ? (appState.currentStation ? t('player.tuner') : appState.currentEpisode ? 'Podcast' : appState.currentRecording ? t('player.aufnahme') : '---')
@@ -250,19 +244,6 @@
     const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
     if (idx >= 0 && idx < appState.stations.length - 1) return appState.stations[idx + 1].name;
     if (idx === appState.stations.length - 1) return appState.stations[0].name;
-    return null;
-  });
-
-  // Quality Info
-  let qualityLabel = $derived(() => {
-    const q = appState.streamQuality;
-    if (!q) return null;
-    if (appState.playerMode === 'hls') {
-      return `${q.inputCodec.toUpperCase()} ${q.inputBitrate}k -> HLS ${q.outputBitrate}k`;
-    }
-    if (appState.playerMode === 'direct' && q.inputBitrate) {
-      return `${q.inputCodec.toUpperCase()} ${q.inputBitrate}k (Direct)`;
-    }
     return null;
   });
 
@@ -874,26 +855,6 @@
     100% { transform: translateX(-50%); }
   }
 
-  .display-meta {
-    font-family: var(--hifi-font-display);
-    font-size: 9px;
-    color: var(--hifi-display-text);
-    opacity: 0.6;
-    margin-top: 1px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .quality-info {
-    font-family: var(--hifi-font-values);
-    font-size: 7px;
-    color: var(--hifi-display-text);
-    text-shadow: 0 0 4px var(--hifi-display-text);
-    letter-spacing: 0.5px;
-  }
-
   /* VOLUME */
   .volume-section {
     width: 80px;
@@ -1149,10 +1110,6 @@
   }
 
   .transport-btn:disabled .transport-icon {
-    opacity: 0.25;
-  }
-
-  .transport-btn:disabled .transport-label {
     opacity: 0.25;
   }
 

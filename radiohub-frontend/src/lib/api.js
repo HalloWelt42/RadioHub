@@ -58,10 +58,6 @@ class RadioHubAPI {
     });
   }
 
-  async getStation(uuid) {
-    return this.fetch(`/api/stations/${uuid}`);
-  }
-
   // === Bitrate Detection ===
   async verifyBitrate(uuids) {
     return this.fetch('/api/stations/verify-bitrate', {
@@ -174,10 +170,6 @@ class RadioHubAPI {
   }
 
   // === Favorites ===
-  async getFavorites() {
-    return this.fetch('/api/favorites');
-  }
-
   async getFavoritesAll() {
     return this.fetch('/api/favorites/all');
   }
@@ -239,16 +231,8 @@ class RadioHubAPI {
     return this.fetch('/api/recording/sessions');
   }
 
-  async getSession(id) {
-    return this.fetch(`/api/recording/sessions/${id}`);
-  }
-
   async deleteSession(id) {
     return this.fetch(`/api/recording/sessions/${id}`, { method: 'DELETE' });
-  }
-
-  getSessionDownloadUrl(filename) {
-    return `${this.baseUrl}/api/recording/download/${encodeURIComponent(filename)}`;
   }
 
   async getSessionMetadata(sessionId) {
@@ -299,19 +283,6 @@ class RadioHubAPI {
   }
 
   // === Audio-Nachbearbeitung ===
-  async getAudioInfo(sessionId) {
-    return this.fetch(`/api/recording/sessions/${sessionId}/audio-info`);
-  }
-
-  async normalizeSession(sessionId, targetLufs = -16.0, segmentIds = null) {
-    const body = { target_lufs: targetLufs };
-    if (segmentIds) body.segment_ids = segmentIds;
-    return this.fetch(`/api/recording/sessions/${sessionId}/normalize`, {
-      method: 'POST',
-      body: JSON.stringify(body)
-    });
-  }
-
   normalizeSessionSSE(sessionId, targetLufs = -16.0, segmentIds = null) {
     const url = `${this.baseUrl}/api/recording/sessions/${sessionId}/normalize`;
     const body = { target_lufs: targetLufs };
@@ -319,15 +290,6 @@ class RadioHubAPI {
     return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-  }
-
-  async convertSession(sessionId, format, bitrate = 192, mono = false, segmentIds = null) {
-    const body = { format, bitrate, mono };
-    if (segmentIds) body.segment_ids = segmentIds;
-    return this.fetch(`/api/recording/sessions/${sessionId}/convert`, {
-      method: 'POST',
       body: JSON.stringify(body)
     });
   }
@@ -343,32 +305,9 @@ class RadioHubAPI {
     });
   }
 
-  async getFormatBitrates() {
-    return this.fetch('/api/recording/audio-processing/presets');
-  }
-
-  async getPeaksInfo(sessionId) {
-    return this.fetch(`/api/recording/sessions/${sessionId}/peaks/info`);
-  }
-
-  async getPeaksChunk(sessionId, start = 0, duration = 300) {
-    const url = `${this.baseUrl}/api/recording/sessions/${sessionId}/peaks?start=${start}&duration=${duration}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Peaks Error: ${response.status}`);
-    return response.arrayBuffer();
-  }
-
   // === Recordings Explorer ===
   async getRecordingsStats() {
     return this.fetch('/api/recordings/stats');
-  }
-
-  async getRecordingsFolders() {
-    return this.fetch('/api/recordings/folders');
-  }
-
-  async getRecordingsFiles(path = '/', limit = 50) {
-    return this.fetch(`/api/recordings/files?path=${encodeURIComponent(path)}&limit=${limit}`);
   }
 
   getPlayUrl(path) {
@@ -427,10 +366,6 @@ class RadioHubAPI {
     return this.fetch(`/api/podcasts/subscriptions/search?q=${encodeURIComponent(query)}`);
   }
 
-  async getEpisode(episodeId) {
-    return this.fetch(`/api/podcasts/episodes/${episodeId}`);
-  }
-
   async updateEpisodePosition(episodeId, positionSeconds) {
     return this.fetch(`/api/podcasts/episodes/${episodeId}/position`, {
       method: 'PUT',
@@ -446,27 +381,12 @@ class RadioHubAPI {
     return this.fetch(`/api/podcasts/episodes/${episodeId}/unplayed`, { method: 'PUT' });
   }
 
-  async markAllPlayed(podcastId) {
-    return this.fetch(`/api/podcasts/${podcastId}/mark-all-played`, { method: 'PUT' });
-  }
-
   async downloadEpisode(episodeId) {
     return this.fetch(`/api/podcasts/episodes/${episodeId}/download`, { method: 'POST' });
   }
 
-  async downloadEpisodesBatch(podcastId, episodeIds) {
-    return this.fetch(`/api/podcasts/${podcastId}/download-batch`, {
-      method: 'POST',
-      body: JSON.stringify({ episode_ids: episodeIds })
-    });
-  }
-
   async deleteEpisodeDownload(episodeId) {
     return this.fetch(`/api/podcasts/episodes/${episodeId}/download`, { method: 'DELETE' });
-  }
-
-  async deletePlayedDownloads(podcastId) {
-    return this.fetch(`/api/podcasts/${podcastId}/played-downloads`, { method: 'DELETE' });
   }
 
   async refreshAllPodcasts() {
@@ -475,13 +395,6 @@ class RadioHubAPI {
 
   async getPodcastStats() {
     return this.fetch('/api/podcasts/stats');
-  }
-
-  async updatePodcastCategories(podcastId, categories) {
-    return this.fetch(`/api/podcasts/${podcastId}/categories`, {
-      method: 'PUT',
-      body: JSON.stringify({ categories })
-    });
   }
 
   async setAutoDownload(podcastId, enabled) {
@@ -550,10 +463,6 @@ class RadioHubAPI {
     return this.fetch('/api/files/delete-orphaned', { method: 'DELETE' });
   }
 
-  getFilesZipDownloadUrl() {
-    return `${this.baseUrl}/api/files/download-zip`;
-  }
-
   async downloadFilesZip(files, includePlaylist = true) {
     const url = `${this.baseUrl}/api/files/download-zip`;
     const response = await fetch(url, {
@@ -575,43 +484,6 @@ class RadioHubAPI {
 
   getEpisodeImageUrl(episodeId) {
     return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/image`;
-  }
-
-  // === Timeshift Buffer (Legacy) ===
-  async getBufferStatus() {
-    return this.fetch('/api/buffer/status');
-  }
-
-  async startBuffering(station) {
-    return this.fetch('/api/buffer/start', {
-      method: 'POST',
-      body: JSON.stringify({
-        station_uuid: station.uuid || station.stationuuid,
-        station_name: station.name,
-        stream_url: station.url_resolved || station.url,
-        bitrate: station.bitrate || 128,
-        max_minutes: 120
-      })
-    });
-  }
-
-  async stopBuffering() {
-    return this.fetch('/api/buffer/stop', { method: 'POST' });
-  }
-
-  async seekBuffer(positionSeconds) {
-    return this.fetch('/api/buffer/seek', {
-      method: 'POST',
-      body: JSON.stringify({ position_seconds: positionSeconds })
-    });
-  }
-
-  async goLive() {
-    return this.fetch('/api/buffer/live', { method: 'POST' });
-  }
-
-  getBufferStreamUrl() {
-    return `${this.baseUrl}/api/buffer/stream`;
   }
 
   // === HLS Timeshift Buffer ===
@@ -720,24 +592,10 @@ class RadioHubAPI {
     });
   }
 
-  async reportAd(uuid, streamUrl, name, note = null) {
-    return this.fetch('/api/ad-detection/report', {
-      method: 'POST',
-      body: JSON.stringify({ uuid, stream_url: streamUrl, name, note })
-    });
-  }
-
   async reportAdMarkOnly(uuid, streamUrl, name, note = null) {
     return this.fetch('/api/ad-detection/report-mark', {
       method: 'POST',
       body: JSON.stringify({ uuid, stream_url: streamUrl, name, note })
-    });
-  }
-
-  async markFalsePositive(uuid) {
-    return this.fetch('/api/ad-detection/false-positive', {
-      method: 'POST',
-      body: JSON.stringify({ uuid })
     });
   }
 
@@ -754,13 +612,6 @@ class RadioHubAPI {
     return this.fetch('/api/ad-detection/decide', {
       method: 'POST',
       body: JSON.stringify({ uuid, action })
-    });
-  }
-
-  async scanAds(batchSize = 50) {
-    return this.fetch('/api/ad-detection/scan', {
-      method: 'POST',
-      body: JSON.stringify({ batch_size: batchSize })
     });
   }
 

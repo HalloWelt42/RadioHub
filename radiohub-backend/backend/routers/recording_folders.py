@@ -96,7 +96,6 @@ async def delete_folder(folder_id: int):
         # Physisches Verzeichnis löschen (verwaiste leere Unterordner mit aufräumen)
         folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
         if folder_dir.exists():
-            import shutil
             # Cache-Suffixe die beim Löschen ignoriert/aufgeräumt werden dürfen
             cache_suffixes = {".peaks", ".peaks.tmp"}
             # Prüfen ob noch echte Dateien vorhanden sind (Cache-Dateien ignorieren)

@@ -6,7 +6,6 @@ Ermöglicht Transparenz über Datenflüsse und konfigurierbare Endpunkte.
 """
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional
 
 from ..services.config_service import config_service
 
