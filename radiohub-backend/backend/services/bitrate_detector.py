@@ -281,13 +281,23 @@ def get_cached_bitrates(uuids: List[str]) -> dict:
 
 
 def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate: int = 0, icy: bool = False):
-    """Speichert erkannte Bitrate + ICY-Status in DB."""
+    """Speichert erkannte Bitrate + ICY-Status in DB.
+
+    icy wird nur auf 1 gesetzt, nie zurueck auf 0 -- Live-Erkennung
+    aus dem HLS-Buffer hat Vorrang vor der TCP-Probe.
+    """
     with db_session() as conn:
         c = conn.cursor()
         c.execute(
-            """INSERT OR REPLACE INTO detected_bitrates
+            """INSERT INTO detected_bitrates
                (uuid, bitrate, codec, sample_rate, icy, detected_at)
-               VALUES (?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?)
+               ON CONFLICT(uuid) DO UPDATE SET
+                 bitrate = excluded.bitrate,
+                 codec = excluded.codec,
+                 sample_rate = excluded.sample_rate,
+                 icy = MAX(icy, excluded.icy),
+                 detected_at = excluded.detected_at""",
             (uuid, bitrate, codec, sample_rate, int(icy), datetime.now().isoformat())
         )
 
