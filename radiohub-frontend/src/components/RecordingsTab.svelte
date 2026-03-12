@@ -246,6 +246,10 @@
   async function deleteSession(session) {
     if (session.status === 'recording') return;
     try {
+      // Wiedergabe stoppen falls diese Session gerade abgespielt wird
+      if (appState.currentRecording?.session_id === session.id) {
+        actions.stop();
+      }
       await api.deleteSession(session.id);
       sessions = sessions.filter(s => s.id !== session.id);
       if (selectedSession?.id === session.id) {
@@ -257,7 +261,7 @@
       loadStats();
       if (view === 'file-explorer') loadFileExplorer();
     } catch (e) {
-      actions.showToast(t('toast.loeschenFehler'), 'error');
+      actions.showToast(`${t('toast.loeschenFehler')}: ${e.message}`, 'error');
     }
   }
 
@@ -316,6 +320,10 @@
   async function deleteSegment(segment, e) {
     e.stopPropagation();
     try {
+      // Wiedergabe stoppen falls dieses Segment gerade abgespielt wird
+      if (appState.currentRecording?.session_id === selectedSession?.id) {
+        actions.stop();
+      }
       await api.deleteSegment(selectedSession.id, segment.id);
       segments = segments.filter(s => s.id !== segment.id);
       if (segments.length === 0) {
@@ -325,7 +333,7 @@
       actions.showToast(t('toast.segmentGeloescht'), 'success');
       loadStats();
     } catch (e) {
-      actions.showToast(t('toast.loeschenFehler'), 'error');
+      actions.showToast(`${t('toast.loeschenFehler')}: ${e.message}`, 'error');
     }
   }
 

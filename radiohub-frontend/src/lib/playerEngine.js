@@ -29,6 +29,7 @@ let _generation = 0;
 let _recordingInterval = null;
 let _recordingStartTime = null;
 let _recordingPollInterval = null;
+let _recordingStarting = false;
 let _hlsSessionId = null;
 let _lastSeekPosition = 0;
 let _userModeOverride = false;
@@ -674,11 +675,17 @@ export async function restartHLS() {
  */
 export async function startRecording() {
   if (!_appState?.currentStation) return { success: false };
+  if (_recordingStarting) return { success: false };
+  _recordingStarting = true;
 
-  if (_appState.playerMode === 'hls') {
-    return _startHlsRecording();
+  try {
+    if (_appState.playerMode === 'hls') {
+      return await _startHlsRecording();
+    }
+    return await _startDirectRecording();
+  } finally {
+    _recordingStarting = false;
   }
-  return _startDirectRecording();
 }
 
 async function _startDirectRecording() {
