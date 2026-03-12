@@ -38,6 +38,19 @@ FORMAT_CODECS = {
 class AudioProcessor:
     """FFmpeg-basierte Audio-Verarbeitung fuer Aufnahmen."""
 
+    def __init__(self):
+        # Per-Pfad Locks: verhindert parallele Operationen auf derselben Datei
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._locks_guard = asyncio.Lock()
+
+    async def _get_lock(self, path: Path) -> asyncio.Lock:
+        """Lock fuer einen bestimmten Dateipfad holen/erstellen."""
+        key = str(path.resolve())
+        async with self._locks_guard:
+            if key not in self._locks:
+                self._locks[key] = asyncio.Lock()
+            return self._locks[key]
+
     async def get_audio_info(self, audio_path: Path) -> dict:
         """Audio-Metadaten via ffprobe auslesen."""
         cmd = [
@@ -142,11 +155,13 @@ class AudioProcessor:
         EBU R128 Normalisierung (zwei Durchlaeufe).
         Ersetzt die Originaldatei.
         """
-        logger.info("Normalisierung: %s", audio_path.name)
-        loudnorm_data = await self._analyze_lufs(audio_path, target_lufs)
-        result = await self._apply_loudnorm(audio_path, loudnorm_data, target_lufs)
-        logger.info("Normalisierung abgeschlossen: %s", audio_path.name)
-        return result
+        lock = await self._get_lock(audio_path)
+        async with lock:
+            logger.info("Normalisierung: %s", audio_path.name)
+            loudnorm_data = await self._analyze_lufs(audio_path, target_lufs)
+            result = await self._apply_loudnorm(audio_path, loudnorm_data, target_lufs)
+            logger.info("Normalisierung abgeschlossen: %s", audio_path.name)
+            return result
 
     async def normalize_segments(self, segment_paths: list[Path],
                                   target_lufs: float = -16.0,
@@ -160,6 +175,23 @@ class AudioProcessor:
         if not segment_paths:
             return []
 
+        # Locks fuer alle Segmente holen
+        locks = [await self._get_lock(p) for p in segment_paths]
+        for lk in locks:
+            await lk.acquire()
+
+        try:
+            return await self._normalize_segments_locked(
+                segment_paths, target_lufs, on_progress
+            )
+        finally:
+            for lk in locks:
+                lk.release()
+
+    async def _normalize_segments_locked(self, segment_paths: list[Path],
+                                          target_lufs: float,
+                                          on_progress) -> list[Path]:
+        """Interne Implementierung (Locks bereits gehalten)."""
         total_steps = len(segment_paths) + 1  # 1 Analyse + N Anwendungen
 
         # Pass 1: Concat-Liste erstellen, gemeinsam analysieren
@@ -254,94 +286,99 @@ class AudioProcessor:
         bitrate_kbps: Ziel-Bitrate in kbps (z.B. 64, 128, 192, 256, 320).
         Ersetzt die Originaldatei.
         """
-        if target_format not in FORMAT_CODECS:
-            raise ValueError(f"Unbekanntes Format: {target_format}")
+        lock = await self._get_lock(audio_path)
+        async with lock:
+            if target_format not in FORMAT_CODECS:
+                raise ValueError(f"Unbekanntes Format: {target_format}")
 
-        target_ext = FORMAT_EXTENSIONS[target_format]
-        temp_path = audio_path.with_suffix(f".conv{target_ext}")
+            target_ext = FORMAT_EXTENSIONS[target_format]
+            temp_path = audio_path.with_suffix(f".conv{target_ext}")
 
-        codec = FORMAT_CODECS[target_format]
-        cmd = ["ffmpeg", "-y", "-i", str(audio_path)]
+            codec = FORMAT_CODECS[target_format]
+            cmd = ["ffmpeg", "-y", "-i", str(audio_path)]
 
-        # Codec + Bitrate
-        cmd.extend(["-c:a", codec])
-        if target_format == "ogg":
-            # OGG Vorbis nutzt Quality statt Bitrate
-            cmd.extend(["-q:a", self._kbps_to_ogg_quality(bitrate_kbps)])
-        else:
-            cmd.extend(["-b:a", f"{bitrate_kbps}k"])
+            # Codec + Bitrate
+            cmd.extend(["-c:a", codec])
+            if target_format == "ogg":
+                # OGG Vorbis nutzt Quality statt Bitrate
+                cmd.extend(["-q:a", self._kbps_to_ogg_quality(bitrate_kbps)])
+            else:
+                cmd.extend(["-b:a", f"{bitrate_kbps}k"])
 
-        if mono:
-            cmd.extend(["-ac", "1"])
+            if mono:
+                cmd.extend(["-ac", "1"])
 
-        cmd.append(str(temp_path))
+            cmd.append(str(temp_path))
 
-        logger.info(
-            "Konvertierung: %s -> %s (%d kbps%s)",
-            audio_path.name, target_format, bitrate_kbps,
-            ", mono" if mono else ""
-        )
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
-
-        if proc.returncode != 0 or not temp_path.exists():
-            if temp_path.exists():
-                temp_path.unlink()
-            logger.error(
-                "Konvertierung fehlgeschlagen: %s",
-                stderr.decode()[-500:]
+            logger.info(
+                "Konvertierung: %s -> %s (%d kbps%s)",
+                audio_path.name, target_format, bitrate_kbps,
+                ", mono" if mono else ""
             )
-            raise RuntimeError("Konvertierung fehlgeschlagen")
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
 
-        # Original ersetzen durch konvertierte Datei
-        final_path = audio_path.with_suffix(target_ext)
-        audio_path.unlink(missing_ok=True)
-        shutil.move(str(temp_path), str(final_path))
+            if proc.returncode != 0 or not temp_path.exists():
+                if temp_path.exists():
+                    temp_path.unlink()
+                logger.error(
+                    "Konvertierung fehlgeschlagen: %s",
+                    stderr.decode()[-500:]
+                )
+                raise RuntimeError("Konvertierung fehlgeschlagen")
 
-        logger.info(
-            "Konvertierung abgeschlossen: %s (%.1f MB)",
-            final_path.name, final_path.stat().st_size / 1024 / 1024
-        )
-        return final_path
+            # Sicher ersetzen: erst temp an Ziel bewegen, dann Original loeschen
+            final_path = audio_path.with_suffix(target_ext)
+            shutil.move(str(temp_path), str(final_path))
+            if final_path != audio_path and audio_path.exists():
+                audio_path.unlink(missing_ok=True)
+
+            logger.info(
+                "Konvertierung abgeschlossen: %s (%.1f MB)",
+                final_path.name, final_path.stat().st_size / 1024 / 1024
+            )
+            return final_path
 
     async def to_mono(self, audio_path: Path) -> Path:
         """Stereo -> Mono konvertieren. Ersetzt die Originaldatei."""
-        ext = audio_path.suffix
-        temp_path = audio_path.with_suffix(f".mono{ext}")
+        lock = await self._get_lock(audio_path)
+        async with lock:
+            ext = audio_path.suffix
+            temp_path = audio_path.with_suffix(f".mono{ext}")
 
-        codec_args = self._get_codec_args_for_ext(ext)
+            codec_args = self._get_codec_args_for_ext(ext)
 
-        cmd = [
-            "ffmpeg", "-y", "-i", str(audio_path),
-            "-ac", "1",
-            *codec_args,
-            str(temp_path)
-        ]
+            cmd = [
+                "ffmpeg", "-y", "-i", str(audio_path),
+                "-ac", "1",
+                *codec_args,
+                str(temp_path)
+            ]
 
-        logger.info("Mono-Konvertierung: %s", audio_path.name)
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
-
-        if proc.returncode != 0 or not temp_path.exists():
-            if temp_path.exists():
-                temp_path.unlink()
-            logger.error(
-                "Mono-Konvertierung fehlgeschlagen: %s",
-                stderr.decode()[-500:]
+            logger.info("Mono-Konvertierung: %s", audio_path.name)
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
             )
-            raise RuntimeError("Mono-Konvertierung fehlgeschlagen")
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
 
-        shutil.move(str(temp_path), str(audio_path))
-        logger.info("Mono-Konvertierung abgeschlossen: %s", audio_path.name)
-        return audio_path
+            if proc.returncode != 0 or not temp_path.exists():
+                if temp_path.exists():
+                    temp_path.unlink()
+                logger.error(
+                    "Mono-Konvertierung fehlgeschlagen: %s",
+                    stderr.decode()[-500:]
+                )
+                raise RuntimeError("Mono-Konvertierung fehlgeschlagen")
+
+            shutil.move(str(temp_path), str(audio_path))
+            logger.info("Mono-Konvertierung abgeschlossen: %s", audio_path.name)
+            return audio_path
 
     def get_format_bitrates(self) -> dict:
         """Verfuegbare Bitraten pro Format zurueckgeben."""

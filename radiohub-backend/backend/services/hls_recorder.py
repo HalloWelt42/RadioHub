@@ -68,6 +68,7 @@ class HLSRecorderService:
     def __init__(self):
         self.active_session: Optional[HLSRecSession] = None
         self._collector_task: Optional[asyncio.Task] = None
+        self._stopping = False  # Guard gegen doppeltes stop()
         self._cleanup_stale_sessions()
 
     def _cleanup_stale_sessions(self):
@@ -275,6 +276,9 @@ class HLSRecorderService:
         """
         if not self.active_session:
             return {"success": False, "error": "Keine aktive HLS-Aufnahme"}
+        if self._stopping:
+            return {"success": False, "error": "Stopp laeuft bereits"}
+        self._stopping = True
 
         session = self.active_session
 
@@ -395,6 +399,7 @@ class HLSRecorderService:
 
         self.active_session = None
         self._collector_task = None
+        self._stopping = False
 
         return result
 
@@ -494,6 +499,7 @@ class HLSRecorderService:
 
         self.active_session = None
         self._collector_task = None
+        self._stopping = False
 
     async def _auto_finalize(self):
         """Automatische Finalisierung wenn Collector unerwartet endet.

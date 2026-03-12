@@ -54,6 +54,7 @@ class PodcastService:
     def __init__(self):
         self.client: Optional[httpx.AsyncClient] = None
         self._next_refresh_at: Optional[datetime] = None
+        self._downloading: set[int] = set()  # Aktive Downloads (episode_id)
 
     @property
     def refresh_interval(self) -> int:
@@ -626,6 +627,9 @@ class PodcastService:
 
     async def download_episode(self, episode_id: int) -> dict:
         """Episode herunterladen"""
+        if episode_id in self._downloading:
+            return {"success": False, "error": "Download laeuft bereits"}
+
         episode = await self.get_episode(episode_id)
         if not episode:
             return {"success": False, "error": "Episode nicht gefunden"}
@@ -658,6 +662,7 @@ class PodcastService:
         if free < 100 * 1024 * 1024:  # 100 MB Minimum
             return {"success": False, "error": "Nicht genug Speicherplatz"}
 
+        self._downloading.add(episode_id)
         try:
             client = await self._get_client()
             async with client.stream("GET", audio_url) as resp:
@@ -684,6 +689,8 @@ class PodcastService:
             if target.exists():
                 target.unlink(missing_ok=True)
             return {"success": False, "error": str(e)}
+        finally:
+            self._downloading.discard(episode_id)
 
     async def download_episodes_batch(self, episode_ids: List[int]) -> dict:
         """Mehrere Episoden herunterladen"""

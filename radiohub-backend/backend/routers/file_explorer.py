@@ -276,9 +276,28 @@ async def delete_file(path: str = Query(..., description="Absoluter Dateipfad"))
 
 @router.delete("/delete-orphaned")
 async def delete_orphaned_folders():
-    """Verwaiste Aufnahme-Ordner loeschen (ohne DB-Zuordnung)."""
+    """Verwaiste Aufnahme-Ordner loeschen (ohne DB-Zuordnung).
+
+    Sicherheit: Nur Ordner loeschen die weder in recording_folders
+    noch als session file_path referenziert werden.
+    """
     folder_info = _get_recording_folder_info()
+
+    # Session-Pfade aus DB laden (auch segmentierte Sessions haben Verzeichnisse)
+    session_dirs = set()
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT file_path FROM sessions WHERE file_path IS NOT NULL")
+        for row in c.fetchall():
+            p = Path(row[0])
+            # file_path kann Datei oder Verzeichnis sein
+            if p.is_dir():
+                session_dirs.add(p.resolve())
+            else:
+                session_dirs.add(p.parent.resolve())
+
     deleted = []
+    skipped = []
 
     RADIO_RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
     for item in list(RADIO_RECORDINGS_DIR.iterdir()):
@@ -287,14 +306,24 @@ async def delete_orphaned_folders():
         info = folder_info.get(item.name, {})
         if info.get("known", False):
             continue
-        # Verwaist: loeschen
+        # Pruefen ob der Ordner von einer Session referenziert wird
+        if item.resolve() in session_dirs:
+            skipped.append(item.name)
+            continue
+        # Sicherheitscheck: Nur loeschen wenn keine Audio-Dateien enthalten
+        audio_exts = {".mp3", ".aac", ".m4a", ".ogg", ".opus", ".flac", ".wav"}
+        has_audio = any(f.suffix.lower() in audio_exts for f in item.rglob("*") if f.is_file())
+        if has_audio:
+            skipped.append(item.name)
+            continue
+        # Verwaist und leer: loeschen
         try:
             shutil.rmtree(item)
             deleted.append(item.name)
         except Exception:
             pass
 
-    return {"success": True, "deleted": deleted, "count": len(deleted)}
+    return {"success": True, "deleted": deleted, "skipped": skipped, "count": len(deleted)}
 
 
 # === ZIP + M3U Download ===

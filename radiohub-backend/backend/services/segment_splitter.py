@@ -35,6 +35,10 @@ def _safe_filename(title: str, max_len: int = 80) -> str:
 
 class SegmentSplitter:
 
+    def __init__(self):
+        # Aktive Split-Operationen tracken (verhindert Doppel-Splits)
+        self._active_splits: set[str] = set()
+
     async def split_session(self, session_id: str, audio_path: Path,
                             meta_path: Path, total_duration: float,
                             file_format: str) -> list[dict]:
@@ -42,6 +46,22 @@ class SegmentSplitter:
 
         Returns: Liste der erstellten Segmente (leer wenn kein Split moeglich).
         """
+        if session_id in self._active_splits:
+            print(f"  Split: Session {session_id} wird bereits gesplittet")
+            return []
+        self._active_splits.add(session_id)
+
+        try:
+            return await self._split_session_impl(
+                session_id, audio_path, meta_path, total_duration, file_format
+            )
+        finally:
+            self._active_splits.discard(session_id)
+
+    async def _split_session_impl(self, session_id: str, audio_path: Path,
+                                   meta_path: Path, total_duration: float,
+                                   file_format: str) -> list[dict]:
+        """Interne Split-Implementierung (Guard bereits gesetzt)."""
         if not audio_path or not audio_path.exists():
             print(f"  Split: Audio-Datei nicht gefunden: {audio_path}")
             return []
@@ -203,6 +223,24 @@ class SegmentSplitter:
         Falls meta_entries vorhanden: Titel aus ICY-Metadata zuordnen.
         Returns: Liste der erstellten Segmente.
         """
+        if session_id in self._active_splits:
+            print(f"  CustomSplit: Session {session_id} wird bereits gesplittet")
+            return []
+        self._active_splits.add(session_id)
+
+        try:
+            return await self._split_at_times_impl(
+                session_id, audio_path, cut_times, total_duration,
+                file_format, meta_entries
+            )
+        finally:
+            self._active_splits.discard(session_id)
+
+    async def _split_at_times_impl(self, session_id: str, audio_path: Path,
+                                    cut_times: list[float], total_duration: float,
+                                    file_format: str,
+                                    meta_entries: list[dict] | None = None) -> list[dict]:
+        """Interne Split-Implementierung (Guard bereits gesetzt)."""
         if not audio_path or not audio_path.exists():
             print(f"  CustomSplit: Audio-Datei nicht gefunden: {audio_path}")
             return []
