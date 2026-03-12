@@ -482,6 +482,9 @@
     display: flex;
     gap: 4px;
     padding: 10px 10px;
+    background: var(--hifi-brushed-metal), var(--hifi-bg-panel);
+    box-shadow: var(--hifi-brushed-edge-top), var(--hifi-brushed-edge-bottom);
+    border-radius: 0;
   }
 
   .action-btn {

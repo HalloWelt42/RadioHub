@@ -142,6 +142,37 @@
     --hifi-spacing-xl: 30px;
 
     /* ==========================================
+       BRUSHED METAL - Gebürstetes Edelstahl
+       ========================================== */
+    --hifi-brushed-metal:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.06) 0%,
+            rgba(255,255,255,0.02) 30%,
+            transparent 50%,
+            rgba(0,0,0,0.02) 80%,
+            rgba(0,0,0,0.04) 100%
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,0.05) 0px,
+            rgba(0,0,0,0.04) 1px,
+            transparent 2px,
+            rgba(255,255,255,0.03) 3px,
+            rgba(0,0,0,0.02) 4px,
+            transparent 5px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(255,255,255,0.02) 3px,
+            rgba(0,0,0,0.015) 4px,
+            transparent 7px
+        );
+    --hifi-brushed-edge-top: inset 0 1px 0 rgba(255,255,255,0.08);
+    --hifi-brushed-edge-bottom: inset 0 -1px 0 rgba(0,0,0,0.06);
+
+    /* ==========================================
        TRANSITIONS
        ========================================== */
     --hifi-transition-fast: 0.1s ease;
@@ -193,6 +224,35 @@
     /* Borders */
     --hifi-border-light: rgba(255, 255, 255, 0.1);
     --hifi-border-dark: rgba(0, 0, 0, 0.3);
+
+    /* Brushed Metal - Dark */
+    --hifi-brushed-metal:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.05) 0%,
+            rgba(255,255,255,0.015) 30%,
+            transparent 50%,
+            rgba(0,0,0,0.03) 80%,
+            rgba(0,0,0,0.06) 100%
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,0.04) 0px,
+            rgba(0,0,0,0.05) 1px,
+            transparent 2px,
+            rgba(255,255,255,0.025) 3px,
+            rgba(0,0,0,0.03) 4px,
+            transparent 5px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(255,255,255,0.015) 3px,
+            rgba(0,0,0,0.02) 4px,
+            transparent 7px
+        );
+    --hifi-brushed-edge-top: inset 0 1px 0 rgba(255,255,255,0.06);
+    --hifi-brushed-edge-bottom: inset 0 -1px 0 rgba(0,0,0,0.1);
 
     /* Knobs & Faders */
     --hifi-knob-bg: linear-gradient(145deg, #2a2a2a, #1a1a1a);

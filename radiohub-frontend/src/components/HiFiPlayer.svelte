@@ -696,12 +696,15 @@
     align-items: flex-start;
     gap: 10px;
     padding: 12px 15px 10px;
-    background: var(--hifi-bg-panel);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 50%, rgba(0,0,0,0.02) 100%),
+        var(--hifi-brushed-metal),
+        var(--hifi-bg-panel);
     border-top: 1px solid var(--hifi-border-dark);
     position: relative;
     z-index: 30;
     overflow: visible;
-    box-shadow: 0 -4px 8px var(--hifi-shadow-dark);
+    box-shadow: 0 -4px 8px var(--hifi-shadow-dark), inset 0 1px 0 rgba(255,255,255,0.08);
     user-select: none;
     -webkit-user-select: none;
   }
@@ -710,10 +713,17 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: var(--hifi-bg-panel);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 40%, rgba(0,0,0,0.03) 100%),
+        var(--hifi-brushed-metal),
+        var(--hifi-bg-panel);
     padding: 6px 16px 14px;
     border-radius: 20px 20px 0 0;
-    box-shadow: var(--hifi-shadow-button);
+    box-shadow:
+        var(--hifi-shadow-button),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 1px 0 0 rgba(255,255,255,0.04),
+        inset -1px 0 0 rgba(0,0,0,0.04);
     position: relative;
     z-index: 3;
     margin-top: -40px;
@@ -748,10 +758,15 @@
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: var(--hifi-text-secondary);
+    color: #999;
     text-transform: uppercase;
     margin-bottom: 8px;
     height: 12px;
+    text-shadow:
+        0 -2px 1px rgba(0,0,0,1),
+        0 -1px 0 rgba(0,0,0,0.5),
+        0 1px 0 rgba(255,255,255,0.35),
+        0 2px 3px rgba(0,0,0,0.15);
   }
 
   .section-content {
@@ -1033,8 +1048,15 @@
   }
 
   .transport-fader-container.disabled {
-    opacity: 0.3;
     pointer-events: none;
+  }
+
+  .transport-fader-container.disabled .transport-fader-track {
+    opacity: 0.3;
+  }
+
+  .transport-fader-container.disabled .transport-fader {
+    opacity: 0.3;
   }
 
   .transport-fader-container.seeking {
@@ -1125,8 +1147,17 @@
   }
 
   .transport-btn:disabled {
-    opacity: 0.3;
     cursor: not-allowed;
+    background: var(--hifi-bg-tertiary);
+    box-shadow: var(--hifi-shadow-button);
+  }
+
+  .transport-btn:disabled .transport-icon {
+    opacity: 0.25;
+  }
+
+  .transport-btn:disabled .transport-label {
+    opacity: 0.25;
   }
 
   .transport-icon {
@@ -1146,15 +1177,15 @@
 
   .transport-btn.live-btn:disabled .transport-icon {
     color: var(--hifi-led-blue);
-    opacity: 1;
+    opacity: 0.25;
   }
 
   .transport-btn.rec {
-    background: rgba(180, 40, 40, 0.08);
+    background: color-mix(in srgb, var(--hifi-bg-tertiary) 92%, #b42828);
   }
 
   .transport-btn.rec:hover:not(:disabled) {
-    background: rgba(180, 40, 40, 0.15);
+    background: color-mix(in srgb, var(--hifi-bg-secondary) 85%, #b42828);
   }
 
   .transport-btn.rec .transport-icon {

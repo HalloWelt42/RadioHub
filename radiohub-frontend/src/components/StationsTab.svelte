@@ -859,7 +859,7 @@
               </div>
               <div class="station-name" onclick={(e) => playAndExpand(station, e)}>
                 <i class="fa-solid fa-play hover-play-icon"></i>
-                <img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-music station-favicon-fallback' })); }} />
+                {#if station.favicon}<img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music station-favicon-fallback"></i>{/if}
                 <span class="station-name-text">{station.name}</span>
               </div>
               <div class="station-badges">
@@ -901,7 +901,7 @@
               <div class="station-details">
                 <div class="details-content">
                   <div class="details-favicon">
-                    <img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { e.target.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-music details-favicon-fallback' })); }} />
+                    {#if station.favicon}<img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music details-favicon-fallback"></i>{/if}
                   </div>
                   <div class="details-grid">
                     {#if isPlaying && appState.streamTitle}

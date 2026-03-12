@@ -4,13 +4,21 @@ RadioHub - Favicon Router
 Liefert lokal gecachte Sender-Favicons aus.
 Bei Cache-Miss wird on-demand aus der DB-URL heruntergeladen.
 """
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+import base64
+
+from fastapi import APIRouter
+from fastapi.responses import FileResponse, Response
 
 from ..services.favicon_cache import get_cached_path, get_or_download
 from ..database import db_session
 
 router = APIRouter(prefix="/api/favicon", tags=["favicon"])
+
+# 1x1 transparentes PNG als Fallback (kein 404 mehr)
+_TRANSPARENT_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAB"
+    "Nl7BcQAAAABJRU5ErkJggg=="
+)
 
 _CONTENT_TYPES = {
     ".png": "image/png",
@@ -35,7 +43,11 @@ async def get_favicon(uuid: str):
             path = await get_or_download(uuid, favicon_url)
 
     if not path:
-        raise HTTPException(404, "Favicon nicht verfuegbar")
+        return Response(
+            content=_TRANSPARENT_PNG,
+            media_type="image/png",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
 
     content_type = _CONTENT_TYPES.get(path.suffix.lower(), "image/png")
     return FileResponse(

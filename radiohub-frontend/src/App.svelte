@@ -14,6 +14,28 @@
 
   let backendOnline = $state(false);
 
+  // Logo Glow Animation (nur Dark Mode)
+  $effect(() => {
+    if (appState.theme !== 'dark') return;
+    let forward = true;
+    const letters = document.querySelectorAll('.logo-letter');
+    if (!letters.length) return;
+
+    function runSweep() {
+      letters.forEach((sp, i) => {
+        const delay = forward ? i * 0.15 : (letters.length - 1 - i) * 0.15;
+        sp.style.animation = 'none';
+        sp.offsetHeight;
+        sp.style.animation = `letterGlow 0.6s ease-in-out ${delay}s both`;
+      });
+      forward = !forward;
+    }
+
+    runSweep();
+    const iv = setInterval(runSweep, 7000);
+    return () => clearInterval(iv);
+  });
+
   // Theme init
   $effect(() => {
     actions.initTheme();
@@ -127,7 +149,12 @@
   <!-- Header -->
   <header class="hifi-header">
     <div class="hifi-logo">
-      <span class="hifi-logo-text">RadioHub</span>
+      <div class="hifi-logo-row">
+        <span class="hifi-logo-text">{#each 'RadioHub'.split('') as ch, i}<span class="logo-letter" style="--i:{i}">{ch}</span>{/each}</span>
+        <button class="donate-heart" onclick={() => { actions.navigateTo('/setup/allgemein/bedanken'); sfx.select(); }} title="Unterstützen">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+      </div>
       <span class="hifi-logo-sub">DIGITAL AUDIO SYSTEM</span>
     </div>
     
@@ -197,40 +224,125 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
-    background: var(--hifi-bg-panel);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(0,0,0,0.03) 100%),
+        var(--hifi-brushed-metal),
+        var(--hifi-bg-panel);
     border-bottom: 1px solid var(--hifi-border-dark);
     border-radius: 0;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.08),
+        0 2px 4px rgba(0,0,0,0.15);
   }
   
   .hifi-logo {
     display: flex;
     flex-direction: column;
   }
+
+  .hifi-logo-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @keyframes -global-heartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  .donate-heart {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 16px;
+    color: #cc2244;
+    text-shadow:
+        0 0 6px rgba(204, 34, 68, 0.6),
+        0 0 12px rgba(204, 34, 68, 0.3),
+        0 1px 1px rgba(0,0,0,0.4),
+        0 -1px 0 rgba(255,255,255,0.15);
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    transition: all 0.2s ease;
+    animation: heartPulse 2s ease-in-out infinite;
+  }
+
+  .donate-heart:hover {
+    color: #ee3355;
+    text-shadow:
+        0 0 10px rgba(238, 51, 85, 0.8),
+        0 0 20px rgba(238, 51, 85, 0.5),
+        0 0 30px rgba(238, 51, 85, 0.3),
+        0 1px 1px rgba(0,0,0,0.4);
+    transform: scale(1.2);
+    animation: none;
+  }
+
+  .donate-heart:active {
+    transform: scale(0.95);
+  }
   
   /* Logo bleibt bei separater Schrift */
   .hifi-logo-text {
-    font-family: var(--hifi-font-display);
-    font-size: 22px;
-    font-weight: 700;
+    font-family: var(--hifi-font-segment);
+    font-size: 26px;
+    font-weight: 900;
     color: var(--hifi-accent);
     letter-spacing: 2px;
+  }
+
+  .logo-letter {
+    display: inline-block;
+  }
+
+  @keyframes -global-letterGlow {
+    0%   { text-shadow: none; }
+    40%  { text-shadow: 0 0 8px rgba(74,144,217,0.9), 0 0 20px rgba(74,144,217,0.5), 0 0 40px rgba(74,144,217,0.3); }
+    100% { text-shadow: none; }
   }
   
   .hifi-logo-sub {
     font-family: var(--hifi-font-values);
     font-size: 8px;
     letter-spacing: 3px;
-    color: var(--hifi-text-secondary);
     text-transform: uppercase;
+    color: #555;
+  }
+
+  :global([data-theme="dark"]) .hifi-logo-sub {
+    color: transparent;
+    text-shadow: none;
+    background: linear-gradient(90deg,
+        #dd3366, #dd6633, #ddaa33, #33dd77, #33bbdd, #5533dd, #cc33dd,
+        #dd3366, #dd6633, #ddaa33, #33dd77, #33bbdd, #5533dd, #cc33dd, #dd3366
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: specFlow 20s linear infinite;
+  }
+
+  @keyframes specFlow {
+    0%   { background-position: 0% center; }
+    100% { background-position: -200% center; }
   }
   
   .hifi-nav {
     display: flex;
     gap: 4px;
-    background: var(--hifi-bg-panel);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.04) 100%),
+        var(--hifi-brushed-metal),
+        var(--hifi-bg-panel);
     padding: 10px 16px;
     border-radius: var(--hifi-border-radius-pill);
-    box-shadow: var(--hifi-shadow-button);
+    box-shadow:
+        var(--hifi-shadow-button),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.06);
     position: relative;
     z-index: 2;
     transform: translateY(20px);
