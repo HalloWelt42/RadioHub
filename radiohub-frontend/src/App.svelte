@@ -203,6 +203,11 @@
   
   <!-- Player -->
   <HiFiPlayer />
+
+  <!-- Footer -->
+  <footer class="hifi-footer">
+    <span>&copy; {new Date().getFullYear()} <a href="https://github.com/HalloWelt42/RadioHub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> HalloWelt42</a> -- RadioHub v0.4.1</span>
+  </footer>
 </div>
 
 <!-- Toast außerhalb hifi-app für korrektes z-index Stacking -->
@@ -210,6 +215,7 @@
 
 <style>
   .hifi-app {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -394,5 +400,26 @@
     flex: 1;
     overflow: hidden;
     background: var(--hifi-bg-secondary);
+  }
+
+  .hifi-footer {
+    position: absolute;
+    bottom: 2px;
+    left: 8px;
+    font-family: var(--hifi-font-values);
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.5px;
+    z-index: 100;
+  }
+
+  .hifi-footer a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .hifi-footer a:hover {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: underline;
   }
 </style>

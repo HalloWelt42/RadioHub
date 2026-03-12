@@ -10,7 +10,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from ..config import RECORDINGS_DIR, AUDIO_EXTENSIONS, AUDIO_MIMETYPES
+from ..config import RECORDINGS_DIR, RADIO_RECORDINGS_DIR, AUDIO_EXTENSIONS, AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/recordings", tags=["recordings"])
 
@@ -32,22 +32,23 @@ def get_safe_path(rel_path: str) -> Path:
 
 @router.get("/stats")
 async def get_stats():
-    """Speicher-Statistiken"""
-    RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-    
+    """Speicher-Statistiken (nur Radio-Aufnahmen, ohne Podcasts/Cache)"""
+    radio_dir = RADIO_RECORDINGS_DIR
+    radio_dir.mkdir(parents=True, exist_ok=True)
+
     # Speicherplatz
-    total, used, free = shutil.disk_usage(RECORDINGS_DIR)
-    
-    # Dateien zählen
+    total, used, free = shutil.disk_usage(radio_dir)
+
+    # Nur echte Audio-Dateien zählen (keine .peaks, .meta.json, .tmp)
     file_count = 0
     total_size = 0
-    
-    for root, dirs, files in os.walk(RECORDINGS_DIR):
+
+    for root, dirs, files in os.walk(radio_dir):
         for f in files:
             if Path(f).suffix.lower() in AUDIO_EXTENSIONS:
                 file_count += 1
                 total_size += (Path(root) / f).stat().st_size
-    
+
     return {
         "disk_free_gb": round(free / (1024**3), 2),
         "disk_total_gb": round(total / (1024**3), 2),
