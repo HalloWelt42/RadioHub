@@ -132,6 +132,6 @@ async def get_peaks_chunk(
             "X-Total-Duration": f"{total_duration:.3f}",
             "X-Chunk-Start": f"{start:.3f}",
             "X-Chunk-Samples": str(len(data) // 4),
-            "Cache-Control": "public, max-age=3600"
+            "Cache-Control": "no-cache"
         }
     )

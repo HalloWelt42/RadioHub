@@ -519,6 +519,7 @@
     box-shadow: var(--hifi-shadow-inset);
   }
 
+
   .sidebar-divider {
     height: 1px;
     background: var(--hifi-border-dark);

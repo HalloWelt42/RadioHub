@@ -51,8 +51,12 @@
   let minimapDragMoved = false;
 
   // Zoom-Stufen (Sekunden sichtbar)
-  const ZOOM_LEVELS = [15, 30, 60, 120, 300, 600, 1800, 3600];
-  let zoomIndex = $state(4); // Start: 300s = 5 min
+  const ZOOM_LEVELS = [5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600];
+  let zoomIndex = $state(6); // Start: 300s = 5 min
+
+  // Amplituden-Zoom (Gain-Stufen)
+  const GAIN_LEVELS = [1, 2, 4, 8, 16];
+  let gainIndex = $state(0); // Start: 1x
 
   // Titel-Regionen aus Metadata
   let titleRegions = $derived.by(() => {
@@ -220,6 +224,7 @@
     renderer.setMarkers(markers);
     renderer.setPlayPosition(playPosition);
     renderer.setTitleRegions(titleRegions);
+    renderer.setGain(GAIN_LEVELS[gainIndex]);
     renderer.render();
 
     // Minimap
@@ -230,6 +235,7 @@
       minimapRenderer.setTitleRegions(titleRegions);
       minimapRenderer.setMarkers(markers);
       minimapRenderer.setPlayPosition(playPosition);
+      minimapRenderer.setGain(1.0); // Minimap immer ohne Gain
       minimapRenderer.render();
 
       // Viewport-Indikator auf Minimap zeichnen
@@ -273,6 +279,20 @@
     zoomIndex = ZOOM_LEVELS.findIndex(z => z >= totalDuration);
     if (zoomIndex === -1) zoomIndex = ZOOM_LEVELS.length - 1;
     loadAndDraw();
+  }
+
+  function gainUp() {
+    if (gainIndex < GAIN_LEVELS.length - 1) {
+      gainIndex++;
+      drawFrame();
+    }
+  }
+
+  function gainDown() {
+    if (gainIndex > 0) {
+      gainIndex--;
+      drawFrame();
+    }
   }
 
   async function loadAndDraw() {
@@ -716,6 +736,15 @@
         <i class="fa-solid fa-arrows-left-right-to-line"></i>
       </button>
       <span class="zoom-label">{formatDuration(viewDuration)}</span>
+      <span class="toolbar-sep"></span>
+      <button class="cutter-btn" onclick={gainDown} title="Amplitude -" disabled={gainIndex <= 0}>
+        <i class="fa-solid fa-compress"></i>
+      </button>
+      <span class="gain-label">{GAIN_LEVELS[gainIndex]}x</span>
+      <button class="cutter-btn" onclick={gainUp} title="Amplitude +" disabled={gainIndex >= GAIN_LEVELS.length - 1}>
+        <i class="fa-solid fa-expand"></i>
+      </button>
+      <span class="toolbar-sep"></span>
       <button
         class="cutter-btn autoplay-toggle"
         class:autoplay-active={autoPlayEnabled}
@@ -997,6 +1026,23 @@
     font-weight: 700;
     color: var(--hifi-text-secondary);
     padding: 0 6px;
+  }
+
+  .gain-label {
+    font-family: var(--hifi-font-values);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    padding: 0 4px;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--hifi-border-dark);
+    margin: 0 2px;
   }
 
   /* Info-Leiste */

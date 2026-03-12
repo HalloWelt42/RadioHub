@@ -35,6 +35,7 @@ export class WaveformRenderer {
     this.playPosition = -1;
     this.titleRegions = [];
     this.selection = null; // { start, end }
+    this.gain = 1.0; // Vertikaler Zoom-Faktor
 
     this._rafId = null;
   }
@@ -69,6 +70,10 @@ export class WaveformRenderer {
 
   setTitleRegions(regions) {
     this.titleRegions = regions;
+  }
+
+  setGain(factor) {
+    this.gain = factor;
   }
 
   setSelection(sel) {
@@ -158,7 +163,7 @@ export class WaveformRenderer {
       // Weniger Samples als Pixel: Jedes Sample einzeln zeichnen
       for (let i = Math.max(0, viewStartSample); i < Math.min(this.peaks.length, viewEndSample); i++) {
         const x = ((i - viewStartSample) / samplesInView) * this.width;
-        const val = Math.abs(this.peaks[i]);
+        const val = Math.min(Math.abs(this.peaks[i]) * this.gain, 1.0);
         const barH = val * halfH;
         ctx.fillRect(x, centerY - barH, Math.max(1, this.width / samplesInView), barH * 2);
       }
@@ -178,7 +183,7 @@ export class WaveformRenderer {
         }
 
         if (maxVal > 0.001) {
-          const barH = maxVal * halfH;
+          const barH = Math.min(maxVal * this.gain, 1.0) * halfH;
           ctx.fillRect(px, centerY - barH, 1, barH * 2);
         }
       }
@@ -192,7 +197,8 @@ export class WaveformRenderer {
 
     // Intervall bestimmen (automatisch anpassen an Zoom)
     let interval;
-    if (this.viewDuration <= 30) interval = 5;
+    if (this.viewDuration <= 10) interval = 1;
+    else if (this.viewDuration <= 30) interval = 5;
     else if (this.viewDuration <= 120) interval = 15;
     else if (this.viewDuration <= 600) interval = 60;
     else if (this.viewDuration <= 1800) interval = 300;
