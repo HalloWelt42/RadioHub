@@ -792,7 +792,6 @@
     background: var(--hifi-border-dark);
     overflow: hidden;
     font-family: 'Barlow', sans-serif;
-    user-select: none;
   }
 
   .podcast-content {

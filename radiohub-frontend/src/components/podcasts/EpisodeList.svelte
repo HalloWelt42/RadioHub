@@ -169,7 +169,6 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--hifi-text-secondary);
-    user-select: none;
   }
 
   .column-headers > div {

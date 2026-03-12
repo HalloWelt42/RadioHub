@@ -1000,10 +1000,8 @@
     gap: 1px;
     background: var(--hifi-border-dark);
     font-family: 'Barlow', sans-serif;
-    user-select: none;
-    -webkit-user-select: none;
   }
-  
+
   /* Filter Panel */
   .filter-panel {
     width: 224px;
@@ -1491,8 +1489,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
-    user-select: text;
-    -webkit-user-select: text;
     display: flex;
     align-items: center;
     gap: 0;

@@ -705,8 +705,6 @@
     z-index: 30;
     overflow: visible;
     box-shadow: 0 -4px 8px var(--hifi-shadow-dark), inset 0 1px 0 rgba(255,255,255,0.08);
-    user-select: none;
-    -webkit-user-select: none;
   }
 
   .center-group {

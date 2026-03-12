@@ -15,6 +15,17 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Textauswahl nur dort erlauben wo sinnvoll */
+input, textarea, select, [contenteditable],
+.station-name, .episode-title, .session-name,
+.folder-name, .metadata-value, .file-name,
+.selectable, pre, code {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 /* ==========================================

@@ -525,7 +525,6 @@
     position: sticky;
     top: 0;
     cursor: pointer;
-    user-select: none;
 }
 
 .hifi-table th:hover { background: var(--hifi-bg-secondary); }
