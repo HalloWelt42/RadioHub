@@ -1558,7 +1558,8 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    padding: 1px 4px;
+    line-height: 1;
+    padding: 2px 4px;
     border-radius: 2px;
     display: inline-flex;
     align-items: center;
