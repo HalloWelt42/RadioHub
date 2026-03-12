@@ -568,6 +568,7 @@
 
   // === Audio-Nachbearbeitung ===
   let isProcessing = $state(false);
+  let processingStatus = $state('');
   let showConvertPanel = $state(false);
   let convertFormat = $state('mp3');
   let convertQuality = $state('medium');
@@ -575,13 +576,66 @@
 
   async function handleNormalize() {
     isProcessing = true;
+    processingStatus = '';
     try {
-      await api.normalizeSession(session.id);
-      actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+      // Segmentierte Session: SSE-Stream mit Fortschritt
+      if (existingSegments.length > 0) {
+        processingStatus = 'Analyse...';
+        const response = await fetch(`/api/recording/sessions/${session.id}/normalize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_lufs: -16.0 })
+        });
+
+        if (response.headers.get('content-type')?.includes('text/event-stream')) {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              try {
+                const evt = JSON.parse(line.slice(6));
+                if (evt.type === 'start') {
+                  const min = Math.floor(evt.estimated_seconds / 60);
+                  const sec = evt.estimated_seconds % 60;
+                  processingStatus = `Normalisiere ${evt.segments} Segmente (~${min}:${String(sec).padStart(2, '0')})`;
+                } else if (evt.type === 'progress') {
+                  processingStatus = evt.message;
+                } else if (evt.type === 'done') {
+                  actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+                } else if (evt.type === 'error') {
+                  actions.showToast(evt.message, 'error');
+                }
+              } catch {}
+            }
+          }
+        } else {
+          // Fallback: Normale JSON-Response (einzelne Datei)
+          const data = await response.json();
+          if (data.success) {
+            actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+          } else {
+            actions.showToast(t('cutter.normalisierungFehler'), 'error');
+          }
+        }
+      } else {
+        // Einzelne Datei: normaler API-Call
+        await api.normalizeSession(session.id);
+        actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+      }
     } catch (e) {
       actions.showToast(t('cutter.normalisierungFehler'), 'error');
     }
     isProcessing = false;
+    processingStatus = '';
   }
 
   async function handleConvert() {
@@ -755,7 +809,7 @@
     {#if isProcessing}
       <span class="processing-indicator">
         <div class="mini-spinner"></div>
-        <span>{t('cutter.verarbeitung')}</span>
+        <span>{processingStatus || t('cutter.verarbeitung')}</span>
       </span>
     {/if}
   </div>
