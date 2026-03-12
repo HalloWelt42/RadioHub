@@ -140,4 +140,11 @@ Die App ist dann unter `http://localhost:5180` erreichbar.
 
 ## Lizenz
 
-Privates Projekt. Alle Rechte vorbehalten.
+Nicht-kommerzielle Lizenz v1.0 (`LicenseRef-RadioHub-NC-1.0`)
+Basierend auf [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de) mit Ergänzungen.
+
+Copyright 2025-2026 HalloWelt42
+
+Private, nicht-kommerzielle Nutzung und private Modifikation erlaubt.
+Kommerzielle Nutzung, Verkauf und Veröffentlichung modifizierter Versionen untersagt.
+Vollständige Lizenzbedingungen: [lizenz.md](radiohub-frontend/public/legal/lizenz.md)
