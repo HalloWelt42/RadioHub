@@ -38,19 +38,9 @@
   let dragStartX = 0;
   let dragMoved = false;
   let lastSeekTime = 0; // Timestamp des letzten Seeks (gegen Playhead-Sprung)
-  let lastAudioTime = 0;    // Letzter bekannter audio.currentTime
-  let lastAudioReadMs = 0;  // performance.now() beim Lesen
-  let isPlaying = $state(false); // Laeuft gerade Wiedergabe?
   const PLAYHEAD_RATIO = 0.3; // Playhead steht bei 30% von links
   let trimStart = $state(false); // Erstes Fragment wegschneiden
   let trimEnd = $state(false);   // Letztes Fragment wegschneiden
-
-  // Analyse-Zonen
-  let analyseActive = $state(false);
-  let analyseWidth = $state(15); // Sekunden links/rechts vom Marker
-  let analysisZones = $state([]); // [{ center, left, right, quality }]
-  let transitionPlayIndex = $state(-1); // Welcher Übergang wird gerade gespielt
-  let transitionPlayTimer = null;
 
   // Zoom-Stufen (Sekunden sichtbar)
   const ZOOM_LEVELS = [15, 30, 60, 120, 300, 600, 1800, 3600];
@@ -96,7 +86,6 @@
       if (renderer) renderer.destroy();
       if (minimapRenderer) minimapRenderer.destroy();
       if (playRafId) cancelAnimationFrame(playRafId);
-      if (transitionPlayTimer) clearTimeout(transitionPlayTimer);
       if (themeObserver) themeObserver.disconnect();
     };
   });
@@ -136,46 +125,36 @@
       actions.showToast(t('toast.ladenFehler'), 'error');
     }
 
-    // Playback-Position tracken per rAF (~60fps)
+    // Playback-Position tracken per rAF, gedeckelt auf 25fps (40ms)
     // Playhead steht fest bei 30% -- Waveform scrollt darunter durch
+    let wasPlaying = false;
+    let lastDrawMs = 0;
+    const FRAME_INTERVAL = 40; // 25fps
+
     function playLoop() {
       playRafId = requestAnimationFrame(playLoop);
 
-      // Nach Seek 800ms warten, damit Audio-Element (HLS) aufholt
-      if (Date.now() - lastSeekTime < 800) return;
+      // Nach Seek kurz warten, damit audio.currentTime den neuen Wert hat
+      if (Date.now() - lastSeekTime < 300) return;
       if (appState.currentRecording?.session_id !== session.id) return;
 
       const audio = document.querySelector('audio');
       if (!audio || audio.paused) {
-        if (isPlaying) { isPlaying = false; drawFrame(); }
+        if (wasPlaying) { wasPlaying = false; drawFrame(); }
         return;
       }
 
+      // 25fps Throttle
       const now = performance.now();
-      const realTime = audio.currentTime;
+      if (now - lastDrawMs < FRAME_INTERVAL) return;
+      lastDrawMs = now;
 
-      // Erster Frame nach Seek/Pause: Referenz sofort synchronisieren
-      if (!isPlaying) {
-        lastAudioTime = realTime;
-        lastAudioReadMs = now;
-        isPlaying = true;
-      }
-
-      // Zeitinterpolation: audio.currentTime aktualisiert nur sporadisch,
-      // wir rechnen dazwischen hoch fuer fluessige 60fps-Bewegung
-      if (Math.abs(realTime - lastAudioTime) > 0.01) {
-        // Browser hat neuen Wert geliefert -- Referenz aktualisieren
-        lastAudioTime = realTime;
-        lastAudioReadMs = now;
-      }
-      // Interpolierte Position: letzter bekannter Wert + verstrichene Zeit
-      const elapsed = (now - lastAudioReadMs) / 1000;
-      const interpolated = Math.min(lastAudioTime + elapsed, totalDuration);
-      playPosition = interpolated;
+      wasPlaying = true;
+      playPosition = audio.currentTime;
 
       // Waveform scrollt mit: Playhead bleibt bei PLAYHEAD_RATIO (30%)
       const targetStart = Math.max(0,
-        Math.min(interpolated - viewDuration * PLAYHEAD_RATIO, totalDuration - viewDuration)
+        Math.min(playPosition - viewDuration * PLAYHEAD_RATIO, totalDuration - viewDuration)
       );
       viewStart = targetStart;
       loader.ensureRange(viewStart, viewStart + viewDuration);
@@ -229,7 +208,6 @@
     renderer.setMarkers(markers);
     renderer.setPlayPosition(playPosition);
     renderer.setTitleRegions(titleRegions);
-    renderer.setAnalysisZones(analyseActive ? analysisZones : []);
     renderer.render();
 
     // Minimap
@@ -427,12 +405,9 @@
   function seekToTime(timeSec, autoPlay = false) {
     const clamped = Math.max(0, Math.min(timeSec, totalDuration));
     lastSeekTime = Date.now();
-    lastAudioTime = clamped;
-    lastAudioReadMs = performance.now();
 
     // Falls Session nicht spielt, starten
     if (appState.currentRecording?.session_id !== session.id) {
-      // Session-Audio-URL (unterstuetzt segmentierte Sessions)
       const playUrl = api.getSessionAudioUrl(session.id);
 
       actions.playRecording({
@@ -445,15 +420,13 @@
         playUrl
       });
 
+      // Audio-Element braucht kurz bis es bereit ist
       setTimeout(() => {
         const audio = document.querySelector('audio');
         if (audio) {
           audio.currentTime = clamped;
           if (autoPlay) audio.play().catch(() => {});
-          // Seek-Guard neu starten, da der eigentliche Seek erst jetzt passiert
           lastSeekTime = Date.now();
-          lastAudioTime = clamped;
-          lastAudioReadMs = performance.now();
         }
       }, 500);
     } else {
@@ -568,202 +541,6 @@
       actions.showToast(t('cutter.monoFehler'), 'error');
     }
     isProcessing = false;
-  }
-
-  // === Analyse-Zonen ===
-  function toggleAnalyse() {
-    if (!metadata || metadata.length === 0) {
-      actions.showToast(t('cutter.analyseKeineDaten'), 'info');
-      return;
-    }
-    analyseActive = !analyseActive;
-
-    if (analyseActive) {
-      runAnalysis();
-    } else {
-      analysisZones = [];
-      drawFrame();
-    }
-  }
-
-  function runAnalysis() {
-    if (!loader || !metadata || metadata.length === 0) return;
-
-    // ICY-Marker-Zeitpunkte (Titelwechsel)
-    const markerTimes = metadata
-      .map(e => (e.t || 0) / 1000)
-      .filter(t => t > 0 && t < totalDuration);
-
-    const zones = [];
-    for (const center of markerTimes) {
-      const leftSec = Math.min(analyseWidth, center);
-      const rightSec = Math.min(analyseWidth, totalDuration - center);
-
-      // Peaks im Bereich holen
-      const scanStart = center - leftSec;
-      const scanEnd = center + rightSec;
-      const peaks = loader.getPeaks(scanStart, scanEnd);
-
-      // Qualität berechnen: Stille/niedrige Amplitude nahe dem Marker suchen
-      const quality = analyzeTransitionQuality(peaks, leftSec, rightSec, loader.sampleRate);
-
-      zones.push({
-        center,
-        left: leftSec,
-        right: rightSec,
-        quality
-      });
-    }
-
-    analysisZones = zones;
-    drawFrame();
-  }
-
-  function analyzeTransitionQuality(peaks, leftSec, rightSec, sampleRate) {
-    if (!peaks || peaks.length === 0) return 0;
-
-    const totalSamples = peaks.length;
-    const centerSample = Math.floor(leftSec * sampleRate);
-
-    // Suchbereich: gesamte Zone durchsuchen
-    const searchStart = Math.max(0, Math.floor(0.5 * sampleRate)); // 0.5s vom Rand weg
-    const searchEnd = Math.min(totalSamples - 1, totalSamples - Math.floor(0.5 * sampleRate));
-
-    if (searchEnd <= searchStart) return 0.5;
-
-    // 1. Stille-Suche: Minimale RMS in 300ms-Fenstern
-    const windowSize = Math.max(1, Math.floor(0.3 * sampleRate));
-    let minRms = 1.0;
-    let minRmsPos = centerSample;
-
-    for (let i = searchStart; i < searchEnd - windowSize; i++) {
-      let sumSq = 0;
-      for (let j = i; j < i + windowSize; j++) {
-        const v = Math.abs(peaks[j]);
-        sumSq += v * v;
-      }
-      const rms = Math.sqrt(sumSq / windowSize);
-      if (rms < minRms) {
-        minRms = rms;
-        minRmsPos = i + Math.floor(windowSize / 2);
-      }
-    }
-
-    // 2. Energie-Wechsel suchen: Maximaler Unterschied zwischen
-    //    aufeinanderfolgenden 500ms-Blöcken (Crossfade-Erkennung)
-    const blockSize = Math.max(1, Math.floor(0.5 * sampleRate));
-    let maxEnergyDiff = 0;
-
-    for (let i = searchStart; i < searchEnd - 2 * blockSize; i += Math.floor(blockSize / 4)) {
-      let rmsA = 0, rmsB = 0;
-      for (let j = 0; j < blockSize; j++) {
-        const vA = Math.abs(peaks[i + j] || 0);
-        const vB = Math.abs(peaks[i + blockSize + j] || 0);
-        rmsA += vA * vA;
-        rmsB += vB * vB;
-      }
-      rmsA = Math.sqrt(rmsA / blockSize);
-      rmsB = Math.sqrt(rmsB / blockSize);
-      const diff = Math.abs(rmsA - rmsB);
-      if (diff > maxEnergyDiff) maxEnergyDiff = diff;
-    }
-
-    // Score: Kombination aus Stille und Energie-Wechsel
-    // - Stille nahe 0 = guter Übergang (Pause zwischen Titeln)
-    // - Hoher Energie-Wechsel = erkennbarer Titelwechsel
-    const silenceScore = minRms < 0.01 ? 1.0
-      : minRms < 0.05 ? 0.8
-      : minRms < 0.15 ? 0.5
-      : minRms < 0.25 ? 0.3
-      : 0.1;
-
-    const energyScore = maxEnergyDiff > 0.2 ? 0.9
-      : maxEnergyDiff > 0.1 ? 0.7
-      : maxEnergyDiff > 0.05 ? 0.5
-      : 0.3;
-
-    // Gewichtung: 60% Stille, 40% Energie-Wechsel
-    return Math.min(1.0, silenceScore * 0.6 + energyScore * 0.4);
-  }
-
-  function updateAnalyseWidth(delta) {
-    const newWidth = Math.max(5, Math.min(60, analyseWidth + delta));
-    analyseWidth = newWidth;
-
-    if (analyseActive) runAnalysis();
-  }
-
-  // Übergang vorhören: 3s vor + 3s nach dem Marker abspielen
-  function playTransition(zoneIndex) {
-    if (zoneIndex < 0 || zoneIndex >= analysisZones.length) return;
-    if (transitionPlayTimer) clearTimeout(transitionPlayTimer);
-
-    const zone = analysisZones[zoneIndex];
-    const startTime = Math.max(0, zone.center - 3);
-    const playDuration = 6; // 3s vor + 3s nach
-
-    transitionPlayIndex = zoneIndex;
-    seekToTime(startTime, true);
-
-    // Stopp-Timer: Prüft Position statt fester Zeit
-    function checkStop() {
-      const audio = document.querySelector('audio');
-      if (!audio || audio.paused) {
-        transitionPlayIndex = -1;
-        return;
-      }
-      if (audio.currentTime >= zone.center + 3) {
-        audio.pause();
-        transitionPlayIndex = -1;
-        return;
-      }
-      transitionPlayTimer = setTimeout(checkStop, 150);
-    }
-    transitionPlayTimer = setTimeout(checkStop, 500);
-  }
-
-  // Alle Übergänge nacheinander abspielen
-  function playAllTransitions() {
-    if (analysisZones.length === 0) return;
-    if (transitionPlayTimer) clearTimeout(transitionPlayTimer);
-    let currentIdx = 0;
-
-    function playNext() {
-      if (currentIdx >= analysisZones.length) {
-        transitionPlayIndex = -1;
-        return;
-      }
-      const zone = analysisZones[currentIdx];
-      transitionPlayIndex = currentIdx;
-      seekToTime(Math.max(0, zone.center - 3), true);
-
-      function checkStop() {
-        const audio = document.querySelector('audio');
-        if (!audio || audio.paused) {
-          currentIdx++;
-          if (currentIdx < analysisZones.length) {
-            transitionPlayTimer = setTimeout(playNext, 400);
-          } else {
-            transitionPlayIndex = -1;
-          }
-          return;
-        }
-        if (audio.currentTime >= zone.center + 3) {
-          audio.pause();
-          currentIdx++;
-          if (currentIdx < analysisZones.length) {
-            transitionPlayTimer = setTimeout(playNext, 400);
-          } else {
-            transitionPlayIndex = -1;
-          }
-          return;
-        }
-        transitionPlayTimer = setTimeout(checkStop, 150);
-      }
-      transitionPlayTimer = setTimeout(checkStop, 500);
-    }
-
-    playNext();
   }
 
   // ResizeObserver
@@ -904,63 +681,7 @@
         <span>{t('cutter.verarbeitung')}</span>
       </span>
     {/if}
-    {#if metadata.length > 0}
-      <button
-        class="cutter-btn"
-        class:analyse-active={analyseActive}
-        onclick={toggleAnalyse}
-        title={t('cutter.analyseTip')}
-      >
-        <i class="fa-solid fa-wave-square"></i> {t('cutter.analyse')}
-      </button>
-      {#if analyseActive}
-        <div class="analyse-controls">
-          <button class="analyse-width-btn" onclick={() => updateAnalyseWidth(-2)} title="-2s">
-            <i class="fa-solid fa-minus"></i>
-          </button>
-          <span class="analyse-width-value">{analyseWidth}s</span>
-          <button class="analyse-width-btn" onclick={() => updateAnalyseWidth(2)} title="+2s">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-        <button
-          class="cutter-btn"
-          onclick={playAllTransitions}
-          title={t('cutter.alleUebergaengeTip')}
-          disabled={transitionPlayIndex >= 0}
-        >
-          <i class="fa-solid fa-forward"></i> {t('cutter.alleUebergaenge')}
-        </button>
-        {#if transitionPlayIndex >= 0}
-          <span class="transition-indicator">
-            <div class="mini-spinner"></div>
-            <span>Übergang {transitionPlayIndex + 1}/{analysisZones.length}</span>
-          </span>
-        {/if}
-      {/if}
-    {/if}
   </div>
-
-  <!-- Analyse-Zonen Liste -->
-  {#if analyseActive && analysisZones.length > 0}
-    <div class="analyse-zone-list">
-      {#each analysisZones as zone, i}
-        <span class="zone-chip" class:zone-playing={transitionPlayIndex === i}>
-          <span class="zone-index">{i + 1}</span>
-          <span class="zone-time">{formatDuration(zone.center)}</span>
-          <span class="zone-quality" class:q-good={zone.quality >= 0.7} class:q-mid={zone.quality >= 0.4 && zone.quality < 0.7} class:q-bad={zone.quality < 0.4}>
-            {Math.round(zone.quality * 100)}%
-          </span>
-          <button class="marker-action" onclick={() => playTransition(i)} title={t('cutter.uebergangAbspielenTip')}>
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <button class="marker-action" onclick={() => seekToTime(zone.center)} title={t('cutter.abspielen')}>
-            <i class="fa-solid fa-location-dot"></i>
-          </button>
-        </span>
-      {/each}
-    </div>
-  {/if}
 
   <!-- Konvertierungs-Panel -->
   {#if showConvertPanel}
@@ -1388,110 +1109,6 @@
   .convert-checkbox input {
     accent-color: var(--hifi-accent);
   }
-
-  /* Analyse */
-  .analyse-active {
-    box-shadow: var(--hifi-shadow-inset);
-  }
-  .analyse-active i {
-    color: #ffeb3b;
-    filter: drop-shadow(0 0 4px rgba(255, 235, 59, 0.5));
-  }
-
-  .analyse-controls {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    padding: 0 4px;
-  }
-
-  .analyse-width-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    background: var(--hifi-bg-panel);
-    border: none;
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-button);
-    color: var(--hifi-text-secondary);
-    font-size: 10px;
-    cursor: pointer;
-  }
-  .analyse-width-btn:hover { color: var(--hifi-text-primary); }
-  .analyse-width-btn:active { box-shadow: var(--hifi-shadow-inset); }
-
-  .analyse-width-value {
-    font-family: var(--hifi-font-values);
-    font-size: 11px;
-    font-weight: 700;
-    color: #ffeb3b;
-    min-width: 28px;
-    text-align: center;
-  }
-
-  .transition-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--hifi-font-display);
-    font-size: 10px;
-    font-weight: 700;
-    color: #ffeb3b;
-  }
-
-  /* Analyse-Zonen Liste */
-  .analyse-zone-list {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--hifi-bg-panel);
-    flex-wrap: wrap;
-  }
-
-  .zone-chip {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    background: var(--hifi-bg-panel);
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-button);
-    transition: box-shadow 0.2s;
-  }
-
-  .zone-chip.zone-playing {
-    box-shadow: var(--hifi-shadow-inset), 0 0 6px rgba(255, 235, 59, 0.3);
-  }
-
-  .zone-index {
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--hifi-text-secondary);
-    min-width: 12px;
-    text-align: center;
-  }
-
-  .zone-time {
-    font-family: var(--hifi-font-values);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--hifi-text-primary);
-  }
-
-  .zone-quality {
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 3px;
-  }
-  .zone-quality.q-good { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
-  .zone-quality.q-mid { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
-  .zone-quality.q-bad { background: rgba(244, 67, 54, 0.2); color: #f44336; }
 
   /* Spinner */
   .mini-spinner {

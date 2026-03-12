@@ -47,7 +47,6 @@ export class WaveformRenderer {
     this.playPosition = -1;
     this.titleRegions = [];
     this.selection = null; // { start, end }
-    this.analysisZones = []; // [{ center, left, right, quality }]
 
     this._rafId = null;
   }
@@ -88,9 +87,6 @@ export class WaveformRenderer {
     this.selection = sel;
   }
 
-  setAnalysisZones(zones) {
-    this.analysisZones = zones || [];
-  }
 
   timeToX(timeSec) {
     return ((timeSec - this.viewStart) / this.viewDuration) * this.width;
@@ -113,9 +109,6 @@ export class WaveformRenderer {
 
     // Titel-Farbstreifen
     this._drawTitleRegions(ctx, waveTop, waveHeight);
-
-    // Analyse-Zonen (gelb-transparente Bereiche um ICY-Marker)
-    this._drawAnalysisZones(ctx, waveTop, waveHeight);
 
     // Selection
     if (this.selection) {
@@ -303,66 +296,6 @@ export class WaveformRenderer {
       ctx.font = 'bold 8px Barlow, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(String(i + 1), x, top + 8);
-    }
-  }
-
-  _drawAnalysisZones(ctx, top, height) {
-    if (this.analysisZones.length === 0) return;
-
-    for (const zone of this.analysisZones) {
-      const leftStart = this.timeToX(zone.center - zone.left);
-      const rightEnd = this.timeToX(zone.center + zone.right);
-      const centerX = this.timeToX(zone.center);
-
-      // Sichtbarkeit pruefen
-      if (rightEnd < 0 || leftStart > this.width) continue;
-
-      const drawLeft = Math.max(0, leftStart);
-      const drawRight = Math.min(this.width, rightEnd);
-
-      // Gelb-transparenter Hintergrund
-      ctx.fillStyle = 'rgba(255, 235, 59, 0.12)';
-      ctx.fillRect(drawLeft, top, drawRight - drawLeft, height);
-
-      // Strichlinien an den Zonengrenzen
-      ctx.strokeStyle = 'rgba(255, 235, 59, 0.5)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 3]);
-
-      // Linke Grenze
-      if (leftStart > 0 && leftStart < this.width) {
-        ctx.beginPath();
-        ctx.moveTo(leftStart, top);
-        ctx.lineTo(leftStart, top + height);
-        ctx.stroke();
-      }
-
-      // Rechte Grenze
-      if (rightEnd > 0 && rightEnd < this.width) {
-        ctx.beginPath();
-        ctx.moveTo(rightEnd, top);
-        ctx.lineTo(rightEnd, top + height);
-        ctx.stroke();
-      }
-
-      ctx.setLineDash([]);
-
-      // Qualitaets-Indikator: kleines Symbol am oberen Rand
-      if (zone.quality != null && centerX > 10 && centerX < this.width - 10) {
-        const qColor = zone.quality >= 0.7 ? '#4caf50'
-          : zone.quality >= 0.4 ? '#ff9800'
-          : '#f44336';
-        ctx.fillStyle = qColor;
-        ctx.beginPath();
-        ctx.arc(centerX, top + 6, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Qualitaetswert in Prozent
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.font = 'bold 7px Barlow, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(Math.round(zone.quality * 100) + '%', centerX, top + 18);
-      }
     }
   }
 
