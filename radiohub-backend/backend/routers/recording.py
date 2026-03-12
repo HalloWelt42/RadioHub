@@ -339,6 +339,7 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
         first_seg = segments[0]
         splitter.delete_segment(session_id, first_seg["id"])
         trimmed += 1
+        segments = splitter.get_segments(session_id)
 
     return {"success": True, "segments": len(segments), "trimmed": trimmed}
 

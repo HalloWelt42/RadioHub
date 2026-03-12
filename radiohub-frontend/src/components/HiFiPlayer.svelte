@@ -564,7 +564,7 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuftStoppen') : t('player.stop')}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title={t('player.stop')}>
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>

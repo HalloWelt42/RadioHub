@@ -108,8 +108,13 @@
         } else if (wasRecording) {
           wasRecording = false;
           recStatus = null;
-          loadSessions();
+          await loadSessions();
           loadStats();
+          // selectedSession aktualisieren damit status von 'recording' auf 'completed' wechselt
+          if (selectedSession) {
+            const updated = sessions.find(s => s.id === selectedSession.id);
+            if (updated) selectedSession = updated;
+          }
         } else {
           recStatus = null;
         }
