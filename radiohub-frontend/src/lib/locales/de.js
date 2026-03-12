@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'AUFNAHME',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'EINSTELLUNGEN',
+    dark: 'DUNKEL',
+    light: 'HELL',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'DISPLAY THEME',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI SOUNDS',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT BUFFER',
+    displayTheme: 'ANZEIGEMODUS',
+    dark: 'DUNKEL',
+    light: 'HELL',
+    uiSounds: 'BEDIENTÖNE',
+    clickSounds: 'KLICKTÖNE',
+    timeshiftBuffer: 'ZEITVERSATZ-PUFFER',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Output-Bitrate wird automatisch an Input angepasst (nicht höher als Quelle)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'BUFFER-AUFNAHME',
-    lookback: 'LOOKBACK',
+    hlsRec: 'HLS-AUFNAHME',
+    bufferAufnahme: 'PUFFER-AUFNAHME',
+    lookback: 'RÜCKBLICK',
     lookbackHint: 'Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurückgreifen?',
     language: 'SPRACHE',
     datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN'
@@ -55,10 +55,10 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'AUTO-AKTUALISIERUNG',
     aktiv: 'AKTIV',
     aus: 'AUS',
-    refreshIntervall: 'REFRESH-INTERVALL',
+    refreshIntervall: 'AKTUALISIERUNGSINTERVALL',
     intervall: 'INTERVALL',
     refreshHint: 'Podcast-Feeds werden automatisch auf neue Episoden geprüft',
     refreshHintDynamic: 'Alle {hours} Stunden werden abonnierte Feeds aktualisiert'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Neue Aufnahmen gehen in:',
     standardOrdner: 'Neue Aufnahmen gehen in den Standard-Ordner (Root)',
     aktivieren: 'AKTIVIEREN',
-    root: 'ROOT',
+    root: 'STAMMVERZEICHNIS',
     aufnahmen: 'Aufnahmen',
     nochKeineOrdner: 'Noch keine Ordner erstellt',
     ordnerHint: 'Ordner helfen beim Organisieren von Aufnahmen',
@@ -87,7 +87,7 @@ export default {
     laender: 'LÄNDER',
     sprachenAusschliessen: 'SPRACHEN AUSSCHLIEßEN',
     tagsAusschliessen: 'TAGS AUSSCHLIEßEN',
-    minVotes: 'MIN VOTES',
+    minVotes: 'MIN STIMMEN',
     permanentAusblenden: 'PERMANENT AUSBLENDEN',
     permanentHint: 'Sender mit obigen Kriterien dauerhaft entfernen',
     vorschau: 'VORSCHAU',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'WERBEBLOCKER',
     ausgeblendet: 'AUSGEBLENDET',
     werbeerkennung: 'WERBEERKENNUNG',
     werbeHint: 'Sender auf Werbung prüfen und entscheiden',
@@ -163,13 +163,13 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: 'STATION CACHE',
-    stations: 'STATIONS',
-    countries: 'COUNTRIES',
-    syncNow: 'SYNC NOW',
-    syncing: 'SYNCING...',
-    systemInfo: 'SYSTEM INFO',
-    syncFehler: 'Sync fehlgeschlagen'
+    stationCache: 'SENDER-CACHE',
+    stations: 'SENDER',
+    countries: 'LÄNDER',
+    syncNow: 'JETZT SYNC',
+    syncing: 'SYNCHRONISIERE...',
+    systemInfo: 'SYSTEMINFO',
+    syncFehler: 'Synchronisierung fehlgeschlagen'
   },
 
   // === Setup Speicher ===
@@ -196,7 +196,7 @@ export default {
     hint: 'Zeigt alle externen Datenquellen. Konfigurierbare Dienste können bei Bedarf auf eigene Instanzen umgestellt werden.',
     eingehend: 'EINGEHEND',
     ausgehend: 'AUSGEHEND',
-    lokal: 'LOKAL',
+    lokal: 'INTERN',
     endpunktAendern: 'Endpunkt ändern',
     standard: 'Standard',
     zuruecksetzenFehler: 'Zurücksetzen fehlgeschlagen',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Kein Datum',
     verwaistLoeschen: '{count} verwaiste Ordner löschen',
     verwaistLoeschenBestaetigung: '{count} verwaiste Ordner und alle enthaltenen Dateien endgültig löschen?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITALES AUDIOSYSTEM',
+    unterstuetzenTitle: 'Unterstützen'
+  },
+
+  // === Player Labels (HiFi-Gerät) ===
+  playerLabel: {
+    display: 'ANZEIGE',
+    source: 'QUELLE',
+    vu: 'VU',
+    volume: 'LAUTSTÄRKE',
+    timer: 'ZEIT',
+    transport: 'STEUERUNG',
+    playback: 'WIEDERGABE',
+    timeshift: 'ZEITVERSATZ',
+    hlsRec: 'HLS-AUFN.',
+    recording: 'AUFNAHME',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Sender-Details ===
+  stationDetail: {
+    favoriten: 'FAVORITEN',
+    country: 'LAND',
+    bitrate: 'BITRATE',
+    votes: 'STIMMEN',
+    stations: 'SENDER',
+    refresh: 'AKTUALISIEREN',
+    nowPlaying: 'AKTUELLER TITEL',
+    homepage: 'WEBSEITE',
+    tags: 'TAGS',
+    language: 'SPRACHE',
+    codec: 'CODEC',
+    clicks: 'KLICKS',
+    streamUrl: 'STREAM-ADRESSE',
+    werbung: 'WERBUNG',
+    ausblenden: 'AUSBLENDEN',
+    historieLoschen: 'Historie löschen',
+    name: 'NAME'
+  },
+
+  // === Download-Panel ===
+  downloadPanel: {
+    massendownload: 'Massendownload',
+    fehlgeschlagen: 'fehlgeschlagen',
+    fortsetzen: 'Fortsetzen',
+    pause: 'Pause',
+    abbrechen: 'Abbrechen',
+    pausieren: 'Pausieren'
+  },
+
+  // === Cutter Zusatz ===
+  cutterExtra: {
+    autoPlay: 'Autom. Wiedergabe',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyse...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalisiere {count} Segmente (~{time})',
+    heruntergeladenFailed: '{ok} heruntergeladen, {failed} fehlgeschlagen',
+    ladePodcast: 'Lade "{title}" vom Server...',
+    podcastAktualisiert: '"{title}" aktualisiert'
   },
 
   // === Spende ===

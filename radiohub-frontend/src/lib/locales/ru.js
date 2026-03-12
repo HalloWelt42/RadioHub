@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'РАДИО',
+    recorder: 'ЗАПИСЬ',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'НАСТРОЙКИ',
+    dark: 'ТЁМНАЯ',
+    light: 'СВЕТЛАЯ',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'ТЕМА ОФОРМЛЕНИЯ',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: 'РЕЖИМ ОТОБРАЖЕНИЯ',
+    dark: 'ТЁМНАЯ',
+    light: 'СВЕТЛАЯ',
     uiSounds: 'ЗВУКИ ИНТЕРФЕЙСА',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'БУФЕР ТАЙМШИФТА',
+    clickSounds: 'ЗВУКИ НАЖАТИЙ',
+    timeshiftBuffer: 'БУФЕР СДВИГА',
     minBitrate: 'МИН. БИТРЕЙТ',
     maxBitrate: 'МАКС. БИТРЕЙТ',
     timeshiftHint: 'Битрейт вывода автоматически подстраивается под входной (не выше источника)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'ЗАПИСЬ БУФЕРА',
-    lookback: 'LOOKBACK',
+    hlsRec: 'HLS-ЗАПИСЬ',
+    bufferAufnahme: 'БУФЕРНАЯ ЗАПИСЬ',
+    lookback: 'РЕТРОСПЕКТИВА',
     lookbackHint: 'На сколько минут назад должна смотреть запись HLS?',
     language: 'ЯЗЫК',
     datenschutzNutzung: 'КОНФИДЕНЦИАЛЬНОСТЬ И УСЛОВИЯ ИСПОЛЬЗОВАНИЯ'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Новые записи сохраняются в:',
     standardOrdner: 'Новые записи сохраняются в папку по умолчанию (Root)',
     aktivieren: 'АКТИВИРОВАТЬ',
-    root: 'ROOT',
+    root: 'КОРНЕВАЯ ПАПКА',
     aufnahmen: 'Записи',
     nochKeineOrdner: 'Папки ещё не созданы',
     ordnerHint: 'Папки помогают упорядочить записи',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'БЛОКИРОВКА РЕКЛАМЫ',
     ausgeblendet: 'СКРЫТЫЕ',
     werbeerkennung: 'ОБНАРУЖЕНИЕ РЕКЛАМЫ',
     werbeHint: 'Проверить станции на рекламу и принять решение',
@@ -196,7 +196,7 @@ export default {
     hint: 'Показывает все внешние источники данных. Настраиваемые службы можно перенаправить на собственные экземпляры при необходимости.',
     eingehend: 'ВХОДЯЩИЕ',
     ausgehend: 'ИСХОДЯЩИЕ',
-    lokal: 'ЛОКАЛЬНЫЕ',
+    lokal: 'ЛОКАЛЬНЫЙ',
     endpunktAendern: 'Изменить конечную точку',
     standard: 'По умолчанию',
     zuruecksetzenFehler: 'Ошибка сброса',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Нет даты',
     verwaistLoeschen: 'Удалить {count} осиротевших папок',
     verwaistLoeschenBestaetigung: 'Удалить навсегда {count} осиротевших папок и все содержащиеся файлы?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Поддержать'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'ДИСПЛЕЙ',
+    source: 'ИСТОЧНИК',
+    vu: 'VU',
+    volume: 'ГРОМКОСТЬ',
+    timer: 'ВРЕМЯ',
+    transport: 'УПРАВЛЕНИЕ',
+    playback: 'ВОСПРОИЗВЕДЕНИЕ',
+    timeshift: 'СДВИГ ВРЕМЕНИ',
+    hlsRec: 'HLS-ЗАП.',
+    recording: 'ЗАПИСЬ',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'ИЗБРАННОЕ',
+    country: 'СТРАНА',
+    bitrate: 'BITRATE',
+    votes: 'ГОЛОСА',
+    stations: 'СТАНЦИИ',
+    refresh: 'ОБНОВИТЬ',
+    nowPlaying: 'СЕЙЧАС ИГРАЕТ',
+    homepage: 'САЙТ',
+    tags: 'ТЕГИ',
+    language: 'ЯЗЫК',
+    codec: 'CODEC',
+    clicks: 'КЛИКИ',
+    streamUrl: 'АДРЕС ПОТОКА',
+    werbung: 'РЕКЛАМА',
+    ausblenden: 'СКРЫТЬ',
+    historieLoschen: 'Очистить историю',
+    name: 'ИМЯ'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Массовая загрузка',
+    fehlgeschlagen: 'не удалось',
+    fortsetzen: 'Продолжить',
+    pause: 'Пауза',
+    abbrechen: 'Отменить',
+    pausieren: 'Приостановить'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Автовоспроизведение',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Анализ...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Нормализация {count} сегментов (~{time})',
+    heruntergeladenFailed: '{ok} загружено, {failed} не удалось',
+    ladePodcast: 'Загрузка "{title}" с сервера...',
+    podcastAktualisiert: '"{title}" обновлён'
   },
 
   // === Donation ===

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADYO',
+    recorder: 'KAYIT',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'AYARLAR',
+    dark: 'KARANLIK',
+    light: 'AÇIK',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,17 +36,17 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'GÖRÜNTÜ TEMASI',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: 'GÖRÜNTÜLEME MODU',
+    dark: 'KARANLIK',
+    light: 'AÇIK',
     uiSounds: 'ARAYÜZ SESLERİ',
     clickSounds: 'TIKLAMA SESLERİ',
-    timeshiftBuffer: 'ZAMAN KAYDIRMA ARABELLEK',
+    timeshiftBuffer: 'ZAMAN KAYDIRMA TAMPONU',
     minBitrate: 'MİN BİTRATE',
     maxBitrate: 'MAKS BİTRATE',
     timeshiftHint: 'Çıkış bit hızı otomatik olarak girişe ayarlanır (kaynaktan asla yüksek olmaz)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'ARABELLEK KAYDI',
+    hlsRec: 'HLS KAYDI',
+    bufferAufnahme: 'TAMPON KAYDI',
     lookback: 'GERİYE BAKIŞ',
     lookbackHint: 'HLS kaydı geçmişe kaç dakika bakmalı?',
     language: 'DİL',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Yeni kayıtların kaydedileceği yer:',
     standardOrdner: 'Yeni kayıtlar varsayılan klasöre kaydedilir (Kök)',
     aktivieren: 'ETKİNLEŞTİR',
-    root: 'KÖK',
+    root: 'ANA DİZİN',
     aufnahmen: 'Kayıtlar',
     nochKeineOrdner: 'Henüz klasör oluşturulmadı',
     ordnerHint: 'Klasörler kayıtların düzenlenmesine yardımcı olur',
@@ -166,8 +166,8 @@ export default {
     stationCache: 'İSTASYON ÖNBELLEĞİ',
     stations: 'İSTASYONLAR',
     countries: 'ÜLKELER',
-    syncNow: 'ŞİMDİ SENKRONİZE ET',
-    syncing: 'SENKRONİZE EDİLİYOR...',
+    syncNow: 'ŞİMDİ SENKRONLA',
+    syncing: 'SENKRONİZASYON...',
     systemInfo: 'SİSTEM BİLGİSİ',
     syncFehler: 'Senkronizasyon başarısız'
   },
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Tarih yok',
     verwaistLoeschen: '{count} sahipsiz klasörü sil',
     verwaistLoeschenBestaetigung: '{count} sahipsiz klasör ve içindeki tüm dosyalar kalıcı olarak silinsin mi?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Destek'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'EKRAN',
+    source: 'KAYNAK',
+    vu: 'VU',
+    volume: 'SES',
+    timer: 'SÜRE',
+    transport: 'KONTROLLER',
+    playback: 'KANAL ÇALMA',
+    timeshift: 'ZAMAN KAYDIRMA',
+    hlsRec: 'HLS KAYDI',
+    recording: 'KAYIT',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORİLER',
+    country: 'ÜLKE',
+    bitrate: 'BITRATE',
+    votes: 'OYLAR',
+    stations: 'İSTASYONLAR',
+    refresh: 'YENİLE',
+    nowPlaying: 'ŞİMDİ ÇALIYOR',
+    homepage: 'WEB SİTESİ',
+    tags: 'ETİKETLER',
+    language: 'DİL',
+    codec: 'KODEK',
+    clicks: 'TIKLAMALAR',
+    streamUrl: 'YAYIN ADRESİ',
+    werbung: 'REKLAM',
+    ausblenden: 'GİZLE',
+    historieLoschen: 'Geçmişi temizle',
+    name: 'AD'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Toplu indirme',
+    fehlgeschlagen: 'başarısız',
+    fortsetzen: 'Devam et',
+    pause: 'Duraklat',
+    abbrechen: 'İptal',
+    pausieren: 'Duraklatma'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Otomatik oynatma',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analiz ediliyor...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: '{count} segment normalleştiriliyor (~{time})',
+    heruntergeladenFailed: '{ok} indirildi, {failed} başarısız',
+    ladePodcast: '"{title}" sunucudan yükleniyor...',
+    podcastAktualisiert: '"{title}" güncellendi'
   },
 
   // === Donation ===

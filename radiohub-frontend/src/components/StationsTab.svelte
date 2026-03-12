@@ -651,7 +651,7 @@
     <div class="action-row">
       <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? t('stations.alleSender') : t('stations.nurFavoriten')}>
         <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
-        <span>FAVORITEN</span>
+        <span>{t('stationDetail.favoriten')}</span>
       </button>
       {#if activeFilterCount > 0}
         <button class="action-btn square" onclick={() => { clearFilters(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={t('stations.filterZuruecksetzen')}>&#10005;</button>
@@ -666,7 +666,7 @@
     <!-- Countries: nimmt Restplatz, scrollt intern -->
     <div class="section-flex">
       <div class="section-header">
-        <span class="section-label">COUNTRY</span>
+        <span class="section-label">{t('stationDetail.country')}</span>
         {#if selectedCountries.length > 0}
           <span class="section-count">{selectedCountries.length}/{visibleCountries.length}</span>
         {:else if visibleCountries.length > 0}
@@ -728,7 +728,7 @@
     <!-- Bitrate: 2-spaltig -->
     <div class="section-fixed">
       <div class="section-header">
-        <span class="section-label">BITRATE</span>
+        <span class="section-label">{t('stationDetail.bitrate')}</span>
         {#if selectedBitrates.length > 0}
           <span class="section-count">{selectedBitrates.length}</span>
         {/if}
@@ -750,7 +750,7 @@
     <!-- Votes: 2-spaltig -->
     <div class="section-fixed">
       <div class="section-header">
-        <span class="section-label">VOTES</span>
+        <span class="section-label">{t('stationDetail.votes')}</span>
         {#if selectedVotesRanges.length > 0}
           <span class="section-count">{selectedVotesRanges.length}</span>
         {/if}
@@ -774,7 +774,7 @@
     <div class="list-header">
       <div class="station-count-display">
         <span class="count-zeros">{'0'.repeat(Math.max(0, 7 - String(stations.length).length))}</span><span class="count-value">{formatNumber(stations.length)}</span>
-        <span class="count-label">STATIONS</span>
+        <span class="count-label">{t('stationDetail.stations')}</span>
       </div>
 
       <!-- Suchfeld -->
@@ -801,7 +801,7 @@
               </button>
             {/each}
             <button class="history-clear" onmousedown={clearSearchHistory}>
-              Historie löschen
+              {t('stationDetail.historieLoschen')}
             </button>
           </div>
         {/if}
@@ -810,7 +810,7 @@
       <!-- Refresh mit Kreispfeil-Icon -->
       <button class="refresh-btn" onclick={() => { refreshStations(); sfx.click(); }} onmouseenter={sfx.hoverSoft} disabled={isRefreshing} title={isRefreshing ? t('common.laden') : t('stations.neuLaden')}>
         <i class="fa-solid fa-arrows-rotate refresh-icon" class:spinning={isRefreshing}></i>
-        <span>REFRESH</span>
+        <span>{t('stationDetail.refresh')}</span>
       </button>
     </div>
 
@@ -819,11 +819,11 @@
       <!-- Spaltenkoepfe (sticky) -->
       <div class="column-headers">
         <div class="col-led"></div>
-        <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>NAME {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>{t('stationDetail.name')} {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-badges"></div>
-        <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')}>COUNTRY {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')}>{t('stationDetail.country')} {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>KBPS {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
-        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>VOTES {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>{t('stationDetail.votes')} {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-fav"></div>
       </div>
 
@@ -906,57 +906,57 @@
                   <div class="details-grid">
                     {#if isPlaying && appState.streamTitle}
                       <div class="detail-row icy-now-playing">
-                        <span class="detail-label">NOW PLAYING</span>
+                        <span class="detail-label">{t('stationDetail.nowPlaying')}</span>
                         <span class="detail-value icy-title">{appState.streamTitle}</span>
                       </div>
                     {/if}
                     {#if station.homepage}
                       <div class="detail-row">
-                        <span class="detail-label">HOMEPAGE</span>
+                        <span class="detail-label">{t('stationDetail.homepage')}</span>
                         <a href={station.homepage} target="_blank" class="detail-value link">{station.homepage}</a>
                       </div>
                     {/if}
                     {#if station.tags}
                       <div class="detail-row">
-                        <span class="detail-label">TAGS</span>
+                        <span class="detail-label">{t('stationDetail.tags')}</span>
                         <span class="detail-value">{station.tags}</span>
                       </div>
                     {/if}
                     {#if station.language}
                       <div class="detail-row">
-                        <span class="detail-label">LANGUAGE</span>
+                        <span class="detail-label">{t('stationDetail.language')}</span>
                         <span class="detail-value">{station.language}</span>
                       </div>
                     {/if}
                     {#if station.codec}
                       <div class="detail-row">
-                        <span class="detail-label">CODEC</span>
+                        <span class="detail-label">{t('stationDetail.codec')}</span>
                         <span class="detail-value">{station.codec}</span>
                       </div>
                     {/if}
                     {#if station.votes !== undefined}
                       <div class="detail-row">
-                        <span class="detail-label">VOTES</span>
+                        <span class="detail-label">{t('stationDetail.votes')}</span>
                         <span class="detail-value">{formatNumber(station.votes)}</span>
                       </div>
                     {/if}
                     {#if station.clickcount !== undefined}
                       <div class="detail-row">
-                        <span class="detail-label">CLICKS</span>
+                        <span class="detail-label">{t('stationDetail.clicks')}</span>
                         <span class="detail-value">{formatNumber(station.clickcount)}</span>
                       </div>
                     {/if}
                     {#if station.url_resolved}
                       <div class="detail-row">
-                        <span class="detail-label">STREAM URL</span>
+                        <span class="detail-label">{t('stationDetail.streamUrl')}</span>
                         <span class="detail-value url">{station.url_resolved}</span>
                       </div>
                     {/if}
                   </div>
                   <div class="details-actions">
                     <div class="details-actions-btns">
-                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>WERBUNG</button>
-                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>AUSBLENDEN</button>
+                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>{t('stationDetail.werbung')}</button>
+                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>{t('stationDetail.ausblenden')}</button>
                     </div>
                     {#if categories.length > 0}
                       <div class="category-assign-list" class:scrollable={categories.length > 4}>
@@ -1522,6 +1522,7 @@
     object-fit: contain;
     flex-shrink: 0;
     margin-right: 2px;
+    filter: grayscale(60%);
   }
 
   :global(.station-favicon-fallback) {

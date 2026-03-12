@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'OPNAME',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'INSTELLINGEN',
+    dark: 'DONKER',
+    light: 'LICHT',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'WEERGAVETHEMA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI-GELUIDEN',
+    displayTheme: 'WEERGAVEMODUS',
+    dark: 'DONKER',
+    light: 'LICHT',
+    uiSounds: 'BEDIENGELUIDEN',
     clickSounds: 'KLIKGELUIDEN',
-    timeshiftBuffer: 'TIMESHIFT-BUFFER',
+    timeshiftBuffer: 'TIJDVERSCHUIVING-BUFFER',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Uitvoerbitrate wordt automatisch aangepast aan de invoer (nooit hoger dan de bron)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'HLS-OPNAME',
     bufferAufnahme: 'BUFFEROPNAME',
-    lookback: 'TERUGKIJKEN',
+    lookback: 'TERUGBLIK',
     lookbackHint: 'Hoeveel minuten moet de HLS-opname in het verleden terugkijken?',
     language: 'TAAL',
     datenschutzNutzung: 'PRIVACY & GEBRUIKSVOORWAARDEN'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-VERNIEUWEN',
+    autoRefresh: 'AUTO-VERNIEUWING',
     aktiv: 'AAN',
     aus: 'UIT',
     refreshIntervall: 'VERNIEUWINGSINTERVAL',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nieuwe opnamen gaan naar:',
     standardOrdner: 'Nieuwe opnamen gaan naar de standaardmap (Root)',
     aktivieren: 'ACTIVEREN',
-    root: 'ROOT',
+    root: 'HOOFDMAP',
     aufnahmen: 'Opnamen',
     nochKeineOrdner: 'Nog geen mappen aangemaakt',
     ordnerHint: 'Mappen helpen bij het organiseren van opnamen',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'ADVERTENTIEBLOCKER',
     ausgeblendet: 'VERBORGEN',
     werbeerkennung: 'RECLAMEHERKENNING',
     werbeHint: 'Controleer zenders op reclame en beslis',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Geen datum',
     verwaistLoeschen: '{count} verweesde mappen verwijderen',
     verwaistLoeschenBestaetigung: '{count} verweesde mappen en alle bijbehorende bestanden permanent verwijderen?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Ondersteuning'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'SCHERM',
+    source: 'BRON',
+    vu: 'VU',
+    volume: 'VOLUME',
+    timer: 'TIJD',
+    transport: 'BEDIENING',
+    playback: 'AFSPELEN',
+    timeshift: 'TIJDVERSCHUIVING',
+    hlsRec: 'HLS-OPN.',
+    recording: 'OPNAME',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORIETEN',
+    country: 'LAND',
+    bitrate: 'BITRATE',
+    votes: 'STEMMEN',
+    stations: 'ZENDERS',
+    refresh: 'VERNIEUWEN',
+    nowPlaying: 'NU SPEELT',
+    homepage: 'WEBSITE',
+    tags: 'TAGS',
+    language: 'TAAL',
+    codec: 'CODEC',
+    clicks: 'KLIKKEN',
+    streamUrl: 'STREAM-ADRES',
+    werbung: 'ADVERTENTIE',
+    ausblenden: 'VERBERGEN',
+    historieLoschen: 'Geschiedenis wissen',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Bulkdownload',
+    fehlgeschlagen: 'mislukt',
+    fortsetzen: 'Hervatten',
+    pause: 'Pauzeren',
+    abbrechen: 'Annuleren',
+    pausieren: 'Pauzeren'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automatisch afspelen',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyse...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normaliseren van {count} segmenten (~{time})',
+    heruntergeladenFailed: '{ok} gedownload, {failed} mislukt',
+    ladePodcast: 'Laden van "{title}" van server...',
+    podcastAktualisiert: '"{title}" bijgewerkt'
   },
 
   // === Donation ===

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'ENREGISTREMENT',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'RÉGLAGES',
+    dark: 'SOMBRE',
+    light: 'CLAIR',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'THÈME D\'AFFICHAGE',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'SONS DE L\'INTERFACE',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TAMPON TIMESHIFT',
+    displayTheme: 'MODE D\'AFFICHAGE',
+    dark: 'SOMBRE',
+    light: 'CLAIR',
+    uiSounds: 'SONS D\'INTERFACE',
+    clickSounds: 'SONS DE CLIC',
+    timeshiftBuffer: 'TAMPON DIFFÉRÉ',
     minBitrate: 'DÉBIT MIN',
     maxBitrate: 'DÉBIT MAX',
     timeshiftHint: 'Le débit de sortie est automatiquement adapté à l\'entrée (jamais supérieur à la source)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'ENREG. HLS',
     bufferAufnahme: 'ENREGISTREMENT TAMPON',
-    lookback: 'LOOKBACK',
+    lookback: 'RÉTROSPECTIVE',
     lookbackHint: 'Combien de minutes l\'enregistrement HLS doit-il remonter dans le passé ?',
     language: 'LANGUE',
     datenschutzNutzung: 'CONFIDENTIALITÉ ET CONDITIONS D\'UTILISATION'
@@ -55,10 +55,10 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'ACTUALISATION AUTO',
     aktiv: 'ACTIVÉ',
     aus: 'DÉSACTIVÉ',
-    refreshIntervall: 'INTERVALLE DE RAFRAÎCHISSEMENT',
+    refreshIntervall: 'INTERVALLE D\'ACTUALISATION',
     intervall: 'INTERVALLE',
     refreshHint: 'Les flux de podcasts sont automatiquement vérifiés pour de nouveaux épisodes',
     refreshHintDynamic: 'Les flux abonnés sont mis à jour toutes les {hours} heures'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Les nouveaux enregistrements vont dans :',
     standardOrdner: 'Les nouveaux enregistrements vont dans le dossier par défaut (Root)',
     aktivieren: 'ACTIVER',
-    root: 'ROOT',
+    root: 'RACINE',
     aufnahmen: 'Enregistrements',
     nochKeineOrdner: 'Aucun dossier créé pour le moment',
     ordnerHint: 'Les dossiers aident à organiser les enregistrements',
@@ -87,7 +87,7 @@ export default {
     laender: 'PAYS',
     sprachenAusschliessen: 'EXCLURE DES LANGUES',
     tagsAusschliessen: 'EXCLURE DES TAGS',
-    minVotes: 'VOTES MIN',
+    minVotes: 'MIN VOTES',
     permanentAusblenden: 'MASQUER DÉFINITIVEMENT',
     permanentHint: 'Supprimer définitivement les stations correspondant aux critères ci-dessus',
     vorschau: 'APERÇU',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'BLOQUEUR DE PUB',
     ausgeblendet: 'MASQUÉES',
     werbeerkennung: 'DÉTECTION PUB',
     werbeHint: 'Vérifier les stations pour la publicité et décider',
@@ -168,7 +168,7 @@ export default {
     countries: 'PAYS',
     syncNow: 'SYNCHRONISER',
     syncing: 'SYNCHRONISATION...',
-    systemInfo: 'INFOS SYSTÈME',
+    systemInfo: 'INFO SYSTÈME',
     syncFehler: 'Échec de la synchronisation'
   },
 
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Aucune date',
     verwaistLoeschen: 'Supprimer {count} dossiers orphelins',
     verwaistLoeschenBestaetigung: 'Supprimer définitivement {count} dossiers orphelins et tous les fichiers contenus ?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Soutien'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'AFFICHAGE',
+    source: 'SOURCE',
+    vu: 'VU',
+    volume: 'VOLUME',
+    timer: 'DURÉE',
+    transport: 'COMMANDES',
+    playback: 'LECTURE',
+    timeshift: 'DIFFÉRÉ',
+    hlsRec: 'ENREG. HLS',
+    recording: 'ENREGISTREMENT',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORIS',
+    country: 'PAYS',
+    bitrate: 'DÉBIT',
+    votes: 'VOTES',
+    stations: 'STATIONS',
+    refresh: 'ACTUALISER',
+    nowPlaying: 'EN COURS DE LECTURE',
+    homepage: 'SITE WEB',
+    tags: 'TAGS',
+    language: 'LANGUE',
+    codec: 'CODEC',
+    clicks: 'CLICS',
+    streamUrl: 'ADRESSE DU FLUX',
+    werbung: 'PUB',
+    ausblenden: 'MASQUER',
+    historieLoschen: 'Effacer l\'historique',
+    name: 'NOM'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Téléchargement en masse',
+    fehlgeschlagen: 'échoué',
+    fortsetzen: 'Reprendre',
+    pause: 'Pause',
+    abbrechen: 'Annuler',
+    pausieren: 'Pause'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Lecture auto',
+    mono: 'Mono',
+    format: 'Format :',
+    bitrate: 'Débit :',
+    analyse: 'Analyse...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalisation de {count} segments (~{time})',
+    heruntergeladenFailed: '{ok} téléchargés, {failed} échoués',
+    ladePodcast: 'Chargement de "{title}" depuis le serveur...',
+    podcastAktualisiert: '"{title}" mis à jour'
   },
 
   // === Donation ===

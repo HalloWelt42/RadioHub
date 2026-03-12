@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RÁDIO',
+    recorder: 'NAHRÁVÁNÍ',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'NASTAVENÍ',
+    dark: 'TMAVÝ',
+    light: 'SVĚTLÝ',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,17 +36,17 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'MOTIV ZOBRAZENÍ',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'ZVUKY UI',
+    displayTheme: 'REŽIM ZOBRAZENÍ',
+    dark: 'TMAVÝ',
+    light: 'SVĚTLÝ',
+    uiSounds: 'ZVUKY ROZHRANÍ',
     clickSounds: 'ZVUKY KLIKNUTÍ',
-    timeshiftBuffer: 'VYROVNÁVACÍ PAMĚŤ TIMESHIFT',
+    timeshiftBuffer: 'VYROVNÁVACÍ PAMĚŤ',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Výstupní bitrate se automaticky přizpůsobuje vstupu (nikdy vyšší než zdroj)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'NAHRÁVÁNÍ VYROVNÁVACÍ PAMĚTI',
+    hlsRec: 'NAHRÁVÁNÍ HLS',
+    bufferAufnahme: 'NAHRÁVÁNÍ BUFFERU',
     lookback: 'ZPĚTNÝ POHLED',
     lookbackHint: 'Kolik minut zpět má HLS nahrávání sahat?',
     language: 'JAZYK',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nové nahrávky se ukládají do:',
     standardOrdner: 'Nové nahrávky se ukládají do výchozí složky (Root)',
     aktivieren: 'AKTIVOVAT',
-    root: 'ROOT',
+    root: 'KOŘENOVÝ ADRESÁŘ',
     aufnahmen: 'Nahrávky',
     nochKeineOrdner: 'Zatím nebyly vytvořeny žádné složky',
     ordnerHint: 'Složky pomáhají organizovat nahrávky',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'BLOKOVÁNÍ REKLAM',
     ausgeblendet: 'SKRYTÉ',
     werbeerkennung: 'DETEKCE REKLAM',
     werbeHint: 'Zkontrolujte stanice na reklamy a rozhodněte',
@@ -168,7 +168,7 @@ export default {
     countries: 'ZEMĚ',
     syncNow: 'SYNCHRONIZOVAT',
     syncing: 'SYNCHRONIZACE...',
-    systemInfo: 'INFORMACE O SYSTÉMU',
+    systemInfo: 'SYSTÉMOVÉ INFO',
     syncFehler: 'Synchronizace selhala'
   },
 
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Bez data',
     verwaistLoeschen: 'Smazat {count} osiřelých složek',
     verwaistLoeschenBestaetigung: 'Trvale smazat {count} osiřelých složek a všechny obsažené soubory?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Podpora'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'DISPLEJ',
+    source: 'ZDROJ',
+    vu: 'VU',
+    volume: 'HLASITOST',
+    timer: 'ČAS',
+    transport: 'OVLÁDÁNÍ',
+    playback: 'PŘEHRÁVÁNÍ',
+    timeshift: 'ČASOVÝ POSUN',
+    hlsRec: 'NAHR. HLS',
+    recording: 'NAHRÁVÁNÍ',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'OBLÍBENÉ',
+    country: 'ZEMĚ',
+    bitrate: 'BITRATE',
+    votes: 'HLASY',
+    stations: 'STANICE',
+    refresh: 'OBNOVIT',
+    nowPlaying: 'PRÁVĚ HRAJE',
+    homepage: 'WEBOVÁ STRÁNKA',
+    tags: 'ŠTÍTKY',
+    language: 'JAZYK',
+    codec: 'KODEK',
+    clicks: 'KLIKNUTÍ',
+    streamUrl: 'ADRESA STREAMU',
+    werbung: 'REKLAMA',
+    ausblenden: 'SKRÝT',
+    historieLoschen: 'Vymazat historii',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Hromadné stahování',
+    fehlgeschlagen: 'selhalo',
+    fortsetzen: 'Pokračovat',
+    pause: 'Pauza',
+    abbrechen: 'Zrušit',
+    pausieren: 'Pauza'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Autom. přehrávání',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analýza...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizace {count} segmentů (~{time})',
+    heruntergeladenFailed: '{ok} staženo, {failed} selhalo',
+    ladePodcast: 'Načítání "{title}" ze serveru...',
+    podcastAktualisiert: '"{title}" aktualizováno'
   },
 
   // === Donation ===

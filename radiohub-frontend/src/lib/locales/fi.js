@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'TALLENNUS',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'ASETUKSET',
+    dark: 'TUMMA',
+    light: 'VAALEA',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'NÄYTTÖTEEMA',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: 'NÄYTTÖTILA',
+    dark: 'TUMMA',
+    light: 'VAALEA',
     uiSounds: 'KÄYTTÖLIITTYMÄ-ÄÄNET',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT-PUSKURI',
+    clickSounds: 'NAPSAUTUSÄÄNET',
+    timeshiftBuffer: 'AIKASIIRTOPUSKURI',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Lähtöbittinopeus mukautuu automaattisesti sisääntuloon (ei koskaan korkeampi kuin lähde)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'HLS-TALLENNUS',
     bufferAufnahme: 'PUSKURITALLENNUS',
-    lookback: 'LOOKBACK',
+    lookback: 'TAKAISINKATSE',
     lookbackHint: 'Kuinka monta minuuttia HLS-tallennuksen tulisi katsoa taaksepäin?',
     language: 'KIELI',
     datenschutzNutzung: 'TIETOSUOJA JA KÄYTTÖEHDOT'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'AUTOMAATTINEN PÄIVITYS',
     aktiv: 'PÄÄLLÄ',
     aus: 'POIS',
     refreshIntervall: 'PÄIVITYSVÄLI',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Uudet tallenteet tallennetaan:',
     standardOrdner: 'Uudet tallenteet tallennetaan oletuskansioon (Root)',
     aktivieren: 'AKTIVOI',
-    root: 'ROOT',
+    root: 'JUURIKANSIO',
     aufnahmen: 'Tallenteet',
     nochKeineOrdner: 'Kansioita ei ole vielä luotu',
     ordnerHint: 'Kansiot auttavat tallenteiden järjestämisessä',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'MAINOSTEN ESTO',
     ausgeblendet: 'PIILOTETUT',
     werbeerkennung: 'MAINOSTUNNISTUS',
     werbeHint: 'Tarkista asemat mainosten varalta ja päätä',
@@ -163,7 +163,7 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: 'ASEMAVÄLIMUISTI',
+    stationCache: 'ASEMIEN VÄLIMUISTI',
     stations: 'ASEMAT',
     countries: 'MAAT',
     syncNow: 'SYNKRONOI NYT',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Ei päivämäärää',
     verwaistLoeschen: 'Poista {count} orpoa kansiota',
     verwaistLoeschenBestaetigung: 'Poistetaanko {count} orpoa kansiota ja kaikki niiden tiedostot pysyvästi?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Tue'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'NÄYTTÖ',
+    source: 'LÄHDE',
+    vu: 'VU',
+    volume: 'ÄÄNENVOIMAKKUUS',
+    timer: 'AIKA',
+    transport: 'OHJAUS',
+    playback: 'TOISTO',
+    timeshift: 'AIKASIIRTO',
+    hlsRec: 'HLS-TALL.',
+    recording: 'TALLENNUS',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'SUOSIKIT',
+    country: 'MAA',
+    bitrate: 'BITRATE',
+    votes: 'ÄÄNET',
+    stations: 'ASEMAT',
+    refresh: 'PÄIVITÄ',
+    nowPlaying: 'NYT SOI',
+    homepage: 'KOTISIVU',
+    tags: 'TUNNISTEET',
+    language: 'KIELI',
+    codec: 'KOODEKKI',
+    clicks: 'KLIKKAUKSET',
+    streamUrl: 'SUORATOISTO-OSOITE',
+    werbung: 'MAINOS',
+    ausblenden: 'PIILOTA',
+    historieLoschen: 'Tyhjennä historia',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Joukkotallennus',
+    fehlgeschlagen: 'epäonnistui',
+    fortsetzen: 'Jatka',
+    pause: 'Tauko',
+    abbrechen: 'Peru',
+    pausieren: 'Keskeytä'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automaattinen toisto',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analysoidaan...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalisoidaan {count} segmenttiä (~{time})',
+    heruntergeladenFailed: '{ok} ladattu, {failed} epäonnistui',
+    ladePodcast: 'Ladataan "{title}" palvelimelta...',
+    podcastAktualisiert: '"{title}" päivitetty'
   },
 
   // === Donation ===

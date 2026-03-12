@@ -306,7 +306,7 @@
   async function handleSubscribe(podcast) {
     try {
       await api.subscribePodcast(podcast.feed_url);
-      actions.showToast(`"${podcast.title}" abonniert`, 'success');
+      actions.showToast(`"${podcast.title}" ${t('toast.abonniert')}`, 'success');
       sfx.click();
       await loadSubscriptions();
       await loadStats();
@@ -419,7 +419,7 @@
     if (wasCancelled) {
       actions.showToast(t('podcasts.downloadAbgebrochen', { done: batchDone, total: batchTotal }), 'warning');
     } else if (batchFailed > 0) {
-      actions.showToast(`${batchTotal - batchFailed} heruntergeladen, ${batchFailed} fehlgeschlagen`, 'warning');
+      actions.showToast(t('cutterExtra.heruntergeladenFailed', { ok: batchTotal - batchFailed, failed: batchFailed }), 'warning');
     } else {
       actions.showToast(t('podcasts.episodenHeruntergeladen', { total: batchTotal }), 'success');
     }
@@ -427,14 +427,14 @@
 
   async function handleRefreshSinglePodcast(podcast) {
     try {
-      actions.showToast(`Lade "${podcast.title}" vom Server...`, 'info');
+      actions.showToast(t('cutterExtra.ladePodcast', { title: podcast.title }), 'info');
       await api.refreshPodcast(podcast.id);
       await loadSubscriptions();
       // Wenn dieser Podcast gerade angezeigt wird, Episoden neu laden
       if (selectedPodcastId === podcast.id) {
         await loadEpisodes(podcast.id);
       }
-      actions.showToast(`"${podcast.title}" aktualisiert`, 'success');
+      actions.showToast(t('cutterExtra.podcastAktualisiert', { title: podcast.title }), 'success');
     } catch (e) {
       actions.showToast(t('podcasts.aktualisiereFehler'), 'error');
     }
@@ -766,7 +766,7 @@
       <!-- Willkommen / Kein Podcast ausgewählt -->
       <div class="welcome-state">
         <i class="fa-solid fa-podcast welcome-icon"></i>
-        <HiFiDisplay size="medium">PODCASTS</HiFiDisplay>
+        <HiFiDisplay size="medium">{t('nav.podcast')}</HiFiDisplay>
         <p class="welcome-hint">
           {#if subscriptions.length > 0}
             {t('podcasts.podcastAuswaehlen')}

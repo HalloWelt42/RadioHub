@@ -151,11 +151,11 @@
     <div class="hifi-logo">
       <div class="hifi-logo-row">
         <span class="hifi-logo-text">{#each 'RadioHub'.split('') as ch, i}<span class="logo-letter" style="--i:{i}">{ch}</span>{/each}</span>
-        <button class="donate-heart" onclick={() => { actions.navigateTo('/setup/allgemein/bedanken'); sfx.select(); }} title="Unterstützen">
+        <button class="donate-heart" onclick={() => { actions.navigateTo('/setup/allgemein/bedanken'); sfx.select(); }} title={t('app.unterstuetzenTitle')}>
           <i class="fa-solid fa-heart"></i>
         </button>
       </div>
-      <span class="hifi-logo-sub">DIGITAL AUDIO SYSTEM</span>
+      <span class="hifi-logo-sub">{t('app.digitalAudioSystem')}</span>
     </div>
     
     <nav class="hifi-nav">

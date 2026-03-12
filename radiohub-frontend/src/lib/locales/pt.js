@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RÁDIO',
+    recorder: 'GRAVAÇÃO',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'CONFIGURAÇÕES',
+    dark: 'ESCURO',
+    light: 'CLARO',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'TEMA DO ECRÃ',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'SONS DA INTERFACE',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'BUFFER TIMESHIFT',
+    displayTheme: 'MODO DE EXIBIÇÃO',
+    dark: 'ESCURO',
+    light: 'CLARO',
+    uiSounds: 'SONS DE INTERFACE',
+    clickSounds: 'SONS DE CLIQUE',
+    timeshiftBuffer: 'BUFFER DE DIFERIDO',
     minBitrate: 'BITRATE MÍN',
     maxBitrate: 'BITRATE MÁX',
     timeshiftHint: 'O bitrate de saída é automaticamente ajustado à entrada (nunca superior à fonte)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'GRAVAÇÃO DE BUFFER',
-    lookback: 'LOOKBACK',
+    hlsRec: 'GRAV. HLS',
+    bufferAufnahme: 'GRAVAÇÃO BUFFER',
+    lookback: 'RETROSPECTIVA',
     lookbackHint: 'Quantos minutos deve a gravação HLS recuar no passado?',
     language: 'IDIOMA',
     datenschutzNutzung: 'PRIVACIDADE E CONDIÇÕES DE UTILIZAÇÃO'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'ATUALIZAÇÃO AUTO',
     aktiv: 'ATIVADO',
     aus: 'DESATIVADO',
     refreshIntervall: 'INTERVALO DE ATUALIZAÇÃO',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'As novas gravações vão para:',
     standardOrdner: 'As novas gravações vão para a pasta predefinida (Root)',
     aktivieren: 'ATIVAR',
-    root: 'ROOT',
+    root: 'RAIZ',
     aufnahmen: 'Gravações',
     nochKeineOrdner: 'Ainda não foram criadas pastas',
     ordnerHint: 'As pastas ajudam a organizar as gravações',
@@ -87,7 +87,7 @@ export default {
     laender: 'PAÍSES',
     sprachenAusschliessen: 'EXCLUIR IDIOMAS',
     tagsAusschliessen: 'EXCLUIR ETIQUETAS',
-    minVotes: 'VOTOS MÍN',
+    minVotes: 'MIN VOTOS',
     permanentAusblenden: 'OCULTAR PERMANENTEMENTE',
     permanentHint: 'Remover permanentemente as estações que correspondem aos critérios acima',
     vorschau: 'PRÉ-VISUALIZAÇÃO',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'BLOQUEADOR DE ANÚNCIOS',
     ausgeblendet: 'OCULTAS',
     werbeerkennung: 'DETEÇÃO DE ANÚNCIOS',
     werbeHint: 'Verificar estações quanto a anúncios e decidir',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Sem data',
     verwaistLoeschen: 'Eliminar {count} pastas órfãs',
     verwaistLoeschenBestaetigung: 'Eliminar permanentemente {count} pastas órfãs e todos os ficheiros contidos?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Apoio'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'VISOR',
+    source: 'FONTE',
+    vu: 'VU',
+    volume: 'VOLUME',
+    timer: 'TEMPO',
+    transport: 'CONTROLES',
+    playback: 'REPRODUÇÃO',
+    timeshift: 'DIFERIDO',
+    hlsRec: 'GRAV. HLS',
+    recording: 'GRAVAÇÃO',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITOS',
+    country: 'PAÍS',
+    bitrate: 'BITRATE',
+    votes: 'VOTOS',
+    stations: 'ESTAÇÕES',
+    refresh: 'ATUALIZAR',
+    nowPlaying: 'EM REPRODUÇÃO',
+    homepage: 'WEBSITE',
+    tags: 'ETIQUETAS',
+    language: 'IDIOMA',
+    codec: 'CODEC',
+    clicks: 'CLIQUES',
+    streamUrl: 'ENDEREÇO DO STREAM',
+    werbung: 'ANÚNCIO',
+    ausblenden: 'OCULTAR',
+    historieLoschen: 'Limpar histórico',
+    name: 'NOME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Transferência em massa',
+    fehlgeschlagen: 'falhado',
+    fortsetzen: 'Retomar',
+    pause: 'Pausa',
+    abbrechen: 'Cancelar',
+    pausieren: 'Pausar'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Reprodução auto',
+    mono: 'Mono',
+    format: 'Formato:',
+    bitrate: 'Bitrate:',
+    analyse: 'A analisar...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'A normalizar {count} segmentos (~{time})',
+    heruntergeladenFailed: '{ok} transferidos, {failed} falhados',
+    ladePodcast: 'A carregar "{title}" do servidor...',
+    podcastAktualisiert: '"{title}" atualizado'
   },
 
   // === Donation ===

@@ -549,6 +549,75 @@ export default {
     verwaistLoeschenBestaetigung: 'Permanently delete {count} orphaned folders and all contained files?'
   },
 
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Support'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'DISPLAY',
+    source: 'SOURCE',
+    vu: 'VU',
+    volume: 'VOLUME',
+    timer: 'TIMER',
+    transport: 'TRANSPORT',
+    playback: 'PLAYBACK',
+    timeshift: 'TIMESHIFT',
+    hlsRec: 'HLS-REC',
+    recording: 'RECORDING',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITES',
+    country: 'COUNTRY',
+    bitrate: 'BITRATE',
+    votes: 'VOTES',
+    stations: 'STATIONS',
+    refresh: 'REFRESH',
+    nowPlaying: 'NOW PLAYING',
+    homepage: 'HOMEPAGE',
+    tags: 'TAGS',
+    language: 'LANGUAGE',
+    codec: 'CODEC',
+    clicks: 'CLICKS',
+    streamUrl: 'STREAM URL',
+    werbung: 'AD',
+    ausblenden: 'HIDE',
+    historieLoschen: 'Clear history',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Batch download',
+    fehlgeschlagen: 'failed',
+    fortsetzen: 'Resume',
+    pause: 'Pause',
+    abbrechen: 'Cancel',
+    pausieren: 'Pause'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Auto-Play',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyzing...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizing {count} segments (~{time})',
+    heruntergeladenFailed: '{ok} downloaded, {failed} failed',
+    ladePodcast: 'Loading "{title}" from server...',
+    podcastAktualisiert: '"{title}" updated'
+  },
+
   // === Donation ===
   spende: {
     adresseKopiert: 'Address copied',

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'INSPELNING',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'INSTÄLLNINGAR',
+    dark: 'MÖRK',
+    light: 'LJUS',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -37,17 +37,17 @@ export default {
   // === Setup Allgemein ===
   allgemein: {
     displayTheme: 'VISNINGSTEMA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI-LJUD',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT-BUFFERT',
+    dark: 'MÖRK',
+    light: 'LJUS',
+    uiSounds: 'GRÄNSSNITTSLJUD',
+    clickSounds: 'KLICKLJUD',
+    timeshiftBuffer: 'TIDSSKIFTBUFFERT',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Utmatningsbitrate anpassas automatiskt till inmatningen (aldrig högre än källan)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'BUFFERTINSPELNING',
-    lookback: 'LOOKBACK',
+    hlsRec: 'HLS-INSPELNING',
+    bufferAufnahme: 'BUFFERINSPELNING',
+    lookback: 'TILLBAKABLICK',
     lookbackHint: 'Hur många minuter ska HLS-inspelningen titta tillbaka i tiden?',
     language: 'SPRÅK',
     datenschutzNutzung: 'INTEGRITET OCH ANVÄNDARVILLKOR'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'AUTO-UPPDATERING',
     aktiv: 'PÅ',
     aus: 'AV',
     refreshIntervall: 'UPPDATERINGSINTERVALL',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nya inspelningar sparas i:',
     standardOrdner: 'Nya inspelningar sparas i standardmappen (Root)',
     aktivieren: 'AKTIVERA',
-    root: 'ROOT',
+    root: 'ROTMAPP',
     aufnahmen: 'Inspelningar',
     nochKeineOrdner: 'Inga mappar skapade ännu',
     ordnerHint: 'Mappar hjälper till att organisera inspelningar',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'REKLAMBLOCKERING',
     ausgeblendet: 'DOLDA',
     werbeerkennung: 'REKLAMDETEKTERING',
     werbeHint: 'Kontrollera stationer för reklam och besluta',
@@ -166,8 +166,8 @@ export default {
     stationCache: 'STATIONSCACHE',
     stations: 'STATIONER',
     countries: 'LÄNDER',
-    syncNow: 'SYNKA NU',
-    syncing: 'SYNKAR...',
+    syncNow: 'SYNKRONISERA NU',
+    syncing: 'SYNKRONISERAR...',
     systemInfo: 'SYSTEMINFO',
     syncFehler: 'Synkronisering misslyckades'
   },
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Inget datum',
     verwaistLoeschen: 'Radera {count} föräldralösa mappar',
     verwaistLoeschenBestaetigung: 'Radera {count} föräldralösa mappar och alla filer permanent?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Stöd'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'SKÄRM',
+    source: 'KÄLLA',
+    vu: 'VU',
+    volume: 'VOLYM',
+    timer: 'TID',
+    transport: 'KONTROLLER',
+    playback: 'UPPSPELNING',
+    timeshift: 'TIDSSKIFT',
+    hlsRec: 'HLS-INSP.',
+    recording: 'INSPELNING',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITER',
+    country: 'LAND',
+    bitrate: 'BITRATE',
+    votes: 'RÖSTER',
+    stations: 'STATIONER',
+    refresh: 'UPPDATERA',
+    nowPlaying: 'SPELAS NU',
+    homepage: 'HEMSIDA',
+    tags: 'TAGGAR',
+    language: 'SPRÅK',
+    codec: 'KODEK',
+    clicks: 'KLICK',
+    streamUrl: 'STREAM-ADRESS',
+    werbung: 'REKLAM',
+    ausblenden: 'DÖLJ',
+    historieLoschen: 'Rensa historik',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Massnedladdning',
+    fehlgeschlagen: 'misslyckades',
+    fortsetzen: 'Återuppta',
+    pause: 'Paus',
+    abbrechen: 'Avbryt',
+    pausieren: 'Pausa'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automatisk uppspelning',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyserar...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normaliserar {count} segment (~{time})',
+    heruntergeladenFailed: '{ok} nedladdade, {failed} misslyckades',
+    ladePodcast: 'Laddar "{title}" från server...',
+    podcastAktualisiert: '"{title}" uppdaterad'
   },
 
   // === Donation ===

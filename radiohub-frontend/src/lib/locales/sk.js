@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RÁDIO',
+    recorder: 'NAHRÁVANIE',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'NASTAVENIA',
+    dark: 'TMAVÝ',
+    light: 'SVETLÝ',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,17 +36,17 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'MOTÍV ZOBRAZENIA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'ZVUKY UI',
+    displayTheme: 'REŽIM ZOBRAZENIA',
+    dark: 'TMAVÝ',
+    light: 'SVETLÝ',
+    uiSounds: 'ZVUKY ROZHRANIA',
     clickSounds: 'ZVUKY KLIKNUTIA',
-    timeshiftBuffer: 'VYROVNÁVACIA PAMÄŤ TIMESHIFT',
+    timeshiftBuffer: 'VYROVNÁVACIA PAMÄŤ',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Výstupný bitrate sa automaticky prispôsobuje vstupu (nikdy vyšší ako zdroj)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'NAHRÁVANIE VYROVNÁVACEJ PAMÄTE',
+    hlsRec: 'NAHRÁVANIE HLS',
+    bufferAufnahme: 'NAHRÁVANIE BUFFERU',
     lookback: 'SPÄTNÝ POHĽAD',
     lookbackHint: 'Koľko minút dozadu má HLS nahrávanie siahať?',
     language: 'JAZYK',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nové nahrávky sa ukladajú do:',
     standardOrdner: 'Nové nahrávky sa ukladajú do predvoleného priečinka (Root)',
     aktivieren: 'AKTIVOVAŤ',
-    root: 'ROOT',
+    root: 'KOREŇOVÝ ADRESÁR',
     aufnahmen: 'Nahrávky',
     nochKeineOrdner: 'Zatiaľ neboli vytvorené žiadne priečinky',
     ordnerHint: 'Priečinky pomáhajú organizovať nahrávky',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'BLOKOVANIE REKLÁM',
     ausgeblendet: 'SKRYTÉ',
     werbeerkennung: 'DETEKCIA REKLÁM',
     werbeHint: 'Skontrolujte stanice na reklamy a rozhodnite',
@@ -163,12 +163,12 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: 'VYROVNÁVACIA PAMÄŤ STANÍC',
+    stationCache: 'MEDZIPAMÄŤ STANÍC',
     stations: 'STANICE',
     countries: 'KRAJINY',
     syncNow: 'SYNCHRONIZOVAŤ',
     syncing: 'SYNCHRONIZÁCIA...',
-    systemInfo: 'INFORMÁCIE O SYSTÉME',
+    systemInfo: 'SYSTÉMOVÉ INFO',
     syncFehler: 'Synchronizácia zlyhala'
   },
 
@@ -196,7 +196,7 @@ export default {
     hint: 'Zobrazuje všetky externé zdroje dát. Konfigurovateľné služby možno v prípade potreby presmerovať na vlastné inštancie.',
     eingehend: 'PRICHÁDZAJÚCE',
     ausgehend: 'ODCHÁDZAJÚCE',
-    lokal: 'LOKÁLNE',
+    lokal: 'LOKÁLNY',
     endpunktAendern: 'Zmeniť koncový bod',
     standard: 'Predvolený',
     zuruecksetzenFehler: 'Reset zlyhal',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Bez dátumu',
     verwaistLoeschen: 'Zmazať {count} osirotených priečinkov',
     verwaistLoeschenBestaetigung: 'Trvalo zmazať {count} osirotených priečinkov a všetky obsiahnuté súbory?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Podpora'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'DISPLEJ',
+    source: 'ZDROJ',
+    vu: 'VU',
+    volume: 'HLASITOSŤ',
+    timer: 'ČAS',
+    transport: 'OVLÁDANIE',
+    playback: 'PREHRÁVANIE',
+    timeshift: 'ČASOVÝ POSUN',
+    hlsRec: 'NAHR. HLS',
+    recording: 'NAHRÁVANIE',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'OBĽÚBENÉ',
+    country: 'KRAJINA',
+    bitrate: 'BITRATE',
+    votes: 'HLASY',
+    stations: 'STANICE',
+    refresh: 'OBNOVIŤ',
+    nowPlaying: 'PRÁVE HRAJE',
+    homepage: 'WEBOVÁ STRÁNKA',
+    tags: 'ŠTÍTKY',
+    language: 'JAZYK',
+    codec: 'KODEK',
+    clicks: 'KLIKNUTIA',
+    streamUrl: 'ADRESA STREAMU',
+    werbung: 'REKLAMA',
+    ausblenden: 'SKRYŤ',
+    historieLoschen: 'Vymazať históriu',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Hromadné sťahovanie',
+    fehlgeschlagen: 'zlyhalo',
+    fortsetzen: 'Pokračovať',
+    pause: 'Pauza',
+    abbrechen: 'Zrušiť',
+    pausieren: 'Pauza'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Autom. prehrávanie',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analýza...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizácia {count} segmentov (~{time})',
+    heruntergeladenFailed: '{ok} stiahnuté, {failed} zlyhalo',
+    ladePodcast: 'Načítanie "{title}" zo servera...',
+    podcastAktualisiert: '"{title}" aktualizované'
   },
 
   // === Donation ===

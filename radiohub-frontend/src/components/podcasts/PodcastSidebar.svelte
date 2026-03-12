@@ -242,7 +242,7 @@
   {#if refreshCountdown}
     <div class="refresh-timer" title={t('podcasts.naechsterRefresh')}>
       <i class="fa-solid fa-clock"></i>
-      <span class="timer-label">REFRESH</span>
+      <span class="timer-label">{t('stationDetail.refresh')}</span>
       <span class="timer-value">{refreshCountdown}</span>
     </div>
   {/if}

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'OPPTAK',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'INNSTILLINGER',
+    dark: 'MØRK',
+    light: 'LYS',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -37,17 +37,17 @@ export default {
   // === Setup Allgemein ===
   allgemein: {
     displayTheme: 'VISNINGSTEMA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI-LYDER',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT-BUFFER',
+    dark: 'MØRK',
+    light: 'LYS',
+    uiSounds: 'BETJENINGSLYDER',
+    clickSounds: 'KLIKKLYDER',
+    timeshiftBuffer: 'TIDSFORSKYVNINGSBUFFER',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Utgangsbitrate tilpasses automatisk til inngang (aldri høyere enn kilden)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'HLS-OPPTAK',
     bufferAufnahme: 'BUFFEROPPTAK',
-    lookback: 'LOOKBACK',
+    lookback: 'TILBAKEBLIKK',
     lookbackHint: 'Hvor mange minutter skal HLS-opptaket se tilbake i tid?',
     language: 'SPRÅK',
     datenschutzNutzung: 'PERSONVERN OG BRUKSVILKÅR'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'AUTO-OPPDATERING',
     aktiv: 'PÅ',
     aus: 'AV',
     refreshIntervall: 'OPPDATERINGSINTERVALL',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nye opptak lagres i:',
     standardOrdner: 'Nye opptak lagres i standardmappen (Root)',
     aktivieren: 'AKTIVER',
-    root: 'ROOT',
+    root: 'ROTMAPPE',
     aufnahmen: 'Opptak',
     nochKeineOrdner: 'Ingen mapper opprettet ennå',
     ordnerHint: 'Mapper hjelper med å organisere opptak',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'REKLAMEBLOKKERING',
     ausgeblendet: 'SKJULTE',
     werbeerkennung: 'REKLAMEGJENKJENNING',
     werbeHint: 'Sjekk stasjoner for reklame og beslutt',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Ingen dato',
     verwaistLoeschen: 'Slett {count} foreldreløse mapper',
     verwaistLoeschenBestaetigung: 'Slett {count} foreldreløse mapper og alle filer permanent?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Støtt'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'SKJERM',
+    source: 'KILDE',
+    vu: 'VU',
+    volume: 'VOLUM',
+    timer: 'TID',
+    transport: 'KONTROLLER',
+    playback: 'AVSPILLING',
+    timeshift: 'TIDSFORSKYVNING',
+    hlsRec: 'HLS-OPPT.',
+    recording: 'OPPTAK',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITTER',
+    country: 'LAND',
+    bitrate: 'BITRATE',
+    votes: 'STEMMER',
+    stations: 'STASJONER',
+    refresh: 'OPPDATER',
+    nowPlaying: 'SPILLES NÅ',
+    homepage: 'HJEMMESIDE',
+    tags: 'TAGGER',
+    language: 'SPRÅK',
+    codec: 'KODEK',
+    clicks: 'KLIKK',
+    streamUrl: 'STRØMADRESSE',
+    werbung: 'REKLAME',
+    ausblenden: 'SKJUL',
+    historieLoschen: 'Tøm historikk',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Massenedlasting',
+    fehlgeschlagen: 'mislyktes',
+    fortsetzen: 'Gjenoppta',
+    pause: 'Pause',
+    abbrechen: 'Avbryt',
+    pausieren: 'Sett på pause'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automatisk avspilling',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyserer...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normaliserer {count} segmenter (~{time})',
+    heruntergeladenFailed: '{ok} lastet ned, {failed} mislyktes',
+    ladePodcast: 'Laster "{title}" fra server...',
+    podcastAktualisiert: '"{title}" oppdatert'
   },
 
   // === Donation ===

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'OPTAGELSE',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'INDSTILLINGER',
+    dark: 'MØRK',
+    light: 'LYS',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -37,17 +37,17 @@ export default {
   // === Setup Allgemein ===
   allgemein: {
     displayTheme: 'VISNINGSTEMA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI-LYDE',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT-BUFFER',
+    dark: 'MØRK',
+    light: 'LYS',
+    uiSounds: 'BETJENINGSLYDE',
+    clickSounds: 'KLIKLYDE',
+    timeshiftBuffer: 'TIDSFORSKYDNINGSBUFFER',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Udgangsbitrate tilpasses automatisk til input (aldrig højere end kilden)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'HLS-OPTAGELSE',
     bufferAufnahme: 'BUFFEROPTAGELSE',
-    lookback: 'LOOKBACK',
+    lookback: 'TILBAGEBLIK',
     lookbackHint: 'Hvor mange minutter skal HLS-optagelsen kigge tilbage i tiden?',
     language: 'SPROG',
     datenschutzNutzung: 'PRIVATLIV OG BRUGSVILKÅR'
@@ -55,7 +55,7 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'AUTO-REFRESH',
+    autoRefresh: 'AUTO-OPDATERING',
     aktiv: 'TIL',
     aus: 'FRA',
     refreshIntervall: 'OPDATERINGSINTERVAL',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nye optagelser gemmes i:',
     standardOrdner: 'Nye optagelser gemmes i standardmappen (Root)',
     aktivieren: 'AKTIVER',
-    root: 'ROOT',
+    root: 'RODMAPPE',
     aufnahmen: 'Optagelser',
     nochKeineOrdner: 'Ingen mapper oprettet endnu',
     ordnerHint: 'Mapper hjælper med at organisere optagelser',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'REKLAMEBLOKERING',
     ausgeblendet: 'SKJULTE',
     werbeerkennung: 'REKLAMEGENKENDELSE',
     werbeHint: 'Kontroller stationer for reklamer og beslut',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Ingen dato',
     verwaistLoeschen: 'Slet {count} forældreløse mapper',
     verwaistLoeschenBestaetigung: 'Slet {count} forældreløse mapper og alle indeholdte filer permanent?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Støt'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'SKÆRM',
+    source: 'KILDE',
+    vu: 'VU',
+    volume: 'LYDSTYRKE',
+    timer: 'TID',
+    transport: 'BETJENING',
+    playback: 'AFSPILNING',
+    timeshift: 'TIDSFORSKYDNING',
+    hlsRec: 'HLS-OPT.',
+    recording: 'OPTAGELSE',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITTER',
+    country: 'LAND',
+    bitrate: 'BITRATE',
+    votes: 'STEMMER',
+    stations: 'STATIONER',
+    refresh: 'OPDATER',
+    nowPlaying: 'SPILLER NU',
+    homepage: 'HJEMMESIDE',
+    tags: 'TAGS',
+    language: 'SPROG',
+    codec: 'KODEK',
+    clicks: 'KLIK',
+    streamUrl: 'STREAM-ADRESSE',
+    werbung: 'REKLAME',
+    ausblenden: 'SKJUL',
+    historieLoschen: 'Ryd historik',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Massedownload',
+    fehlgeschlagen: 'fejlet',
+    fortsetzen: 'Genoptag',
+    pause: 'Pause',
+    abbrechen: 'Annuller',
+    pausieren: 'Sæt på pause'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automatisk afspilning',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analyse...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normaliserer {count} segmenter (~{time})',
+    heruntergeladenFailed: '{ok} downloadet, {failed} fejlet',
+    ladePodcast: 'Indlæser "{title}" fra server...',
+    podcastAktualisiert: '"{title}" opdateret'
   },
 
   // === Donation ===

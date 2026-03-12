@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'ラジオ',
+    recorder: '録音',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: '設定',
+    dark: 'ダーク',
+    light: 'ライト',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'ディスプレイテーマ',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI サウンド',
-    clickSounds: 'CLICK-SOUNDS',
+    displayTheme: '表示モード',
+    dark: 'ダーク',
+    light: 'ライト',
+    uiSounds: 'UIサウンド',
+    clickSounds: 'クリック音',
     timeshiftBuffer: 'タイムシフトバッファ',
     minBitrate: '最小ビットレート',
     maxBitrate: '最大ビットレート',
     timeshiftHint: '出力ビットレートは入力に自動調整されます（ソースより高くなることはありません）',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'HLS録音',
     bufferAufnahme: 'バッファ録音',
-    lookback: 'LOOKBACK',
+    lookback: '振り返り',
     lookbackHint: 'HLS録音は何分前まで遡りますか？',
     language: '言語',
     datenschutzNutzung: 'プライバシーと利用規約'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: '新しい録音の保存先：',
     standardOrdner: '新しい録音はデフォルトフォルダ（Root）に保存されます',
     aktivieren: '有効化',
-    root: 'ROOT',
+    root: 'ルートフォルダ',
     aufnahmen: '録音',
     nochKeineOrdner: 'フォルダはまだ作成されていません',
     ordnerHint: 'フォルダで録音を整理できます',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: '広告ブロック',
     ausgeblendet: '非表示',
     werbeerkennung: '広告検出',
     werbeHint: '放送局の広告をチェックして判断する',
@@ -163,8 +163,8 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: '放送局キャッシュ',
-    stations: '放送局',
+    stationCache: 'ステーションキャッシュ',
+    stations: 'ステーション',
     countries: '国',
     syncNow: '今すぐ同期',
     syncing: '同期中...',
@@ -547,6 +547,75 @@ export default {
     keinDatum: '日付なし',
     verwaistLoeschen: '{count}個の孤立フォルダを削除',
     verwaistLoeschenBestaetigung: '{count}個の孤立フォルダとすべての含まれるファイルを完全に削除しますか？'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'サポート'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'ディスプレイ',
+    source: 'ソース',
+    vu: 'VU',
+    volume: '音量',
+    timer: 'タイマー',
+    transport: 'コントロール',
+    playback: '再生',
+    timeshift: 'タイムシフト',
+    hlsRec: 'HLS録音',
+    recording: '録音',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'お気に入り',
+    country: '国',
+    bitrate: 'BITRATE',
+    votes: '投票',
+    stations: '局',
+    refresh: '更新',
+    nowPlaying: '再生中',
+    homepage: 'ホームページ',
+    tags: 'タグ',
+    language: '言語',
+    codec: 'CODEC',
+    clicks: 'クリック',
+    streamUrl: 'ストリームURL',
+    werbung: '広告',
+    ausblenden: '非表示',
+    historieLoschen: '履歴を削除',
+    name: '名前'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: '一括ダウンロード',
+    fehlgeschlagen: '失敗',
+    fortsetzen: '再開',
+    pause: '一時停止',
+    abbrechen: 'キャンセル',
+    pausieren: '一時停止'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: '自動再生',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: '分析中...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: '{count}セグメントを正規化中 (~{time})',
+    heruntergeladenFailed: '{ok}件ダウンロード済み、{failed}件失敗',
+    ladePodcast: 'サーバーから「{title}」を読み込み中...',
+    podcastAktualisiert: '「{title}」更新済み'
   },
 
   // === Donation ===

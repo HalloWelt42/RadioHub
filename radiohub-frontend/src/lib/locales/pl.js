@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'NAGRYWANIE',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'USTAWIENIA',
+    dark: 'CIEMNY',
+    light: 'JASNY',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'MOTYW WYŚWIETLANIA',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'DŹWIĘKI UI',
+    displayTheme: 'TRYB WYŚWIETLANIA',
+    dark: 'CIEMNY',
+    light: 'JASNY',
+    uiSounds: 'DŹWIĘKI INTERFEJSU',
     clickSounds: 'DŹWIĘKI KLIKNIĘĆ',
-    timeshiftBuffer: 'BUFOR TIMESHIFT',
+    timeshiftBuffer: 'BUFOR PRZESUNIĘCIA',
     minBitrate: 'MIN BITRATE',
     maxBitrate: 'MAX BITRATE',
     timeshiftHint: 'Bitrate wyjściowy jest automatycznie dostosowywany do wejściowego (nigdy wyższy niż źródło)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'NAGR. HLS',
     bufferAufnahme: 'NAGRYWANIE BUFORA',
-    lookback: 'PODGLĄD WSTECZ',
+    lookback: 'WSTECZ',
     lookbackHint: 'Ile minut wstecz powinno sięgać nagrywanie HLS?',
     language: 'JĘZYK',
     datenschutzNutzung: 'PRYWATNOŚĆ I WARUNKI UŻYTKOWANIA'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Nowe nagrania trafiają do:',
     standardOrdner: 'Nowe nagrania trafiają do domyślnego folderu (Root)',
     aktivieren: 'AKTYWUJ',
-    root: 'ROOT',
+    root: 'KATALOG GŁÓWNY',
     aufnahmen: 'Nagrania',
     nochKeineOrdner: 'Nie utworzono jeszcze żadnych folderów',
     ordnerHint: 'Foldery pomagają organizować nagrania',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: 'BLOKOWANIE REKLAM',
     ausgeblendet: 'UKRYTE',
     werbeerkennung: 'WYKRYWANIE REKLAM',
     werbeHint: 'Sprawdź stacje pod kątem reklam i zdecyduj',
@@ -166,9 +166,9 @@ export default {
     stationCache: 'PAMIĘĆ PODRĘCZNA STACJI',
     stations: 'STACJE',
     countries: 'KRAJE',
-    syncNow: 'SYNCHRONIZUJ TERAZ',
+    syncNow: 'SYNCHRONIZUJ',
     syncing: 'SYNCHRONIZACJA...',
-    systemInfo: 'INFORMACJE O SYSTEMIE',
+    systemInfo: 'INFO O SYSTEMIE',
     syncFehler: 'Synchronizacja nie powiodła się'
   },
 
@@ -196,7 +196,7 @@ export default {
     hint: 'Pokazuje wszystkie zewnętrzne źródła danych. Konfigurowalne usługi można w razie potrzeby przekierować do własnych instancji.',
     eingehend: 'PRZYCHODZĄCE',
     ausgehend: 'WYCHODZĄCE',
-    lokal: 'LOKALNE',
+    lokal: 'LOKALNY',
     endpunktAendern: 'Zmień punkt końcowy',
     standard: 'Domyślny',
     zuruecksetzenFehler: 'Resetowanie nie powiodło się',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Brak daty',
     verwaistLoeschen: 'Usuń {count} osieroconych folderów',
     verwaistLoeschenBestaetigung: 'Trwale usunąć {count} osieroconych folderów i wszystkie zawarte pliki?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Wsparcie'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'WYŚWIETLACZ',
+    source: 'ŹRÓDŁO',
+    vu: 'VU',
+    volume: 'GŁOŚNOŚĆ',
+    timer: 'CZAS',
+    transport: 'STEROWANIE',
+    playback: 'ODTWARZANIE',
+    timeshift: 'PRZESUNIĘCIE',
+    hlsRec: 'NAGR. HLS',
+    recording: 'NAGRYWANIE',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'ULUBIONE',
+    country: 'KRAJ',
+    bitrate: 'BITRATE',
+    votes: 'GŁOSY',
+    stations: 'STACJE',
+    refresh: 'ODŚWIEŻ',
+    nowPlaying: 'TERAZ GRAMY',
+    homepage: 'STRONA WWW',
+    tags: 'TAGI',
+    language: 'JĘZYK',
+    codec: 'KODEK',
+    clicks: 'KLIKNIĘCIA',
+    streamUrl: 'ADRES STRUMIENIA',
+    werbung: 'REKLAMA',
+    ausblenden: 'UKRYJ',
+    historieLoschen: 'Wyczyść historię',
+    name: 'NAME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Pobieranie zbiorcze',
+    fehlgeschlagen: 'niepowodzenie',
+    fortsetzen: 'Wznów',
+    pause: 'Pauza',
+    abbrechen: 'Anuluj',
+    pausieren: 'Pauza'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Autom. odtwarzanie',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analiza...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizacja {count} segmentów (~{time})',
+    heruntergeladenFailed: '{ok} pobrano, {failed} nie powiodło się',
+    ladePodcast: 'Ładowanie "{title}" z serwera...',
+    podcastAktualisiert: '"{title}" zaktualizowano'
   },
 
   // === Donation ===

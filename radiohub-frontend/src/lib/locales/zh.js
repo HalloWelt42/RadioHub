@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: '收音机',
+    recorder: '录音',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: '设置',
+    dark: '深色',
+    light: '浅色',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,18 +36,18 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: '显示主题',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: '显示模式',
+    dark: '深色',
+    light: '浅色',
     uiSounds: '界面音效',
-    clickSounds: 'CLICK-SOUNDS',
+    clickSounds: '点击音效',
     timeshiftBuffer: '时移缓冲区',
     minBitrate: '最低比特率',
     maxBitrate: '最高比特率',
     timeshiftHint: '输出比特率自动调整为输入（不会高于源）',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: '缓冲区录制',
-    lookback: 'LOOKBACK',
+    hlsRec: 'HLS录音',
+    bufferAufnahme: '缓冲录音',
+    lookback: '回溯',
     lookbackHint: 'HLS录制应回溯多少分钟？',
     language: '语言',
     datenschutzNutzung: '隐私和使用条款'
@@ -55,10 +55,10 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: '自动刷新',
+    autoRefresh: '自动更新',
     aktiv: '开',
     aus: '关',
-    refreshIntervall: '刷新间隔',
+    refreshIntervall: '更新间隔',
     intervall: '间隔',
     refreshHint: '播客订阅源会自动检查新剧集',
     refreshHintDynamic: '订阅源每{hours}小时更新一次'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: '新录音保存到：',
     standardOrdner: '新录音保存到默认文件夹（Root）',
     aktivieren: '启用',
-    root: 'ROOT',
+    root: '根目录',
     aufnahmen: '录音',
     nochKeineOrdner: '尚未创建文件夹',
     ordnerHint: '文件夹有助于整理录音',
@@ -87,7 +87,7 @@ export default {
     laender: '国家',
     sprachenAusschliessen: '排除语言',
     tagsAusschliessen: '排除标签',
-    minVotes: '最少投票数',
+    minVotes: '最低票数',
     permanentAusblenden: '永久隐藏',
     permanentHint: '永久删除符合上述条件的电台',
     vorschau: '预览',
@@ -111,7 +111,7 @@ export default {
 
   // === Setup Sender ===
   senderSetup: {
-    adBlocker: 'AD-BLOCKER',
+    adBlocker: '广告拦截',
     ausgeblendet: '已隐藏',
     werbeerkennung: '广告检测',
     werbeHint: '检查电台是否有广告并做出决定',
@@ -547,6 +547,75 @@ export default {
     keinDatum: '无日期',
     verwaistLoeschen: '删除{count}个孤立文件夹',
     verwaistLoeschenBestaetigung: '永久删除{count}个孤立文件夹及其所有文件？'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: '支持'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: '显示屏',
+    source: '音源',
+    vu: 'VU',
+    volume: '音量',
+    timer: '计时',
+    transport: '控制',
+    playback: '播放',
+    timeshift: '时移',
+    hlsRec: 'HLS录音',
+    recording: '录音',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: '收藏',
+    country: '国家',
+    bitrate: 'BITRATE',
+    votes: '投票',
+    stations: '电台',
+    refresh: '刷新',
+    nowPlaying: '正在播放',
+    homepage: '官网',
+    tags: '标签',
+    language: '语言',
+    codec: 'CODEC',
+    clicks: '点击',
+    streamUrl: '播放地址',
+    werbung: '广告',
+    ausblenden: '隐藏',
+    historieLoschen: '清除历史',
+    name: '名称'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: '批量下载',
+    fehlgeschlagen: '失败',
+    fortsetzen: '继续',
+    pause: '暂停',
+    abbrechen: '取消',
+    pausieren: '暂停'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: '自动播放',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: '分析中...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: '正在标准化 {count} 个片段 (~{time})',
+    heruntergeladenFailed: '{ok} 已下载，{failed} 失败',
+    ladePodcast: '正在从服务器加载"{title}"...',
+    podcastAktualisiert: '"{title}"已更新'
   },
 
   // === Donation ===

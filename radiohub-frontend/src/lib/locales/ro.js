@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RADIO',
+    recorder: 'ÎNREGISTRARE',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'SETĂRI',
+    dark: 'ÎNTUNECAT',
+    light: 'LUMINOS',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,16 +36,16 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'TEMĂ AFIȘAJ',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: 'MOD DE AFIȘARE',
+    dark: 'ÎNTUNECAT',
+    light: 'LUMINOS',
     uiSounds: 'SUNETE INTERFAȚĂ',
-    clickSounds: 'SUNETE CLIC',
-    timeshiftBuffer: 'BUFFER TIMESHIFT',
+    clickSounds: 'SUNETE DE CLIC',
+    timeshiftBuffer: 'BUFFER DECALAJ',
     minBitrate: 'BITRATE MIN',
     maxBitrate: 'BITRATE MAX',
     timeshiftHint: 'Rata de biți la ieșire se ajustează automat la intrare (niciodată mai mare decât sursa)',
-    hlsRec: 'HLS-REC',
+    hlsRec: 'ÎNREG. HLS',
     bufferAufnahme: 'ÎNREGISTRARE BUFFER',
     lookback: 'RETROSPECTIVĂ',
     lookbackHint: 'Câte minute ar trebui să privească în trecut înregistrarea HLS?',
@@ -55,10 +55,10 @@ export default {
 
   // === Setup Podcast ===
   podcast: {
-    autoRefresh: 'REÎMPROSPĂTARE AUTOMATĂ',
+    autoRefresh: 'ACTUALIZARE AUTOMATĂ',
     aktiv: 'PORNIT',
     aus: 'OPRIT',
-    refreshIntervall: 'INTERVAL DE REÎMPROSPĂTARE',
+    refreshIntervall: 'INTERVAL DE ACTUALIZARE',
     intervall: 'INTERVAL',
     refreshHint: 'Fluxurile de podcast sunt verificate automat pentru episoade noi',
     refreshHintDynamic: 'Fluxurile abonate sunt actualizate la fiecare {hours} ore'
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Înregistrările noi se salvează în:',
     standardOrdner: 'Înregistrările noi se salvează în folderul implicit (Rădăcină)',
     aktivieren: 'ACTIVARE',
-    root: 'RĂDĂCINĂ',
+    root: 'DIRECTOR RĂDĂCINĂ',
     aufnahmen: 'Înregistrări',
     nochKeineOrdner: 'Încă nu a fost creat niciun folder',
     ordnerHint: 'Folderele ajută la organizarea înregistrărilor',
@@ -87,7 +87,7 @@ export default {
     laender: 'ȚĂRI',
     sprachenAusschliessen: 'EXCLUDERE LIMBI',
     tagsAusschliessen: 'EXCLUDERE ETICHETE',
-    minVotes: 'VOTURI MIN',
+    minVotes: 'MIN VOTURI',
     permanentAusblenden: 'ASCUNDERE PERMANENTĂ',
     permanentHint: 'Eliminarea permanentă a posturilor care corespund criteriilor de mai sus',
     vorschau: 'PREVIZUALIZARE',
@@ -163,12 +163,12 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: 'CACHE POSTURI',
-    stations: 'POSTURI',
+    stationCache: 'CACHE STAȚII',
+    stations: 'STAȚII',
     countries: 'ȚĂRI',
-    syncNow: 'SINCRONIZARE',
-    syncing: 'SE SINCRONIZEAZĂ...',
-    systemInfo: 'INFORMAȚII SISTEM',
+    syncNow: 'SINCRONIZEAZĂ',
+    syncing: 'SINCRONIZARE...',
+    systemInfo: 'INFO SISTEM',
     syncFehler: 'Sincronizarea a eșuat'
   },
 
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Fără dată',
     verwaistLoeschen: 'Ștergere {count} foldere orfane',
     verwaistLoeschenBestaetigung: 'Ștergere permanentă a {count} foldere orfane și a tuturor fișierelor conținute?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Susține'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'AFIȘAJ',
+    source: 'SURSĂ',
+    vu: 'VU',
+    volume: 'VOLUM',
+    timer: 'TIMP',
+    transport: 'COMENZI',
+    playback: 'REDARE',
+    timeshift: 'DECALAJ',
+    hlsRec: 'ÎNREG. HLS',
+    recording: 'ÎNREGISTRARE',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'FAVORITE',
+    country: 'ȚARĂ',
+    bitrate: 'BITRATE',
+    votes: 'VOTURI',
+    stations: 'STAȚII',
+    refresh: 'REÎMPROSPĂTARE',
+    nowPlaying: 'ACUM SE REDĂ',
+    homepage: 'PAGINĂ WEB',
+    tags: 'ETICHETE',
+    language: 'LIMBĂ',
+    codec: 'CODEC',
+    clicks: 'CLICKURI',
+    streamUrl: 'ADRESĂ STREAM',
+    werbung: 'RECLAMĂ',
+    ausblenden: 'ASCUNDE',
+    historieLoschen: 'Șterge istoricul',
+    name: 'NUME'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Descărcare în masă',
+    fehlgeschlagen: 'eșuat',
+    fortsetzen: 'Reia',
+    pause: 'Pauză',
+    abbrechen: 'Anulează',
+    pausieren: 'Pune pe pauză'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Redare automată',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Analiză...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizare {count} segmente (~{time})',
+    heruntergeladenFailed: '{ok} descărcate, {failed} eșuate',
+    ladePodcast: 'Se încarcă "{title}" de pe server...',
+    podcastAktualisiert: '"{title}" actualizat'
   },
 
   // === Donation ===

@@ -4,6 +4,7 @@
    * Zeigt Fortschritt, erlaubt Pause/Fortsetzen/Abbrechen.
    */
   import { formatSize } from '../../lib/formatters.js';
+  import { t } from '../../lib/i18n.svelte.js';
 
   let {
     active = false,
@@ -25,10 +26,10 @@
   <div class="download-job-panel">
     <div class="job-header">
       <i class="fa-solid fa-arrow-down job-icon"></i>
-      <span class="job-title">Massendownload</span>
+      <span class="job-title">{t('downloadPanel.massendownload')}</span>
       <span class="job-counter">{done} / {total}</span>
       {#if failed > 0}
-        <span class="job-failed">{failed} fehlgeschlagen</span>
+        <span class="job-failed">{failed} {t('downloadPanel.fehlgeschlagen')}</span>
       {/if}
     </div>
 
@@ -52,19 +53,19 @@
 
     <div class="job-actions">
       {#if paused}
-        <button class="job-btn job-btn-resume" onclick={onresume} title="Fortsetzen">
+        <button class="job-btn job-btn-resume" onclick={onresume} title={t('downloadPanel.fortsetzen')}>
           <i class="fa-solid fa-play"></i>
-          <span>Fortsetzen</span>
+          <span>{t('downloadPanel.fortsetzen')}</span>
         </button>
       {:else}
-        <button class="job-btn job-btn-pause" onclick={onpause} title="Pausieren">
+        <button class="job-btn job-btn-pause" onclick={onpause} title={t('downloadPanel.pausieren')}>
           <i class="fa-solid fa-pause"></i>
-          <span>Pause</span>
+          <span>{t('downloadPanel.pause')}</span>
         </button>
       {/if}
-      <button class="job-btn job-btn-cancel" onclick={oncancel} title="Abbrechen">
+      <button class="job-btn job-btn-cancel" onclick={oncancel} title={t('downloadPanel.abbrechen')}>
         <i class="fa-solid fa-xmark"></i>
-        <span>Abbrechen</span>
+        <span>{t('downloadPanel.abbrechen')}</span>
       </button>
     </div>
   </div>

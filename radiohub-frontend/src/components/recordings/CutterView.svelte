@@ -603,7 +603,7 @@
     const segIds = partialSelection ? selectedSegmentIds : null;
 
     try {
-      processingStatus = 'Analyse...';
+      processingStatus = t('cutterExtra.analyse');
       const response = await api.normalizeSessionSSE(session.id, -16.0, segIds);
 
       if (response.headers.get('content-type')?.includes('text/event-stream')) {
@@ -611,7 +611,7 @@
           if (evt.type === 'start') {
             const min = Math.floor(evt.estimated_seconds / 60);
             const sec = evt.estimated_seconds % 60;
-            processingStatus = `Normalisiere ${evt.segments} Segmente (~${min}:${String(sec).padStart(2, '0')})`;
+            processingStatus = t('cutterExtra.normalisiere', { count: evt.segments, time: `${min}:${String(sec).padStart(2, '0')}` });
           } else if (evt.type === 'progress') {
             processingStatus = evt.message;
           } else if (evt.type === 'done') {
@@ -720,7 +720,7 @@
         class="cutter-btn autoplay-toggle"
         class:autoplay-active={autoPlayEnabled}
         onclick={() => autoPlayEnabled = !autoPlayEnabled}
-        title="Auto-Play"
+        title={t('cutterExtra.autoPlay')}
       >
         <i class="fa-solid fa-circle-play"></i>
       </button>
@@ -771,7 +771,7 @@
       {/if}
       {#if metadata.length > 0 && segments.length === 0}
         <button class="cutter-btn" onclick={autoSplit} disabled={isCutting} title={t('cutter.autoSplit')}>
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto
+          <i class="fa-solid fa-wand-magic-sparkles"></i> {t('cutterExtra.auto')}
         </button>
       {/if}
       <button class="cutter-btn" onclick={onclose}>
@@ -828,7 +828,7 @@
   <div class="tools-bar">
     {#if segments.length > 0}
       <span class="segment-selection-badge" class:partial={selectedSegmentIds.length < segments.length}>
-        {selectedSegmentIds.length}/{segments.length} Seg.
+        {selectedSegmentIds.length}/{segments.length} {t('cutterExtra.seg')}
       </span>
     {/if}
     <button class="cutter-btn" onclick={handleNormalize} disabled={isProcessing || (segments.length > 0 && selectedSegmentIds.length === 0)} title={t('cutter.normalisierenTip')}>
@@ -849,7 +849,7 @@
   {#if showConvertPanel}
     <div class="convert-panel">
       <div class="convert-row">
-        <label class="convert-label">Format:</label>
+        <label class="convert-label">{t('cutterExtra.format')}</label>
         <select class="convert-select" bind:value={convertFormat} onchange={onFormatChange}>
           <option value="mp3">MP3</option>
           <option value="ogg">OGG Vorbis</option>
@@ -857,7 +857,7 @@
         </select>
       </div>
       <div class="convert-row">
-        <label class="convert-label">Bitrate:</label>
+        <label class="convert-label">{t('cutterExtra.bitrate')}</label>
         <select class="convert-select" bind:value={convertBitrate}>
           {#each FORMAT_BITRATES[convertFormat] as kbps}
             <option value={kbps}>{kbps} kbps</option>
@@ -867,7 +867,7 @@
       <div class="convert-row">
         <label class="convert-checkbox">
           <input type="checkbox" bind:checked={convertMono} />
-          Mono
+          {t('cutterExtra.mono')}
         </label>
       </div>
       <button class="cutter-btn cutter-btn-primary" onclick={handleConvert} disabled={isProcessing}>

@@ -4,12 +4,12 @@
 export default {
   // === Navigation ===
   nav: {
-    tuner: 'TUNER',
-    recorder: 'RECORDER',
+    tuner: 'RÁDIÓ',
+    recorder: 'FELVÉTEL',
     podcast: 'PODCAST',
-    setup: 'SETUP',
-    dark: 'DARK',
-    light: 'LIGHT',
+    setup: 'BEÁLLÍTÁSOK',
+    dark: 'SÖTÉT',
+    light: 'VILÁGOS',
     online: 'ONLINE',
     offline: 'OFFLINE'
   },
@@ -36,17 +36,17 @@ export default {
 
   // === Setup Allgemein ===
   allgemein: {
-    displayTheme: 'MEGJELENÍTÉSI TÉMA',
-    dark: 'DARK',
-    light: 'LIGHT',
+    displayTheme: 'MEGJELENÍTÉSI MÓD',
+    dark: 'SÖTÉT',
+    light: 'VILÁGOS',
     uiSounds: 'FELÜLETI HANGOK',
     clickSounds: 'KATTINTÁSHANGOK',
-    timeshiftBuffer: 'IDŐELTOLÁS PUFFER',
+    timeshiftBuffer: 'IDŐELTOLÁS-PUFFER',
     minBitrate: 'MIN BITRÁTA',
     maxBitrate: 'MAX BITRÁTA',
     timeshiftHint: 'A kimeneti bitráta automatikusan a bemenethez igazodik (soha nem magasabb a forrásnál)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'PUFFER FELVÉTEL',
+    hlsRec: 'HLS-FELVÉTEL',
+    bufferAufnahme: 'PUFFER-FELVÉTEL',
     lookback: 'VISSZATEKINTÉS',
     lookbackHint: 'Hány percet tekintsen vissza a HLS felvétel a múltba?',
     language: 'NYELV',
@@ -74,7 +74,7 @@ export default {
     neueAufnahmenIn: 'Új felvételek helye:',
     standardOrdner: 'Új felvételek az alapértelmezett mappába kerülnek (Gyökér)',
     aktivieren: 'AKTIVÁLÁS',
-    root: 'GYÖKÉR',
+    root: 'GYÖKÉRMAPPA',
     aufnahmen: 'Felvételek',
     nochKeineOrdner: 'Még nincs mappa létrehozva',
     ordnerHint: 'A mappák segítenek a felvételek rendszerezésében',
@@ -87,7 +87,7 @@ export default {
     laender: 'ORSZÁGOK',
     sprachenAusschliessen: 'NYELVEK KIZÁRÁSA',
     tagsAusschliessen: 'CÍMKÉK KIZÁRÁSA',
-    minVotes: 'MIN SZAVAZATOK',
+    minVotes: 'MIN SZAVAZAT',
     permanentAusblenden: 'VÉGLEGESEN ELREJTÉS',
     permanentHint: 'A fenti feltételeknek megfelelő állomások végleges eltávolítása',
     vorschau: 'ELŐNÉZET',
@@ -163,7 +163,7 @@ export default {
 
   // === Setup System ===
   system: {
-    stationCache: 'ÁLLOMÁS GYORSÍTÓTÁR',
+    stationCache: 'ÁLLOMÁS-GYORSÍTÓTÁR',
     stations: 'ÁLLOMÁSOK',
     countries: 'ORSZÁGOK',
     syncNow: 'SZINKRONIZÁLÁS',
@@ -547,6 +547,75 @@ export default {
     keinDatum: 'Nincs dátum',
     verwaistLoeschen: '{count} árva mappa törlése',
     verwaistLoeschenBestaetigung: '{count} árva mappa és az összes benne lévő fájl végleges törlése?'
+  },
+
+  // === App / Header / Footer ===
+  app: {
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
+    unterstuetzenTitle: 'Támogatás'
+  },
+
+  // === Player Labels (HiFi device) ===
+  playerLabel: {
+    display: 'KIJELZŐ',
+    source: 'FORRÁS',
+    vu: 'VU',
+    volume: 'HANGERŐ',
+    timer: 'IDŐ',
+    transport: 'VEZÉRLÉS',
+    playback: 'LEJÁTSZÁS',
+    timeshift: 'IDŐELTOLÁS',
+    hlsRec: 'HLS-FELV.',
+    recording: 'FELVÉTEL',
+    podcast: 'PODCAST',
+    live: 'LIVE',
+    bitrate: 'BITRATE'
+  },
+
+  // === Station Details ===
+  stationDetail: {
+    favoriten: 'KEDVENCEK',
+    country: 'ORSZÁG',
+    bitrate: 'BITRATE',
+    votes: 'SZAVAZATOK',
+    stations: 'ÁLLOMÁSOK',
+    refresh: 'FRISSÍTÉS',
+    nowPlaying: 'MOST JÁTSZIK',
+    homepage: 'HONLAP',
+    tags: 'CÍMKÉK',
+    language: 'NYELV',
+    codec: 'KODEK',
+    clicks: 'KATTINTÁSOK',
+    streamUrl: 'STREAM-CÍM',
+    werbung: 'HIRDETÉS',
+    ausblenden: 'ELREJTÉS',
+    historieLoschen: 'Előzmények törlése',
+    name: 'NÉV'
+  },
+
+  // === Download Panel ===
+  downloadPanel: {
+    massendownload: 'Tömeges letöltés',
+    fehlgeschlagen: 'sikertelen',
+    fortsetzen: 'Folytatás',
+    pause: 'Szünet',
+    abbrechen: 'Mégse',
+    pausieren: 'Szüneteltetés'
+  },
+
+  // === Cutter Extra ===
+  cutterExtra: {
+    autoPlay: 'Automatikus lejátszás',
+    mono: 'Mono',
+    format: 'Format:',
+    bitrate: 'Bitrate:',
+    analyse: 'Elemzés...',
+    auto: 'Auto',
+    seg: 'Seg.',
+    normalisiere: 'Normalizálás: {count} szegmens (~{time})',
+    heruntergeladenFailed: '{ok} letöltve, {failed} sikertelen',
+    ladePodcast: '"{title}" betöltése a szerverről...',
+    podcastAktualisiert: '"{title}" frissítve'
   },
 
   // === Donation ===

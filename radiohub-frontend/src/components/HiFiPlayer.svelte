@@ -350,12 +350,12 @@
 
   // Transport Section Label (kontextabhängig)
   let transportLabel = $derived(
-    appState.recordingType === 'hls-rec' ? 'HLS-REC' :
-    appState.recordingType === 'direct' ? 'RECORDING' :
-    isRecordingPlayback ? 'PLAYBACK' :
-    isPodcast ? 'PODCAST' :
-    isHLSMode ? 'TIMESHIFT' :
-    'TRANSPORT'
+    appState.recordingType === 'hls-rec' ? t('playerLabel.hlsRec') :
+    appState.recordingType === 'direct' ? t('playerLabel.recording') :
+    isRecordingPlayback ? t('playerLabel.playback') :
+    isPodcast ? t('playerLabel.podcast') :
+    isHLSMode ? t('playerLabel.timeshift') :
+    t('playerLabel.transport')
   );
 
   // Mode Toggle Verfügbarkeit
@@ -420,7 +420,7 @@
 
   <!-- DISPLAY (Scrolling Text) -->
   <div class="player-section display-section">
-    <div class="section-label">DISPLAY</div>
+    <div class="section-label">{t('playerLabel.display')}</div>
     <div class="section-content">
       <div class="display-box name-display" class:display-inactive={!displayActive} bind:this={displayContainer}>
         <div class="display-text-wrapper">
@@ -439,7 +439,7 @@
 
   <!-- SOURCE -->
   <div class="player-section source-section">
-    <div class="section-label">SOURCE</div>
+    <div class="section-label">{t('playerLabel.source')}</div>
     <div class="section-content">
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
@@ -453,14 +453,14 @@
   <!-- VU / VOLUME / VU -->
   <div class="center-group">
     <div class="player-section vu-section">
-      <div class="section-label">VU</div>
+      <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
         <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
       </div>
     </div>
 
     <div class="player-section volume-section">
-      <div class="section-label">VOLUME</div>
+      <div class="section-label">{t('playerLabel.volume')}</div>
       <div class="section-content">
         <HiFiKnob
           bind:value={appState.volume}
@@ -473,7 +473,7 @@
     </div>
 
     <div class="player-section vu-section">
-      <div class="section-label">VU</div>
+      <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
         <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
       </div>
@@ -482,7 +482,7 @@
 
   <!-- TIMER (hh:mm:ss) -->
   <div class="player-section timer-section">
-    <div class="section-label">TIMER</div>
+    <div class="section-label">{t('playerLabel.timer')}</div>
     <div class="section-content">
       <div class="display-box timer-display"
         class:timer-red={timerColor === 'red'}
@@ -509,7 +509,7 @@
           {formatTimeShort(currentTime)}
         {:else if isHLSMode && appState.hlsStatus}
           {#if appState.isLive}
-            <span class="live-indicator">LIVE</span>
+            <span class="live-indicator">{t('playerLabel.live')}</span>
           {:else}
             -{formatTimeShort(secondsBehindLive)}
           {/if}
@@ -670,7 +670,7 @@
       <!-- Bitrate LED Selector (nur bei HLS sichtbar) -->
       {#if isHLSMode && appState.hlsActive}
         <div class="bitrate-bar">
-          <span class="bitrate-label">BITRATE</span>
+          <span class="bitrate-label">{t('playerLabel.bitrate')}</span>
           <HiFiBitrateLed
             activeBitrate={hlsInputBitrate}
             overrideBitrate={bitrateOverride}
@@ -758,15 +758,13 @@
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #999;
+    color: #888;
     text-transform: uppercase;
     margin-bottom: 8px;
     height: 12px;
     text-shadow:
-        0 -2px 1px rgba(0,0,0,1),
-        0 -1px 0 rgba(0,0,0,0.5),
-        0 1px 0 rgba(255,255,255,0.35),
-        0 2px 3px rgba(0,0,0,0.15);
+        -1px -1px 1px rgba(0,0,0,0.8),
+        1px 1px 0 rgba(255,255,255,0.12);
   }
 
   .section-content {
