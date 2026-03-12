@@ -736,12 +736,10 @@
 
   .session-item.playing {
     background: rgba(76, 175, 80, 0.08);
-    border-left: 2px solid rgba(76, 175, 80, 0.5);
   }
 
   .session-item.active {
     background: rgba(255, 50, 50, 0.08);
-    border-left: 2px solid rgba(255, 50, 50, 0.5);
   }
 
   /* Session Move Button (erscheint bei Hover) */

@@ -888,7 +888,7 @@
   }
 
   .meta-time {
-    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-family: 'Barlow', sans-serif;
     font-size: 11px;
     font-weight: 700;
     color: var(--hifi-display-text);
