@@ -163,10 +163,17 @@
       if (playPosition >= 0 && Math.abs(audioTime - playPosition) > 5) return;
       playPosition = audioTime;
 
-      // Waveform scrollt mit: Playhead bleibt bei PLAYHEAD_RATIO (30%)
-      viewStart = Math.max(0,
+      // Waveform scrollt weich mit: Playhead bleibt bei PLAYHEAD_RATIO (70%)
+      const targetStart = Math.max(0,
         Math.min(playPosition - viewDuration * PLAYHEAD_RATIO, totalDuration - viewDuration)
       );
+      // Lerp: sanftes Gleiten statt harter Sprung (15% pro Frame bei 25fps)
+      const diff = targetStart - viewStart;
+      if (Math.abs(diff) < 0.1) {
+        viewStart = targetStart;
+      } else {
+        viewStart += diff * 0.15;
+      }
       loader.ensureRange(viewStart, viewStart + viewDuration);
 
       drawFrame();
