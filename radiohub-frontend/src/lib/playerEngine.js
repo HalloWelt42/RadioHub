@@ -310,20 +310,19 @@ export async function playRecording(recording, startTime = 0) {
   _audioEl.load();
 
   if (startTime > 0) {
-    // Seek vor Play: warten bis Metadaten geladen, dann Position setzen
+    // Seek vor Play: loadedmetadata abwarten, currentTime setzen, seeked abwarten, dann play
     await new Promise(resolve => {
-      const onReady = () => {
-        _audioEl.removeEventListener('loadedmetadata', onReady);
+      const onMeta = () => {
         _audioEl.currentTime = startTime;
-        resolve();
+        _audioEl.addEventListener('seeked', () => resolve(), { once: true });
       };
-      _audioEl.addEventListener('loadedmetadata', onReady, { once: true });
-      // Fallback falls Event schon gefeuert
+      _audioEl.addEventListener('loadedmetadata', onMeta, { once: true });
+      // Fallback
       setTimeout(() => {
-        _audioEl.removeEventListener('loadedmetadata', onReady);
+        _audioEl.removeEventListener('loadedmetadata', onMeta);
         _audioEl.currentTime = startTime;
         resolve();
-      }, 2000);
+      }, 3000);
     });
   }
 
