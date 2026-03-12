@@ -15,6 +15,9 @@ home/
 *.db-shm
 *.db-wal
 
+# Claude
+.claude/
+
 # IDE
 .idea/
 .vscode/
