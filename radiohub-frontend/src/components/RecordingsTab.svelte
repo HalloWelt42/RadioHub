@@ -96,7 +96,12 @@
         if (appState.isRecording) {
           wasRecording = true;
           recStatus = { recording: true, station_name: appState.currentStation?.name, duration: appState.recordingElapsed };
-          loadSessions();
+          await loadSessions();
+          // Aktive Session-Referenz aktualisieren damit status/segment_count live angezeigt werden
+          if (selectedSession) {
+            const updated = sessions.find(s => s.id === selectedSession.id);
+            if (updated) selectedSession = updated;
+          }
         } else if (wasRecording) {
           wasRecording = false;
           recStatus = null;

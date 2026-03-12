@@ -447,9 +447,12 @@ class RecorderManager:
         orphans = []
         valid = []
         active_id = self.active_session.id if self.active_session else None
+        # HLS-Recorder hat eigene active_session -- nicht als verwaist markieren
+        from .hls_recorder import hls_recorder
+        hls_active_id = hls_recorder.active_session.id if hls_recorder.active_session else None
         for row in rows:
             if row.get("status") == "recording":
-                if row["id"] == active_id:
+                if row["id"] == active_id or row["id"] == hls_active_id:
                     valid.append(row)
                 else:
                     # Verwaiste recording-Session: Prozess existiert nicht mehr
