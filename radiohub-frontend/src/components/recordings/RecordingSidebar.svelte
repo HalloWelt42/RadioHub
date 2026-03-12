@@ -4,7 +4,7 @@
    * Session-Liste mit Ordner-Gruppen, Stats, Action-Buttons, Resize.
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
-  import { formatDuration, formatSize, formatDate } from '../../lib/formatters.js';
+  import { formatDuration, formatDurationMs, formatSize, formatDate } from '../../lib/formatters.js';
   import { appState } from '../../lib/store.svelte.js';
   import { tick } from 'svelte';
   import * as sfx from '../../lib/uiSounds.js';
@@ -31,7 +31,10 @@
     ondeletefolder = () => {},
     onactivatefolder = () => {},
     ondeactivatefolder = () => {},
-    onmovesession = () => {}
+    onmovesession = () => {},
+    segments = [],
+    selectedSegmentIds = [],
+    onsegmentselectionchange = () => {}
   } = $props();
 
   let showSearch = $state(false);
@@ -153,6 +156,19 @@
     if (ext) return ext.replace('.', '').toUpperCase();
     return 'MP3';
   }
+
+  // Segment-Selektion
+  function toggleSegment(segId) {
+    const ids = selectedSegmentIds.includes(segId)
+      ? selectedSegmentIds.filter(id => id !== segId)
+      : [...selectedSegmentIds, segId];
+    onsegmentselectionchange(ids);
+  }
+
+  function toggleAllSegments() {
+    const allSelected = segments.length > 0 && segments.every(s => selectedSegmentIds.includes(s.id));
+    onsegmentselectionchange(allSelected ? [] : segments.map(s => s.id));
+  }
 </script>
 
 {#snippet sessionItem(session)}
@@ -217,6 +233,24 @@
       </div>
     {/if}
   </div>
+  {#if isSelected && segments.length > 0}
+    {@const allSelected = segments.every(s => selectedSegmentIds.includes(s.id))}
+    <div class="segment-list">
+      <button class="segment-toggle-all" onclick={toggleAllSegments}>
+        <HiFiLed color={allSelected ? 'green' : 'off'} size="small" />
+        <span class="seg-all-label">Alle ({segments.length})</span>
+      </button>
+      {#each segments as seg}
+        {@const isSegSelected = selectedSegmentIds.includes(seg.id)}
+        <button class="segment-row" onclick={() => toggleSegment(seg.id)}>
+          <HiFiLed color={isSegSelected ? 'green' : 'off'} size="small" />
+          <span class="seg-idx">{seg.segment_index + 1}</span>
+          <span class="seg-title">{seg.title || `Teil ${seg.segment_index + 1}`}</span>
+          <span class="seg-dur">{formatDurationMs(seg.duration_ms)}</span>
+        </button>
+      {/each}
+    </div>
+  {/if}
 {/snippet}
 
 <svelte:window onclick={handleGlobalClick} />
@@ -858,5 +892,82 @@
     font-size: 9px;
     color: var(--hifi-text-secondary);
     opacity: 0.6;
+  }
+
+  /* Segment-Liste unter selektierter Session */
+  .segment-list {
+    padding: 2px 0 4px 12px;
+    border-left: 2px solid rgba(51, 153, 255, 0.15);
+    margin-left: 10px;
+    margin-bottom: 2px;
+  }
+
+  .segment-toggle-all {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 3px 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .segment-toggle-all:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .seg-all-label {
+    font-family: 'Barlow', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--hifi-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .segment-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    padding: 2px 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    text-align: left;
+  }
+
+  .segment-row:hover {
+    background: var(--hifi-row-hover);
+  }
+
+  .seg-idx {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    min-width: 12px;
+    text-align: right;
+  }
+
+  .seg-title {
+    flex: 1;
+    font-family: 'Barlow', sans-serif;
+    font-size: 10px;
+    color: var(--hifi-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .seg-dur {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.7;
+    flex-shrink: 0;
   }
 </style>

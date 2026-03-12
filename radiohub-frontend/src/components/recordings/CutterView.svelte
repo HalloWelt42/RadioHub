@@ -14,6 +14,8 @@
   let {
     session,
     metadata = [],
+    segments = [],
+    selectedSegmentIds = [],
     onclose = () => {},
     onsplit = () => {}
   } = $props();
@@ -69,8 +71,7 @@
     return regions;
   });
 
-  // Bestehende Segmente
-  let existingSegments = $state([]);
+  // Bestehende Segmente kommen als `segments` Prop
 
   // === Lifecycle ===
   let themeObserver = null;
@@ -100,12 +101,6 @@
 
   async function initCutter() {
     if (!session) return;
-
-    // Bestehende Segmente laden
-    try {
-      const result = await api.getSegments(session.id);
-      existingSegments = result.segments || [];
-    } catch (e) {}
 
     // Peaks-Loader initialisieren
     loader = new PeaksLoader(session.id);
@@ -571,65 +566,67 @@
   let processingStatus = $state('');
   let showConvertPanel = $state(false);
   let convertFormat = $state('mp3');
-  let convertQuality = $state('medium');
+  let convertBitrate = $state(192);
   let convertMono = $state(false);
+
+  // kbps-Stufen pro Format
+  const FORMAT_BITRATES = {
+    mp3: [64, 96, 128, 160, 192, 224, 256, 320],
+    ogg: [64, 96, 128, 160, 192, 224, 256, 320],
+    aac: [64, 96, 128, 160, 192, 256]
+  };
+
+  // Bitrate clampen wenn Format wechselt
+  function onFormatChange() {
+    const rates = FORMAT_BITRATES[convertFormat];
+    if (!rates.includes(convertBitrate)) {
+      // Nächsten passenden Wert finden
+      convertBitrate = rates.reduce((prev, curr) =>
+        Math.abs(curr - convertBitrate) < Math.abs(prev - convertBitrate) ? curr : prev
+      );
+    }
+  }
 
   async function handleNormalize() {
     isProcessing = true;
     processingStatus = '';
+
+    const allSelected = segments.length > 0 && selectedSegmentIds.length === segments.length;
+    const partialSelection = segments.length > 0 && selectedSegmentIds.length > 0 && !allSelected;
+
+    // Hinweis bei Einzelselektion
+    if (partialSelection) {
+      actions.showToast(t('cutter.normalisierungEinzelnHinweis'), 'info');
+    }
+
+    // segment_ids nur schicken wenn Teilauswahl
+    const segIds = partialSelection ? selectedSegmentIds : null;
+
     try {
-      // Segmentierte Session: SSE-Stream mit Fortschritt
-      if (existingSegments.length > 0) {
-        processingStatus = 'Analyse...';
-        const response = await fetch(`/api/recording/sessions/${session.id}/normalize`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target_lufs: -16.0 })
-        });
+      processingStatus = 'Analyse...';
+      const response = await api.normalizeSessionSSE(session.id, -16.0, segIds);
 
-        if (response.headers.get('content-type')?.includes('text/event-stream')) {
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = '';
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop();
-
-            for (const line of lines) {
-              if (!line.startsWith('data: ')) continue;
-              try {
-                const evt = JSON.parse(line.slice(6));
-                if (evt.type === 'start') {
-                  const min = Math.floor(evt.estimated_seconds / 60);
-                  const sec = evt.estimated_seconds % 60;
-                  processingStatus = `Normalisiere ${evt.segments} Segmente (~${min}:${String(sec).padStart(2, '0')})`;
-                } else if (evt.type === 'progress') {
-                  processingStatus = evt.message;
-                } else if (evt.type === 'done') {
-                  actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
-                } else if (evt.type === 'error') {
-                  actions.showToast(evt.message, 'error');
-                }
-              } catch {}
-            }
-          }
-        } else {
-          // Fallback: Normale JSON-Response (einzelne Datei)
-          const data = await response.json();
-          if (data.success) {
+      if (response.headers.get('content-type')?.includes('text/event-stream')) {
+        await readSSEStream(response, (evt) => {
+          if (evt.type === 'start') {
+            const min = Math.floor(evt.estimated_seconds / 60);
+            const sec = evt.estimated_seconds % 60;
+            processingStatus = `Normalisiere ${evt.segments} Segmente (~${min}:${String(sec).padStart(2, '0')})`;
+          } else if (evt.type === 'progress') {
+            processingStatus = evt.message;
+          } else if (evt.type === 'done') {
             actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
-          } else {
-            actions.showToast(t('cutter.normalisierungFehler'), 'error');
+          } else if (evt.type === 'error') {
+            actions.showToast(evt.message, 'error');
           }
-        }
+        });
       } else {
-        // Einzelne Datei: normaler API-Call
-        await api.normalizeSession(session.id);
-        actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+        const data = await response.json();
+        if (data.success) {
+          actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
+        } else {
+          actions.showToast(t('cutter.normalisierungFehler'), 'error');
+        }
       }
     } catch (e) {
       actions.showToast(t('cutter.normalisierungFehler'), 'error');
@@ -638,27 +635,59 @@
     processingStatus = '';
   }
 
+  // SSE-Stream lesen und Events per Callback verarbeiten
+  async function readSSEStream(response, onEvent) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try { onEvent(JSON.parse(line.slice(6))); } catch {}
+      }
+    }
+  }
+
   async function handleConvert() {
     isProcessing = true;
     showConvertPanel = false;
+    processingStatus = '';
+
+    const allSelected = segments.length > 0 && selectedSegmentIds.length === segments.length;
+    const segIds = (segments.length > 0 && !allSelected && selectedSegmentIds.length > 0)
+      ? selectedSegmentIds : null;
+
     try {
-      await api.convertSession(session.id, convertFormat, convertQuality, convertMono);
-      actions.showToast(t('cutter.konvertierungErfolgreich'), 'success');
+      const resp = await api.convertSessionSSE(
+        session.id, convertFormat, convertBitrate, convertMono, segIds
+      );
+      const ct = resp.headers.get('content-type') || '';
+      if (ct.includes('text/event-stream')) {
+        await readSSEStream(resp, (evt) => {
+          if (evt.type === 'progress') {
+            processingStatus = evt.message;
+          } else if (evt.type === 'done') {
+            actions.showToast(t('cutter.konvertierungErfolgreich'), 'success');
+          } else if (evt.type === 'error') {
+            actions.showToast(evt.message, 'error');
+          }
+        });
+      } else {
+        const data = await resp.json();
+        if (data.success) {
+          actions.showToast(t('cutter.konvertierungErfolgreich'), 'success');
+        }
+      }
     } catch (e) {
       actions.showToast(t('cutter.konvertierungFehler'), 'error');
     }
     isProcessing = false;
-  }
-
-  async function handleMono() {
-    isProcessing = true;
-    try {
-      await api.toMonoSession(session.id);
-      actions.showToast(t('cutter.monoErfolgreich'), 'success');
-    } catch (e) {
-      actions.showToast(t('cutter.monoFehler'), 'error');
-    }
-    isProcessing = false;
+    processingStatus = '';
   }
 
   // ResizeObserver
@@ -740,7 +769,7 @@
           {t('cutter.schneiden')} ({markers.length + 1 - (trimStart ? 1 : 0) - (trimEnd ? 1 : 0)} {t('cutter.teile')})
         </button>
       {/if}
-      {#if metadata.length > 0 && existingSegments.length === 0}
+      {#if metadata.length > 0 && segments.length === 0}
         <button class="cutter-btn" onclick={autoSplit} disabled={isCutting} title={t('cutter.autoSplit')}>
           <i class="fa-solid fa-wand-magic-sparkles"></i> Auto
         </button>
@@ -797,14 +826,16 @@
 
   <!-- Werkzeuge + Analyse in einer Zeile -->
   <div class="tools-bar">
-    <button class="cutter-btn" onclick={handleNormalize} disabled={isProcessing} title={t('cutter.normalisierenTip')}>
+    {#if segments.length > 0}
+      <span class="segment-selection-badge" class:partial={selectedSegmentIds.length < segments.length}>
+        {selectedSegmentIds.length}/{segments.length} Seg.
+      </span>
+    {/if}
+    <button class="cutter-btn" onclick={handleNormalize} disabled={isProcessing || (segments.length > 0 && selectedSegmentIds.length === 0)} title={t('cutter.normalisierenTip')}>
       <i class="fa-solid fa-volume-high"></i> {t('cutter.normalisieren')}
     </button>
-    <button class="cutter-btn" onclick={() => showConvertPanel = !showConvertPanel} disabled={isProcessing} title={t('cutter.konvertierenTip')}>
+    <button class="cutter-btn" onclick={() => showConvertPanel = !showConvertPanel} disabled={isProcessing || (segments.length > 0 && selectedSegmentIds.length === 0)} title={t('cutter.konvertierenTip')}>
       <i class="fa-solid fa-file-audio"></i> {t('cutter.konvertieren')}
-    </button>
-    <button class="cutter-btn" onclick={handleMono} disabled={isProcessing} title={t('cutter.monoTip')}>
-      <i class="fa-solid fa-headphones"></i> {t('cutter.mono')}
     </button>
     {#if isProcessing}
       <span class="processing-indicator">
@@ -819,25 +850,24 @@
     <div class="convert-panel">
       <div class="convert-row">
         <label class="convert-label">Format:</label>
-        <select class="convert-select" bind:value={convertFormat}>
-          <option value="mp3">{t('cutter.formatMP3')}</option>
-          <option value="ogg">{t('cutter.formatOGG')}</option>
-          <option value="aac">{t('cutter.formatAAC')}</option>
+        <select class="convert-select" bind:value={convertFormat} onchange={onFormatChange}>
+          <option value="mp3">MP3</option>
+          <option value="ogg">OGG Vorbis</option>
+          <option value="aac">AAC</option>
         </select>
       </div>
       <div class="convert-row">
-        <label class="convert-label">{t('cutter.qualitaetMedium')}:</label>
-        <select class="convert-select" bind:value={convertQuality}>
-          <option value="low">{t('cutter.qualitaetLow')}</option>
-          <option value="medium">{t('cutter.qualitaetMedium')}</option>
-          <option value="high">{t('cutter.qualitaetHigh')}</option>
-          <option value="best">{t('cutter.qualitaetBest')}</option>
+        <label class="convert-label">Bitrate:</label>
+        <select class="convert-select" bind:value={convertBitrate}>
+          {#each FORMAT_BITRATES[convertFormat] as kbps}
+            <option value={kbps}>{kbps} kbps</option>
+          {/each}
         </select>
       </div>
       <div class="convert-row">
         <label class="convert-checkbox">
           <input type="checkbox" bind:checked={convertMono} />
-          {t('cutter.auchMono')}
+          Mono
         </label>
       </div>
       <button class="cutter-btn cutter-btn-primary" onclick={handleConvert} disabled={isProcessing}>
@@ -862,22 +892,6 @@
           </button>
         </span>
       {/each}
-    </div>
-  {/if}
-
-  <!-- Bestehende Segmente -->
-  {#if existingSegments.length > 0}
-    <div class="existing-segments">
-      <span class="segments-label">{t('cutter.bestehendeSegmente')} ({existingSegments.length})</span>
-      <div class="segment-chips">
-        {#each existingSegments as seg}
-          <span class="segment-chip">
-            <span class="seg-index">{seg.segment_index + 1}</span>
-            <span class="seg-title">{seg.title || `Teil ${seg.segment_index + 1}`}</span>
-            <span class="seg-duration">{formatDuration((seg.duration_ms || 0) / 1000)}</span>
-          </span>
-        {/each}
-      </div>
     </div>
   {/if}
 
@@ -1115,63 +1129,6 @@
   .marker-remove:hover { color: var(--hifi-led-red); }
 
   /* Bestehende Segmente */
-  .existing-segments {
-    padding: 8px 12px;
-    background: var(--hifi-bg-panel);
-  }
-
-  .segments-label {
-    font-family: var(--hifi-font-display);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--hifi-text-secondary);
-    text-transform: uppercase;
-  }
-
-  .segment-chips {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-
-  .segment-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background: var(--hifi-bg-panel);
-    border-radius: var(--hifi-border-radius-sm);
-    box-shadow: var(--hifi-shadow-button);
-    font-size: 10px;
-  }
-
-  .seg-index {
-    font-family: var(--hifi-font-values);
-    font-weight: 700;
-    color: var(--hifi-accent);
-    min-width: 14px;
-    text-align: center;
-  }
-
-  .seg-title {
-    font-family: var(--hifi-font-body);
-    font-weight: 600;
-    color: var(--hifi-text-primary);
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .seg-duration {
-    font-family: var(--hifi-font-values);
-    font-weight: 700;
-    color: var(--hifi-text-secondary);
-    font-size: 9px;
-  }
-
   /* Werkzeuge-Leiste */
   .tools-bar {
     display: flex;
@@ -1180,6 +1137,22 @@
     padding: 8px 12px;
     background: var(--hifi-bg-panel);
     flex-wrap: wrap;
+  }
+
+  .segment-selection-badge {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hifi-accent);
+    padding: 2px 6px;
+    border: 1px solid var(--hifi-accent);
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .segment-selection-badge.partial {
+    color: var(--hifi-text-warning, #ff9800);
+    border-color: var(--hifi-text-warning, #ff9800);
   }
 
   .tools-label {

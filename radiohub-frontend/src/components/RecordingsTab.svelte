@@ -17,6 +17,7 @@
   let selectedSession = $state(null);
   let metadata = $state([]);
   let segments = $state([]);
+  let selectedSegmentIds = $state([]);
   let metadataLoading = $state(false);
 
   // View: aus Route abgeleitet ('details' | 'file-explorer' | 'cutter')
@@ -72,6 +73,7 @@
     setView('details');
     metadata = [];
     segments = [];
+    selectedSegmentIds = [];
     metadataLoading = true;
     try {
       const [segResult, metaResult] = await Promise.all([
@@ -81,6 +83,7 @@
           : Promise.resolve({ entries: [] })
       ]);
       segments = segResult.segments || [];
+      selectedSegmentIds = segments.map(s => s.id);
       metadata = metaResult.entries || [];
     } catch (e) {}
     metadataLoading = false;
@@ -252,6 +255,7 @@
       }
       actions.showToast(t('toast.aufnahmeGeloescht'), 'success');
       loadStats();
+      if (view === 'file-explorer') loadFileExplorer();
     } catch (e) {
       actions.showToast(t('toast.loeschenFehler'), 'error');
     }
@@ -388,6 +392,20 @@
       await api.deleteFileExplorer(file.path);
       actions.showToast(t('toast.dateiGeloescht'), 'success');
       await loadFileExplorer();
+      await loadSessions();
+      await loadStats();
+    } catch (e) {
+      actions.showToast(t('toast.loeschenFehler'), 'error');
+    }
+  }
+
+  async function handleDeleteOrphaned() {
+    const orphaned = fileExplorerFolders.filter(f => f.orphaned);
+    if (!orphaned.length) return;
+    try {
+      const result = await api.deleteOrphanedFolders();
+      actions.showToast(`${result.count} Ordner gelöscht`, 'success');
+      await loadFileExplorer();
       await loadStats();
     } catch (e) {
       actions.showToast(t('toast.loeschenFehler'), 'error');
@@ -421,8 +439,13 @@
     if (selectedSession) {
       const segResult = await api.getSegments(selectedSession.id).catch(() => ({ segments: [] }));
       segments = segResult.segments || [];
+      selectedSegmentIds = segments.map(s => s.id);
     }
     setView('details');
+  }
+
+  function handleSegmentSelectionChange(ids) {
+    selectedSegmentIds = ids;
   }
 
   function handleSidebarResize(newWidth) {
@@ -440,6 +463,8 @@
     sessions={filteredSessions}
     {stats}
     {folders}
+    {segments}
+    {selectedSegmentIds}
     selectedSessionId={selectedSession?.id || null}
     {activeSessionId}
     isRecording={appState.isRecording}
@@ -457,6 +482,7 @@
     onactivatefolder={activateFolder}
     ondeactivatefolder={deactivateFolder}
     onmovesession={moveSessionToFolder}
+    onsegmentselectionchange={handleSegmentSelectionChange}
   />
 
   <div class="recording-content">
@@ -464,6 +490,8 @@
       <CutterView
         session={selectedSession}
         {metadata}
+        {segments}
+        {selectedSegmentIds}
         onclose={handleCutterClose}
         onsplit={handleCutterSplit}
       />
@@ -474,9 +502,11 @@
         totalSize={fileExplorerTotalSize}
         totalFiles={fileExplorerTotalFiles}
         isLoading={fileExplorerLoading}
+        activeSessionPath={selectedSession?.file_path || null}
         onplay={handleFileExplorerPlay}
         ondelete={handleFileExplorerDelete}
         onrefresh={loadFileExplorer}
+        ondeleteorphaned={handleDeleteOrphaned}
         oncutter={handleCutter}
       />
     {:else if selectedSession}

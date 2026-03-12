@@ -298,27 +298,47 @@ class RadioHubAPI {
     return this.fetch(`/api/recording/sessions/${sessionId}/audio-info`);
   }
 
-  async normalizeSession(sessionId, targetLufs = -16.0) {
+  async normalizeSession(sessionId, targetLufs = -16.0, segmentIds = null) {
+    const body = { target_lufs: targetLufs };
+    if (segmentIds) body.segment_ids = segmentIds;
     return this.fetch(`/api/recording/sessions/${sessionId}/normalize`, {
       method: 'POST',
-      body: JSON.stringify({ target_lufs: targetLufs })
+      body: JSON.stringify(body)
     });
   }
 
-  async convertSession(sessionId, format, quality = 'medium', mono = false) {
+  normalizeSessionSSE(sessionId, targetLufs = -16.0, segmentIds = null) {
+    const url = `${this.baseUrl}/api/recording/sessions/${sessionId}/normalize`;
+    const body = { target_lufs: targetLufs };
+    if (segmentIds) body.segment_ids = segmentIds;
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  }
+
+  async convertSession(sessionId, format, bitrate = 192, mono = false, segmentIds = null) {
+    const body = { format, bitrate, mono };
+    if (segmentIds) body.segment_ids = segmentIds;
     return this.fetch(`/api/recording/sessions/${sessionId}/convert`, {
       method: 'POST',
-      body: JSON.stringify({ format, quality, mono })
+      body: JSON.stringify(body)
     });
   }
 
-  async toMonoSession(sessionId) {
-    return this.fetch(`/api/recording/sessions/${sessionId}/to-mono`, {
-      method: 'POST'
+  convertSessionSSE(sessionId, format, bitrate = 192, mono = false, segmentIds = null) {
+    const url = `${this.baseUrl}/api/recording/sessions/${sessionId}/convert`;
+    const body = { format, bitrate, mono };
+    if (segmentIds) body.segment_ids = segmentIds;
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
   }
 
-  async getAudioPresets() {
+  async getFormatBitrates() {
     return this.fetch('/api/recording/audio-processing/presets');
   }
 
@@ -519,6 +539,10 @@ class RadioHubAPI {
 
   async deleteFileExplorer(path) {
     return this.fetch(`/api/files/delete?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+  }
+
+  async deleteOrphanedFolders() {
+    return this.fetch('/api/files/delete-orphaned', { method: 'DELETE' });
   }
 
   getFilesZipDownloadUrl() {

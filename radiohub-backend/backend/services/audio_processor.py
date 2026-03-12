@@ -15,26 +15,11 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Qualitaets-Presets pro Format
-QUALITY_PRESETS = {
-    "mp3": {
-        "low": {"bitrate": "64k", "label": "64 kbps (Sprache)"},
-        "medium": {"bitrate": "128k", "label": "128 kbps (Standard)"},
-        "high": {"bitrate": "192k", "label": "192 kbps (Gut)"},
-        "best": {"bitrate": "320k", "label": "320 kbps (Maximal)"},
-    },
-    "ogg": {
-        "low": {"quality": "2", "label": "Q2 (~96 kbps, Sprache)"},
-        "medium": {"quality": "5", "label": "Q5 (~160 kbps, Standard)"},
-        "high": {"quality": "7", "label": "Q7 (~224 kbps, Gut)"},
-        "best": {"quality": "9", "label": "Q9 (~320 kbps, Maximal)"},
-    },
-    "aac": {
-        "low": {"bitrate": "64k", "label": "64 kbps (Sprache)"},
-        "medium": {"bitrate": "128k", "label": "128 kbps (Standard)"},
-        "high": {"bitrate": "192k", "label": "192 kbps (Gut)"},
-        "best": {"bitrate": "256k", "label": "256 kbps (Maximal)"},
-    },
+# Verfuegbare Bitraten pro Format (kbps)
+FORMAT_BITRATES = {
+    "mp3": [64, 96, 128, 160, 192, 224, 256, 320],
+    "ogg": [64, 96, 128, 160, 192, 224, 256, 320],
+    "aac": [64, 96, 128, 160, 192, 256],
 }
 
 FORMAT_EXTENSIONS = {
@@ -238,50 +223,62 @@ class AudioProcessor:
 
         return results
 
+    def _kbps_to_ogg_quality(self, kbps: int) -> str:
+        """kbps-Wert auf OGG Vorbis Quality-Stufe (0-10) umrechnen."""
+        if kbps <= 64:
+            return "1"
+        elif kbps <= 96:
+            return "2"
+        elif kbps <= 128:
+            return "3"
+        elif kbps <= 160:
+            return "5"
+        elif kbps <= 192:
+            return "6"
+        elif kbps <= 224:
+            return "7"
+        elif kbps <= 256:
+            return "8"
+        else:
+            return "9"
+
     async def convert(
         self,
         audio_path: Path,
         target_format: str,
-        quality: str = "medium",
+        bitrate_kbps: int = 192,
         mono: bool = False,
     ) -> Path:
         """
         Audio in ein anderes Format konvertieren.
-        Gibt den Pfad der neuen Datei zurueck.
+        bitrate_kbps: Ziel-Bitrate in kbps (z.B. 64, 128, 192, 256, 320).
+        Ersetzt die Originaldatei.
         """
         if target_format not in FORMAT_CODECS:
             raise ValueError(f"Unbekanntes Format: {target_format}")
 
-        preset = QUALITY_PRESETS.get(target_format, {}).get(quality)
-        if not preset:
-            raise ValueError(f"Unbekannte Qualitaet: {quality}")
-
         target_ext = FORMAT_EXTENSIONS[target_format]
-        output_path = audio_path.with_suffix(target_ext)
-
-        # Falls Ziel = Quelle und gleiches Format, temp-Datei nutzen
-        if output_path == audio_path:
-            output_path = audio_path.with_suffix(f".conv{target_ext}")
+        temp_path = audio_path.with_suffix(f".conv{target_ext}")
 
         codec = FORMAT_CODECS[target_format]
         cmd = ["ffmpeg", "-y", "-i", str(audio_path)]
 
-        # Codec + Qualitaet
+        # Codec + Bitrate
         cmd.extend(["-c:a", codec])
-        if "bitrate" in preset:
-            cmd.extend(["-b:a", preset["bitrate"]])
-        elif "quality" in preset:
-            cmd.extend(["-q:a", preset["quality"]])
+        if target_format == "ogg":
+            # OGG Vorbis nutzt Quality statt Bitrate
+            cmd.extend(["-q:a", self._kbps_to_ogg_quality(bitrate_kbps)])
+        else:
+            cmd.extend(["-b:a", f"{bitrate_kbps}k"])
 
-        # Mono
         if mono:
             cmd.extend(["-ac", "1"])
 
-        cmd.append(str(output_path))
+        cmd.append(str(temp_path))
 
         logger.info(
-            "Konvertierung: %s -> %s (%s%s)",
-            audio_path.name, target_format, quality,
+            "Konvertierung: %s -> %s (%d kbps%s)",
+            audio_path.name, target_format, bitrate_kbps,
             ", mono" if mono else ""
         )
         proc = await asyncio.create_subprocess_exec(
@@ -291,27 +288,25 @@ class AudioProcessor:
         )
         _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
 
-        if proc.returncode != 0 or not output_path.exists():
-            if output_path.exists():
-                output_path.unlink()
+        if proc.returncode != 0 or not temp_path.exists():
+            if temp_path.exists():
+                temp_path.unlink()
             logger.error(
                 "Konvertierung fehlgeschlagen: %s",
                 stderr.decode()[-500:]
             )
             raise RuntimeError("Konvertierung fehlgeschlagen")
 
-        # Falls gleicher Dateiname: Original loeschen und umbenennen
-        if output_path.name.startswith(audio_path.stem + ".conv"):
-            final_path = audio_path.with_suffix(target_ext)
-            audio_path.unlink(missing_ok=True)
-            shutil.move(str(output_path), str(final_path))
-            output_path = final_path
+        # Original ersetzen durch konvertierte Datei
+        final_path = audio_path.with_suffix(target_ext)
+        audio_path.unlink(missing_ok=True)
+        shutil.move(str(temp_path), str(final_path))
 
         logger.info(
             "Konvertierung abgeschlossen: %s (%.1f MB)",
-            output_path.name, output_path.stat().st_size / 1024 / 1024
+            final_path.name, final_path.stat().st_size / 1024 / 1024
         )
-        return output_path
+        return final_path
 
     async def to_mono(self, audio_path: Path) -> Path:
         """Stereo -> Mono konvertieren. Ersetzt die Originaldatei."""
@@ -348,9 +343,9 @@ class AudioProcessor:
         logger.info("Mono-Konvertierung abgeschlossen: %s", audio_path.name)
         return audio_path
 
-    def get_quality_presets(self) -> dict:
-        """Alle verfuegbaren Qualitaets-Presets zurueckgeben."""
-        return QUALITY_PRESETS
+    def get_format_bitrates(self) -> dict:
+        """Verfuegbare Bitraten pro Format zurueckgeben."""
+        return FORMAT_BITRATES
 
     def _get_codec_args_for_ext(self, ext: str) -> list:
         """Passende Codec-Argumente fuer eine Dateiendung."""
