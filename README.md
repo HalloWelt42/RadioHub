@@ -1,7 +1,7 @@
 # RadioHub - Digital Audio System
 
 Webbasiertes Internetradio, Podcast-Player und Audiorecorder mit HiFi-Optik.
-Konzipiert fuer Raspberry Pi, laeuft aber auf jedem System mit Python und Node.js.
+Konzipiert für Raspberry Pi, läuft aber auf jedem System mit Python und Node.js.
 
 ![RadioHub Dark & Light Mode](media/hero-dark-light.png)
 
@@ -11,22 +11,22 @@ Konzipiert fuer Raspberry Pi, laeuft aber auf jedem System mit Python und Node.j
 
 ### Tuner - Internetradio
 
-Zugriff auf tausende Sender weltweit ueber die Radio-Browser-API.
+Zugriff auf tausende Sender weltweit über die Radio-Browser-API.
 Filterbar nach Land, Bitrate, Codec und Votes. Favoritenverwaltung inklusive.
 
-![Tuner - Senderuebersicht](media/feature-tuner.png)
+![Tuner - Senderübersicht](media/feature-tuner.png)
 
 - Sendersuche mit Echtzeit-Filter und Sortierung
 - Länderliste mit Senderanzahl
 - Favoritensystem mit Drag-and-Drop-Sortierung
 - Sender-Details: Homepage, Codec, Bitrate, Stream-URL
-- Favicon-Caching fuer schnelle Darstellung
+- Favicon-Caching für schnelle Darstellung
 - Laufschrift mit aktuellem Titel (ICY-Metadata)
 
 ### Recorder - Aufnahmen
 
 Laufende Streams mitschneiden, segmentieren und bearbeiten.
-Integrierter Waveform-Cutter fuer praezises Schneiden.
+Integrierter Waveform-Cutter für präzises Schneiden.
 
 ![Recorder - Aufnahmen](media/feature-recorder.png)
 
@@ -43,37 +43,37 @@ RSS-Feeds abonnieren, Episoden streamen oder herunterladen.
 ![Podcasts](media/feature-podcasts.png)
 
 - Podcast-Suche und Abonnement-Verwaltung
-- Episoden-Filter: Alle, Ungehoert, Downloads
+- Episoden-Filter: Alle, Ungehört, Downloads
 - Streaming und Offline-Downloads
 - Automatische Feed-Aktualisierung
 
 ### Setup
 
-Umfangreiche Einstellungen fuer Darstellung, Sprache und System.
+Umfangreiche Einstellungen für Darstellung, Sprache und System.
 
 ![Setup - Einstellungen](media/feature-settings.png)
 
 - Dark Mode und Light Mode
 - 20+ Sprachen mit Flaggen-Auswahl
-- Aufnahme-Einstellungen (Format, Qualitaet, Speicherpfad)
+- Aufnahme-Einstellungen (Format, Qualität, Speicherpfad)
 - Timeshift-Buffer-Konfiguration
 - System-Informationen und Dienste-Verwaltung
 
 ### HiFi-Player
 
-Der Player orientiert sich an klassischer HiFi-Geraete-Optik:
+Der Player orientiert sich an klassischer HiFi-Geräte-Optik:
 
-- Gebuerstetes Edelstahl-Design (Brushed Metal)
+- Gebürstetes Edelstahl-Design (Brushed Metal)
 - VU-Meter mit Echtzeit-Pegelanzeige
 - Transport-Buttons im Hardware-Look
-- Drehregler fuer Lautstaerke
-- LED-Anzeigen fuer Status und Navigation
+- Drehregler für Lautstärke
+- LED-Anzeigen für Status und Navigation
 - Laufschrift-Display mit Stream-Titel
-- Tastatursteuerung (Space, Pfeiltasten, 1-4 fuer Tabs)
+- Tastatursteuerung (Space, Pfeiltasten, 1-4 für Tabs)
 
 ### Light Mode
 
-Alle Oberflaechen sind auch im hellen Design verfuegbar.
+Alle Oberflächen sind auch im hellen Design verfügbar.
 
 ![Tuner - Light Mode](media/feature-tuner-light.png)
 
