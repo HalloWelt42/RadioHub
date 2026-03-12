@@ -511,6 +511,7 @@ class RecorderManager:
         # Audio-Datei oder Session-Verzeichnis löschen
         if session.get("file_path"):
             file_path = Path(session["file_path"])
+            parent_dir = file_path.parent if file_path.is_file() else file_path.parent
             if file_path.is_dir():
                 # Segmente: Verzeichnis mit Inhalt löschen
                 for f in file_path.iterdir():
@@ -520,8 +521,17 @@ class RecorderManager:
                     file_path.rmdir()
                 except Exception:
                     pass
+                parent_dir = file_path.parent
             elif file_path.is_file():
+                parent_dir = file_path.parent
                 file_path.unlink()
+
+            # Verwaiste Cache-Dateien (.peaks) zum Session-Prefix aufräumen
+            session_prefix = file_path.stem  # z.B. "rec_20260312_184024_..."
+            if parent_dir.exists():
+                for cache_file in parent_dir.glob(f"{session_prefix}*"):
+                    if cache_file.suffix in (".peaks", ".tmp") and cache_file.is_file():
+                        cache_file.unlink(missing_ok=True)
 
         # Meta-Datei löschen
         if session.get("meta_file_path"):

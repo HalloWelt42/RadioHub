@@ -97,11 +97,13 @@ async def delete_folder(folder_id: int):
         folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
         if folder_dir.exists():
             import shutil
-            # Prüfen ob noch echte Dateien vorhanden sind (nicht nur leere Ordner)
-            has_files = any(f.is_file() for f in folder_dir.rglob("*"))
-            if has_files:
-                raise HTTPException(400, "Ordner enthält noch Dateien auf der Festplatte")
-            # Nur leere Unterordner -> komplett aufräumen
+            # Cache-Suffixe die beim Löschen ignoriert/aufgeräumt werden dürfen
+            cache_suffixes = {".peaks", ".peaks.tmp"}
+            # Prüfen ob noch echte Dateien vorhanden sind (Cache-Dateien ignorieren)
+            real_files = [f for f in folder_dir.rglob("*") if f.is_file() and f.suffix not in cache_suffixes]
+            if real_files:
+                raise HTTPException(400, f"Ordner enthält noch {len(real_files)} Dateien auf der Festplatte")
+            # Nur Cache-Dateien und leere Unterordner -> komplett aufräumen
             shutil.rmtree(folder_dir, ignore_errors=True)
 
         c.execute("DELETE FROM recording_folders WHERE id = ?", (folder_id,))
