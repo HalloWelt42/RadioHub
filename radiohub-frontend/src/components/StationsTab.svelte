@@ -879,9 +879,9 @@
                   {:else if ad.user_action === 'allowed'}
                     <span class="info-badge ad-badge-ok" title="Werbung: Manuell freigegeben">OK</span>
                   {:else if ad.confidence > 0}
-                    <span class="info-badge ad-badge-suspect" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht nach Pruefung">{Math.round(ad.confidence * 100)}% AD</span>
+                    <span class="info-badge ad-badge-suspect" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht nach Prüfung">{Math.round(ad.confidence * 100)}% AD</span>
                   {:else}
-                    <span class="info-badge ad-badge-clean" title="Werbung: 0% -- Kein Verdacht nach Pruefung">0% AD</span>
+                    <span class="info-badge ad-badge-clean" title="Werbung: 0% -- Kein Verdacht nach Prüfung">0% AD</span>
                   {/if}
                 {/if}
               </div>

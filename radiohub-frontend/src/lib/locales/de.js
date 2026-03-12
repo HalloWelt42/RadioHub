@@ -289,7 +289,7 @@ export default {
     fehler: 'Fehler',
     themeLight: 'Zu hellem Design wechseln',
     themeDark: 'Zu dunklem Design wechseln',
-    schliessen: 'SCHLIESSEN'
+    schliessen: 'SCHLIEßEN'
   },
 
   // === Toast-Meldungen ===

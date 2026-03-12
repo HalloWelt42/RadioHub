@@ -195,7 +195,7 @@ async def get_all_episodes(
         try:
             pid_list = [int(x) for x in podcast_ids.split(",")]
         except ValueError:
-            raise HTTPException(400, "Ungueltige podcast_ids")
+            raise HTTPException(400, "Ungültige podcast_ids")
 
     return await podcast_service.get_all_episodes(
         limit=limit, offset=offset, filter_status=filter_status,

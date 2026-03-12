@@ -91,7 +91,7 @@ async def delete_folder(folder_id: int):
         c.execute("SELECT COUNT(*) FROM sessions WHERE folder_id = ?", (folder_id,))
         count = c.fetchone()[0]
         if count > 0:
-            raise HTTPException(400, f"Ordner enthaelt noch {count} Aufnahmen")
+            raise HTTPException(400, f"Ordner enthält noch {count} Aufnahmen")
 
         # Physisches Verzeichnis loeschen (verwaiste leere Unterordner mit aufraeumen)
         folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
@@ -100,7 +100,7 @@ async def delete_folder(folder_id: int):
             # Pruefen ob noch echte Dateien vorhanden sind (nicht nur leere Ordner)
             has_files = any(f.is_file() for f in folder_dir.rglob("*"))
             if has_files:
-                raise HTTPException(400, "Ordner enthaelt noch Dateien auf der Festplatte")
+                raise HTTPException(400, "Ordner enthält noch Dateien auf der Festplatte")
             # Nur leere Unterordner -> komplett aufraeumen
             shutil.rmtree(folder_dir, ignore_errors=True)
 

@@ -262,7 +262,7 @@ async def delete_file(path: str = Query(..., description="Absoluter Dateipfad"))
     if not file_path.exists():
         raise HTTPException(404, "Datei nicht gefunden")
     if not file_path.is_file():
-        raise HTTPException(400, "Kein gueltiger Dateipfad")
+        raise HTTPException(400, "Kein gültiger Dateipfad")
 
     file_path.unlink()
 
@@ -316,7 +316,7 @@ def _cleanup_temp_file(path: str):
 async def download_zip(req: ZipDownloadRequest, background_tasks: BackgroundTasks):
     """Selektierte Dateien als ZIP mit optionaler M3U-Playlist"""
     if not req.files:
-        raise HTTPException(400, "Keine Dateien ausgewaehlt")
+        raise HTTPException(400, "Keine Dateien ausgewählt")
 
     # Dateien validieren
     valid_files = []
@@ -330,7 +330,7 @@ async def download_zip(req: ZipDownloadRequest, background_tasks: BackgroundTask
             valid_files.append(fp)
 
     if not valid_files:
-        raise HTTPException(404, "Keine gueltigen Dateien gefunden")
+        raise HTTPException(404, "Keine gültigen Dateien gefunden")
 
     cache_dir = get_cache_dir()
     zip_name = f"radiohub_download_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"

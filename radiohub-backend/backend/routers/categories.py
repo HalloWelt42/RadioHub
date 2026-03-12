@@ -162,7 +162,7 @@ async def update_category(cat_id: int, body: CategoryUpdate):
             updates.append("sort_order = ?")
             params.append(body.sort_order)
         if not updates:
-            raise HTTPException(status_code=400, detail="Keine Aenderungen")
+            raise HTTPException(status_code=400, detail="Keine Änderungen")
         params.append(cat_id)
         c.execute(f"UPDATE categories SET {', '.join(updates)} WHERE id = ?", params)
         if c.rowcount == 0:
