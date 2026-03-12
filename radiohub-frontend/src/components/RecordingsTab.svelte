@@ -177,7 +177,7 @@
       await loadFolders();
       actions.showToast(t('toast.ordnerGeloescht'), 'success');
     } catch (e) {
-      actions.showToast(t('toast.loeschenFehler'), 'error');
+      actions.showToast(`${t('toast.loeschenFehler')}: ${e.message}`, 'error');
     }
   }
 

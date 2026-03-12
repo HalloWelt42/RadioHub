@@ -22,7 +22,12 @@ class RadioHubAPI {
     });
     
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+      let detail = `API Error: ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body.detail) detail = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail);
+      } catch {}
+      throw new Error(detail);
     }
     
     return response.json();
