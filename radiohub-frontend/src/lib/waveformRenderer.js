@@ -6,20 +6,8 @@
  * Kein Framework -- reines JS fuer maximale Performance.
  */
 
-// Titel-Farb-Palette (HiFi-passend, Alpha 0.15 beim Zeichnen)
-const TITLE_COLORS = [
-  '#4fc3f7', '#81c784', '#ffb74d', '#e57373',
-  '#ba68c8', '#4dd0e1', '#aed581', '#ff8a65',
-  '#9575cd', '#f06292'
-];
-
-function hashTitle(title) {
-  let hash = 0;
-  for (let i = 0; i < title.length; i++) {
-    hash = ((hash << 5) - hash + title.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
+// Zwei Farben fuer alternierenden Titelwechsel
+const TITLE_COLORS = ['#4fc3f7', '#81c784'];
 
 export class WaveformRenderer {
   constructor(canvas, options = {}) {
@@ -238,12 +226,13 @@ export class WaveformRenderer {
 
   _drawTitleRegions(ctx, top, height) {
     let prevColorIdx = -1;
+    let regionIdx = 0;
     for (const region of this.titleRegions) {
       const x1 = this.timeToX(region.start);
       const x2 = this.timeToX(region.end);
-      if (x2 < 0 || x1 > this.width) continue;
+      if (x2 < 0 || x1 > this.width) { regionIdx++; continue; }
 
-      const colorIdx = hashTitle(region.title) % TITLE_COLORS.length;
+      const colorIdx = regionIdx % TITLE_COLORS.length;
 
       // Hintergrund-Streifen (~30% Alpha)
       ctx.fillStyle = TITLE_COLORS[colorIdx] + '4D';
@@ -261,6 +250,7 @@ export class WaveformRenderer {
         ctx.stroke();
       }
       prevColorIdx = colorIdx;
+      regionIdx++;
     }
   }
 

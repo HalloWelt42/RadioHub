@@ -37,10 +37,16 @@
   let dragMarkerIndex = $state(-1);
   let dragStartX = 0;
   let dragMoved = false;
-  let lastSeekTime = 0; // Timestamp des letzten Seeks (gegen Playhead-Sprung)
-  const PLAYHEAD_RATIO = 0.3; // Playhead steht bei 30% von links
-  let trimStart = $state(false); // Erstes Fragment wegschneiden
-  let trimEnd = $state(false);   // Letztes Fragment wegschneiden
+  let lastSeekTime = 0;
+  const SCROLL_THRESHOLD = 2/3; // Auto-Scroll ab letztem Drittel
+  let trimStart = $state(false);
+  let trimEnd = $state(false);
+  let autoPlayEnabled = $state(true); // Auto-Play bei Klick
+
+  // Minimap-Drag
+  let isDraggingMinimapMarker = $state(false);
+  let minimapDragIndex = $state(-1);
+  let minimapDragMoved = false;
 
   // Zoom-Stufen (Sekunden sichtbar)
   const ZOOM_LEVELS = [15, 30, 60, 120, 300, 600, 1800, 3600];
@@ -152,11 +158,13 @@
       wasPlaying = true;
       playPosition = audio.currentTime;
 
-      // Waveform scrollt mit: Playhead bleibt bei PLAYHEAD_RATIO (30%)
-      const targetStart = Math.max(0,
-        Math.min(playPosition - viewDuration * PLAYHEAD_RATIO, totalDuration - viewDuration)
-      );
-      viewStart = targetStart;
+      // Auto-Scroll: erst wenn Playhead ins letzte Drittel kommt
+      const relPos = (playPosition - viewStart) / viewDuration;
+      if (relPos > SCROLL_THRESHOLD || relPos < 0) {
+        viewStart = Math.max(0,
+          Math.min(playPosition - viewDuration * (1/3), totalDuration - viewDuration)
+        );
+      }
       loader.ensureRange(viewStart, viewStart + viewDuration);
 
       drawFrame();
@@ -367,14 +375,67 @@
     }
   }
 
-  // Minimap-Klick: Navigation
-  function handleMinimapClick(e) {
-    if (!minimapEl) return;
+  // Minimap: Navigation + Marker-Drag + Seek
+  function handleMinimapMouseDown(e) {
+    if (!minimapRenderer) return;
     const rect = minimapEl.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const clickTime = (x / rect.width) * totalDuration;
+    const y = e.clientY - rect.top;
+    const hit = minimapRenderer.hitTest(x, y);
+
+    if (hit.type === 'marker') {
+      isDraggingMinimapMarker = true;
+      minimapDragIndex = hit.index;
+      minimapDragMoved = false;
+      e.preventDefault();
+      return;
+    }
+
+    // Klick: View zentrieren + Seek
+    const clickTime = minimapRenderer.xToTime(x);
     viewStart = Math.max(0, Math.min(clickTime - viewDuration / 2, totalDuration - viewDuration));
+    seekToTime(clickTime);
     loadAndDraw();
+  }
+
+  function handleMinimapMouseMove(e) {
+    if (!minimapRenderer) return;
+    const rect = minimapEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (isDraggingMinimapMarker) {
+      minimapDragMoved = true;
+      const newTime = minimapRenderer.xToTime(x);
+      const snapped = Math.round(newTime * 10) / 10;
+      const clamped = Math.max(0, Math.min(snapped, totalDuration));
+      markers = markers.map((m, i) =>
+        i === minimapDragIndex ? { ...m, time: clamped } : m
+      );
+      minimapEl.style.cursor = 'grabbing';
+      drawFrame();
+      return;
+    }
+
+    // Cursor: grab bei Marker-Nähe
+    const hit = minimapRenderer.hitTest(x, y);
+    minimapEl.style.cursor = hit.type === 'marker' ? 'grab' : 'pointer';
+  }
+
+  function handleMinimapMouseUp() {
+    if (isDraggingMinimapMarker) {
+      const moved = minimapDragMoved;
+      const idx = minimapDragIndex;
+      isDraggingMinimapMarker = false;
+      minimapDragIndex = -1;
+      if (moved) {
+        markers = [...markers].sort((a, b) => a.time - b.time);
+      } else if (idx >= 0 && idx < markers.length) {
+        seekToTime(markers[idx].time);
+      }
+      minimapEl.style.cursor = 'pointer';
+      drawFrame();
+    }
   }
 
   // === Marker ===
@@ -402,14 +463,18 @@
   }
 
   // === Playback ===
-  function seekToTime(timeSec, autoPlay = false) {
+  function seekToTime(timeSec, forcePlay = false) {
     const clamped = Math.max(0, Math.min(timeSec, totalDuration));
+    const shouldPlay = forcePlay || autoPlayEnabled;
     lastSeekTime = Date.now();
 
-    // Falls Session nicht spielt, starten
     if (appState.currentRecording?.session_id !== session.id) {
+      if (!shouldPlay) {
+        playPosition = clamped;
+        drawFrame();
+        return;
+      }
       const playUrl = api.getSessionAudioUrl(session.id);
-
       actions.playRecording({
         path: session.file_path || '',
         name: session.station_name || session.id,
@@ -419,13 +484,11 @@
         duration: session.duration,
         playUrl
       });
-
-      // Audio-Element braucht kurz bis es bereit ist
       setTimeout(() => {
         const audio = document.querySelector('audio');
         if (audio) {
           audio.currentTime = clamped;
-          if (autoPlay) audio.play().catch(() => {});
+          audio.play().catch(() => {});
           lastSeekTime = Date.now();
         }
       }, 500);
@@ -433,7 +496,7 @@
       const audio = document.querySelector('audio');
       if (audio) {
         audio.currentTime = clamped;
-        if (autoPlay || audio.paused) audio.play().catch(() => {});
+        if (shouldPlay && audio.paused) audio.play().catch(() => {});
       }
     }
 
@@ -569,6 +632,14 @@
         <i class="fa-solid fa-arrows-left-right-to-line"></i>
       </button>
       <span class="zoom-label">{formatDuration(viewDuration)}</span>
+      <button
+        class="cutter-btn autoplay-toggle"
+        class:autoplay-active={autoPlayEnabled}
+        onclick={() => autoPlayEnabled = !autoPlayEnabled}
+        title="Auto-Play"
+      >
+        <i class="fa-solid fa-circle-play"></i>
+      </button>
     </div>
 
     <div class="toolbar-group">
@@ -660,7 +731,12 @@
   </div>
 
   <!-- Minimap -->
-  <div class="cutter-minimap-wrap" onclick={handleMinimapClick}>
+  <div class="cutter-minimap-wrap"
+    onmousedown={handleMinimapMouseDown}
+    onmousemove={handleMinimapMouseMove}
+    onmouseup={handleMinimapMouseUp}
+    onmouseleave={handleMinimapMouseUp}
+  >
     <canvas bind:this={minimapEl} class="cutter-minimap"></canvas>
   </div>
 
@@ -723,7 +799,7 @@
         <span class="marker-chip">
           <span class="marker-index">{i + 1}</span>
           <span class="marker-time">{formatDuration(marker.time)}</span>
-          <button class="marker-action" onclick={() => seekToTime(marker.time)} title={t('cutter.abspielen')}>
+          <button class="marker-action" onclick={() => seekToTime(marker.time, true)} title={t('cutter.abspielen')}>
             <i class="fa-solid fa-play"></i>
           </button>
           <button class="marker-action marker-remove" onclick={() => removeMarker(i)} title={t('common.loeschen')}>
@@ -833,6 +909,17 @@
   .cutter-btn.trim-active i {
     color: var(--hifi-led-red);
     filter: drop-shadow(0 0 4px rgba(255, 51, 51, 0.5));
+  }
+
+  .cutter-btn.autoplay-toggle {
+    padding: 0 8px;
+  }
+  .cutter-btn.autoplay-active {
+    box-shadow: var(--hifi-shadow-inset);
+  }
+  .cutter-btn.autoplay-active i {
+    color: var(--hifi-accent);
+    filter: drop-shadow(0 0 4px currentColor);
   }
 
   .zoom-label {
