@@ -282,11 +282,44 @@ class RadioHubAPI {
     return this.fetch(`/api/recording/sessions/${sessionId}/split`, { method: 'POST' });
   }
 
-  async customSplit(sessionId, cutPoints) {
+  async customSplit(sessionId, cutPoints, trimStart = false, trimEnd = false) {
     return this.fetch(`/api/recording/sessions/${sessionId}/custom-split`, {
       method: 'POST',
-      body: JSON.stringify({ cut_points: cutPoints })
+      body: JSON.stringify({
+        cut_points: cutPoints,
+        trim_start: trimStart,
+        trim_end: trimEnd
+      })
     });
+  }
+
+  // === Audio-Nachbearbeitung ===
+  async getAudioInfo(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/audio-info`);
+  }
+
+  async normalizeSession(sessionId, targetLufs = -16.0) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/normalize`, {
+      method: 'POST',
+      body: JSON.stringify({ target_lufs: targetLufs })
+    });
+  }
+
+  async convertSession(sessionId, format, quality = 'medium', mono = false) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/convert`, {
+      method: 'POST',
+      body: JSON.stringify({ format, quality, mono })
+    });
+  }
+
+  async toMonoSession(sessionId) {
+    return this.fetch(`/api/recording/sessions/${sessionId}/to-mono`, {
+      method: 'POST'
+    });
+  }
+
+  async getAudioPresets() {
+    return this.fetch('/api/recording/audio-processing/presets');
   }
 
   async getPeaksInfo(sessionId) {
@@ -315,6 +348,10 @@ class RadioHubAPI {
 
   getPlayUrl(path) {
     return `${this.baseUrl}/api/recordings/play?path=${encodeURIComponent(path)}`;
+  }
+
+  getSessionAudioUrl(sessionId) {
+    return `${this.baseUrl}/api/recording/sessions/${sessionId}/audio`;
   }
 
   // === Podcasts ===

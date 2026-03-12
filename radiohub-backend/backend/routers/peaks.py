@@ -6,7 +6,7 @@ Binary Transfer (Float32Array) fuer minimale Bandbreite.
 Unterstuetzt sowohl einzelne Audio-Dateien als auch segmentierte Sessions.
 """
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
 from pathlib import Path
 
 from ..services.recorder import rec_manager
@@ -61,6 +61,26 @@ async def _get_audio_path(session_id: str) -> Path:
         return cached
 
     raise HTTPException(404, "Audio-Datei nicht gefunden")
+
+
+@router.get("/sessions/{session_id}/audio")
+async def get_session_audio(session_id: str):
+    """Audio-Stream fuer die gesamte Session (auch segmentierte).
+
+    Liefert die zusammengebaute Audio-Datei fuer Cutter-Playback.
+    """
+    audio = await _get_audio_path(session_id)
+    ext = audio.suffix.lower()
+    content_types = {
+        ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".ogg": "audio/ogg",
+        ".opus": "audio/opus", ".aac": "audio/aac", ".wav": "audio/wav"
+    }
+    return FileResponse(
+        path=audio,
+        media_type=content_types.get(ext, "audio/mpeg"),
+        filename=f"{session_id}{ext}",
+        headers={"Accept-Ranges": "bytes"}
+    )
 
 
 @router.get("/sessions/{session_id}/peaks/info")

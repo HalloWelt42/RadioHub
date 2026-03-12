@@ -1,16 +1,38 @@
 <script>
   import { appState } from '../../lib/store.svelte.js';
+
+  let visible = $state(false);
+  let currentToast = $state(null);
+  let fadeTimer = null;
+
+  // Toast-Wechsel beobachten
+  $effect(() => {
+    const toast = appState.toast;
+    if (toast) {
+      currentToast = toast;
+      visible = true;
+      clearTimeout(fadeTimer);
+      // Fade-Out nach 2.5s starten (Animation dauert 0.4s)
+      fadeTimer = setTimeout(() => {
+        visible = false;
+      }, 2500);
+    } else {
+      visible = false;
+    }
+  });
 </script>
 
-{#if appState.toast}
-  <div 
+{#if currentToast}
+  <div
     class="hifi-toast"
-    class:success={appState.toast.type === 'success'}
-    class:error={appState.toast.type === 'error'}
-    class:warning={appState.toast.type === 'warning'}
-    class:info={appState.toast.type === 'info'}
+    class:visible
+    class:success={currentToast.type === 'success'}
+    class:error={currentToast.type === 'error'}
+    class:warning={currentToast.type === 'warning'}
+    class:info={currentToast.type === 'info'}
+    ontransitionend={() => { if (!visible) currentToast = null; }}
   >
-    {appState.toast.message}
+    {currentToast.message}
   </div>
 {/if}
 
@@ -19,7 +41,7 @@
     position: fixed;
     bottom: 140px;
     left: 50%;
-    transform: translateX(-50%) !important;
+    transform: translateX(-50%) translateY(20px);
     z-index: 5000;
     padding: 8px 20px;
     background: var(--hifi-bg-tertiary);
@@ -32,8 +54,14 @@
     color: var(--hifi-text-primary);
     min-width: 160px;
     text-align: center;
-    animation: slideUp 0.3s ease;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .hifi-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   .hifi-toast.success {
@@ -51,16 +79,5 @@
   .hifi-toast.info {
     border-color: var(--hifi-led-blue);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 8px rgba(51, 153, 255, 0.2);
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
   }
 </style>

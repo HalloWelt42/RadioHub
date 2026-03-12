@@ -33,7 +33,7 @@ export class WaveformRenderer {
     this.playheadColor = options.playheadColor || '#f44336';
     this.markerColor = options.markerColor || '#ffeb3b';
     this.selectionColor = options.selectionColor || 'rgba(255, 152, 0, 0.15)';
-    this.timelineHeight = options.timelineHeight || 22;
+    this.timelineHeight = options.timelineHeight ?? 14;
     this.markerHitRadius = 8; // px fuer Marker-Klick-Erkennung
 
     // Daten
@@ -47,6 +47,7 @@ export class WaveformRenderer {
     this.playPosition = -1;
     this.titleRegions = [];
     this.selection = null; // { start, end }
+    this.analysisZones = []; // [{ center, left, right, quality }]
 
     this._rafId = null;
   }
@@ -87,6 +88,10 @@ export class WaveformRenderer {
     this.selection = sel;
   }
 
+  setAnalysisZones(zones) {
+    this.analysisZones = zones || [];
+  }
+
   timeToX(timeSec) {
     return ((timeSec - this.viewStart) / this.viewDuration) * this.width;
   }
@@ -108,6 +113,9 @@ export class WaveformRenderer {
 
     // Titel-Farbstreifen
     this._drawTitleRegions(ctx, waveTop, waveHeight);
+
+    // Analyse-Zonen (gelb-transparente Bereiche um ICY-Marker)
+    this._drawAnalysisZones(ctx, waveTop, waveHeight);
 
     // Selection
     if (this.selection) {
@@ -212,7 +220,7 @@ export class WaveformRenderer {
     const firstTick = Math.ceil(this.viewStart / interval) * interval;
 
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '10px Barlow, sans-serif';
+    ctx.font = 'bold 9px Barlow, sans-serif';
     ctx.textAlign = 'center';
 
     for (let t = firstTick; t <= this.viewStart + this.viewDuration; t += interval) {
@@ -223,7 +231,7 @@ export class WaveformRenderer {
       ctx.strokeStyle = 'rgba(255,255,255,0.2)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x, h - 4);
+      ctx.moveTo(x, h - 3);
       ctx.lineTo(x, h);
       ctx.stroke();
 
@@ -231,22 +239,35 @@ export class WaveformRenderer {
       const min = Math.floor(t / 60);
       const sec = Math.floor(t % 60);
       const label = sec === 0 ? `${min}m` : `${min}:${String(sec).padStart(2, '0')}`;
-      ctx.fillText(label, x, h - 6);
+      ctx.fillText(label, x, h - 4);
     }
   }
 
   _drawTitleRegions(ctx, top, height) {
+    let prevColorIdx = -1;
     for (const region of this.titleRegions) {
       const x1 = this.timeToX(region.start);
       const x2 = this.timeToX(region.end);
       if (x2 < 0 || x1 > this.width) continue;
 
       const colorIdx = hashTitle(region.title) % TITLE_COLORS.length;
-      ctx.fillStyle = TITLE_COLORS[colorIdx] + '26'; // ~15% alpha
-      ctx.fillRect(
-        Math.max(0, x1), top,
-        Math.min(x2, this.width) - Math.max(0, x1), height
-      );
+
+      // Hintergrund-Streifen (~30% Alpha)
+      ctx.fillStyle = TITLE_COLORS[colorIdx] + '4D';
+      const drawX1 = Math.max(0, x1);
+      const drawX2 = Math.min(x2, this.width);
+      ctx.fillRect(drawX1, top, drawX2 - drawX1, height);
+
+      // Trennlinie am Titelwechsel
+      if (prevColorIdx !== -1 && x1 > 0 && x1 < this.width) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, top);
+        ctx.lineTo(x1, top + height);
+        ctx.stroke();
+      }
+      prevColorIdx = colorIdx;
     }
   }
 
@@ -285,11 +306,71 @@ export class WaveformRenderer {
     }
   }
 
+  _drawAnalysisZones(ctx, top, height) {
+    if (this.analysisZones.length === 0) return;
+
+    for (const zone of this.analysisZones) {
+      const leftStart = this.timeToX(zone.center - zone.left);
+      const rightEnd = this.timeToX(zone.center + zone.right);
+      const centerX = this.timeToX(zone.center);
+
+      // Sichtbarkeit pruefen
+      if (rightEnd < 0 || leftStart > this.width) continue;
+
+      const drawLeft = Math.max(0, leftStart);
+      const drawRight = Math.min(this.width, rightEnd);
+
+      // Gelb-transparenter Hintergrund
+      ctx.fillStyle = 'rgba(255, 235, 59, 0.12)';
+      ctx.fillRect(drawLeft, top, drawRight - drawLeft, height);
+
+      // Strichlinien an den Zonengrenzen
+      ctx.strokeStyle = 'rgba(255, 235, 59, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+
+      // Linke Grenze
+      if (leftStart > 0 && leftStart < this.width) {
+        ctx.beginPath();
+        ctx.moveTo(leftStart, top);
+        ctx.lineTo(leftStart, top + height);
+        ctx.stroke();
+      }
+
+      // Rechte Grenze
+      if (rightEnd > 0 && rightEnd < this.width) {
+        ctx.beginPath();
+        ctx.moveTo(rightEnd, top);
+        ctx.lineTo(rightEnd, top + height);
+        ctx.stroke();
+      }
+
+      ctx.setLineDash([]);
+
+      // Qualitaets-Indikator: kleines Symbol am oberen Rand
+      if (zone.quality != null && centerX > 10 && centerX < this.width - 10) {
+        const qColor = zone.quality >= 0.7 ? '#4caf50'
+          : zone.quality >= 0.4 ? '#ff9800'
+          : '#f44336';
+        ctx.fillStyle = qColor;
+        ctx.beginPath();
+        ctx.arc(centerX, top + 6, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Qualitaetswert in Prozent
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = 'bold 7px Barlow, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(Math.round(zone.quality * 100) + '%', centerX, top + 18);
+      }
+    }
+  }
+
   hitTest(canvasX, canvasY) {
-    // Marker pruefen
+    // Marker pruefen (gesamte Linienhoehe, nicht nur Dreieck)
     for (let i = 0; i < this.markers.length; i++) {
       const mx = this.timeToX(this.markers[i].time);
-      if (Math.abs(canvasX - mx) < this.markerHitRadius && canvasY < this.timelineHeight + 15) {
+      if (Math.abs(canvasX - mx) < this.markerHitRadius && canvasY >= this.timelineHeight) {
         return { type: 'marker', index: i, marker: this.markers[i] };
       }
     }

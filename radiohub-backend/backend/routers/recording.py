@@ -255,6 +255,8 @@ async def split_session(session_id: str):
 
 class CustomSplitRequest(BaseModel):
     cut_points: list[float]
+    trim_start: bool = False  # Erstes Segment (Anfangsfragment) loeschen
+    trim_end: bool = False    # Letztes Segment (Endfragment) loeschen
 
 
 @router.post("/sessions/{session_id}/custom-split")
@@ -322,7 +324,18 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
     if not segments:
         raise HTTPException(500, "Split fehlgeschlagen")
 
-    return {"success": True, "segments": len(segments)}
+    # Anfangs-/Endfragmente entfernen wenn gewuenscht
+    trimmed = 0
+    if req.trim_end and len(segments) > 1:
+        last_seg = segments[-1]
+        splitter.delete_segment(session_id, last_seg["id"])
+        trimmed += 1
+    if req.trim_start and len(segments) > (1 + trimmed):
+        first_seg = segments[0]
+        splitter.delete_segment(session_id, first_seg["id"])
+        trimmed += 1
+
+    return {"success": True, "segments": len(segments) - trimmed, "trimmed": trimmed}
 
 
 def _cleanup_temp_file(path: str):
