@@ -315,13 +315,18 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
             except Exception:
                 pass
 
-    segments = await splitter.split_at_times(
+    result = await splitter.split_at_times(
         session_id, audio_file, req.cut_points, duration, file_format,
         meta_entries=meta_entries
     )
 
-    if not segments:
+    if not result:
         raise HTTPException(500, "Split fehlgeschlagen")
+
+    # Frische Segmente aus DB laden (mit ID)
+    segments = splitter.get_segments(session_id)
+    if not segments:
+        raise HTTPException(500, "Segmente nach Split nicht gefunden")
 
     # Anfangs-/Endfragmente entfernen wenn gewünscht
     trimmed = 0
@@ -329,12 +334,13 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
         last_seg = segments[-1]
         splitter.delete_segment(session_id, last_seg["id"])
         trimmed += 1
-    if req.trim_start and len(segments) > (1 + trimmed):
+        segments = splitter.get_segments(session_id)
+    if req.trim_start and len(segments) > 1:
         first_seg = segments[0]
         splitter.delete_segment(session_id, first_seg["id"])
         trimmed += 1
 
-    return {"success": True, "segments": len(segments) - trimmed, "trimmed": trimmed}
+    return {"success": True, "segments": len(segments), "trimmed": trimmed}
 
 
 def _cleanup_temp_file(path: str):
