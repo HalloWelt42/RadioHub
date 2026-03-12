@@ -9,6 +9,7 @@ Ergebnisse werden in detected_bitrates gecacht.
 import asyncio
 import json
 import re
+import ssl
 from datetime import datetime
 from typing import Optional, List
 from urllib.parse import unquote, urlparse
@@ -136,12 +137,13 @@ async def check_icy_support(stream_url: str, timeout: float = 5.0) -> bool:
     """Prueft via Raw-TCP ob ein Stream ICY-Metadata unterstuetzt.
 
     Sendet HTTP GET mit Icy-MetaData:1 und prueft ob icy-metaint
-    im Response-Header vorkommt.
+    im Response-Header vorkommt. Unterstuetzt HTTP und HTTPS.
     """
     try:
         parsed = urlparse(stream_url)
         host = parsed.hostname
-        port = parsed.port or 80
+        use_tls = parsed.scheme == "https"
+        port = parsed.port or (443 if use_tls else 80)
         path = parsed.path or "/"
         if parsed.query:
             path += f"?{parsed.query}"
@@ -149,13 +151,17 @@ async def check_icy_support(stream_url: str, timeout: float = 5.0) -> bool:
         if not host:
             return False
 
+        ssl_ctx = None
+        if use_tls:
+            ssl_ctx = ssl.create_default_context()
+
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(host, port),
+            asyncio.open_connection(host, port, ssl=ssl_ctx),
             timeout=timeout
         )
 
         request = (
-            f"GET {path} HTTP/1.0\r\n"
+            f"GET {path} HTTP/1.1\r\n"
             f"Host: {host}\r\n"
             f"Icy-MetaData: 1\r\n"
             f"User-Agent: RadioHub/0.2\r\n"
@@ -189,7 +195,8 @@ async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str
     try:
         parsed = urlparse(stream_url)
         host = parsed.hostname
-        port = parsed.port or 80
+        use_tls = parsed.scheme == "https"
+        port = parsed.port or (443 if use_tls else 80)
         path = parsed.path or "/"
         if parsed.query:
             path += f"?{parsed.query}"
@@ -197,13 +204,15 @@ async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str
         if not host:
             return None
 
+        ssl_ctx = ssl.create_default_context() if use_tls else None
+
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(host, port),
+            asyncio.open_connection(host, port, ssl=ssl_ctx),
             timeout=timeout
         )
 
         request = (
-            f"GET {path} HTTP/1.0\r\n"
+            f"GET {path} HTTP/1.1\r\n"
             f"Host: {host}\r\n"
             f"Icy-MetaData: 1\r\n"
             f"User-Agent: RadioHub/0.2\r\n"
