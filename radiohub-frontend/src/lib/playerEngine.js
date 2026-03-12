@@ -306,25 +306,11 @@ export async function playRecording(recording, startTime = 0) {
     return;
   }
 
-  _audioEl.src = recording.playUrl;
+  // Media Fragment: #t=X sorgt dafür, dass der Browser direkt ab startTime lädt
+  _audioEl.src = startTime > 0
+    ? `${recording.playUrl}#t=${startTime}`
+    : recording.playUrl;
   _audioEl.load();
-
-  if (startTime > 0) {
-    // Seek vor Play: loadedmetadata abwarten, currentTime setzen, seeked abwarten, dann play
-    await new Promise(resolve => {
-      const onMeta = () => {
-        _audioEl.currentTime = startTime;
-        _audioEl.addEventListener('seeked', () => resolve(), { once: true });
-      };
-      _audioEl.addEventListener('loadedmetadata', onMeta, { once: true });
-      // Fallback
-      setTimeout(() => {
-        _audioEl.removeEventListener('loadedmetadata', onMeta);
-        _audioEl.currentTime = startTime;
-        resolve();
-      }, 3000);
-    });
-  }
 
   try {
     await _audioEl.play();
