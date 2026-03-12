@@ -1,7 +1,7 @@
 """
 RadioHub - Recording Folders Router
 
-Ordner fuer Aufnahmen: CRUD, Aktivierung, Session-Verschiebung.
+Ordner für Aufnahmen: CRUD, Aktivierung, Session-Verschiebung.
 """
 import re
 import shutil
@@ -80,7 +80,7 @@ async def create_folder(body: FolderCreate):
 
 @router.delete("/{folder_id}")
 async def delete_folder(folder_id: int):
-    """Ordner loeschen (nur wenn keine Sessions zugewiesen)."""
+    """Ordner löschen (nur wenn keine Sessions zugewiesen)."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM recording_folders WHERE id = ?", (folder_id,))
@@ -93,15 +93,15 @@ async def delete_folder(folder_id: int):
         if count > 0:
             raise HTTPException(400, f"Ordner enthält noch {count} Aufnahmen")
 
-        # Physisches Verzeichnis loeschen (verwaiste leere Unterordner mit aufraeumen)
+        # Physisches Verzeichnis löschen (verwaiste leere Unterordner mit aufräumen)
         folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
         if folder_dir.exists():
             import shutil
-            # Pruefen ob noch echte Dateien vorhanden sind (nicht nur leere Ordner)
+            # Prüfen ob noch echte Dateien vorhanden sind (nicht nur leere Ordner)
             has_files = any(f.is_file() for f in folder_dir.rglob("*"))
             if has_files:
                 raise HTTPException(400, "Ordner enthält noch Dateien auf der Festplatte")
-            # Nur leere Unterordner -> komplett aufraeumen
+            # Nur leere Unterordner -> komplett aufräumen
             shutil.rmtree(folder_dir, ignore_errors=True)
 
         c.execute("DELETE FROM recording_folders WHERE id = ?", (folder_id,))
@@ -114,7 +114,7 @@ async def delete_folder(folder_id: int):
 
 @router.put("/deactivate")
 async def deactivate_folder():
-    """Aktiven Ordner zuruecksetzen (Aufnahmen gehen in Root)."""
+    """Aktiven Ordner zurücksetzen (Aufnahmen gehen in Root)."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("UPDATE recording_folders SET is_active = 0 WHERE is_active = 1")
@@ -142,7 +142,7 @@ async def activate_folder(folder_id: int):
 
 @router.put("/{folder_id}")
 async def update_folder(folder_id: int, body: FolderUpdate):
-    """Ordner umbenennen oder Sortierung aendern."""
+    """Ordner umbenennen oder Sortierung ändern."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM recording_folders WHERE id = ?", (folder_id,))
@@ -205,7 +205,7 @@ async def update_folder(folder_id: int, body: FolderUpdate):
 
 @router.put("/move-session/{session_id}")
 async def move_session(session_id: str, body: MoveSessionRequest):
-    """Session in einen Ordner verschieben (oder zurueck zu Root)."""
+    """Session in einen Ordner verschieben (oder zurück zu Root)."""
     with db_session() as conn:
         c = conn.cursor()
 

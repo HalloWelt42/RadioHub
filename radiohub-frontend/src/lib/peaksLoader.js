@@ -1,13 +1,13 @@
 /**
  * RadioHub - Peaks Loader
  *
- * Lazy-Loading Manager fuer Waveform-Peaks.
- * Laedt 5-Minuten-Chunks vom Backend, haelt max ~30 min im Speicher.
- * Binary Transfer (Float32Array) fuer minimale Bandbreite.
+ * Lazy-Loading Manager für Waveform-Peaks.
+ * Lädt 5-Minuten-Chunks vom Backend, hält max ~30 min im Speicher.
+ * Binary Transfer (Float32Array) für minimale Bandbreite.
  */
 
 const CHUNK_DURATION = 300; // 5 Minuten pro Chunk
-const SAMPLE_RATE = 100;   // Peaks pro Sekunde (muss mit Backend uebereinstimmen)
+const SAMPLE_RATE = 100;   // Peaks pro Sekunde (muss mit Backend übereinstimmen)
 const PREFETCH_THRESHOLD = 30; // Prefetch wenn 30s vor Chunk-Rand
 
 export class PeaksLoader {
@@ -83,7 +83,7 @@ export class PeaksLoader {
   }
 
   prefetch(viewStart, viewEnd) {
-    // Prefetch naechsten Chunk wenn nah am Rand
+    // Prefetch nächsten Chunk wenn nah am Rand
     const lastChunk = this._chunkIndex(viewEnd);
     const distToEnd = this._chunkStart(lastChunk + 1) - viewEnd;
 

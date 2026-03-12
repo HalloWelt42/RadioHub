@@ -67,7 +67,7 @@ class PodcastService:
         return config_service.get("podcast_auto_refresh", True)
 
     def get_refresh_status(self) -> dict:
-        """Refresh-Timer Status fuer Frontend"""
+        """Refresh-Timer Status für Frontend"""
         interval = self.refresh_interval
         return {
             "next_refresh_at": self._next_refresh_at.isoformat() if self._next_refresh_at else None,
@@ -97,7 +97,7 @@ class PodcastService:
     # =========================================================================
 
     async def search(self, query: str, source: str = "all", limit: int = 20) -> List[PodcastSearchResult]:
-        """Sucht Podcasts ueber iTunes und/oder fyyd"""
+        """Sucht Podcasts über iTunes und/oder fyyd"""
         results = []
 
         if source in ("all", "itunes"):
@@ -249,7 +249,7 @@ class PodcastService:
             return dict(row) if row else None
 
     async def refresh_podcast(self, podcast_id: int) -> dict:
-        """Podcast-Feed neu laden, neue Episoden hinzufuegen"""
+        """Podcast-Feed neu laden, neue Episoden hinzufügen"""
         sub = await self.get_subscription(podcast_id)
         if not sub:
             return {"success": False, "error": "Podcast nicht gefunden"}
@@ -275,7 +275,7 @@ class PodcastService:
                 c.execute("UPDATE podcast_subscriptions SET categories = ? WHERE id = ?",
                           (",".join(feed_data["categories"]), podcast_id))
 
-            # Neue Episoden einfuegen
+            # Neue Episoden einfügen
             for ep in feed_data.get("episodes", []):
                 c.execute('''INSERT OR IGNORE INTO podcast_episodes
                     (podcast_id, guid, title, description, audio_url, duration,
@@ -296,7 +296,7 @@ class PodcastService:
             except Exception:
                 pass
 
-        # Auto-Download fuer neue Episoden
+        # Auto-Download für neue Episoden
         if sub.get("auto_download") and new_episodes > 0:
             try:
                 await self._auto_download_new(podcast_id)
@@ -376,7 +376,7 @@ class PodcastService:
     async def get_all_episodes(self, limit: int = 50, offset: int = 0,
                                filter_status: str = "all", sort_by: str = "published_at",
                                sort_order: str = "desc", podcast_ids: Optional[List[int]] = None) -> dict:
-        """Episoden ueber alle Abos, mit optionalem Podcast-Filter"""
+        """Episoden über alle Abos, mit optionalem Podcast-Filter"""
         allowed_sort = {"published_at", "title", "duration"}
         if sort_by not in allowed_sort:
             sort_by = "published_at"
@@ -418,9 +418,9 @@ class PodcastService:
 
     async def search_episodes(self, query: str, limit: int = 50, offset: int = 0,
                                search_in: str = "all") -> dict:
-        """Volltextsuche ueber Episoden (Titel, Beschreibung, Transkript).
+        """Volltextsuche über Episoden (Titel, Beschreibung, Transkript).
         search_in: 'all' | 'title' | 'description' | 'transcript'
-        Gibt Ergebnisse mit Kontext-Snippets zurueck.
+        Gibt Ergebnisse mit Kontext-Snippets zurück.
         """
         if not query or len(query) < 2:
             return {"episodes": [], "total": 0}
@@ -475,7 +475,7 @@ class PodcastService:
 
         desc = episode.get("description") or ""
         if q_lower in desc.lower():
-            # HTML-Tags entfernen fuer Snippet
+            # HTML-Tags entfernen für Snippet
             import re
             clean = re.sub(r'<[^>]+>', ' ', desc)
             clean = re.sub(r'\s+', ' ', clean).strip()
@@ -628,7 +628,7 @@ class PodcastService:
     async def download_episode(self, episode_id: int) -> dict:
         """Episode herunterladen"""
         if episode_id in self._downloading:
-            return {"success": False, "error": "Download laeuft bereits"}
+            return {"success": False, "error": "Download läuft bereits"}
 
         episode = await self.get_episode(episode_id)
         if not episode:
@@ -657,7 +657,7 @@ class PodcastService:
         filename = f"{episode_id}_{safe_title}{ext}"
         target = audio_dir / filename
 
-        # Speicherplatz pruefen
+        # Speicherplatz prüfen
         total, used, free = shutil.disk_usage(DATA_DIR)
         if free < 100 * 1024 * 1024:  # 100 MB Minimum
             return {"success": False, "error": "Nicht genug Speicherplatz"}
@@ -685,7 +685,7 @@ class PodcastService:
             return {"success": True, "path": str(target), "size": file_size}
 
         except Exception as e:
-            # Aufraumen bei Fehler
+            # Aufräumen bei Fehler
             if target.exists():
                 target.unlink(missing_ok=True)
             return {"success": False, "error": str(e)}
@@ -709,7 +709,7 @@ class PodcastService:
         return results
 
     async def delete_episode_download(self, episode_id: int) -> bool:
-        """Lokale Episode-Datei loeschen"""
+        """Lokale Episode-Datei löschen"""
         episode = await self.get_episode(episode_id)
         if not episode:
             return False
@@ -743,7 +743,7 @@ class PodcastService:
         return None
 
     async def _auto_download_new(self, podcast_id: int):
-        """Neue (ungehoerte, nicht heruntergeladene) Episoden automatisch laden"""
+        """Neue (ungehörte, nicht heruntergeladene) Episoden automatisch laden"""
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''SELECT id FROM podcast_episodes
@@ -755,7 +755,7 @@ class PodcastService:
             await self.download_episodes_batch(episode_ids)
 
     async def delete_played_downloads(self, podcast_id: int = None) -> int:
-        """Gehoerte Downloads loeschen (Speicher freigeben)"""
+        """Gehörte Downloads löschen (Speicher freigeben)"""
         where = "WHERE is_downloaded = 1 AND is_played = 1"
         params = []
         if podcast_id:
@@ -799,7 +799,7 @@ class PodcastService:
             if row[0]:
                 return row[0]
 
-            # Kein Transkript verfuegbar
+            # Kein Transkript verfügbar
             transcript_url = row[1]
             if not transcript_url:
                 return None
@@ -819,7 +819,7 @@ class PodcastService:
                any(x in content_type for x in ["srt", "vtt"]):
                 text = self._subtitle_to_text(text)
 
-            # HTML-Tags entfernen falls noetig
+            # HTML-Tags entfernen falls nötig
             if "<" in text and ">" in text:
                 text = re.sub(r'<[^>]+>', '', text)
 
@@ -845,7 +845,7 @@ class PodcastService:
         text_lines = []
         for line in lines:
             line = line.strip()
-            # Zeitstempel und Nummern ueberspringen
+            # Zeitstempel und Nummern überspringen
             if not line:
                 continue
             if re.match(r'^\d+$', line):
@@ -896,7 +896,7 @@ class PodcastService:
         }
 
     async def get_storage_stats(self) -> dict:
-        """Speicher-Statistiken (Kompatibilitaet)"""
+        """Speicher-Statistiken (Kompatibilität)"""
         stats = await self.get_stats()
         return {
             "disk_free_gb": stats["disk_free_gb"],
@@ -1043,14 +1043,14 @@ class PodcastService:
             return 0
 
     def _parse_pub_date(self, date_str: str) -> str:
-        """RFC 2822 pubDate nach ISO 8601 konvertieren fuer korrekte Sortierung."""
+        """RFC 2822 pubDate nach ISO 8601 konvertieren für korrekte Sortierung."""
         if not date_str:
             return ""
         try:
             dt = parsedate_to_datetime(date_str)
             return dt.strftime("%Y-%m-%dT%H:%M:%S")
         except Exception:
-            # Fallback: Original-String zurueckgeben
+            # Fallback: Original-String zurückgeben
             return date_str
 
 

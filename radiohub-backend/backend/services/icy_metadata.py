@@ -7,13 +7,13 @@ Loggt Titelwechsel mit Audio-Byte-Positionen in eine .meta.json Datei.
 ICY-Protokoll:
 - HTTP/1.0 GET mit "Icy-MetaData: 1" Header
 - Server antwortet mit icy-metaint=N Header
-- Alle N Audio-Bytes: 1 Byte Laenge, dann Laenge*16 Bytes Metadata
+- Alle N Audio-Bytes: 1 Byte Länge, dann Länge*16 Bytes Metadata
 - Metadata: "StreamTitle='Artist - Song';"
 
 Byte-Tracking:
-- Kumulative Audio-Bytes werden pro Metadata-Zyklus gezaehlt
+- Kumulative Audio-Bytes werden pro Metadata-Zyklus gezählt
 - Jeder Entry speichert 'b' (Byte-Position) + 't' (Wallclock-ms)
-- Splitter nutzt Byte-Ratio fuer praezise Schnitt-Positionen:
+- Splitter nutzt Byte-Ratio für präzise Schnitt-Positionen:
   audio_pos = (entry_bytes / total_bytes) * total_duration
 """
 import asyncio
@@ -37,7 +37,7 @@ class IcyMetadataLogger:
         self._metaint: int = 0
 
     async def run(self, stream_url: str, output_path: Path, timeout: float = 10.0):
-        """Startet ICY-Metadata-Logging. Laeuft bis stop() aufgerufen wird."""
+        """Startet ICY-Metadata-Logging. Läuft bis stop() aufgerufen wird."""
         self.entries = []
         self._running = True
         self._last_title = ""
@@ -52,7 +52,7 @@ class IcyMetadataLogger:
             path += f"?{parsed.query}"
 
         if not host:
-            print(f"  ICY: Ungueltige URL: {stream_url}")
+            print(f"  ICY: Ungültige URL: {stream_url}")
             return
 
         try:
@@ -81,12 +81,12 @@ class IcyMetadataLogger:
             # Response-Header lesen
             metaint = await self._read_headers()
             if not metaint:
-                print("  ICY: Kein icy-metaint Header, Stream unterstuetzt kein ICY")
+                print("  ICY: Kein icy-metaint Header, Stream unterstützt kein ICY")
                 self._close()
                 return
 
             self._metaint = metaint
-            # Start-Time NACH Connection+Headers (naeher am Audio-Start)
+            # Start-Time NACH Connection+Headers (näher am Audio-Start)
             self._start_time = asyncio.get_event_loop().time()
 
             print(f"  ICY: Metadata-Interval: {metaint} Bytes")
@@ -104,7 +104,7 @@ class IcyMetadataLogger:
             self._close()
 
     async def _read_headers(self) -> int:
-        """Liest HTTP-Response-Header und gibt icy-metaint zurueck (0 wenn nicht vorhanden)."""
+        """Liest HTTP-Response-Header und gibt icy-metaint zurück (0 wenn nicht vorhanden)."""
         metaint = 0
         while True:
             line = await asyncio.wait_for(self._reader.readline(), timeout=10)
@@ -125,7 +125,7 @@ class IcyMetadataLogger:
     async def _metadata_loop(self, metaint: int, output_path: Path):
         """Liest Audio-Chunks und extrahiert Metadata mit Byte-Tracking."""
         while self._running:
-            # Audio-Bytes ueberspringen (exakt metaint Bytes pro Zyklus)
+            # Audio-Bytes überspringen (exakt metaint Bytes pro Zyklus)
             remaining = metaint
             while remaining > 0:
                 chunk_size = min(remaining, 8192)
@@ -141,7 +141,7 @@ class IcyMetadataLogger:
             # Kumulative Audio-Bytes nach diesem Chunk
             self._cumulative_bytes += metaint
 
-            # Metadata-Laenge lesen (1 Byte)
+            # Metadata-Länge lesen (1 Byte)
             length_byte = await asyncio.wait_for(
                 self._reader.readexactly(1),
                 timeout=10
@@ -198,7 +198,7 @@ class IcyMetadataLogger:
             print(f"  ICY: Speichern fehlgeschlagen: {e}")
 
     def _close(self):
-        """Schliesst die TCP-Verbindung."""
+        """Schließt die TCP-Verbindung."""
         self._running = False
         if self._writer:
             try:

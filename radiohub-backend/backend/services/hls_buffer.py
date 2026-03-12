@@ -364,12 +364,12 @@ class HLSBufferService:
                     (uuid,)
                 )
                 if c.rowcount > 0:
-                    print(f"  ICY-Flag in DB korrigiert fuer {uuid[:12]}")
+                    print(f"  ICY-Flag in DB korrigiert für {uuid[:12]}")
         except Exception as e:
             print(f"  ICY-Flag Update fehlgeschlagen: {e}")
 
     def get_icy_entries(self) -> list[dict]:
-        """Aktuelle ICY-Metadata-Eintraege aus Memory."""
+        """Aktuelle ICY-Metadata-Einträge aus Memory."""
         if self._icy_logger:
             return list(self._icy_logger.entries)
         return []

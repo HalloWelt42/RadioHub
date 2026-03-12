@@ -39,11 +39,11 @@ class SessionAssignmentsRequest(BaseModel):
     ids: List[str]
 
 
-# === Batch-Endpoints MUESSEN vor /{cat_id} stehen (FastAPI Routing) ===
+# === Batch-Endpoints MÜSSEN vor /{cat_id} stehen (FastAPI Routing) ===
 
 @router.post("/station-assignments")
 async def get_station_assignments(body: StationAssignmentsRequest):
-    """Kategorie-Zuordnungen fuer eine Liste von Station-UUIDs."""
+    """Kategorie-Zuordnungen für eine Liste von Station-UUIDs."""
     if not body.uuids:
         return {"assignments": {}}
     with db_session() as conn:
@@ -64,7 +64,7 @@ async def get_station_assignments(body: StationAssignmentsRequest):
 
 @router.post("/podcast-assignments")
 async def get_podcast_assignments(body: PodcastAssignmentsRequest):
-    """Kategorie-Zuordnungen fuer eine Liste von Podcast-IDs."""
+    """Kategorie-Zuordnungen für eine Liste von Podcast-IDs."""
     if not body.ids:
         return {"assignments": {}}
     with db_session() as conn:
@@ -85,7 +85,7 @@ async def get_podcast_assignments(body: PodcastAssignmentsRequest):
 
 @router.post("/session-assignments")
 async def get_session_assignments(body: SessionAssignmentsRequest):
-    """Kategorie-Zuordnungen fuer eine Liste von Session-IDs."""
+    """Kategorie-Zuordnungen für eine Liste von Session-IDs."""
     if not body.ids:
         return {"assignments": {}}
     with db_session() as conn:
@@ -172,7 +172,7 @@ async def update_category(cat_id: int, body: CategoryUpdate):
 
 @router.delete("/{cat_id}")
 async def delete_category(cat_id: int):
-    """Kategorie loeschen (CASCADE entfernt Zuordnungen)."""
+    """Kategorie löschen (CASCADE entfernt Zuordnungen)."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("DELETE FROM categories WHERE id = ?", (cat_id,))

@@ -61,11 +61,11 @@ class PeaksGenerator:
             raw = struct.pack(f"<{len(normalized)}f", *normalized)
 
             peaks_path.write_bytes(raw)
-            print(f"  Peaks: {num_samples} Samples generiert fuer {audio_path.name}")
+            print(f"  Peaks: {num_samples} Samples generiert für {audio_path.name}")
             return peaks_path
 
         except asyncio.TimeoutError:
-            print(f"  Peaks: Timeout fuer {audio_path.name}")
+            print(f"  Peaks: Timeout für {audio_path.name}")
             return None
         except Exception as e:
             print(f"  Peaks: Fehler: {e}")
@@ -73,7 +73,7 @@ class PeaksGenerator:
 
     def get_peaks_chunk(self, peaks_path: Path, start_sec: float,
                         duration_sec: float) -> bytes:
-        """Liefert Peaks-Daten fuer einen Zeitbereich als raw bytes.
+        """Liefert Peaks-Daten für einen Zeitbereich als raw bytes.
 
         Returns: Raw float32 bytes (Little Endian).
         """
@@ -102,14 +102,14 @@ class PeaksGenerator:
             return f.read(length)
 
     def get_total_duration(self, peaks_path: Path) -> float:
-        """Gesamtdauer in Sekunden basierend auf Peaks-Dateigroesse."""
+        """Gesamtdauer in Sekunden basierend auf Peaks-Dateigröße."""
         if not peaks_path.exists():
             return 0.0
         total_samples = peaks_path.stat().st_size // BYTES_PER_SAMPLE
         return total_samples / SAMPLE_RATE
 
     def has_cache(self, audio_path: Path) -> bool:
-        """Prueft ob Peaks-Cache existiert."""
+        """Prüft ob Peaks-Cache existiert."""
         peaks_path = audio_path.with_suffix(".peaks")
         return peaks_path.exists() and peaks_path.stat().st_size > 0
 

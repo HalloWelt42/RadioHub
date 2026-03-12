@@ -59,7 +59,7 @@ async def cache_filters():
 
 @router.get("/cache/tags")
 async def cache_tags(limit: int = Query(100)):
-    """Erweiterte Tag-Liste mit Counts (fuer Kategorie-Verwaltung)."""
+    """Erweiterte Tag-Liste mit Counts (für Kategorie-Verwaltung)."""
     tags = cache_service.get_tags(limit)
     return {"tags": tags}
 
@@ -95,7 +95,7 @@ async def search_stations(req: StationSearchRequest):
             det = detected.get(s.get("uuid"))
             if det:
                 if det["bitrate"] > 0:
-                    # Nur ueberschreiben wenn Original-Wert fehlt oder 0
+                    # Nur überschreiben wenn Original-Wert fehlt oder 0
                     if not s.get("bitrate") or s["bitrate"] == 0:
                         s["bitrate"] = det["bitrate"]
                     if det.get("codec") and (not s.get("codec") or s["codec"] == ""):
@@ -180,10 +180,10 @@ async def get_bitrates(req: VerifyBitrateRequest):
 
 @router.get("/stations/{uuid}/now-playing")
 async def now_playing(uuid: str):
-    """Holt aktuellen ICY-StreamTitle fuer einen Sender.
+    """Holt aktuellen ICY-StreamTitle für einen Sender.
 
-    One-Shot: Verbindet, liest ersten Metadata-Block, schliesst.
-    Fuer Polling im Frontend (alle ~15s).
+    One-Shot: Verbindet, liest ersten Metadata-Block, schließt.
+    Für Polling im Frontend (alle ~15s).
     """
     from ..database import db_session
 
@@ -212,9 +212,9 @@ class IcyQualityRequest(BaseModel):
 
 @router.put("/stations/{uuid}/icy-quality")
 async def set_station_icy_quality(uuid: str, req: IcyQualityRequest):
-    """Setzt die ICY-Cut-Qualitaetsbewertung fuer einen Sender.
+    """Setzt die ICY-Cut-Qualitätsbewertung für einen Sender.
 
-    quality: 'good' = genaue Schnitte, 'poor' = ungenaue Schnitte, null = zuruecksetzen
+    quality: 'good' = genaue Schnitte, 'poor' = ungenaue Schnitte, null = zurücksetzen
     """
     if req.quality and req.quality not in ('good', 'poor'):
         return {"error": "quality muss 'good', 'poor' oder null sein"}

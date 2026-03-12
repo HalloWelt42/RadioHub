@@ -1,16 +1,16 @@
 """
 RadioHub Storage Zone Manager v1.0.0
 
-Verwaltet konfigurierbare Speicher-Zonen fuer verschiedene Datentypen.
-Ermoeglicht es, Datenbank, Cache, Aufnahmen und Podcasts auf
+Verwaltet konfigurierbare Speicher-Zonen für verschiedene Datentypen.
+Ermöglicht es, Datenbank, Cache, Aufnahmen und Podcasts auf
 verschiedene Laufwerke/Pfade zu verteilen.
 
 Konfiguration: storage.json
-Prioritaet: STORAGE_CONFIG Env > {DATA_PATH}/storage.json > Defaults
+Priorität: STORAGE_CONFIG Env > {DATA_PATH}/storage.json > Defaults
 
 Zonen:
   database   - SQLite-Datei (SSD empfohlen)
-  cache      - HLS-Buffer, temporaere Dateien (SSD empfohlen)
+  cache      - HLS-Buffer, temporäre Dateien (SSD empfohlen)
   recordings - Radio-Aufnahmen (HDD reicht)
   podcasts   - Podcast-Downloads + Cover (HDD reicht)
   config     - App-Einstellungen (SSD empfohlen)
@@ -34,7 +34,7 @@ _DEFAULT_ZONE_SUBDIRS = {
     "config": "",                       # App-Einstellungen (in DATA_DIR)
 }
 
-# Zone-Beschreibungen fuer die UI
+# Zone-Beschreibungen für die UI
 ZONE_INFO = {
     "database": {
         "label": "Datenbank",
@@ -44,13 +44,13 @@ ZONE_INFO = {
     },
     "cache": {
         "label": "Cache / Buffer",
-        "description": "HLS-Buffer, temporaere Dateien",
+        "description": "HLS-Buffer, temporäre Dateien",
         "icon": "fa-bolt",
         "recommended": "SSD",
     },
     "recordings": {
         "label": "Aufnahmen",
-        "description": "Radio-Aufnahmen, grosse Dateien",
+        "description": "Radio-Aufnahmen, große Dateien",
         "icon": "fa-record-vinyl",
         "recommended": "HDD",
     },
@@ -62,7 +62,7 @@ ZONE_INFO = {
     },
     "config": {
         "label": "Konfiguration",
-        "description": "App-Einstellungen und Praeferenzen",
+        "description": "App-Einstellungen und Präferenzen",
         "icon": "fa-gear",
         "recommended": "SSD",
     },
@@ -72,7 +72,7 @@ _storage_config: Optional[dict] = None
 
 
 def _find_config_path() -> Optional[Path]:
-    """Sucht storage.json in Prioritaetsreihenfolge"""
+    """Sucht storage.json in Prioritätsreihenfolge"""
     # 1. STORAGE_CONFIG Env-Variable
     env_path = os.getenv("STORAGE_CONFIG")
     if env_path:
@@ -87,7 +87,7 @@ def _find_config_path() -> Optional[Path]:
 
 
 def _load_or_create() -> dict:
-    """Laedt oder erstellt Storage-Konfiguration"""
+    """Lädt oder erstellt Storage-Konfiguration"""
     global _storage_config
     if _storage_config is not None:
         return _storage_config
@@ -97,7 +97,7 @@ def _load_or_create() -> dict:
     if config_path:
         with open(config_path, "r") as f:
             _storage_config = json.load(f)
-        # Fehlende Zonen mit Defaults ergaenzen
+        # Fehlende Zonen mit Defaults ergänzen
         zones = _storage_config.setdefault("zones", {})
         for zone, subdir in _DEFAULT_ZONE_SUBDIRS.items():
             if zone not in zones:
@@ -138,11 +138,11 @@ def _save_config():
 
 
 # ============================================================
-#  Oeffentliche API
+#  Öffentliche API
 # ============================================================
 
 def get_zone_path(zone: str) -> Path:
-    """Gibt den Pfad einer Storage-Zone zurueck.
+    """Gibt den Pfad einer Storage-Zone zurück.
 
     Args:
         zone: Name der Zone (database, cache, recordings, podcasts, config)
@@ -188,7 +188,7 @@ def get_all_zones() -> dict:
             data["free_bytes"] = free
             data["total_bytes"] = total
 
-            # Dateien in Zone zaehlen
+            # Dateien in Zone zählen
             zone_size = 0
             zone_files = 0
             for f in path.rglob("*"):
@@ -209,7 +209,7 @@ def get_all_zones() -> dict:
 
 
 def update_zone(zone: str, new_path: str) -> dict:
-    """Zone-Pfad aendern.
+    """Zone-Pfad ändern.
 
     WICHTIG: Verschiebt keine Daten! Der alte Pfad bleibt erhalten.
     Der Nutzer muss Daten selbst verschieben oder den
@@ -245,10 +245,10 @@ def update_zone(zone: str, new_path: str) -> dict:
 
 
 def validate_path(path: str) -> dict:
-    """Prueft ob ein Pfad als Zone-Speicher geeignet ist.
+    """Prüft ob ein Pfad als Zone-Speicher geeignet ist.
 
     Args:
-        path: Zu pruefender Pfad
+        path: Zu prüfender Pfad
 
     Returns:
         Dict mit exists, writable, free_bytes, total_bytes, error
@@ -276,12 +276,12 @@ def validate_path(path: str) -> dict:
 
 
 def get_data_dir() -> Path:
-    """Basis-Datenverzeichnis (fuer Abwaertskompatibilitaet)."""
+    """Basis-Datenverzeichnis (für Abwärtskompatibilität)."""
     return _DATA_DIR
 
 
 def reload():
-    """Konfiguration neu laden (z.B. nach API-Aenderung)."""
+    """Konfiguration neu laden (z.B. nach API-Änderung)."""
     global _storage_config
     _storage_config = None
     _load_or_create()

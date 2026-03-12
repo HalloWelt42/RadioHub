@@ -283,7 +283,7 @@
         loadAllEpisodes();
       }
       actions.showToast(t('podcasts.alleFeedsAktualisiert'), 'success');
-      await loadRefreshStatus();  // Timer zuruecksetzen
+      await loadRefreshStatus();  // Timer zurücksetzen
     } catch (e) {
       actions.showToast(t('podcasts.aktualisiereFehler'), 'error');
     }

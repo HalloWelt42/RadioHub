@@ -1,8 +1,8 @@
 """
 RadioHub Storage API Router
 
-Endpoints fuer Storage-Zone-Verwaltung.
-Ermoeglicht Frontend-Konfiguration der Speicherpfade.
+Endpoints für Storage-Zone-Verwaltung.
+Ermöglicht Frontend-Konfiguration der Speicherpfade.
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -33,11 +33,11 @@ async def list_zones():
 
 @router.put("/zones/{zone}")
 async def update_zone_path(zone: str, req: ZoneUpdateRequest):
-    """Pfad einer Storage-Zone aendern.
+    """Pfad einer Storage-Zone ändern.
     Verschiebt keine Daten - nur der Pfad wird aktualisiert."""
     try:
         result = update_zone(zone, req.path)
-        # Konfiguration neu laden damit Aenderungen wirksam werden
+        # Konfiguration neu laden damit Änderungen wirksam werden
         reload_storage()
         return result
     except ValueError as e:
@@ -50,7 +50,7 @@ async def update_zone_path(zone: str, req: ZoneUpdateRequest):
 
 @router.get("/validate")
 async def validate_storage_path(path: str):
-    """Pfad pruefen (existiert, beschreibbar, Speicherplatz)"""
+    """Pfad prüfen (existiert, beschreibbar, Speicherplatz)"""
     if not path:
         raise HTTPException(status_code=400, detail="Pfad darf nicht leer sein")
     try:

@@ -1,12 +1,12 @@
 """
 RadioHub - Ad Detector (Phase 2)
 
-Werbeerkennung fuer Radiosender:
+Werbeerkennung für Radiosender:
 - Schicht 1: URL/Domain Pattern-Matching (kein I/O)
 - Schicht 2: HTTP-Header-Analyse (1 HEAD-Request)
 
 Ergebnisse werden in station_ad_status + ad_detections_log gespeichert.
-KEIN automatisches Blocken -- User entscheidet ueber /api/ad-detection/decide.
+KEIN automatisches Blocken -- User entscheidet über /api/ad-detection/decide.
 """
 import json
 import re
@@ -187,7 +187,7 @@ def check_url(url: str) -> list:
 
 
 def check_domain_blacklist(url: str) -> list:
-    """Prueft URL gegen domain_blacklist Tabelle in der DB."""
+    """Prüft URL gegen domain_blacklist Tabelle in der DB."""
     domain = _extract_domain(url)
     if not domain:
         return []
@@ -298,7 +298,7 @@ async def analyze_headers(url: str) -> list:
                         'detail': f'{redirect_count} Redirects'
                     })
 
-                # Redirects ueber Ad-Domains?
+                # Redirects über Ad-Domains?
                 for r in resp.history:
                     rd = _extract_domain(str(r.url))
                     for ad_d in AD_NETWORK_DOMAINS:
@@ -306,7 +306,7 @@ async def analyze_headers(url: str) -> list:
                             results.append({
                                 'reason': 'REDIRECT_AD_INTERMEDIATE',
                                 'confidence': METHOD_WEIGHTS['REDIRECT_AD_INTERMEDIATE'],
-                                'detail': f'Redirect ueber Ad-Domain: {rd}'
+                                'detail': f'Redirect über Ad-Domain: {rd}'
                             })
                             break
                     if results and results[-1]['reason'] == 'REDIRECT_AD_INTERMEDIATE':
@@ -322,7 +322,7 @@ async def analyze_headers(url: str) -> list:
 def calculate_confidence(detections: list) -> float:
     """
     Noisy-OR-Kombination: Mehrere schwache Signale ergeben zusammen starkes Signal.
-    Formel: P(ad) = 1 - Pi(1 - p_i) fuer alle p_i
+    Formel: P(ad) = 1 - Pi(1 - p_i) für alle p_i
     """
     if not detections:
         return 0.0
@@ -337,7 +337,7 @@ def determine_block_status(confidence: float, reasons: list, manually_set: bool 
     """
     Bewertet Konfidenz und gibt Empfehlung (KEIN automatisches Blocken).
     Returns: {status, action}
-    action ist nur eine Empfehlung -- User entscheidet ueber /decide.
+    action ist nur eine Empfehlung -- User entscheidet über /decide.
     """
     if manually_set:
         return {'status': 'manual_blocked', 'action': 'recommend_block'}
@@ -359,7 +359,7 @@ def determine_block_status(confidence: float, reasons: list, manually_set: bool 
 # === Config-Hilfsfunktion ===
 
 def _get_ad_config() -> dict:
-    """Laedt Ad-Detection-Einstellungen aus Config-Tabelle."""
+    """Lädt Ad-Detection-Einstellungen aus Config-Tabelle."""
     defaults = {
         'ad_detection_enabled': True,
         'ad_detection_methods': ['url_check', 'header_check'],
@@ -388,7 +388,7 @@ def _get_ad_config() -> dict:
 
 async def check_station_ads(uuid: str, stream_url: str, name: Optional[str] = None) -> dict:
     """
-    Orchestrator: Prueft einen Sender auf Werbung.
+    Orchestrator: Prüft einen Sender auf Werbung.
     - Schicht 1: URL-Pattern (kein I/O)
     - Schicht 2: HTTP-Header-Analyse (1 HEAD-Request)
     - Berechnet Konfidenz, schreibt station_ad_status + ad_detections_log
@@ -432,11 +432,11 @@ async def check_station_ads(uuid: str, stream_url: str, name: Optional[str] = No
     with db_session() as conn:
         c = conn.cursor()
 
-        # Vorherigen Status pruefen
+        # Vorherigen Status prüfen
         c.execute("SELECT manually_set, check_count, ad_detections, user_action FROM station_ad_status WHERE station_uuid = ?", (uuid,))
         existing = c.fetchone()
 
-        # User hat bereits entschieden (blocked oder allowed) -> nur check_count erhoehen
+        # User hat bereits entschieden (blocked oder allowed) -> nur check_count erhöhen
         if existing and existing[3] in ('blocked', 'allowed'):
             c.execute(
                 "UPDATE station_ad_status SET last_checked = ?, check_count = check_count + 1, confidence = ?, reasons_json = ? WHERE station_uuid = ?",
@@ -451,7 +451,7 @@ async def check_station_ads(uuid: str, stream_url: str, name: Optional[str] = No
                 'message': f'User hat bereits entschieden: {existing[3]}'
             }
 
-        # Manuell gesetzt -> nicht ueberschreiben
+        # Manuell gesetzt -> nicht überschreiben
         if existing and existing[0]:
             c.execute(
                 "UPDATE station_ad_status SET last_checked = ?, check_count = check_count + 1 WHERE station_uuid = ?",
@@ -613,14 +613,14 @@ def report_ad_mark_only(uuid: str, stream_url: str, name: str, note: Optional[st
 
 def mark_false_positive(uuid: str) -> dict:
     """
-    Fehlalarm markieren: Setzt Status auf clean, entfernt ad:-Eintraege aus blocklist.
+    Fehlalarm markieren: Setzt Status auf clean, entfernt ad:-Einträge aus blocklist.
     """
     now = datetime.now().isoformat()
 
     with db_session() as conn:
         c = conn.cursor()
 
-        # Status zuruecksetzen
+        # Status zurücksetzen
         c.execute("""
             UPDATE station_ad_status
             SET block_status = 'clean', confidence = 0.0,
@@ -633,13 +633,13 @@ def mark_false_positive(uuid: str) -> dict:
 
         updated = c.rowcount
 
-        # Log-Eintraege als resolved markieren
+        # Log-Einträge als resolved markieren
         c.execute(
             "UPDATE ad_detections_log SET resolved = 1 WHERE station_uuid = ? AND resolved = 0",
             (uuid,)
         )
 
-        # Aus blocklist entfernen wo reason mit "ad:" anfaengt
+        # Aus blocklist entfernen wo reason mit "ad:" anfängt
         c.execute(
             "DELETE FROM blocklist WHERE uuid = ? AND reason LIKE 'ad:%'",
             (uuid,)
@@ -656,7 +656,7 @@ def mark_false_positive(uuid: str) -> dict:
 
 
 def get_ad_status(uuid: str) -> Optional[dict]:
-    """Holt Ad-Status fuer einen einzelnen Sender."""
+    """Holt Ad-Status für einen einzelnen Sender."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM station_ad_status WHERE station_uuid = ?", (uuid,))
@@ -667,7 +667,7 @@ def get_ad_status(uuid: str) -> Optional[dict]:
 
 
 def get_ad_summary() -> dict:
-    """Uebersicht: Wie viele Sender in welchem Status."""
+    """Übersicht: Wie viele Sender in welchem Status."""
     with db_session() as conn:
         c = conn.cursor()
         c.execute("""
@@ -732,7 +732,7 @@ def get_suspects(min_confidence: float = 0.0) -> list:
 def decide_station_ad(uuid: str, action: str) -> dict:
     """
     User entscheidet: 'block' oder 'allow'.
-    - block: In blocklist mit category='ad', Gruende aus station_ad_status
+    - block: In blocklist mit category='ad', Gründe aus station_ad_status
     - allow: user_action='allowed', wird nicht mehr gefragt
     """
     now = datetime.now().isoformat()
@@ -749,7 +749,7 @@ def decide_station_ad(uuid: str, action: str) -> dict:
         stream_url, reasons_json, confidence = row[0], row[1], row[2]
 
         if action == 'block':
-            # Reason aus Detection-Gruenden bauen
+            # Reason aus Detection-Gründen bauen
             reasons = json.loads(reasons_json) if reasons_json else []
             primary_reason = f"ad:{reasons[0]['reason']}" if reasons else 'ad:USER_CONFIRMED'
 
@@ -784,8 +784,8 @@ def decide_station_ad(uuid: str, action: str) -> dict:
 
 def seed_domain_blacklist():
     """
-    Befuellt domain_blacklist mit Builtin-Domains beim ersten Start.
-    Wird nur einmal ausgefuehrt (idempotent via INSERT OR IGNORE).
+    Befüllt domain_blacklist mit Builtin-Domains beim ersten Start.
+    Wird nur einmal ausgeführt (idempotent via INSERT OR IGNORE).
     """
     now = datetime.now().isoformat()
 

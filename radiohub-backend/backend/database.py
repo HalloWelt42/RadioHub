@@ -179,10 +179,10 @@ def init_db():
         blocked_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
-    # === Migration: category-Spalte hinzufuegen (idempotent) ===
+    # === Migration: category-Spalte hinzufügen (idempotent) ===
     try:
         c.execute("ALTER TABLE blocklist ADD COLUMN category TEXT DEFAULT 'manual'")
-        # Bestehende Eintraege migrieren
+        # Bestehende Einträge migrieren
         c.execute("UPDATE blocklist SET category = 'ad' WHERE reason LIKE 'ad:%'")
         ad_count = c.rowcount
         c.execute("""UPDATE blocklist SET category = 'filter'
@@ -256,7 +256,7 @@ def init_db():
         added_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
-    # === Recording Folders (Ordner fuer Aufnahmen) ===
+    # === Recording Folders (Ordner für Aufnahmen) ===
     c.execute('''CREATE TABLE IF NOT EXISTS recording_folders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
@@ -376,7 +376,7 @@ def init_db():
         except Exception:
             pass
 
-    # === Indices fuer Performance ===
+    # === Indices für Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_name ON stations(name)")

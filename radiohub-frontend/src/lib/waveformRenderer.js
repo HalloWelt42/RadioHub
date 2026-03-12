@@ -1,12 +1,12 @@
 /**
  * RadioHub - Waveform Renderer
  *
- * Canvas-basierter Waveform-Renderer fuer den Cutter.
+ * Canvas-basierter Waveform-Renderer für den Cutter.
  * Zeichnet Peaks, ICY-Titel-Farbstreifen, Marker, Playback-Linie.
- * Kein Framework -- reines JS fuer maximale Performance.
+ * Kein Framework -- reines JS für maximale Performance.
  */
 
-// Zwei Farben fuer alternierenden Titelwechsel
+// Zwei Farben für alternierenden Titelwechsel
 const TITLE_COLORS = ['#4fc3f7', '#81c784'];
 
 export class WaveformRenderer {
@@ -22,7 +22,7 @@ export class WaveformRenderer {
     this.markerColor = options.markerColor || '#ffeb3b';
     this.selectionColor = options.selectionColor || 'rgba(255, 152, 0, 0.15)';
     this.timelineHeight = options.timelineHeight ?? 14;
-    this.markerHitRadius = 8; // px fuer Marker-Klick-Erkennung
+    this.markerHitRadius = 8; // px für Marker-Klick-Erkennung
 
     // Daten
     this.peaks = new Float32Array(0);
@@ -141,7 +141,7 @@ export class WaveformRenderer {
     if (this.peaks.length === 0) return;
 
     const centerY = top + height / 2;
-    const halfH = height / 2 * 0.9; // 90% der halben Hoehe nutzen
+    const halfH = height / 2 * 0.9; // 90% der halben Höhe nutzen
 
     const viewStartSample = Math.floor((this.viewStart - this.peaksStart) * this.sampleRate);
     const viewEndSample = viewStartSample + Math.floor(this.viewDuration * this.sampleRate);
@@ -290,7 +290,7 @@ export class WaveformRenderer {
   }
 
   hitTest(canvasX, canvasY) {
-    // Marker pruefen (gesamte Linienhoehe, nicht nur Dreieck)
+    // Marker prüfen (gesamte Linienhöhe, nicht nur Dreieck)
     for (let i = 0; i < this.markers.length; i++) {
       const mx = this.timeToX(this.markers[i].time);
       if (Math.abs(canvasX - mx) < this.markerHitRadius && canvasY >= this.timelineHeight) {

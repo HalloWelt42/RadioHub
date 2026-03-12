@@ -403,7 +403,7 @@ export async function stop() {
     _stopPodcastPositionSave();
   }
 
-  // 5. State zuruecksetzen
+  // 5. State zurücksetzen
   _appState.isPlaying = false;
   _appState.isPaused = false;
   _appState.hlsActive = false;
@@ -467,7 +467,7 @@ export function seek(position) {
     }
     _lastSeekPosition = position;
 
-    // Tatsaechlicher Audio-Seek nur wenn seekable Range vorhanden
+    // Tatsächlicher Audio-Seek nur wenn seekable Range vorhanden
     if (_audioEl.seekable.length > 0) {
       if (targetSeg >= lastSeg - 1) {
         const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
@@ -667,7 +667,7 @@ export async function restartHLS() {
 }
 
 // ============================================================
-//  Recording (modus-abhaengig: Direct-REC vs HLS-REC)
+//  Recording (modus-abhängig: Direct-REC vs HLS-REC)
 // ============================================================
 
 /**
@@ -767,7 +767,7 @@ function _startRecordingPoll() {
         _appState.recordingIcyEntries = status.icy_entries || [];
       }
     } catch (e) {
-      // Netzwerkfehler: nicht sofort reagieren, naechster Poll klaert
+      // Netzwerkfehler: nicht sofort reagieren, nächster Poll klärt
     }
   }, 5000);
 }
@@ -904,7 +904,7 @@ export function handleEnded() {
       const idx = playlist.findIndex(s => s.path === _appState.currentRecording.path);
 
       if (mode === 'shuffle') {
-        // Zufaellig, aber nicht denselben Track
+        // Zufällig, aber nicht denselben Track
         const candidates = playlist.length > 1
           ? playlist.filter((_, i) => i !== idx)
           : playlist;
@@ -914,7 +914,7 @@ export function handleEnded() {
       }
 
       if (mode === 'reverse') {
-        // Rueckwaerts: vorheriger Track, am Anfang stoppen
+        // Rückwärts: vorheriger Track, am Anfang stoppen
         if (idx > 0) {
           playRecording(playlist[idx - 1]);
         }
@@ -931,7 +931,7 @@ export function handleEnded() {
         return;
       }
 
-      // linear: naechster Track, am Ende stoppen
+      // linear: nächster Track, am Ende stoppen
       if (idx >= 0 && idx < playlist.length - 1) {
         playRecording(playlist[idx + 1]);
         return;
@@ -939,7 +939,7 @@ export function handleEnded() {
     }
     stop();
   } else if (_appState?.playerMode === 'podcast') {
-    // Episode als gehoert markieren
+    // Episode als gehört markieren
     if (_appState.currentEpisode?.id) {
       api.markEpisodePlayed(_appState.currentEpisode.id).catch(() => {});
       api.updateEpisodePosition(_appState.currentEpisode.id, 0).catch(() => {});
@@ -963,7 +963,7 @@ export function handleEnded() {
       }
 
       if (mode === 'reverse') {
-        // Rueckwaerts: vorherige Episode, am Anfang stoppen
+        // Rückwärts: vorherige Episode, am Anfang stoppen
         if (idx > 0) {
           _appState.currentEpisodeIndex = idx - 1;
           playPodcast(playlist[idx - 1], podcast);
@@ -982,7 +982,7 @@ export function handleEnded() {
         return;
       }
 
-      // linear: naechster Track, am Ende stoppen
+      // linear: nächster Track, am Ende stoppen
       if (idx >= 0 && idx < playlist.length - 1) {
         _appState.currentEpisodeIndex = idx + 1;
         playPodcast(playlist[idx + 1], podcast);

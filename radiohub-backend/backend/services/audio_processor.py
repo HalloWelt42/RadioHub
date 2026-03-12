@@ -15,7 +15,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Verfuegbare Bitraten pro Format (kbps)
+# Verfügbare Bitraten pro Format (kbps)
 FORMAT_BITRATES = {
     "mp3": [64, 96, 128, 160, 192, 224, 256, 320],
     "ogg": [64, 96, 128, 160, 192, 224, 256, 320],
@@ -36,7 +36,7 @@ FORMAT_CODECS = {
 
 
 class AudioProcessor:
-    """FFmpeg-basierte Audio-Verarbeitung fuer Aufnahmen."""
+    """FFmpeg-basierte Audio-Verarbeitung für Aufnahmen."""
 
     def __init__(self):
         # Per-Pfad Locks: verhindert parallele Operationen auf derselben Datei
@@ -44,7 +44,7 @@ class AudioProcessor:
         self._locks_guard = asyncio.Lock()
 
     async def _get_lock(self, path: Path) -> asyncio.Lock:
-        """Lock fuer einen bestimmten Dateipfad holen/erstellen."""
+        """Lock für einen bestimmten Dateipfad holen/erstellen."""
         key = str(path.resolve())
         async with self._locks_guard:
             if key not in self._locks:
@@ -88,7 +88,7 @@ class AudioProcessor:
 
     async def _analyze_lufs(self, audio_path: Path, target_lufs: float = -16.0,
                             timeout: int = 300) -> dict:
-        """Pass 1: LUFS-Analyse einer Audiodatei. Gibt loudnorm-Messwerte zurueck."""
+        """Pass 1: LUFS-Analyse einer Audiodatei. Gibt loudnorm-Messwerte zurück."""
         cmd = [
             "ffmpeg", "-y", "-i", str(audio_path),
             "-af", f"loudnorm=I={target_lufs}:TP=-1.5:LRA=11:print_format=json",
@@ -152,7 +152,7 @@ class AudioProcessor:
 
     async def normalize(self, audio_path: Path, target_lufs: float = -16.0) -> Path:
         """
-        EBU R128 Normalisierung (zwei Durchlaeufe).
+        EBU R128 Normalisierung (zwei Durchläufe).
         Ersetzt die Originaldatei.
         """
         lock = await self._get_lock(audio_path)
@@ -167,15 +167,15 @@ class AudioProcessor:
                                   target_lufs: float = -16.0,
                                   on_progress=None) -> list[Path]:
         """
-        EBU R128 Normalisierung ueber mehrere Segmente.
-        Pass 1: Gemeinsame Analyse via ffmpeg concat (ein Messwert fuer alle).
+        EBU R128 Normalisierung über mehrere Segmente.
+        Pass 1: Gemeinsame Analyse via ffmpeg concat (ein Messwert für alle).
         Pass 2: Gleicher Gain auf jedes Segment einzeln.
-        on_progress(step, total, message) fuer Fortschritt.
+        on_progress(step, total, message) für Fortschritt.
         """
         if not segment_paths:
             return []
 
-        # Locks fuer alle Segmente holen
+        # Locks für alle Segmente holen
         locks = [await self._get_lock(p) for p in segment_paths]
         for lk in locks:
             await lk.acquire()
@@ -217,7 +217,7 @@ class AudioProcessor:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            # Timeout: 60s pro Segment (grosszuegig fuer Pi)
+            # Timeout: 60s pro Segment (großzügig für Pi)
             _, stderr = await asyncio.wait_for(
                 proc.communicate(), timeout=60 * len(segment_paths)
             )
@@ -331,7 +331,7 @@ class AudioProcessor:
                 )
                 raise RuntimeError("Konvertierung fehlgeschlagen")
 
-            # Sicher ersetzen: erst temp an Ziel bewegen, dann Original loeschen
+            # Sicher ersetzen: erst temp an Ziel bewegen, dann Original löschen
             final_path = audio_path.with_suffix(target_ext)
             shutil.move(str(temp_path), str(final_path))
             if final_path != audio_path and audio_path.exists():
@@ -381,11 +381,11 @@ class AudioProcessor:
             return audio_path
 
     def get_format_bitrates(self) -> dict:
-        """Verfuegbare Bitraten pro Format zurueckgeben."""
+        """Verfügbare Bitraten pro Format zurückgeben."""
         return FORMAT_BITRATES
 
     def _get_codec_args_for_ext(self, ext: str) -> list:
-        """Passende Codec-Argumente fuer eine Dateiendung."""
+        """Passende Codec-Argumente für eine Dateiendung."""
         ext_lower = ext.lower()
         if ext_lower == ".mp3":
             return ["-c:a", "libmp3lame", "-b:a", "192k"]

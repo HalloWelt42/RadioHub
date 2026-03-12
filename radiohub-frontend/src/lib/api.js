@@ -3,7 +3,7 @@
  * Kommunikation mit Backend
  */
 
-// API Base URL - relativ fuer Vite-Proxy, ueberschreibbar fuer Docker/Produktion
+// API Base URL - relativ für Vite-Proxy, überschreibbar für Docker/Produktion
 const API_BASE = window.RADIOHUB_API_URL || '';
 
 class RadioHubAPI {

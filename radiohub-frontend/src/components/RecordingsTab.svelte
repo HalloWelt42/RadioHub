@@ -442,7 +442,7 @@
   }
 
   async function handleCutterSplit() {
-    // Nach Schnitt: Segmente + Sessions neu laden, zurueck zur Detail-Ansicht
+    // Nach Schnitt: Segmente + Sessions neu laden, zurück zur Detail-Ansicht
     await Promise.all([loadSessions(), loadStats()]);
     if (selectedSession) {
       const segResult = await api.getSegments(selectedSession.id).catch(() => ({ segments: [] }));

@@ -4,9 +4,9 @@ RadioHub v0.2.4 - Konfiguration
 Daten-Verzeichnis wird per Environment-Variable gesetzt.
 Docker mounted externes Verzeichnis nach /data.
 
-Pfade werden jetzt ueber Storage-Zonen aufgeloest (storage.py).
+Pfade werden jetzt über Storage-Zonen aufgelöst (storage.py).
 Alle Konstanten und Funktionen bleiben als Wrapper erhalten,
-damit bestehende Imports nicht geaendert werden muessen.
+damit bestehende Imports nicht geändert werden müssen.
 """
 import os
 from pathlib import Path
@@ -23,7 +23,7 @@ DATA_DIR = _get_data_dir()
 DB_PATH = get_zone_path("database") / "radiohub.db"
 
 # Aufnahmen
-# RECORDINGS_DIR bleibt als Eltern-Verzeichnis fuer Sicherheitschecks
+# RECORDINGS_DIR bleibt als Eltern-Verzeichnis für Sicherheitschecks
 RECORDINGS_DIR = DATA_DIR / "recordings"
 RADIO_RECORDINGS_DIR = get_zone_path("recordings")
 PODCAST_RECORDINGS_DIR = get_zone_path("podcasts")
@@ -33,9 +33,9 @@ CACHE_DIR = get_zone_path("cache")
 
 
 def ensure_directories():
-    """Erstellt alle benoetigten Verzeichnisse.
+    """Erstellt alle benötigten Verzeichnisse.
     Storage-Zonen erstellen ihre Verzeichnisse automatisch,
-    RECORDINGS_DIR wird hier extra angelegt fuer Abwaertskompatibilitaet."""
+    RECORDINGS_DIR wird hier extra angelegt für Abwärtskompatibilität."""
     RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 

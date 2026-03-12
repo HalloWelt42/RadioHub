@@ -1,9 +1,9 @@
 """
 RadioHub v0.1.0 - Peaks Router
 
-Waveform-Peaks fuer den Cutter. On-demand Generierung + Chunk-Abruf.
-Binary Transfer (Float32Array) fuer minimale Bandbreite.
-Unterstuetzt sowohl einzelne Audio-Dateien als auch segmentierte Sessions.
+Waveform-Peaks für den Cutter. On-demand Generierung + Chunk-Abruf.
+Binary Transfer (Float32Array) für minimale Bandbreite.
+Unterstützt sowohl einzelne Audio-Dateien als auch segmentierte Sessions.
 """
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response, FileResponse
@@ -26,7 +26,7 @@ async def _get_audio_path(session_id: str) -> Path:
     if not session:
         raise HTTPException(404, "Session nicht gefunden")
     if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme laeuft noch")
+        raise HTTPException(400, "Aufnahme läuft noch")
 
     file_path = session.get("file_path", "")
     if not file_path:
@@ -34,17 +34,17 @@ async def _get_audio_path(session_id: str) -> Path:
 
     audio = Path(file_path)
 
-    # Einzelne Datei -> direkt zurueckgeben
+    # Einzelne Datei -> direkt zurückgeben
     if audio.is_file():
         return audio
 
-    # Verzeichnis = segmentierte Session -> zusammenbauen fuer Peaks
+    # Verzeichnis = segmentierte Session -> zusammenbauen für Peaks
     if audio.is_dir():
         segments = splitter.get_segments(session_id)
         if not segments:
             raise HTTPException(404, "Keine Segmente gefunden")
 
-        # Pruefen ob bereits eine zusammengebaute Datei im Cache existiert
+        # Prüfen ob bereits eine zusammengebaute Datei im Cache existiert
         cache_dir = get_cache_dir()
         ext = Path(segments[0]["file_path"]).suffix
         cached = cache_dir / f"{session_id}_peaks_source{ext}"
@@ -56,7 +56,7 @@ async def _get_audio_path(session_id: str) -> Path:
         if not result or not result.exists():
             raise HTTPException(500, "Zusammenbau fehlgeschlagen")
 
-        # Umbenennen fuer Peaks-Cache-Konsistenz
+        # Umbenennen für Peaks-Cache-Konsistenz
         result.rename(cached)
         return cached
 
@@ -65,9 +65,9 @@ async def _get_audio_path(session_id: str) -> Path:
 
 @router.get("/sessions/{session_id}/audio")
 async def get_session_audio(session_id: str):
-    """Audio-Stream fuer die gesamte Session (auch segmentierte).
+    """Audio-Stream für die gesamte Session (auch segmentierte).
 
-    Liefert die zusammengebaute Audio-Datei fuer Cutter-Playback.
+    Liefert die zusammengebaute Audio-Datei für Cutter-Playback.
     """
     audio = await _get_audio_path(session_id)
     ext = audio.suffix.lower()
@@ -111,7 +111,7 @@ async def get_peaks_chunk(
     start: float = Query(0, ge=0, description="Start in Sekunden"),
     duration: float = Query(300, gt=0, le=600, description="Dauer in Sekunden (max 600)")
 ):
-    """Peaks-Daten fuer Zeitbereich als Float32Array (binary).
+    """Peaks-Daten für Zeitbereich als Float32Array (binary).
 
     Generiert Peaks on-demand wenn noch kein Cache existiert.
     """

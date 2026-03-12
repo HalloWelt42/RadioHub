@@ -109,7 +109,7 @@ async def subscribe(req: SubscribeRequest):
 
 @router.get("/refresh-status")
 async def refresh_status():
-    """Naechster automatischer Refresh-Zeitpunkt"""
+    """Nächster automatischer Refresh-Zeitpunkt"""
     return podcast_service.get_refresh_status()
 
 
@@ -189,7 +189,7 @@ async def get_all_episodes(
     sort_order: str = Query("desc"),
     podcast_ids: Optional[str] = Query(None, description="Komma-getrennte Podcast-IDs")
 ):
-    """Episoden ueber alle Abos"""
+    """Episoden über alle Abos"""
     pid_list = None
     if podcast_ids:
         try:
@@ -342,6 +342,6 @@ async def get_transcript(episode_id: int):
 
 @router.delete("/{podcast_id}/played-downloads")
 async def delete_played_downloads(podcast_id: int):
-    """Gehoerte Downloads eines Podcasts loeschen"""
+    """Gehörte Downloads eines Podcasts löschen"""
     count = await podcast_service.delete_played_downloads(podcast_id)
     return {"success": True, "deleted": count}

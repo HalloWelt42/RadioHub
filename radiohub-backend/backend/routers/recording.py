@@ -79,7 +79,7 @@ async def get_session(session_id: str):
 
 @router.delete("/sessions/{session_id}")
 async def delete_session(session_id: str):
-    """Session loeschen"""
+    """Session löschen"""
     success = rec_manager.delete_session(session_id)
     if not success:
         raise HTTPException(404, "Session nicht gefunden oder aktiv")
@@ -202,7 +202,7 @@ async def download_segment(segment_id: int):
 
 @router.delete("/sessions/{session_id}/segments/{segment_id}")
 async def delete_segment(session_id: str, segment_id: int):
-    """Einzelnes Segment loeschen"""
+    """Einzelnes Segment löschen"""
     success = splitter.delete_segment(session_id, segment_id)
     if not success:
         raise HTTPException(404, "Segment nicht gefunden")
@@ -211,20 +211,20 @@ async def delete_segment(session_id: str, segment_id: int):
 
 @router.post("/sessions/{session_id}/split")
 async def split_session(session_id: str):
-    """Nachtraeglich splitten: Bestehende Aufnahme anhand .meta.json in Segmente schneiden"""
+    """Nachträglich splitten: Bestehende Aufnahme anhand .meta.json in Segmente schneiden"""
     session = rec_manager.get_session(session_id)
     if not session:
         raise HTTPException(404, "Session nicht gefunden")
 
     if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme laeuft noch")
+        raise HTTPException(400, "Aufnahme läuft noch")
 
     # Bereits Segmente vorhanden?
     existing = splitter.get_segments(session_id)
     if existing:
         raise HTTPException(400, f"Session hat bereits {len(existing)} Segmente")
 
-    # Meta-Datei pruefen
+    # Meta-Datei prüfen
     meta_path = session.get("meta_file_path")
     if not meta_path:
         raise HTTPException(400, "Keine Metadaten vorhanden")
@@ -232,7 +232,7 @@ async def split_session(session_id: str):
     if not meta_file.exists():
         raise HTTPException(400, "Meta-Datei nicht gefunden")
 
-    # Audio-Datei pruefen
+    # Audio-Datei prüfen
     file_path = session.get("file_path")
     if not file_path:
         raise HTTPException(400, "Keine Audio-Datei vorhanden")
@@ -255,8 +255,8 @@ async def split_session(session_id: str):
 
 class CustomSplitRequest(BaseModel):
     cut_points: list[float]
-    trim_start: bool = False  # Erstes Segment (Anfangsfragment) loeschen
-    trim_end: bool = False    # Letztes Segment (Endfragment) loeschen
+    trim_start: bool = False  # Erstes Segment (Anfangsfragment) löschen
+    trim_end: bool = False    # Letztes Segment (Endfragment) löschen
 
 
 @router.post("/sessions/{session_id}/custom-split")
@@ -267,12 +267,12 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
         raise HTTPException(404, "Session nicht gefunden")
 
     if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme laeuft noch")
+        raise HTTPException(400, "Aufnahme läuft noch")
 
     if not req.cut_points or len(req.cut_points) == 0:
         raise HTTPException(400, "Keine Schnittpunkte angegeben")
 
-    # Audio-Datei pruefen (auch segmentierte Sessions unterstuetzen)
+    # Audio-Datei prüfen (auch segmentierte Sessions unterstützen)
     file_path = session.get("file_path", "")
     if not file_path:
         raise HTTPException(400, "Keine Audio-Datei vorhanden")
@@ -300,7 +300,7 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
     duration = session.get("duration", 0)
     file_format = session.get("file_format", ".mp3")
 
-    # Meta-Entries laden (optional, fuer Titel-Zuordnung)
+    # Meta-Entries laden (optional, für Titel-Zuordnung)
     meta_entries = None
     meta_path = session.get("meta_file_path")
     if meta_path:
@@ -324,7 +324,7 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
     if not segments:
         raise HTTPException(500, "Split fehlgeschlagen")
 
-    # Anfangs-/Endfragmente entfernen wenn gewuenscht
+    # Anfangs-/Endfragmente entfernen wenn gewünscht
     trimmed = 0
     if req.trim_end and len(segments) > 1:
         last_seg = segments[-1]
@@ -339,7 +339,7 @@ async def custom_split_session(session_id: str, req: CustomSplitRequest):
 
 
 def _cleanup_temp_file(path: str):
-    """Background-Task: Temp-Datei loeschen"""
+    """Background-Task: Temp-Datei löschen"""
     try:
         p = Path(path)
         if p.exists():
@@ -355,7 +355,7 @@ async def download_full_session(session_id: str, background_tasks: BackgroundTas
     if not session:
         raise HTTPException(404, "Session nicht gefunden")
 
-    # Pruefen ob Segmente existieren
+    # Prüfen ob Segmente existieren
     segments = splitter.get_segments(session_id)
     if not segments:
         # Keine Segmente -> direkt Datei servieren (Legacy)
@@ -386,7 +386,7 @@ async def download_full_session(session_id: str, background_tasks: BackgroundTas
     safe_name = "".join(c if c.isalnum() or c in " -_" else "_" for c in station)[:50]
     download_name = f"{safe_name}_{session_id}{ext}"
 
-    # Temp-Datei nach Response aufraeumen
+    # Temp-Datei nach Response aufräumen
     background_tasks.add_task(_cleanup_temp_file, str(output_path))
 
     return FileResponse(
@@ -419,13 +419,13 @@ async def download_zip_session(session_id: str, background_tasks: BackgroundTask
 
     try:
         with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
-            # Segmente hinzufuegen
+            # Segmente hinzufügen
             for seg in segments:
                 fp = Path(seg["file_path"])
                 if fp.exists():
                     zf.write(fp, fp.name)
 
-            # Meta-Datei hinzufuegen
+            # Meta-Datei hinzufügen
             meta_path = session.get("meta_file_path")
             if meta_path:
                 mp = Path(meta_path)

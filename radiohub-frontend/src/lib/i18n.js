@@ -29,7 +29,7 @@ export function currentLanguage() {
 }
 
 /**
- * Sprache wechseln (mit Lazy-Loading fuer nicht-geladene Locales)
+ * Sprache wechseln (mit Lazy-Loading für nicht-geladene Locales)
  */
 export async function setLanguage(lang) {
   const entry = availableLanguages.find(l => l.code === lang);

@@ -1,6 +1,6 @@
 <script>
   /**
-   * CutterView - Grafischer Waveform-Editor fuer Aufnahmen.
+   * CutterView - Grafischer Waveform-Editor für Aufnahmen.
    * Canvas-basiert, Lazy-Loading, Marker-System, ICY-Titel-Farben.
    */
   import { onMount } from 'svelte';
@@ -312,7 +312,7 @@
     const rect = canvasEl.getBoundingClientRect();
     const x = e.clientX - rect.left;
 
-    // Cursor anpassen: Hand bei Marker-Naehe
+    // Cursor anpassen: Hand bei Marker-Nähe
     if (!isDraggingMarker) {
       const y = e.clientY - rect.top;
       const hit = renderer.hitTest(x, y);
@@ -547,7 +547,7 @@
     isCutting = false;
   }
 
-  // Marker aus ICY-Metadata uebernehmen
+  // Marker aus ICY-Metadata übernehmen
   function markersFromMetadata() {
     if (!metadata || metadata.length === 0) {
       actions.showToast(t('cutter.keineMetadaten'), 'info');

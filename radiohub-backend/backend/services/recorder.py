@@ -102,7 +102,7 @@ class RecorderManager:
                 print(f"  {len(stale)} verwaiste Recording-Session(s) bereinigt")
 
     async def _detect_codec(self, stream_url: str) -> tuple[str, str]:
-        """Erkennt Audio-Codec via ffprobe. Gibt (codec_name, extension) zurueck."""
+        """Erkennt Audio-Codec via ffprobe. Gibt (codec_name, extension) zurück."""
         cmd = [
             "ffprobe", "-v", "quiet",
             "-print_format", "json",
@@ -143,11 +143,11 @@ class RecorderManager:
         if self.active_session:
             return {
                 "success": False,
-                "error": "Aufnahme laeuft bereits",
+                "error": "Aufnahme läuft bereits",
                 "session_id": self.active_session.id
             }
 
-        # Disk-Space pruefen
+        # Disk-Space prüfen
         rec_dir = get_radio_recordings_dir()
         try:
             stat = shutil.disk_usage(str(rec_dir))
@@ -183,7 +183,7 @@ class RecorderManager:
 
         # FFmpeg-Kommando bauen
         if codec:
-            # Stream-Copy: kein Re-Encoding, originale Qualitaet
+            # Stream-Copy: kein Re-Encoding, originale Qualität
             cmd = [
                 "ffmpeg", "-y",
                 "-reconnect", "1",
@@ -216,7 +216,7 @@ class RecorderManager:
             )
             self.active_session = session
 
-            # Monitor-Task fuer Prozess-Ueberwachung
+            # Monitor-Task für Prozess-Überwachung
             self._monitor_task = asyncio.create_task(self._monitor_process(session))
 
             # ICY-Metadata-Logger starten (parallel, optional)
@@ -252,7 +252,7 @@ class RecorderManager:
             return {"success": False, "error": str(e)}
 
     async def _monitor_process(self, session: RecordingSession):
-        """Ueberwacht FFmpeg-Prozess auf unerwartetes Ende"""
+        """Überwacht FFmpeg-Prozess auf unerwartetes Ende"""
         if not session.process:
             return
 
@@ -432,7 +432,7 @@ class RecorderManager:
         return status
 
     def get_sessions(self, limit: int = 50) -> list:
-        """Alle Sessions aus DB. Bereinigt verwaiste Eintraege (Datei fehlt)."""
+        """Alle Sessions aus DB. Bereinigt verwaiste Einträge (Datei fehlt)."""
 
         with db_session() as conn:
             c = conn.cursor()
@@ -498,9 +498,9 @@ class RecorderManager:
             return dict(row) if row else None
 
     def delete_session(self, session_id: str) -> bool:
-        """Session und Datei/Segmente loeschen"""
+        """Session und Datei/Segmente löschen"""
 
-        # Aktive Session kann nicht geloescht werden
+        # Aktive Session kann nicht gelöscht werden
         if self.active_session and self.active_session.id == session_id:
             return False
 
@@ -508,11 +508,11 @@ class RecorderManager:
         if not session:
             return False
 
-        # Audio-Datei oder Session-Verzeichnis loeschen
+        # Audio-Datei oder Session-Verzeichnis löschen
         if session.get("file_path"):
             file_path = Path(session["file_path"])
             if file_path.is_dir():
-                # Segmente: Verzeichnis mit Inhalt loeschen
+                # Segmente: Verzeichnis mit Inhalt löschen
                 for f in file_path.iterdir():
                     if f.is_file():
                         f.unlink()
@@ -523,13 +523,13 @@ class RecorderManager:
             elif file_path.is_file():
                 file_path.unlink()
 
-        # Meta-Datei loeschen
+        # Meta-Datei löschen
         if session.get("meta_file_path"):
             meta_path = Path(session["meta_file_path"])
             if meta_path.exists():
                 meta_path.unlink()
 
-        # DB-Eintrag loeschen (CASCADE loescht auch segments)
+        # DB-Eintrag löschen (CASCADE löscht auch segments)
         with db_session() as conn:
             c = conn.cursor()
             c.execute("DELETE FROM sessions WHERE id = ?", (session_id,))

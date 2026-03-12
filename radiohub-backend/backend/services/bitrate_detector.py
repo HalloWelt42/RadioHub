@@ -134,10 +134,10 @@ async def probe_bitrate(stream_url: str, timeout: float = PROBE_TIMEOUT) -> Opti
 
 
 async def check_icy_support(stream_url: str, timeout: float = 5.0) -> bool:
-    """Prueft via Raw-TCP ob ein Stream ICY-Metadata unterstuetzt.
+    """Prüft via Raw-TCP ob ein Stream ICY-Metadata unterstützt.
 
-    Sendet HTTP GET mit Icy-MetaData:1 und prueft ob icy-metaint
-    im Response-Header vorkommt. Unterstuetzt HTTP und HTTPS.
+    Sendet HTTP GET mit Icy-MetaData:1 und prüft ob icy-metaint
+    im Response-Header vorkommt. Unterstützt HTTP und HTTPS.
     """
     try:
         parsed = urlparse(stream_url)
@@ -186,8 +186,8 @@ async def check_icy_support(stream_url: str, timeout: float = 5.0) -> bool:
 async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str]:
     """Holt den aktuellen ICY-StreamTitle via One-Shot Raw-TCP.
 
-    Verbindet sich, liest Header fuer metaint, dann genau einen
-    Metadata-Block, und schliesst sofort. Gibt den Titel zurueck
+    Verbindet sich, liest Header für metaint, dann genau einen
+    Metadata-Block, und schließt sofort. Gibt den Titel zurück
     oder None bei Fehler / kein ICY.
     """
     reader = None
@@ -238,7 +238,7 @@ async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str
         if not metaint:
             return None
 
-        # Audio-Bytes ueberspringen bis zum ersten Metadata-Block
+        # Audio-Bytes überspringen bis zum ersten Metadata-Block
         remaining = metaint
         while remaining > 0:
             chunk = await asyncio.wait_for(reader.read(min(remaining, 8192)), timeout=timeout)
@@ -246,7 +246,7 @@ async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str
                 return None
             remaining -= len(chunk)
 
-        # Metadata-Laenge (1 Byte)
+        # Metadata-Länge (1 Byte)
         length_byte = await asyncio.wait_for(reader.readexactly(1), timeout=timeout)
         meta_length = length_byte[0] * 16
 
@@ -275,7 +275,7 @@ async def fetch_icy_title(stream_url: str, timeout: float = 8.0) -> Optional[str
 
 
 def get_cached_bitrates(uuids: List[str]) -> dict:
-    """Holt gecachte Bitrates + Codec + ICY + icy_quality fuer mehrere UUIDs."""
+    """Holt gecachte Bitrates + Codec + ICY + icy_quality für mehrere UUIDs."""
     if not uuids:
         return {}
 
@@ -292,7 +292,7 @@ def get_cached_bitrates(uuids: List[str]) -> dict:
 def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate: int = 0, icy: bool = False):
     """Speichert erkannte Bitrate + ICY-Status in DB.
 
-    icy wird nur auf 1 gesetzt, nie zurueck auf 0 -- Live-Erkennung
+    icy wird nur auf 1 gesetzt, nie zurück auf 0 -- Live-Erkennung
     aus dem HLS-Buffer hat Vorrang vor der TCP-Probe.
     """
     with db_session() as conn:
@@ -312,9 +312,9 @@ def save_detected_bitrate(uuid: str, bitrate: int, codec: str = "", sample_rate:
 
 
 def set_icy_quality(uuid: str, quality: Optional[str]):
-    """Setzt die ICY-Qualitaetsbewertung fuer einen Sender.
+    """Setzt die ICY-Qualitätsbewertung für einen Sender.
 
-    quality: 'good', 'poor', oder None (zuruecksetzen)
+    quality: 'good', 'poor', oder None (zurücksetzen)
     Legt ggf. einen Minimal-Eintrag an falls der Sender noch nicht geprobt wurde.
     """
     with db_session() as conn:
@@ -376,7 +376,7 @@ async def probe_stations(stations: List[dict]):
                 save_detected_bitrate(uuid, 0)
                 return
 
-            # Bitrate + ICY parallel pruefen
+            # Bitrate + ICY parallel prüfen
             bitrate_task = probe_bitrate(url)
             icy_task = check_icy_support(url)
             result, has_icy = await asyncio.gather(bitrate_task, icy_task)

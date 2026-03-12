@@ -3,12 +3,12 @@ RadioHub v0.2.4 - HLS Recorder Service
 
 Aufnahme aus dem HLS-Buffer mit konfigurierbarem Lookback.
 Kopiert .ts Segmente, konkateniert per ffmpeg Stream-Copy zu .aac.
-Nutzt ICY-Metadata aus dem HLS-Buffer fuer Segment-Split.
+Nutzt ICY-Metadata aus dem HLS-Buffer für Segment-Split.
 
-Edge-Case-Haertung:
+Edge-Case-Härtung:
 - Stale-Session-Cleanup bei Server-Neustart
-- Auto-Finalisierung wenn HLS-Buffer waehrend Aufnahme stirbt
-- Disk-Space-Guard vor Start und waehrend Aufnahme
+- Auto-Finalisierung wenn HLS-Buffer während Aufnahme stirbt
+- Disk-Space-Guard vor Start und während Aufnahme
 """
 import asyncio
 import json
@@ -48,12 +48,12 @@ class HLSRecSession:
 
     @property
     def total_seconds(self) -> float:
-        """Geschaetzte Gesamtdauer inkl. Lookback (1 Segment = 1 Sekunde)."""
+        """Geschätzte Gesamtdauer inkl. Lookback (1 Segment = 1 Sekunde)."""
         return float(len(self.collected_segments))
 
 
 def _check_disk_space(path: Path) -> bool:
-    """Prueft ob genug Speicherplatz vorhanden ist."""
+    """Prüft ob genug Speicherplatz vorhanden ist."""
     try:
         stat = shutil.disk_usage(str(path))
         free_mb = stat.free / (1024 * 1024)
@@ -76,7 +76,7 @@ class HLSRecorderService:
 
         Nach Server-Neustart existiert kein Collector-Task mehr,
         aber die DB hat noch status='recording' mit rec_type='hls-rec'.
-        Ausserdem .ts Verzeichnisse von abgebrochenen Sessions aufraeumen.
+        Außerdem .ts Verzeichnisse von abgebrochenen Sessions aufräumen.
         """
         with db_session() as conn:
             c = conn.cursor()
@@ -91,9 +91,9 @@ class HLSRecorderService:
                 file_size = 0
                 if fp:
                     p = Path(fp)
-                    # HLS-REC speichert Session-Dir als file_path waehrend Aufnahme
+                    # HLS-REC speichert Session-Dir als file_path während Aufnahme
                     if p.is_dir():
-                        # .ts Verzeichnis aufraeumen
+                        # .ts Verzeichnis aufräumen
                         ts_dir = p / "ts"
                         if ts_dir.exists():
                             shutil.rmtree(ts_dir, ignore_errors=True)
@@ -110,25 +110,25 @@ class HLSRecorderService:
     async def start(self, lookback_seconds: int = 300) -> dict:
         """Startet HLS-REC.
 
-        1. Prueft ob HLS-Buffer aktiv und keine andere Aufnahme laeuft
+        1. Prüft ob HLS-Buffer aktiv und keine andere Aufnahme läuft
         2. Kopiert Lookback-Segmente aus dem Buffer
-        3. Startet Collector-Task fuer neue Segmente
+        3. Startet Collector-Task für neue Segmente
         """
         # Guards
         if not hls_buffer.is_active():
             return {"success": False, "error": "HLS-Buffer nicht aktiv"}
 
         if self.active_session:
-            return {"success": False, "error": "HLS-REC laeuft bereits",
+            return {"success": False, "error": "HLS-REC läuft bereits",
                     "session_id": self.active_session.id}
 
         if rec_manager.active_session:
-            return {"success": False, "error": "Direkt-Aufnahme laeuft bereits"}
+            return {"success": False, "error": "Direkt-Aufnahme läuft bereits"}
 
         # Aktiven Aufnahmeordner bestimmen
         active_dir, folder_id = get_active_recording_dir()
 
-        # Disk-Space pruefen
+        # Disk-Space prüfen
         if not _check_disk_space(active_dir):
             return {"success": False,
                     "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
@@ -141,7 +141,7 @@ class HLSRecorderService:
         first_seg = hls_status.get("first_segment")
         last_seg = hls_status.get("last_segment")
         if first_seg is None or last_seg is None:
-            return {"success": False, "error": "Keine HLS-Segmente verfuegbar"}
+            return {"success": False, "error": "Keine HLS-Segmente verfügbar"}
 
         station_uuid = hls_status.get("station_uuid", "")
         station_name = hls_status.get("station_name", "")
@@ -213,7 +213,7 @@ class HLSRecorderService:
 
         Bricht automatisch ab wenn:
         - HLS-Buffer nicht mehr aktiv
-        - Speicherplatz unter Minimum faellt
+        - Speicherplatz unter Minimum fällt
         """
         last_copied = max(session.collected_segments) if session.collected_segments else 0
         disk_check_counter = 0
@@ -228,7 +228,7 @@ class HLSRecorderService:
                     buffer_dead = True
                     break
 
-                # Disk-Space alle 30 Zyklen pruefen (~15 Sekunden)
+                # Disk-Space alle 30 Zyklen prüfen (~15 Sekunden)
                 disk_check_counter += 1
                 if disk_check_counter >= 30:
                     disk_check_counter = 0
@@ -272,12 +272,12 @@ class HLSRecorderService:
         1. Collector stoppen + finaler Sweep
         2. .ts Segmente konkatenieren -> .aac
         3. ICY-Metadata filtern und speichern
-        4. Segment-Split ausloesen
+        4. Segment-Split auslösen
         """
         if not self.active_session:
             return {"success": False, "error": "Keine aktive HLS-Aufnahme"}
         if self._stopping:
-            return {"success": False, "error": "Stopp laeuft bereits"}
+            return {"success": False, "error": "Stopp läuft bereits"}
         self._stopping = True
 
         session = self.active_session
@@ -351,7 +351,7 @@ class HLSRecorderService:
         meta_file = session_dir / f"{session.id}.meta.json"
         meta_count = self._save_icy_metadata(session, meta_file, real_duration)
 
-        # .ts Verzeichnis + concat-Datei aufraeumen
+        # .ts Verzeichnis + concat-Datei aufräumen
         if concat_file.exists():
             concat_file.unlink()
         if session.ts_dir.exists():
@@ -370,7 +370,7 @@ class HLSRecorderService:
 
         print(f"HLS-REC gestoppt: {session.id} "
               f"({total_segments} Segmente, {real_duration:.0f}s, "
-              f"{file_size / 1024 / 1024:.1f}MB, {meta_count} ICY-Eintraege)")
+              f"{file_size / 1024 / 1024:.1f}MB, {meta_count} ICY-Einträge)")
 
         result = {
             "success": True,
@@ -405,7 +405,7 @@ class HLSRecorderService:
 
     def _save_icy_metadata(self, session: HLSRecSession,
                            meta_file: Path, total_duration: float) -> int:
-        """Filtert ICY-Eintraege auf das Aufnahme-Zeitfenster und speichert sie."""
+        """Filtert ICY-Einträge auf das Aufnahme-Zeitfenster und speichert sie."""
         all_entries = hls_buffer.get_icy_entries()
         if not all_entries:
             return 0
@@ -522,7 +522,7 @@ class HLSRecorderService:
     def get_status(self) -> dict:
         """Aktueller HLS-REC Status.
 
-        Prueft auch ob Collector-Task noch lebt.
+        Prüft auch ob Collector-Task noch lebt.
         """
         if not self.active_session:
             return {"recording": False}

@@ -1,8 +1,8 @@
 """
 RadioHub v0.2.5 - File Explorer Router
 
-Einheitlicher Datei-Explorer fuer Podcasts und Aufnahmen.
-Ordnerstruktur, Datei-Loeschung, ZIP+M3U Download.
+Einheitlicher Datei-Explorer für Podcasts und Aufnahmen.
+Ordnerstruktur, Datei-Löschung, ZIP+M3U Download.
 """
 import os
 import shutil
@@ -41,7 +41,7 @@ def _scan_audio_files(folder: Path) -> list:
     for item in sorted(folder.rglob("*")):
         if item.is_file() and item.suffix.lower() in AUDIO_EXTENSIONS:
             stat = item.stat()
-            # Relativer Pfad zum Ordner fuer verschachtelte Dateien
+            # Relativer Pfad zum Ordner für verschachtelte Dateien
             rel = item.relative_to(folder)
             display_name = str(rel) if len(rel.parts) > 1 else item.name
             files.append({
@@ -58,7 +58,7 @@ def _get_recording_folder_info() -> dict:
     """Ordner-Pfade zu Session-Infos aus der DB mappen.
     Nutzt recording_folders (folder_id) UND file_path als Fallback.
     Liefert: { dir_name: { station_names: [...], start_time, end_time, known: bool } }
-    known=True heisst: Ordner ist in recording_folders oder hat Sessions.
+    known=True heißt: Ordner ist in recording_folders oder hat Sessions.
     """
     mapping = {}
     try:
@@ -86,7 +86,7 @@ def _get_recording_folder_info() -> dict:
                    WHERE file_path IS NOT NULL"""
             ).fetchall()
             for row in rows:
-                # Ordnernamen bestimmen: ueber folder_id oder file_path
+                # Ordnernamen bestimmen: über folder_id oder file_path
                 dir_name = None
                 if row["folder_id"] and row["folder_id"] in folder_id_to_path:
                     dir_name = folder_id_to_path[row["folder_id"]]
@@ -250,7 +250,7 @@ async def get_recording_files():
 
 @router.delete("/delete")
 async def delete_file(path: str = Query(..., description="Absoluter Dateipfad")):
-    """Einzelne Datei loeschen (nur innerhalb RECORDINGS_DIR)"""
+    """Einzelne Datei löschen (nur innerhalb RECORDINGS_DIR)"""
     file_path = Path(path)
 
     # Sicherheitscheck: muss innerhalb RECORDINGS_DIR liegen
@@ -266,7 +266,7 @@ async def delete_file(path: str = Query(..., description="Absoluter Dateipfad"))
 
     file_path.unlink()
 
-    # Leeren Eltern-Ordner aufraeumen
+    # Leeren Eltern-Ordner aufräumen
     parent = file_path.parent
     if parent != RECORDINGS_DIR and not any(parent.iterdir()):
         parent.rmdir()
@@ -276,9 +276,9 @@ async def delete_file(path: str = Query(..., description="Absoluter Dateipfad"))
 
 @router.delete("/delete-orphaned")
 async def delete_orphaned_folders():
-    """Verwaiste Aufnahme-Ordner loeschen (ohne DB-Zuordnung).
+    """Verwaiste Aufnahme-Ordner löschen (ohne DB-Zuordnung).
 
-    Sicherheit: Nur Ordner loeschen die weder in recording_folders
+    Sicherheit: Nur Ordner löschen die weder in recording_folders
     noch als session file_path referenziert werden.
     """
     folder_info = _get_recording_folder_info()
@@ -306,17 +306,17 @@ async def delete_orphaned_folders():
         info = folder_info.get(item.name, {})
         if info.get("known", False):
             continue
-        # Pruefen ob der Ordner von einer Session referenziert wird
+        # Prüfen ob der Ordner von einer Session referenziert wird
         if item.resolve() in session_dirs:
             skipped.append(item.name)
             continue
-        # Sicherheitscheck: Nur loeschen wenn keine Audio-Dateien enthalten
+        # Sicherheitscheck: Nur löschen wenn keine Audio-Dateien enthalten
         audio_exts = {".mp3", ".aac", ".m4a", ".ogg", ".opus", ".flac", ".wav"}
         has_audio = any(f.suffix.lower() in audio_exts for f in item.rglob("*") if f.is_file())
         if has_audio:
             skipped.append(item.name)
             continue
-        # Verwaist und leer: loeschen
+        # Verwaist und leer: löschen
         try:
             shutil.rmtree(item)
             deleted.append(item.name)
@@ -334,7 +334,7 @@ class ZipDownloadRequest(BaseModel):
 
 
 def _cleanup_temp_file(path: str):
-    """Temp-Datei nach Download loeschen"""
+    """Temp-Datei nach Download löschen"""
     try:
         Path(path).unlink(missing_ok=True)
     except Exception:

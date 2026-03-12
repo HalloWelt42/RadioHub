@@ -40,7 +40,7 @@
   let availableBitrates = $state([]);
   let availableVotesRanges = $state([]);
   
-  // Sichtbare Laender (in Setup konfiguriert, in Config persistiert)
+  // Sichtbare Länder (in Setup konfiguriert, in Config persistiert)
   let visibleCountries = $state([]);
 
   // Setup-Suchfilter (excludedLanguages, excludedTags, minVotes) -- aus Config geladen
@@ -78,7 +78,7 @@
   let limit = 50;
   let hasMore = $state(true);
 
-  // Sidebar-Laender: nur die im Overlay konfigurierten, mit Daten aus availableCountries
+  // Sidebar-Länder: nur die im Overlay konfigurierten, mit Daten aus availableCountries
   let sidebarCountries = $derived(() => {
     if (visibleCountries.length === 0) return [];
     const visSet = new Set(visibleCountries);
@@ -112,7 +112,7 @@
       ]);
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
 
-      // Laender + Filter-Config aktualisieren
+      // Länder + Filter-Config aktualisieren
       if (config.sidebar_countries) {
         const saved = typeof config.sidebar_countries === 'string'
           ? JSON.parse(config.sidebar_countries) : config.sidebar_countries;
@@ -187,7 +187,7 @@
       availableCountries = allCountries;
       categories = Array.isArray(cats) ? cats : (cats?.categories || []);
 
-      // Gespeicherte sichtbare Laender aus Config laden
+      // Gespeicherte sichtbare Länder aus Config laden
       if (config.sidebar_countries && !_countriesInitialized) {
         try {
           const saved = typeof config.sidebar_countries === 'string'
@@ -291,7 +291,7 @@
       const newStations = result.stations || [];
 
       if (append) {
-        // Deduplizierung: nur Sender hinzufuegen die noch nicht in der Liste sind
+        // Deduplizierung: nur Sender hinzufügen die noch nicht in der Liste sind
         const existingUuids = new Set(stations.map(s => s.uuid));
         const uniqueNew = newStations.filter(s => !existingUuids.has(s.uuid));
         stations = [...stations, ...uniqueNew];
@@ -612,7 +612,7 @@
       // Rollback: gezielt nur diese categoryId korrigieren
       const live = categoryAssignments[stationUuid] || [];
       if (isAssigned) {
-        // War vorher drin, API-Remove fehlgeschlagen -> wieder hinzufuegen
+        // War vorher drin, API-Remove fehlgeschlagen -> wieder hinzufügen
         if (!live.includes(categoryId)) {
           categoryAssignments[stationUuid] = [...live, categoryId];
         }
@@ -816,7 +816,7 @@
 
     <!-- Liste (scrollbar, alle Sender) -->
     <div class="station-list" onscroll={handleScroll} onkeydown={handleListKeydown} tabindex="0">
-      <!-- Spaltenkoepfe (sticky) -->
+      <!-- Spaltenköpfe (sticky) -->
       <div class="column-headers">
         <div class="col-led"></div>
         <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>{t('stationDetail.name')} {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
@@ -869,7 +869,7 @@
                     class:icy-good={station.icy_quality === 'good'}
                     class:icy-poor={station.icy_quality === 'poor'}
                     onclick={(e) => toggleIcyQuality(station, e)}
-                    title={station.icy_quality === 'good' ? 'ICY: Genaue Schnitte (Klick: wechseln)' : station.icy_quality === 'poor' ? 'ICY: Ungenaue Schnitte (Klick: wechseln)' : 'ICY Metadata (Klick: Qualitaet bewerten)'}
+                    title={station.icy_quality === 'good' ? 'ICY: Genaue Schnitte (Klick: wechseln)' : station.icy_quality === 'poor' ? 'ICY: Ungenaue Schnitte (Klick: wechseln)' : 'ICY Metadata (Klick: Qualität bewerten)'}
                   >ICY</button>
                 {/if}
                 {#if adStatusMap[station.uuid]}
@@ -1389,7 +1389,7 @@
     background: var(--hifi-bg-panel);
   }
 
-  /* Spaltenkoepfe */
+  /* Spaltenköpfe */
   .column-headers {
     display: flex;
     align-items: center;
@@ -1799,7 +1799,7 @@
     color: var(--hifi-display-blue);
   }
 
-  /* Spielender Sender: Wrapper-Styling, komplett sticky unterhalb Spaltenkoepfe */
+  /* Spielender Sender: Wrapper-Styling, komplett sticky unterhalb Spaltenköpfe */
   .station-wrapper.playing {
     position: sticky;
     top: 28px;
@@ -1917,7 +1917,7 @@
     word-break: break-all;
   }
 
-  /* Sort-Icons in Spaltenkoepfen */
+  /* Sort-Icons in Spaltenköpfen */
   .column-headers i {
     margin-left: 4px;
     font-size: 10px;

@@ -1,12 +1,12 @@
 """
 RadioHub - Audio Processing Router
 
-Endpunkte fuer Audio-Nachbearbeitung:
+Endpunkte für Audio-Nachbearbeitung:
 - Normalisierung (EBU R128)
 - Format-Konvertierung (MP3, OGG, AAC)
 - Mono-Konvertierung
 - Audio-Info
-- Qualitaets-Presets
+- Qualitäts-Presets
 """
 
 import asyncio
@@ -27,7 +27,7 @@ router = APIRouter(prefix="/api/recording", tags=["audio-processing"])
 
 
 def _resolve_audio_path(session: dict, session_id: str) -> Path:
-    """Audio-Pfad einer Session aufloesen (auch segmentierte)."""
+    """Audio-Pfad einer Session auflösen (auch segmentierte)."""
     file_path = session.get("file_path", "")
     if not file_path:
         raise HTTPException(400, "Keine Audio-Datei vorhanden")
@@ -91,12 +91,12 @@ async def normalize_session(session_id: str, req: Optional[NormalizeRequest] = N
         raise HTTPException(404, "Session nicht gefunden")
 
     if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme laeuft noch")
+        raise HTTPException(400, "Aufnahme läuft noch")
 
     target_lufs = req.target_lufs if req else -16.0
     segment_ids = req.segment_ids if req else None
 
-    # Segmente pruefen
+    # Segmente prüfen
     segments = splitter.get_segments(session_id)
 
     if segments:
@@ -238,7 +238,7 @@ async def to_mono_session(session_id: str):
         raise HTTPException(404, "Session nicht gefunden")
 
     if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme laeuft noch")
+        raise HTTPException(400, "Aufnahme läuft noch")
 
     audio_file = _resolve_audio_path(session, session_id)
 
@@ -252,5 +252,5 @@ async def to_mono_session(session_id: str):
 
 @router.get("/audio-processing/presets")
 async def get_presets():
-    """Verfuegbare Bitraten pro Format zurueckgeben."""
+    """Verfügbare Bitraten pro Format zurückgeben."""
     return audio_processor.get_format_bitrates()

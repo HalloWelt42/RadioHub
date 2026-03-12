@@ -22,7 +22,7 @@ from .services.ad_detector import seed_domain_blacklist
 
 
 async def _podcast_refresh_loop():
-    """Periodischer Feed-Refresh fuer alle Podcast-Abos"""
+    """Periodischer Feed-Refresh für alle Podcast-Abos"""
     podcast_service.set_next_refresh(datetime.now() + timedelta(seconds=60))
     await asyncio.sleep(60)  # 1 Min nach Start warten
     while True:
@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     init_db()
     get_config_service()  # Config initialisieren
-    seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befuellen
+    seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befüllen
 
     # Periodischer Podcast-Refresh
     refresh_task = asyncio.create_task(_podcast_refresh_loop())

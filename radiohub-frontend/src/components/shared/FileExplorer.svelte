@@ -19,7 +19,7 @@
     onplay = () => {},
     ondelete = () => {},
     onrefresh = () => {},
-    ondeleteorphaned = null,  // Callback: verwaiste Ordner loeschen
+    ondeleteorphaned = null,  // Callback: verwaiste Ordner löschen
     oncutter = null           // Callback für Cutter (nur recording)
   } = $props();
 
@@ -27,7 +27,7 @@
   let selectedFiles = $state(new Set());
   let isDownloading = $state(false);
   let sortBy = $state('date');       // 'name' | 'date' | 'size' | 'files'
-  let sortAsc = $state(false);       // false = neueste/groesste zuerst
+  let sortAsc = $state(false);       // false = neueste/größte zuerst
 
   // Sortierte Ordner
   let sortedFolders = $derived.by(() => {
@@ -39,7 +39,7 @@
           cmp = a.name.localeCompare(b.name, 'de');
           break;
         case 'date':
-          // start_time oder fallback auf aelteste Datei-modified
+          // start_time oder fallback auf älteste Datei-modified
           const dateA = a.start_time || _oldestFileDate(a) || '';
           const dateB = b.start_time || _oldestFileDate(b) || '';
           cmp = dateA.localeCompare(dateB);

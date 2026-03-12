@@ -67,7 +67,7 @@ class CacheService:
         return {"status": "synced", "count": count}
     
     async def _fetch_stations(self) -> List[dict]:
-        """Laedt alle Sender von API in Batches (API-Limit ~20000 pro Request)"""
+        """Lädt alle Sender von API in Batches (API-Limit ~20000 pro Request)"""
         BATCH_SIZE = 20000
         all_stations = []
         offset = 0
@@ -206,7 +206,7 @@ class CacheService:
             }
     
     def get_tags(self, limit: int = 100) -> list:
-        """Holt alle verfuegbaren Tags mit Counts (fuer Kategorie-Verwaltung)."""
+        """Holt alle verfügbaren Tags mit Counts (für Kategorie-Verwaltung)."""
         with db_session() as conn:
             c = conn.cursor()
             c.execute("""SELECT tags FROM stations WHERE tags != ''

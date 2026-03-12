@@ -12,7 +12,7 @@
 
   function sanitize(raw) {
     if (!raw) return '';
-    // Einfacher Tag-Filter: Entferne alles ausser erlaubte Tags
+    // Einfacher Tag-Filter: Entferne alles außer erlaubte Tags
     return raw.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/gi, (match, tag) => {
       const lower = tag.toLowerCase();
       if (ALLOWED_TAGS.has(lower)) {
@@ -22,7 +22,7 @@
           const href = hrefMatch ? hrefMatch[1] : '#';
           return `<a href="${href}" target="_blank" rel="noopener noreferrer">`;
         }
-        // Schliessende Tags und einfache Tags durchlassen
+        // Schließende Tags und einfache Tags durchlassen
         if (match.startsWith('</')) return `</${lower}>`;
         if (lower === 'br') return '<br>';
         return `<${lower}>`;

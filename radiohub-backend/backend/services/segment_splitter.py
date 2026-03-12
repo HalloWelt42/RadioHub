@@ -2,7 +2,7 @@
 RadioHub v0.2.2 - Segment Splitter
 
 Schneidet Aufnahmen anhand von ICY-Metadata in atomare Segmente.
-Nutzt Audio-Byte-Positionen (nicht Wallclock) fuer praezise Schnitte.
+Nutzt Audio-Byte-Positionen (nicht Wallclock) für präzise Schnitte.
 Stream-Copy (kein Re-Encoding). Reassembly via FFmpeg concat demuxer.
 """
 import asyncio
@@ -44,7 +44,7 @@ class SegmentSplitter:
                             file_format: str) -> list[dict]:
         """Schneidet Audio anhand .meta.json in Segmente.
 
-        Returns: Liste der erstellten Segmente (leer wenn kein Split moeglich).
+        Returns: Liste der erstellten Segmente (leer wenn kein Split möglich).
         """
         if session_id in self._active_splits:
             print(f"  Split: Session {session_id} wird bereits gesplittet")
@@ -89,10 +89,10 @@ class SegmentSplitter:
 
         total_ms = int(total_duration * 1000)
         if total_ms <= 0:
-            print("  Split: Keine gueltige Gesamtdauer")
+            print("  Split: Keine gültige Gesamtdauer")
             return []
 
-        # Byte-Ratio verfuegbar?
+        # Byte-Ratio verfügbar?
         use_byte_ratio = total_audio_bytes > 0 and "b" in entries[0]
         if use_byte_ratio:
             print(f"  Split: Byte-Ratio Modus ({total_audio_bytes} total bytes)")
@@ -109,7 +109,7 @@ class SegmentSplitter:
 
         for i, entry in enumerate(entries):
             if use_byte_ratio:
-                # Praezise Position via Byte-Ratio
+                # Präzise Position via Byte-Ratio
                 entry_bytes = entry.get("b", 0)
                 start_ms = int((entry_bytes / total_audio_bytes) * total_ms)
                 if i + 1 < len(entries):
@@ -196,20 +196,20 @@ class SegmentSplitter:
                      seg["start_ms"], seg["end_ms"], seg["duration_ms"],
                      seg["file_path"], seg["file_size"]))
 
-        # Originaldatei loeschen
+        # Originaldatei löschen
         try:
             audio_path.unlink()
-            print(f"  Split: Originaldatei geloescht: {audio_path.name}")
+            print(f"  Split: Originaldatei gelöscht: {audio_path.name}")
         except Exception as e:
-            print(f"  Split: Originaldatei nicht loeschbar: {e}")
+            print(f"  Split: Originaldatei nicht löschbar: {e}")
 
-        # Session file_path auf Verzeichnis updaten (Marker fuer Segmente)
+        # Session file_path auf Verzeichnis updaten (Marker für Segmente)
         with db_session() as conn:
             c = conn.cursor()
             c.execute("UPDATE sessions SET file_path = ? WHERE id = ?",
                       (str(session_dir), session_id))
 
-        print(f"  Split: {len(segments)} Segmente erstellt fuer {session_id}")
+        print(f"  Split: {len(segments)} Segmente erstellt für {session_id}")
         return segments
 
     async def split_at_times(self, session_id: str, audio_path: Path,
@@ -245,7 +245,7 @@ class SegmentSplitter:
             print(f"  CustomSplit: Audio-Datei nicht gefunden: {audio_path}")
             return []
 
-        # Bestehende Segmente loeschen
+        # Bestehende Segmente löschen
         existing = self.get_segments(session_id)
         if existing:
             for seg in existing:
@@ -351,12 +351,12 @@ class SegmentSplitter:
                      seg["start_ms"], seg["end_ms"], seg["duration_ms"],
                      seg["file_path"], seg["file_size"]))
 
-        # Originaldatei loeschen
+        # Originaldatei löschen
         try:
             audio_path.unlink()
-            print(f"  CustomSplit: Originaldatei geloescht: {audio_path.name}")
+            print(f"  CustomSplit: Originaldatei gelöscht: {audio_path.name}")
         except Exception as e:
-            print(f"  CustomSplit: Originaldatei nicht loeschbar: {e}")
+            print(f"  CustomSplit: Originaldatei nicht löschbar: {e}")
 
         # Session file_path auf Verzeichnis updaten
         with db_session() as conn:
@@ -364,7 +364,7 @@ class SegmentSplitter:
             c.execute("UPDATE sessions SET file_path = ? WHERE id = ?",
                       (str(session_dir), session_id))
 
-        print(f"  CustomSplit: {len(segments)} Segmente erstellt fuer {session_id}")
+        print(f"  CustomSplit: {len(segments)} Segmente erstellt für {session_id}")
         return segments
 
     async def concat_session(self, session_id: str) -> Optional[Path]:
@@ -376,7 +376,7 @@ class SegmentSplitter:
         if not segments:
             return None
 
-        # Pruefen ob alle Dateien existieren
+        # Prüfen ob alle Dateien existieren
         for seg in segments:
             fp = Path(seg["file_path"])
             if not fp.exists():
@@ -390,7 +390,7 @@ class SegmentSplitter:
         concat_file = cache_dir / f"{session_id}_concat.txt"
         with open(concat_file, "w", encoding="utf-8") as f:
             for seg in segments:
-                # Pfade mit einfachen Anfuehrungszeichen escapen
+                # Pfade mit einfachen Anführungszeichen escapen
                 safe_path = seg["file_path"].replace("'", "'\\''")
                 f.write(f"file '{safe_path}'\n")
 
@@ -425,7 +425,7 @@ class SegmentSplitter:
             print(f"  Concat: Fehler: {e}")
             return None
         finally:
-            # Concat-Liste aufraeumen
+            # Concat-Liste aufräumen
             if concat_file.exists():
                 concat_file.unlink()
 
@@ -456,21 +456,21 @@ class SegmentSplitter:
             return dict(row) if row else None
 
     def delete_segment(self, session_id: str, segment_id: int) -> bool:
-        """Loescht ein einzelnes Segment (Datei + DB).
+        """Löscht ein einzelnes Segment (Datei + DB).
 
-        Falls keine Segmente mehr: Session wird ebenfalls geloescht.
+        Falls keine Segmente mehr: Session wird ebenfalls gelöscht.
         Returns: True bei Erfolg.
         """
         segment = self.get_segment(segment_id)
         if not segment or segment["session_id"] != session_id:
             return False
 
-        # Datei loeschen
+        # Datei löschen
         fp = Path(segment["file_path"])
         if fp.exists():
             fp.unlink()
 
-        # DB-Eintrag loeschen
+        # DB-Eintrag löschen
         with db_session() as conn:
             c = conn.cursor()
             c.execute("DELETE FROM segments WHERE id = ?", (segment_id,))
@@ -485,14 +485,14 @@ class SegmentSplitter:
                         c.execute("UPDATE segments SET segment_index = ? WHERE id = ?",
                                   (new_idx, seg["id"]))
         else:
-            # Keine Segmente mehr -> Session-Verzeichnis und Session loeschen
+            # Keine Segmente mehr -> Session-Verzeichnis und Session löschen
             # Verzeichnis aus dem Segment-Pfad ableiten (parent = session_dir)
             session_dir = Path(segment["file_path"]).parent
             self._cleanup_dir(session_dir)
 
             with db_session() as conn:
                 c = conn.cursor()
-                # Meta-Datei loeschen
+                # Meta-Datei löschen
                 c.execute("SELECT meta_file_path FROM sessions WHERE id = ?", (session_id,))
                 row = c.fetchone()
                 if row and row[0]:
@@ -501,12 +501,12 @@ class SegmentSplitter:
                         mp.unlink()
                 c.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
 
-            print(f"  Segment: Letztes Segment geloescht, Session {session_id} entfernt")
+            print(f"  Segment: Letztes Segment gelöscht, Session {session_id} entfernt")
 
         return True
 
     def _cleanup_dir(self, dir_path: Path):
-        """Loescht ein Verzeichnis und seinen Inhalt."""
+        """Löscht ein Verzeichnis und seinen Inhalt."""
         if not dir_path.exists() or not dir_path.is_dir():
             return
         for f in dir_path.iterdir():

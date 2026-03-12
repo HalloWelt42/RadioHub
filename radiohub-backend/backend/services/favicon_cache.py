@@ -1,7 +1,7 @@
 """
 RadioHub - Favicon Cache Service
 
-Laedt Sender-Favicons herunter und speichert sie lokal.
+Lädt Sender-Favicons herunter und speichert sie lokal.
 Externe URLs werden nur einmal aufgerufen, danach aus Cache bedient.
 """
 import logging
@@ -32,7 +32,7 @@ TIMEOUT = 5.0
 
 
 def get_cached_path(uuid: str) -> Path | None:
-    """Gibt den Pfad zum gecachten Favicon zurueck, oder None."""
+    """Gibt den Pfad zum gecachten Favicon zurück, oder None."""
     matches = list(FAVICON_DIR.glob(f"{uuid}.*"))
     return matches[0] if matches else None
 
@@ -68,12 +68,12 @@ async def get_or_download(uuid: str, favicon_url: str) -> Path | None:
             return path
 
     except Exception as e:
-        logger.debug("Favicon-Download fehlgeschlagen fuer %s: %s", uuid, e)
+        logger.debug("Favicon-Download fehlgeschlagen für %s: %s", uuid, e)
         return None
 
 
 async def cache_batch(stations: list[dict], max_count: int = 50):
-    """Favicons fuer eine Liste von Sendern im Hintergrund cachen."""
+    """Favicons für eine Liste von Sendern im Hintergrund cachen."""
     count = 0
     for s in stations:
         if count >= max_count:

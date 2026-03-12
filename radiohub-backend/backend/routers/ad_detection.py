@@ -1,7 +1,7 @@
 """
 RadioHub - Ad-Detection Router (Phase 2)
 
-API-Endpoints fuer Werbeerkennung:
+API-Endpoints für Werbeerkennung:
 Check, Report, False-Positive, Suspects, Decide, Summary, Scan-Stream, Batch-Status.
 """
 import json
@@ -48,7 +48,7 @@ class ScanRequest(BaseModel):
 
 @router.post("/scan")
 async def scan_batch(req: ScanRequest):
-    """Batch-Scan: Prueft N zufaellige, noch nicht gecheckte Sender."""
+    """Batch-Scan: Prüft N zufällige, noch nicht gecheckte Sender."""
     batch_size = min(req.batch_size, 200)
 
     with db_session() as conn:
@@ -99,7 +99,7 @@ def _count_unchecked() -> int:
 
 @router.get("/scan-stream")
 async def scan_stream(batch_size: int = Query(default=50, le=200)):
-    """SSE-Stream: Prueft Sender und sendet Fortschritt pro Sender."""
+    """SSE-Stream: Prüft Sender und sendet Fortschritt pro Sender."""
 
     with db_session() as conn:
         c = conn.cursor()
@@ -164,7 +164,7 @@ class BatchStatusRequest(BaseModel):
 
 @router.post("/batch-status")
 async def batch_status(req: BatchStatusRequest):
-    """Ad-Status fuer mehrere Sender auf einmal abfragen."""
+    """Ad-Status für mehrere Sender auf einmal abfragen."""
     if not req.uuids:
         return {}
 
@@ -190,19 +190,19 @@ async def batch_status(req: BatchStatusRequest):
 
 @router.get("/suspects")
 async def suspects(min_confidence: float = Query(default=0.0)):
-    """Verdaechtige Sender ueber Schwellwert, User hat noch nicht entschieden"""
+    """Verdächtige Sender über Schwellwert, User hat noch nicht entschieden"""
     return get_suspects(min_confidence)
 
 
 @router.post("/decide")
 async def decide(req: DecideRequest):
-    """User entscheidet ueber verdaechtigen Sender: block oder allow"""
+    """User entscheidet über verdächtigen Sender: block oder allow"""
     return decide_station_ad(req.uuid, req.action)
 
 
 @router.get("/summary/overview")
 async def summary():
-    """Uebersicht: Wie viele Sender in welchem Ad-Status"""
+    """Übersicht: Wie viele Sender in welchem Ad-Status"""
     data = get_ad_summary()
     data['remaining'] = _count_unchecked()
     return data
@@ -210,7 +210,7 @@ async def summary():
 
 @router.get("/{uuid}")
 async def get_station_ad_status(uuid: str):
-    """Ad-Status fuer einen Sender"""
+    """Ad-Status für einen Sender"""
     status = get_ad_status(uuid)
     if not status:
         return {"uuid": uuid, "status": "unknown", "confidence": 0.0}
@@ -219,7 +219,7 @@ async def get_station_ad_status(uuid: str):
 
 @router.post("/check")
 async def check_ads(req: CheckRequest):
-    """Sender auf Werbung pruefen (URL + Header-Check)"""
+    """Sender auf Werbung prüfen (URL + Header-Check)"""
     result = await check_station_ads(req.uuid, req.stream_url, req.name)
     return result
 

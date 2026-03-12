@@ -53,7 +53,7 @@
     const station = appState.currentStation;
     const playing = appState.isPlaying;
 
-    // Polling starten wenn Station spielt und ICY unterstuetzt
+    // Polling starten wenn Station spielt und ICY unterstützt
     if (playing && station?.icy && station?.uuid) {
       // Sofort ersten Titel holen
       fetchIcyTitle(station.uuid);
