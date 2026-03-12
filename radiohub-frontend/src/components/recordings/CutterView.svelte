@@ -38,7 +38,7 @@
   let dragStartX = 0;
   let dragMoved = false;
   let lastSeekTime = 0;
-  const SCROLL_THRESHOLD = 2/3; // Auto-Scroll ab letztem Drittel
+  const PLAYHEAD_RATIO = 0.3; // Playhead steht fest bei 30% von links
   let trimStart = $state(false);
   let trimEnd = $state(false);
   let autoPlayEnabled = $state(true); // Auto-Play bei Klick
@@ -158,13 +158,10 @@
       wasPlaying = true;
       playPosition = audio.currentTime;
 
-      // Auto-Scroll: erst wenn Playhead ins letzte Drittel kommt
-      const relPos = (playPosition - viewStart) / viewDuration;
-      if (relPos > SCROLL_THRESHOLD || relPos < 0) {
-        viewStart = Math.max(0,
-          Math.min(playPosition - viewDuration * (1/3), totalDuration - viewDuration)
-        );
-      }
+      // Waveform scrollt mit: Playhead bleibt bei PLAYHEAD_RATIO (30%)
+      viewStart = Math.max(0,
+        Math.min(playPosition - viewDuration * PLAYHEAD_RATIO, totalDuration - viewDuration)
+      );
       loader.ensureRange(viewStart, viewStart + viewDuration);
 
       drawFrame();
