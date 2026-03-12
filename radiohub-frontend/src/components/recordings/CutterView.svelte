@@ -156,7 +156,12 @@
       lastDrawMs = now;
 
       wasPlaying = true;
-      playPosition = audio.currentTime;
+
+      // Sprung unterdrücken: audio.currentTime ignorieren wenn weit weg von playPosition
+      // (Browser hat noch nicht zur gewünschten Position geseekt)
+      const audioTime = audio.currentTime;
+      if (playPosition >= 0 && Math.abs(audioTime - playPosition) > 5) return;
+      playPosition = audioTime;
 
       // Waveform scrollt mit: Playhead bleibt bei PLAYHEAD_RATIO (30%)
       viewStart = Math.max(0,
