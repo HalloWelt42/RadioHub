@@ -480,15 +480,7 @@
         date: session.start_time,
         duration: session.duration,
         playUrl
-      });
-      setTimeout(() => {
-        const audio = document.querySelector('audio');
-        if (audio) {
-          audio.currentTime = clamped;
-          audio.play().catch(() => {});
-          lastSeekTime = Date.now();
-        }
-      }, 500);
+      }, clamped);
     } else {
       const audio = document.querySelector('audio');
       if (audio) {

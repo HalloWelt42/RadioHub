@@ -187,8 +187,8 @@ export const actions = {
   },
 
   // Recording-Wiedergabe
-  async playRecording(recording) {
-    await engine.playRecording(recording);
+  async playRecording(recording, startTime = 0) {
+    await engine.playRecording(recording, startTime);
   },
 
   // Recording (delegiert an Engine)

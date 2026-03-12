@@ -258,8 +258,9 @@ export async function playPodcast(episode, podcast) {
 /**
  * Spielt eine Aufnahme ab.
  * recording = { path, name, session_id, station_name, date, duration, playUrl }
+ * startTime: Optionale Startposition in Sekunden (verhindert kurzes Abspielen ab 0:00)
  */
-export async function playRecording(recording) {
+export async function playRecording(recording, startTime = 0) {
   if (!_appState) return;
   const gen = ++_generation;
 
@@ -307,6 +308,24 @@ export async function playRecording(recording) {
 
   _audioEl.src = recording.playUrl;
   _audioEl.load();
+
+  if (startTime > 0) {
+    // Seek vor Play: warten bis Metadaten geladen, dann Position setzen
+    await new Promise(resolve => {
+      const onReady = () => {
+        _audioEl.removeEventListener('loadedmetadata', onReady);
+        _audioEl.currentTime = startTime;
+        resolve();
+      };
+      _audioEl.addEventListener('loadedmetadata', onReady, { once: true });
+      // Fallback falls Event schon gefeuert
+      setTimeout(() => {
+        _audioEl.removeEventListener('loadedmetadata', onReady);
+        _audioEl.currentTime = startTime;
+        resolve();
+      }, 2000);
+    });
+  }
 
   try {
     await _audioEl.play();
