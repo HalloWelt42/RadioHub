@@ -29,15 +29,26 @@ export function currentLanguage() {
 }
 
 /**
- * Sprache wechseln
+ * Sprache wechseln (mit Lazy-Loading fuer nicht-geladene Locales)
  */
-export function setLanguage(lang) {
+export async function setLanguage(lang) {
   const entry = availableLanguages.find(l => l.code === lang);
   if (!entry) {
     console.warn(`i18n: Unbekannte Sprache "${lang}", Fallback auf "de"`);
     lang = 'de';
   }
   if (lang === _lang) return;
+
+  // Lazy-Load: Locale nachladen wenn noch nicht vorhanden
+  if (!locales[lang]) {
+    try {
+      const mod = await import(`./locales/${lang}.js`);
+      locales[lang] = mod.default;
+    } catch (e) {
+      console.warn(`i18n: Locale "${lang}" nicht ladbar, Fallback auf EN/DE`);
+    }
+  }
+
   _lang = lang;
   _translations = locales[lang] || {};
   // Alle Listener benachrichtigen
