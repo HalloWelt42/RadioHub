@@ -1,9 +1,11 @@
 """
-RadioHub v0.2.1 - Recorder Service
+RadioHub v0.2.2 - Recorder Service
 
 Stream-Aufnahme mit FFmpeg: Stream-Copy (kein Re-Encoding),
 automatische Codec-Erkennung via ffprobe, Fallback auf MP3.
 Disk-Space-Guard gegen vollaufende Platte.
+Stall-Detection: Dateigröße wird alle 30s geprüft, bei Stillstand
+wird die Aufnahme automatisch als 'stalled' markiert.
 """
 import asyncio
 import json
@@ -21,6 +23,10 @@ from .audio_utils import probe_duration
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
+
+# Stall-Detection: Nach so vielen Prüfungen ohne Wachstum -> stalled
+STALL_CHECK_INTERVAL = 30   # Sekunden zwischen Prüfungen
+STALL_MAX_CHECKS = 3        # 3x keine Änderung = 90s Stillstand -> stalled
 
 
 # Codec -> Dateiendung
@@ -242,30 +248,90 @@ class RecorderManager:
             return {"success": False, "error": str(e)}
 
     async def _monitor_process(self, session: RecordingSession):
-        """Überwacht FFmpeg-Prozess auf unerwartetes Ende"""
+        """Überwacht FFmpeg-Prozess auf unerwartetes Ende UND Stall-Detection.
+
+        Prüft alle STALL_CHECK_INTERVAL Sekunden ob die Dateigröße wächst.
+        Nach STALL_MAX_CHECKS ohne Wachstum: FFmpeg killen + als stalled markieren.
+        Prüft zusätzlich Disk-Space gegen MIN_FREE_DISK_MB.
+        """
         if not session.process:
             return
 
+        last_size = 0
+        stall_count = 0
+
         try:
-            returncode = await session.process.wait()
+            while True:
+                # Warte auf Prozess-Ende ODER Timeout für nächsten Check
+                try:
+                    returncode = await asyncio.wait_for(
+                        session.process.wait(),
+                        timeout=STALL_CHECK_INTERVAL
+                    )
+                    # FFmpeg hat sich beendet
+                    if self.active_session and self.active_session.id == session.id:
+                        if returncode != 0:
+                            stderr = b""
+                            if session.process.stderr:
+                                stderr = await session.process.stderr.read()
+                            err_msg = stderr.decode("utf-8", errors="replace")[-500:]
+                            print(f"REC abgebrochen: {session.id} (exit {returncode})")
+                            if err_msg.strip():
+                                print(f"  FFmpeg: {err_msg.strip()}")
+                            self._finalize_session(session, "failed")
+                        else:
+                            print(f"REC Stream beendet: {session.id}")
+                            self._finalize_session(session, "completed")
+                    return
 
-            # Nur reagieren wenn Session noch aktiv (nicht manuell gestoppt)
-            if self.active_session and self.active_session.id == session.id:
-                if returncode != 0:
-                    stderr = b""
-                    if session.process.stderr:
-                        stderr = await session.process.stderr.read()
-                    err_msg = stderr.decode("utf-8", errors="replace")[-500:]
-                    print(f"REC abgebrochen: {session.id} (exit {returncode})")
-                    if err_msg.strip():
-                        print(f"  FFmpeg: {err_msg.strip()}")
+                except asyncio.TimeoutError:
+                    pass  # Timeout = FFmpeg läuft noch, weiter mit Checks
 
-                    # Session als fehlgeschlagen markieren
-                    self._finalize_session(session, "failed")
+                # Session noch aktiv?
+                if not self.active_session or self.active_session.id != session.id:
+                    return
+
+                # --- Stall-Detection: Dateigröße prüfen ---
+                current_size = session.file_size
+                if current_size > last_size:
+                    # Wächst -> alles OK, Counter zurücksetzen
+                    last_size = current_size
+                    stall_count = 0
                 else:
-                    # Sauberes Ende (z.B. Stream endet)
-                    print(f"REC Stream beendet: {session.id}")
-                    self._finalize_session(session, "completed")
+                    stall_count += 1
+                    if stall_count >= STALL_MAX_CHECKS:
+                        elapsed = stall_count * STALL_CHECK_INTERVAL
+                        print(f"REC STALLED: {session.id} "
+                              f"(Dateigröße unverändert seit {elapsed}s, "
+                              f"letzte Größe: {current_size/1024/1024:.1f}MB)")
+                        # FFmpeg killen
+                        if session.process.returncode is None:
+                            session.process.kill()
+                            await session.process.wait()
+                        self._finalize_session(session, "stalled")
+                        return
+
+                # --- Disk-Space prüfen ---
+                try:
+                    rec_dir = get_radio_recordings_dir()
+                    stat = shutil.disk_usage(str(rec_dir))
+                    free_mb = stat.free / (1024 * 1024)
+                    if free_mb < MIN_FREE_DISK_MB:
+                        print(f"REC DISK FULL: {session.id} "
+                              f"(nur {free_mb:.0f}MB frei)")
+                        if session.process.returncode is None:
+                            session.process.terminate()
+                            try:
+                                await asyncio.wait_for(
+                                    session.process.wait(), timeout=5
+                                )
+                            except asyncio.TimeoutError:
+                                session.process.kill()
+                                await session.process.wait()
+                        self._finalize_session(session, "disk_full")
+                        return
+                except Exception:
+                    pass
 
         except asyncio.CancelledError:
             pass
@@ -374,6 +440,15 @@ class RecorderManager:
             self._finalize_session(session, "interrupted")
             return {"recording": False}
 
+        # Disk-Space für Warnung im Frontend
+        free_mb = None
+        try:
+            rec_dir = get_radio_recordings_dir()
+            stat = shutil.disk_usage(str(rec_dir))
+            free_mb = round(stat.free / (1024 * 1024))
+        except Exception:
+            pass
+
         status = {
             "recording": True,
             "session_id": session.id,
@@ -382,7 +457,8 @@ class RecorderManager:
             "duration": session.duration,
             "file_size": session.file_size,
             "codec": session.codec or "mp3",
-            "file_format": session.file_format
+            "file_format": session.file_format,
+            "free_disk_mb": free_mb
         }
 
         # ICY-Daten mitliefern wenn Logger läuft

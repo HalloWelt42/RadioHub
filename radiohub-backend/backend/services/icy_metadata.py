@@ -1,8 +1,9 @@
 """
-RadioHub v0.2.1 - ICY Metadata Logger
+RadioHub v0.2.2 - ICY Metadata Logger
 
 Liest ICY-Metadata (StreamTitle) aus dem Radio-Stream via Raw-TCP.
 Loggt Titelwechsel mit Audio-Byte-Positionen in eine .meta.json Datei.
+Mit Reconnect-Logik bei Verbindungsabbruch.
 
 ICY-Protokoll:
 - HTTP/1.0 GET mit "Icy-MetaData: 1" Header
@@ -25,6 +26,10 @@ from typing import Optional
 from urllib.parse import urlparse
 
 
+ICY_MAX_RECONNECTS = 10       # Maximale Reconnect-Versuche
+ICY_RECONNECT_DELAY = 5       # Sekunden zwischen Versuchen
+
+
 class IcyMetadataLogger:
     def __init__(self):
         self.entries: list[dict] = []
@@ -35,14 +40,45 @@ class IcyMetadataLogger:
         self._last_title: str = ""
         self._cumulative_bytes: int = 0
         self._metaint: int = 0
+        self._reconnect_count: int = 0
+
+    async def _connect(self, host: str, port: int, path: str,
+                       timeout: float = 10.0) -> int:
+        """Verbindet zum Stream und gibt metaint zurück (0 bei Fehler)."""
+        self._close_connection()
+
+        try:
+            self._reader, self._writer = await asyncio.wait_for(
+                asyncio.open_connection(host, port),
+                timeout=timeout
+            )
+        except (asyncio.TimeoutError, OSError) as e:
+            print(f"  ICY: Verbindung fehlgeschlagen: {e}")
+            return 0
+
+        request = (
+            f"GET {path} HTTP/1.0\r\n"
+            f"Host: {host}\r\n"
+            f"Icy-MetaData: 1\r\n"
+            f"User-Agent: RadioHub/0.2\r\n"
+            f"Connection: close\r\n"
+            f"\r\n"
+        )
+
+        self._writer.write(request.encode())
+        await self._writer.drain()
+
+        metaint = await self._read_headers()
+        return metaint
 
     async def run(self, stream_url: str, output_path: Path, timeout: float = 10.0):
-        """Startet ICY-Metadata-Logging. Läuft bis stop() aufgerufen wird."""
+        """Startet ICY-Metadata-Logging mit Reconnect. Läuft bis stop()."""
         self.entries = []
         self._running = True
         self._last_title = ""
         self._cumulative_bytes = 0
         self._metaint = 0
+        self._reconnect_count = 0
 
         parsed = urlparse(stream_url)
         host = parsed.hostname
@@ -56,43 +92,56 @@ class IcyMetadataLogger:
             return
 
         try:
-            self._reader, self._writer = await asyncio.wait_for(
-                asyncio.open_connection(host, port),
-                timeout=timeout
-            )
-        except (asyncio.TimeoutError, OSError) as e:
-            print(f"  ICY: Verbindung fehlgeschlagen: {e}")
-            return
-
-        # HTTP/1.0 Request mit ICY-Header
-        request = (
-            f"GET {path} HTTP/1.0\r\n"
-            f"Host: {host}\r\n"
-            f"Icy-MetaData: 1\r\n"
-            f"User-Agent: RadioHub/0.2\r\n"
-            f"Connection: close\r\n"
-            f"\r\n"
-        )
-
-        try:
-            self._writer.write(request.encode())
-            await self._writer.drain()
-
-            # Response-Header lesen
-            metaint = await self._read_headers()
+            metaint = await self._connect(host, port, path, timeout)
             if not metaint:
-                print("  ICY: Kein icy-metaint Header, Stream unterstützt kein ICY")
-                self._close()
+                print("  ICY: Kein icy-metaint Header, Stream ohne ICY")
                 return
 
             self._metaint = metaint
-            # Start-Time NACH Connection+Headers (näher am Audio-Start)
             self._start_time = asyncio.get_event_loop().time()
-
             print(f"  ICY: Metadata-Interval: {metaint} Bytes")
 
-            # Metadata-Loop
-            await self._metadata_loop(metaint, output_path)
+            # Metadata-Loop mit Reconnect
+            while self._running:
+                try:
+                    await self._metadata_loop(metaint, output_path)
+                    # Sauberes Ende der Loop = Stream beendet
+                    if not self._running:
+                        break
+
+                    # Reconnect-Versuch
+                    self._reconnect_count += 1
+                    if self._reconnect_count > ICY_MAX_RECONNECTS:
+                        print(f"  ICY: Max Reconnects erreicht ({ICY_MAX_RECONNECTS})")
+                        break
+
+                    print(f"  ICY: Stream unterbrochen, "
+                          f"Reconnect {self._reconnect_count}/{ICY_MAX_RECONNECTS} "
+                          f"in {ICY_RECONNECT_DELAY}s...")
+                    await asyncio.sleep(ICY_RECONNECT_DELAY)
+
+                    if not self._running:
+                        break
+
+                    new_metaint = await self._connect(host, port, path, timeout)
+                    if not new_metaint:
+                        print(f"  ICY: Reconnect fehlgeschlagen")
+                        # Nächsten Versuch abwarten
+                        continue
+
+                    metaint = new_metaint
+                    print(f"  ICY: Reconnect erfolgreich "
+                          f"({self._reconnect_count}/{ICY_MAX_RECONNECTS})")
+
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    if self._running:
+                        print(f"  ICY: Loop-Fehler: {e}")
+                        self._reconnect_count += 1
+                        if self._reconnect_count > ICY_MAX_RECONNECTS:
+                            break
+                        await asyncio.sleep(ICY_RECONNECT_DELAY)
 
         except asyncio.CancelledError:
             pass
@@ -101,7 +150,7 @@ class IcyMetadataLogger:
                 print(f"  ICY: Fehler: {e}")
         finally:
             self._save(output_path)
-            self._close()
+            self._close_connection()
 
     async def _read_headers(self) -> int:
         """Liest HTTP-Response-Header und gibt icy-metaint zurück (0 wenn nicht vorhanden)."""
@@ -197,9 +246,8 @@ class IcyMetadataLogger:
         except Exception as e:
             print(f"  ICY: Speichern fehlgeschlagen: {e}")
 
-    def _close(self):
-        """Schließt die TCP-Verbindung."""
-        self._running = False
+    def _close_connection(self):
+        """Schließt die TCP-Verbindung (ohne _running zu ändern)."""
         if self._writer:
             try:
                 self._writer.close()
@@ -211,7 +259,7 @@ class IcyMetadataLogger:
     def stop(self):
         """Stoppt den Logger."""
         self._running = False
-        self._close()
+        self._close_connection()
 
     @property
     def entry_count(self) -> int:
