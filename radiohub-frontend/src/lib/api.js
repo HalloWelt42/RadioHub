@@ -314,6 +314,10 @@ class RadioHubAPI {
     return `${this.baseUrl}/api/recordings/play?path=${encodeURIComponent(path)}`;
   }
 
+  getStreamProxyUrl(streamUrl) {
+    return `${this.baseUrl}/api/stream/proxy?url=${encodeURIComponent(streamUrl)}`;
+  }
+
   getSessionAudioUrl(sessionId) {
     return `${this.baseUrl}/api/recording/sessions/${sessionId}/audio`;
   }

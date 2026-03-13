@@ -60,6 +60,7 @@ vi.mock('../src/lib/api.js', () => ({
       const base = 'http://localhost:9091/api/hls/playlist.m3u8';
       return sid ? `${base}?sid=${sid}` : base;
     }),
+    getStreamProxyUrl: vi.fn((url) => `http://localhost:9091/api/stream/proxy?url=${encodeURIComponent(url)}`),
     getEpisodePlayUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/play`),
     getEpisodeStreamUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/stream`),
     markEpisodePlayed: vi.fn(() => Promise.resolve({})),
@@ -205,10 +206,10 @@ describe('PlayerEngine', () => {
       expect(state.playerError).toBe(null);
     });
 
-    it('TC-A2: Audio-Source wird auf Stream-URL gesetzt', async () => {
+    it('TC-A2: Audio-Source nutzt Backend-Proxy', async () => {
       await engine.playStation(STATION_A);
 
-      expect(audioEl.src).toBe(STATION_A.url_resolved);
+      expect(audioEl.src).toBe(api.getStreamProxyUrl(STATION_A.url_resolved));
       expect(audioEl.load).toHaveBeenCalled();
       expect(audioEl.play).toHaveBeenCalled();
     });
@@ -493,7 +494,7 @@ describe('PlayerEngine', () => {
       await engine.playStation(STATION_B);
 
       expect(state.currentStation).toEqual(STATION_B);
-      expect(audioEl.src).toBe(STATION_B.url_resolved);
+      expect(audioEl.src).toBe(api.getStreamProxyUrl(STATION_B.url_resolved));
     });
 
     it('TC-SW4: Schneller Wechsel A->B->C: Nur C spielt', async () => {
@@ -508,7 +509,7 @@ describe('PlayerEngine', () => {
 
       // Nur C darf aktiv sein
       expect(state.currentStation.name).toBe('TestRadio C');
-      expect(audioEl.src).toBe('http://c.example.com');
+      expect(audioEl.src).toBe(api.getStreamProxyUrl('http://c.example.com'));
     });
 
     it('TC-SW5: Generation Counter verhindert veraltete State-Updates', async () => {

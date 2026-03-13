@@ -4,8 +4,10 @@ RadioHub v0.1.11 - Stations Router
 Sender-Suche, Cache-Sync, Filter mit Sortierung, Bitrate-Detection
 """
 import asyncio
+import httpx
 from typing import Optional, List, Literal
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from ..services.cache import cache_service
@@ -221,3 +223,58 @@ async def set_station_icy_quality(uuid: str, req: IcyQualityRequest):
 
     set_icy_quality(uuid, req.quality)
     return {"uuid": uuid, "icy_quality": req.quality}
+
+
+@router.get("/stream/proxy")
+async def stream_proxy(url: str = Query(..., description="Stream-URL"), request: Request = None):
+    """Proxied einen Audio-Stream durch das Backend (umgeht CORS)."""
+    if not url.startswith(("http://", "https://")):
+        from fastapi import HTTPException
+        raise HTTPException(400, "Ungueltige URL")
+
+    headers = {
+        "User-Agent": "RadioHub/1.0",
+        "Icy-MetaData": "1",
+    }
+    range_header = request.headers.get("range") if request else None
+    if range_header:
+        headers["Range"] = range_header
+
+    try:
+        client = httpx.AsyncClient(follow_redirects=True, timeout=30.0)
+        resp = await client.send(
+            client.build_request("GET", url, headers=headers),
+            stream=True
+        )
+    except httpx.RequestError as e:
+        from fastapi import HTTPException
+        raise HTTPException(502, f"Stream nicht erreichbar: {e}")
+
+    if resp.status_code >= 400:
+        await resp.aclose()
+        await client.aclose()
+        from fastapi import HTTPException
+        raise HTTPException(resp.status_code, "Upstream-Fehler")
+
+    content_type = resp.headers.get("content-type", "audio/mpeg")
+
+    response_headers = {"Cache-Control": "no-cache"}
+    for h in ("content-length", "content-range", "accept-ranges",
+              "icy-metaint", "icy-name", "icy-genre", "icy-br"):
+        if h in resp.headers:
+            response_headers[h] = resp.headers[h]
+
+    async def stream_chunks():
+        try:
+            async for chunk in resp.aiter_bytes(chunk_size=65536):
+                yield chunk
+        finally:
+            await resp.aclose()
+            await client.aclose()
+
+    return StreamingResponse(
+        stream_chunks(),
+        status_code=resp.status_code,
+        media_type=content_type,
+        headers=response_headers,
+    )

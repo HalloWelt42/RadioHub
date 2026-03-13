@@ -153,7 +153,7 @@ export async function playStation(station) {
 
 
   const url = station.url_resolved || station.url;
-  _audioEl.src = url;
+  _audioEl.src = api.getStreamProxyUrl(url);
   _audioEl.load();
 
   try {
