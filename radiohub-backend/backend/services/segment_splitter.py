@@ -365,25 +365,32 @@ class SegmentSplitter:
         """Reassembliert alle Segmente einer Session zu einer Datei.
 
         Returns: Pfad zur zusammengebauten Datei (in CACHE_DIR) oder None.
+        Ueberspringt fehlende Segment-Dateien (mit Warnung).
         """
         segments = self.get_segments(session_id)
         if not segments:
             return None
 
-        # Prüfen ob alle Dateien existieren
+        # Fehlende Dateien filtern statt komplett abbrechen
+        valid_segments = []
         for seg in segments:
             fp = Path(seg["file_path"])
-            if not fp.exists():
-                print(f"  Concat: Segment-Datei fehlt: {fp}")
-                return None
+            if fp.exists():
+                valid_segments.append(seg)
+            else:
+                print(f"  Concat: Segment-Datei fehlt, uebersprungen: {fp}")
+
+        if not valid_segments:
+            print(f"  Concat: Keine gueltige Segment-Datei fuer {session_id}")
+            return None
 
         cache_dir = get_cache_dir()
-        ext = Path(segments[0]["file_path"]).suffix
+        ext = Path(valid_segments[0]["file_path"]).suffix
 
         # Concat-Listdatei schreiben
         concat_file = cache_dir / f"{session_id}_concat.txt"
         with open(concat_file, "w", encoding="utf-8") as f:
-            for seg in segments:
+            for seg in valid_segments:
                 # Pfade mit einfachen Anführungszeichen escapen
                 safe_path = seg["file_path"].replace("'", "'\\''")
                 f.write(f"file '{safe_path}'\n")
@@ -498,6 +505,51 @@ class SegmentSplitter:
             print(f"  Segment: Letztes Segment gelöscht, Session {session_id} entfernt")
 
         return True
+
+    def repair_session(self, session_id: str) -> dict:
+        """Bereinigt verwaiste Segmente (DB-Eintraege ohne Datei auf Platte).
+
+        Loescht DB-Eintraege deren Dateien fehlen, re-indexiert den Rest.
+        Returns: Dict mit removed (geloeschte), kept (beibehaltene) Anzahl.
+        """
+        segments = self.get_segments(session_id)
+        if not segments:
+            return {"removed": 0, "kept": 0, "removed_titles": []}
+
+        removed_titles = []
+        kept_ids = []
+
+        for seg in segments:
+            fp = Path(seg["file_path"])
+            if fp.exists() and fp.stat().st_size > 0:
+                kept_ids.append(seg["id"])
+            else:
+                removed_titles.append(seg.get("title", f"Segment {seg['segment_index']}"))
+                # DB-Eintrag loeschen (Datei existiert nicht, also nichts zu unlinken)
+                with db_session() as conn:
+                    c = conn.cursor()
+                    c.execute("DELETE FROM segments WHERE id = ?", (seg["id"],))
+
+        # Verbleibende re-indexieren
+        if kept_ids and len(kept_ids) < len(segments):
+            remaining = self.get_segments(session_id)
+            with db_session() as conn:
+                c = conn.cursor()
+                for new_idx, seg in enumerate(remaining):
+                    if seg["segment_index"] != new_idx:
+                        c.execute("UPDATE segments SET segment_index = ? WHERE id = ?",
+                                  (new_idx, seg["id"]))
+
+        removed_count = len(segments) - len(kept_ids)
+        if removed_count > 0:
+            print(f"  Repair: {session_id} -- {removed_count} verwaiste Segmente entfernt, "
+                  f"{len(kept_ids)} behalten")
+
+        return {
+            "removed": removed_count,
+            "kept": len(kept_ids),
+            "removed_titles": removed_titles
+        }
 
     def _cleanup_dir(self, dir_path: Path):
         """Löscht ein Verzeichnis und seinen Inhalt."""

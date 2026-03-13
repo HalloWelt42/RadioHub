@@ -136,19 +136,41 @@ async def download_recording(filename: str):
 
 @router.get("/segments")
 async def get_all_segments():
-    """Alle Segmente aller Sessions"""
+    """Alle Segmente aller Sessions (bereinigt automatisch verwaiste)."""
     segments = splitter.get_all_segments()
+
+    # Verwaiste Segmente erkennen und bereinigen
+    orphan_sessions = set()
+    for seg in segments:
+        fp = Path(seg["file_path"])
+        if not fp.exists():
+            orphan_sessions.add(seg["session_id"])
+
+    if orphan_sessions:
+        for sid in orphan_sessions:
+            splitter.repair_session(sid)
+        # Bereinigte Liste neu laden
+        segments = splitter.get_all_segments()
+
     return {"count": len(segments), "segments": segments}
 
 
 @router.get("/sessions/{session_id}/segments")
 async def get_segments(session_id: str):
-    """Alle Segmente einer Session"""
+    """Alle Segmente einer Session (bereinigt automatisch verwaiste)."""
     session = rec_manager.get_session(session_id)
     if not session:
         raise HTTPException(404, "Session nicht gefunden")
 
     segments = splitter.get_segments(session_id)
+
+    # Verwaiste Segmente automatisch bereinigen
+    has_orphans = any(not Path(s["file_path"]).exists() for s in segments)
+    if has_orphans:
+        result = splitter.repair_session(session_id)
+        if result["removed"] > 0:
+            segments = splitter.get_segments(session_id)
+
     return {"count": len(segments), "segments": segments}
 
 
@@ -206,6 +228,51 @@ async def delete_segment(session_id: str, segment_id: int):
     if not success:
         raise HTTPException(404, "Segment nicht gefunden")
     return {"success": True}
+
+
+@router.post("/sessions/{session_id}/repair")
+async def repair_session(session_id: str):
+    """Bereinigt verwaiste Segmente (DB-Eintraege ohne Datei).
+
+    Entfernt Geister-Eintraege, re-indexiert verbleibende Segmente.
+    """
+    session = rec_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(404, "Session nicht gefunden")
+
+    result = splitter.repair_session(session_id)
+    return {"success": True, **result}
+
+
+@router.post("/repair-all")
+async def repair_all_sessions():
+    """Prueft alle Sessions auf verwaiste Segmente und bereinigt sie."""
+    all_segments = splitter.get_all_segments()
+    if not all_segments:
+        return {"success": True, "sessions_checked": 0, "total_removed": 0}
+
+    # Alle betroffenen Session-IDs sammeln
+    session_ids = sorted(set(s["session_id"] for s in all_segments))
+    total_removed = 0
+    repaired = []
+
+    for sid in session_ids:
+        result = splitter.repair_session(sid)
+        if result["removed"] > 0:
+            total_removed += result["removed"]
+            repaired.append({
+                "session_id": sid,
+                "removed": result["removed"],
+                "kept": result["kept"],
+                "removed_titles": result["removed_titles"]
+            })
+
+    return {
+        "success": True,
+        "sessions_checked": len(session_ids),
+        "total_removed": total_removed,
+        "repaired": repaired
+    }
 
 
 @router.post("/sessions/{session_id}/split")

@@ -44,6 +44,14 @@ async def _get_audio_path(session_id: str) -> Path:
         if not segments:
             raise HTTPException(404, "Keine Segmente gefunden")
 
+        # Verwaiste Segmente automatisch bereinigen
+        has_orphans = any(not Path(s["file_path"]).exists() for s in segments)
+        if has_orphans:
+            repair = splitter.repair_session(session_id)
+            segments = splitter.get_segments(session_id)
+            if not segments:
+                raise HTTPException(404, "Keine gueltigen Segmente nach Bereinigung")
+
         # Prüfen ob bereits eine zusammengebaute Datei im Cache existiert
         cache_dir = get_cache_dir()
         ext = Path(segments[0]["file_path"]).suffix
