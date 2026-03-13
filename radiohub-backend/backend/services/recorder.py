@@ -1,5 +1,5 @@
 """
-RadioHub v0.3.0 - Recorder Service (Segmented Recording)
+RadioHub v0.3.1 - Recorder Service (Segmented Recording)
 
 Stream-Aufnahme mit FFmpeg Segment-Muxer: Schreibt 30-Min-Chunks
 statt einer monolithischen Datei. Bei Stream-Abbruch gehen max 30 Min verloren.
@@ -10,6 +10,9 @@ Ablauf:
 3. Stop:
    a) Mit ICY-Metadata: Chunks concat -> Titel-Split -> fertig
    b) Ohne ICY-Metadata: Chunks als 30-Min-Segmente registrieren
+
+Debug-Log: Zuschaltbar per Config 'recording_debug_log'.
+Schreibt eine .log-Datei neben die Aufnahme mit allen wichtigen Events.
 """
 import asyncio
 import json
@@ -56,6 +59,39 @@ SEGMENT_FORMATS = {
     ".wav": "wav",
 }
 
+# Snapshot-Intervall: Alle N Monitor-Zyklen einen Groessen-Snapshot loggen
+SNAPSHOT_INTERVAL = 10  # 10 * 30s = 5 Minuten
+
+
+class SessionLogger:
+    """Optionales Debug-Log pro Aufnahme-Session.
+
+    Schreibt eine .log-Datei neben die Aufnahme. Nur aktiv wenn
+    Config 'recording_debug_log' = true. Loggt keine Audio-Daten,
+    nur Events mit Timestamps: Start, Chunks, Stalls, Groesse, Stop.
+    """
+
+    def __init__(self, log_path: Optional[Path] = None):
+        self._path = log_path
+        self._enabled = False
+        if log_path:
+            self._enabled = bool(config_service.get("recording_debug_log", False))
+
+    def log(self, msg: str):
+        """Schreibt eine Zeile ins Log (wenn aktiv)."""
+        if not self._enabled or not self._path:
+            return
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            with open(self._path, "a", encoding="utf-8") as f:
+                f.write(f"[{ts}] {msg}\n")
+        except Exception:
+            pass
+
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
 
 class RecordingSession:
     def __init__(self, session_id: str, station_uuid: str, station_name: str,
@@ -74,6 +110,7 @@ class RecordingSession:
         self.meta_file_path: Optional[Path] = None
         self.icy_logger: Optional[IcyMetadataLogger] = None
         self.icy_task: Optional[asyncio.Task] = None
+        self.logger: Optional[SessionLogger] = None
 
     @property
     def duration(self) -> float:
@@ -220,6 +257,13 @@ class RecorderManager:
         session.codec = codec
         session.file_format = ext
 
+        # Debug-Logger (optional, per Config zuschaltbar)
+        safe_name = "".join(
+            c if c.isalnum() or c in " -_" else "_" for c in station_name
+        )[:50]
+        log_path = active_dir / f"{session_id}_{safe_name}.log"
+        session.logger = SessionLogger(log_path)
+
         # FFmpeg-Kommando: Segment-Muxer fuer 30-Min-Chunks
         seg_fmt = SEGMENT_FORMATS.get(ext, "mp3")
         chunk_pattern = str(chunk_dir / f"chunk_%03d{ext}")
@@ -295,6 +339,15 @@ class RecorderManager:
             mode = "Stream-Copy" if codec else "MP3-Encoding"
             print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, "
                   f"Chunks a {CHUNK_DURATION}s)")
+            session.logger.log(f"START {station_name}")
+            session.logger.log(f"  Stream: {stream_url}")
+            session.logger.log(f"  Codec: {codec or 'fallback->mp3'}, Mode: {mode}")
+            session.logger.log(f"  Chunk-Dauer: {CHUNK_DURATION}s, Format: {ext}")
+            try:
+                _stat = shutil.disk_usage(str(active_dir))
+                session.logger.log(f"  Disk frei: {_stat.free / 1024 / 1024:.0f}MB")
+            except Exception:
+                pass
             return {
                 "success": True,
                 "session_id": session_id,
@@ -321,6 +374,8 @@ class RecorderManager:
         last_size = 0
         last_chunk_count = 0
         stall_count = 0
+        snapshot_counter = 0
+        log = session.logger
 
         try:
             while True:
@@ -339,9 +394,11 @@ class RecorderManager:
                             print(f"REC abgebrochen: {session.id} (exit {returncode})")
                             if err_msg.strip():
                                 print(f"  FFmpeg: {err_msg.strip()}")
+                            log.log(f"FFMPEG EXIT {returncode}: {err_msg.strip()[:200]}")
                             self._finalize_session(session, "failed")
                         else:
                             print(f"REC Stream beendet: {session.id}")
+                            log.log("FFMPEG EXIT 0 (Stream beendet)")
                             self._finalize_session(session, "completed")
                     return
 
@@ -355,18 +412,29 @@ class RecorderManager:
                 current_size = session.file_size
                 current_chunks = session.chunk_count
 
+                # Neuer Chunk? -> loggen
+                if current_chunks > last_chunk_count:
+                    log.log(f"CHUNK {current_chunks} "
+                            f"({current_size/1024/1024:.1f}MB gesamt, "
+                            f"{session.duration/60:.0f}min)")
+
                 if current_size > last_size or current_chunks > last_chunk_count:
                     last_size = current_size
                     last_chunk_count = current_chunks
                     stall_count = 0
                 else:
                     stall_count += 1
+                    if stall_count == 1:
+                        log.log(f"STALL? Keine Aenderung seit {STALL_CHECK_INTERVAL}s "
+                                f"({current_size/1024/1024:.1f}MB, "
+                                f"{current_chunks} Chunks)")
                     if stall_count >= STALL_MAX_CHECKS:
                         elapsed = stall_count * STALL_CHECK_INTERVAL
                         print(f"REC STALLED: {session.id} "
                               f"({current_chunks} Chunks, "
                               f"unverändert seit {elapsed}s, "
                               f"{current_size/1024/1024:.1f}MB)")
+                        log.log(f"STALLED nach {elapsed}s -- FFmpeg wird gekillt")
                         if session.process.returncode is None:
                             session.process.kill()
                             await session.process.wait()
@@ -381,6 +449,7 @@ class RecorderManager:
                     if free_mb < MIN_FREE_DISK_MB:
                         print(f"REC DISK FULL: {session.id} "
                               f"(nur {free_mb:.0f}MB frei)")
+                        log.log(f"DISK FULL: {free_mb:.0f}MB frei -- Aufnahme beendet")
                         if session.process.returncode is None:
                             session.process.terminate()
                             try:
@@ -394,6 +463,21 @@ class RecorderManager:
                         return
                 except Exception:
                     pass
+
+                # --- Periodischer Snapshot (alle ~5 Minuten) ---
+                snapshot_counter += 1
+                if snapshot_counter >= SNAPSHOT_INTERVAL:
+                    snapshot_counter = 0
+                    elapsed_min = session.duration / 60
+                    disk_info = ""
+                    try:
+                        _s = shutil.disk_usage(str(get_radio_recordings_dir()))
+                        disk_info = f", Disk {_s.free/1024/1024:.0f}MB frei"
+                    except Exception:
+                        pass
+                    log.log(f"SNAPSHOT {elapsed_min:.0f}min: "
+                            f"{current_chunks} Chunks, "
+                            f"{current_size/1024/1024:.1f}MB{disk_info}")
 
         except asyncio.CancelledError:
             pass
@@ -561,12 +645,17 @@ class RecorderManager:
         chunks = session.get_chunks()
         chunk_count = len(chunks)
         meta_count = session.icy_logger.entry_count if session.icy_logger else 0
+        log = session.logger
 
         print(f"REC gestoppt: {session.id} "
               f"({chunk_count} Chunks, {session.file_size/1024/1024:.1f}MB, "
               f"{meta_count} ICY-Eintraege)")
+        log.log(f"STOP nach {session.duration/60:.1f}min")
+        log.log(f"  {chunk_count} Chunks, {session.file_size/1024/1024:.1f}MB, "
+                f"{meta_count} ICY-Eintraege")
 
         if chunk_count == 0:
+            log.log("LEER: Keine Chunks geschrieben")
             self._finalize_session(session, "empty")
             return {"success": True, "session_id": session.id,
                     "duration": 0, "file_size": 0, "segments": 0}
@@ -586,12 +675,14 @@ class RecorderManager:
         }
 
         if has_icy:
+            log.log(f"STRATEGIE: Titel-Split ({meta_count} ICY-Eintraege)")
             # Chunks concatenieren -> eine Datei -> Titel-Split
             concat_file = await self._concat_chunks(session)
             if concat_file and concat_file.exists():
                 real_duration = await probe_duration(concat_file)
                 duration = real_duration if real_duration > 0 else session.duration
                 file_size = concat_file.stat().st_size
+                log.log(f"  Concat OK: {duration:.0f}s, {file_size/1024/1024:.1f}MB")
 
                 self._finalize_session(session, "completed",
                                        real_duration=real_duration)
@@ -610,19 +701,22 @@ class RecorderManager:
                     if segments:
                         result["segments"] = len(segments)
                         print(f"  REC Titel-Split: {len(segments)} Segmente")
+                        log.log(f"  Titel-Split: {len(segments)} Segmente")
                 except Exception as e:
                     print(f"  REC Split-Fehler: {e}")
+                    log.log(f"  Split-Fehler: {e}")
 
                 result["duration"] = duration
                 result["file_size"] = file_size
             else:
                 # Concat fehlgeschlagen -> Fallback: Chunks als Segmente
                 print("  REC Concat fehlgeschlagen, Fallback auf Chunk-Segmente")
+                log.log("CONCAT FEHLGESCHLAGEN -- Fallback auf Chunk-Segmente")
                 has_icy = False  # Fallthrough zu Chunk-Registrierung
 
         if not has_icy:
+            log.log(f"STRATEGIE: Chunk-Segmente (kein ICY oder Concat-Fallback)")
             # Chunks direkt als Segmente registrieren (30-Min-Teile)
-            # Erst Gesamtdauer ermitteln
             total_duration = 0
             for chunk in chunks:
                 d = await probe_duration(chunk)
@@ -642,7 +736,10 @@ class RecorderManager:
             result["duration"] = duration
             result["file_size"] = file_size
             print(f"  REC Chunk-Segmente: {seg_count} Teile")
+            log.log(f"  {seg_count} Segmente, {duration:.0f}s gesamt")
 
+        log.log(f"FERTIG: {result.get('duration', 0):.0f}s, "
+                f"{result.get('segments', 0)} Segmente")
         result["file_path"] = str(session.session_dir)
         return result
 
