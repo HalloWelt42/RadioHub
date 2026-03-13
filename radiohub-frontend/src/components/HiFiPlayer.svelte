@@ -547,7 +547,7 @@
           ontouchstart={() => prevPressed = true}
           ontouchend={() => { prevPressed = false; navigatePrev(); }}
         >
-          <HiFiLed color={prevPressed ? 'yellow' : 'off'} size="small" />
+          <HiFiLed color={prevPressed ? 'yellow' : 'off'} size="wide" />
           <i class="fa-solid fa-backward-step transport-icon"></i>
         </button>
 
@@ -563,7 +563,7 @@
           ontouchstart={() => skipBackPressed = true}
           ontouchend={() => { skipBackPressed = false; handleSkip(-10); }}
         >
-          <HiFiLed color={skipBackPressed ? 'yellow' : 'off'} size="small" />
+          <HiFiLed color={skipBackPressed ? 'yellow' : 'off'} size="wide" />
           <i class="fa-solid fa-backward transport-icon"></i>
         </button>
 
@@ -576,19 +576,19 @@
           onmouseup={() => { stopPressed = false; handleStop(); sfx.click(); }}
           onmouseleave={() => stopPressed = false}
         >
-          <HiFiLed color={stopLedColor} size="small" />
+          <HiFiLed color={stopLedColor} size="wide" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
         <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : appState.playerMode === 'direct' ? t('player.play') + ' / ' + t('player.stop') + ' (Space)' : (appState.isPaused ? t('player.pause') : t('player.play')) + ' (Space)'}>
-          <HiFiLed color={playPauseLedColor} size="small" />
+          <HiFiLed color={playPauseLedColor} size="wide" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
 
         <!-- Rec -->
         <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={appState.isRecording || !isStation || isRecordingPlayback} title={appState.isRecording ? t('player.recLaeuft') : isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : t('player.recStart')}>
-          <HiFiLed color={recLedColor} size="small" blink={appState.isRecording} />
+          <HiFiLed color={recLedColor} size="wide" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
 
@@ -604,7 +604,7 @@
           ontouchstart={() => skipFwdPressed = true}
           ontouchend={() => { skipFwdPressed = false; handleSkip(10); }}
         >
-          <HiFiLed color={skipFwdPressed ? 'yellow' : 'off'} size="small" />
+          <HiFiLed color={skipFwdPressed ? 'yellow' : 'off'} size="wide" />
           <i class="fa-solid fa-forward transport-icon"></i>
         </button>
 
@@ -620,7 +620,7 @@
           ontouchstart={() => nextPressed = true}
           ontouchend={() => { nextPressed = false; navigateNext(); }}
         >
-          <HiFiLed color={nextPressed ? 'yellow' : 'off'} size="small" />
+          <HiFiLed color={nextPressed ? 'yellow' : 'off'} size="wide" />
           <i class="fa-solid fa-forward-step transport-icon" class:reversed={appState.playMode === 'reverse'}></i>
         </button>
 
@@ -631,7 +631,7 @@
           title={appState.isRecording ? t('player.recLaeuft') : isLive ? t('player.bereitsLive') : !isHLSMode ? t('player.liveNurHls') : t('player.goLive')}
           onclick={() => engine.goLive()}
         >
-          <HiFiLed color={liveLedColor} size="small" />
+          <HiFiLed color={liveLedColor} size="wide" />
           <i class="fa-solid fa-tower-broadcast transport-icon"></i>
         </button>
 
@@ -642,7 +642,7 @@
           title={appState.isRecording ? t('player.recModuswechsel') : !canToggleStreamMode ? t('player.moduswechselNicht') : appState.playerMode === 'hls' ? t('player.directMode') : t('player.hlsMode')}
           onclick={() => engine.toggleStreamMode()}
         >
-          <HiFiLed color={modeLedColor} size="small" />
+          <HiFiLed color={modeLedColor} size="wide" />
           <i class="fa-solid {appState.playerMode === 'hls' ? 'fa-arrows-rotate' : 'fa-wave-square'} transport-icon"></i>
         </button>
 
@@ -654,7 +654,7 @@
           onmouseenter={sfx.hover}
           onclick={() => { cyclePlayMode(); sfx.click(); }}
         >
-          <HiFiLed color={playModeLedColor} size="small" />
+          <HiFiLed color={playModeLedColor} size="wide" />
           <i class="fa-solid {playModeIcons[appState.playMode]} transport-icon"></i>
         </button>
       </div>

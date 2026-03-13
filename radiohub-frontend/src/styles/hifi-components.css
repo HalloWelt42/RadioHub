@@ -956,6 +956,7 @@
 }
 
 .hifi-led-small { width: 8px; height: 8px; }
+.hifi-led-wide { width: 16px; height: 4px; }
 .hifi-led-round { border-radius: var(--hifi-border-radius-round); }
 .hifi-led-large { width: 20px; height: 8px; }
 .hifi-led-xlarge { width: 30px; height: 10px; }

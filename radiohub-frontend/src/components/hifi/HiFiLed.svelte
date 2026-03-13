@@ -19,6 +19,7 @@
   class:blink
   class:pulse
   class:hifi-led-small={size === 'small'}
+  class:hifi-led-wide={size === 'wide'}
   class:hifi-led-large={size === 'large'}
   {title}
 ></div>
