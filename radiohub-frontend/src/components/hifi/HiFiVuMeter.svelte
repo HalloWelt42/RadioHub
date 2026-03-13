@@ -16,7 +16,10 @@
     const realLevel = getRMS();
     let peakLevel;
 
-    if (realLevel !== null) {
+    if (volume === 0) {
+      // Stumm -> VU komplett aus
+      peakLevel = 0;
+    } else if (realLevel !== null) {
       // Echte Analyse: AnalyserNode sieht bereits das volume-angepasste Signal
       // (audioEl.volume wird vor MediaElementSource angewendet)
       peakLevel = Math.round(realLevel * 8);
