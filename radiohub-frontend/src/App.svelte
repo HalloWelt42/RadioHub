@@ -111,12 +111,12 @@
 
       case 'ArrowLeft':  // Pfeil links = Vorheriger Sender
         e.preventDefault();
-        if (appState.playerMode !== 'recording') actions.navigatePrev();
+        actions.navigatePrev();
         break;
 
       case 'ArrowRight':  // Pfeil rechts = Nächster Sender
         e.preventDefault();
-        if (appState.playerMode !== 'recording') actions.navigateNext();
+        actions.navigateNext();
         break;
 
       case 'm':  // M = Mute toggle

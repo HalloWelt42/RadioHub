@@ -212,7 +212,7 @@
   let displayActive = $derived((appState.isPlaying || appState.isPaused) && hasSource);
 
   let _canSeek = $derived(appState.playerMode === 'podcast' || appState.playerMode === 'hls' || appState.playerMode === 'recording');
-  let canNavigate = $derived(!isRecordingPlayback && (appState.stations?.length > 0 || isPodcast));
+  let canNavigate = $derived(appState.stations?.length > 0 || isPodcast || (isRecordingPlayback && appState.recordingPlaylist?.length > 1));
 
   // Prev/Next Namen für Tooltips
   let prevStationName = $derived(() => {
@@ -220,6 +220,12 @@
     if (isPodcast && appState.podcastPlaylist?.length > 1) {
       const idx = appState.currentEpisodeIndex ?? -1;
       if (idx > 0) return appState.podcastPlaylist[idx - 1]?.episode?.title;
+      return null;
+    }
+    if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx > 0) return appState.recordingPlaylist[idx - 1].name;
+      if (idx === 0) return appState.recordingPlaylist[appState.recordingPlaylist.length - 1].name;
       return null;
     }
     if (!appState.currentStation || !appState.stations?.length) return null;
@@ -234,6 +240,12 @@
     if (isPodcast && appState.podcastPlaylist?.length > 1) {
       const idx = appState.currentEpisodeIndex ?? -1;
       if (idx >= 0 && idx < appState.podcastPlaylist.length - 1) return appState.podcastPlaylist[idx + 1]?.episode?.title;
+      return null;
+    }
+    if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
+      const idx = appState.recordingPlaylist.findIndex(s => s.path === appState.currentRecording?.path);
+      if (idx >= 0 && idx < appState.recordingPlaylist.length - 1) return appState.recordingPlaylist[idx + 1].name;
+      if (idx === appState.recordingPlaylist.length - 1) return appState.recordingPlaylist[0].name;
       return null;
     }
     if (!appState.currentStation || !appState.stations?.length) return null;
@@ -553,7 +565,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? t('player.recLaeuft') : isRecordingPlayback ? t('player.keinPrev') : !canNavigate ? (isPodcast ? t('player.keinePrevEpisode') : t('player.keinPrev')) : (prevStationName() || (isPodcast ? t('player.prevEpisode') : t('player.prevSender'))) + ' (\u2190)'}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keinePrevEpisode') : isRecordingPlayback ? t('player.keinePrevTitel') : t('player.keinPrev')) : (prevStationName() || (isPodcast ? t('player.prevEpisode') : isRecordingPlayback ? t('player.prevTitel') : t('player.prevSender'))) + ' (\u2190)'}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -626,7 +638,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? t('player.recLaeuft') : isRecordingPlayback ? t('player.keinNext') : !canNavigate ? (isPodcast ? t('player.keineNextEpisode') : t('player.keinNext')) : (nextStationName() || (isPodcast ? t('player.nextEpisode') : t('player.nextSender'))) + ' (\u2192)'}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keineNextEpisode') : isRecordingPlayback ? t('player.keineNextTitel') : t('player.keinNext')) : (nextStationName() || (isPodcast ? t('player.nextEpisode') : isRecordingPlayback ? t('player.nextTitel') : t('player.nextSender'))) + ' (\u2192)'}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}
