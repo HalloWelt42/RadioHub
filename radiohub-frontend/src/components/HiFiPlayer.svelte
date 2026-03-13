@@ -183,7 +183,14 @@
 
   let sourceType = $derived(
     appState.isPlaying || appState.isPaused
-      ? (appState.currentStation ? t('player.tuner') : appState.currentEpisode ? 'Podcast' : appState.currentRecording ? t('player.aufnahme') : '---')
+      ? (appState.currentStation ? t('player.tuner')
+        : appState.currentEpisode ? t('player.podcast')
+        : appState.currentRecording
+          ? (appState.currentRecording.source === 'cutter' ? t('player.cutter')
+            : appState.currentRecording.source === 'file' ? t('player.datei')
+            : appState.currentRecording.source === 'podcast' ? t('player.podcast')
+            : t('player.aufnahme'))
+          : '---')
       : '---'
   );
 
@@ -450,7 +457,7 @@
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
         {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.recordingType === 'hls-rec' ? 'HLS-REC' : appState.recordingType === 'direct' ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
+          <span class="source-mode">{appState.recordingType === 'hls-rec' ? 'HLS-REC' : appState.recordingType === 'direct' ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'podcast' ? 'STREAM' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
         {/if}
       </div>
     </div>

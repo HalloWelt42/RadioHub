@@ -263,7 +263,10 @@ export default {
     endlosschleife: 'Loop',
     zufall: 'Shuffle',
     tuner: 'Tuner',
-    aufnahme: 'Recording'
+    aufnahme: 'Recording',
+    cutter: 'Cutter',
+    datei: 'File',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

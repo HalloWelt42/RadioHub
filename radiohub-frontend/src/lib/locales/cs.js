@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Smyčka',
     zufall: 'Náhodně',
     tuner: 'Tuner',
-    aufnahme: 'Nahrávka'
+    aufnahme: 'Nahrávka',
+    cutter: 'Cutter',
+    datei: 'Soubor',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

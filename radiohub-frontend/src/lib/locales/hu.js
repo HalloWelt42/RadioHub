@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Ismétlés',
     zufall: 'Véletlenszerű',
     tuner: 'Tuner',
-    aufnahme: 'Felvétel'
+    aufnahme: 'Felvétel',
+    cutter: 'Cutter',
+    datei: 'Fájl',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

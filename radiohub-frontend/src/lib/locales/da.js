@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Gentag',
     zufall: 'Tilfældig',
     tuner: 'Tuner',
-    aufnahme: 'Optagelse'
+    aufnahme: 'Optagelse',
+    cutter: 'Cutter',
+    datei: 'Fil',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

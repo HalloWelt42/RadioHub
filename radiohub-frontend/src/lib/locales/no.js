@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Gjenta',
     zufall: 'Tilfeldig',
     tuner: 'Tuner',
-    aufnahme: 'Opptak'
+    aufnahme: 'Opptak',
+    cutter: 'Cutter',
+    datei: 'Fil',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

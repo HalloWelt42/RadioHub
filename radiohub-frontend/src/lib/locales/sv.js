@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Upprepa',
     zufall: 'Blanda',
     tuner: 'Tuner',
-    aufnahme: 'Inspelning'
+    aufnahme: 'Inspelning',
+    cutter: 'Cutter',
+    datei: 'Fil',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

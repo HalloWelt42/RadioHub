@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Pętla',
     zufall: 'Losowo',
     tuner: 'Tuner',
-    aufnahme: 'Nagranie'
+    aufnahme: 'Nagranie',
+    cutter: 'Cutter',
+    datei: 'Plik',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

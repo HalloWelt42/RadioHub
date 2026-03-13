@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'ループ',
     zufall: 'シャッフル',
     tuner: 'チューナー',
-    aufnahme: '録音'
+    aufnahme: '録音',
+    cutter: 'Cutter',
+    datei: 'ファイル',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Toista jatkuvasti',
     zufall: 'Satunnainen',
     tuner: 'Tuner',
-    aufnahme: 'Tallenne'
+    aufnahme: 'Tallenne',
+    cutter: 'Cutter',
+    datei: 'Tiedosto',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

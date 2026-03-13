@@ -234,7 +234,8 @@
       station_name: session.station_name,
       date: session.start_time,
       duration: session.duration,
-      playUrl
+      playUrl,
+      source: 'recording'
     });
   }
 
@@ -312,7 +313,8 @@
       session_id: segment.session_id,
       station_name: segment.title,
       duration: segment.duration_ms / 1000,
-      playUrl
+      playUrl,
+      source: 'recording'
     });
   }
 
@@ -430,7 +432,8 @@
     actions.playRecording({
       path: file.path,
       name: file.name,
-      playUrl: api.getPlayUrl(relPath)
+      playUrl: api.getPlayUrl(relPath),
+      source: 'file'
     });
   }
 

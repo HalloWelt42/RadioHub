@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Buclă',
     zufall: 'Aleatoriu',
     tuner: 'Tuner',
-    aufnahme: 'Înregistrare'
+    aufnahme: 'Înregistrare',
+    cutter: 'Cutter',
+    datei: 'Fișier',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

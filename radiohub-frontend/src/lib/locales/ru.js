@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Зацикленный',
     zufall: 'Случайный',
     tuner: 'Тюнер',
-    aufnahme: 'Запись'
+    aufnahme: 'Запись',
+    cutter: 'Cutter',
+    datei: 'Файл',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

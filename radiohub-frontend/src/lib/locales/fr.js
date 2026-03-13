@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Boucle',
     zufall: 'Aléatoire',
     tuner: 'Tuner',
-    aufnahme: 'Enregistrement'
+    aufnahme: 'Enregistrement',
+    cutter: 'Cutter',
+    datei: 'Fichier',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

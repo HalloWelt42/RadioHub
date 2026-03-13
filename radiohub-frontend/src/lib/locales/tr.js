@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Döngü',
     zufall: 'Karışık',
     tuner: 'Tuner',
-    aufnahme: 'Kayıt'
+    aufnahme: 'Kayıt',
+    cutter: 'Cutter',
+    datei: 'Dosya',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

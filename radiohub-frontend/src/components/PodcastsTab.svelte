@@ -256,11 +256,12 @@
   }
 
   function handleFilePlay(file) {
-    // Datei als Recording abspielen
+    // Podcast-Datei als Recording abspielen
     actions.playRecording({
       path: file.path,
       name: file.name,
-      playUrl: api.getPlayUrl(file.path.replace(/^.*\/recordings\//, ''))
+      playUrl: api.getPlayUrl(file.path.replace(/^.*\/recordings\//, '')),
+      source: 'podcast'
     });
   }
 

@@ -245,7 +245,10 @@ export default {
     endlosschleife: 'Herhalen',
     zufall: 'Willekeurig',
     tuner: 'Tuner',
-    aufnahme: 'Opname'
+    aufnahme: 'Opname',
+    cutter: 'Cutter',
+    datei: 'Bestand',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

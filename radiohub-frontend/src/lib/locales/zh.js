@@ -245,7 +245,10 @@ export default {
     endlosschleife: '循环',
     zufall: '随机',
     tuner: '调谐器',
-    aufnahme: '录音'
+    aufnahme: '录音',
+    cutter: 'Cutter',
+    datei: '文件',
+    podcast: 'Podcast'
   },
 
   // === Stations ===

@@ -506,7 +506,8 @@
         station_name: session.station_name,
         date: session.start_time,
         duration: session.duration,
-        playUrl
+        playUrl,
+        source: 'cutter'
       }, clamped);
     } else {
       const audio = document.querySelector('audio');
