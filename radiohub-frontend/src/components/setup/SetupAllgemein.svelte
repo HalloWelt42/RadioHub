@@ -109,41 +109,57 @@
     saveConfig('language', code);
   }
 
-  // Markdown lazy-loading
+  // Markdown mit Sprach-Fallback laden: aktuelle Sprache -> en -> de
+  async function fetchLegal(filename) {
+    const lang = activeLang || currentLanguage() || 'de';
+    const tryLangs = [lang];
+    if (lang !== 'en') tryLangs.push('en');
+    if (lang !== 'de') tryLangs.push('de');
+    for (const l of tryLangs) {
+      try {
+        const res = await fetch(`/legal/${l}/${filename}`);
+        if (res.ok) return await res.text();
+      } catch (e) { /* naechste Sprache */ }
+    }
+    return '';
+  }
+
+  let lastInfoLang = '';
+  let lastLizenzLang = '';
+  let lastRechtLang = '';
+
+  // Markdown lazy-loading + Sprach-Wechsel
   $effect(() => {
-    if (activeSubTab === 'info') loadInfo();
-    if (activeSubTab === 'lizenz') loadLizenz();
-    if (activeSubTab === 'recht') loadRecht();
+    const lang = activeLang;
+    if (activeSubTab === 'info') loadInfo(lang);
+    if (activeSubTab === 'lizenz') loadLizenz(lang);
+    if (activeSubTab === 'recht') loadRecht(lang);
   });
 
-  async function loadInfo() {
-    if (infoContent) return;
-    try {
-      const res = await fetch('/legal/info.md');
-      if (res.ok) infoContent = parseMarkdown(await res.text());
-    } catch (e) { /* ignorieren */ }
+  async function loadInfo(lang) {
+    if (infoContent && lastInfoLang === lang) return;
+    lastInfoLang = lang;
+    const md = await fetchLegal('info.md');
+    if (md) infoContent = parseMarkdown(md);
   }
 
-  async function loadLizenz() {
-    if (lizenzContent) return;
-    try {
-      const res = await fetch('/legal/lizenz.md');
-      if (res.ok) lizenzContent = parseMarkdown(await res.text());
-    } catch (e) { /* ignorieren */ }
+  async function loadLizenz(lang) {
+    if (lizenzContent && lastLizenzLang === lang) return;
+    lastLizenzLang = lang;
+    const md = await fetchLegal('lizenz.md');
+    if (md) lizenzContent = parseMarkdown(md);
   }
 
-  async function loadRecht() {
-    if (rechtContent) return;
-    try {
-      const [dsRes, agbRes] = await Promise.all([
-        fetch('/legal/datenschutz.md'),
-        fetch('/legal/agb.md')
-      ]);
-      let md = '';
-      if (dsRes.ok) md += await dsRes.text();
-      if (agbRes.ok) md += '\n\n---\n\n' + await agbRes.text();
-      rechtContent = parseMarkdown(md);
-    } catch (e) { /* ignorieren */ }
+  async function loadRecht(lang) {
+    if (rechtContent && lastRechtLang === lang) return;
+    lastRechtLang = lang;
+    const [ds, agb] = await Promise.all([
+      fetchLegal('datenschutz.md'),
+      fetchLegal('agb.md')
+    ]);
+    let md = ds;
+    if (agb) md += '\n\n---\n\n' + agb;
+    rechtContent = parseMarkdown(md);
   }
 </script>
 
@@ -290,17 +306,19 @@
           <span>{t('allgemein.tastaturHint')}</span>
         </div>
         <div class="hotkey-body">
-          {#each hotkeys as group}
-            <div class="hotkey-group">
-              <div class="hotkey-group-title">{t('allgemein.' + group.group)}</div>
-              {#each group.keys as hk}
-                <div class="hotkey-row">
-                  <kbd class="hotkey-badge">{hk.key}</kbd>
-                  <span class="hotkey-label">{t('allgemein.' + hk.label)}</span>
-                </div>
-              {/each}
-            </div>
-          {/each}
+          <div class="hotkey-table">
+            {#each hotkeys as group}
+              <div class="hotkey-col">
+                <div class="hotkey-group-title">{t('allgemein.' + group.group)}</div>
+                {#each group.keys as hk}
+                  <div class="hotkey-row">
+                    <kbd class="hotkey-badge">{hk.key}</kbd>
+                    <span class="hotkey-label">{t('allgemein.' + hk.label)}</span>
+                  </div>
+                {/each}
+              </div>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
@@ -319,29 +337,29 @@
 
             <!-- Badge-Demo direkt als Svelte-Markup -->
             <hr class="md-hr"/>
-            <h3 class="md-h3">Badge-Referenz</h3>
-            <p class="md-text">So sehen die Badges in der Senderliste aus:</p>
+            <h3 class="md-h3">{t('allgemein.badgeRef')}</h3>
+            <p class="md-text">{t('allgemein.badgeRefHint')}</p>
 
             <div class="badge-demo-section">
               <div class="badge-demo-group">
-                <h4 class="md-h4">ICY-Badges</h4>
+                <h4 class="md-h4">{t('allgemein.icyBadges')}</h4>
                 <div class="badge-demo-row">
                   <span class="demo-badge icy-default">ICY</span>
-                  <span class="badge-demo-label">Nicht bewertet - ICY vorhanden, Qualität unbekannt</span>
+                  <span class="badge-demo-label">{t('allgemein.icyDefault')}</span>
                 </div>
                 <div class="badge-demo-row">
                   <span class="demo-badge icy-good">ICY</span>
-                  <span class="badge-demo-label">Gute Qualität - präzise Titelwechsel, saubere Schnitte</span>
+                  <span class="badge-demo-label">{t('allgemein.icyGood')}</span>
                 </div>
                 <div class="badge-demo-row">
                   <span class="demo-badge icy-poor">ICY</span>
-                  <span class="badge-demo-label">Schlechte Qualität - ungenaue Zeitpunkte, Schnitte prüfen</span>
+                  <span class="badge-demo-label">{t('allgemein.icyPoor')}</span>
                 </div>
               </div>
 
               <div class="badge-demo-group">
-                <h4 class="md-h4">ICY-Bewertungssystem</h4>
-                <p class="md-text">Per Klick auf den ICY-Badge wird die Qualität bewertet. Der Zustand wechselt zyklisch:</p>
+                <h4 class="md-h4">{t('allgemein.icySystem')}</h4>
+                <p class="md-text">{t('allgemein.icySystemHint')}</p>
                 <div class="badge-cycle">
                   <span class="demo-badge icy-default">ICY</span>
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
@@ -349,42 +367,42 @@
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
                   <span class="demo-badge icy-poor">ICY</span>
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-                  <span class="badge-cycle-reset">zurück</span>
+                  <span class="badge-cycle-reset">{t('allgemein.icySystemBack')}</span>
                 </div>
-                <p class="md-text">Die Bewertung beeinflusst, wie RadioHub Schnitte behandelt. Bei "good" werden ICY-Marker direkt als Schnittpunkte verwendet. Bei "poor" sollten Schnitte manuell im Cutter geprüft werden.</p>
+                <p class="md-text">{t('allgemein.icySystemText')}</p>
               </div>
 
               <div class="badge-demo-group">
-                <h4 class="md-h4">Werbe-Badges</h4>
+                <h4 class="md-h4">{t('allgemein.adBadges')}</h4>
                 <div class="badge-demo-row">
                   <span class="demo-badge ad-clean">0% AD</span>
-                  <span class="badge-demo-label">Kein Werbeverdacht nach automatischer Prüfung</span>
+                  <span class="badge-demo-label">{t('allgemein.adClean')}</span>
                 </div>
                 <div class="badge-demo-row">
                   <span class="demo-badge ad-suspect">35% AD</span>
-                  <span class="badge-demo-label">Werbeverdacht (Prozent = Konfidenz der Erkennung)</span>
+                  <span class="badge-demo-label">{t('allgemein.adSuspect')}</span>
                 </div>
                 <div class="badge-demo-row">
                   <span class="demo-badge ad-blocked">AD</span>
-                  <span class="badge-demo-label">Manuell als Werbung markiert und ausgeblendet</span>
+                  <span class="badge-demo-label">{t('allgemein.adBlocked')}</span>
                 </div>
                 <div class="badge-demo-row">
                   <span class="demo-badge ad-ok">OK</span>
-                  <span class="badge-demo-label">Manuell freigegeben trotz Verdacht</span>
+                  <span class="badge-demo-label">{t('allgemein.adOk')}</span>
                 </div>
               </div>
 
               <div class="badge-demo-group">
-                <h4 class="md-h4">Werbe-Bewertungssystem</h4>
-                <p class="md-text">Die Werbeerkennung arbeitet in zwei Stufen:</p>
+                <h4 class="md-h4">{t('allgemein.adSystem')}</h4>
+                <p class="md-text">{t('allgemein.adSystemHint')}</p>
                 <div class="badge-flow">
                   <div class="badge-flow-step">
-                    <span class="badge-flow-label">1. Automatisch</span>
-                    <p class="md-text">Unter Setup > Radio > Sender kann ein Scan gestartet werden. RadioHub prüft Stream-URLs auf Werbe-Domains und analysiert Server-Antworten. Das Ergebnis ist ein Prozentwert.</p>
+                    <span class="badge-flow-label">{t('allgemein.adStep1Label')}</span>
+                    <p class="md-text">{t('allgemein.adStep1Text')}</p>
                   </div>
                   <div class="badge-flow-step">
-                    <span class="badge-flow-label">2. Manuell</span>
-                    <p class="md-text">Über das Kontextmenü eines Senders (Rechtsklick oder Aktions-Buttons) kann ein Sender als "Werbung" markiert oder "freigegeben" werden. Das überschreibt die automatische Bewertung.</p>
+                    <span class="badge-flow-label">{t('allgemein.adStep2Label')}</span>
+                    <p class="md-text">{t('allgemein.adStep2Text')}</p>
                   </div>
                 </div>
               </div>
@@ -579,12 +597,20 @@
 
   .hotkey-body {
     padding: 16px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+  }
+
+  .hotkey-table {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .hotkey-col {
+    display: flex;
+    flex-direction: column;
   }
 
   .hotkey-group-title {
