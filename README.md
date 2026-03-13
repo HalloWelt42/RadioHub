@@ -147,4 +147,4 @@ Copyright 2025-2026 HalloWelt42
 
 Private, nicht-kommerzielle Nutzung und private Modifikation erlaubt.
 Kommerzielle Nutzung, Verkauf und Veröffentlichung modifizierter Versionen untersagt.
-Vollständige Lizenzbedingungen: [lizenz.md](radiohub-frontend/public/legal/lizenz.md)
+Vollständige Lizenzbedingungen: [lizenz.md](radiohub-frontend/public/legal/de/lizenz.md)
