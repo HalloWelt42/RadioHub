@@ -88,8 +88,13 @@ class SegmentSplitter:
         else:
             print("  Split: Wallclock-Fallback (Legacy-Metadata)")
 
-        # Session-Verzeichnis anlegen (im selben Ordner wie die Audio-Datei)
-        session_dir = audio_path.parent / session_id
+        # Session-Verzeichnis: Wenn Audio-Datei in einem Session-Dir liegt,
+        # direkt dort die Segmente ablegen (kein zusaetzliches Unterverzeichnis)
+        parent = audio_path.parent
+        if parent.name == session_id or parent.name.startswith("rec_"):
+            session_dir = parent
+        else:
+            session_dir = parent / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
 
         ext = file_format if file_format.startswith(".") else f".{file_format}"
