@@ -1102,7 +1102,7 @@
     border-radius: var(--hifi-border-radius-sm);
     box-shadow: var(--hifi-shadow-button);
     cursor: pointer;
-    transition: background 0.1s ease, box-shadow 0.1s ease;
+    transition: background 0.1s ease, box-shadow 0.1s ease, transform 0.05s ease;
     min-width: 34px;
   }
 
@@ -1111,13 +1111,15 @@
   }
 
   .transport-btn:active:not(:disabled) {
+    background: var(--hifi-bg-primary);
     box-shadow: var(--hifi-shadow-inset);
+    transform: translateY(1px);
   }
 
   .transport-btn:disabled {
     cursor: not-allowed;
-    background: var(--hifi-bg-tertiary);
-    box-shadow: var(--hifi-shadow-button);
+    background: var(--hifi-bg-secondary);
+    box-shadow: none;
   }
 
   .transport-btn:disabled .transport-icon {
