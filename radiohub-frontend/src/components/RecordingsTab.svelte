@@ -49,6 +49,10 @@
     return () => stopPolling();
   });
 
+  $effect(() => {
+    if (view === 'file-explorer') loadFileExplorer();
+  });
+
   // Auto-Expand: Session des aktuell spielenden Segments öffnen + hinscrollen
   $effect(() => {
     const rec = appState.currentRecording;
@@ -290,20 +294,22 @@
   }
 
   async function playSegment(segment) {
+    const playlistSegments = selectedSegmentIds.length > 0
+      ? segments.filter(s => selectedSegmentIds.includes(s.id))
+      : segments;
+
     if (appState.playMode === 'shuffle') {
       try {
         const result = await api.getAllSegments();
         const all = result.segments || [];
-        if (all.length > 0) {
-          appState.recordingPlaylist = all.map(mapSegmentToPlaylistEntry);
-        }
+        appState.recordingPlaylist = all.length > 0
+          ? all.map(mapSegmentToPlaylistEntry)
+          : playlistSegments.map(mapSegmentToPlaylistEntry);
       } catch (e) {
-        if (segments.length > 0) {
-          appState.recordingPlaylist = segments.map(mapSegmentToPlaylistEntry);
-        }
+        appState.recordingPlaylist = playlistSegments.map(mapSegmentToPlaylistEntry);
       }
-    } else if (segments.length > 0) {
-      appState.recordingPlaylist = segments.map(mapSegmentToPlaylistEntry);
+    } else {
+      appState.recordingPlaylist = playlistSegments.map(mapSegmentToPlaylistEntry);
     }
 
     const playUrl = api.getSegmentPlayUrl(segment.id);
@@ -427,12 +433,19 @@
     }
   }
 
-  function handleFileExplorerPlay(file) {
-    const relPath = file.path.replace(/^.*\/recordings\//, '');
+  function handleFileExplorerPlay(file, selectedList) {
+    const playlist = selectedList && selectedList.length > 0 ? selectedList : [file];
+    appState.recordingPlaylist = playlist.map(f => ({
+      path: f.path,
+      name: f.name,
+      playUrl: api.getPlayUrl(f.path.replace(/^.*\/recordings\//, '')),
+      source: 'file'
+    }));
+
     actions.playRecording({
       path: file.path,
       name: file.name,
-      playUrl: api.getPlayUrl(relPath),
+      playUrl: api.getPlayUrl(file.path.replace(/^.*\/recordings\//, '')),
       source: 'file'
     });
   }

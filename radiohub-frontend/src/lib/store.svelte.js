@@ -278,17 +278,21 @@ export const actions = {
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
       const playlist = appState.recordingPlaylist;
       const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
+      const mode = appState.playMode || 'linear';
 
-      if (appState.playMode === 'shuffle') {
+      if (mode === 'shuffle') {
         const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
         engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
         return;
       }
 
-      if (idx > 0) {
-        engine.playRecording(playlist[idx - 1]);
-      } else if (idx === 0) {
-        engine.playRecording(playlist[playlist.length - 1]);
+      // Prev: rueckwaerts, bei reverse vorwaerts
+      const forward = mode === 'reverse';
+      const prevIdx = forward ? idx + 1 : idx - 1;
+      if (prevIdx >= 0 && prevIdx < playlist.length) {
+        engine.playRecording(playlist[prevIdx]);
+      } else if (mode === 'loop') {
+        engine.playRecording(playlist[forward ? 0 : playlist.length - 1]);
       }
       return;
     }
@@ -331,17 +335,21 @@ export const actions = {
     if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
       const playlist = appState.recordingPlaylist;
       const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
+      const mode = appState.playMode || 'linear';
 
-      if (appState.playMode === 'shuffle') {
+      if (mode === 'shuffle') {
         const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
         engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
         return;
       }
 
-      if (idx >= 0 && idx < playlist.length - 1) {
-        engine.playRecording(playlist[idx + 1]);
-      } else {
-        engine.playRecording(playlist[0]);
+      // Next: vorwaerts, bei reverse rueckwaerts
+      const forward = mode !== 'reverse';
+      const nextIdx = forward ? idx + 1 : idx - 1;
+      if (nextIdx >= 0 && nextIdx < playlist.length) {
+        engine.playRecording(playlist[nextIdx]);
+      } else if (mode === 'loop') {
+        engine.playRecording(playlist[forward ? 0 : playlist.length - 1]);
       }
       return;
     }

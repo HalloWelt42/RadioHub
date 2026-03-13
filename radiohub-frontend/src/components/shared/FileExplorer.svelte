@@ -127,6 +127,15 @@
     selectedFiles = new Set();
   }
 
+  function getSelectedFilesList() {
+    if (selectedFiles.size === 0) return [];
+    const result = [];
+    folders.forEach(f => f.files.forEach(file => {
+      if (selectedFiles.has(file.path)) result.push(file);
+    }));
+    return result;
+  }
+
   async function downloadZip() {
     if (selectedFiles.size === 0) return;
     isDownloading = true;
@@ -309,7 +318,7 @@
                   <span class="file-size">{formatSize(file.size)}</span>
                   <span class="file-date">{formatDate(file.modified)}</span>
                   <div class="file-actions">
-                    <button class="action-btn" onclick={() => onplay(file)} title={t('fileExplorer.dateiAbspielen')}>
+                    <button class="action-btn" onclick={() => onplay(file, getSelectedFilesList())} title={t('fileExplorer.dateiAbspielen')}>
                       <i class="fa-solid fa-play"></i>
                     </button>
                     <button class="action-btn action-btn-danger" onclick={() => handleDelete(file)} title={t('fileExplorer.dateiLoeschen')}>
