@@ -49,8 +49,30 @@ export default {
     lookback: 'TERUGBLIK',
     lookbackHint: 'Hoeveel minuten moet de HLS-opname in het verleden terugkijken?',
     language: 'TAAL',
-    datenschutzNutzung: 'PRIVACY & GEBRUIKSVOORWAARDEN'
-    infoTitle: 'TECHNISCHE INFORMATIE',  },
+    datenschutzNutzung: 'PRIVACY & GEBRUIKSVOORWAARDEN',
+    infoTitle: 'TECHNISCHE INFORMATIE',
+    badgeRef: 'Badge-referentie',
+    badgeRefHint: 'Zo zien de badges eruit in de zenderlijst:',
+    icyBadges: 'ICY-badges',
+    icyDefault: 'Niet beoordeeld - ICY aanwezig, kwaliteit onbekend',
+    icyGood: 'Goede kwaliteit - nauwkeurige titelwisselingen, schone knipbewerkingen',
+    icyPoor: 'Slechte kwaliteit - onnauwkeurige tijdstempels, knipbewerkingen controleren',
+    icySystem: 'ICY-beoordelingssysteem',
+    icySystemHint: 'Klik op de ICY-badge om de kwaliteit te beoordelen. De status wisselt door:',
+    icySystemBack: 'resetten',
+    icySystemText: 'De beoordeling beinvloedt hoe RadioHub met knipbewerkingen omgaat. Bij "goed" worden ICY-markers direct als knippunten gebruikt. Bij "slecht" moeten knipbewerkingen handmatig in de Cutter worden gecontroleerd.',
+    adBadges: 'Reclamebadges',
+    adClean: 'Geen reclameverdenking na automatische scan',
+    adSuspect: 'Reclameverdenking (percentage = detectiebetrouwbaarheid)',
+    adBlocked: 'Handmatig als reclame gemarkeerd en verborgen',
+    adOk: 'Handmatig goedgekeurd ondanks verdenking',
+    adSystem: 'Reclamedetectiesysteem',
+    adSystemHint: 'Reclamedetectie werkt in twee fasen:',
+    adStep1Label: '1. Automatisch',
+    adStep1Text: 'Onder Setup > Radio > Zenders kan een scan worden gestart. RadioHub controleert stream-URLs op reclamedomijnen en analyseert serverreacties. Het resultaat is een percentagewaarde.',
+    adStep2Label: '2. Handmatig',
+    adStep2Text: 'Via het contextmenu van een zender (rechtsklik of actieknoppen) kan een zender als "reclame" of "goedgekeurd" worden gemarkeerd. Dit overschrijft de automatische beoordeling.'
+  },
 
   // === Setup Podcast ===
   podcast: {

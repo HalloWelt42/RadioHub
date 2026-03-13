@@ -49,8 +49,31 @@ export default {
     lookback: '回溯',
     lookbackHint: 'HLS录制应回溯多少分钟？',
     language: '语言',
-    datenschutzNutzung: '隐私和使用条款'
-    infoTitle: '技术信息',  },
+    datenschutzNutzung: '隐私和使用条款',
+    // Info
+    infoTitle: '技术信息',
+    badgeRef: '徽章参考',
+    badgeRefHint: '徽章在电台列表中的显示方式：',
+    icyBadges: 'ICY徽章',
+    icyDefault: '未评级 - ICY存在，质量未知',
+    icyGood: '良好 - 精确的标题变化，干净的剪切',
+    icyPoor: '低质量 - 不准确的时间戳，检查剪切',
+    icySystem: 'ICY评级系统',
+    icySystemHint: '点击ICY徽章评价质量。状态按以下顺序循环：',
+    icySystemBack: '重置',
+    icySystemText: '评级影响RadioHub处理剪切的方式。设为"good"时，ICY标记直接用作剪切点。设为"poor"时，应在剪辑器中手动检查剪切。',
+    adBadges: '广告徽章',
+    adClean: '自动扫描后无广告嫌疑',
+    adSuspect: '广告嫌疑（百分比 = 检测置信度）',
+    adBlocked: '手动标记为广告并隐藏',
+    adOk: '尽管有嫌疑但手动批准',
+    adSystem: '广告检测系统',
+    adSystemHint: '广告检测分两个阶段工作：',
+    adStep1Label: '1. 自动',
+    adStep1Text: '在设置 > 广播 > 电台中可以启动扫描。RadioHub检查流URL中的广告域名并分析服务器响应。结果是一个百分比值。',
+    adStep2Label: '2. 手动',
+    adStep2Text: '通过电台的上下文菜单（右键或操作按钮），可以将电台标记为"广告"或"已批准"。这将覆盖自动评级。',
+  },
 
   // === Setup Podcast ===
   podcast: {

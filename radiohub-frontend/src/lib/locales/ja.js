@@ -49,8 +49,31 @@ export default {
     lookback: '振り返り',
     lookbackHint: 'HLS録音は何分前まで遡りますか？',
     language: '言語',
-    datenschutzNutzung: 'プライバシーと利用規約'
-    infoTitle: '技術情報',  },
+    datenschutzNutzung: 'プライバシーと利用規約',
+    // Info
+    infoTitle: '技術情報',
+    badgeRef: 'バッジリファレンス',
+    badgeRefHint: '放送局リストではバッジは以下のように表示されます：',
+    icyBadges: 'ICYバッジ',
+    icyDefault: '未評価 - ICYあり、品質不明',
+    icyGood: '良好 - 正確なタイトル変更、きれいなカット',
+    icyPoor: '低品質 - 不正確なタイムスタンプ、カットを確認',
+    icySystem: 'ICY評価システム',
+    icySystemHint: 'ICYバッジをクリックして品質を評価します。状態は以下の順に切り替わります：',
+    icySystemBack: 'リセット',
+    icySystemText: '評価はRadioHubのカット処理に影響します。「good」の場合、ICYマーカーがカットポイントとして直接使用されます。「poor」の場合、カッターで手動確認が必要です。',
+    adBadges: '広告バッジ',
+    adClean: '自動スキャン後に広告の疑いなし',
+    adSuspect: '広告の疑い（パーセント = 検出信頼度）',
+    adBlocked: '手動で広告としてマークされ非表示',
+    adOk: '疑いがあるにもかかわらず手動で承認',
+    adSystem: '広告検出システム',
+    adSystemHint: '広告検出は2段階で動作します：',
+    adStep1Label: '1. 自動',
+    adStep1Text: '設定 > ラジオ > 放送局でスキャンを開始できます。RadioHubはストリームURLの広告ドメインをチェックし、サーバーレスポンスを分析します。結果はパーセンテージ値です。',
+    adStep2Label: '2. 手動',
+    adStep2Text: '放送局のコンテキストメニュー（右クリックまたはアクションボタン）から、放送局を「広告」または「承認」としてマークできます。これは自動評価を上書きします。',
+  },
 
   // === Setup Podcast ===
   podcast: {

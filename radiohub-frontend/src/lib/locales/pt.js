@@ -49,8 +49,30 @@ export default {
     lookback: 'RETROSPECTIVA',
     lookbackHint: 'Quantos minutos deve a gravação HLS recuar no passado?',
     language: 'IDIOMA',
-    datenschutzNutzung: 'PRIVACIDADE E CONDIÇÕES DE UTILIZAÇÃO'
-    infoTitle: 'INFORMACOES TECNICAS',  },
+    datenschutzNutzung: 'PRIVACIDADE E CONDIÇÕES DE UTILIZAÇÃO',
+    infoTitle: 'INFORMAÇÕES TÉCNICAS',
+    badgeRef: 'Referencia de Emblemas',
+    badgeRefHint: 'Assim aparecem os emblemas na lista de estacoes:',
+    icyBadges: 'Emblemas ICY',
+    icyDefault: 'Nao avaliado - ICY presente, qualidade desconhecida',
+    icyGood: 'Boa qualidade - mudancas de titulo precisas, cortes limpos',
+    icyPoor: 'Qualidade fraca - marcas temporais imprecisas, verificar cortes',
+    icySystem: 'Sistema de Avaliacao ICY',
+    icySystemHint: 'Clique no emblema ICY para avaliar a qualidade. O estado alterna entre:',
+    icySystemBack: 'repor',
+    icySystemText: 'A avaliacao afeta como o RadioHub lida com os cortes. Com "bom", os marcadores ICY sao usados diretamente como pontos de corte. Com "fraco", os cortes devem ser revistos manualmente no Cutter.',
+    adBadges: 'Emblemas de Anuncios',
+    adClean: 'Sem suspeita de anuncios apos verificacao automatica',
+    adSuspect: 'Suspeita de anuncio (percentagem = confianca da detecao)',
+    adBlocked: 'Manualmente marcado como anuncio e oculto',
+    adOk: 'Manualmente aprovado apesar da suspeita',
+    adSystem: 'Sistema de Detecao de Anuncios',
+    adSystemHint: 'A detecao de anuncios funciona em duas fases:',
+    adStep1Label: '1. Automatica',
+    adStep1Text: 'Em Setup > Radio > Estacoes pode ser iniciada uma verificacao. O RadioHub analisa URLs de fluxos quanto a dominios de anuncios e analisa respostas de servidores. O resultado e um valor percentual.',
+    adStep2Label: '2. Manual',
+    adStep2Text: 'Atraves do menu de contexto de uma estacao (clique direito ou botoes de acao) uma estacao pode ser marcada como "anuncio" ou "aprovada". Isto substitui a avaliacao automatica.'
+  },
 
   // === Setup Podcast ===
   podcast: {

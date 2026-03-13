@@ -49,8 +49,30 @@ export default {
     lookback: 'WSTECZ',
     lookbackHint: 'Ile minut wstecz powinno sięgać nagrywanie HLS?',
     language: 'JĘZYK',
-    datenschutzNutzung: 'PRYWATNOŚĆ I WARUNKI UŻYTKOWANIA'
-    infoTitle: 'INFORMACJE TECHNICZNE',  },
+    datenschutzNutzung: 'PRYWATNOŚĆ I WARUNKI UŻYTKOWANIA',
+    infoTitle: 'INFORMACJE TECHNICZNE',
+    badgeRef: 'Referencja odznak',
+    badgeRefHint: 'Tak wygladaja odznaki na liscie stacji:',
+    icyBadges: 'Odznaki ICY',
+    icyDefault: 'Nieocenione - ICY obecne, jakosc nieznana',
+    icyGood: 'Dobra jakosc - precyzyjne zmiany tytulow, czyste ciecia',
+    icyPoor: 'Slaba jakosc - niedokladne znaczniki czasu, sprawdz ciecia',
+    icySystem: 'System oceny ICY',
+    icySystemHint: 'Kliknij odznake ICY, aby ocenic jakosc. Stan przelacza sie miedzy:',
+    icySystemBack: 'resetuj',
+    icySystemText: 'Ocena wplywa na to, jak RadioHub obsluguje ciecia. Przy "dobrym" markery ICY sa uzywane bezposrednio jako punkty ciecia. Przy "slabym" ciecia powinny byc recznie sprawdzone w Cutterze.',
+    adBadges: 'Odznaki reklam',
+    adClean: 'Brak podejrzenia reklam po automatycznym skanowaniu',
+    adSuspect: 'Podejrzenie reklamy (procent = pewnosc wykrycia)',
+    adBlocked: 'Recznie oznaczone jako reklama i ukryte',
+    adOk: 'Recznie zatwierdzone pomimo podejrzenia',
+    adSystem: 'System wykrywania reklam',
+    adSystemHint: 'Wykrywanie reklam dziala w dwoch etapach:',
+    adStep1Label: '1. Automatyczny',
+    adStep1Text: 'W Setup > Radio > Stacje mozna uruchomic skanowanie. RadioHub sprawdza adresy URL strumieni pod katem domen reklamowych i analizuje odpowiedzi serwerow. Wynikiem jest wartosc procentowa.',
+    adStep2Label: '2. Reczny',
+    adStep2Text: 'Przez menu kontekstowe stacji (prawy przycisk myszy lub przyciski akcji) stacja moze byc oznaczona jako "reklama" lub "zatwierdzona". To nadpisuje automatyczna ocene.'
+  },
 
   // === Setup Podcast ===
   podcast: {
