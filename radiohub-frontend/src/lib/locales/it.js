@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Registrazioni',
     nochKeineOrdner: 'Nessuna cartella creata finora',
     ordnerHint: 'Le cartelle aiutano a organizzare le registrazioni',
-    ordnernameErforderlich: 'Nome cartella richiesto'
+    ordnernameErforderlich: 'Nome cartella richiesto',
+    // ICY Ignore
+    ignorierteIcyTitel: 'TITOLI ICY IGNORATI',
+    ignoreHint: 'Questi titoli verranno ignorati durante la registrazione -- il titolo precedente continua.',
+    muster: 'MODELLO',
+    typ: 'TIPO',
+    quelle: 'FONTE',
+    exact: 'Esatto',
+    contains: 'Contiene',
+    builtin: 'Sistema',
+    user: 'Utente',
+    musterHinzufuegen: 'Aggiungi modello...',
+    hinzufuegen: 'AGGIUNGI',
+    nochKeineIgnore: 'Nessun titolo ignorato',
+    ignoreListeHint: 'Aggiungi i titoli da saltare durante la registrazione'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Spazio libero',
     dateienLabel: 'File',
     gbFrei: 'GB liberi',
-    breiteAnpassen: 'Regola larghezza'
+    breiteAnpassen: 'Regola larghezza',
+    titelIgnorieren: 'Ignora questo titolo in futuro',
+    titelIgnoriert: 'Il titolo verrà ignorato in futuro',
+    titelNichtMehrIgnorieren: 'Smetti di ignorare questo titolo',
+    titelNichtMehrIgnoriert: 'Il titolo non verrà più ignorato'
   },
 
   // === Cutter ===

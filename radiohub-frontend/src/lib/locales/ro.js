@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Înregistrări',
     nochKeineOrdner: 'Încă nu a fost creat niciun folder',
     ordnerHint: 'Folderele ajută la organizarea înregistrărilor',
-    ordnernameErforderlich: 'Numele folderului este necesar'
+    ordnernameErforderlich: 'Numele folderului este necesar',
+    // ICY Ignore
+    ignorierteIcyTitel: 'TITLURI ICY IGNORATE',
+    ignoreHint: 'Aceste titluri vor fi ignorate în timpul înregistrării -- titlul anterior continuă.',
+    muster: 'MODEL',
+    typ: 'TIP',
+    quelle: 'SURSĂ',
+    exact: 'Exact',
+    contains: 'Conține',
+    builtin: 'Sistem',
+    user: 'Utilizator',
+    musterHinzufuegen: 'Adăugare model...',
+    hinzufuegen: 'ADAUGĂ',
+    nochKeineIgnore: 'Niciun titlu ignorat',
+    ignoreListeHint: 'Adăugați titluri care să fie sărite în timpul înregistrării'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Spațiu de stocare liber',
     dateienLabel: 'Fișiere',
     gbFrei: 'GB liber',
-    breiteAnpassen: 'Ajustare lățime'
+    breiteAnpassen: 'Ajustare lățime',
+    titelIgnorieren: 'Ignoră acest titlu în viitor',
+    titelIgnoriert: 'Titlul va fi ignorat în viitor',
+    titelNichtMehrIgnorieren: 'Nu mai ignora acest titlu',
+    titelNichtMehrIgnoriert: 'Titlul nu va mai fi ignorat'
   },
 
   // === Cutter ===

@@ -119,7 +119,21 @@ export default {
     aufnahmen: 'Aufnahmen',
     nochKeineOrdner: 'Noch keine Ordner erstellt',
     ordnerHint: 'Ordner helfen beim Organisieren von Aufnahmen',
-    ordnernameErforderlich: 'Ordnername erforderlich'
+    ordnernameErforderlich: 'Ordnername erforderlich',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNORIERTE ICY-TITEL',
+    ignoreHint: 'Diese Titel werden bei Aufnahmen ignoriert -- der vorherige Titel läuft weiter.',
+    muster: 'MUSTER',
+    typ: 'TYP',
+    quelle: 'QUELLE',
+    exact: 'Exakt',
+    contains: 'Enthält',
+    builtin: 'System',
+    user: 'Benutzer',
+    musterHinzufuegen: 'Muster hinzufügen...',
+    hinzufuegen: 'HINZUFÜGEN',
+    nochKeineIgnore: 'Keine ignorierten Titel',
+    ignoreListeHint: 'Füge Titel hinzu, die bei Aufnahmen übersprungen werden sollen'
   },
 
   // === Setup Filter ===
@@ -466,6 +480,10 @@ export default {
     aufnahmeLoeschen: 'Aufnahme endgültig löschen',
     aufnahmeStoppen: 'Aufnahme stoppen',
     segmentLoeschen: 'Segment endgültig löschen',
+    titelIgnorieren: 'Titel künftig ignorieren',
+    titelIgnoriert: 'Titel wird künftig ignoriert',
+    titelNichtMehrIgnorieren: 'Titel nicht mehr ignorieren',
+    titelNichtMehrIgnoriert: 'Titel wird nicht mehr ignoriert',
     inOrdnerVerschieben: 'In Ordner verschieben',
     rootKeinOrdner: 'Root (kein Ordner)',
     segmenteErzeugtToast: '{count} Segmente erzeugt',

@@ -11,9 +11,15 @@
   let formName = $state('');
   let showForm = $state(false);
 
+  // ICY Ignore
+  let ignoreItems = $state([]);
+  let ignorePattern = $state('');
+  let ignoreMatchType = $state('exact');
+
   // === INIT ===
   $effect(() => {
     loadFolders();
+    loadIgnoreList();
   });
 
   async function loadFolders() {
@@ -107,6 +113,51 @@
       cancelForm();
     }
   }
+
+  // === ICY IGNORE ===
+  async function loadIgnoreList() {
+    try {
+      const data = await api.getIcyIgnoreList();
+      ignoreItems = data.items || [];
+    } catch (e) {
+      console.error('Ignore-Liste laden fehlgeschlagen:', e);
+    }
+  }
+
+  async function addIgnoreItem() {
+    const pattern = ignorePattern.trim();
+    if (!pattern) return;
+    try {
+      await api.addIcyIgnore(pattern, ignoreMatchType);
+      ignorePattern = '';
+      ignoreMatchType = 'exact';
+      await loadIgnoreList();
+      actions.showToast(t('recordings.titelIgnoriert'));
+    } catch (e) {
+      if (e.message?.includes('409')) {
+        actions.showToast(t('recordings.titelIgnoriert'), 'info');
+      } else {
+        actions.showToast(e.message || 'Fehler', 'error');
+      }
+    }
+  }
+
+  async function removeIgnoreItem(id) {
+    try {
+      await api.removeIcyIgnore(id);
+      ignoreItems = ignoreItems.filter(i => i.id !== id);
+      actions.showToast(t('toast.geloescht'));
+    } catch (e) {
+      actions.showToast(e.message || 'Fehler', 'error');
+    }
+  }
+
+  function handleIgnoreKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addIgnoreItem();
+    }
+  }
 </script>
 
 {#if isLoading}
@@ -189,6 +240,64 @@
           <div class="empty-state">
             <span class="hifi-font-label">{t('aufnahmen.nochKeineOrdner')}</span>
             <span class="empty-hint">{t('aufnahmen.ordnerHint')}</span>
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <!-- ICY Ignore-Liste -->
+    <div class="hifi-panel">
+      <div class="hifi-panel-header">
+        <span class="hifi-font-label">{t('aufnahmen.ignorierteIcyTitel')} ({ignoreItems.length})</span>
+      </div>
+
+      <div class="folder-content">
+        <div class="active-hint">
+          <span>{t('aufnahmen.ignoreHint')}</span>
+        </div>
+
+        <!-- Hinzufügen-Formular -->
+        <div class="ignore-add-form">
+          <input
+            type="text"
+            class="form-input ignore-input"
+            placeholder={t('aufnahmen.musterHinzufuegen')}
+            bind:value={ignorePattern}
+            onkeydown={handleIgnoreKeydown}
+          />
+          <select class="form-input ignore-select" bind:value={ignoreMatchType}>
+            <option value="exact">{t('aufnahmen.exact')}</option>
+            <option value="contains">{t('aufnahmen.contains')}</option>
+          </select>
+          <button class="action-btn create-btn" onclick={addIgnoreItem} disabled={!ignorePattern.trim()}>
+            {t('aufnahmen.hinzufuegen')}
+          </button>
+        </div>
+
+        <!-- Liste -->
+        {#if ignoreItems.length > 0}
+          <div class="ignore-list">
+            <div class="ignore-header-row">
+              <span class="ignore-col-pattern">{t('aufnahmen.muster')}</span>
+              <span class="ignore-col-type">{t('aufnahmen.typ')}</span>
+              <span class="ignore-col-source">{t('aufnahmen.quelle')}</span>
+              <span class="ignore-col-actions"></span>
+            </div>
+            {#each ignoreItems as item (item.id)}
+              <div class="ignore-row">
+                <span class="ignore-col-pattern ignore-pattern-text">{item.pattern}</span>
+                <span class="ignore-col-type">{item.match_type === 'contains' ? t('aufnahmen.contains') : t('aufnahmen.exact')}</span>
+                <span class="ignore-col-source">{item.source === 'builtin' ? t('aufnahmen.builtin') : t('aufnahmen.user')}</span>
+                <span class="ignore-col-actions">
+                  <button class="mini-btn delete-btn" onclick={() => removeIgnoreItem(item.id)}>{t('common.loeschen')}</button>
+                </span>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="empty-state">
+            <span class="hifi-font-label">{t('aufnahmen.nochKeineIgnore')}</span>
+            <span class="empty-hint">{t('aufnahmen.ignoreListeHint')}</span>
           </div>
         {/if}
       </div>
@@ -390,6 +499,71 @@
   .empty-hint {
     font-family: var(--hifi-font-body);
     font-size: 11px;
+    color: var(--hifi-text-secondary);
+  }
+
+  /* === ICY Ignore === */
+  .ignore-add-form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .ignore-input {
+    flex: 1;
+  }
+
+  .ignore-select {
+    width: 100px;
+    padding: 8px 6px;
+    appearance: auto;
+  }
+
+  .ignore-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ignore-header-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-family: var(--hifi-font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--hifi-text-secondary);
+    text-transform: uppercase;
+  }
+
+  .ignore-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--hifi-bg-panel);
+    border: 1px solid var(--hifi-border-dark);
+    border-radius: var(--hifi-border-radius-sm);
+  }
+
+  .ignore-col-pattern { flex: 1; min-width: 0; }
+  .ignore-col-type { width: 70px; text-align: center; }
+  .ignore-col-source { width: 70px; text-align: center; }
+  .ignore-col-actions { width: 60px; text-align: right; }
+
+  .ignore-pattern-text {
+    font-family: var(--hifi-font-values);
+    font-size: 11px;
+    color: var(--hifi-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ignore-row .ignore-col-type,
+  .ignore-row .ignore-col-source {
+    font-family: var(--hifi-font-body);
+    font-size: 10px;
     color: var(--hifi-text-secondary);
   }
 </style>

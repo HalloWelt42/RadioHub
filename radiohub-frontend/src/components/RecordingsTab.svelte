@@ -43,8 +43,12 @@
   let recStatus = $state(null);
   let pollInterval = null;
 
+  // ICY Ignore-Liste (Set aus Pattern-Strings fuer schnellen Lookup)
+  let ignoredTitles = $state(new Set());
+
   $effect(() => {
     loadData();
+    loadIgnoredTitles();
     startPolling();
     return () => stopPolling();
   });
@@ -330,6 +334,46 @@
     window.open(url, '_blank');
   }
 
+  async function loadIgnoredTitles() {
+    try {
+      const data = await api.getIcyIgnoreList();
+      ignoredTitles = new Set((data.items || []).map(i => i.pattern));
+    } catch (e) {
+      console.error('Ignore-Liste laden fehlgeschlagen:', e);
+    }
+  }
+
+  function isTitleIgnored(title) {
+    if (!title) return false;
+    return ignoredTitles.has(title);
+  }
+
+  async function toggleIgnore(title, e) {
+    e.stopPropagation();
+    if (!title) return;
+    const wasIgnored = isTitleIgnored(title);
+    try {
+      if (wasIgnored) {
+        await api.removeIcyIgnoreByPattern(title);
+        const next = new Set(ignoredTitles);
+        next.delete(title);
+        ignoredTitles = next;
+        actions.showToast(t('recordings.titelNichtMehrIgnoriert'), 'success');
+      } else {
+        await api.addIcyIgnore(title, 'exact');
+        ignoredTitles = new Set([...ignoredTitles, title]);
+        actions.showToast(t('recordings.titelIgnoriert'), 'success');
+      }
+    } catch (err) {
+      if (!wasIgnored && err.message?.includes('409')) {
+        ignoredTitles = new Set([...ignoredTitles, title]);
+        actions.showToast(t('recordings.titelIgnoriert'), 'info');
+      } else {
+        actions.showToast(`Fehler: ${err.message}`, 'error');
+      }
+    }
+  }
+
   async function deleteSegment(segment, e) {
     e.stopPropagation();
     try {
@@ -612,6 +656,9 @@
                 <div class="meta-entry live-entry">
                   <span class="meta-time">[{formatMetaTime(entry.t)}]</span>
                   <span class="meta-title">{entry.title}</span>
+                  <button class="action-btn ignore-btn mini" class:ignored={isTitleIgnored(entry.title)} onclick={(e) => toggleIgnore(entry.title, e)} title={isTitleIgnored(entry.title) ? t('recordings.titelNichtMehrIgnorieren') : t('recordings.titelIgnorieren')}>
+                    <i class="fa-solid" class:fa-eye-slash={isTitleIgnored(entry.title)} class:fa-eye={!isTitleIgnored(entry.title)}></i>
+                  </button>
                 </div>
               {/each}
             </div>
@@ -637,6 +684,9 @@
                   </button>
                   <button class="action-btn delete-btn" onclick={(e) => deleteSegment(seg, e)} title={t('recordings.segmentLoeschen')}>
                     <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                  <button class="action-btn ignore-btn" class:ignored={isTitleIgnored(seg.title)} onclick={(e) => toggleIgnore(seg.title, e)} title={isTitleIgnored(seg.title) ? t('recordings.titelNichtMehrIgnorieren') : t('recordings.titelIgnorieren')}>
+                    <i class="fa-solid" class:fa-eye-slash={isTitleIgnored(seg.title)} class:fa-eye={!isTitleIgnored(seg.title)}></i>
                   </button>
                 </div>
               </div>
@@ -827,6 +877,32 @@
   .action-btn.delete-btn:hover {
     color: var(--hifi-led-red);
     opacity: 1;
+  }
+
+  .action-btn.ignore-btn {
+    color: var(--hifi-text-secondary);
+    opacity: 0.4;
+  }
+
+  .action-btn.ignore-btn:hover {
+    color: var(--hifi-text-primary);
+    opacity: 0.8;
+  }
+
+  .action-btn.ignore-btn.ignored {
+    color: var(--hifi-led-red);
+    opacity: 0.9;
+  }
+
+  .action-btn.ignore-btn.ignored:hover {
+    color: var(--hifi-led-red);
+    opacity: 1;
+  }
+
+  .action-btn.ignore-btn.mini {
+    font-size: 0.7em;
+    padding: 0 4px;
+    margin-left: auto;
   }
 
   .action-btn.rec-btn {

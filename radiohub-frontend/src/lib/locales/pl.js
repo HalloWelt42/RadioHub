@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Nagrania',
     nochKeineOrdner: 'Nie utworzono jeszcze żadnych folderów',
     ordnerHint: 'Foldery pomagają organizować nagrania',
-    ordnernameErforderlich: 'Nazwa folderu jest wymagana'
+    ordnernameErforderlich: 'Nazwa folderu jest wymagana',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNOROWANE TYTUŁY ICY',
+    ignoreHint: 'Te tytuły będą ignorowane podczas nagrywania -- poprzedni tytuł kontynuuje.',
+    muster: 'WZORZEC',
+    typ: 'TYP',
+    quelle: 'ŹRÓDŁO',
+    exact: 'Dokładny',
+    contains: 'Zawiera',
+    builtin: 'System',
+    user: 'Użytkownik',
+    musterHinzufuegen: 'Dodaj wzorzec...',
+    hinzufuegen: 'DODAJ',
+    nochKeineIgnore: 'Brak ignorowanych tytułów',
+    ignoreListeHint: 'Dodaj tytuły, które mają być pomijane podczas nagrywania'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Wolna pamięć',
     dateienLabel: 'Pliki',
     gbFrei: 'GB wolne',
-    breiteAnpassen: 'Dostosuj szerokość'
+    breiteAnpassen: 'Dostosuj szerokość',
+    titelIgnorieren: 'Ignoruj ten tytuł w przyszłości',
+    titelIgnoriert: 'Tytuł będzie ignorowany w przyszłości',
+    titelNichtMehrIgnorieren: 'Przestań ignorować ten tytuł',
+    titelNichtMehrIgnoriert: 'Tytuł nie będzie już ignorowany'
   },
 
   // === Cutter ===

@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Nahrávky',
     nochKeineOrdner: 'Zatím nebyly vytvořeny žádné složky',
     ordnerHint: 'Složky pomáhají organizovat nahrávky',
-    ordnernameErforderlich: 'Název složky je povinný'
+    ordnernameErforderlich: 'Název složky je povinný',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNOROVANÉ ICY TITULY',
+    ignoreHint: 'Tyto tituly budou během nahrávání ignorovány -- předchozí titul pokračuje.',
+    muster: 'VZOR',
+    typ: 'TYP',
+    quelle: 'ZDROJ',
+    exact: 'Přesně',
+    contains: 'Obsahuje',
+    builtin: 'Systém',
+    user: 'Uživatel',
+    musterHinzufuegen: 'Přidat vzor...',
+    hinzufuegen: 'PŘIDAT',
+    nochKeineIgnore: 'Žádné ignorované tituly',
+    ignoreListeHint: 'Přidejte tituly, které mají být při nahrávání přeskočeny'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Volné úložiště',
     dateienLabel: 'Soubory',
     gbFrei: 'GB volných',
-    breiteAnpassen: 'Přizpůsobit šířku'
+    breiteAnpassen: 'Přizpůsobit šířku',
+    titelIgnorieren: 'Tento titul v budoucnu ignorovat',
+    titelIgnoriert: 'Titul bude v budoucnu ignorován',
+    titelNichtMehrIgnorieren: 'Přestat ignorovat tento titul',
+    titelNichtMehrIgnoriert: 'Titul již nebude ignorován'
   },
 
   // === Cutter ===

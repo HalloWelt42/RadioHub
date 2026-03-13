@@ -31,7 +31,7 @@ ICY_RECONNECT_DELAY = 5       # Sekunden zwischen Versuchen
 
 
 class IcyMetadataLogger:
-    def __init__(self):
+    def __init__(self, ignore_rules: list[dict] | None = None):
         self.entries: list[dict] = []
         self._running = False
         self._reader: Optional[asyncio.StreamReader] = None
@@ -41,6 +41,8 @@ class IcyMetadataLogger:
         self._cumulative_bytes: int = 0
         self._metaint: int = 0
         self._reconnect_count: int = 0
+        # Ignorier-Liste: [{pattern, match_type}, ...]
+        self._ignore_rules = ignore_rules or []
 
     async def _connect(self, host: str, port: int, path: str,
                        timeout: float = 10.0) -> int:
@@ -210,6 +212,9 @@ class IcyMetadataLogger:
             # StreamTitle parsen
             title = self._parse_stream_title(meta_str)
             if title and title != self._last_title:
+                if self._is_ignored(title):
+                    print(f"  ICY [ignoriert]: {title}")
+                    continue
                 elapsed_ms = int((asyncio.get_event_loop().time() - self._start_time) * 1000)
                 self.entries.append({
                     "t": elapsed_ms,
@@ -228,6 +233,21 @@ class IcyMetadataLogger:
         match = re.search(r"StreamTitle='([^']*)'", meta_str)
         if match:
             return match.group(1).strip()
+
+    def _is_ignored(self, title: str) -> bool:
+        """Prueft ob ein ICY-Titel auf der Ignorier-Liste steht."""
+        upper = title.upper()
+        for rule in self._ignore_rules:
+            pattern = rule.get("pattern", "").upper()
+            if not pattern:
+                continue
+            if rule.get("match_type") == "contains":
+                if pattern in upper:
+                    return True
+            else:  # exact
+                if upper == pattern:
+                    return True
+        return False
         return ""
 
     def _save(self, output_path: Path):

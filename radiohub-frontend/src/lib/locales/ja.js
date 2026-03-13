@@ -100,7 +100,21 @@ export default {
     aufnahmen: '録音',
     nochKeineOrdner: 'フォルダはまだ作成されていません',
     ordnerHint: 'フォルダで録音を整理できます',
-    ordnernameErforderlich: 'フォルダ名が必要です'
+    ordnernameErforderlich: 'フォルダ名が必要です',
+    // ICY Ignore
+    ignorierteIcyTitel: '無視するICYタイトル',
+    ignoreHint: 'これらのタイトルは録音中に無視されます -- 前のタイトルが継続します。',
+    muster: 'パターン',
+    typ: 'タイプ',
+    quelle: 'ソース',
+    exact: '完全一致',
+    contains: '部分一致',
+    builtin: 'システム',
+    user: 'ユーザー',
+    musterHinzufuegen: 'パターンを追加...',
+    hinzufuegen: '追加',
+    nochKeineIgnore: '無視するタイトルなし',
+    ignoreListeHint: '録音中にスキップするタイトルを追加してください'
   },
 
   // === Setup Filter ===
@@ -482,7 +496,11 @@ export default {
     freierSpeicher: '空きストレージ',
     dateienLabel: 'ファイル',
     gbFrei: 'GB空き',
-    breiteAnpassen: '幅を調整'
+    breiteAnpassen: '幅を調整',
+    titelIgnorieren: 'このタイトルを今後無視する',
+    titelIgnoriert: 'タイトルは今後無視されます',
+    titelNichtMehrIgnorieren: 'このタイトルの無視を解除する',
+    titelNichtMehrIgnoriert: 'タイトルは無視されなくなります'
   },
 
   // === Cutter ===

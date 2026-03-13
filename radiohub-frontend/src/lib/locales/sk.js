@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Nahrávky',
     nochKeineOrdner: 'Zatiaľ neboli vytvorené žiadne priečinky',
     ordnerHint: 'Priečinky pomáhajú organizovať nahrávky',
-    ordnernameErforderlich: 'Názov priečinka je povinný'
+    ordnernameErforderlich: 'Názov priečinka je povinný',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNOROVANÉ ICY TITULY',
+    ignoreHint: 'Tieto tituly budú počas nahrávania ignorované -- predchádzajúci titul pokračuje.',
+    muster: 'VZOR',
+    typ: 'TYP',
+    quelle: 'ZDROJ',
+    exact: 'Presne',
+    contains: 'Obsahuje',
+    builtin: 'Systém',
+    user: 'Používateľ',
+    musterHinzufuegen: 'Pridať vzor...',
+    hinzufuegen: 'PRIDAŤ',
+    nochKeineIgnore: 'Žiadne ignorované tituly',
+    ignoreListeHint: 'Pridajte tituly, ktoré sa majú pri nahrávaní preskočiť'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Voľné úložisko',
     dateienLabel: 'Súbory',
     gbFrei: 'GB voľných',
-    breiteAnpassen: 'Prispôsobiť šírku'
+    breiteAnpassen: 'Prispôsobiť šírku',
+    titelIgnorieren: 'Ignorovať tento titul v budúcnosti',
+    titelIgnoriert: 'Titul bude v budúcnosti ignorovaný',
+    titelNichtMehrIgnorieren: 'Prestať ignorovať tento titul',
+    titelNichtMehrIgnoriert: 'Titul už nebude ignorovaný'
   },
 
   // === Cutter ===

@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Felvételek',
     nochKeineOrdner: 'Még nincs mappa létrehozva',
     ordnerHint: 'A mappák segítenek a felvételek rendszerezésében',
-    ordnernameErforderlich: 'Mappa neve szükséges'
+    ordnernameErforderlich: 'Mappa neve szükséges',
+    // ICY Ignore
+    ignorierteIcyTitel: 'FIGYELMEN KÍVÜL HAGYOTT ICY CÍMEK',
+    ignoreHint: 'Ezek a címek figyelmen kívül lesznek hagyva a felvétel során -- az előző cím folytatódik.',
+    muster: 'MINTA',
+    typ: 'TÍPUS',
+    quelle: 'FORRÁS',
+    exact: 'Pontos',
+    contains: 'Tartalmaz',
+    builtin: 'Rendszer',
+    user: 'Felhasználó',
+    musterHinzufuegen: 'Minta hozzáadása...',
+    hinzufuegen: 'HOZZÁADÁS',
+    nochKeineIgnore: 'Nincs figyelmen kívül hagyott cím',
+    ignoreListeHint: 'Adja meg a felvétel során kihagyandó címeket'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Szabad tárhely',
     dateienLabel: 'Fájlok',
     gbFrei: 'GB szabad',
-    breiteAnpassen: 'Szélesség beállítása'
+    breiteAnpassen: 'Szélesség beállítása',
+    titelIgnorieren: 'Cím figyelmen kívül hagyása a jövőben',
+    titelIgnoriert: 'A cím figyelmen kívül lesz hagyva a jövőben',
+    titelNichtMehrIgnorieren: 'Ne hagyja figyelmen kívül ezt a címet',
+    titelNichtMehrIgnoriert: 'A cím nem lesz többé figyelmen kívül hagyva'
   },
 
   // === Cutter ===

@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Kayıtlar',
     nochKeineOrdner: 'Henüz klasör oluşturulmadı',
     ordnerHint: 'Klasörler kayıtların düzenlenmesine yardımcı olur',
-    ordnernameErforderlich: 'Klasör adı gerekli'
+    ordnernameErforderlich: 'Klasör adı gerekli',
+    // ICY Ignore
+    ignorierteIcyTitel: 'YOK SAYILAN ICY BAŞLIKLARI',
+    ignoreHint: 'Bu başlıklar kayıt sırasında yok sayılır -- önceki başlık devam eder.',
+    muster: 'DESEN',
+    typ: 'TÜR',
+    quelle: 'KAYNAK',
+    exact: 'Tam eşleşme',
+    contains: 'İçerir',
+    builtin: 'Sistem',
+    user: 'Kullanıcı',
+    musterHinzufuegen: 'Desen ekle...',
+    hinzufuegen: 'EKLE',
+    nochKeineIgnore: 'Yok sayılan başlık yok',
+    ignoreListeHint: 'Kayıt sırasında atlanacak başlıkları ekleyin'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Boş depolama',
     dateienLabel: 'Dosyalar',
     gbFrei: 'GB boş',
-    breiteAnpassen: 'Genişliği ayarla'
+    breiteAnpassen: 'Genişliği ayarla',
+    titelIgnorieren: 'Bu başlığı gelecekte yok say',
+    titelIgnoriert: 'Başlık gelecekte yok sayılacak',
+    titelNichtMehrIgnorieren: 'Bu başlığı yok saymayı durdur',
+    titelNichtMehrIgnoriert: 'Başlık artık yok sayılmayacak'
   },
 
   // === Cutter ===

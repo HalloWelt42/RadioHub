@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Tallenteet',
     nochKeineOrdner: 'Kansioita ei ole vielä luotu',
     ordnerHint: 'Kansiot auttavat tallenteiden järjestämisessä',
-    ordnernameErforderlich: 'Kansion nimi vaaditaan'
+    ordnernameErforderlich: 'Kansion nimi vaaditaan',
+    // ICY Ignore
+    ignorierteIcyTitel: 'OHITETUT ICY-OTSIKOT',
+    ignoreHint: 'Nämä otsikot ohitetaan tallennuksen aikana -- edellinen otsikko jatkuu.',
+    muster: 'MALLI',
+    typ: 'TYYPPI',
+    quelle: 'LÄHDE',
+    exact: 'Tarkka',
+    contains: 'Sisältää',
+    builtin: 'Järjestelmä',
+    user: 'Käyttäjä',
+    musterHinzufuegen: 'Lisää malli...',
+    hinzufuegen: 'LISÄÄ',
+    nochKeineIgnore: 'Ei ohitettuja otsikoita',
+    ignoreListeHint: 'Lisää otsikot, jotka ohitetaan tallennuksen aikana'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Vapaa tallennustila',
     dateienLabel: 'Tiedostot',
     gbFrei: 'Gt vapaana',
-    breiteAnpassen: 'Säädä leveyttä'
+    breiteAnpassen: 'Säädä leveyttä',
+    titelIgnorieren: 'Ohita tämä otsikko jatkossa',
+    titelIgnoriert: 'Otsikko ohitetaan jatkossa',
+    titelNichtMehrIgnorieren: 'Lopeta tämän otsikon ohittaminen',
+    titelNichtMehrIgnoriert: 'Otsikkoa ei enää ohiteta'
   },
 
   // === Cutter ===

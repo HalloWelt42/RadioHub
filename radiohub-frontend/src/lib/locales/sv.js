@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Inspelningar',
     nochKeineOrdner: 'Inga mappar skapade ännu',
     ordnerHint: 'Mappar hjälper till att organisera inspelningar',
-    ordnernameErforderlich: 'Mappnamn krävs'
+    ordnernameErforderlich: 'Mappnamn krävs',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNORERADE ICY-TITLAR',
+    ignoreHint: 'Dessa titlar ignoreras under inspelning -- föregående titel fortsätter.',
+    muster: 'MÖNSTER',
+    typ: 'TYP',
+    quelle: 'KÄLLA',
+    exact: 'Exakt',
+    contains: 'Innehåller',
+    builtin: 'System',
+    user: 'Användare',
+    musterHinzufuegen: 'Lägg till mönster...',
+    hinzufuegen: 'LÄGG TILL',
+    nochKeineIgnore: 'Inga ignorerade titlar',
+    ignoreListeHint: 'Lägg till titlar som ska hoppas över under inspelning'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Ledigt lagringsutrymme',
     dateienLabel: 'Filer',
     gbFrei: 'GB ledigt',
-    breiteAnpassen: 'Anpassa bredd'
+    breiteAnpassen: 'Anpassa bredd',
+    titelIgnorieren: 'Ignorera denna titel framöver',
+    titelIgnoriert: 'Titeln ignoreras framöver',
+    titelNichtMehrIgnorieren: 'Sluta ignorera denna titel',
+    titelNichtMehrIgnoriert: 'Titeln ignoreras inte längre'
   },
 
   // === Cutter ===

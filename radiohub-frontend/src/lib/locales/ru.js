@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Записи',
     nochKeineOrdner: 'Папки ещё не созданы',
     ordnerHint: 'Папки помогают упорядочить записи',
-    ordnernameErforderlich: 'Требуется имя папки'
+    ordnernameErforderlich: 'Требуется имя папки',
+    // ICY Ignore
+    ignorierteIcyTitel: 'ИГНОРИРУЕМЫЕ ICY-ЗАГОЛОВКИ',
+    ignoreHint: 'Эти заголовки будут игнорироваться во время записи -- предыдущий заголовок продолжается.',
+    muster: 'ШАБЛОН',
+    typ: 'ТИП',
+    quelle: 'ИСТОЧНИК',
+    exact: 'Точное',
+    contains: 'Содержит',
+    builtin: 'Система',
+    user: 'Пользователь',
+    musterHinzufuegen: 'Добавить шаблон...',
+    hinzufuegen: 'ДОБАВИТЬ',
+    nochKeineIgnore: 'Нет игнорируемых заголовков',
+    ignoreListeHint: 'Добавьте заголовки, которые нужно пропускать при записи'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Свободное хранилище',
     dateienLabel: 'Файлы',
     gbFrei: 'ГБ свободно',
-    breiteAnpassen: 'Настроить ширину'
+    breiteAnpassen: 'Настроить ширину',
+    titelIgnorieren: 'Игнорировать этот заголовок в будущем',
+    titelIgnoriert: 'Заголовок будет игнорироваться в будущем',
+    titelNichtMehrIgnorieren: 'Перестать игнорировать этот заголовок',
+    titelNichtMehrIgnoriert: 'Заголовок больше не будет игнорироваться'
   },
 
   // === Cutter ===

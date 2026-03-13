@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Opnamen',
     nochKeineOrdner: 'Nog geen mappen aangemaakt',
     ordnerHint: 'Mappen helpen bij het organiseren van opnamen',
-    ordnernameErforderlich: 'Mapnaam vereist'
+    ordnernameErforderlich: 'Mapnaam vereist',
+    // ICY Ignore
+    ignorierteIcyTitel: 'GENEGEERDE ICY-TITELS',
+    ignoreHint: 'Deze titels worden genegeerd tijdens opname -- de vorige titel gaat door.',
+    muster: 'PATROON',
+    typ: 'TYPE',
+    quelle: 'BRON',
+    exact: 'Exact',
+    contains: 'Bevat',
+    builtin: 'Systeem',
+    user: 'Gebruiker',
+    musterHinzufuegen: 'Patroon toevoegen...',
+    hinzufuegen: 'TOEVOEGEN',
+    nochKeineIgnore: 'Geen genegeerde titels',
+    ignoreListeHint: 'Voeg titels toe die tijdens opname overgeslagen moeten worden'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Vrije opslag',
     dateienLabel: 'Bestanden',
     gbFrei: 'GB vrij',
-    breiteAnpassen: 'Breedte aanpassen'
+    breiteAnpassen: 'Breedte aanpassen',
+    titelIgnorieren: 'Deze titel in de toekomst negeren',
+    titelIgnoriert: 'Titel wordt in de toekomst genegeerd',
+    titelNichtMehrIgnorieren: 'Stop met het negeren van deze titel',
+    titelNichtMehrIgnoriert: 'Titel wordt niet meer genegeerd'
   },
 
   // === Cutter ===

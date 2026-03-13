@@ -119,7 +119,21 @@ export default {
     aufnahmen: 'Recordings',
     nochKeineOrdner: 'No folders created yet',
     ordnerHint: 'Folders help organize recordings',
-    ordnernameErforderlich: 'Folder name required'
+    ordnernameErforderlich: 'Folder name required',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNORED ICY TITLES',
+    ignoreHint: 'These titles will be ignored during recording -- the previous title continues.',
+    muster: 'PATTERN',
+    typ: 'TYPE',
+    quelle: 'SOURCE',
+    exact: 'Exact',
+    contains: 'Contains',
+    builtin: 'System',
+    user: 'User',
+    musterHinzufuegen: 'Add pattern...',
+    hinzufuegen: 'ADD',
+    nochKeineIgnore: 'No ignored titles',
+    ignoreListeHint: 'Add titles that should be skipped during recording'
   },
 
   // === Setup Filter ===
@@ -466,6 +480,10 @@ export default {
     aufnahmeLoeschen: 'Permanently delete recording',
     aufnahmeStoppen: 'Stop recording',
     segmentLoeschen: 'Permanently delete segment',
+    titelIgnorieren: 'Ignore this title in future',
+    titelIgnoriert: 'Title will be ignored in future',
+    titelNichtMehrIgnorieren: 'Stop ignoring this title',
+    titelNichtMehrIgnoriert: 'Title will no longer be ignored',
     inOrdnerVerschieben: 'Move to folder',
     rootKeinOrdner: 'Root (no folder)',
     segmenteErzeugtToast: '{count} segments created',

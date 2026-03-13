@@ -319,7 +319,16 @@ class RecorderManager:
             )[:50]
             meta_path = active_dir / f"{session_id}_{safe_name}.meta.json"
             session.meta_file_path = meta_path
-            session.icy_logger = IcyMetadataLogger()
+            # Ignorier-Liste aus DB laden
+            ignore_rules = []
+            try:
+                with db_session() as conn:
+                    c = conn.cursor()
+                    c.execute("SELECT pattern, match_type FROM icy_title_ignore")
+                    ignore_rules = [{"pattern": r[0], "match_type": r[1]} for r in c.fetchall()]
+            except Exception:
+                pass  # Tabelle existiert evtl. noch nicht
+            session.icy_logger = IcyMetadataLogger(ignore_rules=ignore_rules)
             session.icy_task = asyncio.create_task(
                 session.icy_logger.run(stream_url, meta_path)
             )

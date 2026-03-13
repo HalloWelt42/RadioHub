@@ -375,6 +375,26 @@ def init_db():
         except Exception:
             pass
 
+    # === ICY-Titel Ignorier-Liste ===
+    c.execute('''CREATE TABLE IF NOT EXISTS icy_title_ignore (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pattern TEXT UNIQUE NOT NULL,
+        match_type TEXT DEFAULT 'exact',
+        source TEXT DEFAULT 'user',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
+    # Builtin-Eintraege (idempotent)
+    for pattern, mtype in [
+        ("THIS STATION WILL CONTINUE AFTER THIS BREAK", "exact"),
+        ("ADBREAK", "contains"),
+        ("AD BREAK", "contains"),
+    ]:
+        c.execute(
+            "INSERT OR IGNORE INTO icy_title_ignore (pattern, match_type, source) VALUES (?, ?, 'builtin')",
+            (pattern, mtype)
+        )
+
     # === Indices für Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")

@@ -100,7 +100,21 @@ export default {
     aufnahmen: '录音',
     nochKeineOrdner: '尚未创建文件夹',
     ordnerHint: '文件夹有助于整理录音',
-    ordnernameErforderlich: '需要文件夹名称'
+    ordnernameErforderlich: '需要文件夹名称',
+    // ICY Ignore
+    ignorierteIcyTitel: '已忽略的ICY标题',
+    ignoreHint: '录制期间将忽略这些标题 -- 继续使用上一个标题。',
+    muster: '模式',
+    typ: '类型',
+    quelle: '来源',
+    exact: '精确匹配',
+    contains: '包含',
+    builtin: '系统',
+    user: '用户',
+    musterHinzufuegen: '添加模式...',
+    hinzufuegen: '添加',
+    nochKeineIgnore: '无忽略标题',
+    ignoreListeHint: '添加录制时需要跳过的标题'
   },
 
   // === Setup Filter ===
@@ -482,7 +496,11 @@ export default {
     freierSpeicher: '可用存储',
     dateienLabel: '文件',
     gbFrei: 'GB可用',
-    breiteAnpassen: '调整宽度'
+    breiteAnpassen: '调整宽度',
+    titelIgnorieren: '以后忽略此标题',
+    titelIgnoriert: '此标题将在以后被忽略',
+    titelNichtMehrIgnorieren: '停止忽略此标题',
+    titelNichtMehrIgnoriert: '此标题将不再被忽略'
   },
 
   // === Cutter ===

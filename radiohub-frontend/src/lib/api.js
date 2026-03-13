@@ -663,6 +663,29 @@ class RadioHubAPI {
   async resetServiceUrl(serviceId) {
     return this.fetch(`/api/services/${serviceId}/reset`, { method: 'POST' });
   }
+
+  // === ICY-Titel Ignorier-Liste ===
+  async getIcyIgnoreList() {
+    return this.fetch('/api/recording/icy-ignore');
+  }
+
+  async addIcyIgnore(pattern, matchType = 'exact') {
+    return this.fetch('/api/recording/icy-ignore', {
+      method: 'POST',
+      body: JSON.stringify({ pattern, match_type: matchType })
+    });
+  }
+
+  async removeIcyIgnore(id) {
+    return this.fetch(`/api/recording/icy-ignore/${id}`, { method: 'DELETE' });
+  }
+
+  async removeIcyIgnoreByPattern(pattern) {
+    return this.fetch('/api/recording/icy-ignore/remove-by-pattern', {
+      method: 'POST',
+      body: JSON.stringify({ pattern })
+    });
+  }
 }
 
 export const api = new RadioHubAPI(API_BASE);

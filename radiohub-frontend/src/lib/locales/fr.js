@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Enregistrements',
     nochKeineOrdner: 'Aucun dossier créé pour le moment',
     ordnerHint: 'Les dossiers aident à organiser les enregistrements',
-    ordnernameErforderlich: 'Nom de dossier requis'
+    ordnernameErforderlich: 'Nom de dossier requis',
+    // ICY Ignore
+    ignorierteIcyTitel: 'TITRES ICY IGNORÉS',
+    ignoreHint: 'Ces titres seront ignorés lors de l\'enregistrement -- le titre précédent continue.',
+    muster: 'MODÈLE',
+    typ: 'TYPE',
+    quelle: 'SOURCE',
+    exact: 'Exact',
+    contains: 'Contient',
+    builtin: 'Système',
+    user: 'Utilisateur',
+    musterHinzufuegen: 'Ajouter un modèle...',
+    hinzufuegen: 'AJOUTER',
+    nochKeineIgnore: 'Aucun titre ignoré',
+    ignoreListeHint: 'Ajoutez les titres à ignorer lors de l\'enregistrement'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Stockage libre',
     dateienLabel: 'Fichiers',
     gbFrei: 'Go libres',
-    breiteAnpassen: 'Ajuster la largeur'
+    breiteAnpassen: 'Ajuster la largeur',
+    titelIgnorieren: 'Ignorer ce titre à l\'avenir',
+    titelIgnoriert: 'Le titre sera ignoré à l\'avenir',
+    titelNichtMehrIgnorieren: 'Ne plus ignorer ce titre',
+    titelNichtMehrIgnoriert: 'Le titre ne sera plus ignoré'
   },
 
   // === Cutter ===

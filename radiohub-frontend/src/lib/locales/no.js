@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Opptak',
     nochKeineOrdner: 'Ingen mapper opprettet ennå',
     ordnerHint: 'Mapper hjelper med å organisere opptak',
-    ordnernameErforderlich: 'Mappenavn påkrevd'
+    ordnernameErforderlich: 'Mappenavn påkrevd',
+    // ICY Ignore
+    ignorierteIcyTitel: 'IGNORERTE ICY-TITLER',
+    ignoreHint: 'Disse titlene ignoreres under opptak -- forrige tittel fortsetter.',
+    muster: 'MØNSTER',
+    typ: 'TYPE',
+    quelle: 'KILDE',
+    exact: 'Nøyaktig',
+    contains: 'Inneholder',
+    builtin: 'System',
+    user: 'Bruker',
+    musterHinzufuegen: 'Legg til mønster...',
+    hinzufuegen: 'LEGG TIL',
+    nochKeineIgnore: 'Ingen ignorerte titler',
+    ignoreListeHint: 'Legg til titler som skal hoppes over under opptak'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Ledig lagringsplass',
     dateienLabel: 'Filer',
     gbFrei: 'GB ledig',
-    breiteAnpassen: 'Tilpass bredde'
+    breiteAnpassen: 'Tilpass bredde',
+    titelIgnorieren: 'Ignorer denne tittelen fremover',
+    titelIgnoriert: 'Tittel ignoreres fremover',
+    titelNichtMehrIgnorieren: 'Slutt å ignorere denne tittelen',
+    titelNichtMehrIgnoriert: 'Tittelen ignoreres ikke lenger'
   },
 
   // === Cutter ===

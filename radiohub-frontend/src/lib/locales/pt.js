@@ -99,7 +99,21 @@ export default {
     aufnahmen: 'Gravações',
     nochKeineOrdner: 'Ainda não foram criadas pastas',
     ordnerHint: 'As pastas ajudam a organizar as gravações',
-    ordnernameErforderlich: 'Nome da pasta obrigatório'
+    ordnernameErforderlich: 'Nome da pasta obrigatório',
+    // ICY Ignore
+    ignorierteIcyTitel: 'TÍTULOS ICY IGNORADOS',
+    ignoreHint: 'Estes títulos serão ignorados durante a gravação -- o título anterior continua.',
+    muster: 'PADRÃO',
+    typ: 'TIPO',
+    quelle: 'FONTE',
+    exact: 'Exato',
+    contains: 'Contém',
+    builtin: 'Sistema',
+    user: 'Utilizador',
+    musterHinzufuegen: 'Adicionar padrão...',
+    hinzufuegen: 'ADICIONAR',
+    nochKeineIgnore: 'Sem títulos ignorados',
+    ignoreListeHint: 'Adicione títulos a ignorar durante a gravação'
   },
 
   // === Setup Filter ===
@@ -481,7 +495,11 @@ export default {
     freierSpeicher: 'Armazenamento livre',
     dateienLabel: 'Ficheiros',
     gbFrei: 'GB livres',
-    breiteAnpassen: 'Ajustar largura'
+    breiteAnpassen: 'Ajustar largura',
+    titelIgnorieren: 'Ignorar este título no futuro',
+    titelIgnoriert: 'O título será ignorado no futuro',
+    titelNichtMehrIgnorieren: 'Parar de ignorar este título',
+    titelNichtMehrIgnoriert: 'O título não será mais ignorado'
   },
 
   // === Cutter ===

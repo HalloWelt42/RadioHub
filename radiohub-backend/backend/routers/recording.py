@@ -545,3 +545,79 @@ async def stop_hls_recording():
 async def hls_recording_status():
     """Status der HLS-Aufnahme"""
     return hls_recorder.get_status()
+
+
+# === ICY-Titel Ignorier-Liste ===
+
+class IcyIgnoreRequest(BaseModel):
+    pattern: str
+    match_type: str = "exact"
+
+
+@router.get("/icy-ignore")
+async def get_icy_ignore_list():
+    """Alle ignorierten ICY-Titel."""
+    from ..database import db_session
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("SELECT id, pattern, match_type, source, created_at FROM icy_title_ignore ORDER BY id")
+        rows = c.fetchall()
+    return {
+        "count": len(rows),
+        "items": [
+            {"id": r[0], "pattern": r[1], "match_type": r[2], "source": r[3], "created_at": r[4]}
+            for r in rows
+        ]
+    }
+
+
+@router.post("/icy-ignore")
+async def add_icy_ignore(req: IcyIgnoreRequest):
+    """Titel zur Ignorier-Liste hinzufuegen."""
+    if not req.pattern.strip():
+        raise HTTPException(400, "Pattern darf nicht leer sein")
+    if req.match_type not in ("exact", "contains"):
+        raise HTTPException(400, "match_type muss 'exact' oder 'contains' sein")
+
+    from ..database import db_session
+    with db_session() as conn:
+        c = conn.cursor()
+        try:
+            c.execute(
+                "INSERT INTO icy_title_ignore (pattern, match_type) VALUES (?, ?)",
+                (req.pattern.strip(), req.match_type)
+            )
+            new_id = c.lastrowid
+        except Exception:
+            raise HTTPException(409, "Pattern existiert bereits")
+    return {"success": True, "id": new_id}
+
+
+@router.delete("/icy-ignore/{item_id}")
+async def remove_icy_ignore(item_id: int):
+    """Eintrag aus der Ignorier-Liste entfernen."""
+    from ..database import db_session
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM icy_title_ignore WHERE id = ?", (item_id,))
+        if c.rowcount == 0:
+            raise HTTPException(404, "Eintrag nicht gefunden")
+    return {"success": True}
+
+
+class IcyIgnoreByPatternRequest(BaseModel):
+    pattern: str
+
+
+@router.post("/icy-ignore/remove-by-pattern")
+async def remove_icy_ignore_by_pattern(req: IcyIgnoreByPatternRequest):
+    """Eintrag per Pattern-String entfernen (fuer Toggle im UI)."""
+    if not req.pattern.strip():
+        raise HTTPException(400, "Pattern darf nicht leer sein")
+    from ..database import db_session
+    with db_session() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM icy_title_ignore WHERE pattern = ?", (req.pattern.strip(),))
+        if c.rowcount == 0:
+            raise HTTPException(404, "Pattern nicht in Ignorier-Liste")
+    return {"success": True}
