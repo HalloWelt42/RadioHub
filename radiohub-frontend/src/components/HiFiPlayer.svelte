@@ -369,7 +369,7 @@
   });
 
   // Play-Modus: linear -> reverse -> loop -> shuffle -> linear
-  let canTogglePlayMode = $derived(appState.playerMode === 'podcast' || appState.activeTab === 'recordings');
+  let canTogglePlayMode = $derived(appState.playerMode === 'podcast');
   const playModeOrder = ['linear', 'reverse', 'loop', 'shuffle'];
   const playModeIcons = { linear: 'fa-arrow-right', reverse: 'fa-arrow-left', loop: 'fa-repeat', shuffle: 'fa-shuffle' };
   const playModeLabels = { linear: 'player.linear', reverse: 'player.rueckwaerts', loop: 'player.endlosschleife', shuffle: 'player.zufall' };
