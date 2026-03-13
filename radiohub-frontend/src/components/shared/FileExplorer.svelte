@@ -199,6 +199,25 @@
       selectedFiles = new Set(paths);
     }
   });
+
+  // Auto-Scroll zur aktuell spielenden Datei bei Titelwechsel
+  $effect(() => {
+    if (!playingFilePath || !folders.length) return;
+    // Ordner finden der die spielende Datei enthaelt
+    const folder = folders.find(f => f.files.some(file => file.path === playingFilePath));
+    if (!folder) return;
+    // Ordner aufklappen falls noetig
+    if (!expandedFolders.has(folder.id)) {
+      const next = new Set(expandedFolders);
+      next.add(folder.id);
+      expandedFolders = next;
+    }
+    // Nach kurzer Verzoegerung (DOM-Update abwarten) zur Zeile scrollen
+    requestAnimationFrame(() => {
+      const el = document.querySelector('.file-row.playing');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
 </script>
 
 <div class="file-explorer">
