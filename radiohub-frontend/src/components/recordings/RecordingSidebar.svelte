@@ -904,7 +904,6 @@
   /* Segment-Liste unter selektierter Session */
   .segment-list {
     padding: 2px 0 4px 12px;
-    border-left: 2px solid rgba(51, 153, 255, 0.15);
     margin-left: 10px;
     margin-bottom: 2px;
   }

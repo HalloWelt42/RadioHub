@@ -488,7 +488,6 @@
 
   .sub-item.playing {
     background: rgba(76, 175, 80, 0.08);
-    border-left: 2px solid rgba(76, 175, 80, 0.5);
   }
 
   .sub-info {

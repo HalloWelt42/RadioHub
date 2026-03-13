@@ -445,7 +445,6 @@
   }
 
   .folder-row.orphaned {
-    border-left: 2px solid var(--hifi-led-amber, #e5a00d);
   }
 
   .folder-header {

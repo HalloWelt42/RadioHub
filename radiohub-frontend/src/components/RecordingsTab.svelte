@@ -932,7 +932,6 @@
 
   .segment-entry.playing {
     background: rgba(40, 180, 40, 0.08);
-    border-left: 2px solid rgba(40, 180, 40, 0.5);
   }
 
   .segment-entry .meta-time {
