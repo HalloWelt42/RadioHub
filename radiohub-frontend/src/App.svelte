@@ -84,9 +84,11 @@
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
     switch (e.key) {
-      case ' ':  // Space = Play/Pause
+      case ' ':  // Space = Play/Pause (Direct: Stop statt Pause)
         e.preventDefault();
-        if (appState.playerMode !== 'none') {
+        if (appState.playerMode === 'direct') {
+          actions.stop();
+        } else if (appState.playerMode !== 'none') {
           actions.togglePause();
         }
         break;

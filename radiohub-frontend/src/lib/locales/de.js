@@ -58,7 +58,7 @@ export default {
     keyPlayback: 'WIEDERGABE',
     keyNavigation: 'NAVIGATION',
     keyTabs: 'TABS',
-    keySpace: 'Wiedergabe / Pause',
+    keySpace: 'Wiedergabe / Pause (nur HLS)',
     keyStop: 'Stopp (inkl. Aufnahme)',
     keyUp: 'Lauter (+5%)',
     keyDown: 'Leiser (-5%)',

@@ -85,6 +85,11 @@
   // === Handlers ===
   function handlePlayPause() {
     if (appState.isPlaying && !appState.isPaused) {
+      // Direct-Streams können nicht pausiert werden -- nur Stop
+      if (appState.playerMode === 'direct') {
+        engine.stop();
+        return;
+      }
       engine.togglePause();
     } else if (appState.isPaused) {
       engine.resume();
@@ -568,7 +573,7 @@
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : (appState.isPaused ? t('player.pause') : t('player.play')) + ' (Space)'}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : appState.playerMode === 'direct' ? t('player.play') + ' / ' + t('player.stop') + ' (Space)' : (appState.isPaused ? t('player.pause') : t('player.play')) + ' (Space)'}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
