@@ -29,6 +29,7 @@ export default {
     kategorien: 'CATEGORIES',
     // Allgemein Sub-Tabs
     einstellungen: 'SETTINGS',
+    tastatur: 'KEYBOARD',
     bedanken: 'DONATE',
     lizenz: 'LICENSE',
     recht: 'LEGAL'
@@ -50,7 +51,24 @@ export default {
     lookback: 'LOOKBACK',
     lookbackHint: 'How many minutes should the HLS recording look back into the past?',
     language: 'LANGUAGE',
-    datenschutzNutzung: 'PRIVACY & TERMS OF SERVICE'
+    datenschutzNutzung: 'PRIVACY & TERMS OF SERVICE',
+    // Keyboard
+    tastaturTitle: 'KEYBOARD SHORTCUTS',
+    tastaturHint: 'Active when no input field is focused',
+    keyPlayback: 'PLAYBACK',
+    keyNavigation: 'NAVIGATION',
+    keyTabs: 'TABS',
+    keySpace: 'Play / Pause',
+    keyStop: 'Stop (incl. recording)',
+    keyUp: 'Volume up (+5%)',
+    keyDown: 'Volume down (-5%)',
+    keyMute: 'Mute toggle',
+    keyLeft: 'Previous station / track',
+    keyRight: 'Next station / track',
+    keyTab1: 'Radio',
+    keyTab2: 'Recording',
+    keyTab3: 'Podcast',
+    keyTab4: 'Settings'
   },
 
   // === Setup Podcast ===

@@ -39,9 +39,30 @@
 
   const subTabs = [
     { id: 'einstellungen', label: 'EINSTELLUNGEN', icon: 'fa-gear', special: null },
+    { id: 'tastatur', label: 'TASTATUR', icon: 'fa-keyboard', special: null },
     { id: 'bedanken', label: 'BEDANKEN', icon: 'fa-heart', special: 'bedanken' },
     { id: 'lizenz', label: 'LIZENZ', icon: 'fa-scale-balanced', special: null },
     { id: 'recht', label: 'RECHT', icon: 'fa-shield-halved', special: null }
+  ];
+
+  const hotkeys = [
+    { group: 'keyPlayback', keys: [
+      { key: 'Space', label: 'keySpace' },
+      { key: 'S', label: 'keyStop' },
+      { key: 'M', label: 'keyMute' }
+    ]},
+    { group: 'keyNavigation', keys: [
+      { key: '\u2191', label: 'keyUp' },
+      { key: '\u2193', label: 'keyDown' },
+      { key: '\u2190', label: 'keyLeft' },
+      { key: '\u2192', label: 'keyRight' }
+    ]},
+    { group: 'keyTabs', keys: [
+      { key: '1', label: 'keyTab1' },
+      { key: '2', label: 'keyTab2' },
+      { key: '3', label: 'keyTab3' },
+      { key: '4', label: 'keyTab4' }
+    ]}
   ];
 
   $effect(() => {
@@ -245,6 +266,34 @@
       </div>
     </div>
 
+  <!-- === TASTATUR === -->
+  {:else if activeSubTab === 'tastatur'}
+    <div class="hotkey-container">
+      <div class="hifi-panel">
+        <div class="hifi-panel-header">
+          <i class="fa-solid fa-keyboard header-icon"></i>
+          <span class="hifi-font-label">{t('allgemein.tastaturTitle')}</span>
+        </div>
+        <div class="hotkey-hint">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>{t('allgemein.tastaturHint')}</span>
+        </div>
+        <div class="hotkey-groups">
+          {#each hotkeys as group}
+            <div class="hotkey-group">
+              <div class="hotkey-group-title">{t('allgemein.' + group.group)}</div>
+              {#each group.keys as hk}
+                <div class="hotkey-row">
+                  <kbd class="hotkey-badge">{hk.key}</kbd>
+                  <span class="hotkey-label">{t('allgemein.' + hk.label)}</span>
+                </div>
+              {/each}
+            </div>
+          {/each}
+        </div>
+      </div>
+    </div>
+
   <!-- === BEDANKEN === -->
   {:else if activeSubTab === 'bedanken'}
     <SetupSpende />
@@ -404,6 +453,76 @@
 
   .lang-btn.active .lang-code {
     color: var(--hifi-accent);
+  }
+
+  /* === Hotkey-Ansicht === */
+  .hotkey-container {
+    max-width: 560px;
+  }
+
+  .hotkey-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-family: var(--hifi-font-body);
+    font-size: 11px;
+    color: var(--hifi-text-muted);
+    border-bottom: 1px solid var(--hifi-border-dark);
+  }
+
+  .hotkey-hint i {
+    color: var(--hifi-accent);
+    font-size: 12px;
+  }
+
+  .hotkey-groups {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hotkey-group-title {
+    font-family: var(--hifi-font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--hifi-text-muted);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--hifi-border-dark);
+  }
+
+  .hotkey-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+  }
+
+  .hotkey-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    background: var(--hifi-bg-tertiary);
+    border: 1px solid var(--hifi-border-dark);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    font-family: var(--hifi-font-values);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--hifi-text-primary);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  }
+
+  .hotkey-label {
+    font-family: var(--hifi-font-body);
+    font-size: 13px;
+    color: var(--hifi-text-secondary);
   }
 
   /* === Markdown Fill Container (füllt verfügbaren Platz) === */

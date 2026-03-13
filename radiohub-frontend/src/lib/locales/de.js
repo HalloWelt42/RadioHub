@@ -29,6 +29,7 @@ export default {
     kategorien: 'KATEGORIEN',
     // Allgemein Sub-Tabs
     einstellungen: 'EINSTELLUNGEN',
+    tastatur: 'TASTATUR',
     bedanken: 'BEDANKEN',
     lizenz: 'LIZENZ',
     recht: 'RECHT'
@@ -50,7 +51,24 @@ export default {
     lookback: 'RÜCKBLICK',
     lookbackHint: 'Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurückgreifen?',
     language: 'SPRACHE',
-    datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN'
+    datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN',
+    // Tastatur
+    tastaturTitle: 'TASTATURKÜRZEL',
+    tastaturHint: 'Aktiv wenn kein Eingabefeld fokussiert ist',
+    keyPlayback: 'WIEDERGABE',
+    keyNavigation: 'NAVIGATION',
+    keyTabs: 'TABS',
+    keySpace: 'Wiedergabe / Pause',
+    keyStop: 'Stopp (inkl. Aufnahme)',
+    keyUp: 'Lauter (+5%)',
+    keyDown: 'Leiser (-5%)',
+    keyMute: 'Stumm ein/aus',
+    keyLeft: 'Vorheriger Sender / Titel',
+    keyRight: 'Nächster Sender / Titel',
+    keyTab1: 'Radio',
+    keyTab2: 'Aufnahme',
+    keyTab3: 'Podcast',
+    keyTab4: 'Einstellungen'
   },
 
   // === Setup Podcast ===
