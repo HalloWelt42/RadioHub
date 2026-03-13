@@ -180,13 +180,17 @@
   let orphanedCount = $derived(folders.filter(f => f.orphaned).length);
 
   // Auto-Aufklappen + Dateien markieren bei aktiver Session
+  // Nur beim Wechsel von activeSessionPath, nicht bei jeder selectedFiles-Aenderung
+  let _lastAppliedSessionPath = null;
   $effect(() => {
     if (!activeSessionPath || !folders.length) return;
+    if (activeSessionPath === _lastAppliedSessionPath) return;
     // Ordner finden: bevorzugt nicht-verwaist mit dir_name als Pfad-Segment
     const match =
       folders.find(f => f.dir_name && !f.orphaned && activeSessionPath.includes('/' + f.dir_name + '/')) ||
       folders.find(f => f.dir_name && activeSessionPath.includes('/' + f.dir_name));
     if (!match) return;
+    _lastAppliedSessionPath = activeSessionPath;
     // Aufklappen
     if (!expandedFolders.has(match.id)) {
       const next = new Set(expandedFolders);
@@ -195,9 +199,7 @@
     }
     // Dateien dieses Ordners selektieren
     const paths = match.files.map(f => f.path);
-    if (paths.length && !paths.every(p => selectedFiles.has(p))) {
-      selectedFiles = new Set(paths);
-    }
+    selectedFiles = new Set(paths);
   });
 
   // Auto-Scroll zur aktuell spielenden Datei bei Titelwechsel

@@ -557,7 +557,7 @@ export default {
     dateiAuswaehlen: '选择文件以进行ZIP下载',
     fuerDownload: '已选择下载',
     nichtAusgewaehlt: '未选择',
-    dateiAbspielen: '播放文件',
+    spieltGerade: '正在播放',
     dateiLoeschen: '永久删除文件',
     sortierungName: '按名称',
     sortierungDatum: '按日期',

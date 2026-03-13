@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Velg fil for ZIP-nedlasting',
     fuerDownload: 'Valgt for nedlasting',
     nichtAusgewaehlt: 'Ikke valgt',
-    dateiAbspielen: 'Spill fil',
+    spieltGerade: 'Spilles nå',
     dateiLoeschen: 'Slett fil permanent',
     sortierungName: 'Etter navn',
     sortierungDatum: 'Etter dato',

@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Fájl kiválasztása ZIP letöltéshez',
     fuerDownload: 'Kiválasztva letöltéshez',
     nichtAusgewaehlt: 'Nincs kiválasztva',
-    dateiAbspielen: 'Fájl lejátszása',
+    spieltGerade: 'Jelenleg játszott',
     dateiLoeschen: 'Fájl végleges törlése',
     sortierungName: 'Név szerint',
     sortierungDatum: 'Dátum szerint',

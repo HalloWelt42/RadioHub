@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Выбрать файл для скачивания ZIP',
     fuerDownload: 'Выбрано для скачивания',
     nichtAusgewaehlt: 'Не выбрано',
-    dateiAbspielen: 'Воспроизвести файл',
+    spieltGerade: 'Сейчас воспроизводится',
     dateiLoeschen: 'Удалить файл навсегда',
     sortierungName: 'По имени',
     sortierungDatum: 'По дате',

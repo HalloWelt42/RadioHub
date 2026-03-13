@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Bestand selecteren voor ZIP-download',
     fuerDownload: 'Geselecteerd voor download',
     nichtAusgewaehlt: 'Niet geselecteerd',
-    dateiAbspielen: 'Bestand afspelen',
+    spieltGerade: 'Wordt nu afgespeeld',
     dateiLoeschen: 'Bestand permanent verwijderen',
     sortierungName: 'Op naam',
     sortierungDatum: 'Op datum',

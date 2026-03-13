@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Vybrat soubor pro stažení ZIP',
     fuerDownload: 'Vybráno ke stažení',
     nichtAusgewaehlt: 'Nevybráno',
-    dateiAbspielen: 'Přehrát soubor',
+    spieltGerade: 'Právě se přehrává',
     dateiLoeschen: 'Trvale smazat soubor',
     sortierungName: 'Podle názvu',
     sortierungDatum: 'Podle data',

@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Valitse tiedosto ZIP-lataukseen',
     fuerDownload: 'Valittu lataukseen',
     nichtAusgewaehlt: 'Ei valittu',
-    dateiAbspielen: 'Toista tiedosto',
+    spieltGerade: 'Toistetaan parhaillaan',
     dateiLoeschen: 'Poista tiedosto pysyvästi',
     sortierungName: 'Nimen mukaan',
     sortierungDatum: 'Päivämäärän mukaan',

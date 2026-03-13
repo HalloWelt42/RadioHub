@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Vælg fil til ZIP-download',
     fuerDownload: 'Valgt til download',
     nichtAusgewaehlt: 'Ikke valgt',
-    dateiAbspielen: 'Afspil fil',
+    spieltGerade: 'Afspilles nu',
     dateiLoeschen: 'Slet fil permanent',
     sortierungName: 'Efter navn',
     sortierungDatum: 'Efter dato',

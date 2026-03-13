@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Sélectionner le fichier pour le téléchargement ZIP',
     fuerDownload: 'Sélectionné pour le téléchargement',
     nichtAusgewaehlt: 'Non sélectionné',
-    dateiAbspielen: 'Lire le fichier',
+    spieltGerade: 'En cours de lecture',
     dateiLoeschen: 'Supprimer définitivement le fichier',
     sortierungName: 'Par nom',
     sortierungDatum: 'Par date',

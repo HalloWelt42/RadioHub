@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Välj fil för ZIP-nedladdning',
     fuerDownload: 'Vald för nedladdning',
     nichtAusgewaehlt: 'Inte vald',
-    dateiAbspielen: 'Spela fil',
+    spieltGerade: 'Spelas nu',
     dateiLoeschen: 'Radera fil permanent',
     sortierungName: 'Efter namn',
     sortierungDatum: 'Efter datum',

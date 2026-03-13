@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Selectare fișier pentru descărcare ZIP',
     fuerDownload: 'Selectat pentru descărcare',
     nichtAusgewaehlt: 'Neselectat',
-    dateiAbspielen: 'Redare fișier',
+    spieltGerade: 'Se redă acum',
     dateiLoeschen: 'Ștergere permanentă fișier',
     sortierungName: 'După nume',
     sortierungDatum: 'După dată',

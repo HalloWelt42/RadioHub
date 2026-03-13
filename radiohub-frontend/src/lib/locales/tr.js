@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'ZIP indirmesi için dosya seç',
     fuerDownload: 'İndirme için seçili',
     nichtAusgewaehlt: 'Seçili değil',
-    dateiAbspielen: 'Dosyayı oynat',
+    spieltGerade: 'Şu anda çalınıyor',
     dateiLoeschen: 'Dosyayı kalıcı olarak sil',
     sortierungName: 'Ada göre',
     sortierungDatum: 'Tarihe göre',

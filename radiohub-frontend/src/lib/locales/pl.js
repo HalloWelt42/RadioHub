@@ -556,7 +556,7 @@ export default {
     dateiAuswaehlen: 'Wybierz plik do pobrania ZIP',
     fuerDownload: 'Wybrano do pobrania',
     nichtAusgewaehlt: 'Nie wybrano',
-    dateiAbspielen: 'Odtwórz plik',
+    spieltGerade: 'Obecnie odtwarzane',
     dateiLoeschen: 'Trwale usuń plik',
     sortierungName: 'Wg nazwy',
     sortierungDatum: 'Wg daty',

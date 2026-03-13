@@ -557,7 +557,7 @@ export default {
     dateiAuswaehlen: 'ZIPダウンロード用にファイルを選択',
     fuerDownload: 'ダウンロード用に選択済み',
     nichtAusgewaehlt: '未選択',
-    dateiAbspielen: 'ファイルを再生',
+    spieltGerade: '再生中',
     dateiLoeschen: 'ファイルを完全に削除',
     sortierungName: '名前順',
     sortierungDatum: '日付順',
