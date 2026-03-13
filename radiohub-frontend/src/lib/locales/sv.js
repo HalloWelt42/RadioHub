@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Uppdatering misslyckades',
     autoDownloadAktiviert: 'Auto-download aktiverad',
     autoDownloadDeaktiviert: 'Auto-download avaktiverad',
+
+    autoDownloadAus: 'Inaktivera auto-nedladdning',
     einstellungFehler: 'Inställning misslyckades',
     episodeHeruntergeladen: 'Avsnitt nedladdat',
     downloadFehler: 'Nedladdning misslyckades',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'PRENUMERATIONER',
     ungehoert: 'Ospelad',
     alle: 'Alla',
+    heute: 'Idag',
+    woche: 'Vecka',
     downloadsFilter: 'Nedladdningar',
     filterLabel: 'FILTER',
     filterAktiv: 'Filter aktivt',

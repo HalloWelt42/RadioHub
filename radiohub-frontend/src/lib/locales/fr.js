@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Échec de la mise à jour',
     autoDownloadAktiviert: 'Téléchargement automatique activé',
     autoDownloadDeaktiviert: 'Téléchargement automatique désactivé',
+
+    autoDownloadAus: 'Desactiver le telechargement auto',
     einstellungFehler: 'Échec du paramètre',
     episodeHeruntergeladen: 'Épisode téléchargé',
     downloadFehler: 'Échec du téléchargement',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ABONNEMENTS',
     ungehoert: 'Non écouté',
     alle: 'Tous',
+    heute: "Aujourd'hui",
+    woche: 'Semaine',
     downloadsFilter: 'Téléchargements',
     filterLabel: 'FILTRE',
     filterAktiv: 'Filtre actif',

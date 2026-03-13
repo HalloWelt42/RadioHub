@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Bijwerken mislukt',
     autoDownloadAktiviert: 'Automatisch downloaden ingeschakeld',
     autoDownloadDeaktiviert: 'Automatisch downloaden uitgeschakeld',
+
+    autoDownloadAus: 'Auto-download uitschakelen',
     einstellungFehler: 'Instelling mislukt',
     episodeHeruntergeladen: 'Aflevering gedownload',
     downloadFehler: 'Download mislukt',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ABONNEMENTEN',
     ungehoert: 'Niet beluisterd',
     alle: 'Alle',
+    heute: 'Vandaag',
+    woche: 'Week',
     downloadsFilter: 'Downloads',
     filterLabel: 'FILTER',
     filterAktiv: 'Filter actief',

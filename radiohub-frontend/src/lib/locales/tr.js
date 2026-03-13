@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Güncelleme başarısız',
     autoDownloadAktiviert: 'Otomatik indirme etkinleştirildi',
     autoDownloadDeaktiviert: 'Otomatik indirme devre dışı bırakıldı',
+
+    autoDownloadAus: 'Otomatik indirmeyi kapat',
     einstellungFehler: 'Ayar başarısız',
     episodeHeruntergeladen: 'Bölüm indirildi',
     downloadFehler: 'İndirme başarısız',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ABONELİKLER',
     ungehoert: 'Dinlenmemiş',
     alle: 'Tümü',
+    heute: 'Bugun',
+    woche: 'Hafta',
     downloadsFilter: 'İndirmeler',
     filterLabel: 'FİLTRE',
     filterAktiv: 'Filtre aktif',

@@ -44,6 +44,7 @@
     onallepisodesclick = () => {},
     onrefreshall = () => {},
     onrefreshpodcast = () => {},
+    onautodownloadtoggle = () => {},
     onselectepisode = () => {},
     onsubscribe = () => {},
     onfileexplorer = () => {},
@@ -51,21 +52,12 @@
   } = $props();
 
   let totalEpisodes = $derived(subscriptions.reduce((sum, s) => sum + (s.episode_count || 0), 0));
-  let totalUnplayed = $derived(subscriptions.reduce((sum, s) => sum + (s.unplayed_count || 0), 0));
-  let totalDownloaded = $derived(stats.downloaded || 0);
 
   let filters = $derived([
-    { key: 'all', label: t('podcasts.alle') },
-    { key: 'unplayed', label: t('podcasts.ungehoert') },
-    { key: 'downloaded', label: t('podcasts.downloadsFilter') }
+    { key: 'today', label: t('podcasts.heute'), count: stats.today || 0, unplayed: stats.today_unplayed || 0 },
+    { key: 'week', label: t('podcasts.woche'), count: stats.week || 0, unplayed: stats.week_unplayed || 0 },
+    { key: 'all', label: t('podcasts.alle'), count: totalEpisodes, unplayed: null }
   ]);
-
-  function getFilterCount(key) {
-    if (key === 'all') return totalEpisodes;
-    if (key === 'unplayed') return totalUnplayed;
-    if (key === 'downloaded') return totalDownloaded;
-    return 0;
-  }
 
   // === Resize Handle ===
   let isDragging = $state(false);
@@ -197,6 +189,16 @@
                   {/if}
                 </div>
               </div>
+              {#if podcast.auto_download}
+                <i
+                  class="fa-solid fa-arrows-rotate sub-auto-icon active"
+                  title={t('podcasts.autoDownloadAus')}
+                  onclick={(e) => { e.stopPropagation(); onautodownloadtoggle(podcast); sfx.click(); }}
+                  role="button"
+                  tabindex="-1"
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onautodownloadtoggle(podcast); sfx.click(); } }}
+                ></i>
+              {/if}
               <i
                 class="fa-solid fa-cloud-arrow-down sub-fetch-icon"
                 class:has-episodes={(podcast.episode_count || 0) > 0}
@@ -223,7 +225,6 @@
       <div class="filter-list">
         {#each filters as f}
           {@const isActive = filterStatus === f.key}
-          {@const count = getFilterCount(f.key)}
           <button
             class="filter-item"
             class:selected={isActive}
@@ -231,7 +232,10 @@
           >
             <HiFiLed color={isActive ? 'yellow' : 'off'} size="small" title={isActive ? t('podcasts.filterAktiv') : t('podcasts.filterInaktiv')} />
             <span class="filter-label">{f.label}</span>
-            <span class="filter-count">{count}</span>
+            {#if f.unplayed != null && f.unplayed > 0}
+              <span class="filter-unplayed">{f.unplayed}</span>
+            {/if}
+            <span class="filter-count">{f.count}</span>
           </button>
         {/each}
       </div>
@@ -540,6 +544,28 @@
     color: var(--hifi-accent) !important;
   }
 
+  .sub-auto-icon {
+    font-size: 9px;
+    color: var(--hifi-text-secondary);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .sub-auto-icon.active {
+    opacity: 0.5;
+    color: var(--hifi-text-green);
+  }
+
+  .sub-item:hover .sub-auto-icon {
+    opacity: 1;
+  }
+
+  .sub-auto-icon:hover {
+    color: var(--hifi-text-red, #ef5350) !important;
+  }
+
   .filter-list {
     display: flex;
     flex-direction: column;
@@ -580,14 +606,24 @@
     color: inherit;
   }
 
-  .filter-count {
+  .filter-unplayed {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--hifi-text-green);
+    background: rgba(76, 175, 80, 0.12);
+    padding: 1px 5px;
+    border-radius: 8px;
     margin-left: auto;
+  }
+
+  .filter-count {
     font-family: var(--hifi-font-values, 'Orbitron', monospace);
     font-size: 10px;
     font-weight: 700;
     color: var(--hifi-accent);
     text-align: right;
-    min-width: 46px;
+    min-width: 30px;
     letter-spacing: 0.3px;
   }
 

@@ -478,6 +478,10 @@ class RadioHubAPI {
     return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/play`;
   }
 
+  getEpisodeStreamUrl(episodeId) {
+    return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/stream`;
+  }
+
   getPodcastImageUrl(podcastId) {
     return `${this.baseUrl}/api/podcasts/${podcastId}/image`;
   }

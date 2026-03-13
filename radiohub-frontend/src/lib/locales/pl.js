@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Aktualizacja nie powiodła się',
     autoDownloadAktiviert: 'Automatyczne pobieranie włączone',
     autoDownloadDeaktiviert: 'Automatyczne pobieranie wyłączone',
+
+    autoDownloadAus: 'Wylacz automatyczne pobieranie',
     einstellungFehler: 'Ustawienie nie powiodło się',
     episodeHeruntergeladen: 'Odcinek pobrany',
     downloadFehler: 'Pobieranie nie powiodło się',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'SUBSKRYPCJE',
     ungehoert: 'Nieodsłuchane',
     alle: 'Wszystkie',
+    heute: 'Dzis',
+    woche: 'Tydzien',
     downloadsFilter: 'Pobrane',
     filterLabel: 'FILTR',
     filterAktiv: 'Filtr aktywny',

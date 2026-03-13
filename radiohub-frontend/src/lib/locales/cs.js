@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Aktualizace selhala',
     autoDownloadAktiviert: 'Automatické stahování zapnuto',
     autoDownloadDeaktiviert: 'Automatické stahování vypnuto',
+
+    autoDownloadAus: 'Vypnout auto-stahovani',
     einstellungFehler: 'Nastavení selhalo',
     episodeHeruntergeladen: 'Epizoda stažena',
     downloadFehler: 'Stahování selhalo',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ODBĚRY',
     ungehoert: 'Nepřehrané',
     alle: 'Všechny',
+    heute: 'Dnes',
+    woche: 'Tyden',
     downloadsFilter: 'Stažené',
     filterLabel: 'FILTR',
     filterAktiv: 'Filtr aktivní',

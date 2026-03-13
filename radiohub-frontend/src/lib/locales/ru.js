@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Ошибка обновления',
     autoDownloadAktiviert: 'Автозагрузка включена',
     autoDownloadDeaktiviert: 'Автозагрузка отключена',
+
+    autoDownloadAus: 'Отключить автозагрузку',
     einstellungFehler: 'Ошибка настройки',
     episodeHeruntergeladen: 'Выпуск загружен',
     downloadFehler: 'Ошибка загрузки',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ПОДПИСКИ',
     ungehoert: 'Непрослушанные',
     alle: 'Все',
+    heute: 'Сегодня',
+    woche: 'Неделя',
     downloadsFilter: 'Загрузки',
     filterLabel: 'ФИЛЬТР',
     filterAktiv: 'Фильтр активен',

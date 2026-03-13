@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: '更新に失敗しました',
     autoDownloadAktiviert: '自動ダウンロードが有効になりました',
     autoDownloadDeaktiviert: '自動ダウンロードが無効になりました',
+
+    autoDownloadAus: '自動ダウンロードを無効にする',
     einstellungFehler: '設定に失敗しました',
     episodeHeruntergeladen: 'エピソードをダウンロードしました',
     downloadFehler: 'ダウンロードに失敗しました',
@@ -362,6 +364,8 @@ export default {
     abonnements: '購読',
     ungehoert: '未再生',
     alle: 'すべて',
+    heute: '今日',
+    woche: '今週',
     downloadsFilter: 'ダウンロード',
     filterLabel: 'フィルター',
     filterAktiv: 'フィルター有効',

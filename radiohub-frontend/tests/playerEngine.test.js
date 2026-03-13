@@ -60,6 +60,10 @@ vi.mock('../src/lib/api.js', () => ({
       const base = 'http://localhost:9091/api/hls/playlist.m3u8';
       return sid ? `${base}?sid=${sid}` : base;
     }),
+    getEpisodePlayUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/play`),
+    getEpisodeStreamUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/stream`),
+    markEpisodePlayed: vi.fn(() => Promise.resolve({})),
+    updateEpisodePosition: vi.fn(() => Promise.resolve({})),
     startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
     stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
     updateConfig: vi.fn(() => Promise.resolve({})),
@@ -416,10 +420,10 @@ describe('PlayerEngine', () => {
       expect(state.playerMode).toBe('podcast');
     });
 
-    it('TC-C2: Audio-Source ist Episode-URL', async () => {
+    it('TC-C2: Audio-Source nutzt Backend-Proxy', async () => {
       await engine.playPodcast(PODCAST_EPISODE, PODCAST_EPISODE.podcast);
 
-      expect(audioEl.src).toBe(PODCAST_EPISODE.audio_url);
+      expect(audioEl.src).toBe(api.getEpisodeStreamUrl(PODCAST_EPISODE.id));
     });
 
     it('TC-C3: HLS wird bei Podcast-Start gestoppt', async () => {

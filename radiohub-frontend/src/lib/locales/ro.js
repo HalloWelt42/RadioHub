@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Actualizarea a eșuat',
     autoDownloadAktiviert: 'Descărcare automată activată',
     autoDownloadDeaktiviert: 'Descărcare automată dezactivată',
+
+    autoDownloadAus: 'Dezactiveaza descarcarea automata',
     einstellungFehler: 'Setarea a eșuat',
     episodeHeruntergeladen: 'Episod descărcat',
     downloadFehler: 'Descărcarea a eșuat',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ABONAMENTE',
     ungehoert: 'Neascultat',
     alle: 'Toate',
+    heute: 'Azi',
+    woche: 'Saptamana',
     downloadsFilter: 'Descărcări',
     filterLabel: 'FILTRU',
     filterAktiv: 'Filtru activ',

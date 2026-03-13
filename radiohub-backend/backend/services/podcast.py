@@ -349,6 +349,10 @@ class PodcastService:
             where += " AND is_downloaded = 1"
         elif filter_status == "played":
             where += " AND is_played = 1"
+        elif filter_status == "today":
+            where += " AND published_at >= datetime('now', '-1 day')"
+        elif filter_status == "week":
+            where += " AND published_at >= datetime('now', '-7 days')"
 
         with db_session() as conn:
             c = conn.cursor()
@@ -386,6 +390,10 @@ class PodcastService:
             where_clauses.append("pe.is_downloaded = 1")
         elif filter_status == "played":
             where_clauses.append("pe.is_played = 1")
+        elif filter_status == "today":
+            where_clauses.append("pe.published_at >= datetime('now', '-1 day')")
+        elif filter_status == "week":
+            where_clauses.append("pe.published_at >= datetime('now', '-7 days')")
 
         where = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
@@ -875,11 +883,27 @@ class PodcastService:
             c.execute("SELECT COALESCE(SUM(file_size), 0) FROM podcast_episodes WHERE is_downloaded = 1")
             dl_size = c.fetchone()[0]
 
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-1 day')")
+            today_count = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-1 day') AND is_played = 0")
+            today_unplayed = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-7 days')")
+            week_count = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-7 days') AND is_played = 0")
+            week_unplayed = c.fetchone()[0]
+
         return {
             "subscriptions": sub_count,
             "episodes": ep_count,
             "downloaded": dl_count,
             "unplayed": unplayed_count,
+            "today": today_count,
+            "today_unplayed": today_unplayed,
+            "week": week_count,
+            "week_unplayed": week_unplayed,
             "download_size_mb": round(dl_size / (1024 * 1024), 1) if dl_size else 0,
             "disk_free_gb": round(free / (1024**3), 2),
         }

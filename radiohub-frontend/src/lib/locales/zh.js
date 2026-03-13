@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: '更新失败',
     autoDownloadAktiviert: '自动下载已启用',
     autoDownloadDeaktiviert: '自动下载已停用',
+
+    autoDownloadAus: '关闭自动下载',
     einstellungFehler: '设置失败',
     episodeHeruntergeladen: '剧集已下载',
     downloadFehler: '下载失败',
@@ -362,6 +364,8 @@ export default {
     abonnements: '订阅',
     ungehoert: '未播放',
     alle: '全部',
+    heute: '今天',
+    woche: '本周',
     downloadsFilter: '下载',
     filterLabel: '筛选',
     filterAktiv: '筛选已启用',

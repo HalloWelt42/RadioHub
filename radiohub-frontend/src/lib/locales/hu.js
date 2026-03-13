@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Frissítés sikertelen',
     autoDownloadAktiviert: 'Automatikus letöltés engedélyezve',
     autoDownloadDeaktiviert: 'Automatikus letöltés letiltva',
+
+    autoDownloadAus: 'Automatikus letoltes kikapcsolasa',
     einstellungFehler: 'Beállítás sikertelen',
     episodeHeruntergeladen: 'Epizód letöltve',
     downloadFehler: 'Letöltés sikertelen',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'FELIRATKOZÁSOK',
     ungehoert: 'Nem hallgatott',
     alle: 'Mind',
+    heute: 'Ma',
+    woche: 'Het',
     downloadsFilter: 'Letöltések',
     filterLabel: 'SZŰRŐ',
     filterAktiv: 'Szűrő aktív',

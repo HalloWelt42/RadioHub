@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Opdatering mislykkedes',
     autoDownloadAktiviert: 'Auto-download aktiveret',
     autoDownloadDeaktiviert: 'Auto-download deaktiveret',
+
+    autoDownloadAus: 'Deaktiver auto-download',
     einstellungFehler: 'Indstilling mislykkedes',
     episodeHeruntergeladen: 'Episode downloadet',
     downloadFehler: 'Download mislykkedes',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ABONNEMENTER',
     ungehoert: 'Uafspillet',
     alle: 'Alle',
+    heute: 'I dag',
+    woche: 'Uge',
     downloadsFilter: 'Downloads',
     filterLabel: 'FILTER',
     filterAktiv: 'Filter aktivt',

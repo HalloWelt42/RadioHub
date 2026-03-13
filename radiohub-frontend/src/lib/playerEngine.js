@@ -229,10 +229,10 @@ export async function playPodcast(episode, podcast) {
   }
 
 
-  // Lokale URL bevorzugen, sonst Remote
+  // Lokale Datei bevorzugen, sonst Backend-Proxy fuer Remote-URL
   const audioSrc = (episode.is_downloaded && episode.id)
     ? api.getEpisodePlayUrl(episode.id)
-    : episode.audio_url;
+    : api.getEpisodeStreamUrl(episode.id);
 
   _audioEl.src = audioSrc;
   _audioEl.playbackRate = _appState.podcastSpeed || 1.0;

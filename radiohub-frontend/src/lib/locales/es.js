@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Error en la actualización',
     autoDownloadAktiviert: 'Descarga automática activada',
     autoDownloadDeaktiviert: 'Descarga automática desactivada',
+
+    autoDownloadAus: 'Desactivar descarga automatica',
     einstellungFehler: 'Error en el ajuste',
     episodeHeruntergeladen: 'Episodio descargado',
     downloadFehler: 'Error de descarga',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'SUSCRIPCIONES',
     ungehoert: 'No escuchado',
     alle: 'Todos',
+    heute: 'Hoy',
+    woche: 'Semana',
     downloadsFilter: 'Descargas',
     filterLabel: 'FILTRO',
     filterAktiv: 'Filtro activo',

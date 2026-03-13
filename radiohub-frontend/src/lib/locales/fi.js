@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Päivitys epäonnistui',
     autoDownloadAktiviert: 'Auto-download aktivoitu',
     autoDownloadDeaktiviert: 'Auto-download deaktivoitu',
+
+    autoDownloadAus: 'Poista automaattinen lataus',
     einstellungFehler: 'Asetus epäonnistui',
     episodeHeruntergeladen: 'Jakso ladattu',
     downloadFehler: 'Lataus epäonnistui',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'TILAUKSET',
     ungehoert: 'Kuuntelematon',
     alle: 'Kaikki',
+    heute: 'Tanaan',
+    woche: 'Viikko',
     downloadsFilter: 'Lataukset',
     filterLabel: 'SUODATIN',
     filterAktiv: 'Suodatin aktiivinen',

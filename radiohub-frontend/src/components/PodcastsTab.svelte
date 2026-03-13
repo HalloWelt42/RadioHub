@@ -40,7 +40,7 @@
   let stats = $state({});
 
   // === Filter/Sort ===
-  let filterStatus = $state('all');
+  let filterStatus = $state('today');
   let sortBy = $state('published_at');
   let sortOrder = $state('desc');
 
@@ -426,6 +426,22 @@
     }
   }
 
+  async function handleSidebarAutoDownloadToggle(podcast) {
+    try {
+      const newVal = !podcast.auto_download;
+      await api.setAutoDownload(podcast.id, newVal);
+      subscriptions = subscriptions.map(s =>
+        s.id === podcast.id ? { ...s, auto_download: newVal } : s
+      );
+      if (selectedPodcast && selectedPodcast.id === podcast.id) {
+        selectedPodcast = { ...selectedPodcast, auto_download: newVal };
+      }
+      actions.showToast(newVal ? t('podcasts.autoDownloadAktiviert') : t('podcasts.autoDownloadDeaktiviert'), 'info');
+    } catch (e) {
+      actions.showToast(t('podcasts.einstellungFehler'), 'error');
+    }
+  }
+
   async function handleRefreshSinglePodcast(podcast) {
     try {
       actions.showToast(t('cutterExtra.ladePodcast', { title: podcast.title }), 'info');
@@ -506,14 +522,14 @@
   }
 
   function handleEpisodePlay(episode) {
-    // Playlist zusammenstellen
+    // Playlist zusammenstellen -- immer ueber Backend (play = lokal, stream = Proxy)
     const playlist = episodes.map(e => ({
       ...e,
-      audio_url: e.is_downloaded ? api.getEpisodePlayUrl(e.id) : e.audio_url
+      audio_url: e.is_downloaded ? api.getEpisodePlayUrl(e.id) : api.getEpisodeStreamUrl(e.id)
     }));
     const podcast = selectedPodcast || podcastMap[episode.podcast_id] || null;
     actions.playEpisodeFromList(
-      { ...episode, audio_url: episode.is_downloaded ? api.getEpisodePlayUrl(episode.id) : episode.audio_url },
+      { ...episode, audio_url: episode.is_downloaded ? api.getEpisodePlayUrl(episode.id) : api.getEpisodeStreamUrl(episode.id) },
       podcast,
       playlist
     );
@@ -629,6 +645,7 @@
     onallepisodesclick={handleAllEpisodesClick}
     onrefreshall={handleRefreshAll}
     onrefreshpodcast={handleRefreshSinglePodcast}
+    onautodownloadtoggle={handleSidebarAutoDownloadToggle}
     onselectepisode={handleSearchEpisodeSelect}
     onsubscribe={handleSubscribe}
     onfileexplorer={handleFileExplorer}

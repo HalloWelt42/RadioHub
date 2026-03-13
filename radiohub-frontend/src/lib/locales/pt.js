@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Falha na atualização',
     autoDownloadAktiviert: 'Transferência automática ativada',
     autoDownloadDeaktiviert: 'Transferência automática desativada',
+
+    autoDownloadAus: 'Desativar download automatico',
     einstellungFehler: 'Falha na definição',
     episodeHeruntergeladen: 'Episódio transferido',
     downloadFehler: 'Falha na transferência',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'SUBSCRIÇÕES',
     ungehoert: 'Não ouvido',
     alle: 'Todos',
+    heute: 'Hoje',
+    woche: 'Semana',
     downloadsFilter: 'Transferências',
     filterLabel: 'FILTRO',
     filterAktiv: 'Filtro ativo',

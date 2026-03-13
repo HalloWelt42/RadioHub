@@ -349,6 +349,8 @@ export default {
     aktualisiereFehler: 'Aktualizácia zlyhala',
     autoDownloadAktiviert: 'Automatické sťahovanie zapnuté',
     autoDownloadDeaktiviert: 'Automatické sťahovanie vypnuté',
+
+    autoDownloadAus: 'Vypnut automaticke stahovanie',
     einstellungFehler: 'Nastavenie zlyhalo',
     episodeHeruntergeladen: 'Epizóda stiahnutá',
     downloadFehler: 'Sťahovanie zlyhalo',
@@ -362,6 +364,8 @@ export default {
     abonnements: 'ODBERY',
     ungehoert: 'Neprehraté',
     alle: 'Všetky',
+    heute: 'Dnes',
+    woche: 'Tyzden',
     downloadsFilter: 'Stiahnuté',
     filterLabel: 'FILTER',
     filterAktiv: 'Filter aktívny',
