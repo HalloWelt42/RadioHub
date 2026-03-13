@@ -22,7 +22,6 @@ export default {
     aufnahmen: '录音',
     speicher: '存储',
     dienste: '服务',
-    system: '系统',
     // Sub-Tabs
     filter: '筛选',
     sender: '电台',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'HLS录制应回溯多少分钟？',
     language: '语言',
     datenschutzNutzung: '隐私和使用条款'
-  },
+    infoTitle: '技术信息',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: '需要名称'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: '电台缓存',
-    stations: '电台',
-    countries: '国家',
-    syncNow: '立即同步',
-    syncing: '同步中...',
-    systemInfo: '系统信息',
-    syncFehler: '同步失败'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: '存储区域',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: '已在直播中',
     liveNurHls: '直播仅在HLS模式下可用',
     keinSender: '未选择电台',
-    recLaeuftStoppen: '正在录制 -- 请先停止REC',
+    recLaeuftStoppen: '正在录制 - 请先停止REC',
     spulenNicht: '无法拖动进度',
     prevSender: '上一个电台',
     nextSender: '下一个电台',
@@ -232,7 +220,7 @@ export default {
     hlsMode: '切换到HLS流（时移）',
     moduswechsel: '正在切换模式...',
     moduswechselNicht: '无法切换模式',
-    recModuswechsel: '正在录制 -- 无法切换模式',
+    recModuswechsel: '正在录制 - 无法切换模式',
     fehlerSchliessen: '关闭错误消息',
     nichtBeiWiedergabe: '录音回放时不可用',
     keinePrevEpisode: '没有上一集',

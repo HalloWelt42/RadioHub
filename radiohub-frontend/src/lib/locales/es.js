@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'GRABACIONES',
     speicher: 'ALMACENAMIENTO',
     dienste: 'SERVICIOS',
-    system: 'SISTEMA',
     // Sub-Tabs
     filter: 'FILTRO',
     sender: 'EMISORAS',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: '¿Cuántos minutos debe retroceder la grabación HLS en el pasado?',
     language: 'IDIOMA',
     datenschutzNutzung: 'PRIVACIDAD Y CONDICIONES DE USO'
-  },
+    infoTitle: 'INFORMACION TECNICA',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Nombre requerido'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'CACHÉ DE EMISORAS',
-    stations: 'EMISORAS',
-    countries: 'PAÍSES',
-    syncNow: 'SINCRONIZAR',
-    syncing: 'SINCRONIZANDO...',
-    systemInfo: 'INFO DEL SISTEMA',
-    syncFehler: 'Error de sincronización'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ZONAS DE ALMACENAMIENTO',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Ya en directo',
     liveNurHls: 'El directo solo está disponible en modo HLS',
     keinSender: 'Ninguna emisora seleccionada',
-    recLaeuftStoppen: 'Grabación en curso -- detenga primero REC',
+    recLaeuftStoppen: 'Grabación en curso - detenga primero REC',
     spulenNicht: 'Búsqueda no disponible',
     prevSender: 'Emisora anterior',
     nextSender: 'Emisora siguiente',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Cambiar al flujo HLS (diferido)',
     moduswechsel: 'Cambiando modo...',
     moduswechselNicht: 'Cambio de modo no disponible',
-    recModuswechsel: 'Grabación en curso -- no se puede cambiar de modo',
+    recModuswechsel: 'Grabación en curso - no se puede cambiar de modo',
     fehlerSchliessen: 'Cerrar mensaje de error',
     nichtBeiWiedergabe: 'No durante la reproducción de grabación',
     keinePrevEpisode: 'Sin episodio anterior',

@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'ЗАПИСИ',
     speicher: 'ХРАНИЛИЩЕ',
     dienste: 'СЛУЖБЫ',
-    system: 'СИСТЕМА',
     // Sub-Tabs
     filter: 'ФИЛЬТР',
     sender: 'СТАНЦИИ',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'На сколько минут назад должна смотреть запись HLS?',
     language: 'ЯЗЫК',
     datenschutzNutzung: 'КОНФИДЕНЦИАЛЬНОСТЬ И УСЛОВИЯ ИСПОЛЬЗОВАНИЯ'
-  },
+    infoTitle: 'ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Требуется название'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'КЭШ СТАНЦИЙ',
-    stations: 'СТАНЦИИ',
-    countries: 'СТРАНЫ',
-    syncNow: 'СИНХРОНИЗИРОВАТЬ',
-    syncing: 'СИНХРОНИЗАЦИЯ...',
-    systemInfo: 'ИНФОРМАЦИЯ О СИСТЕМЕ',
-    syncFehler: 'Ошибка синхронизации'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ЗОНЫ ХРАНИЛИЩА',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Уже в прямом эфире',
     liveNurHls: 'Прямой эфир доступен только в режиме HLS',
     keinSender: 'Станция не выбрана',
-    recLaeuftStoppen: 'Идёт запись -- сначала остановите REC',
+    recLaeuftStoppen: 'Идёт запись - сначала остановите REC',
     spulenNicht: 'Перемотка недоступна',
     prevSender: 'Предыдущая станция',
     nextSender: 'Следующая станция',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Переключить на HLS-поток (со сдвигом по времени)',
     moduswechsel: 'Переключение режима...',
     moduswechselNicht: 'Переключение режима недоступно',
-    recModuswechsel: 'Идёт запись -- переключение режима невозможно',
+    recModuswechsel: 'Идёт запись - переключение режима невозможно',
     fehlerSchliessen: 'Закрыть сообщение об ошибке',
     nichtBeiWiedergabe: 'Недоступно во время воспроизведения записи',
     keinePrevEpisode: 'Нет предыдущего выпуска',
@@ -635,7 +623,7 @@ export default {
     adresseKopiert: 'Адрес скопирован',
     kopierenFehler: 'Ошибка копирования',
     unterstuetzen: 'Поддержать RadioHub',
-    introText: 'RadioHub -- некоммерческий проект с открытым исходным кодом. Если вам нравится эта программа, я буду рад вашей поддержке.',
+    introText: 'RadioHub - некоммерческий проект с открытым исходным кодом. Если вам нравится эта программа, я буду рад вашей поддержке.',
     kofiText: 'Поддержите меня на Ko-fi',
     oderKrypto: 'ИЛИ КРИПТОВАЛЮТОЙ',
     kopiert: 'СКОПИРОВАНО',

@@ -3,7 +3,7 @@
  *
  * Canvas-basierter Waveform-Renderer für den Cutter.
  * Zeichnet Peaks, ICY-Titel-Farbstreifen, Marker, Playback-Linie.
- * Kein Framework -- reines JS für maximale Performance.
+ * Kein Framework - reines JS für maximale Performance.
  */
 
 // Zwei Farben für alternierenden Titelwechsel

@@ -22,7 +22,6 @@ export default {
     aufnahmen: '録音',
     speicher: 'ストレージ',
     dienste: 'サービス',
-    system: 'システム',
     // Sub-Tabs
     filter: 'フィルター',
     sender: '放送局',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'HLS録音は何分前まで遡りますか？',
     language: '言語',
     datenschutzNutzung: 'プライバシーと利用規約'
-  },
+    infoTitle: '技術情報',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: '名前が必要です'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'ステーションキャッシュ',
-    stations: 'ステーション',
-    countries: '国',
-    syncNow: '今すぐ同期',
-    syncing: '同期中...',
-    systemInfo: 'システム情報',
-    syncFehler: '同期に失敗しました'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ストレージゾーン',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'すでにライブです',
     liveNurHls: 'ライブはHLSモードでのみ利用可能です',
     keinSender: '放送局が選択されていません',
-    recLaeuftStoppen: '録音中 -- 先にRECを停止してください',
+    recLaeuftStoppen: '録音中 - 先にRECを停止してください',
     spulenNicht: 'シークは利用できません',
     prevSender: '前の放送局',
     nextSender: '次の放送局',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'HLSストリームに切り替え（タイムシフト）',
     moduswechsel: 'モード切り替え中...',
     moduswechselNicht: 'モード切り替えは利用できません',
-    recModuswechsel: '録音中 -- モード切り替えはできません',
+    recModuswechsel: '録音中 - モード切り替えはできません',
     fehlerSchliessen: 'エラーメッセージを閉じる',
     nichtBeiWiedergabe: '録音再生中は利用できません',
     keinePrevEpisode: '前のエピソードがありません',

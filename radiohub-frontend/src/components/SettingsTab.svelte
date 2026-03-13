@@ -6,7 +6,6 @@
   import SetupAufnahmen from './setup/SetupAufnahmen.svelte';
   import SetupSpeicher from './setup/SetupSpeicher.svelte';
   import SetupDienste from './setup/SetupDienste.svelte';
-  import SetupSystem from './setup/SetupSystem.svelte';
   import { appState, actions } from '../lib/store.svelte.js';
   import { t } from '../lib/i18n.svelte.js';
   import * as router from '../lib/router.js';
@@ -17,8 +16,7 @@
     { id: 'podcast', icon: 'fa-podcast' },
     { id: 'aufnahmen', icon: 'fa-microphone' },
     { id: 'speicher', icon: 'fa-hard-drive' },
-    { id: 'dienste', icon: 'fa-plug' },
-    { id: 'system', icon: 'fa-terminal' }
+    { id: 'dienste', icon: 'fa-plug' }
   ];
 
   // activeTab aus Route-Segmenten ableiten
@@ -75,8 +73,6 @@
       <div class="setup-scroll"><SetupSpeicher /></div>
     {:else if activeTab === 'dienste'}
       <div class="setup-scroll"><SetupDienste /></div>
-    {:else if activeTab === 'system'}
-      <div class="setup-scroll"><SetupSystem /></div>
     {/if}
   </main>
 </div>

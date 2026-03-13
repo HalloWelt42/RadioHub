@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'REGISTRAZIONI',
     speicher: 'ARCHIVIAZIONE',
     dienste: 'SERVIZI',
-    system: 'SISTEMA',
     // Sub-Tabs
     filter: 'FILTRO',
     sender: 'STAZIONI',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Quanti minuti deve retrocedere la registrazione HLS nel passato?',
     language: 'LINGUA',
     datenschutzNutzung: 'PRIVACY E CONDIZIONI D\'USO'
-  },
+    infoTitle: 'INFORMAZIONI TECNICHE',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Nome richiesto'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'CACHE STAZIONI',
-    stations: 'STAZIONI',
-    countries: 'PAESI',
-    syncNow: 'SINCRONIZZA',
-    syncing: 'SINCRONIZZAZIONE...',
-    systemInfo: 'INFO SISTEMA',
-    syncFehler: 'Errore di sincronizzazione'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ZONE DI ARCHIVIAZIONE',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Già in diretta',
     liveNurHls: 'La diretta è disponibile solo in modalità HLS',
     keinSender: 'Nessuna stazione selezionata',
-    recLaeuftStoppen: 'Registrazione in corso -- interrompi prima REC',
+    recLaeuftStoppen: 'Registrazione in corso - interrompi prima REC',
     spulenNicht: 'Ricerca non disponibile',
     prevSender: 'Stazione precedente',
     nextSender: 'Stazione successiva',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Passa al flusso HLS (differito)',
     moduswechsel: 'Cambio modalità...',
     moduswechselNicht: 'Cambio modalità non disponibile',
-    recModuswechsel: 'Registrazione in corso -- nessun cambio di modalità',
+    recModuswechsel: 'Registrazione in corso - nessun cambio di modalità',
     fehlerSchliessen: 'Chiudi messaggio di errore',
     nichtBeiWiedergabe: 'Non durante la riproduzione della registrazione',
     keinePrevEpisode: 'Nessun episodio precedente',

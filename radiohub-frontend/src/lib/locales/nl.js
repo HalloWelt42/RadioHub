@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'OPNAMEN',
     speicher: 'OPSLAG',
     dienste: 'DIENSTEN',
-    system: 'SYSTEEM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'ZENDERS',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Hoeveel minuten moet de HLS-opname in het verleden terugkijken?',
     language: 'TAAL',
     datenschutzNutzung: 'PRIVACY & GEBRUIKSVOORWAARDEN'
-  },
+    infoTitle: 'TECHNISCHE INFORMATIE',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Naam vereist'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'ZENDERCACHE',
-    stations: 'ZENDERS',
-    countries: 'LANDEN',
-    syncNow: 'NU SYNCHRONISEREN',
-    syncing: 'SYNCHRONISEREN...',
-    systemInfo: 'SYSTEEMINFO',
-    syncFehler: 'Synchronisatie mislukt'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'OPSLAGZONES',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Al live',
     liveNurHls: 'Live alleen beschikbaar in HLS-modus',
     keinSender: 'Geen zender geselecteerd',
-    recLaeuftStoppen: 'Opname loopt -- stop eerst REC',
+    recLaeuftStoppen: 'Opname loopt - stop eerst REC',
     spulenNicht: 'Spoelen niet beschikbaar',
     prevSender: 'Vorige zender',
     nextSender: 'Volgende zender',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Overschakelen naar HLS-stream (tijdverschoven)',
     moduswechsel: 'Modus wisselen...',
     moduswechselNicht: 'Moduswissel niet beschikbaar',
-    recModuswechsel: 'Opname loopt -- geen moduswissel',
+    recModuswechsel: 'Opname loopt - geen moduswissel',
     fehlerSchliessen: 'Foutmelding sluiten',
     nichtBeiWiedergabe: 'Niet tijdens afspelen van opname',
     keinePrevEpisode: 'Geen vorige aflevering',

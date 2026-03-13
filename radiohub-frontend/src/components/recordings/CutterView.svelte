@@ -131,7 +131,7 @@
     }
 
     // Playback-Position tracken per rAF, gedeckelt auf 25fps (40ms)
-    // Playhead steht fest bei 30% -- Waveform scrollt darunter durch
+    // Playhead steht fest bei 30% - Waveform scrollt darunter durch
     let wasPlaying = false;
     let lastDrawMs = 0;
     const FRAME_INTERVAL = 40; // 25fps
@@ -949,7 +949,7 @@
     background: var(--hifi-bg-panel);
   }
 
-  /* Toolbar -- gleicher Stil wie .sidebar-actions */
+  /* Toolbar - gleicher Stil wie .sidebar-actions */
   .cutter-toolbar {
     display: flex;
     align-items: center;
@@ -965,7 +965,7 @@
     gap: 4px;
   }
 
-  /* Buttons -- gleicher Stil wie .action-btn in Sidebar */
+  /* Buttons - gleicher Stil wie .action-btn in Sidebar */
   .cutter-btn {
     display: flex;
     align-items: center;

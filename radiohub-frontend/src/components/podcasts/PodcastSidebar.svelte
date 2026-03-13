@@ -268,7 +268,7 @@
         <div class="preview-stats">
           {hoverPodcast.episode_count || 0} {t('podcasts.episodenLabel')}
           {#if (hoverPodcast.unplayed_count || 0) > 0}
-            -- {hoverPodcast.unplayed_count} neu
+            - {hoverPodcast.unplayed_count} neu
           {/if}
         </div>
       </div>

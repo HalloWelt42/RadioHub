@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'RECORDINGS',
     speicher: 'STORAGE',
     dienste: 'SERVICES',
-    system: 'SYSTEM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'STATIONS',
@@ -30,6 +29,7 @@ export default {
     // Allgemein Sub-Tabs
     einstellungen: 'SETTINGS',
     tastatur: 'KEYBOARD',
+    info: 'INFO',
     bedanken: 'DONATE',
     lizenz: 'LICENSE',
     recht: 'LEGAL'
@@ -52,6 +52,8 @@ export default {
     lookbackHint: 'How many minutes should the HLS recording look back into the past?',
     language: 'LANGUAGE',
     datenschutzNutzung: 'PRIVACY & TERMS OF SERVICE',
+    // Info
+    infoTitle: 'TECHNICAL INFORMATION',
     // Keyboard
     tastaturTitle: 'KEYBOARD SHORTCUTS',
     tastaturHint: 'Active when no input field is focused',
@@ -179,17 +181,6 @@ export default {
     nameErforderlich: 'Name required'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'STATION CACHE',
-    stations: 'STATIONS',
-    countries: 'COUNTRIES',
-    syncNow: 'SYNC NOW',
-    syncing: 'SYNCING...',
-    systemInfo: 'SYSTEM INFO',
-    syncFehler: 'Sync failed'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'STORAGE ZONES',
@@ -236,7 +227,7 @@ export default {
     bereitsLive: 'Already live',
     liveNurHls: 'Live only available in HLS mode',
     keinSender: 'No station selected',
-    recLaeuftStoppen: 'Recording in progress -- stop REC first',
+    recLaeuftStoppen: 'Recording in progress - stop REC first',
     spulenNicht: 'Seeking not available',
     prevSender: 'Previous station',
     nextSender: 'Next station',
@@ -250,7 +241,7 @@ export default {
     hlsMode: 'Switch to HLS stream (time-shifted)',
     moduswechsel: 'Switching mode...',
     moduswechselNicht: 'Mode switch not available',
-    recModuswechsel: 'Recording in progress -- no mode switch',
+    recModuswechsel: 'Recording in progress - no mode switch',
     fehlerSchliessen: 'Close error message',
     nichtBeiWiedergabe: 'Not during recording playback',
     keinePrevEpisode: 'No previous episode',

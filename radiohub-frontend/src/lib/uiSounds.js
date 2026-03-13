@@ -1,5 +1,5 @@
-// uiSounds.js -- Synthethische UI-Sounds via Web Audio API
-// Mechanisch, tief, perkussiv -- wie High-End Audio-Equipment
+// uiSounds.js - Synthethische UI-Sounds via Web Audio API
+// Mechanisch, tief, perkussiv - wie High-End Audio-Equipment
 
 let ctx = null;
 let enabled = true;
@@ -13,9 +13,9 @@ function getCtx() {
   return ctx;
 }
 
-// -- Sound-Definitionen --
+// - Sound-Definitionen --
 
-// Hover: Kurzer mechanischer Tick -- wie Relais-Klick
+// Hover: Kurzer mechanischer Tick - wie Relais-Klick
 export function hover() {
   if (!enabled) return;
   const ac = getCtx();
@@ -38,7 +38,7 @@ export function hover() {
   osc.stop(t + 0.025);
 }
 
-// Hover-Variante: Weicher mechanischer Puls -- für Buttons
+// Hover-Variante: Weicher mechanischer Puls - für Buttons
 export function hoverSoft() {
   if (!enabled) return;
   const ac = getCtx();
@@ -93,7 +93,7 @@ export function click() {
   osc2.stop(t + 0.05);
 }
 
-// Select: Tiefer Doppel-Puls -- Bestätigung
+// Select: Tiefer Doppel-Puls - Bestätigung
 export function select() {
   if (!enabled) return;
   const ac = getCtx();
@@ -123,6 +123,6 @@ export function select() {
   osc2.stop(t + 0.09);
 }
 
-// -- Steuerung --
+// - Steuerung --
 
 export function setEnabled(val) { enabled = val; }

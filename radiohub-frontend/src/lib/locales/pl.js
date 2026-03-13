@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'NAGRANIA',
     speicher: 'PAMIĘĆ',
     dienste: 'USŁUGI',
-    system: 'SYSTEM',
     // Sub-Tabs
     filter: 'FILTR',
     sender: 'STACJE',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Ile minut wstecz powinno sięgać nagrywanie HLS?',
     language: 'JĘZYK',
     datenschutzNutzung: 'PRYWATNOŚĆ I WARUNKI UŻYTKOWANIA'
-  },
+    infoTitle: 'INFORMACJE TECHNICZNE',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Nazwa jest wymagana'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'PAMIĘĆ PODRĘCZNA STACJI',
-    stations: 'STACJE',
-    countries: 'KRAJE',
-    syncNow: 'SYNCHRONIZUJ',
-    syncing: 'SYNCHRONIZACJA...',
-    systemInfo: 'INFO O SYSTEMIE',
-    syncFehler: 'Synchronizacja nie powiodła się'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'STREFY PAMIĘCI',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Już na żywo',
     liveNurHls: 'Na żywo dostępne tylko w trybie HLS',
     keinSender: 'Nie wybrano stacji',
-    recLaeuftStoppen: 'Nagrywanie w toku -- najpierw zatrzymaj REC',
+    recLaeuftStoppen: 'Nagrywanie w toku - najpierw zatrzymaj REC',
     spulenNicht: 'Przewijanie niedostępne',
     prevSender: 'Poprzednia stacja',
     nextSender: 'Następna stacja',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Przełącz na strumień HLS (z przesunięciem czasowym)',
     moduswechsel: 'Zmiana trybu...',
     moduswechselNicht: 'Zmiana trybu niedostępna',
-    recModuswechsel: 'Nagrywanie w toku -- brak zmiany trybu',
+    recModuswechsel: 'Nagrywanie w toku - brak zmiany trybu',
     fehlerSchliessen: 'Zamknij komunikat o błędzie',
     nichtBeiWiedergabe: 'Niedostępne podczas odtwarzania nagrania',
     keinePrevEpisode: 'Brak poprzedniego odcinka',

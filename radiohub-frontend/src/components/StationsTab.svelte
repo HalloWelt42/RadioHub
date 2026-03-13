@@ -43,7 +43,7 @@
   // Sichtbare Länder (in Setup konfiguriert, in Config persistiert)
   let visibleCountries = $state([]);
 
-  // Setup-Suchfilter (excludedLanguages, excludedTags, minVotes) -- aus Config geladen
+  // Setup-Suchfilter (excludedLanguages, excludedTags, minVotes) - aus Config geladen
   let excludedLanguages = $state([]);
   let excludedTags = $state([]);
   let filterMinVotes = $state(0);
@@ -315,7 +315,7 @@
     }
   }
 
-  // Einzelne Station proben bei Play -- echte Werte ermitteln und in Liste mergen
+  // Einzelne Station proben bei Play - echte Werte ermitteln und in Liste mergen
   let probeTimer;
   async function probeOnPlay(station) {
     try {
@@ -886,7 +886,7 @@
                   {:else if ad.confidence > 0}
                     <span class="info-badge ad-badge-suspect" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht nach Prüfung">{Math.round(ad.confidence * 100)}% AD</span>
                   {:else}
-                    <span class="info-badge ad-badge-clean" title="Werbung: 0% -- Kein Verdacht nach Prüfung">0% AD</span>
+                    <span class="info-badge ad-badge-clean" title="Werbung: 0% - Kein Verdacht nach Prüfung">0% AD</span>
                   {/if}
                 {/if}
               </div>

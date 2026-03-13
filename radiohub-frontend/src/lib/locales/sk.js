@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'NAHRÁVKY',
     speicher: 'ÚLOŽISKO',
     dienste: 'SLUŽBY',
-    system: 'SYSTÉM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'STANICE',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Koľko minút dozadu má HLS nahrávanie siahať?',
     language: 'JAZYK',
     datenschutzNutzung: 'OCHRANA SÚKROMIA A PODMIENKY POUŽÍVANIA'
-  },
+    infoTitle: 'TECHNICKE INFORMACIE',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Názov je povinný'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'MEDZIPAMÄŤ STANÍC',
-    stations: 'STANICE',
-    countries: 'KRAJINY',
-    syncNow: 'SYNCHRONIZOVAŤ',
-    syncing: 'SYNCHRONIZÁCIA...',
-    systemInfo: 'SYSTÉMOVÉ INFO',
-    syncFehler: 'Synchronizácia zlyhala'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ÚLOŽNÉ ZÓNY',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Už naživo',
     liveNurHls: 'Naživo dostupné iba v režime HLS',
     keinSender: 'Nebola vybraná žiadna stanica',
-    recLaeuftStoppen: 'Nahrávanie prebieha -- najprv zastavte REC',
+    recLaeuftStoppen: 'Nahrávanie prebieha - najprv zastavte REC',
     spulenNicht: 'Pretáčanie nie je k dispozícii',
     prevSender: 'Predchádzajúca stanica',
     nextSender: 'Ďalšia stanica',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Prepnúť na HLS stream (s časovým posunom)',
     moduswechsel: 'Prepínanie režimu...',
     moduswechselNicht: 'Prepnutie režimu nie je k dispozícii',
-    recModuswechsel: 'Nahrávanie prebieha -- nemožno prepnúť režim',
+    recModuswechsel: 'Nahrávanie prebieha - nemožno prepnúť režim',
     fehlerSchliessen: 'Zavrieť chybovú hlášku',
     nichtBeiWiedergabe: 'Nedostupné počas prehrávania nahrávky',
     keinePrevEpisode: 'Žiadna predchádzajúca epizóda',

@@ -12,9 +12,9 @@ RadioHub ist eine lokal betriebene Anwendung.
 
 RadioHub nutzt folgende externe Dienste:
 
-- **Radio Browser API** -- Öffentliche Senderdatenbank (radio-browser.info)
-- **iTunes Search API** -- Podcast-Suche (Apple)
-- **Fyyd API** -- Podcast-Suche (fyyd.de)
+- **Radio Browser API** - Öffentliche Senderdatenbank (radio-browser.info)
+- **iTunes Search API** - Podcast-Suche (Apple)
+- **Fyyd API** - Podcast-Suche (fyyd.de)
 
 Bei der Nutzung dieser Dienste gelten deren jeweilige Datenschutzbestimmungen.
 

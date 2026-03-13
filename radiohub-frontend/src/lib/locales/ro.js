@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'ÎNREGISTRĂRI',
     speicher: 'STOCARE',
     dienste: 'SERVICII',
-    system: 'SISTEM',
     // Sub-Tabs
     filter: 'FILTRU',
     sender: 'POSTURI',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Câte minute ar trebui să privească în trecut înregistrarea HLS?',
     language: 'LIMBĂ',
     datenschutzNutzung: 'CONFIDENȚIALITATE ȘI CONDIȚII DE UTILIZARE'
-  },
+    infoTitle: 'INFORMATII TEHNICE',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Numele este necesar'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'CACHE STAȚII',
-    stations: 'STAȚII',
-    countries: 'ȚĂRI',
-    syncNow: 'SINCRONIZEAZĂ',
-    syncing: 'SINCRONIZARE...',
-    systemInfo: 'INFO SISTEM',
-    syncFehler: 'Sincronizarea a eșuat'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'ZONE DE STOCARE',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Deja live',
     liveNurHls: 'Live disponibil doar în modul HLS',
     keinSender: 'Niciun post selectat',
-    recLaeuftStoppen: 'Înregistrare în curs -- opriți mai întâi ÎNREGISTRAREA',
+    recLaeuftStoppen: 'Înregistrare în curs - opriți mai întâi ÎNREGISTRAREA',
     spulenNicht: 'Derularea nu este disponibilă',
     prevSender: 'Postul anterior',
     nextSender: 'Postul următor',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Comutare la stream HLS (cu decalaj temporal)',
     moduswechsel: 'Se schimbă modul...',
     moduswechselNicht: 'Schimbarea modului nu este disponibilă',
-    recModuswechsel: 'Înregistrare în curs -- fără schimbare de mod',
+    recModuswechsel: 'Înregistrare în curs - fără schimbare de mod',
     fehlerSchliessen: 'Închidere mesaj de eroare',
     nichtBeiWiedergabe: 'Nu în timpul redării înregistrării',
     keinePrevEpisode: 'Niciun episod anterior',

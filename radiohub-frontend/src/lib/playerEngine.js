@@ -118,9 +118,9 @@ export async function playStation(station) {
 
   // --- Phase 3: Bei aktiver Aufnahme blockieren ---
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    _appState.playerError = 'Aufnahme läuft - erst stoppen';
     setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
         _appState.playerError = null;
       }
     }, 3000);
@@ -199,9 +199,9 @@ export async function playPodcast(episode, podcast) {
   }
 
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    _appState.playerError = 'Aufnahme läuft - erst stoppen';
     setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
         _appState.playerError = null;
       }
     }, 3000);
@@ -278,9 +278,9 @@ export async function playRecording(recording, startTime = 0) {
   }
 
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft -- erst stoppen';
+    _appState.playerError = 'Aufnahme läuft - erst stoppen';
     setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft -- erst stoppen') {
+      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
         _appState.playerError = null;
       }
     }, 3000);
@@ -859,7 +859,7 @@ export function handleTimeUpdate() {
       if (segRange > 0) {
         if (_appState.isLive) {
           // Live-Modus: Position an rechten Rand pinnen.
-          // Kein Neuberechnen -- verhindert Pendeln an der Live-Kante.
+          // Kein Neuberechnen - verhindert Pendeln an der Live-Kante.
           // isLive wird nur durch seek/skip/goLive geändert.
           _appState.currentSegment = lastSeg;
           seekPosition = 100;
@@ -879,7 +879,7 @@ export function handleTimeUpdate() {
             seekPosition = ((currentSeg - firstSeg) / segRange) * 100;
             _lastSeekPosition = seekPosition;
           }
-          // isLive wird hier NICHT gesetzt -- nur seek/skip/goLive ändern das
+          // isLive wird hier NICHT gesetzt - nur seek/skip/goLive ändern das
         }
       }
     }

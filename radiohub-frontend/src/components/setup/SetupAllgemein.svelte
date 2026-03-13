@@ -33,16 +33,18 @@
     }
   });
 
-  // Markdown-Inhalte für Lizenz / Recht
+  // Markdown-Inhalte fuer Info / Lizenz / Recht
+  let infoContent = $state('');
   let lizenzContent = $state('');
   let rechtContent = $state('');
 
   const subTabs = [
     { id: 'einstellungen', label: 'EINSTELLUNGEN', icon: 'fa-gear', special: null },
     { id: 'tastatur', label: 'TASTATUR', icon: 'fa-keyboard', special: null },
-    { id: 'bedanken', label: 'BEDANKEN', icon: 'fa-heart', special: 'bedanken' },
+    { id: 'info', label: 'INFO', icon: 'fa-circle-info', special: null },
     { id: 'lizenz', label: 'LIZENZ', icon: 'fa-scale-balanced', special: null },
-    { id: 'recht', label: 'RECHT', icon: 'fa-shield-halved', special: null }
+    { id: 'recht', label: 'RECHT', icon: 'fa-shield-halved', special: null },
+    { id: 'bedanken', label: 'BEDANKEN', icon: 'fa-heart', special: 'bedanken' }
   ];
 
   const hotkeys = [
@@ -109,9 +111,18 @@
 
   // Markdown lazy-loading
   $effect(() => {
+    if (activeSubTab === 'info') loadInfo();
     if (activeSubTab === 'lizenz') loadLizenz();
     if (activeSubTab === 'recht') loadRecht();
   });
+
+  async function loadInfo() {
+    if (infoContent) return;
+    try {
+      const res = await fetch('/legal/info.md');
+      if (res.ok) infoContent = parseMarkdown(await res.text());
+    } catch (e) { /* ignorieren */ }
+  }
 
   async function loadLizenz() {
     if (lizenzContent) return;
@@ -290,6 +301,99 @@
               {/each}
             </div>
           {/each}
+        </div>
+      </div>
+    </div>
+
+  <!-- === INFO === -->
+  {:else if activeSubTab === 'info'}
+    <div class="md-fill">
+      <div class="hifi-panel md-panel">
+        <div class="hifi-panel-header">
+          <i class="fa-solid fa-circle-info header-icon"></i>
+          <span class="hifi-font-label">{t('allgemein.infoTitle')}</span>
+        </div>
+        <div class="md-body">
+          {#if infoContent}
+            {@html infoContent}
+
+            <!-- Badge-Demo direkt als Svelte-Markup -->
+            <hr class="md-hr"/>
+            <h3 class="md-h3">Badge-Referenz</h3>
+            <p class="md-text">So sehen die Badges in der Senderliste aus:</p>
+
+            <div class="badge-demo-section">
+              <div class="badge-demo-group">
+                <h4 class="md-h4">ICY-Badges</h4>
+                <div class="badge-demo-row">
+                  <span class="demo-badge icy-default">ICY</span>
+                  <span class="badge-demo-label">Nicht bewertet - ICY vorhanden, Qualität unbekannt</span>
+                </div>
+                <div class="badge-demo-row">
+                  <span class="demo-badge icy-good">ICY</span>
+                  <span class="badge-demo-label">Gute Qualität - präzise Titelwechsel, saubere Schnitte</span>
+                </div>
+                <div class="badge-demo-row">
+                  <span class="demo-badge icy-poor">ICY</span>
+                  <span class="badge-demo-label">Schlechte Qualität - ungenaue Zeitpunkte, Schnitte prüfen</span>
+                </div>
+              </div>
+
+              <div class="badge-demo-group">
+                <h4 class="md-h4">ICY-Bewertungssystem</h4>
+                <p class="md-text">Per Klick auf den ICY-Badge wird die Qualität bewertet. Der Zustand wechselt zyklisch:</p>
+                <div class="badge-cycle">
+                  <span class="demo-badge icy-default">ICY</span>
+                  <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                  <span class="demo-badge icy-good">ICY</span>
+                  <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                  <span class="demo-badge icy-poor">ICY</span>
+                  <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                  <span class="badge-cycle-reset">zurück</span>
+                </div>
+                <p class="md-text">Die Bewertung beeinflusst, wie RadioHub Schnitte behandelt. Bei "good" werden ICY-Marker direkt als Schnittpunkte verwendet. Bei "poor" sollten Schnitte manuell im Cutter geprüft werden.</p>
+              </div>
+
+              <div class="badge-demo-group">
+                <h4 class="md-h4">Werbe-Badges</h4>
+                <div class="badge-demo-row">
+                  <span class="demo-badge ad-clean">0% AD</span>
+                  <span class="badge-demo-label">Kein Werbeverdacht nach automatischer Prüfung</span>
+                </div>
+                <div class="badge-demo-row">
+                  <span class="demo-badge ad-suspect">35% AD</span>
+                  <span class="badge-demo-label">Werbeverdacht (Prozent = Konfidenz der Erkennung)</span>
+                </div>
+                <div class="badge-demo-row">
+                  <span class="demo-badge ad-blocked">AD</span>
+                  <span class="badge-demo-label">Manuell als Werbung markiert und ausgeblendet</span>
+                </div>
+                <div class="badge-demo-row">
+                  <span class="demo-badge ad-ok">OK</span>
+                  <span class="badge-demo-label">Manuell freigegeben trotz Verdacht</span>
+                </div>
+              </div>
+
+              <div class="badge-demo-group">
+                <h4 class="md-h4">Werbe-Bewertungssystem</h4>
+                <p class="md-text">Die Werbeerkennung arbeitet in zwei Stufen:</p>
+                <div class="badge-flow">
+                  <div class="badge-flow-step">
+                    <span class="badge-flow-label">1. Automatisch</span>
+                    <p class="md-text">Unter Setup > Radio > Sender kann ein Scan gestartet werden. RadioHub prüft Stream-URLs auf Werbe-Domains und analysiert Server-Antworten. Das Ergebnis ist ein Prozentwert.</p>
+                  </div>
+                  <div class="badge-flow-step">
+                    <span class="badge-flow-label">2. Manuell</span>
+                    <p class="md-text">Über das Kontextmenü eines Senders (Rechtsklick oder Aktions-Buttons) kann ein Sender als "Werbung" markiert oder "freigegeben" werden. Das überschreibt die automatische Bewertung.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {:else}
+            <div class="hifi-flex" style="justify-content:center; padding:40px;">
+              <div class="hifi-spinner"><div class="hifi-spinner-ring"></div></div>
+            </div>
+          {/if}
         </div>
       </div>
     </div>
@@ -553,7 +657,7 @@
 
   .md-body :global(.md-h2) {
     font-family: var(--hifi-font-display);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--hifi-text-primary);
     margin: 0 0 6px 0;
@@ -562,7 +666,7 @@
 
   .md-body :global(.md-h3) {
     font-family: var(--hifi-font-display);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.5px;
     color: var(--hifi-text-primary);
@@ -573,7 +677,7 @@
 
   .md-body :global(.md-h4) {
     font-family: var(--hifi-font-display);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--hifi-text-primary);
     margin: 8px 0 2px 0;
@@ -581,7 +685,7 @@
 
   .md-body :global(.md-text) {
     font-family: var(--hifi-font-body);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.7;
     color: var(--hifi-text-secondary);
     margin: 0;
@@ -589,7 +693,7 @@
 
   .md-body :global(.md-list) {
     font-family: var(--hifi-font-body);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.8;
     color: var(--hifi-text-secondary);
     margin: 0;
@@ -610,6 +714,15 @@
     text-decoration: underline;
   }
 
+  .md-body :global(.md-link-internal) {
+    text-decoration: none;
+    border-bottom: 1px dashed var(--hifi-accent);
+  }
+
+  .md-body :global(.md-link-internal:hover) {
+    border-bottom-style: solid;
+  }
+
   .md-body :global(.md-code) {
     font-family: var(--hifi-font-values);
     font-size: 12px;
@@ -623,5 +736,144 @@
     border: none;
     border-top: 1px solid var(--hifi-border-dark);
     margin: 12px 0;
+  }
+
+  /* === Badge-Demo === */
+  .badge-demo-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 8px;
+  }
+
+  .badge-demo-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .badge-demo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+  }
+
+  .badge-demo-label {
+    font-family: var(--hifi-font-body);
+    font-size: 13px;
+    color: var(--hifi-text-secondary);
+  }
+
+  /* Exakte Kopie der echten Badge-Styles */
+  .demo-badge {
+    font-family: var(--hifi-font-values);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: 36px;
+    justify-content: center;
+  }
+
+  .demo-badge.icy-default {
+    color: #5ba8d9;
+    background: rgba(91, 168, 217, 0.15);
+    border: 1px solid rgba(91, 168, 217, 0.3);
+  }
+
+  .demo-badge.icy-good {
+    color: #4caf50;
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+  }
+
+  .demo-badge.icy-poor {
+    color: #e09040;
+    background: rgba(224, 144, 64, 0.15);
+    border: 1px solid rgba(224, 144, 64, 0.3);
+  }
+
+  .demo-badge.ad-clean {
+    color: var(--hifi-text-green, #4caf50);
+    background: rgba(76, 175, 80, 0.12);
+    border: 1px solid rgba(76, 175, 80, 0.25);
+  }
+
+  .demo-badge.ad-suspect {
+    color: var(--hifi-text-amber, #e5a00d);
+    background: rgba(229, 160, 13, 0.12);
+    border: 1px solid rgba(229, 160, 13, 0.25);
+  }
+
+  .demo-badge.ad-blocked {
+    color: var(--hifi-led-red, #e53935);
+    background: rgba(229, 57, 53, 0.12);
+    border: 1px solid rgba(229, 57, 53, 0.25);
+  }
+
+  .demo-badge.ad-ok {
+    color: var(--hifi-text-green, #4caf50);
+    background: rgba(76, 175, 80, 0.12);
+    border: 1px solid rgba(76, 175, 80, 0.25);
+  }
+
+  /* Badge-Zyklus-Darstellung */
+  .badge-cycle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+    margin: 8px 0;
+    flex-wrap: wrap;
+  }
+
+  .badge-cycle-arrow {
+    color: var(--hifi-text-muted);
+    font-size: 10px;
+  }
+
+  .badge-cycle-reset {
+    font-family: var(--hifi-font-body);
+    font-size: 10px;
+    color: var(--hifi-text-muted);
+    font-style: italic;
+  }
+
+  /* Werbe-Flow */
+  .badge-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 8px 0;
+  }
+
+  .badge-flow-step {
+    padding: 10px 14px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm);
+  }
+
+  .badge-flow-label {
+    font-family: var(--hifi-font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--hifi-accent);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .badge-flow-step .md-text {
+    font-size: 12px;
+    margin: 4px 0 0 0;
   }
 </style>

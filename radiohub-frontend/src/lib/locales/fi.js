@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'TALLENTEET',
     speicher: 'TALLENNUSTILA',
     dienste: 'PALVELUT',
-    system: 'JÄRJESTELMÄ',
     // Sub-Tabs
     filter: 'SUODATIN',
     sender: 'ASEMAT',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Kuinka monta minuuttia HLS-tallennuksen tulisi katsoa taaksepäin?',
     language: 'KIELI',
     datenschutzNutzung: 'TIETOSUOJA JA KÄYTTÖEHDOT'
-  },
+    infoTitle: 'TEKNISET TIEDOT',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Nimi vaaditaan'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'ASEMIEN VÄLIMUISTI',
-    stations: 'ASEMAT',
-    countries: 'MAAT',
-    syncNow: 'SYNKRONOI NYT',
-    syncing: 'SYNKRONOIDAAN...',
-    systemInfo: 'JÄRJESTELMÄTIEDOT',
-    syncFehler: 'Synkronointi epäonnistui'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'TALLENNUSALUEET',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Jo live-tilassa',
     liveNurHls: 'Live käytettävissä vain HLS-tilassa',
     keinSender: 'Asemaa ei valittu',
-    recLaeuftStoppen: 'Tallennus käynnissä -- pysäytä REC ensin',
+    recLaeuftStoppen: 'Tallennus käynnissä - pysäytä REC ensin',
     spulenNicht: 'Kelaus ei käytettävissä',
     prevSender: 'Edellinen asema',
     nextSender: 'Seuraava asema',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Vaihda HLS-streamiin (aikasiirretty)',
     moduswechsel: 'Vaihdetaan tilaa...',
     moduswechselNicht: 'Tilanvaihto ei käytettävissä',
-    recModuswechsel: 'Tallennus käynnissä -- ei tilanvaihtoa',
+    recModuswechsel: 'Tallennus käynnissä - ei tilanvaihtoa',
     fehlerSchliessen: 'Sulje virheilmoitus',
     nichtBeiWiedergabe: 'Ei tallennuksen toiston aikana',
     keinePrevEpisode: 'Ei edellistä jaksoa',

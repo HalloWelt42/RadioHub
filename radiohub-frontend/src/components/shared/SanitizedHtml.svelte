@@ -5,7 +5,7 @@
    */
   let {
     html = '',
-    maxHeight = null    // z.B. '200px' -- mit Fade-Out
+    maxHeight = null    // z.B. '200px' - mit Fade-Out
   } = $props();
 
   const ALLOWED_TAGS = new Set(['p', 'br', 'a', 'b', 'i', 'em', 'strong', 'ul', 'ol', 'li', 'span']);

@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'AUFNAHMEN',
     speicher: 'SPEICHER',
     dienste: 'DIENSTE',
-    system: 'SYSTEM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'SENDER',
@@ -30,6 +29,7 @@ export default {
     // Allgemein Sub-Tabs
     einstellungen: 'EINSTELLUNGEN',
     tastatur: 'TASTATUR',
+    info: 'INFO',
     bedanken: 'BEDANKEN',
     lizenz: 'LIZENZ',
     recht: 'RECHT'
@@ -52,6 +52,8 @@ export default {
     lookbackHint: 'Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurückgreifen?',
     language: 'SPRACHE',
     datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN',
+    // Info
+    infoTitle: 'TECHNISCHE INFORMATIONEN',
     // Tastatur
     tastaturTitle: 'TASTATURKÜRZEL',
     tastaturHint: 'Aktiv wenn kein Eingabefeld fokussiert ist',
@@ -179,17 +181,6 @@ export default {
     nameErforderlich: 'Name erforderlich'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'SENDER-CACHE',
-    stations: 'SENDER',
-    countries: 'LÄNDER',
-    syncNow: 'JETZT SYNC',
-    syncing: 'SYNCHRONISIERE...',
-    systemInfo: 'SYSTEMINFO',
-    syncFehler: 'Synchronisierung fehlgeschlagen'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'SPEICHER-ZONEN',
@@ -236,7 +227,7 @@ export default {
     bereitsLive: 'Bereits live',
     liveNurHls: 'Live nur im HLS-Modus verfügbar',
     keinSender: 'Kein Sender ausgewählt',
-    recLaeuftStoppen: 'Aufnahme läuft -- erst REC stoppen',
+    recLaeuftStoppen: 'Aufnahme läuft - erst REC stoppen',
     spulenNicht: 'Spulen nicht verfügbar',
     prevSender: 'Vorheriger Sender',
     nextSender: 'Nächster Sender',
@@ -250,7 +241,7 @@ export default {
     hlsMode: 'Zu HLS-Stream wechseln (zeitversetzt)',
     moduswechsel: 'Moduswechsel läuft...',
     moduswechselNicht: 'Moduswechsel nicht verfügbar',
-    recModuswechsel: 'Aufnahme läuft -- kein Moduswechsel',
+    recModuswechsel: 'Aufnahme läuft - kein Moduswechsel',
     fehlerSchliessen: 'Fehlermeldung schließen',
     nichtBeiWiedergabe: 'Nicht bei Aufnahme-Wiedergabe',
     keinePrevEpisode: 'Keine vorherige Episode',

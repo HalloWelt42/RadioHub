@@ -416,7 +416,7 @@
           <div class="scan-progress-bar">
             <div class="scan-progress-fill" style="width: {scanProgress.total > 0 ? (scanProgress.progress / scanProgress.total * 100) : 0}%"></div>
           </div>
-          <span class="scan-progress-text">{scanProgress.progress}/{scanProgress.total} -- {scanProgress.current}</span>
+          <span class="scan-progress-text">{scanProgress.progress}/{scanProgress.total} - {scanProgress.current}</span>
         </div>
       {/if}
 

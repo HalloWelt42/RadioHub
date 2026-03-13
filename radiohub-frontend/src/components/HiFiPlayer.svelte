@@ -78,14 +78,14 @@
         appState.streamTitle = result.title;
       }
     } catch (e) {
-      // Stilles Fehlen -- kein Titel verfügbar
+      // Stilles Fehlen - kein Titel verfügbar
     }
   }
 
   // === Handlers ===
   function handlePlayPause() {
     if (appState.isPlaying && !appState.isPaused) {
-      // Direct-Streams können nicht pausiert werden -- nur Stop
+      // Direct-Streams können nicht pausiert werden - nur Stop
       if (appState.playerMode === 'direct') {
         engine.stop();
         return;
@@ -277,7 +277,7 @@
 
   // Timer
   // Recording: Aufnahmedauer (rot)
-  // HLS Timeshift: Abstand zu Live (gelb) -- nur wenn NICHT live
+  // HLS Timeshift: Abstand zu Live (gelb) - nur wenn NICHT live
   // Podcast: aktuelle Position (grün)
   // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
@@ -663,7 +663,7 @@
           <i class="fa-solid fa-tower-broadcast transport-icon"></i>
         </button>
 
-        <!-- Mode Toggle (Original/HLS) -- immer sichtbar, disabled wenn nicht nutzbar -->
+        <!-- Mode Toggle (Original/HLS) - immer sichtbar, disabled wenn nicht nutzbar -->
         <button
           class="transport-btn mode-btn"
           class:switching={modeSwitching}

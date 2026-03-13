@@ -131,7 +131,7 @@
     text-shadow: 0 0 4px var(--hifi-led-yellow-glow);
   }
 
-  /* Deaktivierter Zustand -- alles grau */
+  /* Deaktivierter Zustand - alles grau */
   .bitrate-leds.disabled .br-led {
     background: var(--hifi-led-off);
     box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);

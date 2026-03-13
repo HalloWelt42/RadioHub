@@ -80,7 +80,7 @@
 
   function end() {
     dragging = false;
-    // Animation läuft weiter bis Ziel erreicht -- kein Snap, kein Abbruch
+    // Animation läuft weiter bis Ziel erreicht - kein Snap, kein Abbruch
   }
 
   // === Mausrad: Trägheit durch Impulse auslassen ===

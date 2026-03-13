@@ -208,7 +208,7 @@
 
   <!-- Footer -->
   <footer class="hifi-footer">
-    <span>&copy; {new Date().getFullYear()} <a href="https://github.com/HalloWelt42/RadioHub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> HalloWelt42</a> -- RadioHub v0.4.1</span>
+    <span>&copy; {new Date().getFullYear()} <a href="https://github.com/HalloWelt42/RadioHub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> HalloWelt42</a> - RadioHub v0.4.1</span>
   </footer>
 </div>
 

@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'KAYITLAR',
     speicher: 'DEPOLAMA',
     dienste: 'HİZMETLER',
-    system: 'SİSTEM',
     // Sub-Tabs
     filter: 'FİLTRE',
     sender: 'İSTASYONLAR',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'HLS kaydı geçmişe kaç dakika bakmalı?',
     language: 'DİL',
     datenschutzNutzung: 'GİZLİLİK VE KULLANIM KOŞULLARI'
-  },
+    infoTitle: 'TEKNIK BILGILER',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Ad gerekli'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'İSTASYON ÖNBELLEĞİ',
-    stations: 'İSTASYONLAR',
-    countries: 'ÜLKELER',
-    syncNow: 'ŞİMDİ SENKRONLA',
-    syncing: 'SENKRONİZASYON...',
-    systemInfo: 'SİSTEM BİLGİSİ',
-    syncFehler: 'Senkronizasyon başarısız'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'DEPOLAMA BÖLGELERİ',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Zaten canlı',
     liveNurHls: 'Canlı sadece HLS modunda kullanılabilir',
     keinSender: 'İstasyon seçilmedi',
-    recLaeuftStoppen: 'Kayıt devam ediyor -- önce KAYDI durdurun',
+    recLaeuftStoppen: 'Kayıt devam ediyor - önce KAYDI durdurun',
     spulenNicht: 'Sarma kullanılamıyor',
     prevSender: 'Önceki istasyon',
     nextSender: 'Sonraki istasyon',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'HLS akışına geç (zamanlı kaydırma)',
     moduswechsel: 'Mod değiştiriliyor...',
     moduswechselNicht: 'Mod değişimi kullanılamıyor',
-    recModuswechsel: 'Kayıt devam ediyor -- mod değişimi yok',
+    recModuswechsel: 'Kayıt devam ediyor - mod değişimi yok',
     fehlerSchliessen: 'Hata mesajını kapat',
     nichtBeiWiedergabe: 'Kayıt oynatma sırasında değil',
     keinePrevEpisode: 'Önceki bölüm yok',

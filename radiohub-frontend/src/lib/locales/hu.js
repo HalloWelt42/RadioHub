@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'FELVÉTELEK',
     speicher: 'TÁRHELY',
     dienste: 'SZOLGÁLTATÁSOK',
-    system: 'RENDSZER',
     // Sub-Tabs
     filter: 'SZŰRŐ',
     sender: 'ÁLLOMÁSOK',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Hány percet tekintsen vissza a HLS felvétel a múltba?',
     language: 'NYELV',
     datenschutzNutzung: 'ADATVÉDELEM ÉS FELHASZNÁLÁSI FELTÉTELEK'
-  },
+    infoTitle: 'TECHNIKAI INFORMACIOK',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Név szükséges'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'ÁLLOMÁS-GYORSÍTÓTÁR',
-    stations: 'ÁLLOMÁSOK',
-    countries: 'ORSZÁGOK',
-    syncNow: 'SZINKRONIZÁLÁS',
-    syncing: 'SZINKRONIZÁLÁS...',
-    systemInfo: 'RENDSZERINFORMÁCIÓ',
-    syncFehler: 'Szinkronizálás sikertelen'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'TÁRHELY ZÓNÁK',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Már élő',
     liveNurHls: 'Az élő csak HLS módban érhető el',
     keinSender: 'Nincs kiválasztott állomás',
-    recLaeuftStoppen: 'Felvétel folyamatban -- először állítsa le a FELVÉTELT',
+    recLaeuftStoppen: 'Felvétel folyamatban - először állítsa le a FELVÉTELT',
     spulenNicht: 'Tekerés nem elérhető',
     prevSender: 'Előző állomás',
     nextSender: 'Következő állomás',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Váltás HLS streamre (időeltolt)',
     moduswechsel: 'Módváltás folyamatban...',
     moduswechselNicht: 'Módváltás nem elérhető',
-    recModuswechsel: 'Felvétel folyamatban -- nincs módváltás',
+    recModuswechsel: 'Felvétel folyamatban - nincs módváltás',
     fehlerSchliessen: 'Hibaüzenet bezárása',
     nichtBeiWiedergabe: 'Nem felvétel lejátszás közben',
     keinePrevEpisode: 'Nincs előző epizód',

@@ -24,7 +24,7 @@
       // (audioEl.volume wird vor MediaElementSource angewendet)
       peakLevel = Math.round(realLevel * 8);
     } else {
-      // Fallback: Simulation -- Volume manuell einrechnen
+      // Fallback: Simulation - Volume manuell einrechnen
       const volumeBase = Math.floor((volume / 100) * 6);
       const variation = Math.floor(Math.random() * 4) - 1;
       peakLevel = Math.max(1, Math.min(8, volumeBase + variation));

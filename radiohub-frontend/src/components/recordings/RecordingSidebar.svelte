@@ -197,7 +197,7 @@
         <div class="session-meta">
           {formatDate(session.start_time)}
           {#if session.segment_count > 0}
-            -- {session.segment_count} Seg.
+            - {session.segment_count} Seg.
           {/if}
         </div>
       </div>

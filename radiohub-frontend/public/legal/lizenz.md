@@ -1,4 +1,4 @@
-# RadioHub -- Nicht-kommerzielle Lizenz v1.0
+# RadioHub - Nicht-kommerzielle Lizenz v1.0
 
 SPDX-License-Identifier: LicenseRef-RadioHub-NC-1.0
 
@@ -81,18 +81,18 @@ DIE SOFTWARE WIRD "WIE SIE IST" BEREITGESTELLT, OHNE JEGLICHE GEWÄHRLEISTUNG, W
 
 ### Frontend
 
-- **Svelte 5** -- MIT License -- [svelte.dev](https://svelte.dev)
-- **Vite 5** -- MIT License -- [vitejs.dev](https://vitejs.dev)
-- **hls.js** -- Apache 2.0 License -- [github.com/video-dev/hls.js](https://github.com/video-dev/hls.js)
-- **Font Awesome Free 7** -- Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT -- [fontawesome.com](https://fontawesome.com)
-- **Barlow Font** -- SIL Open Font License 1.1
-- **Orbitron Font** -- SIL Open Font License 1.1
+- **Svelte 5** - MIT License - [svelte.dev](https://svelte.dev)
+- **Vite 5** - MIT License - [vitejs.dev](https://vitejs.dev)
+- **hls.js** - Apache 2.0 License - [github.com/video-dev/hls.js](https://github.com/video-dev/hls.js)
+- **Font Awesome Free 7** - Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT - [fontawesome.com](https://fontawesome.com)
+- **Barlow Font** - SIL Open Font License 1.1
+- **Orbitron Font** - SIL Open Font License 1.1
 
 ### Backend
 
-- **Python 3** -- PSF License -- [python.org](https://python.org)
-- **FastAPI** -- MIT License -- [fastapi.tiangolo.com](https://fastapi.tiangolo.com)
-- **Uvicorn** -- BSD 3-Clause -- [uvicorn.org](https://uvicorn.org)
-- **FFmpeg** -- LGPL 2.1+ -- [ffmpeg.org](https://ffmpeg.org)
-- **aiohttp** -- Apache 2.0 -- [aiohttp.readthedocs.io](https://aiohttp.readthedocs.io)
-- **aiosqlite** -- MIT License
+- **Python 3** - PSF License - [python.org](https://python.org)
+- **FastAPI** - MIT License - [fastapi.tiangolo.com](https://fastapi.tiangolo.com)
+- **Uvicorn** - BSD 3-Clause - [uvicorn.org](https://uvicorn.org)
+- **FFmpeg** - LGPL 2.1+ - [ffmpeg.org](https://ffmpeg.org)
+- **aiohttp** - Apache 2.0 - [aiohttp.readthedocs.io](https://aiohttp.readthedocs.io)
+- **aiosqlite** - MIT License

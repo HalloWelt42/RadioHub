@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'INSPELNINGAR',
     speicher: 'LAGRING',
     dienste: 'TJÄNSTER',
-    system: 'SYSTEM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'STATIONER',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Hur många minuter ska HLS-inspelningen titta tillbaka i tiden?',
     language: 'SPRÅK',
     datenschutzNutzung: 'INTEGRITET OCH ANVÄNDARVILLKOR'
-  },
+    infoTitle: 'TEKNISK INFORMATION',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Namn krävs'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'STATIONSCACHE',
-    stations: 'STATIONER',
-    countries: 'LÄNDER',
-    syncNow: 'SYNKRONISERA NU',
-    syncing: 'SYNKRONISERAR...',
-    systemInfo: 'SYSTEMINFO',
-    syncFehler: 'Synkronisering misslyckades'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'LAGRINGSZONER',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Redan live',
     liveNurHls: 'Live endast tillgängligt i HLS-läge',
     keinSender: 'Ingen station vald',
-    recLaeuftStoppen: 'Inspelning pågår -- stoppa REC först',
+    recLaeuftStoppen: 'Inspelning pågår - stoppa REC först',
     spulenNicht: 'Spolning inte tillgänglig',
     prevSender: 'Föregående station',
     nextSender: 'Nästa station',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Byt till HLS-ström (tidsförskjuten)',
     moduswechsel: 'Byter läge...',
     moduswechselNicht: 'Lägesbyte inte tillgängligt',
-    recModuswechsel: 'Inspelning pågår -- inget lägesbyte',
+    recModuswechsel: 'Inspelning pågår - inget lägesbyte',
     fehlerSchliessen: 'Stäng felmeddelande',
     nichtBeiWiedergabe: 'Inte under inspelningsuppspelning',
     keinePrevEpisode: 'Inget föregående avsnitt',

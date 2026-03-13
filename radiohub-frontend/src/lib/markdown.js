@@ -10,7 +10,13 @@ function esc(s) {
 function inline(s) {
   s = esc(s);
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener" class="md-link">$1</a>');
+  // Interne Links (#/...) ohne target="_blank", externe mit
+  s = s.replace(/\[(.+?)\]\((.+?)\)/g, (_, text, href) => {
+    if (href.startsWith('#/')) {
+      return `<a href="${href}" class="md-link md-link-internal">${text}</a>`;
+    }
+    return `<a href="${href}" target="_blank" rel="noopener" class="md-link">${text}</a>`;
+  });
   s = s.replace(/`(.+?)`/g, '<code class="md-code">$1</code>');
   return s;
 }

@@ -22,7 +22,6 @@ export default {
     aufnahmen: 'OPPTAK',
     speicher: 'LAGRING',
     dienste: 'TJENESTER',
-    system: 'SYSTEM',
     // Sub-Tabs
     filter: 'FILTER',
     sender: 'STASJONER',
@@ -51,7 +50,7 @@ export default {
     lookbackHint: 'Hvor mange minutter skal HLS-opptaket se tilbake i tid?',
     language: 'SPRÅK',
     datenschutzNutzung: 'PERSONVERN OG BRUKSVILKÅR'
-  },
+    infoTitle: 'TEKNISK INFORMASJON',  },
 
   // === Setup Podcast ===
   podcast: {
@@ -161,17 +160,6 @@ export default {
     nameErforderlich: 'Navn påkrevd'
   },
 
-  // === Setup System ===
-  system: {
-    stationCache: 'STASJONSCACHE',
-    stations: 'STASJONER',
-    countries: 'LAND',
-    syncNow: 'SYNKRONISER NÅ',
-    syncing: 'SYNKRONISERER...',
-    systemInfo: 'SYSTEMINFO',
-    syncFehler: 'Synkronisering mislyktes'
-  },
-
   // === Setup Speicher ===
   speicher: {
     speicherZonen: 'LAGRINGSSONER',
@@ -218,7 +206,7 @@ export default {
     bereitsLive: 'Allerede live',
     liveNurHls: 'Live kun tilgjengelig i HLS-modus',
     keinSender: 'Ingen stasjon valgt',
-    recLaeuftStoppen: 'Opptak pågår -- stopp REC først',
+    recLaeuftStoppen: 'Opptak pågår - stopp REC først',
     spulenNicht: 'Spoling ikke tilgjengelig',
     prevSender: 'Forrige stasjon',
     nextSender: 'Neste stasjon',
@@ -232,7 +220,7 @@ export default {
     hlsMode: 'Bytt til HLS-strøm (tidsforskjøvet)',
     moduswechsel: 'Bytter modus...',
     moduswechselNicht: 'Modusbytte ikke tilgjengelig',
-    recModuswechsel: 'Opptak pågår -- ingen modusbytte',
+    recModuswechsel: 'Opptak pågår - ingen modusbytte',
     fehlerSchliessen: 'Lukk feilmelding',
     nichtBeiWiedergabe: 'Ikke under opptaksavspilling',
     keinePrevEpisode: 'Ingen forrige episode',
