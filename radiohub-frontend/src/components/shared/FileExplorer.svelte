@@ -277,7 +277,7 @@
     <div class="explorer-tree">
       {#each sortedFolders as folder (folder.id)}
         <div class="folder-row" class:orphaned={folder.orphaned}>
-          <div class="folder-header" onclick={() => toggleFolder(folder.id)}>
+          <div class="folder-header" role="button" tabindex="0" onclick={() => toggleFolder(folder.id)} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFolder(folder.id); } }}>
             <button class="led-toggle" onclick={(e) => { e.stopPropagation(); toggleFolderSelect(folder); }} title={t('fileExplorer.ordnerAuswaehlen')}>
               <HiFiLed color={isFolderSelected(folder) ? 'green' : isFolderPartial(folder) ? 'amber' : 'off'} size="small" title={isFolderSelected(folder) ? t('fileExplorer.alleAusgewaehlt') : isFolderPartial(folder) ? t('fileExplorer.teilweiseAusgewaehlt') : t('fileExplorer.keineAusgewaehlt')} />
             </button>

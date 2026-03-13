@@ -109,10 +109,6 @@
     gap: 12px;
   }
 
-  .span-full {
-    grid-column: 1 / -1;
-  }
-
   .toggle-btn {
     display: flex;
     align-items: center;

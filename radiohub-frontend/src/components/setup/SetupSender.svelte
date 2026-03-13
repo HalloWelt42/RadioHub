@@ -535,7 +535,7 @@
         {:else if blockedData?.categories && Object.keys(blockedData.categories).length > 0}
           {#each Object.entries(blockedData.categories) as [cat, catData]}
             <div class="category-group">
-              <div class="category-row" onclick={() => toggleCategory(cat)} tabindex="0">
+              <div class="category-row" onclick={() => toggleCategory(cat)} tabindex="0" role="button" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCategory(cat); } }}>
                 <span class="reason-arrow" class:open={expandedCategory === cat}>
                   <i class="fa-solid fa-chevron-right"></i>
                 </span>
@@ -571,7 +571,7 @@
                     <!-- Andere Kategorien: einzelne Reasons -->
                     {#each Object.entries(catData.reasons) as [reason, count]}
                       <div class="reason-group">
-                        <div class="reason-row" onclick={() => toggleReason(reason)} tabindex="0">
+                        <div class="reason-row" onclick={() => toggleReason(reason)} tabindex="0" role="button" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleReason(reason); } }}>
                           <span class="reason-arrow sub" class:open={expandedReason === reason}>
                             <i class="fa-solid fa-chevron-right"></i>
                           </span>

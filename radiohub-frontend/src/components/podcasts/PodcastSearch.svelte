@@ -118,7 +118,7 @@
       onkeydown={handleKeydown}
     />
     {#if query}
-      <button class="search-clear" onclick={() => { query = ''; episodeResults = []; subResults = []; externResults = []; totalEpisodes = 0; }}>
+      <button class="search-clear" aria-label="Suche leeren" onclick={() => { query = ''; episodeResults = []; subResults = []; externResults = []; totalEpisodes = 0; }}>
         <i class="fa-solid fa-xmark"></i>
       </button>
     {/if}
@@ -421,6 +421,7 @@
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

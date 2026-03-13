@@ -533,7 +533,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keinePrevEpisode') : isRecordingPlayback ? t('player.keinePrevTitel') : t('player.keinPrev')) : prevStationName() || (isPodcast ? t('player.prevEpisode') : isRecordingPlayback ? t('player.prevTitel') : t('player.prevSender'))}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keinePrevEpisode') : isRecordingPlayback ? t('player.keinePrevTitel') : t('player.keinPrev')) : (prevStationName() || (isPodcast ? t('player.prevEpisode') : isRecordingPlayback ? t('player.prevTitel') : t('player.prevSender'))) + ' (\u2190)'}
           onmouseenter={sfx.hover}
           onmousedown={() => prevPressed = true}
           onmouseup={() => { prevPressed = false; navigatePrev(); }}
@@ -562,13 +562,13 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title={t('player.stop')}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title={t('player.stop') + ' (S)'}>
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
 
         <!-- Play/Pause -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : appState.isPaused ? t('player.pause') : t('player.play')}>
+        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handlePlayPause(); sfx.click(); }} disabled={appState.isRecording} title={appState.isRecording ? t('player.recLaeuft') : (appState.isPaused ? t('player.pause') : t('player.play')) + ' (Space)'}>
           <HiFiLed color={playPauseLedColor} size="small" />
           <i class="fa-solid {appState.isPaused ? 'fa-pause' : 'fa-play'} transport-icon"></i>
         </button>
@@ -599,7 +599,7 @@
         <button
           class="transport-btn"
           disabled={!canNavigate || appState.isRecording}
-          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keineNextEpisode') : isRecordingPlayback ? t('player.keineNextTitel') : t('player.keinNext')) : nextStationName() || (isPodcast ? t('player.nextEpisode') : isRecordingPlayback ? t('player.nextTitel') : t('player.nextSender'))}
+          title={appState.isRecording ? t('player.recLaeuft') : !canNavigate ? (isPodcast ? t('player.keineNextEpisode') : isRecordingPlayback ? t('player.keineNextTitel') : t('player.keinNext')) : (nextStationName() || (isPodcast ? t('player.nextEpisode') : isRecordingPlayback ? t('player.nextTitel') : t('player.nextSender'))) + ' (\u2192)'}
           onmouseenter={sfx.hover}
           onmousedown={() => nextPressed = true}
           onmouseup={() => { nextPressed = false; navigateNext(); }}

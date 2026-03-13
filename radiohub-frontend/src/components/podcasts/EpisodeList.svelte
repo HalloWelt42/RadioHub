@@ -63,6 +63,7 @@
   onscroll={handleScroll}
   onkeydown={handleListKeydown}
   tabindex="0"
+  role="listbox"
 >
   <!-- Sticky Column Headers -->
   <div class="column-headers">
@@ -72,6 +73,9 @@
       class="col-title"
       class:col-active={sortBy === 'title'}
       onclick={() => toggleSort('title')}
+      role="button"
+      tabindex="0"
+      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSort('title'); } }}
     >
       TITEL
       {#if sortBy === 'title'}
@@ -83,6 +87,9 @@
       class="col-date"
       class:col-active={sortBy === 'published_at'}
       onclick={() => toggleSort('published_at')}
+      role="button"
+      tabindex="0"
+      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSort('published_at'); } }}
     >
       DATUM
       {#if sortBy === 'published_at'}
@@ -93,6 +100,9 @@
       class="col-duration"
       class:col-active={sortBy === 'duration'}
       onclick={() => toggleSort('duration')}
+      role="button"
+      tabindex="0"
+      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSort('duration'); } }}
     >
       DAUER
       {#if sortBy === 'duration'}

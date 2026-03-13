@@ -348,6 +348,7 @@
               role="button"
               tabindex="0"
               onclick={() => { toggleFolder(folder.id); sfx.click(); }}
+              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFolder(folder.id); sfx.click(); } }}
             >
               <i class="fa-solid {isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} folder-chevron"></i>
               <HiFiLed
@@ -367,7 +368,9 @@
                 <span class="folder-name">{folder.name}</span>
               {/if}
               <span class="folder-count">{fSessions.length}</span>
-              <div class="folder-actions" onclick={(e) => e.stopPropagation()}>
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+              <div class="folder-actions" role="group" onclick={(e) => e.stopPropagation()}>
                 <button
                   class="folder-action-btn"
                   onclick={() => { folder.is_active ? ondeactivatefolder() : onactivatefolder(folder.id); sfx.click(); }}
@@ -443,9 +446,11 @@
   </div>
 
   <!-- Resize Handle -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
     class="resize-handle"
     class:active={isDragging}
+    role="separator"
     onmousedown={handleResizeStart}
     title={t('recordings.breiteAnpassen')}
   ></div>

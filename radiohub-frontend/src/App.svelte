@@ -159,13 +159,13 @@
     </div>
     
     <nav class="hifi-nav">
-      {#each tabs as tab}
+      {#each tabs as tab, i}
         <button
           class="hifi-nav-btn"
           class:active={appState.activeTab === tab.id}
           onclick={() => { actions.setTab(tab.id); sfx.select(); }}
           onmouseenter={sfx.hoverSoft}
-          title={t(tab.key)}
+          title={t(tab.key) + ' (' + (i + 1) + ')'}
         >
           <HiFiLed color={appState.activeTab === tab.id ? 'green' : 'off'} size="small" />
           {t(tab.key)}

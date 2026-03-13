@@ -24,7 +24,7 @@
   let canvasEl = $state(null);
   let minimapEl = $state(null);
   let containerEl = $state(null);
-  let renderer = null;
+  let renderer = $state(null);
   let minimapRenderer = null;
   let loader = null;
 
@@ -844,7 +844,9 @@
   </div>
 
   <!-- Minimap -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div class="cutter-minimap-wrap"
+    role="application"
     onmousedown={handleMinimapMouseDown}
     onmousemove={handleMinimapMouseMove}
     onmouseup={handleMinimapMouseUp}
@@ -878,7 +880,7 @@
   {#if showConvertPanel}
     <div class="convert-panel">
       <div class="convert-row">
-        <label class="convert-label">{t('cutterExtra.format')}</label>
+        <span class="convert-label">{t('cutterExtra.format')}</span>
         <select class="convert-select" bind:value={convertFormat} onchange={onFormatChange}>
           <option value="mp3">MP3</option>
           <option value="ogg">OGG Vorbis</option>
@@ -886,7 +888,7 @@
         </select>
       </div>
       <div class="convert-row">
-        <label class="convert-label">{t('cutterExtra.bitrate')}</label>
+        <span class="convert-label">{t('cutterExtra.bitrate')}</span>
         <select class="convert-select" bind:value={convertBitrate}>
           {#each FORMAT_BITRATES[convertFormat] as kbps}
             <option value={kbps}>{kbps} kbps</option>
@@ -1199,15 +1201,6 @@
   .segment-selection-badge.partial {
     color: var(--hifi-text-warning, #ff9800);
     border-color: var(--hifi-text-warning, #ff9800);
-  }
-
-  .tools-label {
-    font-family: var(--hifi-font-display);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--hifi-text-secondary);
-    text-transform: uppercase;
   }
 
   .processing-indicator {

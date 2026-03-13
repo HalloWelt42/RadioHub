@@ -607,12 +607,14 @@
           <div class="meta-list">
             <div class="meta-header">{t('recordings.segmente')} ({segments.length} {t('recordings.tracks')})</div>
             {#each segments as seg}
-              <div class="segment-entry" class:playing={playingPath === seg.file_path} role="button" tabindex="0" onclick={() => playSegment(seg)}>
+              <div class="segment-entry" class:playing={playingPath === seg.file_path} role="button" tabindex="0" onclick={() => playSegment(seg)} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playSegment(seg); } }}>
                 <span class="meta-time">[{formatMetaTime(seg.start_ms)}]</span>
                 <span class="meta-title">{seg.title}</span>
                 <span class="segment-duration">{formatDurationMs(seg.duration_ms)}</span>
                 <span class="segment-size">{formatSize(seg.file_size)}</span>
-                <div class="segment-actions" onclick={(e) => e.stopPropagation()}>
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                <div class="segment-actions" role="group" onclick={(e) => e.stopPropagation()}>
                   <button class="action-btn" onclick={(e) => downloadSegment(seg, e)} title={t('recordings.herunterladen')}>
                     <i class="fa-solid fa-download"></i>
                   </button>

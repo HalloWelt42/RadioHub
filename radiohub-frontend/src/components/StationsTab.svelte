@@ -334,12 +334,14 @@
       try {
         const result = await api.getDetectedBitrates([station.uuid]);
         const det = (result.bitrates || {})[station.uuid];
-        if (!det || (det.bitrate <= 0 && !det.codec)) return;
+        if (!det) return;
         stations = stations.map(s => {
           if (s.uuid !== station.uuid) return s;
           const updates = {};
           if (det.bitrate > 0) updates.bitrate = det.bitrate;
           if (det.codec) updates.codec = det.codec.toUpperCase();
+          if (det.icy) updates.icy = true;
+          if (det.icy_quality) updates.icy_quality = det.icy_quality;
           return { ...s, ...updates };
         });
       } catch { /* ignore */ }
@@ -687,7 +689,7 @@
           {/each}
         </div>
       {:else}
-        <div class="empty-hint" onclick={() => { openSetupFilter(); sfx.click(); }}>
+        <div class="empty-hint" onclick={() => { openSetupFilter(); sfx.click(); }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSetupFilter(); sfx.click(); } }}>
           {t('stations.laenderKonfigurieren')}
         </div>
       {/if}
@@ -717,7 +719,7 @@
           {/each}
         </div>
       {:else}
-        <div class="empty-hint" onclick={() => { actions.navigateTo('/setup/radio/kategorien'); sfx.click(); }}>
+        <div class="empty-hint" onclick={() => { actions.navigateTo('/setup/radio/kategorien'); sfx.click(); }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.navigateTo('/setup/radio/kategorien'); sfx.click(); } }}>
           {t('stations.kategorienErstellen')}
         </div>
       {/if}
@@ -815,15 +817,15 @@
     </div>
 
     <!-- Liste (scrollbar, alle Sender) -->
-    <div class="station-list" onscroll={handleScroll} onkeydown={handleListKeydown} tabindex="0">
+    <div class="station-list" onscroll={handleScroll} onkeydown={handleListKeydown} tabindex="0" role="listbox">
       <!-- Spaltenköpfe (sticky) -->
       <div class="column-headers">
         <div class="col-led"></div>
-        <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')}>{t('stationDetail.name')} {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-name" class:col-active={sortBy === 'name'} onclick={() => setSort('name')} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort('name'); } }}>{t('stationDetail.name')} {#if sortBy === 'name'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-badges"></div>
-        <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')}>{t('stationDetail.country')} {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
-        <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')}>KBPS {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
-        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')}>{t('stationDetail.votes')} {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-country" class:col-active={sortBy === 'country'} onclick={() => setSort('country')} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort('country'); } }}>{t('stationDetail.country')} {#if sortBy === 'country'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-bitrate" class:col-active={sortBy === 'bitrate'} onclick={() => setSort('bitrate')} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort('bitrate'); } }}>KBPS {#if sortBy === 'bitrate'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
+        <div class="col-votes" class:col-active={sortBy === 'votes'} onclick={() => setSort('votes')} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort('votes'); } }}>{t('stationDetail.votes')} {#if sortBy === 'votes'}<i class="fa-solid {sortOrder === 'asc' ? 'fa-caret-up' : 'fa-caret-down'}"></i>{/if}</div>
         <div class="col-fav"></div>
       </div>
 
@@ -853,11 +855,14 @@
               class:focused={isFocused && !isPlaying && !isSelected}
               onclick={() => { toggleExpand(station); sfx.click(); }}
               onmouseenter={sfx.hover}
+              role="button"
+              tabindex="0"
+              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(station); sfx.click(); } }}
             >
-              <div class="station-led" onclick={(e) => playAndExpand(station, e)}>
+              <div class="station-led" onclick={(e) => playAndExpand(station, e)} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playAndExpand(station, e); } }}>
                 <HiFiLed color={isPlaying ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
               </div>
-              <div class="station-name" onclick={(e) => playAndExpand(station, e)}>
+              <div class="station-name" onclick={(e) => playAndExpand(station, e)} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playAndExpand(station, e); } }}>
                 <i class="fa-solid fa-play hover-play-icon"></i>
                 {#if station.favicon}<img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music station-favicon-fallback"></i>{/if}
                 <span class="station-name-text">{station.name}</span>

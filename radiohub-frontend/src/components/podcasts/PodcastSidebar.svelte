@@ -164,7 +164,7 @@
       </div>
 
       {#if subscriptions.length === 0}
-        <div class="empty-hint" onclick={() => { showSearch = true; sfx.click(); }}>
+        <div class="empty-hint" onclick={() => { showSearch = true; sfx.click(); }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showSearch = true; sfx.click(); } }}>
           {t('podcasts.podcastsSuchenAbonnieren')}
         </div>
       {:else}
@@ -204,6 +204,7 @@
                 onclick={(e) => { e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); }}
                 role="button"
                 tabindex="-1"
+                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); } }}
               ></i>
               <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? t('podcasts.wirdAbgespielt') : isSelected ? t('podcasts.ausgewaehltStatus') : hasUnplayed ? t('podcasts.neueEpisoden') : t('podcasts.keineNeuen')} />
             </button>
@@ -271,11 +272,13 @@
   {/if}
 
   <!-- Resize Handle -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
     class="resize-handle"
     class:active={isDragging}
     onmousedown={handleResizeStart}
     title={t('podcasts.breiteAnpassen')}
+    role="separator"
   ></div>
 </aside>
 

@@ -40,14 +40,15 @@
   class:focused={isFocused && !isPlaying && !isSelected}
   data-id={episode.id}
   onclick={() => onclick(episode)}
+  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onclick(episode); } }}
   role="button"
   tabindex="-1"
 >
-  <div class="ep-led" onclick={handlePlayClick}>
+  <div class="ep-led" onclick={handlePlayClick} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePlayClick(e); } }}>
     <HiFiLed color={isPlaying ? 'green' : isFocused ? 'yellow' : episode.is_downloaded ? 'blue' : 'off'} size="small" />
   </div>
 
-  <div class="ep-cover" onclick={handlePlayClick}>
+  <div class="ep-cover" onclick={handlePlayClick} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePlayClick(e); } }}>
     <CoverArt src={imageUrl} alt={episode.title} size="sm" />
   </div>
 

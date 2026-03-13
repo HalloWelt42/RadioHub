@@ -29,7 +29,7 @@
     <div class="search-results">
       {#each results as podcast}
         {@const isSubscribed = subscribedFeedUrls.has(podcast.feed_url)}
-        <div class="result-card" onclick={() => isSubscribed ? onopen(podcast) : null}>
+        <div class="result-card" onclick={() => isSubscribed ? onopen(podcast) : null} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isSubscribed) onopen(podcast); } }}>
           <div class="card-cover">
             <CoverArt src={podcast.image_url} alt={podcast.title} size="lg" />
           </div>

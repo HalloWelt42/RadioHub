@@ -53,6 +53,7 @@
 <div
   class="cover-art cover-{size}"
   class:rounded
+  role="img"
   style="--cover-size: {sizeMap[size] || 64}px"
   bind:this={coverEl}
   onmouseenter={handleMouseEnter}
