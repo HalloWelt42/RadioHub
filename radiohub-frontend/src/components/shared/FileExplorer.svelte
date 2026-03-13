@@ -16,6 +16,7 @@
     totalFiles = 0,
     isLoading = false,
     activeSessionPath = null, // file_path der selektierten Session
+    playingFilePath = null,   // Pfad der aktuell spielenden Datei
     onplay = () => {},
     ondelete = () => {},
     onrefresh = () => {},
@@ -310,9 +311,10 @@
           {#if expandedFolders.has(folder.id)}
             <div class="folder-files">
               {#each folder.files as file (file.path)}
-                <div class="file-row" class:selected={selectedFiles.has(file.path)}>
+                {@const isPlaying = playingFilePath === file.path}
+                <div class="file-row" class:selected={selectedFiles.has(file.path)} class:playing={isPlaying}>
                   <button class="led-toggle" onclick={() => toggleFile(file.path)} title={t('fileExplorer.dateiAuswaehlen')}>
-                    <HiFiLed color={selectedFiles.has(file.path) ? 'green' : 'off'} size="small" title={selectedFiles.has(file.path) ? t('fileExplorer.fuerDownload') : t('fileExplorer.nichtAusgewaehlt')} />
+                    <HiFiLed color={isPlaying ? 'green' : selectedFiles.has(file.path) ? 'green' : 'off'} size="small" blink={isPlaying} title={isPlaying ? t('fileExplorer.spieltGerade') : selectedFiles.has(file.path) ? t('fileExplorer.fuerDownload') : t('fileExplorer.nichtAusgewaehlt')} />
                   </button>
                   <span class="file-name" title={file.name}>{file.name}</span>
                   <span class="file-size">{formatSize(file.size)}</span>
@@ -552,6 +554,10 @@
 
   .file-row.selected {
     background: rgba(51, 153, 255, 0.08);
+  }
+
+  .file-row.playing {
+    background: rgba(40, 180, 40, 0.08);
   }
 
   .led-toggle {

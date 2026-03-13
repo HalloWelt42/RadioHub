@@ -575,6 +575,7 @@ export default {
     dateiAuswaehlen: 'Datei für ZIP-Download auswählen',
     fuerDownload: 'Für Download ausgewählt',
     nichtAusgewaehlt: 'Nicht ausgewählt',
+    spieltGerade: 'Wird gerade abgespielt',
     dateiAbspielen: 'Datei abspielen',
     dateiLoeschen: 'Datei endgültig löschen',
     sortierungName: 'Nach Name',

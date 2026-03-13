@@ -532,6 +532,7 @@
         totalFiles={fileExplorerTotalFiles}
         isLoading={fileExplorerLoading}
         activeSessionPath={selectedSession?.file_path || null}
+        playingFilePath={appState.playerMode === 'recording' && appState.currentRecording?.source === 'file' ? appState.currentRecording.path : null}
         onplay={handleFileExplorerPlay}
         ondelete={handleFileExplorerDelete}
         onrefresh={loadFileExplorer}
