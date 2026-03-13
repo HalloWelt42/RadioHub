@@ -268,8 +268,8 @@
 
   <!-- === TASTATUR === -->
   {:else if activeSubTab === 'tastatur'}
-    <div class="hotkey-container">
-      <div class="hifi-panel">
+    <div class="md-fill">
+      <div class="hifi-panel md-panel">
         <div class="hifi-panel-header">
           <i class="fa-solid fa-keyboard header-icon"></i>
           <span class="hifi-font-label">{t('allgemein.tastaturTitle')}</span>
@@ -278,7 +278,7 @@
           <i class="fa-solid fa-circle-info"></i>
           <span>{t('allgemein.tastaturHint')}</span>
         </div>
-        <div class="hotkey-groups">
+        <div class="hotkey-body">
           {#each hotkeys as group}
             <div class="hotkey-group">
               <div class="hotkey-group-title">{t('allgemein.' + group.group)}</div>
@@ -456,10 +456,6 @@
   }
 
   /* === Hotkey-Ansicht === */
-  .hotkey-container {
-    max-width: 560px;
-  }
-
   .hotkey-hint {
     display: flex;
     align-items: center;
@@ -469,6 +465,7 @@
     font-size: 11px;
     color: var(--hifi-text-muted);
     border-bottom: 1px solid var(--hifi-border-dark);
+    flex-shrink: 0;
   }
 
   .hotkey-hint i {
@@ -476,11 +473,14 @@
     font-size: 12px;
   }
 
-  .hotkey-groups {
-    padding: 16px;
+  .hotkey-body {
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .hotkey-group-title {
