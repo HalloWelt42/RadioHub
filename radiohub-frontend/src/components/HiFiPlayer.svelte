@@ -317,7 +317,8 @@
     appState.isPaused ? 'yellow' :
     appState.isPlaying ? 'green' : 'off'
   );
-  let stopLedColor = $derived(!appState.isPlaying && !appState.isPaused && hasSource ? 'yellow' : 'off');
+  let stopPressed = $state(false);
+  let stopLedColor = $derived(stopPressed ? 'yellow' : 'off');
   let recLedColor = $derived(
     appState.recordingType === 'direct' ? 'red' :
     appState.recordingType === 'hls-rec' ? 'amber' :
@@ -567,7 +568,14 @@
         </button>
 
         <!-- Stop -->
-        <button class="transport-btn" onmouseenter={sfx.hover} onclick={() => { handleStop(); sfx.click(); }} title={t('player.stop') + ' (S)'}>
+        <button
+          class="transport-btn"
+          title={t('player.stop') + ' (S)'}
+          onmouseenter={sfx.hover}
+          onmousedown={() => stopPressed = true}
+          onmouseup={() => { stopPressed = false; handleStop(); sfx.click(); }}
+          onmouseleave={() => stopPressed = false}
+        >
           <HiFiLed color={stopLedColor} size="small" />
           <i class="fa-solid fa-stop transport-icon"></i>
         </button>
