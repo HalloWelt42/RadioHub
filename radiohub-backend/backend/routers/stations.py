@@ -242,6 +242,7 @@ async def stream_proxy(url: str = Query(..., description="Stream-URL"), request:
     try:
         client = httpx.AsyncClient(
             follow_redirects=True,
+            verify=False,
             timeout=httpx.Timeout(connect=15.0, read=None, write=None, pool=None)
         )
         resp = await client.send(
