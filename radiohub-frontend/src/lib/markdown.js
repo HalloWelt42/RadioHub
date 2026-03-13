@@ -1,7 +1,19 @@
 /**
  * Einfacher Markdown-Parser (h1-h3, Listen, Absätze, Bold, Links, Code, HR)
  * Wird von SetupAllgemein für Lizenz-/Rechtstexte verwendet.
+ *
+ * Template-Variablen: {{version}}, {{year}}, {{copyright}}
  */
+
+const templateVars = {
+  version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
+  year: new Date().getFullYear().toString(),
+  copyright: `2025-${new Date().getFullYear()}`
+};
+
+function replaceVars(s) {
+  return s.replace(/\{\{(\w+)\}\}/g, (_, key) => templateVars[key] || `{{${key}}}`);
+}
 
 function esc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -22,6 +34,7 @@ function inline(s) {
 }
 
 export function parseMarkdown(md) {
+  md = replaceVars(md);
   const lines = md.split('\n');
   let html = '';
   let inList = false;

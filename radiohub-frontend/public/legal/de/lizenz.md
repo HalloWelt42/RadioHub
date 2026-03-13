@@ -2,7 +2,7 @@
 
 SPDX-License-Identifier: LicenseRef-RadioHub-NC-1.0
 
-Copyright (c) 2025-2026 HalloWelt42
+Copyright (c) {{copyright}} HalloWelt42
 
 Dieses Werk ist lizenziert unter der Creative Commons Namensnennung - Nicht kommerziell - Keine Bearbeitungen 4.0 International Lizenz (CC BY-NC-ND 4.0), ergänzt durch die nachstehenden Zusatzbestimmungen.
 
