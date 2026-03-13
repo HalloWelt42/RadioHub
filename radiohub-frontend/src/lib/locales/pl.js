@@ -230,6 +230,7 @@ export default {
     keinNext: 'Brak następnej stacji',
     directMode: 'Przełącz na oryginalny strumień (Direct)',
     hlsMode: 'Przełącz na strumień HLS (z przesunięciem czasowym)',
+    moduswechsel: 'Zmiana trybu...',
     moduswechselNicht: 'Zmiana trybu niedostępna',
     recModuswechsel: 'Nagrywanie w toku -- brak zmiany trybu',
     fehlerSchliessen: 'Zamknij komunikat o błędzie',
@@ -569,7 +570,11 @@ export default {
     recording: 'NAGRYWANIE',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Dostępne tylko w trybie HLS',
+    deaktiviert: 'wyłączone',
+    bitrateWechsel: 'zmiana...'
   },
 
   // === Station Details ===

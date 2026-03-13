@@ -230,6 +230,7 @@ export default {
     keinNext: 'Niciun post următor',
     directMode: 'Comutare la stream original (Direct)',
     hlsMode: 'Comutare la stream HLS (cu decalaj temporal)',
+    moduswechsel: 'Se schimbă modul...',
     moduswechselNicht: 'Schimbarea modului nu este disponibilă',
     recModuswechsel: 'Înregistrare în curs -- fără schimbare de mod',
     fehlerSchliessen: 'Închidere mesaj de eroare',
@@ -569,7 +570,11 @@ export default {
     recording: 'ÎNREGISTRARE',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Disponibil doar în modul HLS',
+    deaktiviert: 'dezactivat',
+    bitrateWechsel: 'se schimbă...'
   },
 
   // === Station Details ===

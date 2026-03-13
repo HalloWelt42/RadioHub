@@ -248,6 +248,7 @@ export default {
     keinNext: 'No next station',
     directMode: 'Switch to original stream (Direct)',
     hlsMode: 'Switch to HLS stream (time-shifted)',
+    moduswechsel: 'Switching mode...',
     moduswechselNicht: 'Mode switch not available',
     recModuswechsel: 'Recording in progress -- no mode switch',
     fehlerSchliessen: 'Close error message',
@@ -587,7 +588,11 @@ export default {
     recording: 'RECORDING',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Only available in HLS mode',
+    deaktiviert: 'disabled',
+    bitrateWechsel: 'switching...'
   },
 
   // === Station Details ===

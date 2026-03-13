@@ -351,6 +351,18 @@
     )
   );
 
+  // Mode-Umschaltung: Button bleibt eingedrückt bis der neue Modus aktiv ist
+  let modeSwitching = $state(false);
+  let modeSwitchFromMode = $state(null);
+
+  $effect(() => {
+    const currentMode = appState.playerMode;
+    if (modeSwitching && modeSwitchFromMode && currentMode !== modeSwitchFromMode) {
+      modeSwitching = false;
+      modeSwitchFromMode = null;
+    }
+  });
+
   // Play-Modus: linear -> reverse -> loop -> shuffle -> linear
   let canTogglePlayMode = $derived(isRecordingPlayback || appState.playerMode === 'podcast' || appState.activeTab === 'recordings');
   const playModeOrder = ['linear', 'reverse', 'loop', 'shuffle'];
@@ -372,6 +384,7 @@
 
   // Bitrate Override (persistent via localStorage)
   let bitrateOverride = $state(JSON.parse(localStorage.getItem('radiohub_bitrate_override') || 'null'));
+  let bitrateSwitching = $state(false);
 
   // Erkannte Input-Bitrate des Streams (Original, nicht die HLS-Encoding-Bitrate)
   let hlsInputBitrate = $derived(appState.streamQuality?.inputBitrate || 0);
@@ -383,9 +396,17 @@
     } else {
       localStorage.removeItem('radiohub_bitrate_override');
     }
-    // HLS aktiv -> neu starten mit neuer Bitrate
+    // HLS aktiv -> Buffer komplett neu starten mit neuer Bitrate
     if (appState.playerMode === 'hls' && appState.currentStation) {
+      bitrateSwitching = true;
       await engine.restartHLS();
+      // restartHLS setzt hlsActive=false und startet Background-Prozess.
+      // Warten bis hlsActive wieder true (max 15s), dann freischalten.
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        if (appState.hlsActive) break;
+      }
+      bitrateSwitching = false;
     }
   }
 </script>
@@ -440,7 +461,7 @@
     <div class="player-section vu-section">
       <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
-        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused && !appState.playerError} />
       </div>
     </div>
 
@@ -460,7 +481,7 @@
     <div class="player-section vu-section">
       <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
-        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused && !appState.playerError} />
       </div>
     </div>
   </div>
@@ -638,9 +659,11 @@
         <!-- Mode Toggle (Original/HLS) -- immer sichtbar, disabled wenn nicht nutzbar -->
         <button
           class="transport-btn mode-btn"
-          disabled={!canToggleStreamMode}
-          title={appState.isRecording ? t('player.recModuswechsel') : !canToggleStreamMode ? t('player.moduswechselNicht') : appState.playerMode === 'hls' ? t('player.directMode') : t('player.hlsMode')}
-          onclick={() => engine.toggleStreamMode()}
+          class:switching={modeSwitching}
+          disabled={!canToggleStreamMode || modeSwitching}
+          title={appState.isRecording ? t('player.recModuswechsel') : modeSwitching ? t('player.moduswechsel') : !canToggleStreamMode ? t('player.moduswechselNicht') : appState.playerMode === 'hls' ? t('player.directMode') : t('player.hlsMode')}
+          onmouseenter={sfx.hover}
+          onclick={() => { modeSwitching = true; modeSwitchFromMode = appState.playerMode; engine.toggleStreamMode(); sfx.click(); }}
         >
           <HiFiLed color={modeLedColor} size="wide" />
           <i class="fa-solid {appState.playerMode === 'hls' ? 'fa-arrows-rotate' : 'fa-wave-square'} transport-icon"></i>
@@ -659,17 +682,25 @@
         </button>
       </div>
 
-      <!-- Bitrate LED Selector (nur bei HLS sichtbar) -->
-      {#if isHLSMode && appState.hlsActive}
-        <div class="bitrate-bar">
-          <span class="bitrate-label">{t('playerLabel.bitrate')}</span>
-          <HiFiBitrateLed
-            activeBitrate={hlsInputBitrate}
-            overrideBitrate={bitrateOverride}
-            onchange={handleBitrateOverrideChange}
-          />
-        </div>
-      {/if}
+      <!-- HLS-Bitrate LED Selector (immer sichtbar, deaktiviert ohne HLS) -->
+      <div
+        class="bitrate-bar"
+        class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
+        title={!isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
+      >
+        <span class="bitrate-label">{t('playerLabel.hlsBitrate')}</span>
+        <HiFiBitrateLed
+          activeBitrate={hlsInputBitrate}
+          overrideBitrate={bitrateOverride}
+          onchange={handleBitrateOverrideChange}
+          disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
+        />
+        {#if bitrateSwitching}
+          <span class="bitrate-disabled-text bitrate-switching">({t('playerLabel.bitrateWechsel')})</span>
+        {:else if !isHLSMode || !appState.hlsActive}
+          <span class="bitrate-disabled-text">({t('playerLabel.deaktiviert')})</span>
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -1007,6 +1038,25 @@
     white-space: nowrap;
   }
 
+  .bitrate-disabled-text {
+    font-family: var(--hifi-font-values);
+    font-size: 8px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+    white-space: nowrap;
+  }
+
+  .bitrate-switching {
+    color: var(--hifi-led-amber, #e8a317);
+    opacity: 1;
+    animation: pulse-text 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
   /* Horizontal Fader */
   .transport-fader-container {
     width: 100%;
@@ -1125,6 +1175,19 @@
 
   .transport-btn:disabled .transport-icon {
     opacity: 0.25;
+  }
+
+  /* Mode-Umschaltung: Button bleibt eingedrückt bis neuer Modus aktiv */
+  .transport-btn.switching,
+  .transport-btn.switching:disabled {
+    background: var(--hifi-bg-primary);
+    box-shadow: var(--hifi-shadow-inset);
+    transform: translateY(1px);
+    cursor: wait;
+  }
+
+  .transport-btn.switching:disabled .transport-icon {
+    opacity: 1;
   }
 
   .transport-icon {

@@ -230,6 +230,7 @@ export default {
     keinNext: 'Нет следующей станции',
     directMode: 'Переключить на оригинальный поток (Direct)',
     hlsMode: 'Переключить на HLS-поток (со сдвигом по времени)',
+    moduswechsel: 'Переключение режима...',
     moduswechselNicht: 'Переключение режима недоступно',
     recModuswechsel: 'Идёт запись -- переключение режима невозможно',
     fehlerSchliessen: 'Закрыть сообщение об ошибке',
@@ -569,7 +570,11 @@ export default {
     recording: 'ЗАПИСЬ',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Доступно только в режиме HLS',
+    deaktiviert: 'отключено',
+    bitrateWechsel: 'переключение...'
   },
 
   // === Station Details ===

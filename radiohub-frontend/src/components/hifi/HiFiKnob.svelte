@@ -1,37 +1,71 @@
 <script>
-  let { 
-    min = 0, 
-    max = 100, 
-    value = $bindable(50), 
-    step = 1, 
-    unit = '', 
-    label = '', 
+  let {
+    min = 0,
+    max = 100,
+    value = $bindable(50),
+    step = 1,
+    unit = '',
+    label = '',
     size = 'default', // small | large
     onchange
   } = $props();
-  
+
   let container;
   let dragging = $state(false);
-  let centerX = $state(0);
-  let centerY = $state(0);
-  
+  let centerX = 0;
+  let centerY = 0;
+
   const startAngle = -135;
   const endAngle = 135;
-  
+
   let angle = $derived(startAngle + ((value - min) / (max - min)) * (endAngle - startAngle));
   let display = $derived(step < 1 ? value.toFixed(1) : Math.round(value));
-  
+
+  // === Ziel-Speicher + Animation ===
+  // Ein einziger Zustand: _target ist wo der Knob hin will.
+  // Die Animation bewegt value Richtung _target, immer.
+  let _target = value;
+  let _animId = null;
+
+  function setTarget(v) {
+    _target = Math.max(min, Math.min(max, Math.round(v / step) * step));
+    if (!_animId) _animId = requestAnimationFrame(animate);
+  }
+
+  function animate() {
+    const diff = _target - value;
+    if (diff === 0) {
+      _animId = null;
+      return;
+    }
+    // 18% der Restdistanz pro Frame, minimum 1 Step
+    let delta = diff * 0.18;
+    if (Math.abs(delta) < step) delta = Math.sign(diff) * step;
+
+    let next = Math.round((value + delta) / step) * step;
+    next = Math.max(min, Math.min(max, next));
+
+    // Overshooting verhindern
+    if ((diff > 0 && next > _target) || (diff < 0 && next < _target)) {
+      next = _target;
+    }
+
+    if (next !== value) {
+      value = next;
+      onchange?.({ value });
+    }
+
+    _animId = (value !== _target) ? requestAnimationFrame(animate) : null;
+  }
+
+  // === Maus/Touch Drag ===
   function start(e) {
     e.preventDefault();
     dragging = true;
-    _targetValue = value;
     const r = container.getBoundingClientRect();
     centerX = r.left + r.width / 2;
     centerY = r.top + r.height / 2;
   }
-  
-  let _targetValue = value;
-  let _smoothId = null;
 
   function drag(e) {
     if (!dragging) return;
@@ -41,54 +75,41 @@
     if (a < -180) a += 360;
     if (a > 180) a -= 360;
     a = Math.max(startAngle, Math.min(endAngle, a));
-    let v = min + ((a - startAngle) / (endAngle - startAngle)) * (max - min);
-    _targetValue = Math.max(min, Math.min(max, Math.round(v / step) * step));
-    if (!_smoothId) smoothStep();
+    setTarget(min + ((a - startAngle) / (endAngle - startAngle)) * (max - min));
   }
 
-  function smoothStep() {
-    const diff = _targetValue - value;
-    if (Math.abs(diff) < step) {
-      value = _targetValue;
-      onchange?.({ value });
-      _smoothId = null;
-      return;
-    }
-    // Dämpfung: 5% pro Frame -- schwerer, mechanischer Widerstand
-    value = Math.round((value + diff * 0.05) / step) * step;
-    value = Math.max(min, Math.min(max, value));
-    onchange?.({ value });
-    _smoothId = requestAnimationFrame(smoothStep);
-  }
-  
   function end() {
     dragging = false;
-    if (_smoothId) { cancelAnimationFrame(_smoothId); _smoothId = null; }
-    if (value !== _targetValue) {
-      value = _targetValue;
-      onchange?.({ value });
-    }
+    // Animation läuft weiter bis Ziel erreicht -- kein Snap, kein Abbruch
   }
-  
+
+  // === Mausrad: Trägheit durch Impulse auslassen ===
+  let _wheelSkip = 0;
   function wheel(e) {
     e.preventDefault();
-    // Scroll: direkt, keine Dämpfung, 2 Steps pro Tick
-    value = Math.max(min, Math.min(max, value + (e.deltaY > 0 ? -step * 2 : step * 2)));
-    _targetValue = value;
-    onchange?.({ value });
+    _wheelSkip++;
+    if (_wheelSkip % 3 !== 1) return; // Nur jeder 3. Impuls zählt
+    setTarget(value + (e.deltaY > 0 ? -step * 2 : step * 2));
   }
-  
+
+  // === Externe Wertänderungen syncen (Tastatur-Shortcuts) ===
+  $effect(() => {
+    if (!dragging && !_animId) _target = value;
+  });
+
+  // === Event-Listener ===
   $effect(() => {
     window.addEventListener('mousemove', drag);
     window.addEventListener('mouseup', end);
     window.addEventListener('touchmove', drag);
     window.addEventListener('touchend', end);
-    
+
     return () => {
       window.removeEventListener('mousemove', drag);
       window.removeEventListener('mouseup', end);
       window.removeEventListener('touchmove', drag);
       window.removeEventListener('touchend', end);
+      if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
     };
   });
 </script>

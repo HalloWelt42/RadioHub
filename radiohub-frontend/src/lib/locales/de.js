@@ -248,6 +248,7 @@ export default {
     keinNext: 'Kein nächster Sender',
     directMode: 'Zu Original-Stream wechseln (Direct)',
     hlsMode: 'Zu HLS-Stream wechseln (zeitversetzt)',
+    moduswechsel: 'Moduswechsel läuft...',
     moduswechselNicht: 'Moduswechsel nicht verfügbar',
     recModuswechsel: 'Aufnahme läuft -- kein Moduswechsel',
     fehlerSchliessen: 'Fehlermeldung schließen',
@@ -587,7 +588,11 @@ export default {
     recording: 'AUFNAHME',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Nur im HLS-Modus verfügbar',
+    deaktiviert: 'deaktiviert',
+    bitrateWechsel: 'wechselt...'
   },
 
   // === Sender-Details ===

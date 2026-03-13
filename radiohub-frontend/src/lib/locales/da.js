@@ -230,6 +230,7 @@ export default {
     keinNext: 'Ingen næste station',
     directMode: 'Skift til original stream (Direct)',
     hlsMode: 'Skift til HLS-stream (tidsforskudt)',
+    moduswechsel: 'Skifter tilstand...',
     moduswechselNicht: 'Tilstandsskift ikke tilgængeligt',
     recModuswechsel: 'Optagelse i gang -- intet tilstandsskift',
     fehlerSchliessen: 'Luk fejlmeddelelse',
@@ -569,7 +570,11 @@ export default {
     recording: 'OPTAGELSE',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Kun tilgængelig i HLS-tilstand',
+    deaktiviert: 'deaktiveret',
+    bitrateWechsel: 'skifter...'
   },
 
   // === Station Details ===

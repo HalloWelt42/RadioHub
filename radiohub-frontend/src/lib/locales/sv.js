@@ -230,6 +230,7 @@ export default {
     keinNext: 'Ingen nästa station',
     directMode: 'Byt till originalström (Direct)',
     hlsMode: 'Byt till HLS-ström (tidsförskjuten)',
+    moduswechsel: 'Byter läge...',
     moduswechselNicht: 'Lägesbyte inte tillgängligt',
     recModuswechsel: 'Inspelning pågår -- inget lägesbyte',
     fehlerSchliessen: 'Stäng felmeddelande',
@@ -569,7 +570,11 @@ export default {
     recording: 'INSPELNING',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Endast tillgängligt i HLS-läge',
+    deaktiviert: 'inaktiverad',
+    bitrateWechsel: 'byter...'
   },
 
   // === Station Details ===

@@ -230,6 +230,7 @@ export default {
     keinNext: 'Ei seuraavaa asemaa',
     directMode: 'Vaihda alkuperäiseen streamiin (Direct)',
     hlsMode: 'Vaihda HLS-streamiin (aikasiirretty)',
+    moduswechsel: 'Vaihdetaan tilaa...',
     moduswechselNicht: 'Tilanvaihto ei käytettävissä',
     recModuswechsel: 'Tallennus käynnissä -- ei tilanvaihtoa',
     fehlerSchliessen: 'Sulje virheilmoitus',
@@ -569,7 +570,11 @@ export default {
     recording: 'TALLENNUS',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Käytettävissä vain HLS-tilassa',
+    deaktiviert: 'pois käytöstä',
+    bitrateWechsel: 'vaihdetaan...'
   },
 
   // === Station Details ===

@@ -230,6 +230,7 @@ export default {
     keinNext: 'Nincs következő állomás',
     directMode: 'Váltás eredeti streamre (Direct)',
     hlsMode: 'Váltás HLS streamre (időeltolt)',
+    moduswechsel: 'Módváltás folyamatban...',
     moduswechselNicht: 'Módváltás nem elérhető',
     recModuswechsel: 'Felvétel folyamatban -- nincs módváltás',
     fehlerSchliessen: 'Hibaüzenet bezárása',
@@ -569,7 +570,11 @@ export default {
     recording: 'FELVÉTEL',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Csak HLS módban elérhető',
+    deaktiviert: 'kikapcsolva',
+    bitrateWechsel: 'váltás...'
   },
 
   // === Station Details ===

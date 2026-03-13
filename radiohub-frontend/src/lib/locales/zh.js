@@ -230,6 +230,7 @@ export default {
     keinNext: '没有下一个电台',
     directMode: '切换到原始流（Direct）',
     hlsMode: '切换到HLS流（时移）',
+    moduswechsel: '正在切换模式...',
     moduswechselNicht: '无法切换模式',
     recModuswechsel: '正在录制 -- 无法切换模式',
     fehlerSchliessen: '关闭错误消息',
@@ -569,7 +570,11 @@ export default {
     recording: '录音',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: '仅在HLS模式下可用',
+    deaktiviert: '已禁用',
+    bitrateWechsel: '切换中...'
   },
 
   // === Station Details ===

@@ -230,6 +230,7 @@ export default {
     keinNext: '次の放送局がありません',
     directMode: 'オリジナルストリームに切り替え（Direct）',
     hlsMode: 'HLSストリームに切り替え（タイムシフト）',
+    moduswechsel: 'モード切り替え中...',
     moduswechselNicht: 'モード切り替えは利用できません',
     recModuswechsel: '録音中 -- モード切り替えはできません',
     fehlerSchliessen: 'エラーメッセージを閉じる',
@@ -569,7 +570,11 @@ export default {
     recording: '録音',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'HLSモードでのみ利用可能',
+    deaktiviert: '無効',
+    bitrateWechsel: '切替中...'
   },
 
   // === Station Details ===

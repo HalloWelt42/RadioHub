@@ -230,6 +230,7 @@ export default {
     keinNext: 'Sem estação seguinte',
     directMode: 'Mudar para o fluxo original (Direct)',
     hlsMode: 'Mudar para o fluxo HLS (diferido)',
+    moduswechsel: 'Mudando modo...',
     moduswechselNicht: 'Mudança de modo não disponível',
     recModuswechsel: 'Gravação em curso -- sem mudança de modo',
     fehlerSchliessen: 'Fechar mensagem de erro',
@@ -569,7 +570,11 @@ export default {
     recording: 'GRAVAÇÃO',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Disponível apenas no modo HLS',
+    deaktiviert: 'desativado',
+    bitrateWechsel: 'mudando...'
   },
 
   // === Station Details ===

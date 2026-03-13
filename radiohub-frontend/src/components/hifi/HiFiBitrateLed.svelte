@@ -8,7 +8,7 @@
    */
   const STEPS = [32, 48, 64, 96, 128, 192, 256, 320];
 
-  let { activeBitrate = 0, overrideBitrate = null, onchange } = $props();
+  let { activeBitrate = 0, overrideBitrate = null, onchange, disabled = false } = $props();
 
   function nearestStep(bitrate) {
     if (!bitrate || bitrate <= 0) return null;
@@ -24,6 +24,7 @@
   let hasOverride = $derived(overrideBitrate != null);
 
   function handleClick(step) {
+    if (disabled) return;
     if (overrideBitrate === step) {
       // Klick auf Gelbe -> Override entfernen
       onchange?.(null);
@@ -41,18 +42,19 @@
   }
 </script>
 
-<div class="bitrate-leds">
+<div class="bitrate-leds" class:disabled>
   {#each STEPS as step}
     <button
       class="br-led"
-      class:active={getLedState(step) === 'active'}
-      class:override={getLedState(step) === 'override'}
-      class:dimmed={getLedState(step) === 'dimmed'}
+      class:active={!disabled && getLedState(step) === 'active'}
+      class:override={!disabled && getLedState(step) === 'override'}
+      class:dimmed={!disabled && getLedState(step) === 'dimmed'}
+      disabled={disabled}
       onclick={() => handleClick(step)}
-      title="{step} kbps{getLedState(step) === 'active' ? ' (erkannt)' : getLedState(step) === 'override' ? ' (Override)' : ''}"
+      title={disabled ? '' : `${step} kbps${getLedState(step) === 'active' ? ' (erkannt)' : getLedState(step) === 'override' ? ' (Override)' : ''}`}
     ></button>
   {/each}
-  {#if displayValue > 0}
+  {#if !disabled && displayValue > 0}
     <span class="br-value" class:override={hasOverride}>{displayValue}k</span>
   {/if}
 </div>
@@ -127,5 +129,18 @@
   .br-value.override {
     color: var(--hifi-led-yellow);
     text-shadow: 0 0 4px var(--hifi-led-yellow-glow);
+  }
+
+  /* Deaktivierter Zustand -- alles grau */
+  .bitrate-leds.disabled .br-led {
+    background: var(--hifi-led-off);
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .bitrate-leds.disabled .br-led:hover {
+    background: var(--hifi-led-off);
+    transform: none;
   }
 </style>

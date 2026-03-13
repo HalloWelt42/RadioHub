@@ -230,6 +230,7 @@ export default {
     keinNext: 'Sonraki istasyon yok',
     directMode: 'Orijinal akışa geç (Direct)',
     hlsMode: 'HLS akışına geç (zamanlı kaydırma)',
+    moduswechsel: 'Mod değiştiriliyor...',
     moduswechselNicht: 'Mod değişimi kullanılamıyor',
     recModuswechsel: 'Kayıt devam ediyor -- mod değişimi yok',
     fehlerSchliessen: 'Hata mesajını kapat',
@@ -569,7 +570,11 @@ export default {
     recording: 'KAYIT',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Yalnızca HLS modunda kullanılabilir',
+    deaktiviert: 'devre dışı',
+    bitrateWechsel: 'değiştiriliyor...'
   },
 
   // === Station Details ===

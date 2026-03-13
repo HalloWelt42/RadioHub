@@ -230,6 +230,7 @@ export default {
     keinNext: 'Žádná další stanice',
     directMode: 'Přepnout na originální stream (Direct)',
     hlsMode: 'Přepnout na HLS stream (s časovým posunem)',
+    moduswechsel: 'Přepínání režimu...',
     moduswechselNicht: 'Přepnutí režimu není k dispozici',
     recModuswechsel: 'Nahrávání probíhá -- nelze přepnout režim',
     fehlerSchliessen: 'Zavřít chybovou hlášku',
@@ -569,7 +570,11 @@ export default {
     recording: 'NAHRÁVÁNÍ',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Dostupné pouze v režimu HLS',
+    deaktiviert: 'deaktivováno',
+    bitrateWechsel: 'přepíná se...'
   },
 
   // === Station Details ===

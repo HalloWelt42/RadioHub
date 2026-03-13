@@ -230,6 +230,7 @@ export default {
     keinNext: 'Geen volgende zender',
     directMode: 'Overschakelen naar originele stream (Direct)',
     hlsMode: 'Overschakelen naar HLS-stream (tijdverschoven)',
+    moduswechsel: 'Modus wisselen...',
     moduswechselNicht: 'Moduswissel niet beschikbaar',
     recModuswechsel: 'Opname loopt -- geen moduswissel',
     fehlerSchliessen: 'Foutmelding sluiten',
@@ -569,7 +570,11 @@ export default {
     recording: 'OPNAME',
     podcast: 'PODCAST',
     live: 'LIVE',
-    bitrate: 'BITRATE'
+    bitrate: 'BITRATE',
+    hlsBitrate: 'HLS-BITRATE',
+    hlsBitrateNurHls: 'Alleen beschikbaar in HLS-modus',
+    deaktiviert: 'uitgeschakeld',
+    bitrateWechsel: 'wisselen...'
   },
 
   // === Station Details ===
