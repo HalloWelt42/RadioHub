@@ -1107,7 +1107,8 @@
   }
 
   .transport-btn:hover:not(:disabled) {
-    background: var(--hifi-bg-secondary);
+    outline: 1px solid var(--hifi-accent);
+    outline-offset: -1px;
   }
 
   .transport-btn:active:not(:disabled) {
