@@ -234,14 +234,16 @@ async def stream_proxy(url: str = Query(..., description="Stream-URL"), request:
 
     headers = {
         "User-Agent": "RadioHub/1.0",
-        "Icy-MetaData": "1",
     }
     range_header = request.headers.get("range") if request else None
     if range_header:
         headers["Range"] = range_header
 
     try:
-        client = httpx.AsyncClient(follow_redirects=True, timeout=30.0)
+        client = httpx.AsyncClient(
+            follow_redirects=True,
+            timeout=httpx.Timeout(connect=15.0, read=None, write=None, pool=None)
+        )
         resp = await client.send(
             client.build_request("GET", url, headers=headers),
             stream=True
