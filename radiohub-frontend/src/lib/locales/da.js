@@ -601,7 +601,7 @@ export default {
     transport: 'BETJENING',
     playback: 'AFSPILNING',
     timeshift: 'TIDSFORSKYDNING',
-    hlsRec: 'HLS-OPT.',
+    hlsRec: 'HLS-OPTAGELSE',
     recording: 'OPTAGELSE',
     podcast: 'PODCAST',
     live: 'LIVE',

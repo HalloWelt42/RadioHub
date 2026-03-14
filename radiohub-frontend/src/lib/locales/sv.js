@@ -601,7 +601,7 @@ export default {
     transport: 'KONTROLLER',
     playback: 'UPPSPELNING',
     timeshift: 'TIDSSKIFT',
-    hlsRec: 'HLS-INSP.',
+    hlsRec: 'HLS-INSPELNING',
     recording: 'INSPELNING',
     podcast: 'PODCAST',
     live: 'LIVE',

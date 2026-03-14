@@ -601,7 +601,7 @@ export default {
     transport: 'УПРАВЛЕНИЕ',
     playback: 'ВОСПРОИЗВЕДЕНИЕ',
     timeshift: 'СДВИГ ВРЕМЕНИ',
-    hlsRec: 'HLS-ЗАП.',
+    hlsRec: 'HLS-ЗАПИСЬ',
     recording: 'ЗАПИСЬ',
     podcast: 'PODCAST',
     live: 'LIVE',

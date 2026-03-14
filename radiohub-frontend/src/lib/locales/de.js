@@ -621,7 +621,7 @@ export default {
     transport: 'STEUERUNG',
     playback: 'WIEDERGABE',
     timeshift: 'ZEITVERSATZ',
-    hlsRec: 'HLS-AUFN.',
+    hlsRec: 'HLS-AUFNAHME',
     recording: 'AUFNAHME',
     podcast: 'PODCAST',
     live: 'LIVE',

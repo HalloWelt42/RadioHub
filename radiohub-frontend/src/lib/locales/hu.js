@@ -601,7 +601,7 @@ export default {
     transport: 'VEZÉRLÉS',
     playback: 'LEJÁTSZÁS',
     timeshift: 'IDŐELTOLÁS',
-    hlsRec: 'HLS-FELV.',
+    hlsRec: 'HLS-FELVÉTEL',
     recording: 'FELVÉTEL',
     podcast: 'PODCAST',
     live: 'LIVE',

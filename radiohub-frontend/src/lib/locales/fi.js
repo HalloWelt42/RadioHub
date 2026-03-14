@@ -601,7 +601,7 @@ export default {
     transport: 'OHJAUS',
     playback: 'TOISTO',
     timeshift: 'AIKASIIRTO',
-    hlsRec: 'HLS-TALL.',
+    hlsRec: 'HLS-TALLENNUS',
     recording: 'TALLENNUS',
     podcast: 'PODCAST',
     live: 'LIVE',

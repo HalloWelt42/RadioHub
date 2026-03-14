@@ -601,7 +601,7 @@ export default {
     transport: 'BEDIENING',
     playback: 'AFSPELEN',
     timeshift: 'TIJDVERSCHUIVING',
-    hlsRec: 'HLS-OPN.',
+    hlsRec: 'HLS-OPNAME',
     recording: 'OPNAME',
     podcast: 'PODCAST',
     live: 'LIVE',

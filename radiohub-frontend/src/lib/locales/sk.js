@@ -601,7 +601,7 @@ export default {
     transport: 'OVLÁDANIE',
     playback: 'PREHRÁVANIE',
     timeshift: 'ČASOVÝ POSUN',
-    hlsRec: 'NAHR. HLS',
+    hlsRec: 'NAHRÁVANIE HLS',
     recording: 'NAHRÁVANIE',
     podcast: 'PODCAST',
     live: 'LIVE',

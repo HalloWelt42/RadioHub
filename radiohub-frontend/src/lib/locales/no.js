@@ -601,7 +601,7 @@ export default {
     transport: 'KONTROLLER',
     playback: 'AVSPILLING',
     timeshift: 'TIDSFORSKYVNING',
-    hlsRec: 'HLS-OPPT.',
+    hlsRec: 'HLS-OPPTAK',
     recording: 'OPPTAK',
     podcast: 'PODCAST',
     live: 'LIVE',
