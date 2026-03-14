@@ -493,6 +493,8 @@ export default {
     wirdAbgespielt: 'Wird abgespielt',
     ausgewaehltStatus: 'Ausgewählt',
     inaktiv: 'Inaktiv',
+    stalledSession: 'Abgebrochen - unvollständige Aufnahme',
+    abgebrochen: 'ABGEBR.',
     keinOrdner: 'Kein Ordner',
     sucheSchliessen: 'Suche schließen',
     aufnahmenDurchsuchen: 'Aufnahmen durchsuchen',

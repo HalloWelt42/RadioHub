@@ -175,6 +175,7 @@
   {@const isSelected = selectedSessionId === session.id}
   {@const isPlaying = activeSessionId === session.id}
   {@const isActive = session.status === 'recording'}
+  {@const isStalled = session.status === 'stalled'}
   {@const showMoveMenu = moveMenuSessionId === session.id}
   <div class="session-item-wrapper">
     <button
@@ -182,21 +183,24 @@
       class:selected={isSelected}
       class:playing={isPlaying}
       class:active={isActive}
+      class:stalled={isStalled}
       data-session-id={session.id}
       onclick={() => { onselectsession(session); sfx.click(); }}
     >
       <HiFiLed
-        color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
+        color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isStalled ? 'amber' : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
         size="small"
         blink={isActive}
         pulse={isPlaying}
-        title={isActive ? (appState.recordingType === 'hls-rec' ? t('recordings.hlsBufferLaeuft') : t('recordings.aufnahmeLaeuft')) : isPlaying ? t('recordings.wirdAbgespielt') : isSelected ? t('recordings.ausgewaehltStatus') : t('recordings.inaktiv')}
+        title={isActive ? (appState.recordingType === 'hls-rec' ? t('recordings.hlsBufferLaeuft') : t('recordings.aufnahmeLaeuft')) : isStalled ? t('recordings.stalledSession') : isPlaying ? t('recordings.wirdAbgespielt') : isSelected ? t('recordings.ausgewaehltStatus') : t('recordings.inaktiv')}
       />
       <div class="session-info">
         <div class="session-name">{session.station_name || session.id}</div>
         <div class="session-meta">
           {formatDate(session.start_time)}
-          {#if session.segment_count > 0}
+          {#if isStalled}
+            - <span class="stalled-badge">{t('recordings.abgebrochen')}</span>
+          {:else if session.segment_count > 0}
             - {session.segment_count} Seg.
           {/if}
         </div>
@@ -745,6 +749,20 @@
 
   .session-item.active {
     background: rgba(255, 50, 50, 0.08);
+  }
+
+  .session-item.stalled {
+    background: rgba(255, 170, 0, 0.06);
+  }
+
+  .session-item.stalled .session-name {
+    opacity: 0.7;
+  }
+
+  .stalled-badge {
+    color: var(--hifi-led-amber, #ffaa00);
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
   /* Session Move Button (erscheint bei Hover) */

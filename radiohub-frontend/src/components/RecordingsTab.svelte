@@ -587,18 +587,22 @@
     {:else if selectedSession}
       {@const session = selectedSession}
       {@const isActive = session.status === 'recording'}
+      {@const isStalled = session.status === 'stalled'}
       {@const isPlaying = activeSessionId === session.id}
 
       <!-- Session Detail Header -->
       <div class="detail-header">
         <div class="detail-info">
           <HiFiLed
-            color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isPlaying ? 'green' : 'blue'}
+            color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isStalled ? 'amber' : isPlaying ? 'green' : 'blue'}
             size="small"
             blink={isActive}
             pulse={isPlaying}
           />
           <span class="detail-name">{session.station_name || session.id}</span>
+          {#if isStalled}
+            <span class="stalled-tag">{t('recordings.abgebrochen')}</span>
+          {/if}
           <span class="detail-date">{formatDate(session.start_time)}</span>
         </div>
         <div class="detail-meta">
@@ -797,6 +801,18 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .stalled-tag {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(255, 170, 0, 0.15);
+    color: var(--hifi-led-amber, #ffaa00);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
   }
 
   .detail-date {

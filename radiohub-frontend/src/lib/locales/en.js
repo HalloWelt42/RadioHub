@@ -493,6 +493,8 @@ export default {
     wirdAbgespielt: 'Playing',
     ausgewaehltStatus: 'Selected',
     inaktiv: 'Inactive',
+    stalledSession: 'Stalled - incomplete recording',
+    abgebrochen: 'STALLED',
     keinOrdner: 'No folder',
     sucheSchliessen: 'Close search',
     aufnahmenDurchsuchen: 'Search recordings',
