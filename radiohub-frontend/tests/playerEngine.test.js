@@ -121,6 +121,7 @@ function createMockState() {
     currentSegment: null,
     canPlayDirect: true,
     canPlayHLS: null,
+    hlsRecLookbackMinutes: 5,
     stations: [],
   };
 }
@@ -632,6 +633,32 @@ describe('PlayerEngine', () => {
       expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
       // Station bleibt auf A, nicht B
       expect(state.currentStation).toEqual(STATION_A);
+    });
+
+    it('TC-R6: Bei aktivem HLS-Buffer wird HLS-REC statt Direct gestartet', async () => {
+      // Vorbedingung: HLS-Buffer ist aktiv (Auto-HLS nach Senderwechsel)
+      state.currentStation = STATION_A;
+      state.hlsActive = true;
+      state.playerMode = 'hls';
+
+      await engine.startRecording();
+
+      // HLS-REC muss gestartet worden sein, nicht Direct
+      expect(api.startHlsRecording).toHaveBeenCalled();
+      expect(api.startRecording).not.toHaveBeenCalled();
+      expect(state.recordingType).toBe('hls-rec');
+    });
+
+    it('TC-R7: Ohne HLS-Buffer wird Direct-REC gestartet', async () => {
+      state.currentStation = STATION_A;
+      state.hlsActive = false;
+      state.playerMode = 'direct';
+
+      await engine.startRecording();
+
+      expect(api.startRecording).toHaveBeenCalled();
+      expect(api.startHlsRecording).not.toHaveBeenCalled();
+      expect(state.recordingType).toBe('direct');
     });
 
     it('TC-R5: Recording-API wird mit korrekten Daten aufgerufen', async () => {

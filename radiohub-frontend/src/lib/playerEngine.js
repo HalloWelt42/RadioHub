@@ -671,7 +671,8 @@ export async function restartHLS() {
 // ============================================================
 
 /**
- * Startet Aufnahme. Im HLS-Modus: HLS-REC mit Lookback, sonst Direct-REC.
+ * Startet Aufnahme. Bei aktivem HLS-Buffer: HLS-REC mit Lookback, sonst Direct-REC.
+ * Prüft hlsActive (tatsaechlicher HLS-Status), nicht playerMode.
  */
 export async function startRecording() {
   if (!_appState?.currentStation) return { success: false };
@@ -679,7 +680,7 @@ export async function startRecording() {
   _recordingStarting = true;
 
   try {
-    if (_appState.playerMode === 'hls') {
+    if (_appState.hlsActive) {
       return await _startHlsRecording();
     }
     return await _startDirectRecording();
