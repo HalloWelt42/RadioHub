@@ -20,6 +20,25 @@ from ..config import RADIO_RECORDINGS_DIR, get_cache_dir, AUDIO_MIMETYPES
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
 
+def _find_audio_in_chunks(session_path: Path) -> Path | None:
+    """Sucht Audio-Datei in chunks/ Unterverzeichnis (fuer stalled Sessions).
+
+    Bei stalled Sessions zeigt file_path auf das Session-Verzeichnis.
+    Die eigentliche Audio-Datei liegt in chunks/chunk_000.mp3 o.ae.
+    """
+    if session_path.is_dir():
+        chunks_dir = session_path / "chunks"
+        if chunks_dir.is_dir():
+            chunks = sorted(chunks_dir.glob("chunk_*"))
+            if len(chunks) == 1:
+                return chunks[0]
+            if len(chunks) > 1:
+                # Mehrere Chunks: concat noetig, hier nur den ersten liefern
+                # (fuer den normalen Fall mit CHUNK_DURATION=86400 gibt es nur einen)
+                return chunks[0]
+    return None
+
+
 class RecordingStartRequest(BaseModel):
     station_uuid: str
     station_name: str
@@ -298,13 +317,16 @@ async def split_session(session_id: str):
     if not meta_file.exists():
         raise HTTPException(400, "Meta-Datei nicht gefunden")
 
-    # Audio-Datei prüfen
+    # Audio-Datei prüfen (mit Fallback auf chunks/)
     file_path = session.get("file_path")
     if not file_path:
         raise HTTPException(400, "Keine Audio-Datei vorhanden")
     audio_file = Path(file_path)
     if not audio_file.is_file():
-        raise HTTPException(400, "Audio-Datei nicht gefunden")
+        # Fallback: Bei stalled Sessions liegt Audio in chunks/
+        audio_file = _find_audio_in_chunks(audio_file)
+        if not audio_file:
+            raise HTTPException(400, "Audio-Datei nicht gefunden")
 
     duration = session.get("duration", 0)
     file_format = session.get("file_format", ".mp3")

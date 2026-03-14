@@ -42,6 +42,12 @@ async def _get_audio_path(session_id: str) -> Path:
     if audio.is_dir():
         segments = splitter.get_segments(session_id)
         if not segments:
+            # Fallback: Bei stalled Sessions liegt Audio in chunks/
+            chunks_dir = audio / "chunks"
+            if chunks_dir.is_dir():
+                chunks = sorted(chunks_dir.glob("chunk_*"))
+                if chunks:
+                    return chunks[0]
             raise HTTPException(404, "Keine Segmente gefunden")
 
         # Verwaiste Segmente automatisch bereinigen

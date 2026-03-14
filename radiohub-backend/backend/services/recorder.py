@@ -1,11 +1,11 @@
 """
-RadioHub v0.3.1 - Recorder Service (Segmented Recording)
+RadioHub v0.3.2 - Recorder Service (Segmented Recording)
 
-Stream-Aufnahme mit FFmpeg Segment-Muxer: Schreibt 30-Min-Chunks
-statt einer monolithischen Datei. Bei Stream-Abbruch gehen max 30 Min verloren.
+Stream-Aufnahme mit FFmpeg Segment-Muxer. Ein Chunk pro Session
+(segment_time 24h). Das ICY-basierte Splitting passiert beim Stop.
 
 Ablauf:
-1. FFmpeg schreibt Chunks via -f segment -segment_time 1800
+1. FFmpeg schreibt einen Chunk via -f segment -segment_time 86400
 2. Monitor: Stall-Detection + Disk-Space + Chunk-Tracking
 3. Stop:
    a) Mit ICY-Metadata: Chunks concat -> Titel-Split -> fertig
@@ -36,7 +36,10 @@ STALL_CHECK_INTERVAL = 30   # Sekunden zwischen Pruefungen
 STALL_MAX_CHECKS = 3        # 3x keine Aenderung = 90s Stillstand -> stalled
 
 # Segment-Aufnahme: FFmpeg schreibt Chunks statt einer Datei
-CHUNK_DURATION = 1800  # 30 Minuten pro Chunk
+# 86400s = 24h -> praktisch nur ein Chunk pro Session.
+# Vorher: 1800s (30 Min) verursachte Datenverlust bei Stall/Abbruch
+# weil chunk_001 nie finalisiert wurde (ERR-001).
+CHUNK_DURATION = 86400
 
 # Codec -> Dateiendung
 CODEC_EXTENSIONS = {
