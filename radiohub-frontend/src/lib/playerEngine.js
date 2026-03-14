@@ -139,6 +139,7 @@ export async function playStation(station) {
   _appState.isLive = true;
   _appState.playerMode = 'direct';
   _appState.streamQuality = null;
+  _appState.streamTitle = null;
   _appState.playerError = null;
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;

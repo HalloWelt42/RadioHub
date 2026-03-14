@@ -110,7 +110,9 @@
   }
 
   function handleRec() {
-    if (!appState.isRecording) {
+    if (appState.isRecording) {
+      actions.stopRecording();
+    } else {
       actions.startRecording();
     }
   }
@@ -614,7 +616,7 @@
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={appState.isRecording || !isStation || isRecordingPlayback} title={appState.isRecording ? t('player.recLaeuft') : isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : t('player.recStart')}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={(!appState.isRecording && !isStation) || isRecordingPlayback} title={appState.isRecording ? t('player.recStop') : isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : t('player.recStart')}>
           <HiFiLed color={recLedColor} size="wide" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
