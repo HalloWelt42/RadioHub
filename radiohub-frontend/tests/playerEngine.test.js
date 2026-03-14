@@ -67,6 +67,10 @@ vi.mock('../src/lib/api.js', () => ({
     updateEpisodePosition: vi.fn(() => Promise.resolve({})),
     startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
     stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
+    getRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
+    getHlsRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
+    startHlsRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'hlsrec1' })),
+    stopHlsRecording: vi.fn(() => Promise.resolve({ success: true })),
     updateConfig: vi.fn(() => Promise.resolve({})),
   }
 }));
@@ -106,8 +110,11 @@ function createMockState() {
     streamQuality: null,
     playerError: null,
     isRecording: false,
+    recordingType: null,
     recordingSession: null,
     recordingElapsed: 0,
+    recordingIcyCount: 0,
+    recordingIcyEntries: [],
     hlsActive: false,
     hlsStatus: null,
     isLive: true,
@@ -610,7 +617,9 @@ describe('PlayerEngine', () => {
       expect(state.recordingElapsed).toBe(0);
     });
 
-    it('TC-R4: Senderwechsel stoppt laufende Aufnahme', async () => {
+    it('TC-R4: Senderwechsel bei laufender Aufnahme wird blockiert', async () => {
+      // Aktuelle Logik: Bei laufender Aufnahme wird der Senderwechsel
+      // verweigert und ein Fehler angezeigt (statt still zu stoppen).
       await engine.playStation(STATION_A);
       state.currentStation = STATION_A;
       await engine.startRecording();
@@ -618,7 +627,11 @@ describe('PlayerEngine', () => {
 
       await engine.playStation(STATION_B);
 
-      expect(state.isRecording).toBe(false);
+      // Aufnahme laeuft weiter, Senderwechsel wurde blockiert
+      expect(state.isRecording).toBe(true);
+      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+      // Station bleibt auf A, nicht B
+      expect(state.currentStation).toEqual(STATION_A);
     });
 
     it('TC-R5: Recording-API wird mit korrekten Daten aufgerufen', async () => {
@@ -902,6 +915,144 @@ describe('PlayerEngine', () => {
     // Note: Quality wird durch HLS-Polling gesetzt.
     // Das Polling selbst ist schwer zu unit-testen (Timer-basiert).
     // Wird im manuellen UI-Test geprüft (TC-Q2 bis TC-Q4).
+  });
+
+  // ----------------------------------------------------------
+  //  Recording State Recovery (ERR-003/024/025)
+  //
+  //  Testet: checkAndRecoverRecordingState()
+  //  Zweck: Nach Page-Reload muss das Frontend laufende
+  //         Aufnahmen im Backend erkennen und State
+  //         wiederherstellen (Timer, Typ, Session-ID).
+  // ----------------------------------------------------------
+  describe('Recording State Recovery', () => {
+
+    // Mocks pro Test zuruecksetzen, damit keine mockResolvedValueOnce-Werte
+    // aus vorherigen Tests durchsickern
+    beforeEach(() => {
+      api.getRecordingStatus.mockReset();
+      api.getHlsRecordingStatus.mockReset();
+      api.getRecordingStatus.mockResolvedValue({ recording: false });
+      api.getHlsRecordingStatus.mockResolvedValue({ recording: false });
+    });
+
+    it('TC-RSR1: HLS-REC im Backend aktiv -> State wird wiederhergestellt', async () => {
+      // Vorbedingung: Backend meldet aktive HLS-Aufnahme
+      api.getHlsRecordingStatus.mockResolvedValueOnce({
+        recording: true,
+        session_id: 'hlsrec_test_123',
+        duration: 120,
+        icy_count: 3,
+        icy_entries: ['Titel A', 'Titel B', 'Titel C'],
+      });
+
+      await engine.checkAndRecoverRecordingState();
+
+      // Alle Recording-State-Felder muessen gesetzt sein
+      expect(state.isRecording).toBe(true);
+      expect(state.recordingType).toBe('hls-rec');
+      expect(state.recordingSession).toBe('hlsrec_test_123');
+      expect(state.recordingElapsed).toBe(120);
+      expect(state.recordingIcyCount).toBe(3);
+      expect(state.recordingIcyEntries).toEqual(['Titel A', 'Titel B', 'Titel C']);
+    });
+
+    it('TC-RSR2: Direct-REC im Backend aktiv -> State wird wiederhergestellt', async () => {
+      // Vorbedingung: Backend meldet aktive Direct-Aufnahme
+      api.getRecordingStatus.mockResolvedValueOnce({
+        recording: true,
+        session_id: 'rec_test_456',
+        duration: 60,
+        icy_count: 1,
+        icy_entries: ['Song X'],
+      });
+
+      await engine.checkAndRecoverRecordingState();
+
+      expect(state.isRecording).toBe(true);
+      expect(state.recordingType).toBe('direct');
+      expect(state.recordingSession).toBe('rec_test_456');
+      expect(state.recordingElapsed).toBe(60);
+    });
+
+    it('TC-RSR3: Keine Aufnahme im Backend -> State bleibt unverändert', async () => {
+      // Vorbedingung: Beide Endpoints melden keine Aufnahme (Default-Mock)
+      await engine.checkAndRecoverRecordingState();
+
+      expect(state.isRecording).toBe(false);
+      expect(state.recordingType).toBe(null);
+      expect(state.recordingSession).toBe(null);
+      expect(state.recordingElapsed).toBe(0);
+    });
+
+    it('TC-RSR4: Bereits aktive Aufnahme -> kein doppelter Recovery-Versuch', async () => {
+      // Vorbedingung: Frontend hat schon isRecording=true
+      state.isRecording = true;
+      state.recordingType = 'direct';
+
+      // Backend wuerde HLS-REC melden, aber Recovery soll abbrechen
+      api.getHlsRecordingStatus.mockResolvedValueOnce({
+        recording: true,
+        session_id: 'hlsrec_sollte_ignoriert_werden',
+        duration: 999,
+      });
+
+      await engine.checkAndRecoverRecordingState();
+
+      // State darf NICHT ueberschrieben werden
+      expect(state.recordingType).toBe('direct');
+      expect(api.getRecordingStatus).not.toHaveBeenCalled();
+      expect(api.getHlsRecordingStatus).not.toHaveBeenCalled();
+    });
+
+    it('TC-RSR5: HLS hat Vorrang vor Direct wenn beide aktiv', async () => {
+      // Seltener Fall: Beide Endpoints melden aktive Aufnahme
+      // HLS-REC soll Vorrang haben (wird zuerst geprueft)
+      api.getRecordingStatus.mockResolvedValue({
+        recording: true,
+        session_id: 'rec_direct',
+        duration: 30,
+      });
+      api.getHlsRecordingStatus.mockResolvedValue({
+        recording: true,
+        session_id: 'hlsrec_hls',
+        duration: 45,
+      });
+
+      await engine.checkAndRecoverRecordingState();
+
+      expect(state.recordingType).toBe('hls-rec');
+      expect(state.recordingSession).toBe('hlsrec_hls');
+    });
+
+    it('TC-RSR6: Backend-Fehler werden abgefangen, kein Crash', async () => {
+      // Vorbedingung: Beide Endpoints werfen Fehler
+      // catch() in der Funktion faengt sie ab -> recording: false
+      api.getRecordingStatus.mockImplementation(() => { throw new Error('Netzwerkfehler'); });
+      api.getHlsRecordingStatus.mockImplementation(() => { throw new Error('Server down'); });
+
+      // Darf keinen Error werfen
+      await expect(engine.checkAndRecoverRecordingState()).resolves.not.toThrow();
+
+      // State bleibt unveraendert
+      expect(state.isRecording).toBe(false);
+    });
+
+    it('TC-RSR7: Timer-Interval wird bei Recovery gestartet', async () => {
+      api.getRecordingStatus.mockResolvedValue({ recording: false });
+      api.getHlsRecordingStatus.mockResolvedValue({
+        recording: true,
+        session_id: 'hlsrec_timer',
+        duration: 10,
+      });
+
+      await engine.checkAndRecoverRecordingState();
+      expect(state.recordingElapsed).toBe(10);
+
+      // Nach 3 Sekunden muss der Timer hochgezaehlt haben
+      vi.advanceTimersByTime(3000);
+      expect(state.recordingElapsed).toBe(13); // 10 + 3
+    });
   });
 });
 
