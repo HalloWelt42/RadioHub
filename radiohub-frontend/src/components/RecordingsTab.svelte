@@ -409,7 +409,8 @@
         loadSessions();
       }
     } catch (e) {
-      actions.showToast(t('recordings.splitFehler'), 'error');
+      const msg = e?.message || t('recordings.splitFehler');
+      actions.showToast(msg, 'error');
     }
     splitting = false;
   }
