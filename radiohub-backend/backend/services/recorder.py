@@ -501,12 +501,18 @@ class RecorderManager:
         duration = real_duration if real_duration > 0 else session.duration
         file_size = session.file_size
 
+        # meta_file_path bereinigen: NULL setzen wenn Datei nicht existiert
+        meta_path = session.meta_file_path
+        if meta_path and not meta_path.exists():
+            meta_path = None
+
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE sessions SET
-                end_time = ?, duration = ?, file_size = ?, status = ?
+                end_time = ?, duration = ?, file_size = ?, meta_file_path = ?, status = ?
                 WHERE id = ?''',
-                (end_time.isoformat(), duration, file_size, status, session.id))
+                (end_time.isoformat(), duration, file_size,
+                 str(meta_path) if meta_path else None, status, session.id))
 
         if self.active_session and self.active_session.id == session.id:
             self.active_session = None
