@@ -398,6 +398,15 @@ class HLSRecorderService:
             except Exception as e:
                 print(f"  HLS-REC Split-Fehler: {e}")
 
+        # Ohne ICY: Mindestens "Teil 1" als Segment registrieren
+        from .segment_splitter import splitter as seg_splitter
+        existing = seg_splitter.get_segments(session.id)
+        if not existing and output_file.exists():
+            seg_splitter.register_single_segment(
+                session.id, output_file, real_duration
+            )
+            result["segments"] = 1
+
         self.active_session = None
         self._collector_task = None
         self._stopping = False

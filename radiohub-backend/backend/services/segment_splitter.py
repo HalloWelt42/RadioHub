@@ -441,6 +441,24 @@ class SegmentSplitter:
                 WHERE session_id = ? ORDER BY segment_index''', (session_id,))
             return [dict(row) for row in c.fetchall()]
 
+    def register_single_segment(self, session_id: str, audio_path: Path,
+                                 duration: float):
+        """Registriert die gesamte Audio-Datei als einzelnes Segment 'Teil 1'.
+
+        Fuer Sessions ohne ICY-Metadaten die sonst keine Segmente haetten.
+        """
+        duration_ms = int(duration * 1000)
+        file_size = audio_path.stat().st_size if audio_path.exists() else 0
+
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO segments
+                (session_id, segment_index, title, start_ms, end_ms,
+                 duration_ms, file_path, file_size)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                (session_id, 0, "Teil 1", 0, duration_ms,
+                 duration_ms, str(audio_path), file_size))
+
     def get_all_segments(self) -> list[dict]:
         """Alle Segmente aller Sessions aus DB, sortiert nach Session und Index."""
         with db_session() as conn:
