@@ -33,6 +33,7 @@
     if (audioEl) {
       engine.init(audioEl, appState);
       connectAnalyser(audioEl);
+      engine.checkAndRecoverRecordingState();
     }
     return () => {
       // Cleanup bei Unmount: nicht stoppen, nur de-registrieren

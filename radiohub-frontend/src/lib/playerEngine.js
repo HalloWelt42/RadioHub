@@ -797,6 +797,52 @@ function _resetRecordingState() {
 }
 
 /**
+ * Prüft beim App-Start ob im Backend eine Aufnahme läuft
+ * und stellt den Frontend-State entsprechend wieder her.
+ */
+export async function checkAndRecoverRecordingState() {
+  if (!_appState) return;
+  if (_appState.isRecording) return; // Bereits aktiv, nichts tun
+
+  try {
+    const [directStatus, hlsStatus] = await Promise.all([
+      api.getRecordingStatus().catch(() => ({ recording: false })),
+      api.getHlsRecordingStatus().catch(() => ({ recording: false }))
+    ]);
+
+    if (hlsStatus?.recording) {
+      _appState.isRecording = true;
+      _appState.recordingType = 'hls-rec';
+      _appState.recordingSession = hlsStatus.session_id || null;
+      _appState.recordingElapsed = Math.floor(hlsStatus.duration || 0);
+      _appState.recordingIcyCount = hlsStatus.icy_count || 0;
+      _appState.recordingIcyEntries = hlsStatus.icy_entries || [];
+      _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
+      _recordingInterval = setInterval(() => {
+        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+      }, 1000);
+      _startRecordingPoll();
+      console.log('Recording State Recovery: HLS-REC aktiv, Session', hlsStatus.session_id);
+    } else if (directStatus?.recording) {
+      _appState.isRecording = true;
+      _appState.recordingType = 'direct';
+      _appState.recordingSession = directStatus.session_id || null;
+      _appState.recordingElapsed = Math.floor(directStatus.duration || 0);
+      _appState.recordingIcyCount = directStatus.icy_count || 0;
+      _appState.recordingIcyEntries = directStatus.icy_entries || [];
+      _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
+      _recordingInterval = setInterval(() => {
+        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+      }, 1000);
+      _startRecordingPoll();
+      console.log('Recording State Recovery: Direct-REC aktiv, Session', directStatus.session_id);
+    }
+  } catch (e) {
+    // Fehler bei Recovery ignorieren -- normaler Betrieb ohne Aufnahme
+  }
+}
+
+/**
  * Stoppt Aufnahme (automatisch den richtigen Modus).
  */
 export async function stopRecording() {
