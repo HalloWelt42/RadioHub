@@ -94,6 +94,20 @@ export function isInitialized() {
  */
 export async function playStation(station) {
   if (!_appState) return;
+
+  // --- Phase 0: Bei aktiver Aufnahme sofort blockieren ---
+  // MUSS vor HLS-Zerstoerung kommen, sonst wird HLS-REC im Backend
+  // durch den gestoppten HLS-Buffer unbrauchbar (ERR-006).
+  if (_appState.isRecording) {
+    _appState.playerError = 'Aufnahme läuft - erst stoppen';
+    setTimeout(() => {
+      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
+        _appState.playerError = null;
+      }
+    }, 3000);
+    return;
+  }
+
   const gen = ++_generation;
 
   // --- Phase 1: Sofortige Stille ---
@@ -113,18 +127,6 @@ export async function playStation(station) {
     } catch (e) {
       console.error('HLS stop error:', e);
     }
-  }
-  if (_generation !== gen) return; // Abgebrochen durch neueren Aufruf
-
-  // --- Phase 3: Bei aktiver Aufnahme blockieren ---
-  if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft - erst stoppen';
-    setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
-        _appState.playerError = null;
-      }
-    }, 3000);
-    return;
   }
   if (_generation !== gen) return;
 
@@ -183,20 +185,6 @@ export async function playStation(station) {
  */
 export async function playPodcast(episode, podcast) {
   if (!_appState) return;
-  const gen = ++_generation;
-
-  // Sofortige Stille + Cleanup
-  // REIHENFOLGE: Erst HLS zerstören, dann Audio stummschalten
-  _destroyHLS();
-  _stopHLSPolling();
-  _silenceAudio();
-
-  if (_appState.hlsActive) {
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
-    api.stopHLS().catch(() => {});
-  }
 
   if (_appState.isRecording) {
     _appState.playerError = 'Aufnahme läuft - erst stoppen';
@@ -206,6 +194,19 @@ export async function playPodcast(episode, podcast) {
       }
     }, 3000);
     return;
+  }
+
+  const gen = ++_generation;
+
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+
+  if (_appState.hlsActive) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+    api.stopHLS().catch(() => {});
   }
   if (_generation !== gen) return;
 
@@ -263,19 +264,6 @@ export async function playPodcast(episode, podcast) {
  */
 export async function playRecording(recording, startTime = 0) {
   if (!_appState) return;
-  const gen = ++_generation;
-
-  // Sofortige Stille + Cleanup
-  _destroyHLS();
-  _stopHLSPolling();
-  _silenceAudio();
-
-  if (_appState.hlsActive) {
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
-    api.stopHLS().catch(() => {});
-  }
 
   if (_appState.isRecording) {
     _appState.playerError = 'Aufnahme läuft - erst stoppen';
@@ -285,6 +273,19 @@ export async function playRecording(recording, startTime = 0) {
       }
     }, 3000);
     return;
+  }
+
+  const gen = ++_generation;
+
+  _destroyHLS();
+  _stopHLSPolling();
+  _silenceAudio();
+
+  if (_appState.hlsActive) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+    api.stopHLS().catch(() => {});
   }
   if (_generation !== gen) return;
 
