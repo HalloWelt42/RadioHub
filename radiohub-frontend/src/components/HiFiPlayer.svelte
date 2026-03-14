@@ -691,15 +691,15 @@
       <!-- HLS-Bitrate LED Selector (immer sichtbar, deaktiviert ohne HLS) -->
       <div
         class="bitrate-bar"
-        class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
-        title={!isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
+        class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching || appState.isRecording}
+        title={appState.isRecording ? t('player.recLaeuft') : !isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
       >
         <span class="bitrate-label">{t('playerLabel.hlsBitrate')}</span>
         <HiFiBitrateLed
           activeBitrate={hlsInputBitrate}
           overrideBitrate={bitrateOverride}
           onchange={handleBitrateOverrideChange}
-          disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
+          disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching || appState.isRecording}
         />
         {#if bitrateSwitching}
           <span class="bitrate-disabled-text bitrate-switching">({t('playerLabel.bitrateWechsel')})</span>
