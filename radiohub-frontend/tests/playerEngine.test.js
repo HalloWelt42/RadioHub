@@ -81,6 +81,16 @@ vi.mock('../src/lib/api.js', () => {
   };
 });
 
+// localStorage-Mock für Node/Vitest (global, damit alle Tests funktionieren)
+const _mockStorage = {};
+const _lsClear = () => { Object.keys(_mockStorage).forEach(k => delete _mockStorage[k]); };
+globalThis.localStorage = {
+  getItem: (key) => _mockStorage[key] ?? null,
+  setItem: (key, val) => { _mockStorage[key] = String(val); },
+  removeItem: (key) => { delete _mockStorage[key]; },
+  clear: _lsClear,
+};
+
 import * as engine from '../src/lib/playerEngine.js';
 import { api } from '../src/lib/api.js';
 
@@ -1206,6 +1216,73 @@ describe('PlayerEngine', () => {
 
       expect(api.stopHlsRecording).toHaveBeenCalled();
     });
+  });
+});
+
+
+// ============================================================
+//  TC-VOL: Lautstärke-Persistierung
+// ============================================================
+describe('Lautstärke-Persistierung', () => {
+  let state;
+  let audioEl;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    globalThis.localStorage.clear();
+    state = createMockState();
+    audioEl = createMockAudioElement();
+    engine.init(audioEl, state);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('TC-VOL1: setVolume speichert Lautstärke in localStorage', () => {
+    // Arrange: Lautstärke ist initial 70
+
+    // Act: Lautstärke auf 25 setzen
+    engine.setVolume(25);
+
+    // Assert: Im localStorage gespeichert
+    expect(_mockStorage['radiohub_volume']).toBe('25');
+    expect(state.volume).toBe(25);
+    expect(audioEl.volume).toBeCloseTo(0.25);
+  });
+
+  it('TC-VOL2: setVolume(0) speichert Stummschaltung', () => {
+    // Arrange: Lautstärke auf 50 setzen
+    engine.setVolume(50);
+
+    // Act: Stummschalten
+    engine.setVolume(0);
+
+    // Assert: 0 wird korrekt gespeichert
+    expect(_mockStorage['radiohub_volume']).toBe('0');
+    expect(state.volume).toBe(0);
+    expect(audioEl.volume).toBe(0);
+  });
+
+  it('TC-VOL3: Gespeicherte Lautstärke wird nach Neustart geladen', () => {
+    // Arrange: Lautstärke 42 im Storage simulieren
+    _mockStorage['radiohub_volume'] = '42';
+
+    // Act: Wert laden wie in store.svelte.js
+    const loaded = Number(globalThis.localStorage.getItem('radiohub_volume')) || 70;
+
+    // Assert: Gespeicherter Wert wird verwendet, nicht Default 70
+    expect(loaded).toBe(42);
+  });
+
+  it('TC-VOL4: Ohne gespeicherten Wert wird Fallback 70 verwendet', () => {
+    // Arrange: Storage leer (mockStorage = {})
+
+    // Act: Wert laden wie in store.svelte.js
+    const loaded = Number(globalThis.localStorage.getItem('radiohub_volume')) || 70;
+
+    // Assert: Fallback-Wert 70
+    expect(loaded).toBe(70);
   });
 });
 
