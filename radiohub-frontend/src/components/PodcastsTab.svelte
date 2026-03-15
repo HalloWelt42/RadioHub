@@ -56,6 +56,7 @@
   let isLoadingMore = $state(false);
   let isSearching = $state(false);
   let isRefreshing = $state(false);
+  let searchInitialQuery = $state('');
   let downloadProgress = $state({});
 
   // === Derived ===
@@ -112,8 +113,17 @@
 
   async function _initPodcasts() {
     await loadSubscriptions();
-    // Deep-Link: Podcast-ID (und optional Episode-ID) aus Route
     const segs = appState.routeSegments;
+
+    // Deep-Link: Such-Query aus URL /podcast/search/[query]
+    if (segs?.[0] === 'search' && segs[1]) {
+      const query = decodeURIComponent(segs[1]);
+      searchInitialQuery = query;
+      await handleSearch(query);
+      return;
+    }
+
+    // Deep-Link: Podcast-ID (und optional Episode-ID) aus Route
     if (segs?.[0] && /^\d+$/.test(segs[0]) && !selectedPodcastId) {
       const pid = Number(segs[0]);
       const podcast = subscriptions.find(s => s.id === pid);
@@ -320,7 +330,11 @@
   // === Search ===
   async function handleSearch(query) {
     isSearching = true;
-    setView('search');
+    if (query && query.length >= 2) {
+      actions.navigateTo('/podcast/search/' + encodeURIComponent(query), { replace: true });
+    } else {
+      setView('search');
+    }
     try {
       const result = await api.searchPodcasts(query);
       searchResults = result.results || [];
@@ -715,6 +729,7 @@
         <SearchBarWithHistory
           placeholder={t('podcasts.podcastsSuchen')}
           storageKey="radiohub_podcast_search"
+          initialValue={searchInitialQuery}
           onsearch={handleSearch}
         />
       </div>

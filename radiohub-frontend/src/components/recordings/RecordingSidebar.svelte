@@ -37,8 +37,8 @@
     onsegmentselectionchange = () => {}
   } = $props();
 
-  let showSearch = $state(false);
-  let localQuery = $state('');
+  let showSearch = $state(!!searchQuery);
+  let localQuery = $state(searchQuery || '');
   let showNewFolder = $state(false);
   let newFolderName = $state('');
   let renamingFolderId = $state(null);

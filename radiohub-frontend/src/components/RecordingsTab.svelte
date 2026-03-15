@@ -26,6 +26,7 @@
     const seg = appState.routeSegments?.[0];
     if (seg === 'files') return 'file-explorer';
     if (seg === 'cutter') return 'cutter';
+    if (seg === 'search') return 'details'; // Suche bleibt in details-View
     return 'details';
   });
 
@@ -50,6 +51,11 @@
     loadData();
     loadIgnoredTitles();
     startPolling();
+    // Deep-Link: Search-Query aus URL /recorder/search/[query]
+    const segs = appState.routeSegments;
+    if (segs?.[0] === 'search' && segs[1]) {
+      searchQuery = decodeURIComponent(segs[1]);
+    }
     return () => stopPolling();
   });
 
@@ -529,6 +535,11 @@
 
   function handleSearch(query) {
     searchQuery = query;
+    if (query && query.length >= 2) {
+      actions.navigateTo('/recorder/search/' + encodeURIComponent(query), { replace: true });
+    } else if (!query) {
+      actions.navigateTo('/recorder', { replace: true });
+    }
   }
 </script>
 
@@ -544,6 +555,7 @@
     isRecording={appState.isRecording}
     width={sidebarWidth}
     fileExplorerActive={view === 'file-explorer'}
+    {searchQuery}
     onselectsession={selectSession}
     onrefresh={loadData}
     onfileexplorer={toggleFileExplorer}

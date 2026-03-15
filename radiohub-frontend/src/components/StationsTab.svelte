@@ -261,12 +261,20 @@
     }
   }
 
-  // Deep-Link: Sender per UUID aus URL anwählen
+  // Deep-Link: Sender per UUID oder Suche aus URL
   let _deepLinkHandled = false;
   async function _handleDeepLink() {
     if (_deepLinkHandled) return;
     const seg = appState.routeSegments;
     if (!seg || seg.length === 0) return;
+
+    // Such-Deep-Link: /tuner/search/[query]
+    if (seg[0] === 'search' && seg[1]) {
+      _deepLinkHandled = true;
+      searchQuery = decodeURIComponent(seg[1]);
+      await search();
+      return;
+    }
 
     // UUID-Format prüfen (32 hex mit Bindestrichen)
     const uuid = seg[0];
@@ -303,7 +311,12 @@
       isLoading = true;
       offset = 0;
       stations = [];
-      if (searchQuery && searchQuery.length >= 2) saveSearchHistory(searchQuery);
+      if (searchQuery && searchQuery.length >= 2) {
+        saveSearchHistory(searchQuery);
+        actions.navigateTo('/tuner/search/' + encodeURIComponent(searchQuery), { replace: true });
+      } else if (!searchQuery) {
+        actions.navigateTo('/tuner', { replace: true });
+      }
     } else {
       isLoadingMore = true;
     }

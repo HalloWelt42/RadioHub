@@ -7,10 +7,11 @@
     placeholder = 'Suchen...',
     storageKey = 'radiohub_search_history',
     maxHistory = 10,
+    initialValue = '',
     onsearch = () => {}
   } = $props();
 
-  let query = $state('');
+  let query = $state(initialValue);
   let history = $state(loadHistory());
   let showHistory = $state(false);
   let inputEl;
