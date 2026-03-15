@@ -19,6 +19,16 @@
     user-select: none;
 }
 
+/* Einheitlicher Focus-Ring: duenner blauer Rahmen */
+*:focus {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 1px solid var(--hifi-led-blue, #3399ff);
+    outline-offset: 1px;
+}
+
 /* Textauswahl nur dort erlauben wo sinnvoll */
 input, textarea, select, [contenteditable],
 .station-name, .episode-title, .session-name,

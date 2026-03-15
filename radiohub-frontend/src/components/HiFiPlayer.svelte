@@ -693,7 +693,7 @@
       <!-- HLS-Bitrate LED Selector (immer sichtbar, deaktiviert ohne HLS) -->
       <div
         class="bitrate-bar"
-        class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching || appState.isRecording}
+        class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
         title={appState.isRecording ? t('player.recLaeuft') : !isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
       >
         <span class="bitrate-label">{t('playerLabel.hlsBitrate')}</span>
@@ -701,7 +701,8 @@
           activeBitrate={hlsInputBitrate}
           overrideBitrate={bitrateOverride}
           onchange={handleBitrateOverrideChange}
-          disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching || appState.isRecording}
+          disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
+          locked={appState.isRecording}
         />
         {#if bitrateSwitching}
           <span class="bitrate-disabled-text bitrate-switching">({t('playerLabel.bitrateWechsel')})</span>

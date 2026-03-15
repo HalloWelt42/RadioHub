@@ -5,10 +5,13 @@
    * 8 kompakte LEDs für Standard-Bitrate-Stufen.
    * Grün = erkannte Bitrate, Gelb = User-Override.
    * Klick auf LED: Override setzen/entfernen.
+   * locked = Anzeige aktiv, aber nicht bedienbar (z.B. bei Aufnahme)
    */
   const STEPS = [32, 48, 64, 96, 128, 192, 256, 320];
 
-  let { activeBitrate = 0, overrideBitrate = null, onchange, disabled = false } = $props();
+  let { activeBitrate = 0, overrideBitrate = null, onchange, disabled = false, locked = false } = $props();
+
+  let isInteractive = $derived(!disabled && !locked);
 
   function nearestStep(bitrate) {
     if (!bitrate || bitrate <= 0) return null;
@@ -24,12 +27,10 @@
   let hasOverride = $derived(overrideBitrate != null);
 
   function handleClick(step) {
-    if (disabled) return;
+    if (!isInteractive) return;
     if (overrideBitrate === step) {
-      // Klick auf Gelbe -> Override entfernen
       onchange?.(null);
     } else {
-      // Klick auf andere -> Override setzen
       onchange?.(step);
     }
   }
@@ -42,20 +43,20 @@
   }
 </script>
 
-<div class="bitrate-leds" class:disabled>
+<div class="bitrate-leds" class:disabled class:locked>
   {#each STEPS as step}
     <button
       class="br-led"
       class:active={!disabled && getLedState(step) === 'active'}
       class:override={!disabled && getLedState(step) === 'override'}
       class:dimmed={!disabled && getLedState(step) === 'dimmed'}
-      disabled={disabled}
+      disabled={disabled || locked}
       onclick={() => handleClick(step)}
       title={disabled ? '' : `${step} kbps${getLedState(step) === 'active' ? ' (erkannt)' : getLedState(step) === 'override' ? ' (Override)' : ''}`}
     ></button>
   {/each}
   {#if !disabled && displayValue > 0}
-    <span class="br-value" class:override={hasOverride}>{displayValue}k</span>
+    <span class="br-value" class:override={hasOverride} class:locked>{displayValue}k</span>
   {/if}
 </div>
 
@@ -142,5 +143,30 @@
   .bitrate-leds.disabled .br-led:hover {
     background: var(--hifi-led-off);
     transform: none;
+  }
+
+  /* Gesperrter Zustand (Aufnahme) - LED-Status sichtbar, aber gedaempft */
+  .bitrate-leds.locked .br-led {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .bitrate-leds.locked .br-led.active {
+    background: var(--hifi-led-amber, #e8a317);
+    box-shadow: 0 0 6px rgba(232, 163, 23, 0.4), inset 0 0 3px rgba(255,255,255,0.2);
+  }
+
+  .bitrate-leds.locked .br-led.override {
+    background: var(--hifi-led-amber, #e8a317);
+    box-shadow: 0 0 6px rgba(232, 163, 23, 0.4), inset 0 0 3px rgba(255,255,255,0.2);
+  }
+
+  .bitrate-leds.locked .br-led:hover {
+    transform: none;
+  }
+
+  .br-value.locked {
+    color: var(--hifi-led-amber, #e8a317);
+    text-shadow: 0 0 4px rgba(232, 163, 23, 0.4);
   }
 </style>
