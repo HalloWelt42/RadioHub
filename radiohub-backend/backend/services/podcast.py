@@ -221,6 +221,8 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-1 day')) as today_unplayed,
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-7 days')) as week_unplayed,
                 (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
                 FROM podcast_subscriptions ps ORDER BY title''')
             return [dict(row) for row in c.fetchall()]

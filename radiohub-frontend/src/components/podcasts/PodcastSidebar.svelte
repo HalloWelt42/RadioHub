@@ -166,7 +166,8 @@
           {#each subscriptions as podcast (podcast.id)}
             {@const isSelected = selectedPodcastId === podcast.id}
             {@const isPlaying = currentlyPlayingPodcastId === podcast.id}
-            {@const hasUnplayed = (podcast.unplayed_count || 0) > 0}
+            {@const unplayedForFilter = filterStatus === 'today' ? (podcast.today_unplayed || 0) : filterStatus === 'week' ? (podcast.week_unplayed || 0) : (podcast.unplayed_count || 0)}
+            {@const hasUnplayed = unplayedForFilter > 0}
             {@const hasDownloads = (podcast.downloaded_count || 0) > 0}
             <button
               class="sub-item"
@@ -187,10 +188,6 @@
                 <div class="sub-meta">
                   <span class="meta-val">{podcast.episode_count || 0}</span>
                   <span class="meta-label">Ep.</span>
-                  {#if hasUnplayed}
-                    <span class="meta-val unplayed-count">{podcast.unplayed_count}</span>
-                    <span class="meta-label unplayed-count">neu</span>
-                  {/if}
                 </div>
               </div>
               {#if podcast.auto_download}
@@ -203,6 +200,9 @@
                   onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onautodownloadtoggle(podcast); sfx.click(); } }}
                 ></i>
               {/if}
+              {#if hasUnplayed}
+                <span class="unplayed-badge">{unplayedForFilter}</span>
+              {/if}
               <i
                 class="fa-solid fa-cloud-arrow-down sub-fetch-icon"
                 class:has-episodes={(podcast.episode_count || 0) > 0}
@@ -212,7 +212,7 @@
                 tabindex="-1"
                 onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); } }}
               ></i>
-              <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : hasUnplayed ? 'green' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? t('podcasts.wirdAbgespielt') : isSelected ? t('podcasts.ausgewaehltStatus') : hasUnplayed ? t('podcasts.neueEpisoden') : t('podcasts.keineNeuen')} />
+              <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? t('podcasts.wirdAbgespielt') : isSelected ? t('podcasts.ausgewaehltStatus') : ''} />
             </button>
           {/each}
         </div>
@@ -528,40 +528,47 @@
     white-space: nowrap;
   }
 
-  .meta-val {
-    min-width: 22px;
-    text-align: right;
-  }
-
-  .meta-label {
-    margin-right: 4px;
-  }
-
-  .unplayed-count {
+  .unplayed-badge {
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 9px;
+    font-weight: 700;
     color: var(--hifi-text-green);
-    opacity: 1;
+    background: rgba(76, 175, 80, 0.12);
+    padding: 1px 5px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    margin-left: 2px;
   }
 
   .sub-fetch-icon {
-    font-size: 10px;
+    font-size: 13px;
     color: var(--hifi-text-secondary);
     opacity: 0;
     cursor: pointer;
-    transition: opacity 0.15s, color 0.15s;
+    transition: opacity 0.15s, color 0.15s, background 0.15s, transform 0.15s;
     flex-shrink: 0;
+    padding: 5px;
+    border-radius: var(--hifi-border-radius-sm, 4px);
   }
 
   .sub-fetch-icon.has-episodes {
-    opacity: 0.4;
+    opacity: 0.3;
     color: var(--hifi-text-secondary);
   }
 
   .sub-item:hover .sub-fetch-icon {
-    opacity: 1;
+    opacity: 0.7;
   }
 
   .sub-fetch-icon:hover {
+    opacity: 1 !important;
     color: var(--hifi-accent) !important;
+    background: rgba(51, 153, 255, 0.1);
+    transform: scale(1.15);
+  }
+
+  .sub-fetch-icon:active {
+    transform: scale(0.95);
   }
 
   .sub-auto-icon {

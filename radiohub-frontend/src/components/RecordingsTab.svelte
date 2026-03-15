@@ -556,6 +556,7 @@
     width={sidebarWidth}
     fileExplorerActive={view === 'file-explorer'}
     {searchQuery}
+    isRefreshing={isLoading}
     onselectsession={selectSession}
     onrefresh={loadData}
     onfileexplorer={toggleFileExplorer}

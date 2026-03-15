@@ -20,6 +20,7 @@
     width = 280,
     fileExplorerActive = false,
     searchQuery = '',
+    isRefreshing = false,
     onselectsession = () => {},
     onrefresh = () => {},
     onfileexplorer = () => {},
@@ -296,9 +297,10 @@
     <button
       class="action-btn"
       onclick={() => { onrefresh(); sfx.click(); }}
+      disabled={isRefreshing}
       title={t('recordings.sessionListeAktualisieren')}
     >
-      <i class="fa-solid fa-arrows-rotate"></i>
+      <i class="fa-solid {isRefreshing ? 'fa-spinner fa-spin' : 'fa-cloud-arrow-down'}"></i>
     </button>
   </div>
 
