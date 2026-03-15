@@ -169,7 +169,7 @@
           onmouseenter={sfx.hoverSoft}
           title={t(tab.key) + ' (' + (i + 1) + ')'}
         >
-          <HiFiLed color={appState.activeTab === tab.id ? 'green' : 'off'} size="small" />
+          <HiFiLed color={appState.activeTab === tab.id ? 'green' : (tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio') ? 'red' : 'off'} size="small" blink={tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio'} />
           {t(tab.key)}
         </button>
       {/each}

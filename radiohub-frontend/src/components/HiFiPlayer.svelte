@@ -529,7 +529,11 @@
           {/if}
         {/if}
       </span>
-      <span class="section-label">{transportLabel}</span>
+      {#if appState.isRecording}
+        <span class="section-label rec-link" onclick={() => { actions.navigateTo('/tuner'); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
+      {:else}
+        <span class="section-label">{transportLabel}</span>
+      {/if}
       <span class="transport-time" class:time-blue={isHLSMode && appState.hlsStatus?.buffered_seconds}>
         {#if isRecordingPlayback && duration > 0}
           {formatTimeShort(duration)}
@@ -795,6 +799,16 @@
     text-shadow:
         -1px -1px 1px rgba(0,0,0,0.8),
         1px 1px 0 rgba(255,255,255,0.12);
+  }
+
+  .rec-link {
+    cursor: pointer;
+    color: var(--hifi-led-red, #f33);
+    transition: color 0.15s ease;
+  }
+  .rec-link:hover {
+    color: #ff6666;
+    text-decoration: underline;
   }
 
   .section-content {

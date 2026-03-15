@@ -256,6 +256,7 @@ export default {
     recStart: 'Aufnahme starten',
     recStop: 'Aufnahme stoppen',
     recLaeuft: 'Aufnahme läuft',
+    zumSender: 'Zum aufnehmenden Sender springen',
     skipBack: '10 Sekunden zurück',
     skipForward: '10 Sekunden vor',
     goLive: 'Zur Live-Position springen',
