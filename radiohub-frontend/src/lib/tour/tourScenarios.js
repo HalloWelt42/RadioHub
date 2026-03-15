@@ -1,5 +1,5 @@
 /**
- * RadioHub Tour Szenarien v2.0
+ * RadioHub Tour Szenarien v2.1
  * 7 kurze, fokussierte Touren -- max 7 Steps, viele interaktive Schritte.
  * Reine Daten -- keine Logik, kein Svelte-Code.
  *
@@ -12,6 +12,9 @@
  *              { prop, op, value } auf appState ODER { selector, op } auf DOM
  *   preAction: Optional -- Aktion(en) vor dem Step (einzeln oder Array)
  *              { type: 'setTab'|'click'|'fillInput'|'clickSource', ... }
+ *   demoSimulate: Optional -- Im Demo-Modus: State-Werte setzen um waitFor zu erfüllen
+ *              { prop, value } oder Array davon
+ *   demoDelay: Optional -- Verzögerung in ms bevor demoSimulate greift (Standard: 2000)
  */
 
 export const scenarios = {
@@ -34,7 +37,9 @@ export const scenarios = {
         titleKey: 'tour.w.loadTitle',
         textKey: 'tour.w.loadText',
         position: 'bottom',
-        waitFor: { selector: '.station-row', op: 'exists' }
+        waitFor: { selector: '.station-row', op: 'exists' },
+        demoSimulate: { prop: 'isPlaying', value: false },
+        demoDelay: 1500
       },
       {
         target: '.filter-panel',
@@ -47,14 +52,18 @@ export const scenarios = {
         titleKey: 'tour.w.selectTitle',
         textKey: 'tour.w.selectText',
         position: 'left',
-        waitFor: { selector: '.station-wrapper.selected', op: 'exists' }
+        waitFor: { selector: '.station-wrapper.selected', op: 'exists' },
+        demoSimulate: { prop: 'isPlaying', value: true },
+        demoDelay: 2500
       },
       {
         target: '.display-section',
         titleKey: 'tour.w.displayTitle',
         textKey: 'tour.w.displayText',
         position: 'top',
-        waitFor: { prop: 'isPlaying', op: 'equals', value: true }
+        waitFor: { prop: 'isPlaying', op: 'equals', value: true },
+        demoSimulate: { prop: 'isPlaying', value: true },
+        demoDelay: 2000
       },
       {
         target: '.search-bar',
@@ -180,14 +189,18 @@ export const scenarios = {
         textKey: 'tour.rec.prepText',
         position: 'left',
         preAction: { type: 'setTab', value: 'radio' },
-        waitFor: { prop: 'isPlaying', op: 'equals', value: true }
+        waitFor: { prop: 'isPlaying', op: 'equals', value: true },
+        demoSimulate: { prop: 'isPlaying', value: true },
+        demoDelay: 2000
       },
       {
         target: '.transport-btn.rec',
         titleKey: 'tour.rec.startTitle',
         textKey: 'tour.rec.startText',
         position: 'top',
-        waitFor: { prop: 'isRecording', op: 'equals', value: true }
+        waitFor: { prop: 'isRecording', op: 'equals', value: true },
+        demoSimulate: { prop: 'isRecording', value: true },
+        demoDelay: 2000
       },
       {
         target: '.timer-section',
@@ -200,7 +213,9 @@ export const scenarios = {
         titleKey: 'tour.rec.stopTitle',
         textKey: 'tour.rec.stopText',
         position: 'top',
-        waitFor: { prop: 'isRecording', op: 'equals', value: false }
+        waitFor: { prop: 'isRecording', op: 'equals', value: false },
+        demoSimulate: { prop: 'isRecording', value: false },
+        demoDelay: 2000
       },
       {
         target: '.recording-sidebar',
@@ -294,16 +309,19 @@ export const scenarios = {
     description: 'tour.sourceJumpDesc',
     steps: [
       {
-        target: '.source-section',
+        target: '.station-list',
         titleKey: 'tour.sj.introTitle',
         textKey: 'tour.sj.introText',
-        position: 'top',
-        waitFor: { prop: 'isPlaying', op: 'equals', value: true }
+        position: 'left',
+        preAction: { type: 'setTab', value: 'radio' },
+        waitFor: { prop: 'isPlaying', op: 'equals', value: true },
+        demoSimulate: { prop: 'isPlaying', value: true },
+        demoDelay: 2000
       },
       {
-        target: '.source-mode',
-        titleKey: 'tour.sj.modeTitle',
-        textKey: 'tour.sj.modeText',
+        target: '.transport-header',
+        titleKey: 'tour.sj.linkTitle',
+        textKey: 'tour.sj.linkText',
         position: 'top'
       },
       {
@@ -314,17 +332,19 @@ export const scenarios = {
         preAction: { type: 'setTab', value: 'settings' }
       },
       {
-        target: '.source-section',
+        target: '.transport-header',
         titleKey: 'tour.sj.awayTitle',
         textKey: 'tour.sj.awayText',
         position: 'top'
       },
       {
-        target: '.source-section',
+        target: '.transport-header',
         titleKey: 'tour.sj.jumpTitle',
         textKey: 'tour.sj.jumpText',
         position: 'top',
-        waitFor: { prop: 'activeTab', op: 'not_equals', value: 'settings' }
+        waitFor: { prop: 'activeTab', op: 'not_equals', value: 'settings' },
+        demoSimulate: { prop: 'activeTab', value: 'radio' },
+        demoDelay: 3000
       },
       {
         target: '.hifi-nav',

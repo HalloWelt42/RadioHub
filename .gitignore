@@ -35,6 +35,9 @@ Thumbs.db
 # Dokumentation (privat)
 LEXIKON.md
 
+# Demo-Modus (lokal, nicht im Repo)
+.demomode
+
 # Runtime
 .logs/
 .pids/

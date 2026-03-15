@@ -1,10 +1,27 @@
 /**
- * RadioHub Tour Engine v1.0
+ * RadioHub Tour Engine v1.1
  * Lose gekoppelte State-Maschine für interaktive Guided Tours.
  * Beobachtet appState und erkennt User-Aktionen automatisch.
+ *
+ * Demo-Modus: Wenn public/.demomode existiert, werden waitFor-Bedingungen
+ * automatisch per State-Simulation erfüllt. Die Datei wird nicht ins Repo
+ * committed -- nur für lokale Entwicklung/Demo.
  */
 import { appState } from '../store.svelte.js';
 import { scenarios } from './tourScenarios.js';
+
+// === Demo-Modus ===
+let _demoMode = false;
+
+async function _detectDemoMode() {
+  try {
+    const res = await fetch('/.demomode', { method: 'HEAD', cache: 'no-store' });
+    _demoMode = res.ok;
+  } catch { _demoMode = false; }
+}
+_detectDemoMode();
+
+export function isDemoMode() { return _demoMode; }
 
 // === Tour State (reaktiv) ===
 export const tourState = $state({
@@ -32,6 +49,7 @@ function _saveProgress() {
 let _watchInterval = null;
 let _stepSetAt = 0;
 let _advancing = false; // Verhindert mehrfaches Triggern
+let _demoScheduled = false; // Demo-Simulation geplant
 const _MIN_STEP_TIME = 1200;
 
 function _startWatcher() {
@@ -50,6 +68,7 @@ function _stopWatcher() {
     _watchInterval = null;
   }
   _advancing = false;
+  _demoScheduled = false;
   tourState.waitAlreadySatisfied = false;
 }
 
@@ -86,6 +105,17 @@ function _checkWaitCondition() {
   if (Date.now() - _stepSetAt < _MIN_STEP_TIME) return;
 
   const satisfied = _evaluateCondition(step.waitFor);
+
+  // Demo-Modus: waitFor nach Verzögerung automatisch simulieren
+  if (_demoMode && !satisfied && !_demoScheduled && step.demoSimulate) {
+    _demoScheduled = true;
+    const demoDelay = step.demoDelay || 2000;
+    setTimeout(() => {
+      _demoScheduled = false;
+      if (!tourState.active) return;
+      _executeDemoSimulate(step.demoSimulate);
+    }, demoDelay);
+  }
 
   // Nur auto-advance wenn Bedingung NICHT schon beim Betreten erfüllt war
   // (sonst zeigt der Step den Weiter-Button und der User klickt manuell)
@@ -189,6 +219,25 @@ export function isCompleted(scenarioId) {
 export function resetProgress() {
   tourState.completed = [];
   _saveProgress();
+}
+
+// === Demo-Simulation ===
+function _executeDemoSimulate(simulate) {
+  // simulate: Array von { prop: 'isPlaying', value: true }
+  const actions = Array.isArray(simulate) ? simulate : [simulate];
+  for (const { prop, value } of actions) {
+    _setProperty(prop, value);
+  }
+}
+
+function _setProperty(prop, value) {
+  const parts = prop.split('.');
+  let obj = appState;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (obj[parts[i]] == null) return;
+    obj = obj[parts[i]];
+  }
+  obj[parts[parts.length - 1]] = value;
 }
 
 // === Pre-Actions ===
