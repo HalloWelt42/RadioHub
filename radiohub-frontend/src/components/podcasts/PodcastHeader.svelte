@@ -93,7 +93,7 @@
 
   <div class="header-actions">
     <button class="hifi-btn hifi-btn-small" onclick={onrefresh} disabled={isRefreshing} title={t('podcasts.feedHolen')}>
-      <i class="fa-solid fa-cloud-arrow-down" class:fa-spin={isRefreshing}></i>
+      <i class="fa-solid {isRefreshing ? 'fa-spinner fa-spin' : 'fa-cloud-arrow-down'}"></i>
     </button>
     <button
       class="hifi-btn hifi-btn-small"

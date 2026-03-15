@@ -51,6 +51,7 @@
         class="setup-nav-btn"
         class:active={activeTab === tab.id}
         onclick={() => selectSetupTab(tab.id)}
+        title={t('setup.' + tab.id)}
       >
         <HiFiLed color={activeTab === tab.id ? 'green' : 'off'} size="small" />
         <i class="fa-solid {tab.icon}"></i>

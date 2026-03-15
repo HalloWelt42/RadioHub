@@ -798,7 +798,7 @@
           {#each categories as cat (cat.id)}
             {@const isSelected = selectedCategories.includes(cat.id)}
             {@const hasSel = selectedCategories.length > 0}
-            <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)}>
+            <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)} title={cat.name}>
               <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
               <span class="filter-item-label">{cat.name}</span>
             </button>
@@ -878,7 +878,7 @@
           onblur={() => { setTimeout(() => showSearchHistory = false, 200); }}
         />
         {#if searchQuery}
-          <button class="search-clear" onclick={() => { searchQuery = ''; search(); }}>&#10005;</button>
+          <button class="search-clear" onclick={() => { searchQuery = ''; search(); }} title={t('common.loeschen')}>&#10005;</button>
         {/if}
         {#if showSearchHistory && searchHistory.length > 0}
           <div class="search-history">
