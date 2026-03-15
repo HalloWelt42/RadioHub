@@ -83,9 +83,12 @@
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
+    const rec = appState.isRecording;
+
     switch (e.key) {
       case ' ':  // Space = Play/Pause (Direct: Stop statt Pause)
         e.preventDefault();
+        if (rec) break;  // Bei Aufnahme gesperrt
         if (appState.playerMode === 'direct') {
           actions.stop();
         } else if (appState.playerMode !== 'none') {
@@ -94,6 +97,7 @@
         break;
 
       case 's':  // S = Stop
+        if (rec) break;  // Bei Aufnahme gesperrt
         if (!e.ctrlKey && !e.metaKey) {
           actions.stop();
         }
@@ -111,11 +115,13 @@
 
       case 'ArrowLeft':  // Pfeil links = Vorheriger Sender
         e.preventDefault();
+        if (rec) break;  // Bei Aufnahme gesperrt
         actions.navigatePrev();
         break;
 
       case 'ArrowRight':  // Pfeil rechts = Nächster Sender
         e.preventDefault();
+        if (rec) break;  // Bei Aufnahme gesperrt
         actions.navigateNext();
         break;
 

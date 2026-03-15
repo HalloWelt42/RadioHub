@@ -769,9 +769,18 @@ function _startRecordingPoll() {
         // ICY-Daten aus Status in State übernehmen
         _appState.recordingIcyCount = status.icy_count || 0;
         _appState.recordingIcyEntries = status.icy_entries || [];
-        // ICY-Titel live aktualisieren (wie in _startHLSPolling)
+        // ICY-Titel live aktualisieren
         if (status.icy_title) {
           _appState.streamTitle = status.icy_title;
+        }
+        // Codec/Bitrate aus Backend aktualisieren (einmalig wenn noch nicht gesetzt)
+        if (!_appState.streamQuality && (status.codec || status.bitrate)) {
+          _appState.streamQuality = {
+            inputCodec: status.codec || null,
+            inputBitrate: status.bitrate || null,
+            outputBitrate: null,
+            sampleRate: null
+          };
         }
       }
     } catch (e) {

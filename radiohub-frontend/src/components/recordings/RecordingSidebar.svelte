@@ -189,11 +189,11 @@
       onclick={() => { onselectsession(session); sfx.click(); }}
     >
       <HiFiLed
-        color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isStalled ? 'amber' : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
+        color={isActive ? 'red' : isStalled ? 'amber' : isPlaying ? 'green' : isSelected ? 'blue' : 'off'}
         size="small"
         blink={isActive}
         pulse={isPlaying}
-        title={isActive ? (appState.recordingType === 'hls-rec' ? t('recordings.hlsBufferLaeuft') : t('recordings.aufnahmeLaeuft')) : isStalled ? t('recordings.stalledSession') : isPlaying ? t('recordings.wirdAbgespielt') : isSelected ? t('recordings.ausgewaehltStatus') : t('recordings.inaktiv')}
+        title={isActive ? t('recordings.aufnahmeLaeuft') : isStalled ? t('recordings.stalledSession') : isPlaying ? t('recordings.wirdAbgespielt') : isSelected ? t('recordings.ausgewaehltStatus') : t('recordings.inaktiv')}
       />
       <div class="session-info">
         <div class="session-name">{session.station_name || session.id}</div>

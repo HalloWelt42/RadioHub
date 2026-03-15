@@ -607,7 +607,7 @@
       <div class="detail-header">
         <div class="detail-info">
           <HiFiLed
-            color={isActive ? (appState.recordingType === 'hls-rec' ? 'amber' : 'red') : isStalled ? 'amber' : isPlaying ? 'green' : 'blue'}
+            color={isActive ? 'red' : isStalled ? 'amber' : isPlaying ? 'green' : 'blue'}
             size="small"
             blink={isActive}
             pulse={isPlaying}

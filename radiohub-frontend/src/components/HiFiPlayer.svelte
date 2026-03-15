@@ -290,8 +290,7 @@
   // Podcast: aktuelle Position (grün)
   // Sonst: inaktiv (Direct, HLS Live, Idle)
   let timerColor = $derived(
-    appState.recordingType === 'hls-rec' ? 'amber' :
-    appState.recordingType === 'direct' ? 'red' :
+    appState.isRecording ? 'red' :
     isRecordingPlayback ? 'green' :
     isHLSMode && !isLive ? 'yellow' :
     isPodcast ? 'green' :
@@ -317,13 +316,9 @@
   let recordingBitrateLabel = $derived(() => {
     if (!appState.isRecording) return null;
     const q = appState.streamQuality;
-    let bitrate = null;
-    if (appState.recordingType === 'hls-rec' && q?.outputBitrate) {
-      bitrate = `${q.outputBitrate} kbps`;
-    } else if (appState.recordingType === 'direct' && q?.inputBitrate) {
-      bitrate = `${q.inputBitrate} kbps`;
-    }
-    if (!bitrate) return null;
+    const br = q?.outputBitrate || q?.inputBitrate;
+    if (!br) return null;
+    const bitrate = `${br} kbps`;
     const count = appState.recordingIcyCount || 0;
     return count > 0 ? `${bitrate} / ${count}` : bitrate;
   });
@@ -336,9 +331,7 @@
   let stopPressed = $state(false);
   let stopLedColor = $derived(stopPressed ? 'yellow' : 'off');
   let recLedColor = $derived(
-    appState.recordingType === 'direct' ? 'red' :
-    appState.recordingType === 'hls-rec' ? 'amber' :
-    'off'
+    appState.isRecording ? 'red' : 'off'
   );
   let liveLedColor = $derived(isHLSMode && !isLive ? 'blue' : 'off');
 
@@ -351,8 +344,7 @@
 
   // Transport Section Label (kontextabhängig)
   let transportLabel = $derived(
-    appState.recordingType === 'hls-rec' ? t('playerLabel.hlsRec') :
-    appState.recordingType === 'direct' ? t('playerLabel.recording') :
+    appState.isRecording ? t('playerLabel.recording') :
     isRecordingPlayback ? t('playerLabel.playback') :
     isPodcast ? t('playerLabel.podcast') :
     isHLSMode ? t('playerLabel.timeshift') :
@@ -466,7 +458,7 @@
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
         {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.recordingType === 'hls-rec' ? 'HLS-REC' : appState.recordingType === 'direct' ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'podcast' ? 'STREAM' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
+          <span class="source-mode">{appState.isRecording ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'podcast' ? 'STREAM' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
         {/if}
       </div>
     </div>

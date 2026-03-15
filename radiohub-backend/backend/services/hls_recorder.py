@@ -176,8 +176,9 @@ class HLSRecorderService:
                 copied += 1
 
         # ICY-Snapshot: Merke Position in ICY-Entries
+        # Letzten Eintrag vor Start einbeziehen (aktueller Titel)
         icy_entries = hls_buffer.get_icy_entries()
-        session.icy_start_index = len(icy_entries)
+        session.icy_start_index = max(0, len(icy_entries) - 1)
 
         self.active_session = session
 
@@ -541,6 +542,7 @@ class HLSRecorderService:
         icy_entries_raw = hls_buffer.get_icy_entries()
         rec_entries = icy_entries_raw[session.icy_start_index:]
         if rec_entries:
+            status["icy_title"] = rec_entries[-1].get("title", "")
             status["icy_count"] = len(rec_entries)
             status["icy_entries"] = [
                 {"title": e.get("title", ""), "t": e.get("t", 0)}
