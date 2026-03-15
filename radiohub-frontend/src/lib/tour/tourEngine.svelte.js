@@ -13,7 +13,8 @@ export const tourState = $state({
   stepIndex: 0,
   steps: [],
   completed: _loadProgress(),
-  menuOpen: false
+  menuOpen: false,
+  waitAlreadySatisfied: false
 });
 
 // === Fortschritt persistieren ===
@@ -29,9 +30,17 @@ function _saveProgress() {
 
 // === Watcher-Interval ===
 let _watchInterval = null;
+let _stepSetAt = 0;
+let _advancing = false; // Verhindert mehrfaches Triggern
+const _MIN_STEP_TIME = 1200;
 
 function _startWatcher() {
   _stopWatcher();
+  _stepSetAt = Date.now();
+  _advancing = false;
+  // Prüfe ob waitFor beim Betreten schon erfüllt ist
+  const step = currentStep();
+  tourState.waitAlreadySatisfied = step?.waitFor ? _evaluateCondition(step.waitFor) : false;
   _watchInterval = setInterval(_checkWaitCondition, 300);
 }
 
@@ -40,29 +49,49 @@ function _stopWatcher() {
     clearInterval(_watchInterval);
     _watchInterval = null;
   }
+  _advancing = false;
+  tourState.waitAlreadySatisfied = false;
+}
+
+function _evaluateCondition(waitFor) {
+  const { prop, op, value, selector } = waitFor;
+  if (selector) {
+    const el = document.querySelector(selector);
+    switch (op) {
+      case 'exists': return !!el;
+      case 'not_exists': return !el;
+      case 'count_gt': return document.querySelectorAll(selector).length > (value || 0);
+      default: return !!el;
+    }
+  } else {
+    const actual = _resolveProperty(prop);
+    switch (op) {
+      case 'truthy': return !!actual;
+      case 'falsy': return !actual;
+      case 'equals': return actual === value;
+      case 'not_equals': return actual !== value;
+      case 'gt': return actual > value;
+      case 'includes': return typeof actual === 'string' && actual.includes(value);
+      default: return false;
+    }
+  }
 }
 
 function _checkWaitCondition() {
+  if (_advancing) return;
   const step = currentStep();
   if (!step?.waitFor) return;
 
-  const { prop, op, value } = step.waitFor;
-  const actual = _resolveProperty(prop);
-  let satisfied = false;
+  // Mindest-Anzeigezeit abwarten
+  if (Date.now() - _stepSetAt < _MIN_STEP_TIME) return;
 
-  switch (op) {
-    case 'truthy': satisfied = !!actual; break;
-    case 'falsy': satisfied = !actual; break;
-    case 'equals': satisfied = actual === value; break;
-    case 'not_equals': satisfied = actual !== value; break;
-    case 'gt': satisfied = actual > value; break;
-    case 'includes': satisfied = typeof actual === 'string' && actual.includes(value); break;
-    default: satisfied = false;
-  }
+  const satisfied = _evaluateCondition(step.waitFor);
 
-  if (satisfied) {
-    // Kurze Pause damit der User die Änderung sieht
-    setTimeout(() => next(), 600);
+  // Nur auto-advance wenn Bedingung NICHT schon beim Betreten erfüllt war
+  // (sonst zeigt der Step den Weiter-Button und der User klickt manuell)
+  if (satisfied && !tourState.waitAlreadySatisfied) {
+    _advancing = true;
+    setTimeout(() => { _advancing = false; next(); }, 600);
   }
 }
 
@@ -123,13 +152,22 @@ export function next() {
   }
 
   tourState.stepIndex = nextIdx;
+  _stepSetAt = Date.now();
+  _advancing = false;
   _executePreAction(currentStep());
+  // Prüfe ob waitFor des neuen Steps schon erfüllt ist
+  const newStep = currentStep();
+  tourState.waitAlreadySatisfied = newStep?.waitFor ? _evaluateCondition(newStep.waitFor) : false;
 }
 
 export function prev() {
   if (!tourState.active || tourState.stepIndex <= 0) return;
   tourState.stepIndex--;
+  _stepSetAt = Date.now();
+  _advancing = false;
   _executePreAction(currentStep());
+  const step = currentStep();
+  tourState.waitAlreadySatisfied = step?.waitFor ? _evaluateCondition(step.waitFor) : false;
 }
 
 export function skip() {
@@ -156,12 +194,61 @@ export function resetProgress() {
 // === Pre-Actions ===
 function _executePreAction(step) {
   if (!step?.preAction) return;
-  const { type, value } = step.preAction;
+
+  // Array-Support: mehrere preActions sequentiell abarbeiten
+  if (Array.isArray(step.preAction)) {
+    step.preAction.forEach(action => _executeSingleAction(action));
+    return;
+  }
+  _executeSingleAction(step.preAction);
+}
+
+function _executeSingleAction(action) {
+  const { type, value, selector, delay } = action;
   switch (type) {
     case 'setTab':
       if (appState.activeTab !== value) {
-        // Importiert actions nicht direkt -- nutzt den Store-Import
         import('../store.svelte.js').then(({ actions }) => actions.setTab(value));
+      }
+      break;
+    case 'click':
+      // Element per CSS-Selector klicken
+      if (selector) {
+        const wait = delay || 300;
+        setTimeout(() => {
+          const el = document.querySelector(selector);
+          if (el) el.click();
+        }, wait);
+      }
+      break;
+    case 'fillInput':
+      // Eingabefeld füllen (mit Svelte-kompatiblem Event)
+      if (selector && value !== undefined) {
+        const wait = delay || 300;
+        setTimeout(() => {
+          const el = document.querySelector(selector);
+          if (el) {
+            // Für Svelte bind:value muss der native Setter genutzt werden
+            const nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+            if (nativeSet) {
+              nativeSet.call(el, value);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+              el.value = value;
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        }, wait);
+      }
+      break;
+    case 'clickSource':
+      // Source-Sprung: Klick auf die Quellenanzeige
+      if (selector) {
+        const wait = delay || 300;
+        setTimeout(() => {
+          const el = document.querySelector(selector);
+          if (el) el.click();
+        }, wait);
       }
       break;
   }

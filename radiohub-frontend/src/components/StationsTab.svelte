@@ -1596,6 +1596,11 @@
   
   .station-led {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    cursor: pointer;
   }
   
   /* Sendernamen: Barlow */

@@ -4,6 +4,7 @@
   import HiFiTour from './components/hifi/HiFiTour.svelte';
   import HiFiLed from './components/hifi/HiFiLed.svelte';
   import { tourState, toggleMenu } from './lib/tour/tourEngine.svelte.js';
+  import { updateState, startUpdateChecker } from './lib/updateChecker.svelte.js';
   import StationsTab from './components/StationsTab.svelte';
   import RecordingsTab from './components/RecordingsTab.svelte';
   import PodcastsTab from './components/PodcastsTab.svelte';
@@ -70,6 +71,11 @@
       actions.showToast(t('toast.backendOffline'), 'error');
       backendOnline = false;
     });
+  });
+
+  // Update-Check starten
+  $effect(() => {
+    startUpdateChecker();
   });
   
   const tabs = [
@@ -208,6 +214,14 @@
     </nav>
     
     <div class="hifi-header-right">
+      <!-- Update-Check -->
+      <button class="update-check-btn" class:has-update={updateState.available}
+        onclick={() => { if (updateState.available) window.open(updateState.repoUrl + '/releases', '_blank'); }}
+        onmouseenter={sfx.hoverSoft}
+        title={updateState.available ? 'Update verfügbar: v' + updateState.remoteVersion : 'RadioHub v' + updateState.localVersion}>
+        <i class="fa-solid fa-circle-info"></i>
+      </button>
+
       <!-- Lernmodus -->
       <button class="tour-toggle-btn" class:active={tourState.active || tourState.menuOpen} onclick={() => { toggleMenu(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Lernmodus">
         <i class="fa-solid fa-life-ring"></i>
@@ -431,6 +445,36 @@
   
   
   /* Lernmodus-Button (Rettungsring) */
+  .update-check-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: 50%;
+    color: var(--hifi-text-secondary);
+    font-size: 14px;
+    cursor: default;
+    opacity: 0.4;
+    transition: all 0.15s ease;
+  }
+  .update-check-btn.has-update {
+    cursor: pointer;
+    opacity: 1;
+    color: var(--hifi-accent);
+    animation: update-pulse 1.5s ease-in-out infinite;
+  }
+  .update-check-btn.has-update:hover {
+    background: var(--hifi-bg-secondary);
+  }
+  @keyframes update-pulse {
+    0%, 100% { opacity: 0.6; box-shadow: 0 0 4px rgba(74, 144, 217, 0.3); }
+    50% { opacity: 1; box-shadow: 0 0 12px rgba(74, 144, 217, 0.5); text-shadow: 0 0 6px rgba(74, 144, 217, 0.6); }
+  }
+
   .tour-toggle-btn {
     display: flex;
     align-items: center;

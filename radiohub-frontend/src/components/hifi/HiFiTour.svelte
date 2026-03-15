@@ -48,8 +48,8 @@
 
   function computeTooltipPosition(rect, position) {
     const pad = 16;
-    const tooltipW = 320;
-    const tooltipH = 180;
+    const tooltipW = 380;
+    const tooltipH = 200;
 
     let top, left;
     switch (position) {
@@ -83,7 +83,7 @@
 
   function handleBackdropClick() {
     const step = currentStep();
-    if (!step?.waitFor) {
+    if (!step?.waitFor || tourState.waitAlreadySatisfied) {
       next();
       sfx.click();
     }
@@ -179,7 +179,7 @@
     </div>
     <div class="tour-tooltip-text">{tt(currentStep().textKey, lang)}</div>
 
-    {#if currentStep().waitFor}
+    {#if currentStep().waitFor && !tourState.waitAlreadySatisfied}
       <div class="tour-tooltip-hint">
         <HiFiLed color="amber" size="small" pulse={true} />
         <span class="tour-hint-text">{tt('tour.waitAction', lang)}</span>
@@ -199,7 +199,7 @@
         {#if tourState.stepIndex > 0}
           <button class="tour-btn tour-btn-secondary" onclick={handlePrev}>{tt('tour.prev', lang)}</button>
         {/if}
-        {#if !currentStep().waitFor}
+        {#if !currentStep().waitFor || tourState.waitAlreadySatisfied}
           <button class="tour-btn tour-btn-primary" onclick={handleNext}>
             {tourState.stepIndex < tourState.steps.length - 1 ? tt('tour.next', lang) : tt('tour.completed', lang)}
           </button>
@@ -307,7 +307,7 @@
   .tour-tooltip-footer {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     gap: 12px;
   }
 
@@ -315,6 +315,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+    flex: 1;
   }
 
   .tour-step-info {
@@ -327,12 +329,13 @@
 
   .tour-dots {
     display: flex;
-    gap: 4px;
+    gap: 3px;
+    flex-wrap: wrap;
   }
 
   .tour-dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--hifi-border-dark, #333);
     transition: background 0.2s;

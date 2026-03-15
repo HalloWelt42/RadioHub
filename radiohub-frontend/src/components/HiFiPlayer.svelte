@@ -110,11 +110,8 @@
   }
 
   function handleRec() {
-    if (appState.isRecording) {
-      actions.stopRecording();
-    } else {
-      actions.startRecording();
-    }
+    if (appState.isRecording) return; // Stoppen nur über Stop-Button
+    actions.startRecording();
   }
 
   function navigateToSource() {
@@ -630,7 +627,7 @@
 
         <!-- Stop -->
         <button
-          class="transport-btn"
+          class="transport-btn stop"
           title={t('player.stop') + ' (S)'}
           onmouseenter={sfx.hover}
           onmousedown={() => stopPressed = true}
@@ -648,7 +645,7 @@
         </button>
 
         <!-- Rec -->
-        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={(!appState.isRecording && (!isStation || !appState.isPlaying)) || isRecordingPlayback} title={appState.isRecording ? t('player.recStop') : isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : !appState.isPlaying ? t('player.keinPlay') : t('player.recStart')}>
+        <button class="transport-btn rec" onmouseenter={sfx.hover} onclick={() => { handleRec(); sfx.click(); }} disabled={appState.isRecording || !isStation || !appState.isPlaying || isRecordingPlayback} title={appState.isRecording ? t('player.recLaeuft') : isRecordingPlayback ? t('player.nichtBeiWiedergabe') : !isStation ? t('player.keinSender') : !appState.isPlaying ? t('player.keinPlay') : t('player.recStart')}>
           <HiFiLed color={recLedColor} size="wide" blink={appState.isRecording} />
           <i class="fa-solid fa-circle transport-icon"></i>
         </button>
