@@ -28,7 +28,7 @@
   } = $props();
 
   let imageUrl = $derived(
-    podcast?.id ? api.getPodcastImageUrl(podcast.id) : podcast?.image_url || null
+    podcast?.id ? api.getPodcastImageUrl(podcast.id) : null
   );
 
   let categories = $derived(

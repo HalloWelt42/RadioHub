@@ -166,8 +166,20 @@ async def set_auto_download(podcast_id: int, req: AutoDownloadUpdate):
 
 @router.get("/{podcast_id}/image")
 async def get_podcast_image(podcast_id: int):
-    """Podcast Cover-Art ausliefern"""
+    """Podcast Cover-Art ausliefern (mit On-Demand-Download)"""
     path = podcast_service.get_image_path(podcast_id)
+
+    # On-Demand: falls kein lokales Bild, aus DB image_url laden und cachen
+    if not path:
+        from ..database import db_session
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("SELECT image_url FROM podcast_subscriptions WHERE id = ?", (podcast_id,))
+            row = c.fetchone()
+        if row and row["image_url"]:
+            await podcast_service.download_image(row["image_url"], podcast_id)
+            path = podcast_service.get_image_path(podcast_id)
+
     if not path:
         raise HTTPException(404, "Kein Cover vorhanden")
 
@@ -177,7 +189,10 @@ async def get_podcast_image(podcast_id: int):
     elif path.suffix == ".webp":
         content_type = "image/webp"
 
-    return FileResponse(path, media_type=content_type)
+    return FileResponse(
+        path, media_type=content_type,
+        headers={"Cache-Control": "public, max-age=604800"}
+    )
 
 
 # === Episoden ===
@@ -229,15 +244,34 @@ async def get_episode(episode_id: int):
 
 @router.get("/episodes/{episode_id}/image")
 async def get_episode_image(episode_id: int):
-    """Episode-Bild (Fallback: Podcast-Cover)"""
+    """Episode-Bild (Fallback: Podcast-Cover, mit On-Demand-Download)"""
     episode = await podcast_service.get_episode(episode_id)
     if not episode:
         raise HTTPException(404, "Episode nicht gefunden")
 
+    podcast_id = episode["podcast_id"]
+
     # Zuerst Episode-spezifisches Bild, dann Podcast-Cover
-    path = podcast_service.get_image_path(episode["podcast_id"], episode_id)
+    path = podcast_service.get_image_path(podcast_id, episode_id)
     if not path:
-        path = podcast_service.get_image_path(episode["podcast_id"])
+        path = podcast_service.get_image_path(podcast_id)
+
+    # On-Demand: Episode-Bild oder Podcast-Cover herunterladen
+    if not path:
+        img_url = episode.get("image_url")
+        if img_url:
+            await podcast_service.download_image(img_url, podcast_id, episode_id)
+            path = podcast_service.get_image_path(podcast_id, episode_id)
+        if not path:
+            from ..database import db_session
+            with db_session() as conn:
+                c = conn.cursor()
+                c.execute("SELECT image_url FROM podcast_subscriptions WHERE id = ?", (podcast_id,))
+                row = c.fetchone()
+            if row and row["image_url"]:
+                await podcast_service.download_image(row["image_url"], podcast_id)
+                path = podcast_service.get_image_path(podcast_id)
+
     if not path:
         raise HTTPException(404, "Kein Bild vorhanden")
 
@@ -247,7 +281,10 @@ async def get_episode_image(episode_id: int):
     elif path.suffix == ".webp":
         content_type = "image/webp"
 
-    return FileResponse(path, media_type=content_type)
+    return FileResponse(
+        path, media_type=content_type,
+        headers={"Cache-Control": "public, max-age=604800"}
+    )
 
 
 # === Episode-Playback ===

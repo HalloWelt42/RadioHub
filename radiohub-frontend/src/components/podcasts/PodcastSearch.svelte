@@ -158,7 +158,7 @@
             onclick={() => { onselectepisode(ep); sfx.click(); }}
           >
             <CoverArt
-              src={ep.local_image_path ? api.getEpisodeImageUrl(ep.id) : ep.image_url}
+              src={ep.id ? api.getEpisodeImageUrl(ep.id) : null}
               alt={ep.title}
               size="sm"
             />
@@ -214,7 +214,7 @@
             disabled={isSubscribed}
           >
             <CoverArt
-              src={podcast.image_url}
+              src={null}
               alt={podcast.title}
               size="sm"
             />

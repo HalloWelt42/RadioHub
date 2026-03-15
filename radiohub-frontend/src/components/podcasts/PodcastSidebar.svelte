@@ -255,11 +255,17 @@
   <!-- Hover Preview -->
   {#if hoverPodcast}
     <div class="hover-preview" style="top: {hoverY}px;">
-      <img
-        src={hoverPodcast.id ? api.getPodcastImageUrl(hoverPodcast.id) : hoverPodcast.image_url}
-        alt={hoverPodcast.title}
-        class="preview-img"
-      />
+      {#if hoverPodcast.id}
+        <img
+          src={api.getPodcastImageUrl(hoverPodcast.id)}
+          alt={hoverPodcast.title}
+          class="preview-img"
+        />
+      {:else}
+        <div class="preview-img preview-fallback">
+          <i class="fa-solid fa-podcast"></i>
+        </div>
+      {/if}
       <div class="preview-info">
         <div class="preview-title">{hoverPodcast.title}</div>
         {#if hoverPodcast.author}

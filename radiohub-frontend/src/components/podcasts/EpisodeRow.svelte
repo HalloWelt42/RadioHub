@@ -22,9 +22,7 @@
   } = $props();
 
   let imageUrl = $derived(
-    episode.local_image_path
-      ? api.getEpisodeImageUrl(episode.id)
-      : episode.image_url || null
+    episode.id ? api.getEpisodeImageUrl(episode.id) : null
   );
 
   function handlePlayClick(e) {

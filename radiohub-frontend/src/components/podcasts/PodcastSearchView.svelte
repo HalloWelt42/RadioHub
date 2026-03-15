@@ -4,6 +4,7 @@
    * Cover, Titel, Autor, Beschreibung (gekürzt), Abo-Button.
    */
   import CoverArt from '../shared/CoverArt.svelte';
+  import { api } from '../../lib/api.js';
 
   let {
     results = [],
@@ -31,7 +32,7 @@
         {@const isSubscribed = subscribedFeedUrls.has(podcast.feed_url)}
         <div class="result-card" onclick={() => isSubscribed ? onopen(podcast) : null} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isSubscribed) onopen(podcast); } }}>
           <div class="card-cover">
-            <CoverArt src={podcast.image_url} alt={podcast.title} size="lg" />
+            <CoverArt src={podcast.id ? api.getPodcastImageUrl(podcast.id) : null} alt={podcast.title} size="lg" />
           </div>
 
           <div class="card-info">
