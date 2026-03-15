@@ -638,7 +638,7 @@
           } else if (evt.type === 'done') {
             actions.showToast(t('cutter.normalisierungErfolgreich'), 'success');
           } else if (evt.type === 'error') {
-            actions.showToast(evt.message, 'error');
+            actions.showToast(String(evt.message || t('cutter.normalisierungFehler')), 'error');
           }
         });
       } else {
@@ -695,7 +695,7 @@
           } else if (evt.type === 'done') {
             actions.showToast(t('cutter.konvertierungErfolgreich'), 'success');
           } else if (evt.type === 'error') {
-            actions.showToast(evt.message, 'error');
+            actions.showToast(String(evt.message || t('cutter.konvertierungFehler')), 'error');
           }
         });
       } else {
