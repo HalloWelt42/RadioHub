@@ -185,9 +185,11 @@
               <div class="sub-info">
                 <div class="sub-title">{podcast.title}</div>
                 <div class="sub-meta">
-                  {podcast.episode_count || 0} Ep.
+                  <span class="meta-val">{podcast.episode_count || 0}</span>
+                  <span class="meta-label">Ep.</span>
                   {#if hasUnplayed}
-                    <span class="unplayed-count">{podcast.unplayed_count} neu</span>
+                    <span class="meta-val unplayed-count">{podcast.unplayed_count}</span>
+                    <span class="meta-label unplayed-count">neu</span>
                   {/if}
                 </div>
               </div>
@@ -515,6 +517,8 @@
   }
 
   .sub-meta {
+    display: flex;
+    gap: 3px;
     font-family: var(--hifi-font-values, 'Orbitron', monospace);
     font-size: 9px;
     font-weight: 700;
@@ -522,6 +526,15 @@
     opacity: 0.6;
     margin-top: 1px;
     white-space: nowrap;
+  }
+
+  .meta-val {
+    min-width: 22px;
+    text-align: right;
+  }
+
+  .meta-label {
+    margin-right: 4px;
   }
 
   .unplayed-count {
