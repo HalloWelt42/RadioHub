@@ -124,8 +124,7 @@ export const scenarios = {
         titleKey: 'tour.recTabTitle',
         textKey: 'tour.recTabText',
         position: 'bottom',
-        preAction: { type: 'setTab', value: 'recordings' },
-        waitFor: { prop: 'activeTab', op: 'equals', value: 'recordings' }
+        preAction: { type: 'setTab', value: 'recordings' }
       },
       {
         target: '.rec-btn',
@@ -152,8 +151,7 @@ export const scenarios = {
         titleKey: 'tour.podTabTitle',
         textKey: 'tour.podTabText',
         position: 'bottom',
-        preAction: { type: 'setTab', value: 'podcasts' },
-        waitFor: { prop: 'activeTab', op: 'equals', value: 'podcasts' }
+        preAction: { type: 'setTab', value: 'podcasts' }
       },
       {
         target: '.action-btn:first-child',
@@ -185,11 +183,10 @@ export const scenarios = {
         titleKey: 'tour.settingsTabTitle',
         textKey: 'tour.settingsTabText',
         position: 'bottom',
-        preAction: { type: 'setTab', value: 'settings' },
-        waitFor: { prop: 'activeTab', op: 'equals', value: 'settings' }
+        preAction: { type: 'setTab', value: 'settings' }
       },
       {
-        target: '.hifi-nav-btn.active[onclick]',
+        target: '.hifi-header-right .hifi-nav-btn',
         titleKey: 'tour.themeTitle',
         textKey: 'tour.themeText',
         position: 'bottom'
