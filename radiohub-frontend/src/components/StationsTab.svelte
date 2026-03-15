@@ -959,7 +959,7 @@
               onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(station); sfx.click(); } }}
             >
               <div class="station-led" onclick={(e) => playAndExpand(station, e)} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playAndExpand(station, e); } }}>
-                <HiFiLed color={isPlaying ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" />
+                <HiFiLed color={isPlaying && appState.isRecording ? 'red' : isPlaying ? 'blue' : isFocused ? 'yellow' : 'off'} size="small" blink={isPlaying && appState.isRecording} />
               </div>
               <div class="station-name" onclick={(e) => playAndExpand(station, e)} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playAndExpand(station, e); } }}>
                 <i class="fa-solid fa-play hover-play-icon"></i>

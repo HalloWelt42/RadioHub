@@ -117,6 +117,14 @@
     }
   }
 
+  function scrollToRecordingStation() {
+    // Kurz warten bis Tab-Wechsel gerendert ist
+    setTimeout(() => {
+      const el = document.querySelector('.station-wrapper.playing');
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 100);
+  }
+
   // === Time Update ===
   function handleTimeUpdate() {
     if (isDragging || isSeeking) return;
@@ -530,7 +538,7 @@
         {/if}
       </span>
       {#if appState.isRecording}
-        <span class="section-label rec-link" onclick={() => { actions.navigateTo('/tuner'); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
+        <span class="section-label rec-link" onclick={() => { actions.navigateTo('/tuner'); scrollToRecordingStation(); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
       {:else}
         <span class="section-label">{transportLabel}</span>
       {/if}
