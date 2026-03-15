@@ -953,17 +953,20 @@ class PodcastService:
                 if image_el is not None:
                     image_url = image_el.text or ""
 
-            # Kategorien
+            # Kategorien (dedupliziert, Reihenfolge erhalten)
+            categories_seen = set()
             categories = []
             for cat in channel.findall(f"{itunes_ns}category"):
                 cat_text = cat.get("text", "")
-                if cat_text:
+                if cat_text and cat_text not in categories_seen:
                     categories.append(cat_text)
+                    categories_seen.add(cat_text)
                 # Subkategorien
                 for subcat in cat.findall(f"{itunes_ns}category"):
                     sub_text = subcat.get("text", "")
-                    if sub_text:
+                    if sub_text and sub_text not in categories_seen:
                         categories.append(sub_text)
+                        categories_seen.add(sub_text)
 
             # Episoden
             episodes = []
