@@ -124,6 +124,8 @@
     {/if}
   </div>
 
+  <div class="search-divider"></div>
+
   <!-- Scope-Badges -->
   <div class="scope-badges">
     {#each scopes as s}
@@ -248,10 +250,15 @@
     align-items: center;
     gap: 6px;
     padding: 6px 8px;
-    margin: 0 6px;
+    margin: 6px;
     background: var(--hifi-bg-tertiary);
     border-radius: var(--hifi-border-radius-sm, 4px);
     box-shadow: var(--hifi-shadow-inset);
+  }
+
+  .search-divider {
+    height: 1px;
+    background: var(--hifi-border-dark);
   }
 
   .search-icon {

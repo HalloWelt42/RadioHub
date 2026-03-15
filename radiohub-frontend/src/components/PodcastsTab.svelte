@@ -672,6 +672,7 @@
     {subscribedFeedUrls}
     width={sidebarWidth}
     fileExplorerActive={view === 'file-explorer'}
+    {isRefreshing}
     {refreshCountdown}
     {currentlyPlayingPodcastId}
     onselectpodcast={handleSelectPodcast}

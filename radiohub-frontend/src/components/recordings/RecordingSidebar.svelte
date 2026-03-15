@@ -306,6 +306,7 @@
 
   {#if showNewFolder}
     <div class="search-box">
+      <i class="fa-solid fa-folder-plus search-icon"></i>
       <input
         type="text"
         class="search-input"
@@ -319,6 +320,7 @@
 
   {#if showSearch}
     <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input
         type="text"
         class="search-input"
@@ -491,9 +493,6 @@
     display: flex;
     gap: 4px;
     padding: 10px 10px;
-    background: var(--hifi-brushed-metal), var(--hifi-bg-panel);
-    box-shadow: var(--hifi-brushed-edge-top), var(--hifi-brushed-edge-bottom);
-    border-radius: 0;
   }
 
   .action-btn {
@@ -535,23 +534,44 @@
   }
 
   .search-box {
-    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    margin: 6px;
+    background: var(--hifi-bg-tertiary);
+    border-radius: var(--hifi-border-radius-sm, 4px);
+    box-shadow: var(--hifi-shadow-inset);
+  }
+
+  .search-box:focus-within {
+    box-shadow: var(--hifi-shadow-inset), 0 0 0 1px rgba(74, 144, 217, 0.3);
+  }
+
+  .search-icon {
+    font-size: 11px;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+    flex-shrink: 0;
   }
 
   .search-input {
+    flex: 1;
     width: 100%;
-    background: var(--hifi-bg-secondary);
-    border: 1px solid var(--hifi-border-dark);
-    border-radius: var(--hifi-border-radius-sm, 4px);
+    background: none;
+    border: none;
     color: var(--hifi-text-primary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 12px;
-    padding: 6px 8px;
+    font-family: var(--hifi-font-values, 'Orbitron', monospace);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0;
     outline: none;
   }
 
-  .search-input:focus {
-    border-color: var(--hifi-accent);
+  .search-input::placeholder {
+    color: var(--hifi-text-secondary);
+    opacity: 0.4;
+    font-weight: 400;
   }
 
   .section-header {

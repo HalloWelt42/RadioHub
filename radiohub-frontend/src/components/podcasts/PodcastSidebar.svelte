@@ -36,6 +36,7 @@
     width = 280,
     subscribedFeedUrls = new Set(),
     fileExplorerActive = false,
+    isRefreshing = false,
     refreshCountdown = '',
     currentlyPlayingPodcastId = null,
     onselectpodcast = () => {},
@@ -130,9 +131,10 @@
     <button
       class="action-btn"
       onclick={() => { onrefreshall(); sfx.click(); }}
+      disabled={isRefreshing}
       title={t('podcasts.alleFeedsHolen')}
     >
-      <i class="fa-solid fa-cloud-arrow-down"></i>
+      <i class="fa-solid {isRefreshing ? 'fa-spinner fa-spin' : 'fa-cloud-arrow-down'}"></i>
     </button>
   </div>
 
