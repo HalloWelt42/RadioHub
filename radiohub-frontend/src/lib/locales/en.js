@@ -263,6 +263,7 @@ export default {
     bereitsLive: 'Already live',
     liveNurHls: 'Live only available in HLS mode',
     keinSender: 'No station selected',
+    keinPlay: 'Play a station first',
     recLaeuftStoppen: 'Recording in progress - stop REC first',
     spulenNicht: 'Seeking not available',
     prevSender: 'Previous station',

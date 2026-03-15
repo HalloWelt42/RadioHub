@@ -263,6 +263,7 @@ export default {
     bereitsLive: 'Bereits live',
     liveNurHls: 'Live nur im HLS-Modus verfügbar',
     keinSender: 'Kein Sender ausgewählt',
+    keinPlay: 'Erst Sender abspielen',
     recLaeuftStoppen: 'Aufnahme läuft - erst REC stoppen',
     spulenNicht: 'Spulen nicht verfügbar',
     prevSender: 'Vorheriger Sender',
