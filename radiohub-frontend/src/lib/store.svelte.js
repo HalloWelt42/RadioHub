@@ -1,7 +1,8 @@
 /**
- * RadioHub App Store v0.5.1
+ * RadioHub App Store v0.6.0
  * Globaler State mit Svelte 5 Runes
  *
+ * v0.6.0: Volume-Persistierung in localStorage
  * v0.5.0: Player-Logik delegiert an playerEngine.js
  *         Neue Felder: isPaused, playerMode, streamQuality, playerError, recordingElapsed
  */

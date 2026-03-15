@@ -1,5 +1,5 @@
 /**
- * RadioHub Player Engine v1.1.1
+ * RadioHub Player Engine v1.2.0
  *
  * Zentrale Playback-Steuerung mit State-Machine.
  * Löst die Probleme:
