@@ -49,8 +49,48 @@
     onselectepisode = () => {},
     onsubscribe = () => {},
     onfileexplorer = () => {},
-    onresize = () => {}
+    onresize = () => {},
+    onreorder = () => {}
   } = $props();
+
+  // === Drag & Drop Sortierung ===
+  let dragIdx = $state(null);
+  let dropIdx = $state(null);
+
+  function handleDragStart(e, idx) {
+    dragIdx = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+    e.currentTarget.classList.add('dragging');
+  }
+
+  function handleDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    dragIdx = null;
+    dropIdx = null;
+  }
+
+  function handleDragOver(e, idx) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (idx !== dragIdx) dropIdx = idx;
+  }
+
+  function handleDragLeave() {
+    dropIdx = null;
+  }
+
+  function handleDrop(e, idx) {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) { dropIdx = null; return; }
+    const reordered = [...subscriptions];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    onreorder(reordered.map(s => s.id));
+    dragIdx = null;
+    dropIdx = null;
+    sfx.click();
+  }
 
   let totalEpisodes = $derived(subscriptions.reduce((sum, s) => sum + (s.episode_count || 0), 0));
 
@@ -163,7 +203,7 @@
         </div>
       {:else}
         <div class="sub-list">
-          {#each subscriptions as podcast (podcast.id)}
+          {#each subscriptions as podcast, idx (podcast.id)}
             {@const isSelected = selectedPodcastId === podcast.id}
             {@const isPlaying = currentlyPlayingPodcastId === podcast.id}
             {@const unplayedForFilter = filterStatus === 'today' ? (podcast.today_unplayed || 0) : filterStatus === 'week' ? (podcast.week_unplayed || 0) : (podcast.unplayed_count || 0)}
@@ -173,7 +213,15 @@
               class="sub-item"
               class:selected={isSelected}
               class:playing={isPlaying}
+              class:drop-above={dropIdx === idx && dragIdx !== null && dragIdx > idx}
+              class:drop-below={dropIdx === idx && dragIdx !== null && dragIdx < idx}
               data-podcast-id={podcast.id}
+              draggable="true"
+              ondragstart={(e) => handleDragStart(e, idx)}
+              ondragend={handleDragEnd}
+              ondragover={(e) => handleDragOver(e, idx)}
+              ondragleave={handleDragLeave}
+              ondrop={(e) => handleDrop(e, idx)}
               onclick={() => { onselectpodcast(podcast); sfx.click(); }}
               onmouseenter={(e) => { handleSubMouseEnter(e, podcast); sfx.hover(); }}
               onmouseleave={handleSubMouseLeave}
@@ -499,6 +547,20 @@
 
   .sub-item.playing {
     background: rgba(76, 175, 80, 0.08);
+  }
+
+  .sub-item.dragging {
+    opacity: 0.4;
+  }
+
+  .sub-item.drop-above {
+    border-top: 2px solid var(--hifi-accent, #3399ff);
+    margin-top: -2px;
+  }
+
+  .sub-item.drop-below {
+    border-bottom: 2px solid var(--hifi-accent, #3399ff);
+    margin-bottom: -2px;
   }
 
   .sub-info {

@@ -335,6 +335,13 @@ class RadioHubAPI {
     return this.fetch('/api/podcasts/subscriptions');
   }
 
+  async reorderSubscriptions(orderedIds) {
+    return this.fetch('/api/podcasts/order', {
+      method: 'PUT',
+      body: JSON.stringify({ ordered_ids: orderedIds })
+    });
+  }
+
   async subscribePodcast(feedUrl) {
     return this.fetch('/api/podcasts/subscribe', {
       method: 'POST',

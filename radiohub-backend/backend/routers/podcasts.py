@@ -33,6 +33,9 @@ class CategoriesUpdate(BaseModel):
 class AutoDownloadUpdate(BaseModel):
     enabled: bool
 
+class ReorderRequest(BaseModel):
+    ordered_ids: List[int]
+
 
 # === Suche ===
 
@@ -151,6 +154,12 @@ async def update_categories(podcast_id: int, req: CategoriesUpdate):
     success = await podcast_service.update_subscription_categories(podcast_id, req.categories)
     if not success:
         raise HTTPException(404, "Podcast nicht gefunden")
+    return {"success": True}
+
+
+@router.put("/order")
+async def reorder_subscriptions(req: ReorderRequest):
+    await podcast_service.reorder_subscriptions(req.ordered_ids)
     return {"success": True}
 
 

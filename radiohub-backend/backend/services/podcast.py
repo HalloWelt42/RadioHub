@@ -224,7 +224,7 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-1 day')) as today_unplayed,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-7 days')) as week_unplayed,
                 (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
-                FROM podcast_subscriptions ps ORDER BY title''')
+                FROM podcast_subscriptions ps ORDER BY ps.sort_order, ps.title''')
             return [dict(row) for row in c.fetchall()]
 
     async def get_subscription(self, podcast_id: int) -> Optional[dict]:
@@ -238,6 +238,15 @@ class PodcastService:
                 FROM podcast_subscriptions ps WHERE ps.id = ?''', (podcast_id,))
             row = c.fetchone()
             return dict(row) if row else None
+
+    async def reorder_subscriptions(self, ordered_ids: List[int]) -> bool:
+        """Reihenfolge der Podcast-Abos speichern"""
+        with db_session() as conn:
+            c = conn.cursor()
+            for idx, pid in enumerate(ordered_ids):
+                c.execute("UPDATE podcast_subscriptions SET sort_order = ? WHERE id = ?", (idx, pid))
+            conn.commit()
+        return True
 
     async def refresh_podcast(self, podcast_id: int) -> dict:
         """Podcast-Feed neu laden, neue Episoden hinzufügen"""

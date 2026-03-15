@@ -355,6 +355,7 @@ def init_db():
     for col, typedef in [
         ("local_image_path", "TEXT"),
         ("categories", "TEXT DEFAULT ''"),
+        ("sort_order", "INTEGER DEFAULT 0"),
     ]:
         try:
             c.execute(f"ALTER TABLE podcast_subscriptions ADD COLUMN {col} {typedef}")

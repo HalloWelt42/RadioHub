@@ -283,6 +283,18 @@
     searchResults = [];
   }
 
+  async function handleReorder(orderedIds) {
+    // Optimistisch: lokale Reihenfolge sofort aktualisieren
+    const idOrder = new Map(orderedIds.map((id, i) => [id, i]));
+    subscriptions = [...subscriptions].sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+    try {
+      await api.reorderSubscriptions(orderedIds);
+    } catch (e) {
+      // Bei Fehler: neu laden
+      await loadSubscriptions();
+    }
+  }
+
   function handleFileExplorer() {
     if (view === 'file-explorer') {
       setView('episodes');
@@ -723,6 +735,7 @@
     onsubscribe={handleSubscribe}
     onfileexplorer={handleFileExplorer}
     onresize={handleSidebarResize}
+    onreorder={handleReorder}
   />
 
   <!-- Content (rechts) -->

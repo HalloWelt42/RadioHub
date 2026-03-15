@@ -1,5 +1,5 @@
 /**
- * RadioHub App Store v0.6.0
+ * RadioHub App Store v0.6.1
  * Globaler State mit Svelte 5 Runes
  *
  * v0.6.0: Volume-Persistierung in localStorage
