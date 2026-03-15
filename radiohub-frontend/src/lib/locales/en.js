@@ -257,6 +257,7 @@ export default {
     recStop: 'Stop recording',
     recLaeuft: 'Recording in progress',
     zumSender: 'Jump to recording station',
+    zurQuelle: 'Jump to playback source',
     skipBack: '10 seconds back',
     skipForward: '10 seconds forward',
     goLive: 'Jump to live position',

@@ -117,12 +117,33 @@
     }
   }
 
-  function scrollToRecordingStation() {
-    // Kurz warten bis Tab-Wechsel gerendert ist
-    setTimeout(() => {
-      const el = document.querySelector('.station-wrapper.playing');
-      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }, 100);
+  function navigateToSource() {
+    const mode = appState.playerMode;
+    if (mode === 'hls' || mode === 'direct') {
+      actions.navigateTo('/tuner');
+      // Zum spielenden Sender scrollen
+      setTimeout(() => {
+        const el = document.querySelector('.station-wrapper.playing');
+        if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 100);
+    } else if (mode === 'podcast') {
+      // Deep-Link zum spielenden Podcast
+      const ep = appState.currentEpisode;
+      const pod = appState.podcastPlaylistPodcast;
+      if (pod?.id) {
+        actions.navigateTo(`/podcast/${pod.id}`);
+      } else {
+        actions.navigateTo('/podcast');
+      }
+    } else if (mode === 'recording') {
+      // Deep-Link zur spielenden Aufnahme
+      const rec = appState.currentRecording;
+      if (rec?.session_id) {
+        actions.navigateTo(`/recorder/${rec.session_id}`);
+      } else {
+        actions.navigateTo('/recorder');
+      }
+    }
   }
 
   // === Time Update ===
@@ -530,7 +551,9 @@
         {/if}
       </span>
       {#if appState.isRecording}
-        <span class="section-label rec-link" onclick={() => { actions.navigateTo('/tuner'); scrollToRecordingStation(); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
+        <span class="section-label rec-link" onclick={() => { navigateToSource(); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
+      {:else if appState.isPlaying || appState.isPaused}
+        <span class="section-label source-link" onclick={() => { navigateToSource(); sfx.click(); }} title={t('player.zurQuelle')}>{transportLabel}</span>
       {:else}
         <span class="section-label">{transportLabel}</span>
       {/if}
@@ -808,6 +831,15 @@
   }
   .rec-link:hover {
     color: #ff6666;
+    text-decoration: underline;
+  }
+
+  .source-link {
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .source-link:hover {
+    color: var(--hifi-accent, #4a90d9);
     text-decoration: underline;
   }
 

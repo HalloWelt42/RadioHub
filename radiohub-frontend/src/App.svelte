@@ -77,6 +77,30 @@
     { id: 'settings', key: 'nav.setup' }
   ];
 
+  // === Nav-LED Logik ===
+  // Welcher Tab "besitzt" die aktuelle Wiedergabe?
+  let playbackTab = $derived(
+    !appState.isPlaying && !appState.isPaused ? null :
+    appState.playerMode === 'podcast' ? 'podcasts' :
+    appState.playerMode === 'recording' ? 'recordings' :
+    appState.playerMode === 'hls' || appState.playerMode === 'direct' ? 'radio' :
+    null
+  );
+
+  function navLedColor(tabId) {
+    if (appState.activeTab === tabId) return 'green';
+    // Aufnahme hat Vorrang: rot blinkend
+    if (tabId === 'radio' && appState.isRecording) return 'red';
+    // Wiedergabe-Herkunft: grün pulsierend
+    if (playbackTab === tabId) return 'green';
+    return 'off';
+  }
+
+  function navLedPulse(tabId) {
+    if (appState.activeTab === tabId) return false;
+    return playbackTab === tabId;
+  }
+
   // === Globale Tastatursteuerung ===
   function handleGlobalKeydown(e) {
     // Nicht abfangen wenn in Input/Textarea
@@ -175,7 +199,7 @@
           onmouseenter={sfx.hoverSoft}
           title={t(tab.key) + ' (' + (i + 1) + ')'}
         >
-          <HiFiLed color={appState.activeTab === tab.id ? 'green' : (tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio') ? 'red' : 'off'} size="small" blink={tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio'} />
+          <HiFiLed color={navLedColor(tab.id)} size="small" blink={tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio'} pulse={navLedPulse(tab.id)} />
           {t(tab.key)}
         </button>
       {/each}
