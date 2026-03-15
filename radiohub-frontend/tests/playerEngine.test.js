@@ -122,6 +122,7 @@ function createMockState() {
     canPlayDirect: true,
     canPlayHLS: null,
     hlsRecLookbackMinutes: 5,
+    streamTitle: null,
     stations: [],
   };
 }
@@ -1081,6 +1082,125 @@ describe('PlayerEngine', () => {
       expect(state.recordingElapsed).toBe(13); // 10 + 3
     });
   });
+
+  // ----------------------------------------------------------
+  //  Aufnahme-Schutz: Blockade bei Podcast/Recording-Wechsel
+  // ----------------------------------------------------------
+
+  describe('Aufnahme-Schutz bei Modus-Wechsel (ERR-006)', () => {
+    it('TC-RB1: Podcast-Wechsel bei laufender Aufnahme wird blockiert', async () => {
+      // Sender starten + Aufnahme beginnen
+      await engine.playStation(STATION_A);
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+      expect(state.isRecording).toBe(true);
+
+      // Podcast abspielen versuchen -> muss blockiert werden
+      await engine.playPodcast(PODCAST_EPISODE);
+
+      // Aufnahme läuft weiter
+      expect(state.isRecording).toBe(true);
+      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+    });
+
+    it('TC-RB2: Recording-Wiedergabe bei laufender Aufnahme wird blockiert', async () => {
+      await engine.playStation(STATION_A);
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+      expect(state.isRecording).toBe(true);
+
+      // Aufnahme-Wiedergabe versuchen -> muss blockiert werden
+      await engine.playRecording({
+        path: '/radio/test.mp3',
+        name: 'Test',
+        playUrl: 'http://localhost:9091/api/play/test.mp3',
+        source: 'recording'
+      });
+
+      expect(state.isRecording).toBe(true);
+      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+    });
+
+    it('TC-RB3: Fehlermeldung verschwindet nach 3 Sekunden', async () => {
+      vi.useFakeTimers();
+      await engine.playStation(STATION_A);
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+
+      await engine.playStation(STATION_B);
+      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+
+      // Nach 3s muss der Fehler weg sein
+      vi.advanceTimersByTime(3000);
+      expect(state.playerError).toBe(null);
+
+      vi.useRealTimers();
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Ticker-Reset bei Senderwechsel (ERR-019)
+  // ----------------------------------------------------------
+
+  describe('Ticker-Reset bei Senderwechsel (ERR-019)', () => {
+    it('TC-TR1: streamTitle wird bei Senderwechsel zurückgesetzt', async () => {
+      // Sender A starten, Titel setzen
+      await engine.playStation(STATION_A);
+      state.currentStation = STATION_A;
+      state.streamTitle = 'Alter ICY-Titel';
+
+      // Sender B starten -> streamTitle muss null sein
+      await engine.playStation(STATION_B);
+
+      expect(state.streamTitle).toBe(null);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  REC-Stop über stopRecording (ERR-012)
+  // ----------------------------------------------------------
+
+  describe('Aufnahme stoppen (ERR-012)', () => {
+    it('TC-RS1: stopRecording setzt alle Recording-States zurück', async () => {
+      state.currentStation = STATION_A;
+      await engine.startRecording();
+      expect(state.isRecording).toBe(true);
+      expect(state.recordingType).toBe('direct');
+      expect(state.recordingSession).toBe('rec1');
+
+      await engine.stopRecording();
+
+      expect(state.isRecording).toBe(false);
+      expect(state.recordingType).toBe('none');
+      expect(state.recordingSession).toBe(null);
+      expect(state.recordingElapsed).toBe(0);
+    });
+
+    it('TC-RS2: stopRecording ruft korrekten API-Endpoint auf (Direct)', async () => {
+      state.currentStation = STATION_A;
+      state.hlsActive = false;
+      await engine.startRecording();
+
+      await engine.stopRecording();
+
+      expect(api.stopRecording).toHaveBeenCalled();
+      expect(api.stopHlsRecording).not.toHaveBeenCalled();
+    });
+
+    it('TC-RS3: stopRecording ruft korrekten API-Endpoint auf (HLS)', async () => {
+      state.currentStation = STATION_A;
+      state.hlsActive = true;
+      state.playerMode = 'hls';
+      await engine.startRecording();
+
+      // recordingType ist jetzt 'hls-rec'
+      expect(state.recordingType).toBe('hls-rec');
+
+      await engine.stopRecording();
+
+      expect(api.stopHlsRecording).toHaveBeenCalled();
+    });
+  });
 });
 
 
@@ -1131,8 +1251,8 @@ describe('PlayerEngine', () => {
  *   Prüfen: Aufnahme-Datei wird erstellt
  *
  * TC-M11: Recording bei Senderwechsel
- *   Erwartung: Aufnahme wird automatisch gestoppt
- *   Prüfen: Toast erscheint, REC-LED aus
+ *   Erwartung: Senderwechsel wird BLOCKIERT bei laufender Aufnahme
+ *   Prüfen: Fehlermeldung erscheint, Aufnahme läuft weiter
  *
  * TC-M12: Error-Handling (ungültige Stream-URL)
  *   Erwartung: Fehler-Banner erscheint über dem Player
