@@ -520,12 +520,17 @@ class HLSRecorderService:
             and not self._collector_task.done()
         )
 
+        # Bitrate/Codec aus HLS-Buffer holen
+        hls_status = hls_buffer.get_status() if hls_buffer else {}
+
         status = {
             "recording": True,
             "session_id": session.id,
             "station_name": session.station_name,
             "station_uuid": session.station_uuid,
             "duration": session.duration,
+            "bitrate": hls_status.get("output_bitrate", 0),
+            "codec": hls_status.get("codec", ""),
             "lookback_seconds": session.lookback_seconds,
             "collected_segments": len(session.collected_segments),
             "total_seconds": session.total_seconds,

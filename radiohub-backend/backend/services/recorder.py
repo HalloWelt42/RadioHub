@@ -792,6 +792,7 @@ class RecorderManager:
             "station_uuid": session.station_uuid,
             "duration": session.duration,
             "file_size": session.file_size,
+            "bitrate": session.bitrate,
             "codec": session.codec or "mp3",
             "file_format": session.file_format,
             "free_disk_mb": free_mb,

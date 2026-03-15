@@ -769,6 +769,10 @@ function _startRecordingPoll() {
         // ICY-Daten aus Status in State übernehmen
         _appState.recordingIcyCount = status.icy_count || 0;
         _appState.recordingIcyEntries = status.icy_entries || [];
+        // ICY-Titel live aktualisieren (wie in _startHLSPolling)
+        if (status.icy_title) {
+          _appState.streamTitle = status.icy_title;
+        }
       }
     } catch (e) {
       // Netzwerkfehler: nicht sofort reagieren, nächster Poll klärt
@@ -814,33 +818,53 @@ export async function checkAndRecoverRecordingState() {
       api.getHlsRecordingStatus().catch(() => ({ recording: false }))
     ]);
 
-    if (hlsStatus?.recording) {
-      _appState.isRecording = true;
-      _appState.recordingType = 'hls-rec';
-      _appState.recordingSession = hlsStatus.session_id || null;
-      _appState.recordingElapsed = Math.floor(hlsStatus.duration || 0);
-      _appState.recordingIcyCount = hlsStatus.icy_count || 0;
-      _appState.recordingIcyEntries = hlsStatus.icy_entries || [];
-      _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
-      _recordingInterval = setInterval(() => {
-        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
-      }, 1000);
-      _startRecordingPoll();
-      console.log('Recording State Recovery: HLS-REC aktiv, Session', hlsStatus.session_id);
-    } else if (directStatus?.recording) {
-      _appState.isRecording = true;
-      _appState.recordingType = 'direct';
-      _appState.recordingSession = directStatus.session_id || null;
-      _appState.recordingElapsed = Math.floor(directStatus.duration || 0);
-      _appState.recordingIcyCount = directStatus.icy_count || 0;
-      _appState.recordingIcyEntries = directStatus.icy_entries || [];
-      _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
-      _recordingInterval = setInterval(() => {
-        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
-      }, 1000);
-      _startRecordingPoll();
-      console.log('Recording State Recovery: Direct-REC aktiv, Session', directStatus.session_id);
+    const activeStatus = hlsStatus?.recording ? hlsStatus : directStatus?.recording ? directStatus : null;
+    if (!activeStatus) return;
+
+    const recType = hlsStatus?.recording ? 'hls-rec' : 'direct';
+
+    _appState.isRecording = true;
+    _appState.recordingType = recType;
+    _appState.recordingSession = activeStatus.session_id || null;
+    _appState.recordingElapsed = Math.floor(activeStatus.duration || 0);
+    _appState.recordingIcyCount = activeStatus.icy_count || 0;
+    _appState.recordingIcyEntries = activeStatus.icy_entries || [];
+    _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
+    _recordingInterval = setInterval(() => {
+      _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+    }, 1000);
+    _startRecordingPoll();
+
+    // Sender wiederherstellen falls nicht bereits gesetzt
+    if (!_appState.currentStation && activeStatus.station_uuid) {
+      const stations = _appState.stations || [];
+      const match = stations.find(s => s.uuid === activeStatus.station_uuid);
+      if (match) {
+        _appState.currentStation = match;
+      } else {
+        // Minimales Station-Objekt aus Status-Daten
+        _appState.currentStation = {
+          uuid: activeStatus.station_uuid,
+          name: activeStatus.station_name || 'Unbekannt'
+        };
+      }
     }
+
+    // Display-Daten wiederherstellen
+    if (activeStatus.icy_title) {
+      _appState.streamTitle = activeStatus.icy_title;
+    }
+    if (activeStatus.codec) {
+      _appState.streamQuality = {
+        inputCodec: activeStatus.codec,
+        inputBitrate: activeStatus.bitrate || null,
+        outputBitrate: null,
+        sampleRate: null
+      };
+    }
+
+    console.log('Recording State Recovery:', recType, 'aktiv, Session', activeStatus.session_id,
+      'Station:', activeStatus.station_name);
   } catch (e) {
     // Fehler bei Recovery ignorieren -- normaler Betrieb ohne Aufnahme
   }
