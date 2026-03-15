@@ -3,6 +3,8 @@
    * SearchBarWithHistory - Suchfeld mit History-Dropdown
    * Exaktes Design wie StationsTab-Suchfeld.
    */
+  import { untrack } from 'svelte';
+
   let {
     placeholder = 'Suchen...',
     storageKey = 'radiohub_search_history',
@@ -11,7 +13,7 @@
     onsearch = () => {}
   } = $props();
 
-  let query = $state(initialValue);
+  let query = $state(untrack(() => initialValue));
   let history = $state(loadHistory());
   let showHistory = $state(false);
   let inputEl;

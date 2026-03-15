@@ -6,7 +6,7 @@
   import HiFiLed from '../hifi/HiFiLed.svelte';
   import { formatDuration, formatDurationMs, formatSize, formatDate } from '../../lib/formatters.js';
   import { appState } from '../../lib/store.svelte.js';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import * as sfx from '../../lib/uiSounds.js';
   import { t } from '../../lib/i18n.svelte.js';
 
@@ -38,8 +38,8 @@
     onsegmentselectionchange = () => {}
   } = $props();
 
-  let showSearch = $state(!!searchQuery);
-  let localQuery = $state(searchQuery || '');
+  let showSearch = $state(untrack(() => !!searchQuery));
+  let localQuery = $state(untrack(() => searchQuery || ''));
   let showNewFolder = $state(false);
   let newFolderName = $state('');
   let renamingFolderId = $state(null);

@@ -549,7 +549,7 @@
     background: rgba(76, 175, 80, 0.08);
   }
 
-  .sub-item.dragging {
+  .sub-item:global(.dragging) {
     opacity: 0.4;
   }
 

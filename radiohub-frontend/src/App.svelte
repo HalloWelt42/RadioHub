@@ -1,7 +1,9 @@
 <script>
   import HiFiPlayer from './components/HiFiPlayer.svelte';
   import HiFiToast from './components/hifi/HiFiToast.svelte';
+  import HiFiTour from './components/hifi/HiFiTour.svelte';
   import HiFiLed from './components/hifi/HiFiLed.svelte';
+  import { tourState, toggleMenu } from './lib/tour/tourEngine.svelte.js';
   import StationsTab from './components/StationsTab.svelte';
   import RecordingsTab from './components/RecordingsTab.svelte';
   import PodcastsTab from './components/PodcastsTab.svelte';
@@ -206,6 +208,11 @@
     </nav>
     
     <div class="hifi-header-right">
+      <!-- Lernmodus -->
+      <button class="tour-toggle-btn" class:active={tourState.active || tourState.menuOpen} onclick={() => { toggleMenu(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Lernmodus">
+        <i class="fa-solid fa-life-ring"></i>
+      </button>
+
       <!-- Theme Switch -->
       <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
         <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
@@ -244,6 +251,9 @@
 
 <!-- Toast außerhalb hifi-app für korrektes z-index Stacking -->
 <HiFiToast />
+
+<!-- Lernmodus Tour-Overlay -->
+<HiFiTour />
 
 <style>
   .hifi-app {
@@ -420,6 +430,33 @@
   }
   
   
+  /* Lernmodus-Button (Rettungsring) */
+  .tour-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--hifi-bg-tertiary);
+    border: none;
+    border-radius: 50%;
+    color: var(--hifi-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tour-toggle-btn:hover {
+    color: var(--hifi-accent);
+    background: var(--hifi-bg-secondary);
+  }
+  .tour-toggle-btn.active {
+    color: var(--hifi-led-amber);
+    background: var(--hifi-bg-panel);
+    box-shadow: var(--hifi-shadow-inset), 0 0 8px rgba(230, 162, 60, 0.3);
+    text-shadow: 0 0 6px rgba(230, 162, 60, 0.6);
+  }
+
   .hifi-status {
     display: flex;
     align-items: center;
