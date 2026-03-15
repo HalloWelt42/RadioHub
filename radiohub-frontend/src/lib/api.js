@@ -58,6 +58,10 @@ class RadioHubAPI {
     });
   }
 
+  async getStation(uuid) {
+    return this.fetch(`/api/stations/${uuid}`);
+  }
+
   // === Bitrate Detection ===
   async verifyBitrate(uuids) {
     return this.fetch('/api/stations/verify-bitrate', {

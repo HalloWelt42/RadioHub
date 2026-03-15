@@ -24,6 +24,8 @@
   let view = $derived.by(() => {
     if (appState.activeTab !== 'podcasts') return 'episodes';
     const seg = appState.routeSegments?.[0];
+    // Numerisches Segment = Podcast-ID Deep-Link -> episodes view
+    if (seg && /^\d+$/.test(seg)) return 'episodes';
     return VIEW_MAP[seg] || 'episodes';
   });
 
@@ -39,10 +41,10 @@
   let searchResults = $state([]);
   let stats = $state({});
 
-  // === Filter/Sort ===
-  let filterStatus = $state('today');
-  let sortBy = $state('published_at');
-  let sortOrder = $state('desc');
+  // === Filter/Sort (aus localStorage wiederherstellen) ===
+  let filterStatus = $state(localStorage.getItem('radiohub_podcast_filter') || 'today');
+  let sortBy = $state(localStorage.getItem('radiohub_podcast_sort') || 'published_at');
+  let sortOrder = $state(localStorage.getItem('radiohub_podcast_order') || 'desc');
 
   // === UI State ===
   let sidebarWidth = $state(Number(localStorage.getItem('radiohub_podcast_sidebar_width')) || 280);
@@ -101,12 +103,36 @@
 
   // === Init ===
   $effect(() => {
-    loadSubscriptions();
+    _initPodcasts();
     loadStats();
     loadRefreshStatus();
     timerInterval = setInterval(updateCountdown, 1000);
     return () => { if (timerInterval) clearInterval(timerInterval); };
   });
+
+  async function _initPodcasts() {
+    await loadSubscriptions();
+    // Deep-Link: Podcast-ID (und optional Episode-ID) aus Route
+    const segs = appState.routeSegments;
+    if (segs?.[0] && /^\d+$/.test(segs[0]) && !selectedPodcastId) {
+      const pid = Number(segs[0]);
+      const podcast = subscriptions.find(s => s.id === pid);
+      if (podcast) {
+        selectedPodcastId = pid;
+        selectedPodcast = podcast;
+        await loadEpisodes(pid);
+        // Episode-Deep-Link
+        if (segs[1] && /^\d+$/.test(segs[1])) {
+          const eid = Number(segs[1]);
+          selectedEpisodeId = eid;
+          setTimeout(() => {
+            const el = document.querySelector(`.episode-row[data-id="${eid}"]`);
+            if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }, 200);
+        }
+      }
+    }
+  }
 
   // === Daten laden ===
   async function loadSubscriptions() {
@@ -199,12 +225,13 @@
   function handleSelectPodcast(podcast) {
     selectedPodcastId = podcast.id;
     selectedPodcast = podcast;
-    setView('episodes');
+    actions.navigateTo('/podcast/' + podcast.id);
     loadEpisodes(podcast.id);
   }
 
   function handleFilterChange(status) {
     filterStatus = status;
+    localStorage.setItem('radiohub_podcast_filter', status);
     // Episoden neu laden mit neuem Filter
     if (view === 'episodes' && selectedPodcastId) {
       loadEpisodes(selectedPodcastId);
@@ -517,7 +544,13 @@
 
   // === Episode Callbacks ===
   function handleEpisodeSelect(episode) {
-    selectedEpisodeId = selectedEpisodeId === episode.id ? null : episode.id;
+    if (selectedEpisodeId === episode.id) {
+      selectedEpisodeId = null;
+      if (selectedPodcastId) actions.navigateTo('/podcast/' + selectedPodcastId);
+    } else {
+      selectedEpisodeId = episode.id;
+      if (selectedPodcastId) actions.navigateTo('/podcast/' + selectedPodcastId + '/' + episode.id);
+    }
     sfx.click();
   }
 
@@ -588,6 +621,8 @@
   function handleSort(column, order) {
     sortBy = column;
     sortOrder = order;
+    localStorage.setItem('radiohub_podcast_sort', column);
+    localStorage.setItem('radiohub_podcast_order', order);
     if (view === 'episodes' && selectedPodcastId) {
       loadEpisodes(selectedPodcastId);
     } else if (view === 'all-episodes') {

@@ -77,7 +77,7 @@
   let selectedCountries = $state([]);
   let selectedBitrates = $state([]);
   let selectedVotesRanges = $state([]);
-  let showFavsOnly = $state(false);
+  let showFavsOnly = $state(localStorage.getItem('radiohub_favs_only') === 'true');
 
   // Kategorien
   let categories = $state([]);
@@ -251,10 +251,50 @@
       availableBitrates = BITRATE_RANGES;
       availableVotesRanges = VOTES_RANGES;
 
-      search();
+      await search();
+      // Deep-Link: UUID aus Route auslesen und Sender anwählen
+      _handleDeepLink();
     } catch (e) {
       // Netzwerkfehler bei Seitenlade ignorieren
-      search();
+      await search();
+      _handleDeepLink();
+    }
+  }
+
+  // Deep-Link: Sender per UUID aus URL anwählen
+  let _deepLinkHandled = false;
+  async function _handleDeepLink() {
+    if (_deepLinkHandled) return;
+    const seg = appState.routeSegments;
+    if (!seg || seg.length === 0) return;
+
+    // UUID-Format prüfen (32 hex mit Bindestrichen)
+    const uuid = seg[0];
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)) return;
+
+    _deepLinkHandled = true;
+
+    // Sender in bereits geladener Liste suchen
+    let found = stations.find(s => s.uuid === uuid);
+
+    // Falls nicht in Liste: per API einzeln laden und vorne einfügen
+    if (!found) {
+      try {
+        const station = await api.getStation(uuid);
+        if (station && !station.error) {
+          stations = [station, ...stations];
+          found = station;
+        }
+      } catch { /* Sender nicht gefunden */ }
+    }
+
+    if (found) {
+      selectedUuid = found.uuid;
+      // Nach kurzem Delay scrollen damit DOM gerendert ist
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`.station-wrapper[data-uuid="${found.uuid}"]`);
+        if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
     }
   }
   
@@ -396,6 +436,7 @@
       selectedVotesRanges = [];
       selectedCategories = [];
       showFavsOnly = false;
+      localStorage.removeItem('radiohub_favs_only');
       sortBy = 'name';
       sortOrder = 'asc';
 
@@ -469,11 +510,13 @@
           _lastPlayTriggeredUuid = station.uuid;
           actions.playStation(station);
           probeOnPlay(station);
+          actions.navigateTo('/tuner/' + station.uuid);
         }
         break;
       case 'Escape':
         e.preventDefault();
         selectedUuid = null;
+        actions.navigateTo('/tuner');
         break;
     }
   }
@@ -490,8 +533,10 @@
     // Nur auf/zuklappen, kein Play
     if (selectedUuid === station.uuid) {
       selectedUuid = null;
+      actions.navigateTo('/tuner');
     } else {
       selectedUuid = station.uuid;
+      actions.navigateTo('/tuner/' + station.uuid);
     }
   }
 
@@ -501,6 +546,7 @@
     _lastPlayTriggeredUuid = station.uuid;
     actions.playStation(station);
     probeOnPlay(station);
+    actions.navigateTo('/tuner/' + station.uuid);
   }
   
   function toggleFavorite(station, e) {
@@ -671,6 +717,7 @@
     selectedVotesRanges = [];
     selectedCategories = [];
     showFavsOnly = false;
+    localStorage.removeItem('radiohub_favs_only');
     searchQuery = '';
     search();
   }
@@ -690,7 +737,7 @@
   <aside class="filter-panel">
     <!-- Action Row: Favs + Clear + Filter -->
     <div class="action-row">
-      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? t('stations.alleSender') : t('stations.nurFavoriten')}>
+      <button class="action-btn" onclick={() => { showFavsOnly = !showFavsOnly; localStorage.setItem('radiohub_favs_only', showFavsOnly); search(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title={showFavsOnly ? t('stations.alleSender') : t('stations.nurFavoriten')}>
         <HiFiLed color={showFavsOnly ? 'yellow' : 'off'} size="small" />
         <span>{t('stationDetail.favoriten')}</span>
       </button>
@@ -886,7 +933,7 @@
           {@const bitrateVal = typeof station.bitrate === 'object' ? station.bitrate?.value : station.bitrate}
           {@const votesVal = station.votes ?? 0}
 
-          <div class="station-wrapper" class:playing={isPlaying} class:selected={isSelected && !isPlaying} class:focused={isFocused && !isPlaying && !isSelected}>
+          <div class="station-wrapper" data-uuid={station.uuid} class:playing={isPlaying} class:selected={isSelected && !isPlaying} class:focused={isFocused && !isPlaying && !isSelected}>
             <div
               class="station-row"
               class:playing={isPlaying}
