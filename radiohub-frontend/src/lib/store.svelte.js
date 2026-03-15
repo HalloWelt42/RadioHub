@@ -25,7 +25,7 @@ export const appState = $state({
   isPaused: false,
   currentStation: null,
   currentEpisode: null,
-  volume: 70,
+  volume: Number(localStorage.getItem('radiohub_volume')) || 70,
 
   // Player - Mode & Quality
   playerMode: 'none',      // 'none' | 'direct' | 'hls' | 'podcast' | 'recording'

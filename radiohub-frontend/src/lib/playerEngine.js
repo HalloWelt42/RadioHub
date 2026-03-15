@@ -433,6 +433,7 @@ export function setVolume(vol) {
   if (!_appState) return;
   _appState.volume = vol;
   if (_audioEl) _audioEl.volume = vol / 100;
+  localStorage.setItem('radiohub_volume', vol);
 }
 
 // ============================================================
