@@ -203,15 +203,16 @@
               {#if hasUnplayed}
                 <span class="unplayed-badge">{unplayedForFilter}</span>
               {/if}
-              <i
-                class="fa-solid fa-cloud-arrow-down sub-fetch-icon"
-                class:has-episodes={(podcast.episode_count || 0) > 0}
+              <span
+                class="sub-fetch-btn"
                 title={t('podcasts.episodenLaden')}
                 onclick={(e) => { e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); }}
                 role="button"
                 tabindex="-1"
                 onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onrefreshpodcast(podcast); sfx.click(); } }}
-              ></i>
+              >
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </span>
               <HiFiLed color={isPlaying ? 'green' : isSelected ? 'blue' : 'off'} size="small" pulse={isPlaying} title={isPlaying ? t('podcasts.wirdAbgespielt') : isSelected ? t('podcasts.ausgewaehltStatus') : ''} />
             </button>
           {/each}
@@ -540,35 +541,39 @@
     margin-left: 2px;
   }
 
-  .sub-fetch-icon {
-    font-size: 13px;
+  .sub-fetch-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
     color: var(--hifi-text-secondary);
-    opacity: 0;
+    opacity: 0.25;
     cursor: pointer;
-    transition: opacity 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+    transition: opacity 0.15s, color 0.15s, background 0.15s;
     flex-shrink: 0;
-    padding: 5px;
     border-radius: var(--hifi-border-radius-sm, 4px);
+    border: none;
+    background: none;
+    padding: 0;
+    outline: none;
   }
 
-  .sub-fetch-icon.has-episodes {
-    opacity: 0.3;
-    color: var(--hifi-text-secondary);
+  .sub-item:hover .sub-fetch-btn {
+    opacity: 0.6;
   }
 
-  .sub-item:hover .sub-fetch-icon {
-    opacity: 0.7;
-  }
-
-  .sub-fetch-icon:hover {
+  .sub-fetch-btn:hover {
     opacity: 1 !important;
     color: var(--hifi-accent) !important;
-    background: rgba(51, 153, 255, 0.1);
-    transform: scale(1.15);
+    background: rgba(51, 153, 255, 0.15);
   }
 
-  .sub-fetch-icon:active {
-    transform: scale(0.95);
+  .sub-fetch-btn:active {
+    opacity: 1 !important;
+    color: var(--hifi-text-primary) !important;
+    background: rgba(51, 153, 255, 0.25);
   }
 
   .sub-auto-icon {
