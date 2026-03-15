@@ -42,38 +42,44 @@ vi.mock('hls.js', () => {
   return { default: MockHls };
 });
 
+// Backend-URL zentral definiert -- nie hardcoden!
+const TEST_API_BASE = 'http://localhost:9091';
+
 // Mock API
-vi.mock('../src/lib/api.js', () => ({
-  api: {
-    startHLS: vi.fn(() => Promise.resolve({ status: 'started', session_id: 'test' })),
-    stopHLS: vi.fn(() => Promise.resolve({ status: 'stopped' })),
-    getHLSStatus: vi.fn(() => Promise.resolve({
-      active: true,
-      segment_count: 5,
-      buffered_seconds: 5,
-      input_codec: 'mp3',
-      input_bitrate: 192,
-      output_bitrate: 128,
-      sample_rate: 44100
-    })),
-    getHLSPlaylistUrl: vi.fn((sid) => {
-      const base = 'http://localhost:9091/api/hls/playlist.m3u8';
-      return sid ? `${base}?sid=${sid}` : base;
-    }),
-    getStreamProxyUrl: vi.fn((url) => `http://localhost:9091/api/stream/proxy?url=${encodeURIComponent(url)}`),
-    getEpisodePlayUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/play`),
-    getEpisodeStreamUrl: vi.fn((id) => `http://localhost:9091/api/podcasts/episodes/${id}/stream`),
-    markEpisodePlayed: vi.fn(() => Promise.resolve({})),
-    updateEpisodePosition: vi.fn(() => Promise.resolve({})),
-    startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
-    stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
-    getRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
-    getHlsRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
-    startHlsRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'hlsrec1' })),
-    stopHlsRecording: vi.fn(() => Promise.resolve({ success: true })),
-    updateConfig: vi.fn(() => Promise.resolve({})),
-  }
-}));
+vi.mock('../src/lib/api.js', () => {
+  const BASE = 'http://localhost:9091';
+  return {
+    api: {
+      startHLS: vi.fn(() => Promise.resolve({ status: 'started', session_id: 'test' })),
+      stopHLS: vi.fn(() => Promise.resolve({ status: 'stopped' })),
+      getHLSStatus: vi.fn(() => Promise.resolve({
+        active: true,
+        segment_count: 5,
+        buffered_seconds: 5,
+        input_codec: 'mp3',
+        input_bitrate: 192,
+        output_bitrate: 128,
+        sample_rate: 44100
+      })),
+      getHLSPlaylistUrl: vi.fn((sid) => {
+        const base = `${BASE}/api/hls/playlist.m3u8`;
+        return sid ? `${base}?sid=${sid}` : base;
+      }),
+      getStreamProxyUrl: vi.fn((url) => `${BASE}/api/stream/proxy?url=${encodeURIComponent(url)}`),
+      getEpisodePlayUrl: vi.fn((id) => `${BASE}/api/podcasts/episodes/${id}/play`),
+      getEpisodeStreamUrl: vi.fn((id) => `${BASE}/api/podcasts/episodes/${id}/stream`),
+      markEpisodePlayed: vi.fn(() => Promise.resolve({})),
+      updateEpisodePosition: vi.fn(() => Promise.resolve({})),
+      startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
+      stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
+      getRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
+      getHlsRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
+      startHlsRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'hlsrec1' })),
+      stopHlsRecording: vi.fn(() => Promise.resolve({ success: true })),
+      updateConfig: vi.fn(() => Promise.resolve({})),
+    }
+  };
+});
 
 import * as engine from '../src/lib/playerEngine.js';
 import { api } from '../src/lib/api.js';
@@ -1113,7 +1119,7 @@ describe('PlayerEngine', () => {
       await engine.playRecording({
         path: '/radio/test.mp3',
         name: 'Test',
-        playUrl: 'http://localhost:9091/api/play/test.mp3',
+        playUrl: `${TEST_API_BASE}/api/play/test.mp3`,
         source: 'recording'
       });
 
