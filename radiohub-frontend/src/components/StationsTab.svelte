@@ -21,6 +21,31 @@
   // Ausgewählter Sender (Details sichtbar)
   let selectedUuid = $state(null);
 
+  // Auto-Scroll: nach 90s Inaktivität zur spielenden Station scrollen
+  let _inactivityTimer = null;
+  const INACTIVITY_SCROLL_DELAY = 90_000; // 90 Sekunden
+
+  function _resetInactivityTimer() {
+    clearTimeout(_inactivityTimer);
+    _inactivityTimer = setTimeout(_scrollToPlayingStation, INACTIVITY_SCROLL_DELAY);
+  }
+
+  function _scrollToPlayingStation() {
+    if (appState.activeTab !== 'radio') return;
+    if (!appState.currentStation) return;
+    const playingEl = document.querySelector('.station-wrapper.playing');
+    if (playingEl) {
+      playingEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      // Auch selectedUuid auf spielenden Sender setzen
+      selectedUuid = appState.currentStation.uuid;
+    }
+  }
+
+  // Inaktivitäts-Timer bei User-Interaktion zurücksetzen
+  function _handleUserActivity() {
+    _resetInactivityTimer();
+  }
+
   // selectedUuid folgt dem aktuell spielenden Sender nur bei externer Navigation
   // (z.B. Prev/Next Buttons), nicht bei eigenem selectStation()-Klick
   let _lastPlayTriggeredUuid = null;
@@ -91,6 +116,8 @@
   $effect(() => {
     loadFilters();
     actions.loadFavorites();
+    _resetInactivityTimer();
+    return () => clearTimeout(_inactivityTimer);
   });
 
   // Bei Tab-Wechsel zurück auf Radio: Config + Kategorien neu laden
@@ -301,6 +328,17 @@
 
       hasMore = newStations.length === limit;
       offset = append ? offset + newStations.length : newStations.length;
+
+      // Erste Station vorauswählen wenn keine Auswahl aktiv
+      if (!append && !selectedUuid && stations.length > 0) {
+        // Spielenden Sender bevorzugen, sonst erste Station
+        const playingUuid = appState.currentStation?.uuid;
+        if (playingUuid && stations.some(s => s.uuid === playingUuid)) {
+          selectedUuid = playingUuid;
+        } else {
+          selectedUuid = stations[0].uuid;
+        }
+      }
 
       // Kategorie-Zuordnungen für geladene Sender holen
       if (categories.length > 0 && newStations.length > 0) {
@@ -646,7 +684,8 @@
   );
 </script>
 
-<div class="stations-tab">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="stations-tab" onclick={_handleUserActivity} onscroll={_handleUserActivity} onkeydown={_handleUserActivity} onmousemove={_handleUserActivity}>
   <!-- Filter Panel (Links) -->
   <aside class="filter-panel">
     <!-- Action Row: Favs + Clear + Filter -->
