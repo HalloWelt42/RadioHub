@@ -111,6 +111,29 @@
     return () => { if (timerInterval) clearInterval(timerInterval); };
   });
 
+  // === Source-Jump: Transport-Label Klick springt zum spielenden Podcast ===
+  let lastJumpTs = 0;
+  $effect(() => {
+    const req = appState.sourceJumpRequest;
+    if (!req || req.type !== 'podcast' || !req.id || req.ts <= lastJumpTs) return;
+    lastJumpTs = req.ts;
+    _jumpToPodcast(req.id);
+  });
+
+  async function _jumpToPodcast(pid) {
+    // Falls Subscriptions noch nicht geladen, erst laden
+    if (subscriptions.length === 0) await loadSubscriptions();
+    const podcast = subscriptions.find(s => s.id === pid);
+    if (!podcast) return;
+    selectedPodcastId = pid;
+    selectedPodcast = podcast;
+    await loadEpisodes(pid);
+    setTimeout(() => {
+      const el = document.querySelector('.episode-row.playing');
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 150);
+  }
+
   async function _initPodcasts() {
     await loadSubscriptions();
     const segs = appState.routeSegments;

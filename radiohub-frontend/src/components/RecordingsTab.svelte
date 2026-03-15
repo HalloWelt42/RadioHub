@@ -81,6 +81,15 @@
     }
   }
 
+  // === Source-Jump: Transport-Label Klick scrollt zum spielenden Segment ===
+  let lastRecJumpTs = 0;
+  $effect(() => {
+    const req = appState.sourceJumpRequest;
+    if (!req || req.type !== 'recording' || !req.id || req.ts <= lastRecJumpTs) return;
+    lastRecJumpTs = req.ts;
+    setTimeout(scrollToPlayingSegment, 200);
+  });
+
   async function selectSession(session) {
     if (selectedSession?.id === session.id) return;
     selectedSession = session;

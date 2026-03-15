@@ -52,7 +52,6 @@
 
   <div class="ep-info">
     <div class="ep-title">
-      <i class="fa-solid fa-play hover-play-icon"></i>
       <span>{episode.title}</span>
     </div>
     {#if showPodcast && podcastTitle}
@@ -132,21 +131,6 @@
     gap: 0;
   }
 
-  .hover-play-icon {
-    font-size: 10px;
-    color: var(--hifi-display-amber);
-    width: 0;
-    opacity: 0;
-    transition: width 0.15s, opacity 0.15s, margin-right 0.15s;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-
-  .episode-row:hover .hover-play-icon {
-    width: 12px;
-    opacity: 1;
-    margin-right: 4px;
-  }
 
   .ep-podcast-name {
     font-family: 'Barlow', sans-serif;

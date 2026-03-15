@@ -119,30 +119,35 @@
 
   function navigateToSource() {
     const mode = appState.playerMode;
+    const ts = Date.now();
     if (mode === 'hls' || mode === 'direct') {
+      appState.sourceJumpRequest = { type: 'radio', id: appState.currentStation?.id, ts };
       actions.navigateTo('/tuner');
-      // Zum spielenden Sender scrollen
       setTimeout(() => {
         const el = document.querySelector('.station-wrapper.playing');
         if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }, 100);
+      }, 150);
     } else if (mode === 'podcast') {
-      // Deep-Link zum spielenden Podcast
-      const ep = appState.currentEpisode;
       const pod = appState.podcastPlaylistPodcast;
-      if (pod?.id) {
-        actions.navigateTo(`/podcast/${pod.id}`);
+      const podId = pod?.id;
+      appState.sourceJumpRequest = { type: 'podcast', id: podId, ts };
+      if (podId) {
+        actions.navigateTo(`/podcast/${podId}`);
       } else {
         actions.navigateTo('/podcast');
       }
     } else if (mode === 'recording') {
-      // Deep-Link zur spielenden Aufnahme
       const rec = appState.currentRecording;
+      appState.sourceJumpRequest = { type: 'recording', id: rec?.session_id, ts };
       if (rec?.session_id) {
         actions.navigateTo(`/recorder/${rec.session_id}`);
       } else {
         actions.navigateTo('/recorder');
       }
+      setTimeout(() => {
+        const el = document.querySelector('.session-item.playing, .segment-entry.playing');
+        if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 150);
     }
   }
 

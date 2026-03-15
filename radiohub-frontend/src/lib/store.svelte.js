@@ -74,7 +74,10 @@ export const appState = $state({
   hlsRecLookbackMinutes: 5,  // Lookback in Minuten (1-120)
 
   // UI
-  toast: null
+  toast: null,
+
+  // Source-Navigation Signal (Transport-Label Klick)
+  sourceJumpRequest: null  // { type: 'podcast'|'recording'|'radio', id: number, ts: number }
 });
 
 // === Actions ===

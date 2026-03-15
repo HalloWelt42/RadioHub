@@ -60,6 +60,21 @@
     }
   });
 
+  // === Source-Jump: Transport-Label Klick scrollt zum spielenden Sender ===
+  let lastRadioJumpTs = 0;
+  $effect(() => {
+    const req = appState.sourceJumpRequest;
+    if (!req || req.type !== 'radio' || req.ts <= lastRadioJumpTs) return;
+    lastRadioJumpTs = req.ts;
+    setTimeout(() => {
+      const el = document.querySelector('.station-wrapper.playing');
+      if (el) {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (appState.currentStation?.uuid) selectedUuid = appState.currentStation.uuid;
+      }
+    }, 150);
+  });
+
   // Filter-Daten
   let availableCountries = $state([]);
   let availableBitrates = $state([]);
