@@ -864,6 +864,9 @@
             <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCategory(cat.id)} title={cat.name}>
               <HiFiLed color={isSelected ? 'yellow' : 'off'} size="small" />
               <span class="filter-item-label">{cat.name}</span>
+              {#if cat.station_count > 0}
+                <span class="filter-item-count">{formatNumber(cat.station_count)}</span>
+              {/if}
             </button>
           {/each}
         </div>

@@ -112,12 +112,26 @@ async def get_categories(scope: Optional[str] = Query(None)):
     with db_session() as conn:
         c = conn.cursor()
         if scope:
-            c.execute(
-                "SELECT * FROM categories WHERE scope = ? ORDER BY sort_order, id",
-                (scope,)
-            )
+            c.execute("""
+                SELECT c.*, COALESCE(cnt.station_count, 0) AS station_count
+                FROM categories c
+                LEFT JOIN (
+                    SELECT category_id, COUNT(*) AS station_count
+                    FROM category_stations GROUP BY category_id
+                ) cnt ON cnt.category_id = c.id
+                WHERE c.scope = ?
+                ORDER BY c.sort_order, c.id
+            """, (scope,))
         else:
-            c.execute("SELECT * FROM categories ORDER BY sort_order, id")
+            c.execute("""
+                SELECT c.*, COALESCE(cnt.station_count, 0) AS station_count
+                FROM categories c
+                LEFT JOIN (
+                    SELECT category_id, COUNT(*) AS station_count
+                    FROM category_stations GROUP BY category_id
+                ) cnt ON cnt.category_id = c.id
+                ORDER BY c.sort_order, c.id
+            """)
         rows = [dict(r) for r in c.fetchall()]
     return {"categories": rows}
 
