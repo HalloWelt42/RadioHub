@@ -27,6 +27,7 @@ export const appState = $state({
   currentStation: null,
   currentEpisode: null,
   volume: Number(localStorage.getItem('radiohub_volume')) || 70,
+  devMode: localStorage.getItem('radiohub_devmode') === 'true',
 
   // Player - Mode & Quality
   playerMode: 'none',      // 'none' | 'direct' | 'hls' | 'podcast' | 'recording'
@@ -39,7 +40,8 @@ export const appState = $state({
   recordingSession: null,
   recordingElapsed: 0,
   recordingIcyCount: 0,     // Anzahl erkannter Titelwechsel (live)
-  recordingIcyEntries: [],  // [{title, t}] live ICY-Einträge
+  recordingIcyEntries: [],  // [{title, t, ignored, raw_title}] live ICY-Einträge
+  recordingEvents: [],      // [{type, t, detail}] Gap/Stall/Codec-Events
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
   recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste für Prev/Next
   playMode: 'linear',       // 'linear' | 'reverse' | 'loop' | 'shuffle' - Wiedergabe-Modus für Playlists
@@ -107,6 +109,11 @@ export const actions = {
   toggleTheme() {
     const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
     actions.setTheme(newTheme);
+  },
+
+  toggleDevMode() {
+    appState.devMode = !appState.devMode;
+    localStorage.setItem('radiohub_devmode', String(appState.devMode));
   },
 
   initTheme() {

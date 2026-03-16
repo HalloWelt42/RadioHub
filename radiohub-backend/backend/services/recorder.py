@@ -1,18 +1,19 @@
 """
-RadioHub v0.3.2 - Recorder Service (Segmented Recording)
+RadioHub v0.4.0 - Recorder Service (Segmented Recording)
 
 Stream-Aufnahme mit FFmpeg Segment-Muxer. Ein Chunk pro Session
 (segment_time 24h). Das ICY-basierte Splitting passiert beim Stop.
 
 Ablauf:
 1. FFmpeg schreibt einen Chunk via -f segment -segment_time 86400
-2. Monitor: Stall-Detection + Disk-Space + Chunk-Tracking
+2. Monitor: Gap-Detection (10s) + Stall-Detection (60s) + Disk-Space
 3. Stop:
    a) Mit ICY-Metadata: Chunks concat -> Titel-Split -> fertig
    b) Ohne ICY-Metadata: Chunks als 30-Min-Segmente registrieren
 
-Debug-Log: Zuschaltbar per Config 'recording_debug_log'.
-Schreibt eine .log-Datei neben die Aufnahme mit allen wichtigen Events.
+Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
+Stall nach 60s ohne Wachstum -> FFmpeg Kill.
+Events werden in Session und meta.json gespeichert.
 """
 import asyncio
 import json
@@ -32,8 +33,9 @@ from .audio_utils import probe_duration
 MIN_FREE_DISK_MB = 100
 
 # Stall-Detection: Nach so vielen Pruefungen ohne Wachstum -> stalled
-STALL_CHECK_INTERVAL = 30   # Sekunden zwischen Pruefungen
-STALL_MAX_CHECKS = 3        # 3x keine Aenderung = 90s Stillstand -> stalled
+STALL_CHECK_INTERVAL = 10   # Sekunden zwischen Pruefungen
+STALL_MAX_CHECKS = 6        # 6x keine Aenderung = 60s Stillstand -> stalled
+GAP_THRESHOLD = 1           # Ab 1x ohne Wachstum = Gap-Event (10s)
 
 # Segment-Aufnahme: FFmpeg schreibt Chunks statt einer Datei
 # 86400s = 24h -> praktisch nur ein Chunk pro Session.
@@ -114,6 +116,7 @@ class RecordingSession:
         self.icy_logger: Optional[IcyMetadataLogger] = None
         self.icy_task: Optional[asyncio.Task] = None
         self.logger: Optional[SessionLogger] = None
+        self.events: list[dict] = []  # Gap/Stall/Codec-Events
 
     @property
     def duration(self) -> float:
@@ -387,6 +390,7 @@ class RecorderManager:
         last_chunk_count = 0
         stall_count = 0
         snapshot_counter = 0
+        in_gap = False  # Gap-Tracking
         log = session.logger
 
         try:
@@ -433,15 +437,38 @@ class RecorderManager:
                 if current_size > last_size or current_chunks > last_chunk_count:
                     last_size = current_size
                     last_chunk_count = current_chunks
+                    if in_gap:
+                        # Gap beendet
+                        elapsed_ms = int(session.duration * 1000)
+                        session.events.append({
+                            "type": "gap_end",
+                            "t": elapsed_ms,
+                            "detail": f"Daten fliessen wieder nach {stall_count * STALL_CHECK_INTERVAL}s"
+                        })
+                        log.log(f"GAP ENDE nach {stall_count * STALL_CHECK_INTERVAL}s")
+                        in_gap = False
                     stall_count = 0
                 else:
                     stall_count += 1
-                    if stall_count == 1:
-                        log.log(f"STALL? Keine Aenderung seit {STALL_CHECK_INTERVAL}s "
+                    if stall_count >= GAP_THRESHOLD and not in_gap:
+                        # Gap erkannt
+                        in_gap = True
+                        elapsed_ms = int(session.duration * 1000)
+                        session.events.append({
+                            "type": "gap_start",
+                            "t": elapsed_ms,
+                            "detail": f"Kein Wachstum seit {stall_count * STALL_CHECK_INTERVAL}s"
+                        })
+                        log.log(f"GAP START: Keine Aenderung seit {STALL_CHECK_INTERVAL}s "
                                 f"({current_size/1024/1024:.1f}MB, "
                                 f"{current_chunks} Chunks)")
                     if stall_count >= STALL_MAX_CHECKS:
                         elapsed = stall_count * STALL_CHECK_INTERVAL
+                        session.events.append({
+                            "type": "stall",
+                            "t": int(session.duration * 1000),
+                            "detail": f"Stillstand seit {elapsed}s -- FFmpeg gekillt"
+                        })
                         print(f"REC STALLED: {session.id} "
                               f"({current_chunks} Chunks, "
                               f"unverändert seit {elapsed}s, "
@@ -513,6 +540,17 @@ class RecorderManager:
                 WHERE id = ?''',
                 (end_time.isoformat(), duration, file_size,
                  str(meta_path) if meta_path else None, status, session.id))
+
+        # Events in meta.json ergänzen (falls vorhanden)
+        if session.events and meta_path and meta_path.exists():
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                meta["events"] = session.events
+                with open(meta_path, "w", encoding="utf-8") as f:
+                    json.dump(meta, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
 
         if self.active_session and self.active_session.id == session.id:
             self.active_session = None
@@ -796,7 +834,8 @@ class RecorderManager:
             "codec": session.codec or "mp3",
             "file_format": session.file_format,
             "free_disk_mb": free_mb,
-            "chunk_count": session.chunk_count
+            "chunk_count": session.chunk_count,
+            "events": session.events
         }
 
         # ICY-Daten mitliefern wenn Logger laeuft
@@ -804,7 +843,12 @@ class RecorderManager:
             status["icy_title"] = session.icy_logger.entries[-1].get("title", "")
             status["icy_count"] = session.icy_logger.entry_count
             status["icy_entries"] = [
-                {"title": e.get("title", ""), "t": e.get("t", 0)}
+                {
+                    "title": e.get("title", ""),
+                    "t": e.get("t", 0),
+                    "ignored": e.get("ignored", False),
+                    "raw_title": e.get("raw_title", e.get("title", ""))
+                }
                 for e in session.icy_logger.entries
             ]
 

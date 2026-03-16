@@ -676,16 +676,30 @@
       <!-- Session Detail Body -->
       <div class="detail-body">
         {#if isActive}
+          {#if appState.devMode && appState.recordingEvents.some(e => e.type === 'gap_start')}
+            {@const gaps = appState.recordingEvents.filter(e => e.type === 'gap_start')}
+            {@const hasOpenGap = appState.recordingEvents.filter(e => e.type === 'gap_start').length > appState.recordingEvents.filter(e => e.type === 'gap_end').length}
+            <div class="gap-banner" class:active={hasOpenGap}>
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              {#if hasOpenGap}
+                Dropout erkannt -- kein Datenstrom!
+              {:else}
+                {gaps.length} Dropout(s) erkannt
+              {/if}
+            </div>
+          {/if}
           {#if appState.recordingIcyEntries.length > 0}
             <div class="meta-list">
               <div class="meta-header">{t('recordings.erkannteTitle')} ({appState.recordingIcyEntries.length})</div>
               {#each appState.recordingIcyEntries as entry}
-                <div class="meta-entry live-entry">
+                <div class="meta-entry live-entry" class:sperrtext={entry.ignored}>
                   <span class="meta-time">[{formatMetaTime(entry.t)}]</span>
-                  <span class="meta-title">{entry.title}</span>
-                  <button class="action-btn ignore-btn mini" class:ignored={isTitleIgnored(entry.title)} onclick={(e) => toggleIgnore(entry.title, e)} title={isTitleIgnored(entry.title) ? t('recordings.titelNichtMehrIgnorieren') : t('recordings.titelIgnorieren')}>
-                    <i class="fa-solid" class:fa-eye-slash={isTitleIgnored(entry.title)} class:fa-eye={!isTitleIgnored(entry.title)}></i>
-                  </button>
+                  <span class="meta-title">
+                    {entry.title}
+                    {#if entry.ignored}
+                      <span class="sperrtext-badge" title="Sperrtext: {entry.raw_title}">SPERR</span>
+                    {/if}
+                  </span>
                 </div>
               {/each}
             </div>
@@ -1024,6 +1038,42 @@
 
   .meta-entry:hover {
     background: var(--hifi-bg-tertiary);
+  }
+
+  .meta-entry.sperrtext {
+    opacity: 0.5;
+  }
+
+  .gap-banner {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--hifi-bg-tertiary);
+    color: var(--hifi-yellow, #f39c12);
+    margin-bottom: 6px;
+  }
+
+  .gap-banner.active {
+    background: var(--hifi-red, #c0392b);
+    color: #fff;
+    animation: gap-pulse 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes gap-pulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+  }
+
+  .sperrtext-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: var(--hifi-red, #c0392b);
+    color: #fff;
+    margin-left: 4px;
+    vertical-align: middle;
   }
 
   .meta-time {

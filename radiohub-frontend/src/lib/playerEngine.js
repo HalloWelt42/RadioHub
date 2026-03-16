@@ -766,9 +766,10 @@ function _startRecordingPoll() {
         console.warn('Recording-Status-Poll: Backend hat keine aktive Aufnahme, setze State zurück');
         _resetRecordingState();
       } else {
-        // ICY-Daten aus Status in State übernehmen
+        // ICY-Daten und Events aus Status in State übernehmen
         _appState.recordingIcyCount = status.icy_count || 0;
         _appState.recordingIcyEntries = status.icy_entries || [];
+        _appState.recordingEvents = status.events || [];
         // ICY-Titel live aktualisieren
         if (status.icy_title) {
           _appState.streamTitle = status.icy_title;
@@ -810,6 +811,7 @@ function _resetRecordingState() {
     _appState.recordingElapsed = 0;
     _appState.recordingIcyCount = 0;
     _appState.recordingIcyEntries = [];
+    _appState.recordingEvents = [];
   }
 }
 
@@ -838,6 +840,7 @@ export async function checkAndRecoverRecordingState() {
     _appState.recordingElapsed = Math.floor(activeStatus.duration || 0);
     _appState.recordingIcyCount = activeStatus.icy_count || 0;
     _appState.recordingIcyEntries = activeStatus.icy_entries || [];
+    _appState.recordingEvents = activeStatus.events || [];
     _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);
     _recordingInterval = setInterval(() => {
       _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);

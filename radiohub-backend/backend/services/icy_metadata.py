@@ -1,5 +1,5 @@
 """
-RadioHub v0.2.2 - ICY Metadata Logger
+RadioHub v0.3.0 - ICY Metadata Logger
 
 Liest ICY-Metadata (StreamTitle) aus dem Radio-Stream via Raw-TCP.
 Loggt Titelwechsel mit Audio-Byte-Positionen in eine .meta.json Datei.
@@ -38,10 +38,11 @@ class IcyMetadataLogger:
         self._writer: Optional[asyncio.StreamWriter] = None
         self._start_time: Optional[float] = None
         self._last_title: str = ""
+        self._last_valid_title: str = ""  # Carry-Forward: letzter nicht-ignorierter Titel
         self._cumulative_bytes: int = 0
         self._metaint: int = 0
         self._reconnect_count: int = 0
-        # Ignorier-Liste: [{pattern, match_type}, ...]
+        # Sperr-Liste: [{pattern, match_type}, ...]
         self._ignore_rules = ignore_rules or []
 
     async def _connect(self, host: str, port: int, path: str,
@@ -78,6 +79,7 @@ class IcyMetadataLogger:
         self.entries = []
         self._running = True
         self._last_title = ""
+        self._last_valid_title = ""
         self._cumulative_bytes = 0
         self._metaint = 0
         self._reconnect_count = 0
@@ -134,6 +136,7 @@ class IcyMetadataLogger:
                     metaint = new_metaint
                     print(f"  ICY: Reconnect erfolgreich "
                           f"({self._reconnect_count}/{ICY_MAX_RECONNECTS})")
+                    self._reconnect_count = 0
 
                 except asyncio.CancelledError:
                     raise
@@ -212,18 +215,27 @@ class IcyMetadataLogger:
             # StreamTitle parsen
             title = self._parse_stream_title(meta_str)
             if title and title != self._last_title:
-                if self._is_ignored(title):
-                    print(f"  ICY [ignoriert]: {title}")
-                    continue
+                self._last_title = title
+                ignored = self._is_ignored(title)
                 elapsed_ms = int((asyncio.get_event_loop().time() - self._start_time) * 1000)
+
+                if ignored:
+                    # Carry-Forward: Letzten gültigen Titel beibehalten
+                    display_title = self._last_valid_title or title
+                    print(f"  ICY [{elapsed_ms/1000:.1f}s] Sperrtext: {title} -> behalte: {display_title}")
+                else:
+                    display_title = title
+                    self._last_valid_title = title
+                    print(f"  ICY [{elapsed_ms/1000:.1f}s, {self._cumulative_bytes} bytes]: {title}")
+
                 self.entries.append({
                     "t": elapsed_ms,
                     "b": self._cumulative_bytes,
-                    "title": title,
+                    "title": display_title,
+                    "raw_title": title,
+                    "ignored": ignored,
                     "raw": meta_str
                 })
-                self._last_title = title
-                print(f"  ICY [{elapsed_ms/1000:.1f}s, {self._cumulative_bytes} bytes]: {title}")
 
                 # Sofort speichern bei jedem Titelwechsel
                 self._save(output_path)
@@ -248,7 +260,6 @@ class IcyMetadataLogger:
                 if upper == pattern:
                     return True
         return False
-        return ""
 
     def _save(self, output_path: Path):
         """Speichert Metadata als strukturiertes JSON mit Byte-Positionen."""

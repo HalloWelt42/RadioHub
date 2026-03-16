@@ -545,7 +545,12 @@ class HLSRecorderService:
             status["icy_title"] = rec_entries[-1].get("title", "")
             status["icy_count"] = len(rec_entries)
             status["icy_entries"] = [
-                {"title": e.get("title", ""), "t": e.get("t", 0)}
+                {
+                    "title": e.get("title", ""),
+                    "t": e.get("t", 0),
+                    "ignored": e.get("ignored", False),
+                    "raw_title": e.get("raw_title", e.get("title", ""))
+                }
                 for e in rec_entries
             ]
 

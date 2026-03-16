@@ -1,9 +1,12 @@
 """
-RadioHub v0.2.2 - Segment Splitter
+RadioHub v0.3.0 - Segment Splitter
 
 Schneidet Aufnahmen anhand von ICY-Metadata in atomare Segmente.
 Nutzt Audio-Byte-Positionen (nicht Wallclock) für präzise Schnitte.
 Stream-Copy (kein Re-Encoding). Reassembly via FFmpeg concat demuxer.
+
+Carry-Forward: Entries mit ignored=True haben denselben Titel wie ihr
+Vorgänger und erzeugen keinen separaten Schnitt.
 """
 import asyncio
 import json
@@ -76,13 +79,22 @@ class SegmentSplitter:
         if not entries or len(entries) == 0:
             return []
 
+        # Carry-Forward: ignored-Entries rausfiltern, da sie denselben
+        # Titel tragen wie ihr Vorgänger und keinen Schnitt erzeugen sollen.
+        # Die Byte/Zeit-Grenzen des Vorgänger-Segments dehnen sich dadurch
+        # bis zum nächsten nicht-ignorierten Entry.
+        effective_entries = [e for e in entries if not e.get("ignored", False)]
+        if not effective_entries:
+            # Nur ignored-Entries -> alles als ein Segment
+            effective_entries = [entries[0]]
+
         total_ms = int(total_duration * 1000)
         if total_ms <= 0:
             print("  Split: Keine gültige Gesamtdauer")
             return []
 
         # Byte-Ratio verfügbar?
-        use_byte_ratio = total_audio_bytes > 0 and "b" in entries[0]
+        use_byte_ratio = total_audio_bytes > 0 and "b" in effective_entries[0]
         if use_byte_ratio:
             print(f"  Split: Byte-Ratio Modus ({total_audio_bytes} total bytes)")
         else:
@@ -99,30 +111,31 @@ class SegmentSplitter:
 
         ext = file_format if file_format.startswith(".") else f".{file_format}"
         segments = []
-        failed = False
+        skipped = 0
 
-        for i, entry in enumerate(entries):
+        for i, entry in enumerate(effective_entries):
             if use_byte_ratio:
                 # Präzise Position via Byte-Ratio
                 entry_bytes = entry.get("b", 0)
                 start_ms = int((entry_bytes / total_audio_bytes) * total_ms)
-                if i + 1 < len(entries):
-                    next_bytes = entries[i + 1].get("b", 0)
+                if i + 1 < len(effective_entries):
+                    next_bytes = effective_entries[i + 1].get("b", 0)
                     end_ms = int((next_bytes / total_audio_bytes) * total_ms)
                 else:
                     end_ms = total_ms
             else:
                 # Legacy: Wallclock-Timestamps
                 start_ms = entry.get("t", 0)
-                end_ms = entries[i + 1]["t"] if i + 1 < len(entries) else total_ms
+                end_ms = effective_entries[i + 1]["t"] if i + 1 < len(effective_entries) else total_ms
             duration_ms = end_ms - start_ms
 
             if duration_ms <= 0:
                 continue
 
-            title = entry.get("title", f"Segment {i}")
+            seg_idx = len(segments)  # Fortlaufender Index (übersprungene zählen nicht)
+            title = entry.get("title", f"Segment {seg_idx}")
             safe_title = _safe_filename(title)
-            segment_file = session_dir / f"{i:03d}_{safe_title}{ext}"
+            segment_file = session_dir / f"{seg_idx:03d}_{safe_title}{ext}"
 
             # FFmpeg Stream-Copy Cut
             start_sec = start_ms / 1000.0
@@ -147,15 +160,17 @@ class SegmentSplitter:
 
                 if proc.returncode != 0:
                     err = stderr.decode("utf-8", errors="replace")[-200:]
-                    print(f"  Split: FFmpeg Fehler bei Segment {i}: {err}")
-                    failed = True
-                    break
+                    print(f"  Split: FFmpeg Fehler bei Segment {seg_idx}, übersprungen: {err}")
+                    skipped += 1
+                    if segment_file.exists():
+                        segment_file.unlink()
+                    continue
 
                 file_size = segment_file.stat().st_size if segment_file.exists() else 0
 
                 segments.append({
                     "session_id": session_id,
-                    "segment_index": i,
+                    "segment_index": seg_idx,
                     "title": title,
                     "start_ms": start_ms,
                     "end_ms": end_ms,
@@ -165,18 +180,21 @@ class SegmentSplitter:
                 })
 
             except asyncio.TimeoutError:
-                print(f"  Split: Timeout bei Segment {i}")
-                failed = True
-                break
+                print(f"  Split: Timeout bei Segment {seg_idx}, übersprungen")
+                skipped += 1
+                continue
             except Exception as e:
-                print(f"  Split: Fehler bei Segment {i}: {e}")
-                failed = True
-                break
+                print(f"  Split: Fehler bei Segment {seg_idx}, übersprungen: {e}")
+                skipped += 1
+                continue
 
-        if failed or len(segments) == 0:
-            # Cleanup bei Fehler
+        if len(segments) == 0:
+            # Kein einziges Segment erfolgreich
             self._cleanup_dir(session_dir)
             return []
+
+        if skipped > 0:
+            print(f"  Split: {skipped} Segmente übersprungen (Fehler)")
 
         # Segmente in DB speichern
         with db_session() as conn:
@@ -301,9 +319,10 @@ class SegmentSplitter:
 
                 if proc.returncode != 0:
                     err = stderr.decode("utf-8", errors="replace")[-200:]
-                    print(f"  CustomSplit: FFmpeg Fehler bei Segment {i}: {err}")
-                    failed = True
-                    break
+                    print(f"  CustomSplit: FFmpeg Fehler bei Segment {i}, übersprungen: {err}")
+                    if segment_file.exists():
+                        segment_file.unlink()
+                    continue
 
                 file_size = segment_file.stat().st_size if segment_file.exists() else 0
                 start_ms = int(start_sec * 1000)
@@ -311,7 +330,7 @@ class SegmentSplitter:
 
                 segments.append({
                     "session_id": session_id,
-                    "segment_index": i,
+                    "segment_index": len(segments),
                     "title": title,
                     "start_ms": start_ms,
                     "end_ms": end_ms,
@@ -321,15 +340,13 @@ class SegmentSplitter:
                 })
 
             except asyncio.TimeoutError:
-                print(f"  CustomSplit: Timeout bei Segment {i}")
-                failed = True
-                break
+                print(f"  CustomSplit: Timeout bei Segment {i}, übersprungen")
+                continue
             except Exception as e:
-                print(f"  CustomSplit: Fehler bei Segment {i}: {e}")
-                failed = True
-                break
+                print(f"  CustomSplit: Fehler bei Segment {i}, übersprungen: {e}")
+                continue
 
-        if failed or len(segments) == 0:
+        if len(segments) == 0:
             self._cleanup_dir(session_dir)
             return []
 

@@ -219,6 +219,23 @@
         </div>
       </div>
 
+      <!-- Dev-Modus -->
+      <div class="hifi-panel">
+        <div class="hifi-panel-header">
+          <i class="fa-solid fa-bug header-icon"></i>
+          <span class="hifi-font-label">Entwickler-Modus</span>
+        </div>
+        <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
+          <button class="pill-btn" class:active={appState.devMode} onclick={() => actions.toggleDevMode()}>
+            <HiFiLed color={appState.devMode ? 'amber' : 'off'} />
+            <span>{appState.devMode ? 'AN' : 'AUS'}</span>
+          </button>
+          <span class="hifi-font-small" style="color:var(--hifi-text-muted);">
+            Zeigt erweiterte Diagnose-Infos bei Aufnahmen
+          </span>
+        </div>
+      </div>
+
       <!-- Sprache (volle Breite) -->
       <div class="hifi-panel span-full">
         <div class="hifi-panel-header">
