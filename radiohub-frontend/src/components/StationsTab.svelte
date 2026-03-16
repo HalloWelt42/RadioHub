@@ -225,7 +225,7 @@
     { label: '128 - 192', min: 128, max: 192 },
     { label: '192 - 256', min: 192, max: 256 },
     { label: '256 - 320', min: 256, max: 320 },
-    { label: '> 320', min: 320, max: 9999 }
+    { label: '> 320', min: 321, max: 9999 }
   ];
   
   async function loadFilters() {
