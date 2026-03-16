@@ -198,6 +198,22 @@ class RadioHubAPI {
     });
   }
 
+  // === Custom Stream URLs ===
+  async getCustomUrl(uuid) {
+    return this.fetch(`/api/station-custom-urls/${uuid}`);
+  }
+
+  async setCustomUrl(uuid, customUrl, note = '') {
+    return this.fetch(`/api/station-custom-urls/${uuid}`, {
+      method: 'PUT',
+      body: JSON.stringify({ custom_url: customUrl, note })
+    });
+  }
+
+  async resetCustomUrl(uuid) {
+    return this.fetch(`/api/station-custom-urls/${uuid}`, { method: 'DELETE' });
+  }
+
   // === Favorites ===
   async getFavoritesAll() {
     return this.fetch('/api/favorites/all');

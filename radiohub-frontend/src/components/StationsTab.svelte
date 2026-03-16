@@ -124,8 +124,8 @@
     { key: 'schwankende_qualitaet', label: 'Instabil', icon: 'fa-solid fa-wave-square', color: '#ff9800' },
     { key: 'haeufig_offline', label: 'Offline', icon: 'fa-solid fa-plug-circle-xmark', color: '#9e9e9e' },
     { key: 'hoher_sprachanteil', label: 'Talk', icon: 'fa-solid fa-microphone', color: '#64b4ff' },
-    { key: 'user_vote_up', label: '\u25B2', icon: 'fa-solid fa-thumbs-up', color: '#4caf50', group: 'vote' },
-    { key: 'user_vote_down', label: '\u25BC', icon: 'fa-solid fa-thumbs-down', color: '#f44336', group: 'vote' },
+    { key: 'user_vote_up', label: 'Vote', icon: 'fa-solid fa-thumbs-up', color: '#4caf50', group: 'vote' },
+    { key: 'user_vote_down', label: 'Vote', icon: 'fa-solid fa-thumbs-down', color: '#f44336', group: 'vote' },
   ];
 
   // Sortierung
@@ -558,6 +558,8 @@
 
   // Tastatur-Navigation in Stationsliste
   let focusedIndex = $state(-1);
+  let editingUrlUuid = $state(null);
+  let editingUrlValue = $state('');
 
   function handleListKeydown(e) {
     if (!stations.length) return;
@@ -601,6 +603,60 @@
       const row = list?.querySelectorAll('.station-wrapper')[focusedIndex];
       if (row) row.scrollIntoView({ block: 'nearest' });
     });
+  }
+
+  function startEditUrl(station) {
+    editingUrlUuid = station.uuid;
+    editingUrlValue = station.custom_url || station.url_resolved || station.url;
+  }
+
+  function cancelEditUrl() {
+    editingUrlUuid = null;
+    editingUrlValue = '';
+  }
+
+  function restartIfPlaying(station) {
+    if (appState.currentStation?.uuid === station.uuid) {
+      actions.playStation(station);
+    }
+  }
+
+  async function saveCustomUrl(station) {
+    const originalUrl = station.url_resolved || station.url;
+    const newUrl = editingUrlValue.trim();
+    if (!newUrl || newUrl === originalUrl) {
+      // Leer oder gleich wie Original -> Custom entfernen
+      if (station.custom_url) {
+        try {
+          await api.resetCustomUrl(station.uuid);
+          station.custom_url = undefined;
+          restartIfPlaying(station);
+          actions.showToast('Original-URL wiederhergestellt', 'success');
+        } catch { actions.showToast('Fehler beim Zurücksetzen', 'error'); }
+      }
+      editingUrlUuid = null;
+      return;
+    }
+    try {
+      await api.setCustomUrl(station.uuid, newUrl);
+      station.custom_url = newUrl;
+      restartIfPlaying(station);
+      actions.showToast('Custom-URL gespeichert', 'success');
+    } catch {
+      actions.showToast('Fehler beim Speichern', 'error');
+    }
+    editingUrlUuid = null;
+  }
+
+  async function resetCustomUrl(station) {
+    try {
+      await api.resetCustomUrl(station.uuid);
+      station.custom_url = undefined;
+      restartIfPlaying(station);
+      actions.showToast('Original-URL wiederhergestellt', 'success');
+    } catch {
+      actions.showToast('Fehler beim Zurücksetzen', 'error');
+    }
   }
 
   function copyText(text, label) {
@@ -1101,11 +1157,12 @@
               </div>
               <div class="station-name" onclick={(e) => playAndExpand(station, e)} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playAndExpand(station, e); } }}>
                 <i class="fa-solid fa-play hover-play-icon"></i>
-                {#if station.favicon}<img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music station-favicon-fallback"></i>{/if}
+                {#if station.favicon}<img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { const icon = document.createElement('i'); icon.className = 'fa-solid fa-music station-favicon-fallback'; e.target.replaceWith(icon); }} onload={(e) => { if (!e.target.naturalWidth || e.target.naturalWidth < 4) { const icon = document.createElement('i'); icon.className = 'fa-solid fa-music station-favicon-fallback'; e.target.replaceWith(icon); }}} />{:else}<i class="fa-solid fa-music station-favicon-fallback"></i>{/if}
                 <span class="station-name-text">{station.name}</span>
               </div>
               <div class="station-badges"></div>
               <div class="station-country">{translateCountry(station.country) || '-'}</div>
+              <i class="fa-solid fa-chevron-down station-expand-icon" class:expanded={isExpanded}></i>
               <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}</div>
               <div class="station-stats">{formatK(votesVal)}</div>
               <button
@@ -1128,7 +1185,7 @@
               <div class="station-details">
                 <div class="details-content">
                   <div class="details-favicon">
-                    {#if station.favicon}<img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music details-favicon-fallback"></i>{/if}
+                    {#if station.favicon}<img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { const icon = document.createElement('i'); icon.className = 'fa-solid fa-music details-favicon-fallback'; e.target.replaceWith(icon); }} onload={(e) => { if (!e.target.naturalWidth || e.target.naturalWidth < 4) { const icon = document.createElement('i'); icon.className = 'fa-solid fa-music details-favicon-fallback'; e.target.replaceWith(icon); }}} />{:else}<i class="fa-solid fa-music details-favicon-fallback"></i>{/if}
                   </div>
                   <div class="details-body">
                     <!-- Badge-Leiste -->
@@ -1195,11 +1252,51 @@
                           <span class="detail-value">{station.language}</span>
                         </div>
                       {/if}
-                      {#if station.url_resolved}
-                        <div class="detail-row">
-                          <span class="detail-label">{t('stationDetail.streamUrl')}</span>
-                          <span class="detail-value url copyable" onclick={() => copyText(station.url_resolved, 'Stream-Adresse')} title="Klick zum Kopieren">{station.url_resolved}</span>
+                      {#if station.url_resolved || station.url}
+                        <div class="detail-row stream-url-row">
+                          <span class="detail-label">
+                            {t('stationDetail.streamUrl')}
+                            {#if station.custom_url}
+                              <span class="stream-url-custom-badge">Custom</span>
+                            {/if}
+                          </span>
+                          <span class="stream-url-actions">
+                            <button class="stream-url-btn" onclick={() => copyText(station.custom_url || station.url_resolved || station.url, 'Stream-Adresse')} title="Kopieren">
+                              <i class="fa-solid fa-copy"></i>
+                            </button>
+                            {#if editingUrlUuid === station.uuid}
+                              <button class="stream-url-btn stream-url-save" onclick={() => saveCustomUrl(station)} title="Speichern">
+                                <i class="fa-solid fa-check"></i>
+                              </button>
+                              <button class="stream-url-btn" onclick={() => cancelEditUrl()} title="Abbrechen">
+                                <i class="fa-solid fa-xmark"></i>
+                              </button>
+                            {:else}
+                              <button class="stream-url-btn" onclick={() => startEditUrl(station)} title="URL bearbeiten">
+                                <i class="fa-solid fa-pen"></i>
+                              </button>
+                              {#if station.custom_url}
+                                <button class="stream-url-btn stream-url-reset" onclick={() => resetCustomUrl(station)} title="Original wiederherstellen">
+                                  <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                              {/if}
+                            {/if}
+                          </span>
                         </div>
+                        {#if editingUrlUuid === station.uuid}
+                          <div class="stream-url-value-row">
+                            <input
+                              class="stream-url-input stream-url-input--active"
+                              type="text"
+                              bind:value={editingUrlValue}
+                              onkeydown={(e) => { if (e.key === 'Enter') saveCustomUrl(station); if (e.key === 'Escape') cancelEditUrl(); }}
+                            />
+                          </div>
+                        {:else}
+                          <div class="stream-url-value-row">
+                            <span class="stream-url-text" class:stream-url-text--custom={station.custom_url}>{station.custom_url || station.url_resolved || station.url}</span>
+                          </div>
+                        {/if}
                       {/if}
                     </div>
                   </div>
@@ -1736,7 +1833,8 @@
   
   /* Sendernamen: Barlow */
   .station-name {
-    flex: 1;
+    flex: 1 1 0%;
+    min-width: 80px;
     font-family: 'Barlow', sans-serif;
     font-size: 18px;
     font-weight: 500;
@@ -1751,19 +1849,22 @@
 
   .hover-play-icon {
     font-size: 10px;
-    color: var(--hifi-display-amber);
-    width: 0;
+    color: var(--hifi-text-secondary);
+    width: 14px;
     opacity: 0;
-    transition: width 0.15s, opacity 0.15s, margin-right 0.15s;
+    transition: opacity 0.15s, color 0.15s;
     flex-shrink: 0;
-    margin-right: 0;
+    margin-right: 2px;
   }
 
   .station-name:hover .hover-play-icon,
   .station-led:hover + .station-name .hover-play-icon {
-    width: 12px;
+    opacity: 0.5;
+  }
+
+  .station-name:active .hover-play-icon {
     opacity: 1;
-    margin-right: 4px;
+    color: var(--hifi-led-yellow);
   }
 
   .station-favicon {
@@ -1772,8 +1873,13 @@
     border-radius: 3px;
     object-fit: contain;
     flex-shrink: 0;
-    margin-right: 2px;
+    margin-right: 6px;
     filter: grayscale(60%);
+    transition: filter 0.15s;
+  }
+
+  .station-row:hover .station-favicon {
+    filter: grayscale(0%);
   }
 
   :global(.station-favicon-fallback) {
@@ -1788,7 +1894,7 @@
     font-size: 10px;
     color: var(--hifi-text-muted);
     flex-shrink: 0;
-    margin-right: 2px;
+    margin-right: 6px;
   }
 
   .station-name-text {
@@ -1813,6 +1919,24 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  :global(.station-expand-icon) {
+    font-size: 9px;
+    width: 14px;
+    text-align: center;
+    color: var(--hifi-text-secondary);
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .station-row:hover :global(.station-expand-icon) {
+    opacity: 0.4;
+  }
+
+  :global(.station-expand-icon.expanded) {
+    transform: rotate(180deg);
   }
 
   .station-bitrate {
@@ -2074,6 +2198,88 @@
   }
   .detail-value.copyable:hover {
     color: var(--hifi-accent);
+  }
+
+  .stream-url-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stream-url-value-row {
+    grid-column: 1 / -1;
+  }
+
+  .stream-url-text {
+    flex: 1;
+    font-family: var(--hifi-font-display);
+    font-size: 10px;
+    color: var(--hifi-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    cursor: default;
+  }
+
+  .stream-url-text--custom {
+    color: var(--hifi-led-amber);
+  }
+
+  .stream-url-custom-badge {
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--hifi-bg-primary);
+    background: var(--hifi-led-amber);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .stream-url-input {
+    width: 100%;
+    background: var(--hifi-bg-panel);
+    border: none;
+    border-radius: var(--hifi-border-radius-sm);
+    box-shadow: var(--hifi-shadow-inset);
+    padding: 4px 10px;
+    font-family: var(--hifi-font-values);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--hifi-text-primary);
+    outline: none;
+    letter-spacing: 0.5px;
+    box-sizing: border-box;
+  }
+
+  .stream-url-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: var(--hifi-text-muted);
+    cursor: pointer;
+    padding: 3px 5px;
+    font-size: 10px;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .stream-url-btn:hover {
+    color: var(--hifi-accent);
+    border-color: var(--hifi-border-dark);
+  }
+
+  .stream-url-save:hover {
+    color: var(--hifi-led-green);
+    border-color: var(--hifi-led-green);
+  }
+
+  .stream-url-reset:hover {
+    color: var(--hifi-led-amber);
+    border-color: var(--hifi-led-amber);
   }
 
   /* Sort-Icons in Spaltenköpfen */
