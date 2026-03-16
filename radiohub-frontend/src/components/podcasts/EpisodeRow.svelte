@@ -4,6 +4,7 @@
    * LED, Cover, Titel, Badges, Datum, Dauer.
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
+  import HiFiBadge from '../hifi/HiFiBadge.svelte';
   import CoverArt from '../shared/CoverArt.svelte';
   import { api } from '../../lib/api.js';
   import { formatDurationHuman, formatDate } from '../../lib/formatters.js';
@@ -61,9 +62,9 @@
 
   <div class="ep-badges">
     {#if episode.is_played}
-      <i class="fa-solid fa-check played-icon" title={t('podcasts.gehoert')}></i>
+      <HiFiBadge icon="fa-solid fa-check" label="" color="green" title={t('podcasts.gehoert')} />
     {:else if episode.resume_position > 0}
-      <i class="fa-solid fa-rotate-left resume-icon" title={t('podcasts.fortsetzen')}></i>
+      <HiFiBadge icon="fa-solid fa-rotate-left" label="" color="amber" title={t('podcasts.fortsetzen')} />
     {/if}
   </div>
 
@@ -146,18 +147,6 @@
     display: flex;
     gap: 4px;
     align-items: center;
-  }
-
-  .played-icon {
-    font-size: 10px;
-    color: var(--hifi-text-green, #33cc33);
-    opacity: 0.5;
-  }
-
-  .resume-icon {
-    font-size: 10px;
-    color: var(--hifi-led-yellow, #ffcc00);
-    opacity: 0.6;
   }
 
   .ep-date {

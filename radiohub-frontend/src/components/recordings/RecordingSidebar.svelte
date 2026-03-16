@@ -4,6 +4,7 @@
    * Session-Liste mit Ordner-Gruppen, Stats, Action-Buttons, Resize.
    */
   import HiFiLed from '../hifi/HiFiLed.svelte';
+  import HiFiBadge from '../hifi/HiFiBadge.svelte';
   import { formatDuration, formatDurationMs, formatSize, formatDate } from '../../lib/formatters.js';
   import { appState } from '../../lib/store.svelte.js';
   import { tick, untrack } from 'svelte';
@@ -200,7 +201,7 @@
         <div class="session-meta">
           {formatDate(session.start_time)}
           {#if isStalled}
-            - <span class="stalled-badge">{t('recordings.abgebrochen')}</span>
+            - <HiFiBadge label={t('recordings.abgebrochen')} color="amber" />
           {:else if session.segment_count > 0}
             - {session.segment_count} Seg.
           {/if}
@@ -779,12 +780,6 @@
 
   .session-item.stalled .session-name {
     opacity: 0.7;
-  }
-
-  .stalled-badge {
-    color: var(--hifi-led-amber, #ffaa00);
-    font-weight: 700;
-    letter-spacing: 0.5px;
   }
 
   /* Session Move Button (erscheint bei Hover) */

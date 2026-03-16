@@ -1,6 +1,7 @@
 <script>
   import HiFiKnob from '../hifi/HiFiKnob.svelte';
   import HiFiLed from '../hifi/HiFiLed.svelte';
+  import HiFiBadge from '../hifi/HiFiBadge.svelte';
   import SetupSpende from './SetupSpende.svelte';
   import { api } from '../../lib/api.js';
   import { appState, actions } from '../../lib/store.svelte.js';
@@ -361,15 +362,15 @@
               <div class="badge-demo-group">
                 <h4 class="md-h4">{t('allgemein.icyBadges')}</h4>
                 <div class="badge-demo-row">
-                  <span class="demo-badge icy-default">ICY</span>
+                  <HiFiBadge label="ICY" color="green-bright" />
                   <span class="badge-demo-label">{t('allgemein.icyDefault')}</span>
                 </div>
                 <div class="badge-demo-row">
-                  <span class="demo-badge icy-good">ICY</span>
+                  <HiFiBadge label="ICY" color="green" />
                   <span class="badge-demo-label">{t('allgemein.icyGood')}</span>
                 </div>
                 <div class="badge-demo-row">
-                  <span class="demo-badge icy-poor">ICY</span>
+                  <HiFiBadge label="ICY" color="amber" />
                   <span class="badge-demo-label">{t('allgemein.icyPoor')}</span>
                 </div>
               </div>
@@ -378,11 +379,11 @@
                 <h4 class="md-h4">{t('allgemein.icySystem')}</h4>
                 <p class="md-text">{t('allgemein.icySystemHint')}</p>
                 <div class="badge-cycle">
-                  <span class="demo-badge icy-default">ICY</span>
+                  <HiFiBadge label="ICY" color="green-bright" />
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-                  <span class="demo-badge icy-good">ICY</span>
+                  <HiFiBadge label="ICY" color="green" />
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-                  <span class="demo-badge icy-poor">ICY</span>
+                  <HiFiBadge label="ICY" color="amber" />
                   <span class="badge-cycle-arrow"><i class="fa-solid fa-arrow-right"></i></span>
                   <span class="badge-cycle-reset">{t('allgemein.icySystemBack')}</span>
                 </div>
@@ -392,19 +393,19 @@
               <div class="badge-demo-group">
                 <h4 class="md-h4">{t('allgemein.adBadges')}</h4>
                 <div class="badge-demo-row">
-                  <span class="demo-badge ad-clean">0% AD</span>
+                  <HiFiBadge label="0% AD" color="green" />
                   <span class="badge-demo-label">{t('allgemein.adClean')}</span>
                 </div>
                 <div class="badge-demo-row">
-                  <span class="demo-badge ad-suspect">35% AD</span>
+                  <HiFiBadge label="35% AD" color="amber" />
                   <span class="badge-demo-label">{t('allgemein.adSuspect')}</span>
                 </div>
                 <div class="badge-demo-row">
-                  <span class="demo-badge ad-blocked">AD</span>
+                  <HiFiBadge label="AD" color="red" />
                   <span class="badge-demo-label">{t('allgemein.adBlocked')}</span>
                 </div>
                 <div class="badge-demo-row">
-                  <span class="demo-badge ad-ok">OK</span>
+                  <HiFiBadge label="OK" color="green" />
                   <span class="badge-demo-label">{t('allgemein.adOk')}</span>
                 </div>
               </div>
@@ -806,65 +807,6 @@
     font-family: var(--hifi-font-body);
     font-size: 13px;
     color: var(--hifi-text-secondary);
-  }
-
-  /* Exakte Kopie der echten Badge-Styles */
-  .demo-badge {
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    line-height: 1;
-    padding: 3px 6px;
-    border-radius: 2px;
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    min-width: 36px;
-    justify-content: center;
-  }
-
-  .demo-badge.icy-default {
-    color: #5ba8d9;
-    background: rgba(91, 168, 217, 0.15);
-    border: 1px solid rgba(91, 168, 217, 0.3);
-  }
-
-  .demo-badge.icy-good {
-    color: #4caf50;
-    background: rgba(76, 175, 80, 0.15);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-  }
-
-  .demo-badge.icy-poor {
-    color: #e09040;
-    background: rgba(224, 144, 64, 0.15);
-    border: 1px solid rgba(224, 144, 64, 0.3);
-  }
-
-  .demo-badge.ad-clean {
-    color: var(--hifi-text-green, #4caf50);
-    background: rgba(76, 175, 80, 0.12);
-    border: 1px solid rgba(76, 175, 80, 0.25);
-  }
-
-  .demo-badge.ad-suspect {
-    color: var(--hifi-text-amber, #e5a00d);
-    background: rgba(229, 160, 13, 0.12);
-    border: 1px solid rgba(229, 160, 13, 0.25);
-  }
-
-  .demo-badge.ad-blocked {
-    color: var(--hifi-led-red, #e53935);
-    background: rgba(229, 57, 53, 0.12);
-    border: 1px solid rgba(229, 57, 53, 0.25);
-  }
-
-  .demo-badge.ad-ok {
-    color: var(--hifi-text-green, #4caf50);
-    background: rgba(76, 175, 80, 0.12);
-    border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   /* Badge-Zyklus-Darstellung */

@@ -1,5 +1,6 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
+  import HiFiBadge from './hifi/HiFiBadge.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
@@ -1007,31 +1008,9 @@
                 {#if station.favicon}<img class="station-favicon" src={'/api/favicon/' + station.uuid} alt="" loading="lazy" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music station-favicon-fallback"></i>{/if}
                 <span class="station-name-text">{station.name}</span>
               </div>
-              <div class="station-badges">
-                {#if station.icy}
-                  <button
-                    class="info-badge icy-badge"
-                    class:icy-good={station.icy_quality === 'good'}
-                    class:icy-poor={station.icy_quality === 'poor'}
-                    onclick={(e) => toggleIcyQuality(station, e)}
-                    title={station.icy_quality === 'good' ? 'ICY: Genaue Schnitte (Klick: wechseln)' : station.icy_quality === 'poor' ? 'ICY: Ungenaue Schnitte (Klick: wechseln)' : 'ICY Metadata (Klick: Qualität bewerten)'}
-                  >ICY</button>
-                {/if}
-                {#if adStatusMap[station.uuid]}
-                  {@const ad = adStatusMap[station.uuid]}
-                  {#if ad.user_action === 'blocked'}
-                    <span class="info-badge ad-badge-blocked" title="Werbung: Als Werbung markiert">AD</span>
-                  {:else if ad.user_action === 'allowed'}
-                    <span class="info-badge ad-badge-ok" title="Werbung: Manuell freigegeben">OK</span>
-                  {:else if ad.confidence > 0}
-                    <span class="info-badge ad-badge-suspect" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht nach Prüfung">{Math.round(ad.confidence * 100)}% AD</span>
-                  {:else}
-                    <span class="info-badge ad-badge-clean" title="Werbung: 0% - Kein Verdacht nach Prüfung">0% AD</span>
-                  {/if}
-                {/if}
-              </div>
+              <div class="station-badges"></div>
               <div class="station-country">{translateCountry(station.country) || '-'}</div>
-              <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}{station.codec ? ' / ' + station.codec : ''}</div>
+              <div class="station-bitrate">{bitrateVal ? formatNumber(bitrateVal) : '--'}</div>
               <div class="station-stats">{formatK(votesVal)}</div>
               <button
                 class="station-fav"
@@ -1048,55 +1027,78 @@
                   <div class="details-favicon">
                     {#if station.favicon}<img src={'/api/favicon/' + station.uuid} alt="" onerror={(e) => { e.target.style.display = 'none'; }} />{:else}<i class="fa-solid fa-music details-favicon-fallback"></i>{/if}
                   </div>
-                  <div class="details-grid">
-                    {#if isPlaying && appState.streamTitle}
-                      <div class="detail-row icy-now-playing">
-                        <span class="detail-label">{t('stationDetail.nowPlaying')}</span>
-                        <span class="detail-value icy-title">{appState.streamTitle}</span>
-                      </div>
-                    {/if}
-                    {#if station.homepage}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.homepage')}</span>
-                        <a href={station.homepage} target="_blank" class="detail-value link">{station.homepage}</a>
-                      </div>
-                    {/if}
-                    {#if station.tags}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.tags')}</span>
-                        <span class="detail-value">{station.tags}</span>
-                      </div>
-                    {/if}
-                    {#if station.language}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.language')}</span>
-                        <span class="detail-value">{station.language}</span>
-                      </div>
-                    {/if}
-                    {#if station.codec}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.codec')}</span>
-                        <span class="detail-value">{station.codec}</span>
-                      </div>
-                    {/if}
-                    {#if station.votes !== undefined}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.votes')}</span>
-                        <span class="detail-value">{formatNumber(station.votes)}</span>
-                      </div>
-                    {/if}
-                    {#if station.clickcount !== undefined}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.clicks')}</span>
-                        <span class="detail-value">{formatNumber(station.clickcount)}</span>
-                      </div>
-                    {/if}
-                    {#if station.url_resolved}
-                      <div class="detail-row">
-                        <span class="detail-label">{t('stationDetail.streamUrl')}</span>
-                        <span class="detail-value url">{station.url_resolved}</span>
-                      </div>
-                    {/if}
+                  <div class="details-body">
+                    <!-- Badge-Leiste -->
+                    <div class="detail-badges">
+                      {#if station.codec}
+                        <HiFiBadge label={station.codec} color="blue" />
+                      {/if}
+                      {#if bitrateVal}
+                        <HiFiBadge label="{formatNumber(bitrateVal)} kbps" color="purple" />
+                      {/if}
+                      {#if station.icy}
+                        <HiFiBadge
+                          label="ICY"
+                          color={station.icy_quality === 'good' ? 'green' : station.icy_quality === 'poor' ? 'amber' : 'green-bright'}
+                          title={station.icy_quality === 'good' ? 'ICY: Genaue Schnitte' : station.icy_quality === 'poor' ? 'ICY: Ungenaue Schnitte' : 'ICY Metadata'}
+                          onclick={(e) => toggleIcyQuality(station, e)}
+                        />
+                      {/if}
+                      {#if adStatusMap[station.uuid]}
+                        {@const ad = adStatusMap[station.uuid]}
+                        {#if ad.user_action === 'blocked'}
+                          <HiFiBadge label="AD" color="red" title="Als Werbung markiert" />
+                        {:else if ad.user_action === 'allowed'}
+                          <HiFiBadge label="0% AD" color="green" title="Manuell freigegeben" />
+                        {:else if ad.confidence > 0}
+                          <HiFiBadge label="{Math.round(ad.confidence * 100)}% AD" color="amber" title="Werbung: {Math.round(ad.confidence * 100)}% Verdacht" />
+                        {:else}
+                          <HiFiBadge label="0% AD" color="green" title="Kein Verdacht" />
+                        {/if}
+                      {/if}
+                      {#if station.country}
+                        <HiFiBadge label={translateCountry(station.country)} color="muted" />
+                      {/if}
+                      {#if station.votes !== undefined}
+                        <HiFiBadge label={formatK(station.votes)} color="gold" icon="fa-solid fa-thumbs-up" />
+                      {/if}
+                      {#if station.clickcount}
+                        <HiFiBadge label={formatK(station.clickcount)} color="muted" icon="fa-solid fa-mouse-pointer" />
+                      {/if}
+                    </div>
+                    <!-- Text-Details -->
+                    <div class="details-grid">
+                      {#if isPlaying && appState.streamTitle}
+                        <div class="detail-row icy-now-playing">
+                          <span class="detail-label">{t('stationDetail.nowPlaying')}</span>
+                          <span class="detail-value icy-title">{appState.streamTitle}</span>
+                        </div>
+                      {/if}
+                      {#if station.homepage}
+                        <div class="detail-row">
+                          <span class="detail-label">{t('stationDetail.homepage')}</span>
+                          <a href={station.homepage} target="_blank" class="detail-value link">{station.homepage}</a>
+                        </div>
+                      {/if}
+                      {#if station.tags}
+                        <div class="detail-row">
+                          <span class="detail-label">{t('stationDetail.tags')}</span>
+                          <span class="detail-value">{station.tags.split(',').slice(0, 8).map(t => t.trim()).join(', ')}</span>
+                        </div>
+                      {/if}
+                      {#if station.language}
+                        <div class="detail-row">
+                          <span class="detail-label">{t('stationDetail.language')}</span>
+                          <span class="detail-value">{station.language}</span>
+                        </div>
+                      {/if}
+                      {#if station.url_resolved}
+                        <div class="detail-row">
+                          <span class="detail-label">{t('stationDetail.streamUrl')}</span>
+                          <span class="detail-value url">{station.url_resolved}</span>
+                        </div>
+                      {/if}
+                    </div>
                   </div>
                   <div class="details-actions">
                     <div class="details-actions-btns">
@@ -1701,44 +1703,6 @@
     gap: 3px;
   }
 
-  .info-badge {
-    font-family: var(--hifi-font-values);
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    line-height: 1;
-    padding: 2px 4px;
-    border-radius: 2px;
-    display: inline-flex;
-    align-items: center;
-    cursor: default;
-    white-space: nowrap;
-  }
-
-  .icy-badge {
-    color: #5ba8d9;
-    background: rgba(91, 168, 217, 0.15);
-    border: 1px solid rgba(91, 168, 217, 0.3);
-    cursor: pointer;
-  }
-
-  .icy-badge:hover {
-    background: rgba(91, 168, 217, 0.25);
-  }
-
-  .icy-badge.icy-good {
-    color: #4caf50;
-    background: rgba(76, 175, 80, 0.15);
-    border-color: rgba(76, 175, 80, 0.3);
-  }
-
-  .icy-badge.icy-poor {
-    color: #e09040;
-    background: rgba(224, 144, 64, 0.15);
-    border-color: rgba(224, 144, 64, 0.3);
-  }
-
   .station-country {
     width: 160px;
     font-size: 11px;
@@ -1829,30 +1793,6 @@
     flex-direction: column;
     gap: 4px;
     flex-shrink: 0;
-  }
-
-  .ad-badge-clean {
-    color: var(--hifi-text-green, #4caf50);
-    background: rgba(76, 175, 80, 0.12);
-    border: 1px solid rgba(76, 175, 80, 0.25);
-  }
-
-  .ad-badge-suspect {
-    color: var(--hifi-text-amber, #e5a00d);
-    background: rgba(229, 160, 13, 0.12);
-    border: 1px solid rgba(229, 160, 13, 0.25);
-  }
-
-  .ad-badge-blocked {
-    color: var(--hifi-led-red, #e53935);
-    background: rgba(229, 57, 53, 0.12);
-    border: 1px solid rgba(229, 57, 53, 0.25);
-  }
-
-  .ad-badge-ok {
-    color: var(--hifi-text-green, #4caf50);
-    background: rgba(76, 175, 80, 0.12);
-    border: 1px solid rgba(76, 175, 80, 0.25);
   }
 
   .ad-hover-btn {
@@ -2019,34 +1959,48 @@
     border-radius: 8px;
   }
 
-  .details-grid {
+  .details-body {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    flex: 1;
+    gap: 6px;
+    min-width: 0;
   }
-  
-  .detail-row {
+
+  .detail-badges {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
   }
-  
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 14px;
+    align-items: baseline;
+  }
+
+  .detail-row {
+    display: contents;
+  }
+
   .detail-label {
     font-family: var(--hifi-font-values);
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--hifi-text-secondary);
-    min-width: 80px;
-    flex-shrink: 0;
+    white-space: nowrap;
+    line-height: 18px;
   }
-  
+
   .detail-value {
     font-family: 'Barlow', sans-serif;
     font-size: 12px;
     color: var(--hifi-text-primary);
     word-break: break-word;
+    line-height: 18px;
   }
   
   .detail-value.link {

@@ -1,5 +1,6 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
+  import HiFiBadge from './hifi/HiFiBadge.svelte';
   import HiFiDisplay from './hifi/HiFiDisplay.svelte';
   import FileExplorer from './shared/FileExplorer.svelte';
   import RecordingSidebar from './recordings/RecordingSidebar.svelte';
@@ -634,10 +635,12 @@
           <span class="meta-val">{session.bitrate || (session.duration > 0 ? Math.round((session.file_size * 8) / (session.duration * 1000)) : '--')} kbps</span>
           {#if appState.devMode && session.quality_json}
             {@const q = JSON.parse(session.quality_json)}
-            <span class="quality-badge quality-{q.rating}" title="Gaps: {q.gaps}, Codec: {q.codec_changes}, Stalls: {q.stalls}">
-              <i class="fa-solid {q.rating === 'green' ? 'fa-circle-check' : q.rating === 'yellow' ? 'fa-triangle-exclamation' : 'fa-circle-xmark'}"></i>
-              {q.rating === 'green' ? 'OK' : q.rating === 'yellow' ? `${q.gaps + q.codec_changes} Warn.` : `${q.stalls} Abbruch`}
-            </span>
+            <HiFiBadge
+              label={q.rating === 'green' ? 'OK' : q.rating === 'yellow' ? `${q.gaps + q.codec_changes} Warn.` : `${q.stalls} Abbruch`}
+              color={q.rating === 'green' ? 'green' : q.rating === 'yellow' ? 'amber' : 'red'}
+              icon="fa-solid {q.rating === 'green' ? 'fa-circle-check' : q.rating === 'yellow' ? 'fa-triangle-exclamation' : 'fa-circle-xmark'}"
+              title="Gaps: {q.gaps}, Codec: {q.codec_changes}, Stalls: {q.stalls}"
+            />
           {/if}
         </div>
         <div class="detail-actions">
@@ -704,7 +707,7 @@
                   <span class="meta-title">
                     {entry.title}
                     {#if entry.ignored}
-                      <span class="sperrtext-badge" title="Sperrtext: {entry.raw_title}">SPERR</span>
+                      <HiFiBadge label="SPERR" color="red" title="Sperrtext: {entry.raw_title}" />
                     {/if}
                   </span>
                 </div>
@@ -879,32 +882,6 @@
     font-weight: 700;
     color: var(--hifi-text-secondary);
     white-space: nowrap;
-  }
-
-  .quality-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 8px;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .quality-green {
-    background: rgba(0, 180, 0, 0.15);
-    color: #4caf50;
-    border: 1px solid rgba(0, 180, 0, 0.3);
-  }
-  .quality-yellow {
-    background: rgba(255, 180, 0, 0.15);
-    color: #ffb300;
-    border: 1px solid rgba(255, 180, 0, 0.3);
-  }
-  .quality-red {
-    background: rgba(255, 60, 60, 0.15);
-    color: #f44336;
-    border: 1px solid rgba(255, 60, 60, 0.3);
   }
 
   .detail-actions {
@@ -1096,17 +1073,6 @@
   @keyframes gap-pulse {
     from { opacity: 0.7; }
     to { opacity: 1; }
-  }
-
-  .sperrtext-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 3px;
-    background: var(--hifi-red, #c0392b);
-    color: #fff;
-    margin-left: 4px;
-    vertical-align: middle;
   }
 
   .meta-time {

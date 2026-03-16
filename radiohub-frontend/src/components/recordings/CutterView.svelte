@@ -4,6 +4,7 @@
    * Canvas-basiert, Lazy-Loading, Marker-System, ICY-Titel-Farben.
    */
   import { onMount } from 'svelte';
+  import HiFiBadge from '../hifi/HiFiBadge.svelte';
   import { appState, actions } from '../../lib/store.svelte.js';
   import { api } from '../../lib/api.js';
   import { PeaksLoader } from '../../lib/peaksLoader.js';
@@ -859,9 +860,10 @@
   <!-- Werkzeuge + Analyse in einer Zeile -->
   <div class="tools-bar">
     {#if segments.length > 0}
-      <span class="segment-selection-badge" class:partial={selectedSegmentIds.length < segments.length}>
-        {selectedSegmentIds.length}/{segments.length} {t('cutterExtra.seg')}
-      </span>
+      <HiFiBadge
+        label="{selectedSegmentIds.length}/{segments.length} {t('cutterExtra.seg')}"
+        color={selectedSegmentIds.length < segments.length ? 'amber' : 'accent'}
+      />
     {/if}
     <button class="cutter-btn" onclick={handleNormalize} disabled={isProcessing || (segments.length > 0 && selectedSegmentIds.length === 0)} title={t('cutter.normalisierenTip')}>
       <i class="fa-solid fa-volume-high"></i> {t('cutter.normalisieren')}
@@ -1186,22 +1188,6 @@
     padding: 8px 12px;
     background: var(--hifi-bg-panel);
     flex-wrap: wrap;
-  }
-
-  .segment-selection-badge {
-    font-family: var(--hifi-font-values, 'Orbitron', monospace);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--hifi-accent);
-    padding: 2px 6px;
-    border: 1px solid var(--hifi-accent);
-    border-radius: 3px;
-    letter-spacing: 0.5px;
-  }
-
-  .segment-selection-badge.partial {
-    color: var(--hifi-text-warning, #ff9800);
-    border-color: var(--hifi-text-warning, #ff9800);
   }
 
   .processing-indicator {
