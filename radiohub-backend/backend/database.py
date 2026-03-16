@@ -397,6 +397,18 @@ def init_db():
             (pattern, mtype)
         )
 
+    # === Sender-Bewertungen / Tags ===
+    c.execute('''CREATE TABLE IF NOT EXISTS station_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        station_uuid TEXT NOT NULL,
+        tag_key TEXT NOT NULL,
+        tag_value TEXT NOT NULL DEFAULT 'true',
+        source TEXT NOT NULL DEFAULT 'user',
+        confidence REAL DEFAULT 1.0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(station_uuid, tag_key, source)
+    )''')
+
     # === Indices für Performance ===
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_votes ON stations(votes DESC)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_stations_country ON stations(countrycode)")
@@ -420,6 +432,8 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_podcasts_cat ON category_podcasts(category_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_sessions_ses ON category_sessions(session_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_sessions_cat ON category_sessions(category_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_station_tags_uuid ON station_tags(station_uuid)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_station_tags_key ON station_tags(tag_key)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(is_downloaded)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played)")
 

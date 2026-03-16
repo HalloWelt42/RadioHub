@@ -1,6 +1,7 @@
 <script>
   import HiFiLed from './hifi/HiFiLed.svelte';
   import HiFiBadge from './hifi/HiFiBadge.svelte';
+  import HiFiTagPanel from './hifi/HiFiTagPanel.svelte';
   import { api } from '../lib/api.js';
   import { appState, actions } from '../lib/store.svelte.js';
   import * as sfx from '../lib/uiSounds.js';
@@ -109,6 +110,23 @@
   let categories = $state([]);
   let selectedCategories = $state([]);
   let categoryAssignments = $state({}); // Map<uuid, [categoryId, ...]>
+
+  // Sender-Bewertungen / Tags
+  let tagAssignments = $state({}); // Map<uuid, [{tag_key, tag_value, source}]>
+  const TAG_ITEMS = [
+    { key: 'werbung', label: 'Werbung', icon: 'fa-solid fa-bullhorn', color: '#e5a00d', group: 'ad' },
+    { key: 'werbung_widerspruch', label: 'Kein Ad', icon: 'fa-solid fa-ban', color: '#4caf50', group: 'ad' },
+    { key: 'religioes', label: 'Religiös', icon: 'fa-solid fa-church', color: '#a078ff' },
+    { key: 'politisch_extrem', label: 'Extrem', icon: 'fa-solid fa-triangle-exclamation', color: '#f44336' },
+    { key: 'populistisch', label: 'Populistisch', icon: 'fa-solid fa-bullhorn', color: '#ff7043' },
+    { key: 'nicht_jugendfrei', label: 'Ab 18', icon: 'fa-solid fa-shield-halved', color: '#f44336' },
+    { key: 'schlechte_qualitaet', label: 'Qualität', icon: 'fa-solid fa-thumbs-down', color: '#f44336' },
+    { key: 'schwankende_qualitaet', label: 'Instabil', icon: 'fa-solid fa-wave-square', color: '#ff9800' },
+    { key: 'haeufig_offline', label: 'Offline', icon: 'fa-solid fa-plug-circle-xmark', color: '#9e9e9e' },
+    { key: 'hoher_sprachanteil', label: 'Talk', icon: 'fa-solid fa-microphone', color: '#64b4ff' },
+    { key: 'user_vote_up', label: '\u25B2', icon: 'fa-solid fa-thumbs-up', color: '#4caf50', group: 'vote' },
+    { key: 'user_vote_down', label: '\u25BC', icon: 'fa-solid fa-thumbs-down', color: '#f44336', group: 'vote' },
+  ];
 
   // Sortierung
   let sortBy = $state('name');
@@ -433,9 +451,10 @@
         }
       }
 
-      // Kategorie-Zuordnungen für geladene Sender holen
-      if (categories.length > 0 && newStations.length > 0) {
-        loadCategoryAssignments(newStations);
+      // Kategorie-Zuordnungen + Tags für geladene Sender holen
+      if (newStations.length > 0) {
+        if (categories.length > 0) loadCategoryAssignments(newStations);
+        loadTagAssignments(newStations);
       }
 
     } catch (e) {
@@ -774,6 +793,72 @@
     }
   }
 
+  async function loadTagAssignments(stationList) {
+    if (!stationList.length) return;
+    try {
+      const uuids = stationList.map(s => s.uuid);
+      const result = await api.getStationTagsBulk(uuids);
+      const data = result?.assignments || {};
+      tagAssignments = { ...tagAssignments, ...data };
+    } catch {
+      // Netzwerkfehler ignorieren
+    }
+  }
+
+  // Exklusiv-Gruppen: innerhalb einer Gruppe kann nur ein Tag aktiv sein
+  const TAG_EXCLUSIONS = {
+    ad: ['werbung', 'werbung_widerspruch'],
+    vote: ['user_vote_up', 'user_vote_down'],
+  };
+
+  function getExclusionPartner(tagKey) {
+    for (const keys of Object.values(TAG_EXCLUSIONS)) {
+      if (keys.includes(tagKey)) return keys.filter(k => k !== tagKey);
+    }
+    return [];
+  }
+
+  async function toggleTag(stationUuid, tagKey) {
+    const tags = tagAssignments[stationUuid] || [];
+    const existing = tags.find(t => t.tag_key === tagKey && t.source === 'user');
+    const partners = getExclusionPartner(tagKey);
+
+    // Optimistisches Update
+    if (existing) {
+      tagAssignments[stationUuid] = tags.filter(t => !(t.tag_key === tagKey && t.source === 'user'));
+    } else {
+      // Partner entfernen, neuen setzen
+      let updated = tags.filter(t => !(partners.includes(t.tag_key) && t.source === 'user'));
+      updated = [...updated, { tag_key: tagKey, tag_value: 'true', source: 'user' }];
+      tagAssignments[stationUuid] = updated;
+    }
+    tagAssignments = { ...tagAssignments };
+
+    try {
+      if (existing) {
+        await api.removeStationTag(stationUuid, tagKey);
+      } else {
+        // Partner im Backend entfernen
+        for (const p of partners) {
+          if (tags.find(t => t.tag_key === p && t.source === 'user')) {
+            api.removeStationTag(stationUuid, p).catch(() => {});
+          }
+        }
+        await api.setStationTag(stationUuid, tagKey);
+      }
+    } catch {
+      // Rollback: Tags neu laden
+      loadTagAssignments([{ uuid: stationUuid }]);
+      actions.showToast(t('common.fehler'), 'error');
+    }
+  }
+
+  function getActiveTagKeys(stationUuid) {
+    return (tagAssignments[stationUuid] || [])
+      .filter(t => t.source === 'user' && t.tag_value !== 'false')
+      .map(t => t.tag_key);
+  }
+
   function clearFilters() {
     selectedCountries = [];
     selectedBitrates = [];
@@ -1030,6 +1115,13 @@
               >
                 <HiFiLed color={isFav ? 'yellow' : 'off'} size="small" />
               </button>
+              <button
+                class="station-hide"
+                onclick={(e) => blockStation(station, e)}
+                title={t('stations.senderAusblenden')}
+              >
+                <i class="fa-solid fa-eye-slash"></i>
+              </button>
             </div>
 
             {#if isExpanded}
@@ -1112,26 +1204,24 @@
                     </div>
                   </div>
                   <div class="details-actions">
-                    <div class="details-actions-btns">
-                      <button class="ad-hover-btn" onclick={(e) => reportAd(station, e)} title={t('stations.alsWerbung')}>{t('stationDetail.werbung')}</button>
-                      <button class="ad-hover-btn ad-hover-hide" onclick={(e) => blockStation(station, e)} title={t('stations.senderAusblenden')}>{t('stationDetail.ausblenden')}</button>
-                    </div>
                     {#if categories.length > 0}
-                      <div class="category-assign-list" class:scrollable={categories.length > 4}>
-                        {#each categories as cat (cat.id)}
-                          {@const isAssigned = (categoryAssignments[station.uuid] || []).includes(cat.id)}
-                          <button
-                            class="category-assign-item"
-                            class:assigned={isAssigned}
-                            onclick={(e) => toggleCategoryAssignment(station.uuid, cat.id, e)}
-                            title={isAssigned ? cat.name + ' entfernen' : cat.name + ' zuordnen'}
-                          >
-                            <HiFiLed color={isAssigned ? 'green' : 'off'} size="small" />
-                            <span class="category-assign-label">{cat.name}</span>
-                          </button>
-                        {/each}
+                      <div class="details-actions-col">
+                        <HiFiTagPanel
+                          title="Kategorien"
+                          items={categories.map(c => ({ key: c.id, label: c.name }))}
+                          activeKeys={(categoryAssignments[station.uuid] || [])}
+                          ontoggle={(key) => toggleCategoryAssignment(station.uuid, key, { stopPropagation: () => {} })}
+                        />
                       </div>
                     {/if}
+                    <div class="details-actions-col">
+                      <HiFiTagPanel
+                        title="Bewertung"
+                        items={TAG_ITEMS}
+                        activeKeys={getActiveTagKeys(station.uuid)}
+                        ontoggle={(key) => toggleTag(station.uuid, key)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1749,93 +1839,42 @@
     padding: 4px;
   }
 
+  .station-hide {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--hifi-text-secondary);
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    font-size: 10px;
+  }
+
+  .station-row:hover .station-hide {
+    opacity: 0.5;
+  }
+
+  .station-hide:hover {
+    opacity: 1 !important;
+    color: var(--hifi-led-red, #e53935);
+  }
+
   .details-actions {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     margin-left: auto;
-  }
-
-  .category-assign-list {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  .category-assign-list.scrollable {
-    max-height: 96px;
-    overflow-y: auto;
-  }
-
-  .category-assign-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 6px;
-    background: none;
-    border: none;
-    color: var(--hifi-text-secondary);
-    font-family: 'Barlow', sans-serif;
-    font-size: 11px;
-    font-weight: 400;
-    cursor: pointer;
-    text-align: left;
-    border-radius: var(--hifi-border-radius-sm);
-  }
-
-  .category-assign-item:hover {
-    background: var(--hifi-row-hover);
-    color: var(--hifi-text-primary);
-  }
-
-  .category-assign-item.assigned {
-    color: var(--hifi-text-primary);
-  }
-
-  .category-assign-label {
-    white-space: nowrap;
+    max-height: 150px;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .details-actions-btns {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-shrink: 0;
+  .details-actions-col {
+    flex: 1 1 0;
+    min-width: 100px;
+    max-width: 180px;
   }
 
-  .ad-hover-btn {
-    font-family: var(--hifi-font-family);
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    padding: 2px 6px;
-    border: 1px solid var(--hifi-border-dark);
-    border-radius: 3px;
-    cursor: pointer;
-    background: var(--hifi-bg-tertiary);
-    color: var(--hifi-text-secondary);
-    transition: background 0.1s, color 0.1s;
-  }
-
-  .ad-hover-btn:hover {
-    background: var(--hifi-led-amber, #e5a00d);
-    color: #000;
-    border-color: var(--hifi-led-amber, #e5a00d);
-  }
-
-  .ad-hover-hide {
-    color: var(--hifi-led-red, #e53935);
-  }
-
-  .ad-hover-hide:hover {
-    background: var(--hifi-led-red, #e53935);
-    color: #fff;
-    border-color: var(--hifi-led-red, #e53935);
-  }
 
   .loading, .empty {
     display: flex;

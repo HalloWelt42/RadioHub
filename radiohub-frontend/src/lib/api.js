@@ -173,6 +173,31 @@ class RadioHubAPI {
     });
   }
 
+  // === Station Tags (Bewertungen) ===
+  async getStationTags(uuid) {
+    return this.fetch(`/api/station-tags/${uuid}`);
+  }
+
+  async getStationTagsBulk(uuids) {
+    return this.fetch('/api/station-tags/bulk', {
+      method: 'POST',
+      body: JSON.stringify({ station_uuids: uuids })
+    });
+  }
+
+  async setStationTag(uuid, tagKey, tagValue = 'true', source = 'user') {
+    return this.fetch(`/api/station-tags/${uuid}/${tagKey}`, {
+      method: 'PUT',
+      body: JSON.stringify({ tag_key: tagKey, tag_value: tagValue, source })
+    });
+  }
+
+  async removeStationTag(uuid, tagKey, source = 'user') {
+    return this.fetch(`/api/station-tags/${uuid}/${tagKey}?source=${source}`, {
+      method: 'DELETE'
+    });
+  }
+
   // === Favorites ===
   async getFavoritesAll() {
     return this.fetch('/api/favorites/all');

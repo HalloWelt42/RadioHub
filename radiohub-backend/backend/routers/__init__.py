@@ -19,6 +19,7 @@ from .services import router as services_router
 from .favicons import router as favicons_router
 from .peaks import router as peaks_router
 from .audio_processing import router as audio_processing_router
+from .station_tags import router as station_tags_router
 
 __all__ = [
     "stations_router",
@@ -41,4 +42,5 @@ __all__ = [
     "favicons_router",
     "peaks_router",
     "audio_processing_router",
+    "station_tags_router",
 ]
