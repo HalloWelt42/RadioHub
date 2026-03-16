@@ -434,6 +434,18 @@ def init_db():
     c.execute("CREATE INDEX IF NOT EXISTS idx_cat_sessions_cat ON category_sessions(category_id)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_station_tags_uuid ON station_tags(station_uuid)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_station_tags_key ON station_tags(tag_key)")
+
+    # === Custom Stream URLs ===
+    c.execute('''CREATE TABLE IF NOT EXISTS station_custom_urls (
+        station_uuid TEXT PRIMARY KEY,
+        custom_url TEXT NOT NULL,
+        original_url TEXT NOT NULL,
+        original_url_resolved TEXT,
+        note TEXT DEFAULT '',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(is_downloaded)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played)")
 

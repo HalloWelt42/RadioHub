@@ -108,6 +108,22 @@ async def search_stations(req: StationSearchRequest):
                     if det.get("icy_quality"):
                         s["icy_quality"] = det["icy_quality"]
 
+    # Custom URLs mergen
+    if stations:
+        from ..database import db_session as _db
+        with _db() as conn:
+            c = conn.cursor()
+            placeholders = ",".join("?" * len(uuids))
+            c.execute(
+                f"SELECT station_uuid, custom_url FROM station_custom_urls WHERE station_uuid IN ({placeholders})",
+                uuids
+            )
+            custom_urls = {row["station_uuid"]: row["custom_url"] for row in c.fetchall()}
+        for s in stations:
+            cu = custom_urls.get(s.get("uuid"))
+            if cu:
+                s["custom_url"] = cu
+
     # Favicons im Hintergrund cachen
     if stations:
         asyncio.create_task(favicon_cache_batch(stations))
