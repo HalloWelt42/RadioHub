@@ -2,13 +2,13 @@
   /**
    * HiFiTagPanel - Universelle Toggle-Button-Gruppe mit LED-Header
    *
+   * 3 Zustaende: zu (off) -> Anzeige aktiver (gruen) -> Bearbeitung aller (gelb) -> zu
+   *
    * Props:
    *   title      - Ueberschrift (Orbitron)
    *   items      - Array von { key, label, icon?, color? }
    *   activeKeys - Set oder Array der aktiven Keys
-   *   ontoggle   - Callback(key) beim Klick
-   *   open       - Initial offen? (default false)
-   *   columns    - Spaltenanzahl (default 2)
+   *   ontoggle   - Callback(key) beim Klick (nur im gelb-Modus)
    */
   import HiFiLed from './HiFiLed.svelte';
 
@@ -17,42 +17,67 @@
     items = [],
     activeKeys = [],
     ontoggle = null,
-    open = false,
-    columns = 2,
   } = $props();
 
-  let expanded = $state(open);
+  // 0 = zu, 1 = anzeige (gruen), 2 = bearbeitung (gelb)
+  let mode = $state(0);
 
-  function toggle() {
-    expanded = !expanded;
+  function cycle() {
+    const hasActive = activeItems.length > 0;
+    if (mode === 0) {
+      // Wenn aktive vorhanden: gruen, sonst direkt gelb
+      mode = hasActive ? 1 : 2;
+    } else if (mode === 1) {
+      mode = 2;
+    } else {
+      mode = 0;
+    }
   }
 
   function isActive(key) {
     if (activeKeys instanceof Set) return activeKeys.has(key);
     return Array.isArray(activeKeys) && activeKeys.includes(key);
   }
+
+  let activeItems = $derived(items.filter(i => isActive(i.key)));
+  let ledColor = $derived(mode === 2 ? 'yellow' : mode === 1 ? 'green' : 'off');
+  let visibleItems = $derived(mode === 2 ? items : mode === 1 ? activeItems : []);
 </script>
 
 <div class="tag-panel">
-  <button class="tag-panel-header" onclick={toggle}>
-    <HiFiLed color={expanded ? 'yellow' : 'off'} size="small" />
+  <button class="tag-panel-header" onclick={cycle}>
+    <HiFiLed color={ledColor} size="small" />
     <span class="tag-panel-title">{title}</span>
+    {#if mode === 0 && activeItems.length > 0}
+      <span class="tag-panel-count">{activeItems.length}</span>
+    {/if}
   </button>
 
-  {#if expanded}
+  {#if mode > 0 && visibleItems.length > 0}
     <div class="tag-panel-body">
-      {#each items as item (item.key)}
+      {#each visibleItems as item (item.key)}
         {@const active = isActive(item.key)}
-        <button
-          class="tag-btn"
-          class:active
-          style={active && item.color ? `border-color: ${item.color}; color: ${item.color};` : ''}
-          onclick={() => ontoggle?.(item.key)}
-          title={item.label}
-        >
-          {#if item.icon}<i class="{item.icon}"></i>{/if}
-          <span>{item.label}</span>
-        </button>
+        {#if mode === 2}
+          <button
+            class="tag-btn"
+            class:active
+            style={active && item.color ? `border-color: ${item.color}; color: ${item.color};` : ''}
+            onclick={() => ontoggle?.(item.key)}
+            title={item.label}
+          >
+            {#if item.icon}<i class="{item.icon}"></i>{/if}
+            <span>{item.label}</span>
+          </button>
+        {:else}
+          <span
+            class="tag-btn active readonly"
+            style={item.color ? `border-color: ${item.color}; color: ${item.color};` : ''}
+            title={item.label}
+          >
+            {#if item.icon}<i class="{item.icon}"></i>{/if}
+            <span>{item.label}</span>
+          </span>
+        {/if}
       {/each}
     </div>
   {/if}
@@ -83,6 +108,14 @@
     color: var(--hifi-text-secondary);
   }
 
+  .tag-panel-count {
+    font-family: var(--hifi-font-display, 'Orbitron', monospace);
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--hifi-text-secondary);
+    opacity: 0.5;
+  }
+
   .tag-panel-header:hover .tag-panel-title {
     color: var(--hifi-text-primary);
   }
@@ -95,6 +128,11 @@
     max-height: 120px;
     overflow-y: auto;
     overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tag-panel-body::-webkit-scrollbar {
+    display: none;
   }
 
   .tag-btn {
@@ -133,5 +171,24 @@
     background: rgba(229, 160, 13, 0.12);
     color: var(--hifi-led-amber, #e5a00d);
     border-color: var(--hifi-led-amber, #e5a00d);
+  }
+
+  .tag-btn.readonly {
+    cursor: default;
+  }
+  .tag-btn.readonly:hover {
+    background: rgba(229, 160, 13, 0.12);
+  }
+
+  /* -- Light-Mode -- */
+  :global([data-theme="light"]) .tag-btn.active,
+  :global(:root:not([data-theme="dark"])) .tag-btn.active {
+    background: rgba(176, 120, 0, 0.1);
+    color: #8a6200;
+    border-color: #b07800;
+  }
+  :global([data-theme="light"]) .tag-btn.readonly:hover,
+  :global(:root:not([data-theme="dark"])) .tag-btn.readonly:hover {
+    background: rgba(176, 120, 0, 0.1);
   }
 </style>

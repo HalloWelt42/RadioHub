@@ -874,19 +874,9 @@
     50% { height: 30px; }
 }
 
-/* Badges */
+/* Badges -- Styling in HiFiBadge.svelte, hier nur Reset */
 .hifi-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: var(--hifi-bg-tertiary);
-    border-radius: 4px;
-    box-shadow: var(--hifi-shadow-inset);
+    box-shadow: none;
 }
 
 /* Cards */
