@@ -47,32 +47,42 @@
   }
 
   // selectedUuid folgt dem aktuell spielenden Sender nur bei externer Navigation
-  // (z.B. Prev/Next Buttons), nicht bei eigenem selectStation()-Klick
+  // Externer Senderwechsel (Prev/Next) -> selectedUuid nachziehen
+  // Guard: Timestamp-basiert statt UUID, verhindert Race bei schnellem Wechsel
+  let _lastPlayTriggeredTs = 0;
   let _lastPlayTriggeredUuid = null;
   $effect(() => {
     const playingUuid = appState.currentStation?.uuid ?? null;
-    if (playingUuid && playingUuid !== _lastPlayTriggeredUuid) {
-      // Externer Senderwechsel (Prev/Next) -> selectedUuid nachziehen
-      selectedUuid = playingUuid;
-    }
     if (!playingUuid) {
       _lastPlayTriggeredUuid = null;
+      _lastPlayTriggeredTs = 0;
+      return;
+    }
+    // Nur reagieren wenn sich die UUID tatsaechlich geaendert hat
+    // UND nicht von uns selbst getriggert wurde (innerhalb 500ms)
+    if (playingUuid !== _lastPlayTriggeredUuid) {
+      if (Date.now() - _lastPlayTriggeredTs > 500) {
+        selectedUuid = playingUuid;
+      }
+      _lastPlayTriggeredUuid = playingUuid;
     }
   });
 
   // === Source-Jump: Transport-Label Klick scrollt zum spielenden Sender ===
+  // Deep-Link-Handler uebernimmt das Laden + Scrollen via routeSegments.
+  // Dieser Effect ist nur Fallback wenn kein Deep-Link-Segment gesetzt wurde.
   let lastRadioJumpTs = 0;
   $effect(() => {
     const req = appState.sourceJumpRequest;
     if (!req || req.type !== 'radio' || req.ts <= lastRadioJumpTs) return;
     lastRadioJumpTs = req.ts;
+    // Deep-Link-Handler hat Vorrang -- nur scrollen wenn Sender bereits sichtbar
     setTimeout(() => {
-      const el = document.querySelector('.station-wrapper.playing');
-      if (el) {
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        if (appState.currentStation?.uuid) selectedUuid = appState.currentStation.uuid;
-      }
-    }, 150);
+      const uuid = appState.currentStation?.uuid;
+      if (uuid) selectedUuid = uuid;
+      const el = document.querySelector(`.station-wrapper[data-uuid="${uuid}"]`);
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 300);
   });
 
   // Filter-Daten
@@ -119,14 +129,14 @@
   let hasMore = $state(true);
 
   // Sidebar-Länder: nur die im Overlay konfigurierten, mit Daten aus availableCountries
-  let sidebarCountries = $derived(() => {
-    if (visibleCountries.length === 0) return [];
-    const visSet = new Set(visibleCountries);
-    return availableCountries.filter(c => visSet.has(c.code));
-  });
+  let sidebarCountries = $derived(
+    visibleCountries.length === 0 ? [] :
+    availableCountries.filter(c => new Set(visibleCountries).has(c.code))
+  );
 
-  // Search debounce
+  // Search debounce + Generation-Counter gegen Race Conditions
   let searchTimeout;
+  let _searchGeneration = 0;
   
   $effect(() => {
     loadFilters();
@@ -277,15 +287,16 @@
   }
 
   // Deep-Link: Sender per UUID oder Suche aus URL
-  let _deepLinkHandled = false;
+  let _deepLinkHandledValue = null; // Letzter verarbeiteter Segment-Wert
   async function _handleDeepLink() {
-    if (_deepLinkHandled) return;
     const seg = appState.routeSegments;
     if (!seg || seg.length === 0) return;
+    const segKey = seg.join('/');
+    if (_deepLinkHandledValue === segKey) return;
 
     // Such-Deep-Link: /tuner/search/[query]
     if (seg[0] === 'search' && seg[1]) {
-      _deepLinkHandled = true;
+      _deepLinkHandledValue = segKey;
       searchQuery = decodeURIComponent(seg[1]);
       await search();
       return;
@@ -295,7 +306,7 @@
     const uuid = seg[0];
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)) return;
 
-    _deepLinkHandled = true;
+    _deepLinkHandledValue = segKey;
 
     // Sender in bereits geladener Liste suchen
     let found = stations.find(s => s.uuid === uuid);
@@ -322,10 +333,13 @@
   }
   
   async function search(append = false) {
+    const gen = ++_searchGeneration;
     if (!append) {
       isLoading = true;
       offset = 0;
       stations = [];
+      adStatusMap = {}; // Fix 7: Map resetten bei neuem Search
+      focusedIndex = -1; // Fix 5: Keyboard-Focus resetten
       if (searchQuery && searchQuery.length >= 2) {
         saveSearchHistory(searchQuery);
         actions.navigateTo('/tuner/search/' + encodeURIComponent(searchQuery), { replace: true });
@@ -383,6 +397,8 @@
       }
       
       const result = await api.searchStations(params);
+      // Race-Guard: veraltete Response verwerfen
+      if (gen !== _searchGeneration) return;
       const newStations = result.stations || [];
 
       if (append) {
@@ -397,13 +413,16 @@
       hasMore = newStations.length === limit;
       offset = append ? offset + newStations.length : newStations.length;
 
-      // Erste Station vorauswählen wenn keine Auswahl aktiv
-      if (!append && !selectedUuid && stations.length > 0) {
-        // Spielenden Sender bevorzugen, sonst erste Station
+      // Auswahl nach Search aktualisieren
+      if (!append && stations.length > 0) {
         const playingUuid = appState.currentStation?.uuid;
-        if (playingUuid && stations.some(s => s.uuid === playingUuid)) {
+        if (selectedUuid && stations.some(s => s.uuid === selectedUuid)) {
+          // Aktuelle Auswahl ist noch in der Liste -- beibehalten
+        } else if (playingUuid && stations.some(s => s.uuid === playingUuid)) {
+          // Spielender Sender in Liste -- den auswaehlen
           selectedUuid = playingUuid;
         } else {
+          // Erste Station als Fallback
           selectedUuid = stations[0].uuid;
         }
       }
@@ -423,6 +442,8 @@
 
   // Einzelne Station proben bei Play - echte Werte ermitteln und in Liste mergen
   let probeTimer;
+  // Cleanup bei Unmount
+  $effect(() => () => { clearTimeout(probeTimer); });
   async function probeOnPlay(station) {
     try {
       await api.verifyBitrate([station.uuid]);
@@ -535,7 +556,7 @@
         if (focusedIndex >= 0 && focusedIndex < stations.length) {
           const station = stations[focusedIndex];
           selectedUuid = station.uuid;
-          _lastPlayTriggeredUuid = station.uuid;
+          _lastPlayTriggeredUuid = station.uuid; _lastPlayTriggeredTs = Date.now();
           actions.playStation(station);
           probeOnPlay(station);
           actions.navigateTo('/tuner/' + station.uuid);
@@ -571,7 +592,7 @@
   function playAndExpand(station, e) {
     e.stopPropagation();
     selectedUuid = station.uuid;
-    _lastPlayTriggeredUuid = station.uuid;
+    _lastPlayTriggeredUuid = station.uuid; _lastPlayTriggeredTs = Date.now();
     actions.playStation(station);
     probeOnPlay(station);
     actions.navigateTo('/tuner/' + station.uuid);
@@ -652,7 +673,7 @@
         const nextIdx = Math.min(idx, stations.length - 1);
         const nextStation = stations[nextIdx];
         selectedUuid = nextStation.uuid;
-        _lastPlayTriggeredUuid = nextStation.uuid;
+        _lastPlayTriggeredUuid = nextStation.uuid; _lastPlayTriggeredTs = Date.now();
         actions.playStation(nextStation);
         probeOnPlay(nextStation);
       } else {
@@ -789,9 +810,9 @@
           <span class="section-count dim">{visibleCountries.length}</span>
         {/if}
       </div>
-      {#if sidebarCountries().length > 0}
+      {#if sidebarCountries.length > 0}
         <div class="filter-list">
-          {#each sidebarCountries() as country}
+          {#each sidebarCountries as country}
             {@const isSelected = selectedCountries.includes(country.code)}
             {@const hasSel = selectedCountries.length > 0}
             <button class="filter-item" class:selected={isSelected} class:dimmed={hasSel && !isSelected} onclick={() => toggleCountry(country.code)} title={isSelected ? 'Filter entfernen: ' + translateCountry(country.name) : 'Filtern nach: ' + translateCountry(country.name)}>
@@ -812,7 +833,7 @@
     <div class="sidebar-divider"></div>
 
     <!-- Kategorien -->
-    <div class="section-fixed">
+    <div class="section-flex">
       <div class="section-header">
         <span class="section-label">{t('stations.kategorienLabel')}</span>
         {#if selectedCategories.length > 0}
@@ -1129,7 +1150,8 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   /* Action Row */
@@ -1227,7 +1249,7 @@
   /* Country: flex-Restplatz, scrollt intern */
   .section-flex {
     flex: 1;
-    min-height: 0;
+    min-height: 80px;
     display: flex;
     flex-direction: column;
   }
@@ -1242,8 +1264,9 @@
   }
 
   .filter-list.compact {
-    flex: none;
-    max-height: 120px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   /* Bitrate/Votes: feste Höhe */

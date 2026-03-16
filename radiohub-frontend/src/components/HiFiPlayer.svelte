@@ -118,12 +118,9 @@
     const mode = appState.playerMode;
     const ts = Date.now();
     if (mode === 'hls' || mode === 'direct') {
-      appState.sourceJumpRequest = { type: 'radio', id: appState.currentStation?.id, ts };
-      actions.navigateTo('/tuner');
-      setTimeout(() => {
-        const el = document.querySelector('.station-wrapper.playing');
-        if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }, 150);
+      const uuid = appState.currentStation?.uuid;
+      appState.sourceJumpRequest = { type: 'radio', id: uuid, ts };
+      actions.navigateTo(uuid ? `/tuner/${uuid}` : '/tuner');
     } else if (mode === 'podcast') {
       const pod = appState.podcastPlaylistPodcast;
       const podId = pod?.id;
