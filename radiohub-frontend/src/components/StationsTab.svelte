@@ -376,9 +376,14 @@
         votes_min = Math.max(votes_min ?? 0, filterMinVotes);
       }
 
+      // Länder-Filter: Sidebar-Selektion hat Vorrang, sonst konfigurierte Länder
+      const countryFilter = selectedCountries.length > 0
+        ? selectedCountries
+        : visibleCountries.length > 0 ? visibleCountries : undefined;
+
       const params = {
         q: searchQuery || undefined,
-        countries: selectedCountries.length > 0 ? selectedCountries : undefined,
+        countries: countryFilter,
         category_ids: selectedCategories.length > 0 ? selectedCategories : undefined,
         exclude_languages: excludedLanguages.length > 0 ? excludedLanguages : undefined,
         exclude_tags: excludedTags.length > 0 ? excludedTags : undefined,
