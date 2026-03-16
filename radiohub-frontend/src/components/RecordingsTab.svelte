@@ -632,6 +632,13 @@
           <span class="meta-val">{isActive ? formatDuration(appState.recordingElapsed) : formatDuration(session.duration)}</span>
           <span class="meta-val">{session.file_size ? formatSize(session.file_size) : '--'}</span>
           <span class="meta-val">{session.bitrate || (session.duration > 0 ? Math.round((session.file_size * 8) / (session.duration * 1000)) : '--')} kbps</span>
+          {#if appState.devMode && session.quality_json}
+            {@const q = JSON.parse(session.quality_json)}
+            <span class="quality-badge quality-{q.rating}" title="Gaps: {q.gaps}, Codec: {q.codec_changes}, Stalls: {q.stalls}">
+              <i class="fa-solid {q.rating === 'green' ? 'fa-circle-check' : q.rating === 'yellow' ? 'fa-triangle-exclamation' : 'fa-circle-xmark'}"></i>
+              {q.rating === 'green' ? 'OK' : q.rating === 'yellow' ? `${q.gaps + q.codec_changes} Warn.` : `${q.stalls} Abbruch`}
+            </span>
+          {/if}
         </div>
         <div class="detail-actions">
           {#if !isActive}
@@ -872,6 +879,32 @@
     font-weight: 700;
     color: var(--hifi-text-secondary);
     white-space: nowrap;
+  }
+
+  .quality-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .quality-green {
+    background: rgba(0, 180, 0, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(0, 180, 0, 0.3);
+  }
+  .quality-yellow {
+    background: rgba(255, 180, 0, 0.15);
+    color: #ffb300;
+    border: 1px solid rgba(255, 180, 0, 0.3);
+  }
+  .quality-red {
+    background: rgba(255, 60, 60, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(255, 60, 60, 0.3);
   }
 
   .detail-actions {

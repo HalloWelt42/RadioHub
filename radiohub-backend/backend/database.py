@@ -300,6 +300,7 @@ def init_db():
         ("meta_file_path", "TEXT"),
         ("rec_type", "TEXT DEFAULT 'direct'"),
         ("folder_id", "INTEGER REFERENCES recording_folders(id) ON DELETE SET NULL"),
+        ("quality_json", "TEXT"),  # JSON: {gaps, codec_changes, stalls, rating}
     ]:
         try:
             c.execute(f"ALTER TABLE sessions ADD COLUMN {col} {typedef}")

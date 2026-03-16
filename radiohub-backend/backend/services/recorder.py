@@ -744,6 +744,29 @@ class RecorderManager:
         except asyncio.CancelledError:
             pass
 
+    def _build_quality_json(self, session: RecordingSession) -> str:
+        """Aggregiert Events zu einem Quality-Summary-JSON."""
+        gaps = sum(1 for e in session.events if e["type"] == "gap_start")
+        codec_changes = sum(1 for e in session.events if e["type"] == "codec_change")
+        stalls = sum(1 for e in session.events if e["type"] == "stall")
+
+        # Rating: gruen/gelb/rot
+        if stalls > 0:
+            rating = "red"
+        elif gaps > 2 or codec_changes > 1:
+            rating = "yellow"
+        elif gaps > 0 or codec_changes > 0:
+            rating = "yellow"
+        else:
+            rating = "green"
+
+        return json.dumps({
+            "gaps": gaps,
+            "codec_changes": codec_changes,
+            "stalls": stalls,
+            "rating": rating
+        })
+
     def _finalize_session(self, session: RecordingSession, status: str,
                           real_duration: float = 0):
         """Finalisiert Session in DB."""
@@ -756,13 +779,18 @@ class RecorderManager:
         if meta_path and not meta_path.exists():
             meta_path = None
 
+        # Quality-Summary aus Events berechnen
+        quality_json = self._build_quality_json(session) if session.events else None
+
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE sessions SET
-                end_time = ?, duration = ?, file_size = ?, meta_file_path = ?, status = ?
+                end_time = ?, duration = ?, file_size = ?, meta_file_path = ?,
+                status = ?, quality_json = ?
                 WHERE id = ?''',
                 (end_time.isoformat(), duration, file_size,
-                 str(meta_path) if meta_path else None, status, session.id))
+                 str(meta_path) if meta_path else None, status,
+                 quality_json, session.id))
 
         # Events in meta.json ergänzen (falls vorhanden)
         if session.events and meta_path and meta_path.exists():
