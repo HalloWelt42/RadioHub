@@ -584,6 +584,14 @@
     });
   }
 
+  function copyText(text, label) {
+    navigator.clipboard.writeText(text).then(() => {
+      actions.showToast(`${label} kopiert`, 'success');
+    }).catch(() => {
+      actions.showToast('Kopieren fehlgeschlagen', 'error');
+    });
+  }
+
   function toggleExpand(station) {
     // Nur auf/zuklappen, kein Play
     if (selectedUuid === station.uuid) {
@@ -1071,7 +1079,7 @@
                       {#if isPlaying && appState.streamTitle}
                         <div class="detail-row icy-now-playing">
                           <span class="detail-label">{t('stationDetail.nowPlaying')}</span>
-                          <span class="detail-value icy-title">{appState.streamTitle}</span>
+                          <span class="detail-value icy-title copyable" onclick={() => copyText(appState.streamTitle, 'Titel')} title="Klick zum Kopieren">{appState.streamTitle}</span>
                         </div>
                       {/if}
                       {#if station.homepage}
@@ -1095,7 +1103,7 @@
                       {#if station.url_resolved}
                         <div class="detail-row">
                           <span class="detail-label">{t('stationDetail.streamUrl')}</span>
-                          <span class="detail-value url">{station.url_resolved}</span>
+                          <span class="detail-value url copyable" onclick={() => copyText(station.url_resolved, 'Stream-Adresse')} title="Klick zum Kopieren">{station.url_resolved}</span>
                         </div>
                       {/if}
                     </div>
@@ -2017,6 +2025,13 @@
     font-size: 10px;
     color: var(--hifi-text-secondary);
     word-break: break-all;
+  }
+
+  .detail-value.copyable {
+    cursor: pointer;
+  }
+  .detail-value.copyable:hover {
+    color: var(--hifi-accent);
   }
 
   /* Sort-Icons in Spaltenköpfen */
