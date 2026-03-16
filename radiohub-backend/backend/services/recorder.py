@@ -136,10 +136,22 @@ class RecordingSession:
                     if f.is_file() and f.name.startswith("seg_")])
 
 
+# FFmpeg stderr-Patterns die auf Codec-/Format-Wechsel hindeuten
+CODEC_ERROR_PATTERNS = [
+    "Invalid data found when processing input",
+    "Could not find codec parameters",
+    "Error while decoding",
+    "mismatching codec",
+    "Header missing",
+    "codec_id mismatch",
+]
+
+
 class RecorderManager:
     def __init__(self):
         self.active_session: Optional[RecordingSession] = None
         self._monitor_task: Optional[asyncio.Task] = None
+        self._stderr_task: Optional[asyncio.Task] = None
         self._cleanup_stale_sessions()
 
     def _cleanup_stale_sessions(self):
@@ -325,8 +337,9 @@ class RecorderManager:
             session.process = await self._start_ffmpeg(session, initial_file)
             self.active_session = session
 
-            # Monitor-Task
+            # Monitor-Task + Stderr-Watcher
             self._monitor_task = asyncio.create_task(self._monitor_process(session))
+            self._stderr_task = asyncio.create_task(self._watch_stderr(session))
 
             # ICY-Metadata-Logger mit Live-Split Callback starten
             meta_path = active_dir / f"{session_id}_{safe_name}.meta.json"
@@ -384,6 +397,120 @@ class RecorderManager:
                 shutil.rmtree(session_dir, ignore_errors=True)
             print(f"REC fehlgeschlagen: {e}")
             return {"success": False, "error": str(e)}
+
+    async def _watch_stderr(self, session: RecordingSession):
+        """Liest FFmpeg stderr zeilenweise und erkennt Codec-Wechsel.
+
+        Bei Codec-Fehler: Aktuelles Segment finalisieren, Codec neu erkennen,
+        neuen FFmpeg starten. Nutzt dieselbe Split-Logik wie _on_title_change.
+        """
+        last_codec_restart = 0.0  # Cooldown gegen Restart-Loops
+
+        try:
+            while self.active_session and self.active_session.id == session.id:
+                process = session.process
+                if not process or not process.stderr:
+                    await asyncio.sleep(1)
+                    continue
+
+                try:
+                    line = await asyncio.wait_for(
+                        process.stderr.readline(), timeout=10
+                    )
+                except asyncio.TimeoutError:
+                    continue
+
+                if not line:
+                    # stderr geschlossen (Prozess beendet)
+                    await asyncio.sleep(0.5)
+                    continue
+
+                text = line.decode("utf-8", errors="replace").strip()
+                if not text:
+                    continue
+
+                # Pruefen ob stderr-Zeile auf Codec-Fehler hinweist
+                is_codec_error = any(
+                    p.lower() in text.lower() for p in CODEC_ERROR_PATTERNS
+                )
+                if not is_codec_error:
+                    continue
+
+                # Cooldown: Nicht oefter als alle 10 Sekunden neu starten
+                now = asyncio.get_event_loop().time()
+                if now - last_codec_restart < 10.0:
+                    continue
+                last_codec_restart = now
+
+                session.logger.log(f"CODEC-FEHLER: {text[:200]}")
+                print(f"  REC Codec-Fehler: {text[:100]}")
+
+                # Event loggen
+                elapsed_ms = int(session.duration * 1000)
+                session.events.append({
+                    "type": "codec_change",
+                    "t": elapsed_ms,
+                    "detail": text[:200]
+                })
+
+                # Segment-Neustart (wie bei Titelwechsel)
+                if not session._split_lock:
+                    continue
+
+                async with session._split_lock:
+                    old_process = session.process
+                    old_file = session.current_segment_file
+                    old_title = session.current_segment_title
+
+                    # Codec neu erkennen
+                    new_codec, new_ext = await self._detect_codec(session.stream_url)
+                    if new_ext != session.file_format:
+                        session.logger.log(
+                            f"CODEC-WECHSEL: {session.codec} -> {new_codec} "
+                            f"({session.file_format} -> {new_ext})")
+                        session.codec = new_codec
+                        session.file_format = new_ext
+
+                    # Neues Segment
+                    from .segment_splitter import _safe_filename
+                    session.segment_index += 1
+                    safe_title = _safe_filename(old_title or "Teil")
+                    new_file = session.session_dir / (
+                        f"seg_{session.segment_index:03d}_{safe_title}"
+                        f"{session.file_format}")
+
+                    try:
+                        session.process = await self._start_ffmpeg(
+                            session, new_file)
+                    except Exception as e:
+                        print(f"  REC Codec-Recovery fehlgeschlagen: {e}")
+                        session.process = old_process
+                        continue
+
+                    session.current_segment_file = new_file
+                    session.current_segment_start = datetime.now()
+                    session.live_split = True
+
+                    # Alten Prozess stoppen
+                    await self._stop_ffmpeg_graceful(old_process)
+
+                    # Altes Segment registrieren
+                    if old_file and old_file.exists() and old_file.stat().st_size > 0:
+                        dur = await probe_duration(old_file)
+                        if dur > 0:
+                            self._register_segment(
+                                session, session.segment_index - 1,
+                                old_title or f"Teil {session.segment_index}",
+                                old_file, int(dur * 1000))
+
+                    session.logger.log(
+                        f"CODEC-RECOVERY: Neues Segment #{session.segment_index}")
+                    print(f"  REC Codec-Recovery: Segment #{session.segment_index}")
+
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            session.logger.log(f"STDERR-WATCHER Fehler: {e}")
 
     async def _on_title_change(self, title: str, elapsed_ms: int,
                                audio_bytes: int):
@@ -505,14 +632,8 @@ class RecorderManager:
                             continue  # Neuer FFmpeg laeuft, weiter ueberwachen
                     if self.active_session and self.active_session.id == session.id:
                         if returncode != 0:
-                            stderr = b""
-                            if session.process.stderr:
-                                stderr = await session.process.stderr.read()
-                            err_msg = stderr.decode("utf-8", errors="replace")[-500:]
                             print(f"REC abgebrochen: {session.id} (exit {returncode})")
-                            if err_msg.strip():
-                                print(f"  FFmpeg: {err_msg.strip()}")
-                            log.log(f"FFMPEG EXIT {returncode}: {err_msg.strip()[:200]}")
+                            log.log(f"FFMPEG EXIT {returncode}")
                             self._finalize_session(session, "failed")
                         else:
                             print(f"REC Stream beendet: {session.id}")
@@ -669,11 +790,17 @@ class RecorderManager:
 
         session = self.active_session
 
-        # Monitor-Task abbrechen
+        # Monitor-Task + Stderr-Watcher abbrechen
         if self._monitor_task and not self._monitor_task.done():
             self._monitor_task.cancel()
             try:
                 await self._monitor_task
+            except asyncio.CancelledError:
+                pass
+        if self._stderr_task and not self._stderr_task.done():
+            self._stderr_task.cancel()
+            try:
+                await self._stderr_task
             except asyncio.CancelledError:
                 pass
 
