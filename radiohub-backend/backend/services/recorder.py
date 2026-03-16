@@ -1,15 +1,14 @@
 """
-RadioHub v0.4.0 - Recorder Service (Segmented Recording)
+RadioHub v0.5.0 - Recorder Service (Live-Split)
 
-Stream-Aufnahme mit FFmpeg Segment-Muxer. Ein Chunk pro Session
-(segment_time 24h). Das ICY-basierte Splitting passiert beim Stop.
+Stream-Aufnahme mit Live-Split bei ICY-Titelwechsel.
 
 Ablauf:
-1. FFmpeg schreibt einen Chunk via -f segment -segment_time 86400
-2. Monitor: Gap-Detection (10s) + Stall-Detection (60s) + Disk-Space
-3. Stop:
-   a) Mit ICY-Metadata: Chunks concat -> Titel-Split -> fertig
-   b) Ohne ICY-Metadata: Chunks als 30-Min-Segmente registrieren
+1. FFmpeg schreibt Audio in eine Einzeldatei (stdin=PIPE fuer sauberes "q")
+2. ICY-Logger erkennt Titelwechsel -> Callback
+3. Callback: Neuen FFmpeg starten, alten per "q" stoppen, Segment in DB
+4. Stop: Letztes Segment finalisieren, kein Concat noetig
+5. Fallback ohne ICY: Ein Segment pro Session
 
 Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
 Stall nach 60s ohne Wachstum -> FFmpeg Kill.
@@ -37,11 +36,9 @@ STALL_CHECK_INTERVAL = 10   # Sekunden zwischen Pruefungen
 STALL_MAX_CHECKS = 6        # 6x keine Aenderung = 60s Stillstand -> stalled
 GAP_THRESHOLD = 1           # Ab 1x ohne Wachstum = Gap-Event (10s)
 
-# Segment-Aufnahme: FFmpeg schreibt Chunks statt einer Datei
-# 86400s = 24h -> praktisch nur ein Chunk pro Session.
-# Vorher: 1800s (30 Min) verursachte Datenverlust bei Stall/Abbruch
-# weil chunk_001 nie finalisiert wurde (ERR-001).
-CHUNK_DURATION = 86400
+# Minimum-Segment-Dauer: Titelwechsel unter dieser Schwelle werden
+# ignoriert (Titel wird aktualisiert, aber kein neues Segment).
+MIN_SEGMENT_SECONDS = 5
 
 # Codec -> Dateiendung
 CODEC_EXTENSIONS = {
@@ -54,18 +51,8 @@ CODEC_EXTENSIONS = {
     "pcm_s16be": ".wav",
 }
 
-# Dateiendung -> FFmpeg Segment-Format
-SEGMENT_FORMATS = {
-    ".mp3": "mp3",
-    ".aac": "adts",
-    ".ogg": "ogg",
-    ".opus": "ogg",
-    ".flac": "flac",
-    ".wav": "wav",
-}
-
 # Snapshot-Intervall: Alle N Monitor-Zyklen einen Groessen-Snapshot loggen
-SNAPSHOT_INTERVAL = 10  # 10 * 30s = 5 Minuten
+SNAPSHOT_INTERVAL = 10  # 10 * 10s = ~100 Sekunden
 
 
 class SessionLogger:
@@ -111,12 +98,19 @@ class RecordingSession:
         self.start_time = datetime.now()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.session_dir: Optional[Path] = None
-        self.chunk_dir: Optional[Path] = None
         self.meta_file_path: Optional[Path] = None
         self.icy_logger: Optional[IcyMetadataLogger] = None
         self.icy_task: Optional[asyncio.Task] = None
         self.logger: Optional[SessionLogger] = None
         self.events: list[dict] = []  # Gap/Stall/Codec-Events
+
+        # Live-Split Felder
+        self.segment_index: int = 0
+        self.current_segment_file: Optional[Path] = None
+        self.current_segment_title: str = ""
+        self.current_segment_start: Optional[datetime] = None
+        self.live_split: bool = False  # True sobald erster ICY-Split passiert
+        self._split_lock: Optional[asyncio.Lock] = None  # Initialisiert bei Start
 
     @property
     def duration(self) -> float:
@@ -124,25 +118,22 @@ class RecordingSession:
 
     @property
     def file_size(self) -> int:
-        """Gesamtgroesse aller Chunks."""
-        if self.chunk_dir and self.chunk_dir.exists():
+        """Gesamtgroesse aller Audio-Dateien im Session-Verzeichnis."""
+        audio_exts = {'.mp3', '.aac', '.ogg', '.opus', '.flac', '.wav'}
+        if self.session_dir and self.session_dir.exists():
             return sum(
-                f.stat().st_size for f in self.chunk_dir.iterdir() if f.is_file()
+                f.stat().st_size for f in self.session_dir.iterdir()
+                if f.is_file() and f.suffix in audio_exts
             )
         return 0
 
     @property
-    def chunk_count(self) -> int:
-        """Anzahl der bisher geschriebenen Chunks."""
-        if self.chunk_dir and self.chunk_dir.exists():
-            return len(list(self.chunk_dir.glob("chunk_*")))
-        return 0
-
-    def get_chunks(self) -> list[Path]:
-        """Sortierte Liste aller Chunk-Dateien."""
-        if not self.chunk_dir or not self.chunk_dir.exists():
-            return []
-        return sorted(self.chunk_dir.glob("chunk_*"))
+    def segment_count(self) -> int:
+        """Anzahl der bisher geschriebenen Segment-Dateien."""
+        if not self.session_dir or not self.session_dir.exists():
+            return 0
+        return len([f for f in self.session_dir.iterdir()
+                    if f.is_file() and f.name.startswith("seg_")])
 
 
 class RecorderManager:
@@ -166,13 +157,12 @@ class RecorderManager:
                 if fp:
                     p = Path(fp)
                     if p.is_dir():
-                        # Segmentiertes Recording: Chunks zaehlen
-                        chunk_dir = p / "chunks"
-                        if chunk_dir.exists():
-                            file_size = sum(
-                                f.stat().st_size for f in chunk_dir.iterdir()
-                                if f.is_file()
-                            )
+                        # Session-Verzeichnis: Audio-Dateien zaehlen
+                        audio_exts = {'.mp3', '.aac', '.ogg', '.opus', '.flac', '.wav'}
+                        file_size = sum(
+                            f.stat().st_size for f in p.iterdir()
+                            if f.is_file() and f.suffix in audio_exts
+                        )
                     elif p.exists():
                         file_size = p.stat().st_size
                 c.execute(
@@ -217,9 +207,65 @@ class RecorderManager:
 
         return "", ".mp3"
 
+    def _build_ffmpeg_cmd(self, session: RecordingSession,
+                          output_file: Path) -> list[str]:
+        """Baut FFmpeg-Kommando fuer Einzeldatei-Aufnahme (mit stdin=PIPE)."""
+        if session.codec:
+            return [
+                "ffmpeg", "-y",
+                "-reconnect", "1",
+                "-reconnect_streamed", "1",
+                "-reconnect_delay_max", "5",
+                "-i", session.stream_url,
+                "-c:a", "copy",
+                str(output_file)
+            ]
+        else:
+            configured_bitrate = config_service.get("recording_bitrate", 192)
+            br = (f"{session.bitrate}k" if session.bitrate > 0
+                  else f"{configured_bitrate}k")
+            return [
+                "ffmpeg", "-y",
+                "-reconnect", "1",
+                "-reconnect_streamed", "1",
+                "-reconnect_delay_max", "5",
+                "-i", session.stream_url,
+                "-c:a", "libmp3lame", "-b:a", br,
+                str(output_file)
+            ]
+
+    async def _start_ffmpeg(self, session: RecordingSession,
+                            output_file: Path) -> asyncio.subprocess.Process:
+        """Startet FFmpeg-Prozess mit stdin=PIPE fuer sauberes Stoppen."""
+        cmd = self._build_ffmpeg_cmd(session, output_file)
+        return await asyncio.create_subprocess_exec(
+            *cmd,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+    async def _stop_ffmpeg_graceful(self, process: asyncio.subprocess.Process,
+                                    timeout: float = 5.0):
+        """Stoppt FFmpeg sauber via stdin 'q', Fallback auf terminate/kill."""
+        if process.returncode is not None:
+            return
+        try:
+            if process.stdin:
+                process.stdin.write(b"q\n")
+                await process.stdin.drain()
+            await asyncio.wait_for(process.wait(), timeout=timeout)
+        except (asyncio.TimeoutError, Exception):
+            process.terminate()
+            try:
+                await asyncio.wait_for(process.wait(), timeout=3)
+            except asyncio.TimeoutError:
+                process.kill()
+                await process.wait()
+
     async def start(self, station_uuid: str, station_name: str, stream_url: str,
                     bitrate: int = 0) -> dict:
-        """Startet segmentierte Aufnahme (30-Min-Chunks)."""
+        """Startet Aufnahme mit Live-Split bei ICY-Titelwechsel."""
 
         if self.active_session:
             return {
@@ -245,11 +291,10 @@ class RecorderManager:
         # Aktiven Aufnahmeordner bestimmen
         active_dir, folder_id = get_active_recording_dir()
 
-        # Session-Verzeichnis + Chunk-Unterverzeichnis anlegen
+        # Session-Verzeichnis anlegen (kein chunks/-Unterverzeichnis mehr)
         session_id = f"rec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         session_dir = active_dir / session_id
-        chunk_dir = session_dir / "chunks"
-        chunk_dir.mkdir(parents=True, exist_ok=True)
+        session_dir.mkdir(parents=True, exist_ok=True)
 
         session = RecordingSession(
             session_id=session_id,
@@ -259,9 +304,9 @@ class RecorderManager:
             bitrate=bitrate
         )
         session.session_dir = session_dir
-        session.chunk_dir = chunk_dir
         session.codec = codec
         session.file_format = ext
+        session._split_lock = asyncio.Lock()
 
         # Debug-Logger (optional, per Config zuschaltbar)
         safe_name = "".join(
@@ -270,59 +315,20 @@ class RecorderManager:
         log_path = active_dir / f"{session_id}_{safe_name}.log"
         session.logger = SessionLogger(log_path)
 
-        # FFmpeg-Kommando: Segment-Muxer fuer 30-Min-Chunks
-        seg_fmt = SEGMENT_FORMATS.get(ext, "mp3")
-        chunk_pattern = str(chunk_dir / f"chunk_%03d{ext}")
-
-        if codec:
-            # Stream-Copy: kein Re-Encoding, originale Qualitaet
-            cmd = [
-                "ffmpeg", "-y",
-                "-reconnect", "1",
-                "-reconnect_streamed", "1",
-                "-reconnect_delay_max", "5",
-                "-i", stream_url,
-                "-c:a", "copy",
-                "-f", "segment",
-                "-segment_time", str(CHUNK_DURATION),
-                "-segment_format", seg_fmt,
-                "-reset_timestamps", "1",
-                chunk_pattern
-            ]
-        else:
-            # Fallback: Re-Encoding zu MP3
-            configured_bitrate = config_service.get("recording_bitrate", 192)
-            br = f"{bitrate}k" if bitrate > 0 else f"{configured_bitrate}k"
-            cmd = [
-                "ffmpeg", "-y",
-                "-reconnect", "1",
-                "-reconnect_streamed", "1",
-                "-reconnect_delay_max", "5",
-                "-i", stream_url,
-                "-c:a", "libmp3lame",
-                "-b:a", br,
-                "-f", "segment",
-                "-segment_time", str(CHUNK_DURATION),
-                "-segment_format", "mp3",
-                "-reset_timestamps", "1",
-                chunk_pattern
-            ]
+        # Erstes Segment starten
+        initial_file = session_dir / f"seg_000_Teil_1{ext}"
+        session.current_segment_file = initial_file
+        session.current_segment_title = "Teil 1"
+        session.current_segment_start = datetime.now()
 
         try:
-            session.process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.PIPE
-            )
+            session.process = await self._start_ffmpeg(session, initial_file)
             self.active_session = session
 
             # Monitor-Task
             self._monitor_task = asyncio.create_task(self._monitor_process(session))
 
-            # ICY-Metadata-Logger starten (parallel, optional)
-            safe_name = "".join(
-                c if c.isalnum() or c in " -_" else "_" for c in station_name
-            )[:50]
+            # ICY-Metadata-Logger mit Live-Split Callback starten
             meta_path = active_dir / f"{session_id}_{safe_name}.meta.json"
             session.meta_file_path = meta_path
             # Ignorier-Liste aus DB laden
@@ -334,7 +340,10 @@ class RecorderManager:
                     ignore_rules = [{"pattern": r[0], "match_type": r[1]} for r in c.fetchall()]
             except Exception:
                 pass  # Tabelle existiert evtl. noch nicht
-            session.icy_logger = IcyMetadataLogger(ignore_rules=ignore_rules)
+            session.icy_logger = IcyMetadataLogger(
+                ignore_rules=ignore_rules,
+                on_title_change=self._on_title_change
+            )
             session.icy_task = asyncio.create_task(
                 session.icy_logger.run(stream_url, meta_path)
             )
@@ -352,12 +361,11 @@ class RecorderManager:
                      codec, ext, str(meta_path), folder_id))
 
             mode = "Stream-Copy" if codec else "MP3-Encoding"
-            print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, "
-                  f"Chunks a {CHUNK_DURATION}s)")
+            print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, Live-Split)")
             session.logger.log(f"START {station_name}")
             session.logger.log(f"  Stream: {stream_url}")
             session.logger.log(f"  Codec: {codec or 'fallback->mp3'}, Mode: {mode}")
-            session.logger.log(f"  Chunk-Dauer: {CHUNK_DURATION}s, Format: {ext}")
+            session.logger.log(f"  Live-Split aktiv, Format: {ext}")
             try:
                 _stat = shutil.disk_usage(str(active_dir))
                 session.logger.log(f"  Disk frei: {_stat.free / 1024 / 1024:.0f}MB")
@@ -372,22 +380,109 @@ class RecorderManager:
 
         except Exception as e:
             # Aufraumen bei Fehler
-            if chunk_dir.exists():
+            if session_dir.exists():
                 shutil.rmtree(session_dir, ignore_errors=True)
             print(f"REC fehlgeschlagen: {e}")
             return {"success": False, "error": str(e)}
 
+    async def _on_title_change(self, title: str, elapsed_ms: int,
+                               audio_bytes: int):
+        """ICY-Callback: Titelwechsel -> Segment-Rotation."""
+        session = self.active_session
+        if not session or not session.process or not session._split_lock:
+            return
+
+        async with session._split_lock:
+            # Minimum-Segment-Dauer pruefen
+            if session.current_segment_start:
+                age = (datetime.now() - session.current_segment_start).total_seconds()
+                if age < MIN_SEGMENT_SECONDS:
+                    # Zu kurz -- Titel aktualisieren, aber nicht splitten
+                    session.current_segment_title = title
+                    session.logger.log(
+                        f"SKIP Split (zu kurz: {age:.1f}s): {title}")
+                    return
+
+            old_process = session.process
+            old_file = session.current_segment_file
+            old_title = session.current_segment_title
+
+            # Neues Segment vorbereiten
+            from .segment_splitter import _safe_filename
+            session.segment_index += 1
+            safe_title = _safe_filename(title)
+            ext = session.file_format
+            new_file = session.session_dir / (
+                f"seg_{session.segment_index:03d}_{safe_title}{ext}")
+
+            # Neuen FFmpeg starten BEVOR alter gestoppt wird (Overlap-Strategie)
+            try:
+                session.process = await self._start_ffmpeg(session, new_file)
+            except Exception as e:
+                print(f"  REC Split-Fehler: Neuer FFmpeg fehlgeschlagen: {e}")
+                session.process = old_process  # Alten behalten
+                return
+
+            session.current_segment_file = new_file
+            session.current_segment_title = title
+            session.current_segment_start = datetime.now()
+            session.live_split = True
+
+            # Alten FFmpeg sauber stoppen
+            await self._stop_ffmpeg_graceful(old_process)
+
+            # Altes Segment finalisieren (DB-Insert)
+            if old_file and old_file.exists() and old_file.stat().st_size > 0:
+                duration = await probe_duration(old_file)
+                if duration > 0:
+                    self._register_segment(
+                        session, session.segment_index - 1,
+                        old_title or f"Teil {session.segment_index}",
+                        old_file, int(duration * 1000)
+                    )
+
+            session.logger.log(
+                f"SPLIT #{session.segment_index}: {title}")
+            print(f"  REC Split #{session.segment_index}: {title}")
+
+    def _register_segment(self, session: RecordingSession, index: int,
+                          title: str, file_path: Path, duration_ms: int):
+        """Registriert ein Live-Split-Segment in der DB."""
+        # Kumulative Start/End-Zeit berechnen
+        cumulative_ms = self._get_cumulative_ms(session.id)
+        start_ms = cumulative_ms
+        end_ms = cumulative_ms + duration_ms
+        file_size = file_path.stat().st_size if file_path.exists() else 0
+
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO segments
+                (session_id, segment_index, title, start_ms, end_ms,
+                 duration_ms, file_path, file_size)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                (session.id, index, title, start_ms, end_ms,
+                 duration_ms, str(file_path), file_size))
+
+    def _get_cumulative_ms(self, session_id: str) -> int:
+        """Summe aller bisherigen Segment-Dauern einer Session."""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute(
+                "SELECT COALESCE(SUM(duration_ms), 0) FROM segments WHERE session_id = ?",
+                (session_id,))
+            return c.fetchone()[0]
+
     async def _monitor_process(self, session: RecordingSession):
         """Ueberwacht FFmpeg-Prozess: Stall-Detection + Disk-Space.
 
-        Stall wird erkannt wenn weder neue Chunks erscheinen noch der
-        aktuelle Chunk waechst (3x 30s = 90s Stillstand).
+        Prüft alle STALL_CHECK_INTERVAL Sekunden ob Daten wachsen.
+        Bei Live-Split kann session.process wechseln -- wird jede Runde neu gelesen.
         """
         if not session.process:
             return
 
         last_size = 0
-        last_chunk_count = 0
+        last_seg_count = 0
         stall_count = 0
         snapshot_counter = 0
         in_gap = False  # Gap-Tracking
@@ -400,7 +495,14 @@ class RecorderManager:
                         session.process.wait(),
                         timeout=STALL_CHECK_INTERVAL
                     )
-                    # FFmpeg hat sich beendet
+                    # FFmpeg hat sich beendet -- bei Live-Split ist das normal
+                    # (alter Prozess endet, neuer laeuft schon)
+                    if session.live_split:
+                        # Pruefen ob ein neuer Prozess existiert
+                        await asyncio.sleep(1)  # Kurz warten auf Split-Abschluss
+                        if (session.process and
+                                session.process.returncode is None):
+                            continue  # Neuer FFmpeg laeuft, weiter ueberwachen
                     if self.active_session and self.active_session.id == session.id:
                         if returncode != 0:
                             stderr = b""
@@ -424,19 +526,19 @@ class RecorderManager:
                 if not self.active_session or self.active_session.id != session.id:
                     return
 
-                # --- Stall-Detection: Chunks + Dateigroesse pruefen ---
+                # --- Stall-Detection: Segment-Count + Dateigroesse pruefen ---
                 current_size = session.file_size
-                current_chunks = session.chunk_count
+                current_segs = session.segment_count
 
-                # Neuer Chunk? -> loggen
-                if current_chunks > last_chunk_count:
-                    log.log(f"CHUNK {current_chunks} "
+                # Neues Segment? -> loggen
+                if current_segs > last_seg_count:
+                    log.log(f"SEG {current_segs} "
                             f"({current_size/1024/1024:.1f}MB gesamt, "
                             f"{session.duration/60:.0f}min)")
 
-                if current_size > last_size or current_chunks > last_chunk_count:
+                if current_size > last_size or current_segs > last_seg_count:
                     last_size = current_size
-                    last_chunk_count = current_chunks
+                    last_seg_count = current_segs
                     if in_gap:
                         # Gap beendet
                         elapsed_ms = int(session.duration * 1000)
@@ -461,7 +563,7 @@ class RecorderManager:
                         })
                         log.log(f"GAP START: Keine Aenderung seit {STALL_CHECK_INTERVAL}s "
                                 f"({current_size/1024/1024:.1f}MB, "
-                                f"{current_chunks} Chunks)")
+                                f"{current_segs} Segmente)")
                     if stall_count >= STALL_MAX_CHECKS:
                         elapsed = stall_count * STALL_CHECK_INTERVAL
                         session.events.append({
@@ -470,7 +572,7 @@ class RecorderManager:
                             "detail": f"Stillstand seit {elapsed}s -- FFmpeg gekillt"
                         })
                         print(f"REC STALLED: {session.id} "
-                              f"({current_chunks} Chunks, "
+                              f"({current_segs} Segmente, "
                               f"unverändert seit {elapsed}s, "
                               f"{current_size/1024/1024:.1f}MB)")
                         log.log(f"STALLED nach {elapsed}s -- FFmpeg wird gekillt")
@@ -515,7 +617,7 @@ class RecorderManager:
                     except Exception:
                         pass
                     log.log(f"SNAPSHOT {elapsed_min:.0f}min: "
-                            f"{current_chunks} Chunks, "
+                            f"{current_segs} Segmente, "
                             f"{current_size/1024/1024:.1f}MB{disk_info}")
 
         except asyncio.CancelledError:
@@ -555,116 +657,12 @@ class RecorderManager:
         if self.active_session and self.active_session.id == session.id:
             self.active_session = None
 
-    async def _concat_chunks(self, session: RecordingSession) -> Optional[Path]:
-        """Concateniert alle Chunks zu einer Datei. Gibt Pfad zurueck oder None."""
-        chunks = session.get_chunks()
-        if not chunks:
-            return None
-
-        ext = session.file_format
-        concat_list = session.session_dir / "concat.txt"
-        output_file = session.session_dir / f"{session.id}_full{ext}"
-
-        with open(concat_list, "w", encoding="utf-8") as f:
-            for chunk in chunks:
-                safe_path = str(chunk).replace("'", "'\\''")
-                f.write(f"file '{safe_path}'\n")
-
-        cmd = [
-            "ffmpeg", "-y",
-            "-f", "concat",
-            "-safe", "0",
-            "-i", str(concat_list),
-            "-c:a", "copy",
-            str(output_file)
-        ]
-
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.PIPE
-            )
-            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
-
-            if proc.returncode != 0:
-                err = stderr.decode("utf-8", errors="replace")[-300:]
-                print(f"  REC Concat-Fehler: {err}")
-                return None
-
-        except asyncio.TimeoutError:
-            print("  REC Concat-Timeout")
-            return None
-        except Exception as e:
-            print(f"  REC Concat-Fehler: {e}")
-            return None
-        finally:
-            if concat_list.exists():
-                concat_list.unlink()
-
-        return output_file
-
-    async def _register_chunks_as_segments(self, session: RecordingSession,
-                                           total_duration: float):
-        """Registriert die Chunks als Segmente in der DB (ohne ICY = 30-Min-Teile)."""
-        chunks = session.get_chunks()
-        if not chunks:
-            return 0
-
-        # Segment-Verzeichnis = session_dir (Chunks raus, Segmente rein)
-        ext = session.file_format
-        segments = []
-        cumulative_ms = 0
-
-        for i, chunk in enumerate(chunks):
-            chunk_duration = await probe_duration(chunk)
-            if chunk_duration <= 0:
-                chunk_duration = CHUNK_DURATION  # Fallback
-
-            duration_ms = int(chunk_duration * 1000)
-            start_ms = cumulative_ms
-            end_ms = start_ms + duration_ms
-
-            # Chunk umbenennen: chunk_000.mp3 -> 000_Teil_1.mp3
-            segment_name = f"{i:03d}_Teil_{i + 1}{ext}"
-            segment_path = session.session_dir / segment_name
-            shutil.move(str(chunk), str(segment_path))
-
-            segments.append({
-                "session_id": session.id,
-                "segment_index": i,
-                "title": f"Teil {i + 1}",
-                "start_ms": start_ms,
-                "end_ms": end_ms,
-                "duration_ms": duration_ms,
-                "file_path": str(segment_path),
-                "file_size": segment_path.stat().st_size
-            })
-            cumulative_ms = end_ms
-
-        # Chunks-Verzeichnis loeschen (jetzt leer)
-        if session.chunk_dir and session.chunk_dir.exists():
-            try:
-                session.chunk_dir.rmdir()
-            except Exception:
-                pass
-
-        # In DB speichern
-        with db_session() as conn:
-            c = conn.cursor()
-            for seg in segments:
-                c.execute('''INSERT INTO segments
-                    (session_id, segment_index, title, start_ms, end_ms,
-                     duration_ms, file_path, file_size)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (seg["session_id"], seg["segment_index"], seg["title"],
-                     seg["start_ms"], seg["end_ms"], seg["duration_ms"],
-                     seg["file_path"], seg["file_size"]))
-
-        return len(segments)
-
     async def stop(self) -> dict:
-        """Stoppt aktive Aufnahme. Chunks werden concat+split oder als Segmente registriert."""
+        """Stoppt aktive Aufnahme.
+
+        Live-Split: Letztes Segment finalisieren, Segmente sind bereits in DB.
+        Fallback (kein ICY): Einzeldatei als ein Segment registrieren.
+        """
 
         if not self.active_session:
             return {"success": False, "error": "Keine aktive Aufnahme"}
@@ -679,7 +677,7 @@ class RecorderManager:
             except asyncio.CancelledError:
                 pass
 
-        # ICY-Logger stoppen
+        # ICY-Logger stoppen (vor FFmpeg, damit kein Callback mehr kommt)
         if session.icy_logger:
             session.icy_logger.stop()
         if session.icy_task and not session.icy_task.done():
@@ -691,36 +689,19 @@ class RecorderManager:
 
         # FFmpeg sauber stoppen
         if session.process and session.process.returncode is None:
-            session.process.terminate()
-            try:
-                await asyncio.wait_for(session.process.wait(), timeout=5)
-            except asyncio.TimeoutError:
-                session.process.kill()
-                await session.process.wait()
+            await self._stop_ffmpeg_graceful(session.process)
 
-        chunks = session.get_chunks()
-        chunk_count = len(chunks)
         meta_count = session.icy_logger.entry_count if session.icy_logger else 0
         log = session.logger
+        seg_count = session.segment_count
 
         print(f"REC gestoppt: {session.id} "
-              f"({chunk_count} Chunks, {session.file_size/1024/1024:.1f}MB, "
-              f"{meta_count} ICY-Eintraege)")
+              f"({seg_count} Segmente, {session.file_size/1024/1024:.1f}MB, "
+              f"{meta_count} ICY-Eintraege, "
+              f"{'live-split' if session.live_split else 'fallback'})")
         log.log(f"STOP nach {session.duration/60:.1f}min")
-        log.log(f"  {chunk_count} Chunks, {session.file_size/1024/1024:.1f}MB, "
+        log.log(f"  {seg_count} Segmente, {session.file_size/1024/1024:.1f}MB, "
                 f"{meta_count} ICY-Eintraege")
-
-        if chunk_count == 0:
-            log.log("LEER: Keine Chunks geschrieben")
-            self._finalize_session(session, "empty")
-            return {"success": True, "session_id": session.id,
-                    "duration": 0, "file_size": 0, "segments": 0}
-
-        # --- Strategie entscheiden ---
-        # Mit ICY-Metadata: Concat -> Titel-Split (praezise Schnitte)
-        # Ohne ICY-Metadata: Chunks als 30-Min-Segmente registrieren
-        has_icy = (meta_count > 0 and session.meta_file_path
-                   and session.meta_file_path.exists())
 
         result = {
             "success": True,
@@ -730,74 +711,92 @@ class RecorderManager:
             "meta_count": meta_count
         }
 
-        if has_icy:
-            log.log(f"STRATEGIE: Titel-Split ({meta_count} ICY-Eintraege)")
-            # Chunks concatenieren -> eine Datei -> Titel-Split
-            concat_file = await self._concat_chunks(session)
-            if concat_file and concat_file.exists():
-                real_duration = await probe_duration(concat_file)
+        if session.live_split:
+            # === Live-Split-Modus ===
+            # Letztes Segment finalisieren (ist noch nicht in DB)
+            last_file = session.current_segment_file
+            if last_file and last_file.exists() and last_file.stat().st_size > 0:
+                duration = await probe_duration(last_file)
+                if duration > 0:
+                    self._register_segment(
+                        session, session.segment_index,
+                        session.current_segment_title or f"Teil {session.segment_index + 1}",
+                        last_file, int(duration * 1000)
+                    )
+
+            total_duration = self._get_cumulative_ms(session.id) / 1000.0
+            self._finalize_session(session, "completed",
+                                   real_duration=total_duration)
+
+            db_seg_count = self._count_segments(session.id)
+            result["segments"] = db_seg_count
+            result["duration"] = total_duration
+            result["file_size"] = session.file_size
+            result["mode"] = "live-split"
+            log.log(f"LIVE-SPLIT FERTIG: {total_duration:.0f}s, {db_seg_count} Segmente")
+        else:
+            # === Fallback: Kein ICY-Titelwechsel erkannt ===
+            # Einzeldatei als ein Segment registrieren
+            seg_file = session.current_segment_file
+            if seg_file and seg_file.exists() and seg_file.stat().st_size > 0:
+                real_duration = await probe_duration(seg_file)
                 duration = real_duration if real_duration > 0 else session.duration
-                file_size = concat_file.stat().st_size
-                log.log(f"  Concat OK: {duration:.0f}s, {file_size/1024/1024:.1f}MB")
+                file_size = seg_file.stat().st_size
 
                 self._finalize_session(session, "completed",
-                                       real_duration=real_duration)
+                                       real_duration=duration)
 
-                # Chunk-Verzeichnis loeschen (Dateien sind jetzt in concat_file)
-                if session.chunk_dir and session.chunk_dir.exists():
-                    shutil.rmtree(session.chunk_dir, ignore_errors=True)
+                # Als einzelnes Segment registrieren
+                self._register_segment(
+                    session, 0,
+                    session.current_segment_title or session.station_name,
+                    seg_file, int(duration * 1000)
+                )
 
-                # Titel-Split via segment_splitter
-                from .segment_splitter import splitter
-                try:
-                    segments = await splitter.split_session(
-                        session.id, concat_file, session.meta_file_path,
-                        duration, session.file_format
-                    )
-                    if segments:
-                        result["segments"] = len(segments)
-                        print(f"  REC Titel-Split: {len(segments)} Segmente")
-                        log.log(f"  Titel-Split: {len(segments)} Segmente")
-                except Exception as e:
-                    print(f"  REC Split-Fehler: {e}")
-                    log.log(f"  Split-Fehler: {e}")
+                # Wenn ICY-Metadata vorhanden -> nachtraeglich splitten
+                has_icy = (meta_count > 0 and session.meta_file_path
+                           and session.meta_file_path.exists())
+                if has_icy:
+                    log.log(f"FALLBACK: Post-hoc Split ({meta_count} ICY-Eintraege)")
+                    from .segment_splitter import splitter
+                    try:
+                        segments = await splitter.split_session(
+                            session.id, seg_file, session.meta_file_path,
+                            duration, session.file_format
+                        )
+                        if segments:
+                            result["segments"] = len(segments)
+                            print(f"  REC Post-hoc Split: {len(segments)} Segmente")
+                            log.log(f"  Post-hoc Split: {len(segments)} Segmente")
+                    except Exception as e:
+                        print(f"  REC Split-Fehler: {e}")
+                        log.log(f"  Split-Fehler: {e}")
+                else:
+                    result["segments"] = 1
 
                 result["duration"] = duration
                 result["file_size"] = file_size
             else:
-                # Concat fehlgeschlagen -> Fallback: Chunks als Segmente
-                print("  REC Concat fehlgeschlagen, Fallback auf Chunk-Segmente")
-                log.log("CONCAT FEHLGESCHLAGEN -- Fallback auf Chunk-Segmente")
-                has_icy = False  # Fallthrough zu Chunk-Registrierung
+                log.log("LEER: Keine Audiodaten geschrieben")
+                self._finalize_session(session, "empty")
+                result["duration"] = 0
+                result["file_size"] = 0
+                result["segments"] = 0
 
-        if not has_icy:
-            log.log(f"STRATEGIE: Chunk-Segmente (kein ICY oder Concat-Fallback)")
-            # Chunks direkt als Segmente registrieren (30-Min-Teile)
-            total_duration = 0
-            for chunk in chunks:
-                d = await probe_duration(chunk)
-                if d > 0:
-                    total_duration += d
-
-            duration = total_duration if total_duration > 0 else session.duration
-            file_size = session.file_size
-
-            self._finalize_session(session, "completed",
-                                   real_duration=duration)
-
-            seg_count = await self._register_chunks_as_segments(
-                session, duration
-            )
-            result["segments"] = seg_count
-            result["duration"] = duration
-            result["file_size"] = file_size
-            print(f"  REC Chunk-Segmente: {seg_count} Teile")
-            log.log(f"  {seg_count} Segmente, {duration:.0f}s gesamt")
+            result["mode"] = "fallback"
 
         log.log(f"FERTIG: {result.get('duration', 0):.0f}s, "
                 f"{result.get('segments', 0)} Segmente")
         result["file_path"] = str(session.session_dir)
         return result
+
+    def _count_segments(self, session_id: str) -> int:
+        """Anzahl der Segmente einer Session in der DB."""
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM segments WHERE session_id = ?",
+                      (session_id,))
+            return c.fetchone()[0]
 
     def get_status(self) -> dict:
         """Aktueller Aufnahme-Status"""
@@ -834,7 +833,8 @@ class RecorderManager:
             "codec": session.codec or "mp3",
             "file_format": session.file_format,
             "free_disk_mb": free_mb,
-            "chunk_count": session.chunk_count,
+            "segment_count": session.segment_count,
+            "live_split": session.live_split,
             "events": session.events
         }
 

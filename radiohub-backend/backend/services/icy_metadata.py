@@ -1,9 +1,10 @@
 """
-RadioHub v0.3.0 - ICY Metadata Logger
+RadioHub v0.4.0 - ICY Metadata Logger
 
 Liest ICY-Metadata (StreamTitle) aus dem Radio-Stream via Raw-TCP.
 Loggt Titelwechsel mit Audio-Byte-Positionen in eine .meta.json Datei.
 Mit Reconnect-Logik bei Verbindungsabbruch.
+Optional: on_title_change Callback fuer Live-Split bei Titelwechsel.
 
 ICY-Protokoll:
 - HTTP/1.0 GET mit "Icy-MetaData: 1" Header
@@ -22,7 +23,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 from urllib.parse import urlparse
 
 
@@ -31,7 +32,8 @@ ICY_RECONNECT_DELAY = 5       # Sekunden zwischen Versuchen
 
 
 class IcyMetadataLogger:
-    def __init__(self, ignore_rules: list[dict] | None = None):
+    def __init__(self, ignore_rules: list[dict] | None = None,
+                 on_title_change: Optional[Callable] = None):
         self.entries: list[dict] = []
         self._running = False
         self._reader: Optional[asyncio.StreamReader] = None
@@ -44,6 +46,8 @@ class IcyMetadataLogger:
         self._reconnect_count: int = 0
         # Sperr-Liste: [{pattern, match_type}, ...]
         self._ignore_rules = ignore_rules or []
+        # Live-Split Callback: async fn(title, elapsed_ms, audio_bytes)
+        self._on_title_change = on_title_change
 
     async def _connect(self, host: str, port: int, path: str,
                        timeout: float = 10.0) -> int:
@@ -239,6 +243,15 @@ class IcyMetadataLogger:
 
                 # Sofort speichern bei jedem Titelwechsel
                 self._save(output_path)
+
+                # Live-Split Callback (nur bei echten Titelwechseln, nicht Sperrtexten)
+                if not ignored and self._on_title_change:
+                    try:
+                        await self._on_title_change(
+                            display_title, elapsed_ms, self._cumulative_bytes
+                        )
+                    except Exception as e:
+                        print(f"  ICY: Callback-Fehler: {e}")
 
     def _parse_stream_title(self, meta_str: str) -> str:
         """Extrahiert StreamTitle aus ICY-Metadata-String."""
