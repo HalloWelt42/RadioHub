@@ -1,5 +1,5 @@
 """
-RadioHub Backend v0.2.0 - HLS Timeshift Buffer
+RadioHub Backend v0.3.0 - HLS Timeshift Buffer
 
 Internet Radio & Podcast Player mit HLS-basiertem Time-Shift
 © HalloWelt42 - Nur für private Nutzung
