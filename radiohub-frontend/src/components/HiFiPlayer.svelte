@@ -489,7 +489,7 @@
     <div class="player-section vu-section">
       <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
-        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused && !appState.playerError} />
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
       </div>
     </div>
 
@@ -509,7 +509,7 @@
     <div class="player-section vu-section">
       <div class="section-label">{t('playerLabel.vu')}</div>
       <div class="section-content">
-        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused && !appState.playerError} />
+        <HiFiVuMeter volume={appState.volume} active={appState.isPlaying && !appState.isPaused} />
       </div>
     </div>
   </div>
@@ -739,13 +739,6 @@
     </div>
   </div>
 
-  <!-- Error Overlay -->
-  {#if appState.playerError}
-    <div class="player-error">
-      <span>{appState.playerError}</span>
-      <button onclick={() => appState.playerError = null} title={t('player.fehlerSchliessen')}>x</button>
-    </div>
-  {/if}
 </footer>
 
 <style>
@@ -1277,34 +1270,4 @@
     opacity: 0.6;
   }
 
-  /* Player Error */
-  .player-error {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--hifi-led-red);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 4px 4px 0 0;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-  }
-
-  .player-error button {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    padding: 0 4px;
-    opacity: 0.7;
-  }
-
-  .player-error button:hover {
-    opacity: 1;
-  }
 </style>

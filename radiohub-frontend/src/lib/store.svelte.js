@@ -4,7 +4,7 @@
  *
  * v0.6.0: Volume-Persistierung in localStorage
  * v0.5.0: Player-Logik delegiert an playerEngine.js
- *         Neue Felder: isPaused, playerMode, streamQuality, playerError, recordingElapsed
+ *         Neue Felder: isPaused, playerMode, streamQuality, recordingElapsed
  */
 
 import { api } from './api.js';
@@ -32,7 +32,7 @@ export const appState = $state({
   // Player - Mode & Quality
   playerMode: 'none',      // 'none' | 'direct' | 'hls' | 'podcast' | 'recording'
   streamQuality: null,      // { inputCodec, inputBitrate, outputBitrate, sampleRate }
-  playerError: null,        // Fehlermeldung oder null
+  // playerError entfernt - nutzt jetzt das zentrale toast-System
 
   // Recording
   isRecording: false,

@@ -124,7 +124,7 @@ function createMockState() {
     volume: 70,
     playerMode: 'none',
     streamQuality: null,
-    playerError: null,
+    toast: null,
     isRecording: false,
     recordingType: null,
     recordingSession: null,
@@ -228,7 +228,7 @@ describe('PlayerEngine', () => {
       expect(state.currentEpisode).toBe(null);
       expect(state.playerMode).toBe('direct');
       expect(state.isLive).toBe(true);
-      expect(state.playerError).toBe(null);
+      expect(state.toast).toBe(null);
     });
 
     it('TC-A2: Audio-Source nutzt Backend-Proxy', async () => {
@@ -647,7 +647,7 @@ describe('PlayerEngine', () => {
 
       // Aufnahme laeuft weiter, Senderwechsel wurde blockiert
       expect(state.isRecording).toBe(true);
-      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
       // Station bleibt auf A, nicht B
       expect(state.currentStation).toEqual(STATION_A);
     });
@@ -798,7 +798,7 @@ describe('PlayerEngine', () => {
       };
 
       engine.handleError(event);
-      expect(state.playerError).toBe('Netzwerkfehler');
+      expect(state.toast?.message).toBe('Netzwerkfehler');
     });
 
     it('TC-E2: Unbekannter Error zeigt generische Meldung', () => {
@@ -809,7 +809,7 @@ describe('PlayerEngine', () => {
       };
 
       engine.handleError(event);
-      expect(state.playerError).toBe('Wiedergabefehler');
+      expect(state.toast?.message).toBe('Wiedergabefehler');
     });
 
     it('TC-E2b: Error Code 4 wird ignoriert (transienter Source-Wechsel)', () => {
@@ -820,7 +820,7 @@ describe('PlayerEngine', () => {
       };
 
       engine.handleError(event);
-      expect(state.playerError).toBeNull();
+      expect(state.toast).toBeNull();
     });
 
     it('TC-E3: Ohne Audio-Element kein Absturz bei playStation', async () => {
@@ -828,7 +828,7 @@ describe('PlayerEngine', () => {
       engine.init(null, state);
 
       await engine.playStation(STATION_A);
-      expect(state.playerError).toBe('Kein Audio-Element');
+      expect(state.toast?.message).toBe('Kein Audio-Element');
       expect(state.isPlaying).toBe(false);
     });
   });
@@ -909,7 +909,7 @@ describe('PlayerEngine', () => {
       engine.handleError({ target: { error: { code: 3 } } });
 
       expect(state.canPlayDirect).toBe(false);
-      expect(state.playerError).toBe('Dekodierungsfehler');
+      expect(state.toast?.message).toBe('Dekodierungsfehler');
     });
 
     it('TC-SM7: Dekodierungsfehler bei verfügbarem HLS wechselt automatisch', () => {
@@ -920,8 +920,8 @@ describe('PlayerEngine', () => {
       engine.handleError({ target: { error: { code: 3 } } });
 
       expect(state.canPlayDirect).toBe(false);
-      // Kein playerError weil auto-switch zu HLS
-      expect(state.playerError).toBeNull();
+      // Kein Toast weil auto-switch zu HLS
+      expect(state.toast).toBeNull();
     });
 
     it('TC-SM8: playStation resettet Mode-Felder', async () => {
@@ -1116,7 +1116,7 @@ describe('PlayerEngine', () => {
 
       // Aufnahme läuft weiter
       expect(state.isRecording).toBe(true);
-      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
     });
 
     it('TC-RB2: Recording-Wiedergabe bei laufender Aufnahme wird blockiert', async () => {
@@ -1134,21 +1134,21 @@ describe('PlayerEngine', () => {
       });
 
       expect(state.isRecording).toBe(true);
-      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
     });
 
-    it('TC-RB3: Fehlermeldung verschwindet nach 3 Sekunden', async () => {
+    it('TC-RB3: Fehlermeldung verschwindet nach 4 Sekunden (Toast)', async () => {
       vi.useFakeTimers();
       await engine.playStation(STATION_A);
       state.currentStation = STATION_A;
       await engine.startRecording();
 
       await engine.playStation(STATION_B);
-      expect(state.playerError).toBe('Aufnahme läuft - erst stoppen');
+      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
 
-      // Nach 3s muss der Fehler weg sein
-      vi.advanceTimersByTime(3000);
-      expect(state.playerError).toBe(null);
+      // Nach 4s muss der Toast weg sein
+      vi.advanceTimersByTime(4000);
+      expect(state.toast).toBe(null);
 
       vi.useRealTimers();
     });

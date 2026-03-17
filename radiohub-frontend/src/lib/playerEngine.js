@@ -1,5 +1,5 @@
 /**
- * RadioHub Player Engine v1.2.0
+ * RadioHub Player Engine v1.3.0
  *
  * Zentrale Playback-Steuerung mit State-Machine.
  * Löst die Probleme:
@@ -35,17 +35,20 @@ let _lastSeekPosition = 0;
 let _userModeOverride = false;
 let _podcastPositionInterval = null;
 let _errorTimer = null;
+let _reconnectAttempts = 0;
+const _MAX_RECONNECT = 3;
 
 /**
- * Setzt playerError mit Auto-Dismiss nach 5s.
+ * Zeigt Fehlermeldung als Toast (nutzt das zentrale HiFiToast-System).
  */
 function _showPlayerError(msg) {
   if (!_appState) return;
+  _appState.toast = { message: msg, type: 'error' };
+  // Auto-Dismiss nach 4s (HiFiToast hat eigene Animation)
   clearTimeout(_errorTimer);
-  _appState.playerError = msg;
   _errorTimer = setTimeout(() => {
-    if (_appState) _appState.playerError = null;
-  }, 5000);
+    if (_appState) _appState.toast = null;
+  }, 4000);
 }
 
 // === Initialisierung ===
@@ -99,16 +102,12 @@ export async function playStation(station) {
   // MUSS vor HLS-Zerstoerung kommen, sonst wird HLS-REC im Backend
   // durch den gestoppten HLS-Buffer unbrauchbar (ERR-006).
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft - erst stoppen';
-    setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
-        _appState.playerError = null;
-      }
-    }, 3000);
+    _showPlayerError('Aufnahme läuft - erst stoppen');
     return;
   }
 
   const gen = ++_generation;
+  _reconnectAttempts = 0;
 
   // --- Phase 1: Sofortige Stille ---
   // REIHENFOLGE KRITISCH: Erst HLS zerstören (löst MediaSource),
@@ -140,7 +139,7 @@ export async function playStation(station) {
   _appState.playerMode = 'direct';
   _appState.streamQuality = null;
   _appState.streamTitle = null;
-  _appState.playerError = null;
+  _appState.toast = null;
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
@@ -188,16 +187,12 @@ export async function playPodcast(episode, podcast) {
   if (!_appState) return;
 
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft - erst stoppen';
-    setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
-        _appState.playerError = null;
-      }
-    }, 3000);
+    _showPlayerError('Aufnahme läuft - erst stoppen');
     return;
   }
 
   const gen = ++_generation;
+  _reconnectAttempts = 0;
 
   _destroyHLS();
   _stopHLSPolling();
@@ -220,7 +215,7 @@ export async function playPodcast(episode, podcast) {
   _appState.isLive = true;
   _appState.playerMode = 'podcast';
   _appState.streamQuality = null;
-  _appState.playerError = null;
+  _appState.toast = null;
   _appState.currentSegment = null;
   _lastSeekPosition = 0;
 
@@ -267,16 +262,12 @@ export async function playRecording(recording, startTime = 0) {
   if (!_appState) return;
 
   if (_appState.isRecording) {
-    _appState.playerError = 'Aufnahme läuft - erst stoppen';
-    setTimeout(() => {
-      if (_appState.playerError === 'Aufnahme läuft - erst stoppen') {
-        _appState.playerError = null;
-      }
-    }, 3000);
+    _showPlayerError('Aufnahme läuft - erst stoppen');
     return;
   }
 
   const gen = ++_generation;
+  _reconnectAttempts = 0;
 
   _destroyHLS();
   _stopHLSPolling();
@@ -299,7 +290,7 @@ export async function playRecording(recording, startTime = 0) {
   _appState.isLive = false;
   _appState.playerMode = 'recording';
   _appState.streamQuality = null;
-  _appState.playerError = null;
+  _appState.toast = null;
   _appState.currentSegment = null;
   _lastSeekPosition = 0;
 
@@ -413,7 +404,7 @@ export async function stop() {
   _appState.isLive = true;
   _appState.playerMode = 'none';
   _appState.streamQuality = null;
-  _appState.playerError = null;
+  _appState.toast = null;
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
@@ -1139,15 +1130,58 @@ export function handleError(event) {
     _appState.canPlayDirect = false;
     // Automatisch zu HLS wechseln wenn verfügbar
     if (_appState.canPlayHLS === true) {
-      // Direct-Codec nicht abspielbar, wechsle zu HLS
       _switchToHLS(_generation);
       return;
     }
   }
 
+  // Netzwerkfehler bei Podcast/Recording: Auto-Reconnect
+  const mode = _appState.playerMode;
+  if (error.code === 2 && (mode === 'podcast' || mode === 'recording')) {
+    if (_reconnectAttempts < _MAX_RECONNECT) {
+      _reconnectAttempts++;
+      console.warn(`Netzwerkfehler bei ${mode}, Reconnect ${_reconnectAttempts}/${_MAX_RECONNECT}...`);
+      _showPlayerError(`Verbindung unterbrochen - Reconnect ${_reconnectAttempts}/${_MAX_RECONNECT}...`);
+      _attemptReconnect(_generation);
+      return;
+    }
+    // Max Retries erreicht
+    _reconnectAttempts = 0;
+  }
+
   const msg = messages[error.code] || 'Wiedergabefehler';
   _showPlayerError(msg);
   console.error('Audio error:', error.code, msg);
+}
+
+/**
+ * Reconnect bei Podcast/Recording nach Netzwerkfehler.
+ * Speichert Position, lädt neu, seeked zurück.
+ */
+function _attemptReconnect(gen) {
+  if (!_audioEl || !_appState || _generation !== gen) return;
+
+  const savedTime = _audioEl.currentTime || 0;
+  const savedSrc = _audioEl.src;
+
+  setTimeout(() => {
+    if (_generation !== gen || !_audioEl || !_appState) return;
+
+    _audioEl.src = savedSrc;
+    _audioEl.load();
+    _audioEl.play().then(() => {
+      if (_generation !== gen) return;
+      if (savedTime > 0) {
+        _audioEl.currentTime = savedTime;
+      }
+      _reconnectAttempts = 0;
+      _appState.toast = null; // Reconnect-Toast ausblenden
+      console.log('Reconnect erfolgreich, Position:', savedTime);
+    }).catch(e => {
+      console.error('Reconnect fehlgeschlagen:', e);
+      _showPlayerError('Wiedergabe konnte nicht fortgesetzt werden');
+    });
+  }, 2000); // 2s warten vor Retry
 }
 
 // ============================================================
