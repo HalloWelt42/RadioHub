@@ -312,6 +312,7 @@
   let timerColor = $derived(
     appState.isRecording ? 'red' :
     isRecordingPlayback ? 'green' :
+    (isPodcast && isHLSMode) ? 'green' :
     isHLSMode && !isLive ? 'yellow' :
     isPodcast ? 'green' :
     'default'
@@ -320,6 +321,7 @@
   let timerDisplayTime = $derived(
     appState.isRecording ? appState.recordingElapsed :
     isRecordingPlayback ? currentTime :
+    (isPodcast && isHLSMode) ? currentTime :
     isHLSMode && !isLive ? secondsBehindLive :
     isPodcast ? currentTime :
     0
@@ -353,7 +355,7 @@
   let recLedColor = $derived(
     appState.isRecording ? 'red' : 'off'
   );
-  let liveLedColor = $derived(isHLSMode && !isLive ? 'blue' : 'off');
+  let liveLedColor = $derived(isHLSMode && !isPodcast && !isLive ? 'blue' : 'off');
 
   // Mode LED (zeigt aktuellen Modus)
   let modeLedColor = $derived(
@@ -370,10 +372,11 @@
     isHLSMode ? t('playerLabel.timeshift') :
     t('playerLabel.transport')
   );
+  // Podcast-HLS: isPodcast hat Vorrang, zeigt "PODCAST" auch im HLS-Modus
 
   // Mode Toggle Verfügbarkeit
   let canToggleStreamMode = $derived(
-    !appState.isRecording && (
+    !appState.isRecording && !isPodcast && (
       (appState.playerMode === 'hls' && appState.canPlayDirect) ||
       (appState.playerMode === 'direct' && appState.canPlayHLS === true)
     )
@@ -415,7 +418,12 @@
   let bitrateSwitching = $state(false);
 
   // Erkannte Input-Bitrate des Streams (Original, nicht die HLS-Encoding-Bitrate)
-  let hlsInputBitrate = $derived(appState.streamQuality?.inputBitrate || 0);
+  // Podcast-HLS: Ausgabe-Bitrate anzeigen (fest 128 kbps), da Input irrelevant
+  let hlsInputBitrate = $derived(
+    isPodcast && isHLSMode
+      ? (appState.streamQuality?.outputBitrate || 128)
+      : (appState.streamQuality?.inputBitrate || 0)
+  );
 
   async function handleBitrateOverrideChange(newOverride) {
     bitrateOverride = newOverride;
@@ -478,7 +486,7 @@
       <div class="display-box source-display" class:display-inactive={!displayActive}>
         <span class="display-text">{sourceType}</span>
         {#if appState.playerMode !== 'none' && displayActive}
-          <span class="source-mode">{appState.isRecording ? 'REC' : appState.playerMode === 'hls' ? 'HLS' : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'podcast' ? 'STREAM' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
+          <span class="source-mode">{appState.isRecording ? 'REC' : appState.playerMode === 'hls' ? (isPodcast ? 'HLS' : 'HLS') : appState.playerMode === 'direct' ? 'LIVE' : appState.playerMode === 'podcast' ? 'STREAM' : appState.playerMode === 'recording' ? 'REC' : 'FILE'}</span>
         {/if}
       </div>
     </div>
@@ -548,6 +556,7 @@
             -{formatTimeShort(secondsBehindLive)}
           {/if}
         {/if}
+
       </span>
       {#if appState.isRecording}
         <span class="section-label rec-link" onclick={() => { navigateToSource(); sfx.click(); }} title={t('player.zumSender')}>{transportLabel}</span>
@@ -556,7 +565,7 @@
       {:else}
         <span class="section-label">{transportLabel}</span>
       {/if}
-      <span class="transport-time" class:time-blue={isHLSMode && appState.hlsStatus?.buffered_seconds}>
+      <span class="transport-time" class:time-blue={isHLSMode && !isPodcast && appState.hlsStatus?.buffered_seconds}>
         {#if isRecordingPlayback && duration > 0}
           {formatTimeShort(duration)}
         {:else if isPodcast && duration > 0}
@@ -575,7 +584,7 @@
             class="transport-fader"
             min="0"
             max="100"
-            step={isHLSMode && hlsSegRange > 0 && !isLive ? (100 / hlsSegRange) : 0.1}
+            step={isHLSMode && !isPodcast && hlsSegRange > 0 && !isLive ? (100 / hlsSegRange) : 0.1}
             value={seekPosition}
             disabled={!_canSeek || isSeeking || appState.isRecording}
             oninput={handleFaderInput}
@@ -720,15 +729,15 @@
       <div
         class="bitrate-bar"
         class:bitrate-disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
-        title={appState.isRecording ? t('player.recLaeuft') : !isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
+        title={appState.isRecording ? t('player.recLaeuft') : isPodcast && isHLSMode ? 'Podcast: 128 kbps (fest)' : !isHLSMode || !appState.hlsActive ? t('playerLabel.hlsBitrateNurHls') : bitrateSwitching ? t('playerLabel.bitrateWechsel') : ''}
       >
         <span class="bitrate-label">{t('playerLabel.hlsBitrate')}</span>
         <HiFiBitrateLed
           activeBitrate={hlsInputBitrate}
-          overrideBitrate={bitrateOverride}
+          overrideBitrate={isPodcast && isHLSMode ? null : bitrateOverride}
           onchange={handleBitrateOverrideChange}
           disabled={!isHLSMode || !appState.hlsActive || bitrateSwitching}
-          locked={appState.isRecording}
+          locked={appState.isRecording || (isPodcast && isHLSMode)}
         />
         {#if bitrateSwitching}
           <span class="bitrate-disabled-text bitrate-switching">({t('playerLabel.bitrateWechsel')})</span>

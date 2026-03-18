@@ -59,6 +59,7 @@ class HLSSession:
     max_bitrate: int = 256         # User-Einstellung: Maximum
     sample_rate: int = 44100       # Sample Rate
     input_codec: str = "unknown"   # Erkannter Input-Codec
+    is_podcast: bool = False       # Podcast-Modus: alle Segmente behalten, kein ICY
     is_active: bool = True
     error: Optional[str] = None
 
@@ -181,18 +182,34 @@ class HLSBufferService:
         """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate"""
         playlist = self.buffer_dir / "playlist.m3u8"
         segment_pattern = str(self.buffer_dir / "segment_%d.ts")
-        
-        return [
+
+        # Podcast-Modus: Segmente behalten, ENDLIST schreiben (VOD)
+        # Radio-Modus: Rolling Window, Segmente löschen (Live)
+        if self.session.is_podcast:
+            hls_flags = "append_list"
+        else:
+            hls_flags = "delete_segments+append_list+omit_endlist"
+
+        cmd = [
             "ffmpeg",
             "-hide_banner",
             "-loglevel", "warning",
             "-y",  # Überschreiben ohne Nachfrage
             "-reconnect", "1",
-            "-reconnect_streamed", "1", 
+            "-reconnect_streamed", "1",
             "-reconnect_delay_max", "5",
             "-i", stream_url,
-            # Audio Filter: Normalisierung für konsistente Lautstärke
-            "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+        ]
+
+        # Podcast: Kein loudnorm (buffert gesamten Stream, blockiert Output)
+        #          + -vn: Embedded Cover/Chapter-Images ignorieren (blockieren sonst libx264)
+        # Radio: loudnorm fuer konsistente Lautstaerke bei Live-Streams
+        if self.session.is_podcast:
+            cmd += ["-vn"]
+        else:
+            cmd += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"]
+
+        cmd += [
             # Audio Encoding (adaptive Bitrate!)
             "-c:a", "aac",
             "-b:a", f"{self.session.output_bitrate}k",
@@ -202,10 +219,11 @@ class HLSBufferService:
             "-f", "hls",
             "-hls_time", str(self.session.segment_duration),
             "-hls_list_size", str(self.session.max_segments),
-            "-hls_flags", "delete_segments+append_list+omit_endlist",
+            "-hls_flags", hls_flags,
             "-hls_segment_filename", segment_pattern,
             str(playlist)
         ]
+        return cmd
     
     async def start(
         self,
@@ -217,7 +235,8 @@ class HLSBufferService:
         min_bitrate: int = 32,
         max_bitrate: int = 320,
         sample_rate: int = 44100,
-        override_bitrate: int = 0
+        override_bitrate: int = 0,
+        is_podcast: bool = False
     ) -> dict:
         """
         Startet HLS Buffering für einen Stream.
@@ -249,9 +268,11 @@ class HLSBufferService:
         # Neue Session
         session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         segment_duration = 1  # 1 Sekunde für präzises Seeking
-        max_segments = max_minutes * 60  # Bei 1s Segmenten
-        
-        print(f"✓ HLS Buffer starten: {station_name}")
+        # Podcast: 4h Buffer (ganzes File), Radio: Rolling Window
+        max_segments = 14400 if is_podcast else max_minutes * 60
+
+        mode_label = "Podcast" if is_podcast else "Radio"
+        print(f"✓ HLS Buffer starten ({mode_label}): {station_name}")
         
         # Stream-Info erkennen
         print(f"  🔍 Erkenne Stream-Eigenschaften...")
@@ -283,7 +304,8 @@ class HLSBufferService:
             min_bitrate=min_bitrate,
             max_bitrate=max_bitrate,
             sample_rate=sample_rate,
-            input_codec=stream_info.codec
+            input_codec=stream_info.codec,
+            is_podcast=is_podcast
         )
         
         # Buffer-Verzeichnis vorbereiten
@@ -303,8 +325,9 @@ class HLSBufferService:
             # Monitor-Task starten
             self._monitor_task = asyncio.create_task(self._monitor_ffmpeg())
 
-            # ICY-Metadata-Logger parallel starten
-            self._start_icy_tracking(stream_url)
+            # ICY-Metadata-Logger parallel starten (nur fuer Radio, nicht Podcast)
+            if not is_podcast:
+                self._start_icy_tracking(stream_url)
 
             return {
                 "status": "started",

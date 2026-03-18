@@ -562,6 +562,21 @@ class RadioHubAPI {
     });
   }
 
+  async startHLSPodcast(episode) {
+    return this.fetch('/api/hls/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        station_uuid: `podcast_${episode.id}`,
+        station_name: episode.title || 'Podcast',
+        stream_url: episode.remote_audio_url || episode.audio_url,
+        bitrate: 128,
+        max_minutes: 240,
+        override_bitrate: 128,
+        is_podcast: true
+      })
+    });
+  }
+
   async stopHLS() {
     return this.fetch('/api/hls/stop', { method: 'POST' });
   }

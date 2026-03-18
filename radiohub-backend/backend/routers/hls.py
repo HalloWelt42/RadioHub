@@ -34,6 +34,7 @@ class HLSStartRequest(BaseModel):
     bitrate: int = 128
     max_minutes: int = 10
     override_bitrate: int = 0
+    is_podcast: bool = False
 
 
 # === Buffer Control ===
@@ -66,7 +67,8 @@ async def start_hls_buffer(request: HLSStartRequest):
         min_bitrate=min_bitrate,
         max_bitrate=max_bitrate,
         sample_rate=sample_rate,
-        override_bitrate=request.override_bitrate
+        override_bitrate=request.override_bitrate,
+        is_podcast=request.is_podcast
     )
     
     if result.get("status") == "error":

@@ -607,11 +607,12 @@
     // Playlist zusammenstellen - immer ueber Backend (play = lokal, stream = Proxy)
     const playlist = episodes.map(e => ({
       ...e,
+      remote_audio_url: e.audio_url,
       audio_url: e.is_downloaded ? api.getEpisodePlayUrl(e.id) : api.getEpisodeStreamUrl(e.id)
     }));
     const podcast = selectedPodcast || podcastMap[episode.podcast_id] || null;
     actions.playEpisodeFromList(
-      { ...episode, audio_url: episode.is_downloaded ? api.getEpisodePlayUrl(episode.id) : api.getEpisodeStreamUrl(episode.id) },
+      { ...episode, remote_audio_url: episode.audio_url, audio_url: episode.is_downloaded ? api.getEpisodePlayUrl(episode.id) : api.getEpisodeStreamUrl(episode.id) },
       podcast,
       playlist
     );

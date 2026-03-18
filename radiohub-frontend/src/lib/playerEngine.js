@@ -112,6 +112,8 @@ export async function playStation(station) {
   // --- Phase 1: Sofortige Stille ---
   // REIHENFOLGE KRITISCH: Erst HLS zerstören (löst MediaSource),
   // dann Audio stummschalten (kann src jetzt sauber entfernen)
+  _savePodcastPosition();
+  _stopPodcastPositionSave();
   _destroyHLS();
   _stopHLSPolling();
   _silenceAudio();
@@ -194,6 +196,8 @@ export async function playPodcast(episode, podcast) {
   const gen = ++_generation;
   _reconnectAttempts = 0;
 
+  _savePodcastPosition();
+  _stopPodcastPositionSave();
   _destroyHLS();
   _stopHLSPolling();
   _silenceAudio();
@@ -202,7 +206,7 @@ export async function playPodcast(episode, podcast) {
     _appState.hlsActive = false;
     _appState.hlsStatus = null;
     _hlsSessionId = null;
-    api.stopHLS().catch(() => {});
+    try { await api.stopHLS(); } catch (_) {}
   }
   if (_generation !== gen) return;
 
@@ -226,26 +230,66 @@ export async function playPodcast(episode, podcast) {
   }
 
 
-  // Lokale Datei bevorzugen, sonst Backend-Proxy fuer Remote-URL
-  const audioSrc = (episode.is_downloaded && episode.id)
-    ? api.getEpisodePlayUrl(episode.id)
-    : api.getEpisodeStreamUrl(episode.id);
+  // Heruntergeladene Episoden: Direct Play (schnell, kein FFmpeg nötig)
+  if (episode.is_downloaded && episode.id) {
+    _audioEl.src = api.getEpisodePlayUrl(episode.id);
+    _audioEl.playbackRate = _appState.podcastSpeed || 1.0;
+    _audioEl.load();
+    try {
+      await _audioEl.play();
+      if (episode.resume_position > 0) {
+        _audioEl.currentTime = episode.resume_position;
+      }
+    } catch (e) {
+      console.warn('Podcast autoplay blocked:', e.message);
+    }
+    _startPodcastPositionSave();
+    return;
+  }
 
-  _audioEl.src = audioSrc;
+  // Remote-Episoden: HLS-Buffer fuer stabilen Stream (128 kbps AAC)
+  if (episode.remote_audio_url && Hls.isSupported()) {
+    try {
+      const result = await api.startHLSPodcast(episode);
+      if (_generation !== gen) return;
+
+      if (result.status === 'started' || result.status === 'already_active') {
+        _hlsSessionId = result.session_id || null;
+        _appState.hlsActive = true;
+        _appState.hlsStatus = result;
+        _startHLSPolling(gen);
+
+        // Warten bis mind. 3 Segmente bereit sind (max 15s)
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          if (_generation !== gen) return;
+          const status = await api.getHLSStatus();
+          if (status?.segment_count >= 3) {
+            _switchToHLSPodcast(gen, episode);
+            return;
+          }
+        }
+        // Timeout: trotzdem versuchen
+        _switchToHLSPodcast(gen, episode);
+        return;
+      }
+    } catch (e) {
+      console.warn('Podcast HLS fehlgeschlagen, Fallback auf Direct:', e.message);
+    }
+  }
+
+  // Fallback: Direct Stream (wenn HLS nicht verfuegbar)
+  _audioEl.src = api.getEpisodeStreamUrl(episode.id);
   _audioEl.playbackRate = _appState.podcastSpeed || 1.0;
   _audioEl.load();
-
   try {
     await _audioEl.play();
-    // Resume-Position setzen (nach play, damit duration geladen ist)
     if (episode.resume_position > 0) {
       _audioEl.currentTime = episode.resume_position;
     }
   } catch (e) {
     console.warn('Podcast autoplay blocked:', e.message);
   }
-
-  // Periodische Position-Speicherung starten
   _startPodcastPositionSave();
 }
 
@@ -269,6 +313,8 @@ export async function playRecording(recording, startTime = 0) {
   const gen = ++_generation;
   _reconnectAttempts = 0;
 
+  _savePodcastPosition();
+  _stopPodcastPositionSave();
   _destroyHLS();
   _stopHLSPolling();
   _silenceAudio();
@@ -277,7 +323,7 @@ export async function playRecording(recording, startTime = 0) {
     _appState.hlsActive = false;
     _appState.hlsStatus = null;
     _hlsSessionId = null;
-    api.stopHLS().catch(() => {});
+    try { await api.stopHLS(); } catch (_) {}
   }
   if (_generation !== gen) return;
 
@@ -390,8 +436,8 @@ export async function stop() {
     await _stopRecordingInternal();
   }
 
-  // 4b. Podcast: Position speichern + Intervall stoppen
-  if (_appState.playerMode === 'podcast') {
+  // 4b. Podcast (direkt oder HLS): Position speichern + Intervall stoppen
+  if (_appState.playerMode === 'podcast' || (_appState.playerMode === 'hls' && _appState.currentEpisode)) {
     _savePodcastPosition();
     _stopPodcastPositionSave();
   }
@@ -438,10 +484,20 @@ export function setVolume(vol) {
 export function seek(position) {
   if (!_audioEl) return;
 
-  if (_appState?.playerMode === 'hls') {
+  if (_appState?.playerMode === 'hls' && _appState?.currentEpisode) {
+    // Podcast-HLS: Episode-Gesamtdauer fuer Seekbar, aber auf HLS-Puffer begrenzen
+    const epDuration = _appState.currentEpisode.duration || _audioEl.duration || 0;
+    const hlsDuration = _audioEl.duration || 0;
+    if (epDuration > 0) {
+      const targetTime = (position / 100) * epDuration;
+      // Nicht ueber verfuegbaren HLS-Puffer hinaus seeken
+      _audioEl.currentTime = Math.min(targetTime, hlsDuration > 0 ? hlsDuration - 0.5 : targetTime);
+      _lastSeekPosition = position;
+    }
+  } else if (_appState?.playerMode === 'hls') {
+    // Radio-HLS: Segment-basiertes Seeking mit Live-Pinning
     const hs = _appState.hlsStatus;
     if (!hs || hs.first_segment == null || hs.last_segment == null) {
-      // Kein HLS-Status, aber User-Intent speichern
       _lastSeekPosition = position;
       return;
     }
@@ -451,7 +507,6 @@ export function seek(position) {
     const segRange = lastSeg - firstSeg;
     const targetSeg = Math.round(firstSeg + (position / 100) * segRange);
 
-    // State IMMER updaten (User Intent), auch wenn seekable Range fehlt
     if (targetSeg >= lastSeg - 1) {
       _appState.isLive = true;
       _appState.currentSegment = lastSeg;
@@ -461,7 +516,6 @@ export function seek(position) {
     }
     _lastSeekPosition = position;
 
-    // Tatsächlicher Audio-Seek nur wenn seekable Range vorhanden
     if (_audioEl.seekable.length > 0) {
       if (targetSeg >= lastSeg - 1) {
         const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
@@ -491,7 +545,15 @@ export function skip(seconds) {
   const mode = _appState.playerMode;
   if (mode !== 'hls' && mode !== 'podcast' && mode !== 'recording') return;
 
-  if (mode === 'hls') {
+  if (mode === 'hls' && _appState.currentEpisode) {
+    // Podcast-HLS: Zeitbasiertes Skipping (wie normaler Podcast)
+    const newTime = Math.max(0, Math.min(
+      _audioEl.duration || 0,
+      _audioEl.currentTime + seconds
+    ));
+    _audioEl.currentTime = newTime;
+  } else if (mode === 'hls') {
+    // Radio-HLS: Segment-basiertes Skipping
     const hs = _appState.hlsStatus;
     if (hs && hs.first_segment != null && hs.last_segment != null && _audioEl.seekable.length > 0) {
       const segDur = hs.segment_duration || 1;
@@ -651,10 +713,39 @@ export async function restartHLS() {
   if (!station) return;
 
   try {
+    // 1. Alte hls.js-Instanz komplett zerstoeren (Buffer leeren!)
+    _destroyHLS();
+    _stopHLSPolling();
+
+    // 2. Backend-Session stoppen
     await api.stopHLS();
     _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+
+    // 3. Neue Session starten + auf Segmente warten + neue hls.js-Instanz
     const gen = _generation;
-    _startHLSBackground(station, gen);
+    const result = await api.startHLS(station);
+    if (_generation !== gen) return;
+
+    if (result.status === 'started' || result.status === 'already_active') {
+      _hlsSessionId = result.session_id || null;
+      _appState.hlsActive = true;
+      _appState.hlsStatus = result;
+      _startHLSPolling(gen);
+
+      // Warten bis mind. 3 Segmente bereit
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        if (_generation !== gen) return;
+        const status = await api.getHLSStatus();
+        if (status?.segment_count >= 3) break;
+      }
+      if (_generation !== gen) return;
+
+      // 4. Neue hls.js-Instanz mit neuer Playlist-URL verbinden
+      _switchToHLS(gen);
+    }
   } catch (e) {
     console.error('HLS restart failed:', e);
   }
@@ -926,7 +1017,16 @@ export function handleTimeUpdate() {
   const duration = _audioEl.duration || 0;
   let seekPosition = _lastSeekPosition;
 
-  if (_appState.playerMode === 'hls') {
+  if (_appState.playerMode === 'hls' && _appState.currentEpisode) {
+    // Podcast-HLS: Episode-Gesamtdauer verwenden (nicht die wachsende HLS-Puffer-Dauer)
+    const epDuration = _appState.currentEpisode.duration || duration;
+    if (epDuration > 0) {
+      seekPosition = (currentTime / epDuration) * 100;
+      _lastSeekPosition = seekPosition;
+    }
+    return { currentTime, duration: epDuration, seekPosition };
+  } else if (_appState.playerMode === 'hls') {
+    // Radio-HLS: Segment-basiertes Tracking mit Live-Pinning
     const hs = _appState.hlsStatus;
     if (hs && hs.first_segment != null && hs.last_segment != null && _audioEl.seekable.length > 0) {
       const firstSeg = hs.first_segment;
@@ -935,9 +1035,6 @@ export function handleTimeUpdate() {
 
       if (segRange > 0) {
         if (_appState.isLive) {
-          // Live-Modus: Position an rechten Rand pinnen.
-          // Kein Neuberechnen - verhindert Pendeln an der Live-Kante.
-          // isLive wird nur durch seek/skip/goLive geändert.
           _appState.currentSegment = lastSeg;
           seekPosition = 100;
           _lastSeekPosition = 100;
@@ -946,17 +1043,14 @@ export function handleTimeUpdate() {
           const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
           const seekRange = seekEnd - seekStart;
 
-          // Map currentTime auf Segment-Nummer
           const fraction = seekRange > 0 ? (currentTime - seekStart) / seekRange : 0;
           const currentSeg = Math.round(firstSeg + fraction * segRange);
 
-          // Anti-Jitter: Nur updaten wenn sich Segment ändert
           if (_appState.currentSegment !== currentSeg) {
             _appState.currentSegment = currentSeg;
             seekPosition = ((currentSeg - firstSeg) / segRange) * 100;
             _lastSeekPosition = seekPosition;
           }
-          // isLive wird hier NICHT gesetzt - nur seek/skip/goLive ändern das
         }
       }
     }
@@ -1015,7 +1109,7 @@ export function handleEnded() {
       }
     }
     stop();
-  } else if (_appState?.playerMode === 'podcast') {
+  } else if (_appState?.playerMode === 'podcast' || (_appState?.playerMode === 'hls' && _appState?.currentEpisode)) {
     // Episode als gehört markieren
     if (_appState.currentEpisode?.id) {
       api.markEpisodePlayed(_appState.currentEpisode.id).catch(() => {});
@@ -1309,6 +1403,63 @@ function _switchToHLS(gen) {
         _destroyHLS();
         _appState.playerMode = 'direct';
         _playDirectFallback(gen);
+      }
+    }
+  });
+
+  const playlistUrl = api.getHLSPlaylistUrl(_hlsSessionId);
+  _hlsInstance.loadSource(playlistUrl);
+  _hlsInstance.attachMedia(_audioEl);
+}
+
+/**
+ * HLS-Podcast-Modus: hls.js fuer Podcast-Episode initialisieren.
+ * Unterschied zu Radio-HLS: playerMode bleibt 'podcast', Resume-Position wird gesetzt.
+ */
+function _switchToHLSPodcast(gen, episode) {
+  if (_generation !== gen) return;
+  if (!_audioEl || !Hls.isSupported()) return;
+
+  _destroyHLS();
+
+  _hlsInstance = new Hls({
+    debug: false,
+    enableWorker: true,
+    lowLatencyMode: false,
+    backBufferLength: 300  // Podcast: mehr Back-Buffer fuer Seeking
+  });
+
+  _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+    if (_generation !== gen) return;
+    _appState.playerMode = 'hls';
+    _audioEl.playbackRate = _appState?.podcastSpeed || 1.0;
+    _audioEl.play().then(() => {
+      if (_generation !== gen || !_audioEl) return;
+      if (episode.resume_position > 0) {
+        _audioEl.currentTime = episode.resume_position;
+      }
+    }).catch(e => console.error('Podcast HLS play error:', e));
+    _startPodcastPositionSave();
+  });
+
+  let podcastHlsRetries = 0;
+  _hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+    if (_generation !== gen) return;
+    if (data.fatal) {
+      console.error('Podcast HLS Fatal Error:', data.type, data.details);
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && podcastHlsRetries < 3) {
+        podcastHlsRetries++;
+        setTimeout(() => _hlsInstance?.startLoad(), 3000);
+      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        _hlsInstance?.recoverMediaError();
+      } else {
+        // Fatal: Fallback zu Direct-Stream
+        _destroyHLS();
+        if (_appState && episode?.id) {
+          _audioEl.src = api.getEpisodeStreamUrl(episode.id);
+          _audioEl.load();
+          _audioEl.play().catch(e => console.warn('Podcast fallback error:', e));
+        }
       }
     }
   });
