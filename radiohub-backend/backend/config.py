@@ -1,5 +1,5 @@
 """
-RadioHub v0.3.1 - Konfiguration
+RadioHub v0.3.2 - Konfiguration
 
 Daten-Verzeichnis wird per Environment-Variable gesetzt.
 Docker mounted externes Verzeichnis nach /data.
@@ -12,7 +12,7 @@ from pathlib import Path
 from .storage import get_zone_path, get_data_dir as _get_data_dir
 
 # === Version ===
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 
 # === Pfade (delegiert an Storage-Zonen) ===
 # Basis-Verzeichnis (Docker: /data, Lokal: ./data)
