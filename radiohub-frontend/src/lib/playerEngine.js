@@ -1431,7 +1431,9 @@ function _switchToHLSPodcast(gen, episode) {
 
   _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
     if (_generation !== gen) return;
-    _appState.playerMode = 'hls';
+    // playerMode bleibt 'podcast' damit Navigation/Skip korrekt funktionieren
+    // (HLS ist nur der Transport, nicht der logische Modus)
+    _appState.playerMode = 'podcast';
     _audioEl.playbackRate = _appState?.podcastSpeed || 1.0;
     _audioEl.play().then(() => {
       if (_generation !== gen || !_audioEl) return;

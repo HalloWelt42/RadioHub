@@ -250,7 +250,7 @@
     // Podcast-Modus: vorherige Episode
     if (isPodcast && appState.podcastPlaylist?.length > 1) {
       const idx = appState.currentEpisodeIndex ?? -1;
-      if (idx > 0) return appState.podcastPlaylist[idx - 1]?.episode?.title;
+      if (idx > 0) return appState.podcastPlaylist[idx - 1]?.title;
       return null;
     }
     if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {
@@ -270,7 +270,7 @@
     // Podcast-Modus: nächste Episode
     if (isPodcast && appState.podcastPlaylist?.length > 1) {
       const idx = appState.currentEpisodeIndex ?? -1;
-      if (idx >= 0 && idx < appState.podcastPlaylist.length - 1) return appState.podcastPlaylist[idx + 1]?.episode?.title;
+      if (idx >= 0 && idx < appState.podcastPlaylist.length - 1) return appState.podcastPlaylist[idx + 1]?.title;
       return null;
     }
     if (isRecordingPlayback && appState.recordingPlaylist?.length > 1) {

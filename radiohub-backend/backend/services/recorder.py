@@ -242,7 +242,10 @@ class RecorderManager:
                 "-reconnect_streamed", "1",
                 "-reconnect_delay_max", "5",
                 "-i", session.stream_url,
+                "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
                 "-c:a", "libmp3lame", "-b:a", br,
+                "-ac", "2",       # Stereo
+                "-ar", "44100",   # Samplerate
                 str(output_file)
             ]
 
