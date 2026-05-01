@@ -86,32 +86,56 @@ def _find_config_path() -> Optional[Path]:
     return None
 
 
+def _default_zone_path(zone: str) -> str:
+    """Default-Pfad einer Zone unter DATA_DIR."""
+    subdir = _DEFAULT_ZONE_SUBDIRS.get(zone, "")
+    return str(_DATA_DIR / subdir) if subdir else str(_DATA_DIR)
+
+
 def _load_or_create() -> dict:
-    """Lädt oder erstellt Storage-Konfiguration"""
+    """Lädt oder erstellt Storage-Konfiguration.
+
+    Pfad-Validierung: Solange kein STORAGE_CONFIG-Env gesetzt ist (Single-Volume-
+    Setup), müssen alle Zone-Pfade unter DATA_DIR liegen. Pfade aus fremden Hosts
+    (z.B. nach Daten-Migration Mac → Pi) werden automatisch durch Defaults ersetzt
+    und storage.json wird zurückgeschrieben. Verhindert, dass das Backend eine
+    frische DB im falschen Pfad öffnet, während die migrierte DB unbeachtet bleibt.
+    Multi-Volume-Setups (STORAGE_CONFIG gesetzt) bleiben ungeprüft.
+    """
     global _storage_config
     if _storage_config is not None:
         return _storage_config
 
     config_path = _find_config_path()
+    multi_volume = bool(os.getenv("STORAGE_CONFIG"))
+    data_dir_str = str(_DATA_DIR)
+    config_changed = False
 
     if config_path:
         with open(config_path, "r") as f:
             _storage_config = json.load(f)
-        # Fehlende Zonen mit Defaults ergänzen
         zones = _storage_config.setdefault("zones", {})
-        for zone, subdir in _DEFAULT_ZONE_SUBDIRS.items():
+        for zone in _DEFAULT_ZONE_SUBDIRS:
+            default_path = _default_zone_path(zone)
             if zone not in zones:
-                default_path = str(_DATA_DIR / subdir) if subdir else str(_DATA_DIR)
                 zones[zone] = {"path": default_path}
+                config_changed = True
+                continue
+            current = zones[zone].get("path", "")
+            if not multi_volume and not current.startswith(data_dir_str):
+                print(f"  storage.json: Zone '{zone}' hatte fremden Pfad '{current}' "
+                      f"-- ersetzt durch Default '{default_path}'")
+                zones[zone]["path"] = default_path
+                config_changed = True
     else:
         # Neue Default-Config erstellen
         _storage_config = {
             "version": 1,
-            "zones": {},
+            "zones": {zone: {"path": _default_zone_path(zone)} for zone in _DEFAULT_ZONE_SUBDIRS},
         }
-        for zone, subdir in _DEFAULT_ZONE_SUBDIRS.items():
-            default_path = str(_DATA_DIR / subdir) if subdir else str(_DATA_DIR)
-            _storage_config["zones"][zone] = {"path": default_path}
+        config_changed = True
+
+    if config_changed:
         _save_config()
 
     # Verzeichnisse erstellen
