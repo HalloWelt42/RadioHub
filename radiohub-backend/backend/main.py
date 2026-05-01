@@ -14,6 +14,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import DATA_DIR, VERSION
 from .database import init_db, check_db_health
+
+# DB-Schema VOR Service-Imports initialisieren -- einige Service-Singletons
+# greifen bereits im Konstruktor auf DB-Tabellen zu (config, sessions ...).
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+init_db()
+
 from .storage import get_all_zones
 from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router, file_explorer_router, recording_folders_router, storage_router, services_router, favicons_router, peaks_router, audio_processing_router, station_tags_router, station_custom_urls_router
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
@@ -40,9 +46,8 @@ async def _podcast_refresh_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """App Lifecycle"""
-    # Startup
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    init_db()
+    # Startup -- init_db() lief bereits beim Modul-Import (s.o.)
+    hls_recorder.startup()  # Verwaiste HLS-REC-Sessions aufräumen
     get_config_service()  # Config initialisieren
     seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befüllen
 

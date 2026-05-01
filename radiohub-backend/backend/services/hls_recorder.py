@@ -70,6 +70,9 @@ class HLSRecorderService:
         self.active_session: Optional[HLSRecSession] = None
         self._collector_task: Optional[asyncio.Task] = None
         self._stopping = False  # Guard gegen doppeltes stop()
+
+    def startup(self):
+        """Wird vom Lifespan-Startup nach init_db() aufgerufen."""
         self._cleanup_stale_sessions()
 
     def _cleanup_stale_sessions(self):
