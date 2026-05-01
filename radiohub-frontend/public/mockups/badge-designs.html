@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RadioHub Badge-Design Vergleich</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Barlow:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #0a0a12;
+    color: #e0e0e0;
+    padding: 30px;
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    color: #ff4455;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+  }
+
+  h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    color: #888;
+    letter-spacing: 0.5px;
+    margin: 24px 0 12px;
+    text-transform: uppercase;
+  }
+
+  .design-row {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .design-card {
+    background: #111119;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 320px;
+    flex: 1;
+  }
+
+  .design-card h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: #e5a00d;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #222;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .badge-row.context {
+    background: #0d0d15;
+    padding: 10px;
+    border-radius: 4px;
+    align-items: center;
+  }
+
+  .station-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ddd;
+    margin-right: 10px;
+  }
+
+  .note {
+    font-size: 10px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* ============================================
+     DESIGN A: AKTUELL (HiFiBadge)
+     ============================================ */
+  .a .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    line-height: 14px;
+  }
+  .a .badge.blue { color: #64b4ff; background: rgba(100,180,255,0.12); border-color: rgba(100,180,255,0.25); }
+  .a .badge.purple { color: #a078ff; background: rgba(160,120,255,0.12); border-color: rgba(160,120,255,0.25); }
+  .a .badge.green { color: #4caf50; background: rgba(76,175,80,0.10); border-color: rgba(76,175,80,0.25); }
+  .a .badge.amber { color: #e5a00d; background: rgba(229,160,13,0.10); border-color: rgba(229,160,13,0.25); }
+  .a .badge.red { color: #f44336; background: rgba(244,67,54,0.12); border-color: rgba(244,67,54,0.25); }
+  .a .badge.gold { color: #ffd740; background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); }
+  .a .badge.muted { color: #888; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+
+  /* ============================================
+     DESIGN B: OUTLINE ONLY (Kein Hintergrund)
+     ============================================ */
+  .b .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    white-space: nowrap;
+    border: 1px solid;
+    line-height: 14px;
+    background: transparent;
+  }
+  .b .badge.blue { color: #64b4ff; border-color: #64b4ff; }
+  .b .badge.purple { color: #a078ff; border-color: #a078ff; }
+  .b .badge.green { color: #4caf50; border-color: #4caf50; }
+  .b .badge.amber { color: #e5a00d; border-color: #e5a00d; }
+  .b .badge.red { color: #f44336; border-color: #f44336; }
+  .b .badge.gold { color: #ffd740; border-color: #ffd740; }
+  .b .badge.muted { color: #666; border-color: #444; }
+
+  /* ============================================
+     DESIGN C: PILL / ROUNDED
+     ============================================ */
+  .c .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    border-radius: 10px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    line-height: 14px;
+  }
+  .c .badge.blue { color: #64b4ff; background: rgba(100,180,255,0.15); border-color: rgba(100,180,255,0.3); }
+  .c .badge.purple { color: #a078ff; background: rgba(160,120,255,0.15); border-color: rgba(160,120,255,0.3); }
+  .c .badge.green { color: #4caf50; background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); }
+  .c .badge.amber { color: #e5a00d; background: rgba(229,160,13,0.15); border-color: rgba(229,160,13,0.3); }
+  .c .badge.red { color: #f44336; background: rgba(244,67,54,0.15); border-color: rgba(244,67,54,0.3); }
+  .c .badge.gold { color: #ffd740; background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.25); }
+  .c .badge.muted { color: #888; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+
+  /* ============================================
+     DESIGN D: SOLID / INVERTIERT
+     ============================================ */
+  .d .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px;
+    font-family: 'Orbitron', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    white-space: nowrap;
+    border: none;
+    line-height: 14px;
+    color: #000;
+  }
+  .d .badge.blue { background: #64b4ff; }
+  .d .badge.purple { background: #a078ff; }
+  .d .badge.green { background: #4caf50; }
+  .d .badge.amber { background: #e5a00d; }
+  .d .badge.red { background: #f44336; }
+  .d .badge.gold { background: #ffd740; }
+  .d .badge.muted { background: #444; color: #ccc; }
+
+  /* ============================================
+     DESIGN E: LED-DOT + TEXT (Minimalistisch)
+     ============================================ */
+  .e .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px 1px 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    border-radius: 2px;
+    white-space: nowrap;
+    border: none;
+    line-height: 14px;
+    background: rgba(255,255,255,0.04);
+  }
+  .e .badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .e .badge.blue { color: #8cc8ff; }
+  .e .badge.blue::before { background: #64b4ff; box-shadow: 0 0 4px #64b4ff; }
+  .e .badge.purple { color: #bfa0ff; }
+  .e .badge.purple::before { background: #a078ff; box-shadow: 0 0 4px #a078ff; }
+  .e .badge.green { color: #6fcf73; }
+  .e .badge.green::before { background: #4caf50; box-shadow: 0 0 4px #4caf50; }
+  .e .badge.amber { color: #f0c040; }
+  .e .badge.amber::before { background: #e5a00d; box-shadow: 0 0 4px #e5a00d; }
+  .e .badge.red { color: #ff7070; }
+  .e .badge.red::before { background: #f44336; box-shadow: 0 0 4px #f44336; }
+  .e .badge.gold { color: #ffe070; }
+  .e .badge.gold::before { background: #ffd740; box-shadow: 0 0 4px #ffd740; }
+  .e .badge.muted { color: #777; }
+  .e .badge.muted::before { background: #555; box-shadow: none; }
+
+  /* ============================================
+     DESIGN F: NEON GLOW (Retro-HiFi)
+     ============================================ */
+  .f .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    font-family: 'Orbitron', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-radius: 1px;
+    white-space: nowrap;
+    border: 1px solid;
+    line-height: 14px;
+    background: transparent;
+  }
+  .f .badge.blue { color: #64b4ff; border-color: #64b4ff; text-shadow: 0 0 6px rgba(100,180,255,0.5); box-shadow: 0 0 4px rgba(100,180,255,0.15); }
+  .f .badge.purple { color: #a078ff; border-color: #a078ff; text-shadow: 0 0 6px rgba(160,120,255,0.5); box-shadow: 0 0 4px rgba(160,120,255,0.15); }
+  .f .badge.green { color: #4caf50; border-color: #4caf50; text-shadow: 0 0 6px rgba(76,175,80,0.5); box-shadow: 0 0 4px rgba(76,175,80,0.15); }
+  .f .badge.amber { color: #e5a00d; border-color: #e5a00d; text-shadow: 0 0 6px rgba(229,160,13,0.5); box-shadow: 0 0 4px rgba(229,160,13,0.15); }
+  .f .badge.red { color: #f44336; border-color: #f44336; text-shadow: 0 0 6px rgba(244,67,54,0.5); box-shadow: 0 0 4px rgba(244,67,54,0.15); }
+  .f .badge.gold { color: #ffd740; border-color: #ffd740; text-shadow: 0 0 6px rgba(255,215,0,0.5); box-shadow: 0 0 4px rgba(255,215,0,0.15); }
+  .f .badge.muted { color: #666; border-color: #444; text-shadow: none; box-shadow: none; }
+
+  /* ============================================
+     LIGHT MODE
+     ============================================ */
+  body.light {
+    background: #f0f0f4;
+    color: #222;
+  }
+
+  body.light .design-card {
+    background: #fff;
+    border-color: #ddd;
+  }
+
+  body.light .design-card h3 { color: #996600; border-color: #ddd; }
+  body.light .badge-row.context { background: #f8f8fc; }
+  body.light .station-name { color: #222; }
+  body.light .note { color: #999; }
+  body.light h2 { color: #666; }
+  body.light table tr { border-color: #ddd !important; }
+
+  /* A: Filled */
+  body.light .a .badge.blue { color: #1565c0; background: rgba(21,101,192,0.10); border-color: rgba(21,101,192,0.25); }
+  body.light .a .badge.purple { color: #6a1b9a; background: rgba(106,27,154,0.08); border-color: rgba(106,27,154,0.2); }
+  body.light .a .badge.green { color: #2e7d32; background: rgba(46,125,50,0.10); border-color: rgba(46,125,50,0.25); }
+  body.light .a .badge.amber { color: #e65100; background: rgba(230,81,0,0.08); border-color: rgba(230,81,0,0.2); }
+  body.light .a .badge.red { color: #c62828; background: rgba(198,40,40,0.08); border-color: rgba(198,40,40,0.2); }
+  body.light .a .badge.gold { color: #f57f17; background: rgba(245,127,23,0.08); border-color: rgba(245,127,23,0.2); }
+  body.light .a .badge.muted { color: #777; background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); }
+
+  /* B: Outline */
+  body.light .b .badge.blue { color: #1565c0; border-color: #1565c0; }
+  body.light .b .badge.purple { color: #6a1b9a; border-color: #6a1b9a; }
+  body.light .b .badge.green { color: #2e7d32; border-color: #2e7d32; }
+  body.light .b .badge.amber { color: #e65100; border-color: #e65100; }
+  body.light .b .badge.red { color: #c62828; border-color: #c62828; }
+  body.light .b .badge.gold { color: #f57f17; border-color: #f57f17; }
+  body.light .b .badge.muted { color: #999; border-color: #bbb; }
+
+  /* C: Pill */
+  body.light .c .badge.blue { color: #1565c0; background: rgba(21,101,192,0.10); border-color: rgba(21,101,192,0.2); }
+  body.light .c .badge.purple { color: #6a1b9a; background: rgba(106,27,154,0.08); border-color: rgba(106,27,154,0.18); }
+  body.light .c .badge.green { color: #2e7d32; background: rgba(46,125,50,0.10); border-color: rgba(46,125,50,0.2); }
+  body.light .c .badge.amber { color: #e65100; background: rgba(230,81,0,0.08); border-color: rgba(230,81,0,0.18); }
+  body.light .c .badge.red { color: #c62828; background: rgba(198,40,40,0.08); border-color: rgba(198,40,40,0.18); }
+  body.light .c .badge.gold { color: #f57f17; background: rgba(245,127,23,0.08); border-color: rgba(245,127,23,0.18); }
+  body.light .c .badge.muted { color: #888; background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); }
+
+  /* D: Solid */
+  body.light .d .badge.blue { background: #1565c0; color: #fff; }
+  body.light .d .badge.purple { background: #6a1b9a; color: #fff; }
+  body.light .d .badge.green { background: #2e7d32; color: #fff; }
+  body.light .d .badge.amber { background: #e65100; color: #fff; }
+  body.light .d .badge.red { background: #c62828; color: #fff; }
+  body.light .d .badge.gold { background: #f57f17; color: #fff; }
+  body.light .d .badge.muted { background: #bbb; color: #fff; }
+
+  /* E: LED-Dot */
+  body.light .e .badge { background: rgba(0,0,0,0.04); }
+  body.light .e .badge.blue { color: #1565c0; }
+  body.light .e .badge.blue::before { background: #1565c0; box-shadow: 0 0 4px #1565c0; }
+  body.light .e .badge.purple { color: #6a1b9a; }
+  body.light .e .badge.purple::before { background: #6a1b9a; box-shadow: 0 0 4px #6a1b9a; }
+  body.light .e .badge.green { color: #2e7d32; }
+  body.light .e .badge.green::before { background: #2e7d32; box-shadow: 0 0 4px #2e7d32; }
+  body.light .e .badge.amber { color: #e65100; }
+  body.light .e .badge.amber::before { background: #e65100; box-shadow: 0 0 4px #e65100; }
+  body.light .e .badge.red { color: #c62828; }
+  body.light .e .badge.red::before { background: #c62828; box-shadow: 0 0 4px #c62828; }
+  body.light .e .badge.gold { color: #f57f17; }
+  body.light .e .badge.gold::before { background: #f57f17; box-shadow: 0 0 4px #f57f17; }
+  body.light .e .badge.muted { color: #999; }
+  body.light .e .badge.muted::before { background: #bbb; box-shadow: none; }
+
+  /* F: Neon Glow -- im Light-Mode weniger Glow, mehr Farbe */
+  body.light .f .badge.blue { color: #1565c0; border-color: #1565c0; text-shadow: none; box-shadow: 0 0 3px rgba(21,101,192,0.2); }
+  body.light .f .badge.purple { color: #6a1b9a; border-color: #6a1b9a; text-shadow: none; box-shadow: 0 0 3px rgba(106,27,154,0.2); }
+  body.light .f .badge.green { color: #2e7d32; border-color: #2e7d32; text-shadow: none; box-shadow: 0 0 3px rgba(46,125,50,0.2); }
+  body.light .f .badge.amber { color: #e65100; border-color: #e65100; text-shadow: none; box-shadow: 0 0 3px rgba(230,81,0,0.2); }
+  body.light .f .badge.red { color: #c62828; border-color: #c62828; text-shadow: none; box-shadow: 0 0 3px rgba(198,40,40,0.2); }
+  body.light .f .badge.gold { color: #f57f17; border-color: #f57f17; text-shadow: none; box-shadow: 0 0 3px rgba(245,127,23,0.2); }
+  body.light .f .badge.muted { color: #999; border-color: #bbb; text-shadow: none; box-shadow: none; }
+
+  /* Mode Toggle */
+  .mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 6px 14px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid #e5a00d;
+    border-radius: 3px;
+    background: transparent;
+    color: #e5a00d;
+    cursor: pointer;
+    z-index: 100;
+  }
+  .mode-toggle:hover { background: #e5a00d; color: #000; }
+  body.light .mode-toggle { border-color: #333; color: #333; }
+  body.light .mode-toggle:hover { background: #333; color: #fff; }
+
+</style>
+</head>
+<body>
+
+<button class="mode-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? 'Dark Mode' : 'Light Mode';">Light Mode</button>
+
+<h1>Badge-Design Vergleich</h1>
+
+<!-- DESIGN A -->
+<div class="design-row">
+  <div class="design-card a">
+    <h3>A -- Aktuell (Filled + Border)</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">Orbitron 9px, Border + gefuellter Hintergrund, 2px Radius</p>
+  </div>
+
+  <!-- DESIGN B -->
+  <div class="design-card b">
+    <h3>B -- Outline Only</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">Orbitron 9px, nur Outline, transparenter Hintergrund</p>
+  </div>
+</div>
+
+<!-- DESIGN C + D -->
+<div class="design-row">
+  <div class="design-card c">
+    <h3>C -- Pill / Rounded</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">Barlow 9px, Pill-Form (border-radius 10px), weicher Look</p>
+  </div>
+
+  <div class="design-card d">
+    <h3>D -- Solid / Invertiert</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">Orbitron 8px, voller Hintergrund, dunkler Text, kein Border</p>
+  </div>
+</div>
+
+<!-- DESIGN E + F -->
+<div class="design-row">
+  <div class="design-card e">
+    <h3>E -- LED-Dot + Text</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">JetBrains Mono 9px, LED-Dot mit Glow, minimalistisch</p>
+  </div>
+
+  <div class="design-card f">
+    <h3>F -- Neon Glow (Retro-HiFi)</h3>
+    <div class="badge-row">
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge muted">0% AD</span>
+      <span class="badge green">Schweiz</span>
+      <span class="badge gold">240</span>
+      <span class="badge amber">HiFi</span>
+      <span class="badge red">Werbung</span>
+    </div>
+    <div class="badge-row context">
+      <span class="station-name">A Fine Jazz Gumbo Radio</span>
+      <span class="badge blue">AAC</span>
+      <span class="badge purple">56 kbps</span>
+      <span class="badge green">CH</span>
+      <span class="badge gold">240</span>
+    </div>
+    <p class="note">Orbitron 8px, Outline + text-shadow + box-shadow Glow-Effekt</p>
+  </div>
+</div>
+
+<h2>Zusammenfassung</h2>
+<table style="font-size: 11px; border-collapse: collapse; width: 100%; margin-bottom: 30px;">
+  <tr style="border-bottom: 1px solid #333;">
+    <th style="text-align: left; padding: 6px; color: #888;">Design</th>
+    <th style="text-align: left; padding: 6px; color: #888;">Font</th>
+    <th style="text-align: left; padding: 6px; color: #888;">Stil</th>
+    <th style="text-align: left; padding: 6px; color: #888;">Passt zu</th>
+  </tr>
+  <tr style="border-bottom: 1px solid #1a1a1a;">
+    <td style="padding: 6px;">A -- Aktuell</td>
+    <td style="padding: 6px;">Orbitron</td>
+    <td style="padding: 6px;">Filled + Border</td>
+    <td style="padding: 6px;">Standard, dezent</td>
+  </tr>
+  <tr style="border-bottom: 1px solid #1a1a1a;">
+    <td style="padding: 6px;">B -- Outline</td>
+    <td style="padding: 6px;">Orbitron</td>
+    <td style="padding: 6px;">Nur Rahmen</td>
+    <td style="padding: 6px;">Technisch, minimalistisch</td>
+  </tr>
+  <tr style="border-bottom: 1px solid #1a1a1a;">
+    <td style="padding: 6px;">C -- Pill</td>
+    <td style="padding: 6px;">Barlow</td>
+    <td style="padding: 6px;">Abgerundet</td>
+    <td style="padding: 6px;">Modern, weicher</td>
+  </tr>
+  <tr style="border-bottom: 1px solid #1a1a1a;">
+    <td style="padding: 6px;">D -- Solid</td>
+    <td style="padding: 6px;">Orbitron</td>
+    <td style="padding: 6px;">Voller Hintergrund</td>
+    <td style="padding: 6px;">Auffaellig, Signal</td>
+  </tr>
+  <tr style="border-bottom: 1px solid #1a1a1a;">
+    <td style="padding: 6px;">E -- LED-Dot</td>
+    <td style="padding: 6px;">JetBrains Mono</td>
+    <td style="padding: 6px;">Punkt + Text</td>
+    <td style="padding: 6px;">Dashboard, Monitoring</td>
+  </tr>
+  <tr>
+    <td style="padding: 6px;">F -- Neon Glow</td>
+    <td style="padding: 6px;">Orbitron</td>
+    <td style="padding: 6px;">Outline + Glow</td>
+    <td style="padding: 6px;">Retro HiFi, auffaellig</td>
+  </tr>
+</table>
+
+</body>
+</html>

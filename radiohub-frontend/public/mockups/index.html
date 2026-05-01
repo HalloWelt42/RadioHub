@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RadioHub Design Mockups</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Barlow:wght@400;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    padding: 30px;
+  }
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+  }
+  .card:hover {
+    border-color: rgba(100, 200, 255, 0.3);
+    box-shadow: 0 0 30px rgba(100, 200, 255, 0.08);
+    transform: translateY(-2px);
+  }
+  .card iframe {
+    width: 100%;
+    height: 320px;
+    border: none;
+    pointer-events: none;
+    transform: scale(0.5);
+    transform-origin: top left;
+    width: 200%;
+    height: 640px;
+  }
+  .card-frame {
+    height: 320px;
+    overflow: hidden;
+  }
+  .card-info {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .card-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+  }
+  .card-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+  a { color: inherit; text-decoration: none; }
+</style>
+</head>
+<body>
+  <h1>RADIOHUB MOCKUPS</h1>
+  <div class="subtitle">5 FUTURISTISCHE DESIGN-VARIANTEN -- KLICK ZUM OEFFNEN</div>
+
+  <div class="grid">
+    <a href="01-neon-cyber.html" class="card">
+      <div class="card-frame"><iframe src="01-neon-cyber.html" loading="lazy"></iframe></div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">NEON CYBER</div>
+          <div class="card-desc">Cyan/Magenta Neon-Glow, Scanlines, Gradient-Borders</div>
+        </div>
+        <div class="card-num">1/5</div>
+      </div>
+    </a>
+
+    <a href="02-glass-morph.html" class="card">
+      <div class="card-frame"><iframe src="02-glass-morph.html" loading="lazy"></iframe></div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">GLASS MORPHISM</div>
+          <div class="card-desc">Frosted Glass, Blur-Effekte, Soft-Gradients</div>
+        </div>
+        <div class="card-num">2/5</div>
+      </div>
+    </a>
+
+    <a href="03-military-tactical.html" class="card">
+      <div class="card-frame"><iframe src="03-military-tactical.html" loading="lazy"></iframe></div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">MILITARY TACTICAL</div>
+          <div class="card-desc">Grün-Phosphor, Grid-Overlay, Zero-Radius HUD</div>
+        </div>
+        <div class="card-num">3/5</div>
+      </div>
+    </a>
+
+    <a href="04-synthwave.html" class="card">
+      <div class="card-frame"><iframe src="04-synthwave.html" loading="lazy"></iframe></div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">SYNTHWAVE RETRO</div>
+          <div class="card-desc">Pink/Magenta, Chrome-Text, 80s-Grid, Neon-Glow</div>
+        </div>
+        <div class="card-num">4/5</div>
+      </div>
+    </a>
+
+    <a href="05-minimal-holo.html" class="card">
+      <div class="card-frame"><iframe src="05-minimal-holo.html" loading="lazy"></iframe></div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">MINIMAL HOLO</div>
+          <div class="card-desc">Ultra-Clean, Electric-Blue, Thin-Lines, Negative Space</div>
+        </div>
+        <div class="card-num">5/5</div>
+      </div>
+    </a>
+  </div>
+</body>
+</html>

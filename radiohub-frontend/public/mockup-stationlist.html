@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup: Senderliste Redesign</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252525;
+    --bg-panel: #222222;
+    --bg-tertiary: #181818;
+    --text-primary: #e0e0e0;
+    --text-secondary: #999999;
+    --accent: #4a90d9;
+    --border-dark: rgba(0,0,0,0.3);
+    --row-hover: rgba(74,144,217,0.15);
+    --row-selected: rgba(74,144,217,0.25);
+    --led-green: #33cc33;
+    --led-yellow: #ffcc00;
+    --led-off: #444444;
+    --led-red: #ff3333;
+    --display-bg: #0a0a0a;
+    --display-text: #00ff88;
+    --display-border: #444444;
+    --font-values: 'Orbitron', 'Century Gothic', monospace;
+    --shadow-dark: #141414;
+    --shadow-light: #2a2a2a;
+    --shadow-button: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 24px;
+  }
+
+  h2 {
+    font-family: var(--font-values);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin: 32px 0 16px;
+    text-transform: uppercase;
+  }
+  h2:first-child { margin-top: 0; }
+
+  .comparison {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  .panel {
+    flex: 1;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-label {
+    font-family: var(--font-values);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* ===== LED ===== */
+  .led {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .led.green { background: var(--led-green); box-shadow: 0 0 6px var(--led-green); }
+  .led.yellow { background: var(--led-yellow); box-shadow: 0 0 6px var(--led-yellow); }
+  .led.red { background: var(--led-red); box-shadow: 0 0 4px var(--led-red); }
+  .led.off { background: var(--led-off); }
+
+  /* ===========================
+     VORHER (Aktueller Zustand)
+     =========================== */
+  .old-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-dark);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .old-row:hover { background: var(--row-hover); }
+  .old-row.playing { background: var(--row-selected); }
+
+  .old-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .old-country {
+    width: 200px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 0 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .old-bitrate {
+    width: 90px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+    padding-right: 8px;
+  }
+  .old-votes {
+    width: 70px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  /* ===========================
+     NACHHER (Neues Design)
+     =========================== */
+
+  /* -- Aktiver Sender (fixiert oben) -- */
+  .now-playing-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(90deg, rgba(51,204,51,0.08) 0%, transparent 60%);
+    border-bottom: 2px solid rgba(51,204,51,0.3);
+    cursor: pointer;
+  }
+
+  .now-playing-bar .np-led-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .np-pulse {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--led-green);
+    box-shadow: 0 0 6px var(--led-green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--led-green); }
+    50% { opacity: 0.5; box-shadow: 0 0 3px var(--led-green); }
+  }
+
+  .np-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .np-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .np-tag {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+  }
+
+  .np-tag .val {
+    color: var(--text-primary);
+  }
+
+  .np-fav {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .np-expand {
+    font-size: 10px;
+    color: var(--text-secondary);
+    width: 16px;
+    text-align: center;
+  }
+
+  /* -- Normale Zeilen (Neu) -- */
+  .new-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-dark);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .new-row:hover { background: var(--row-hover); }
+
+  .new-row .row-led {
+    flex-shrink: 0;
+  }
+
+  .new-row .row-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .new-row .row-country {
+    font-size: 10px;
+    color: var(--text-secondary);
+    width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .new-row .row-bitrate {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    width: 65px;
+    text-align: right;
+  }
+
+  .new-row .row-votes {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    width: 50px;
+    text-align: right;
+  }
+
+  .new-row .row-fav {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+  }
+
+  /* -- Details Panel (aufgeklappt) -- */
+  .details-panel {
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-dark);
+    padding: 12px 16px 12px 36px;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    align-items: baseline;
+  }
+
+  .details-grid .dl {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .details-grid .dv {
+    font-size: 11px;
+    color: var(--text-primary);
+    word-break: break-word;
+  }
+
+  .details-grid .dv.url {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    word-break: break-all;
+  }
+
+  .details-grid .dv.link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .details-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    padding-left: 0;
+  }
+
+  .tag-chip {
+    font-family: var(--font-values);
+    font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    background: rgba(74,144,217,0.1);
+    border: 1px solid rgba(74,144,217,0.2);
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .details-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-dark);
+  }
+
+  .detail-btn {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .detail-btn.block {
+    background: var(--bg-panel);
+    color: var(--led-red);
+    box-shadow: var(--shadow-button);
+  }
+
+  .detail-btn.homepage {
+    background: var(--bg-panel);
+    color: var(--accent);
+    box-shadow: var(--shadow-button);
+  }
+
+  /* -- Separator -- */
+  .sep {
+    height: 24px;
+  }
+
+  /* -- Annotations -- */
+  .note {
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    background: rgba(74,144,217,0.05);
+    border-left: 2px solid var(--accent);
+    margin: 8px 16px;
+    border-radius: 0 4px 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<h2>Vorher -- Aktueller Zustand</h2>
+<div class="panel">
+  <div class="panel-label">Aktiver Sender</div>
+  <div class="old-row playing">
+    <div class="led green"></div>
+    <div class="old-name">psyradio * fm - progressive</div>
+    <div class="old-country">Germany</div>
+    <div class="old-bitrate">128 kbps</div>
+    <div class="old-votes">455</div>
+    <div class="led yellow"></div>
+    <span style="font-size:10px;color:var(--text-secondary)">&#9654;</span>
+  </div>
+
+  <div class="old-row">
+    <div class="led off"></div>
+    <div class="old-name">Arrow Classic Rock</div>
+    <div class="old-country">The Netherlands</div>
+    <div class="old-bitrate">192 kbps</div>
+    <div class="old-votes">648</div>
+    <div class="led off"></div>
+  </div>
+  <div class="old-row">
+    <div class="led off"></div>
+    <div class="old-name">Blasmusikradio mit Bernd</div>
+    <div class="old-country">Germany</div>
+    <div class="old-bitrate">128 kbps</div>
+    <div class="old-votes">219</div>
+    <div class="led off"></div>
+  </div>
+  <div class="old-row">
+    <div class="led off"></div>
+    <div class="old-name">Fun Radio</div>
+    <div class="old-country">Slovakia</div>
+    <div class="old-bitrate">128 kbps</div>
+    <div class="old-votes">668</div>
+    <div class="led off"></div>
+  </div>
+  <div class="old-row">
+    <div class="led off"></div>
+    <div class="old-name">Radio Bruno Pentasport Fiorentina</div>
+    <div class="old-country">Italy</div>
+    <div class="old-bitrate">- kbps</div>
+    <div class="old-votes">224</div>
+    <div class="led off"></div>
+  </div>
+</div>
+
+<div class="note">
+  Probleme: Zeilen monoton, kein visueller Unterschied zwischen aktivem Sender und Liste.
+  Country nicht übersetzt. Bitrate/Votes nur Text, keine Orbitron-Schrift.
+  Details-Panel (aufklappbar) mit Block-Button vermischt mit Metadaten.
+</div>
+
+<div class="sep"></div>
+
+<h2>Nachher -- Redesign Vorschlag</h2>
+
+<div class="panel">
+  <!-- NOW PLAYING BAR -->
+  <div class="now-playing-bar">
+    <div class="np-led-col">
+      <div class="np-pulse"></div>
+    </div>
+    <div class="np-name">psyradio * fm - progressive</div>
+    <div class="np-meta">
+      <span class="np-tag">Deutschland</span>
+      <span class="np-tag"><span class="val">128</span> KBPS</span>
+      <span class="np-tag"><span class="val">455</span> VOTES</span>
+    </div>
+    <button class="np-fav"><div class="led yellow"></div></button>
+    <span class="np-expand">&#9660;</span>
+  </div>
+
+  <!-- Details aufgeklappt für aktiven Sender -->
+  <div class="details-panel">
+    <div class="details-grid">
+      <span class="dl">CODEC</span>
+      <span class="dv">MP3</span>
+      <span class="dl">LANGUAGE</span>
+      <span class="dv">german</span>
+      <span class="dl">CLICKS</span>
+      <span class="dv">12.450</span>
+      <span class="dl">STREAM</span>
+      <span class="dv url">https://stream.psyradio.org:8443/psy-progressive.mp3</span>
+    </div>
+    <div class="details-tags">
+      <span class="tag-chip">PROGRESSIVE</span>
+      <span class="tag-chip">PSY</span>
+      <span class="tag-chip">TRANCE</span>
+      <span class="tag-chip">ELECTRONIC</span>
+    </div>
+    <div class="details-actions">
+      <button class="detail-btn homepage"><i class="fa-solid fa-globe" style="margin-right:6px"></i>HOMEPAGE</button>
+      <button class="detail-btn block"><i class="fa-solid fa-ban" style="margin-right:6px"></i>BLOCK</button>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Normale Zeilen -->
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Arrow Classic Rock</div>
+    <div class="row-country">Niederlande</div>
+    <div class="row-bitrate">192</div>
+    <div class="row-votes">648</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Blasmusikradio mit Bernd</div>
+    <div class="row-country">Deutschland</div>
+    <div class="row-bitrate">128</div>
+    <div class="row-votes">219</div>
+    <button class="row-fav"><div class="led yellow"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Fun Radio</div>
+    <div class="row-country">Slowakei</div>
+    <div class="row-bitrate">128</div>
+    <div class="row-votes">668</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Hard Rock Radio FM</div>
+    <div class="row-country">USA</div>
+    <div class="row-bitrate">128</div>
+    <div class="row-votes">783</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Polskie Radio Bialystok</div>
+    <div class="row-country">Polen</div>
+    <div class="row-bitrate">160</div>
+    <div class="row-votes">312</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Radio Bruno Pentasport Fiorentina</div>
+    <div class="row-country">Italien</div>
+    <div class="row-bitrate">--</div>
+    <div class="row-votes">224</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+  <div class="new-row">
+    <div class="led off row-led"></div>
+    <div class="row-name">Radio Capital</div>
+    <div class="row-country">Italien</div>
+    <div class="row-bitrate">122</div>
+    <div class="row-votes">210</div>
+    <button class="row-fav"><div class="led off"></div></button>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<h2>Änderungen im Detail</h2>
+
+<div class="note">
+  <strong>Aktiver Sender:</strong><br>
+  - Eigener visueller Bereich mit subtiler grüner Gradient-Linie links<br>
+  - Pulsierende LED statt statischer<br>
+  - Sendername weiss + bold (hebt sich von Liste ab)<br>
+  - Meta-Daten (Country, kbps, Votes) inline als kompakte Orbitron-Tags<br>
+  - Country übersetzt (wie Sidebar)<br>
+  - Grüne Unterkante als Separator zur Liste
+</div>
+
+<div class="note">
+  <strong>Details-Panel (aufklappbar):</strong><br>
+  - Sauberes 2-Spalten-Grid (Label | Wert)<br>
+  - Tags als Chips statt Komma-Text<br>
+  - Aktions-Buttons (Homepage, Block) mit Icons, klar getrennt<br>
+  - "kbps" Label entfernt aus Bitrate-Spalte (steht im Header)<br>
+  - Stream-URL in Monospace
+</div>
+
+<div class="note">
+  <strong>Normale Zeilen:</strong><br>
+  - Kompakter (8px statt 10px Padding)<br>
+  - Country übersetzt (Sidebar-Mapping wiederverwenden)<br>
+  - Bitrate/Votes in Orbitron (nur Zahl, kein "kbps"/"votes" Label)<br>
+  - Fehlende Bitrate als "--" statt "- kbps"<br>
+  - Sendername etwas kleiner (13px statt 14px) für mehr Zeilen im Viewport
+</div>
+
+</body>
+</html>

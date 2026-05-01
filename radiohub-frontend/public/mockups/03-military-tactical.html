@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RadioHub Mockup 3: Military Tactical</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Barlow:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #0a120a;
+    color: #33ff33;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      linear-gradient(rgba(0,40,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,40,0,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 100%; height: 100%;
+    transform: translate(-50%, -50%);
+    background:
+      linear-gradient(0deg, transparent 49.5%, rgba(0,80,0,0.06) 49.5%, rgba(0,80,0,0.06) 50.5%, transparent 50.5%),
+      linear-gradient(90deg, transparent 49.5%, rgba(0,80,0,0.06) 49.5%, rgba(0,80,0,0.06) 50.5%, transparent 50.5%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header, .main, footer { position: relative; z-index: 1; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #0d150d;
+    border-bottom: 1px solid #1a3a1a;
+  }
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #33ff33;
+    letter-spacing: 3px;
+    text-shadow: 0 0 8px rgba(51,255,51,0.4);
+  }
+  .logo-sub {
+    font-size: 8px;
+    letter-spacing: 4px;
+    color: #1a6b1a;
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+  nav { display: flex; gap: 2px; }
+  nav button {
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 18px;
+    background: transparent;
+    border: 1px solid #1a3a1a;
+    color: #1a6b1a;
+    cursor: pointer;
+    letter-spacing: 1px;
+    border-radius: 0;
+    transition: all 0.15s;
+  }
+  nav button:hover {
+    background: rgba(51,255,51,0.05);
+    color: #33ff33;
+    border-color: #2a5a2a;
+  }
+  nav button.active {
+    background: rgba(51,255,51,0.08);
+    color: #33ff33;
+    border-color: #33ff33;
+    box-shadow: 0 0 10px rgba(51,255,51,0.1);
+  }
+  .status-bar {
+    display: flex; align-items: center; gap: 12px; font-size: 10px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 0;
+    background: #33ff33;
+    box-shadow: 0 0 6px rgba(51,255,51,0.8);
+    animation: pulse-mil 2s infinite;
+  }
+  @keyframes pulse-mil {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  .sidebar {
+    width: 180px;
+    background: #0b130b;
+    border-right: 1px solid #1a3a1a;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+  .sidebar-section-title {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #1a6b1a;
+    border-bottom: 1px solid #1a3a1a;
+    padding-bottom: 4px;
+  }
+  .sidebar-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 8px;
+    font-size: 11px;
+    color: #1a8a1a;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    border-radius: 0;
+  }
+  .sidebar-item:hover {
+    background: rgba(51,255,51,0.04);
+    border-left-color: #1a6b1a;
+  }
+  .sidebar-item.active {
+    background: rgba(51,255,51,0.08);
+    border-left-color: #33ff33;
+    color: #33ff33;
+  }
+  .sidebar-count {
+    font-size: 9px;
+    color: #1a4a1a;
+    font-family: 'Orbitron', monospace;
+  }
+
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .toolbar {
+    display: flex; align-items: center; padding: 8px 16px; gap: 12px;
+    border-bottom: 1px solid #1a3a1a;
+  }
+  .station-counter {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    color: #33ff33;
+    text-shadow: 0 0 6px rgba(51,255,51,0.3);
+    min-width: 40px;
+  }
+  .search-box {
+    flex: 1; padding: 7px 14px;
+    background: rgba(51,255,51,0.03);
+    border: 1px solid #1a3a1a;
+    border-radius: 0;
+    color: #33ff33;
+    font-size: 12px;
+    font-family: 'Barlow', sans-serif;
+    outline: none;
+  }
+  .search-box:focus {
+    border-color: #33ff33;
+    box-shadow: 0 0 8px rgba(51,255,51,0.1);
+  }
+  .search-box::placeholder { color: #1a4a1a; }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 1fr 120px 100px 100px;
+    padding: 6px 16px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: #1a6b1a;
+    border-bottom: 1px solid #1a3a1a;
+  }
+  .station-list { flex: 1; overflow-y: auto; }
+  .station-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 100px 100px;
+    padding: 9px 16px;
+    font-size: 12px;
+    border-bottom: 1px solid #0f1f0f;
+    cursor: pointer;
+    transition: all 0.12s;
+    position: relative;
+    color: #1a8a1a;
+  }
+  .station-row::before {
+    content: '[';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: transparent;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    transition: color 0.15s;
+  }
+  .station-row::after {
+    content: ']';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: transparent;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    transition: color 0.15s;
+  }
+  .station-row:hover {
+    background: rgba(51,255,51,0.04);
+  }
+  .station-row:hover::before,
+  .station-row:hover::after {
+    color: #1a6b1a;
+  }
+  .station-row.playing {
+    background: rgba(51,255,51,0.06);
+    color: #33ff33;
+  }
+  .station-row.playing::before,
+  .station-row.playing::after {
+    color: #33ff33;
+  }
+  .station-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .station-country { color: #1a5a1a; font-size: 11px; }
+  .station-bitrate {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: #00cc00;
+  }
+  .station-votes { font-size: 10px; color: #1a4a1a; }
+  .fav-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 0;
+    background: #33ff33;
+    box-shadow: 0 0 4px rgba(51,255,51,0.6);
+    margin-left: 8px;
+  }
+
+  footer {
+    display: grid;
+    grid-template-columns: 60px 1fr auto 1fr auto;
+    align-items: center;
+    padding: 10px 16px;
+    background: #0d150d;
+    border-top: 1px solid #1a3a1a;
+    gap: 16px;
+  }
+  .source-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    padding: 4px 8px;
+    background: rgba(51,255,51,0.06);
+    border: 1px solid #1a3a1a;
+    color: #33ff33;
+    text-align: center;
+    border-radius: 0;
+  }
+  .display {
+    background: #070e07;
+    border: 1px solid #1a3a1a;
+    border-radius: 0;
+    padding: 8px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .display::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px, rgba(51,255,51,0.015) 2px, rgba(51,255,51,0.015) 4px
+    );
+    pointer-events: none;
+  }
+  .display-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #33ff33;
+    text-shadow: 0 0 10px rgba(51,255,51,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .volume-section { display: flex; align-items: center; gap: 8px; }
+  .vu-bar {
+    width: 16px; height: 50px;
+    background: #070e07;
+    border: 1px solid #1a3a1a;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+    padding: 3px;
+  }
+  .vu-led { flex: 1; border-radius: 0; background: rgba(51,255,51,0.06); }
+  .vu-led.on-g { background: #00cc00; box-shadow: 0 0 3px rgba(0,204,0,0.5); }
+  .vu-led.on-y { background: #ffaa00; box-shadow: 0 0 3px rgba(255,170,0,0.5); }
+  .vu-led.on-r { background: #ff3300; box-shadow: 0 0 3px rgba(255,51,0,0.5); }
+
+  .knob-container {
+    width: 44px; height: 44px;
+    background: radial-gradient(circle, #1a2a1a, #0d150d);
+    border-radius: 50%;
+    border: 2px solid #1a3a1a;
+    position: relative;
+  }
+  .knob-indicator {
+    position: absolute;
+    width: 2px; height: 12px;
+    background: #33ff33;
+    box-shadow: 0 0 4px rgba(51,255,51,0.6);
+    top: 4px; left: 50%;
+    transform: translateX(-50%) rotate(-40deg);
+    transform-origin: bottom center;
+  }
+  .timer { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .timer-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: #ffaa00;
+    text-shadow: 0 0 6px rgba(255,170,0,0.4);
+    background: #070e07;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,170,0,0.2);
+    border-radius: 0;
+  }
+  .timer-label { font-size: 8px; letter-spacing: 2px; color: #1a4a1a; }
+
+  .transport { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .transport-header { display: flex; align-items: center; gap: 10px; font-size: 9px; }
+  .live-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: #33ff33;
+    text-shadow: 0 0 6px rgba(51,255,51,0.5);
+    font-weight: 700;
+  }
+  .transport-buttons { display: flex; gap: 3px; }
+  .t-btn {
+    width: 30px; height: 28px;
+    background: rgba(51,255,51,0.04);
+    border: 1px solid #1a3a1a;
+    border-radius: 0;
+    color: #1a6b1a;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .t-btn:hover {
+    background: rgba(51,255,51,0.1);
+    color: #33ff33;
+    border-color: #33ff33;
+  }
+  .t-btn.play {
+    background: rgba(51,255,51,0.08);
+    color: #33ff33;
+    border-color: #2a5a2a;
+  }
+  .t-btn.rec {
+    background: rgba(255,51,0,0.06);
+    border-color: rgba(255,51,0,0.2);
+    color: rgba(255,51,0,0.5);
+  }
+  .seekbar {
+    width: 100%; height: 4px;
+    background: #1a3a1a;
+    border-radius: 0;
+    position: relative;
+  }
+  .seekbar-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 65%;
+    background: #33ff33;
+    box-shadow: 0 0 6px rgba(51,255,51,0.3);
+  }
+  .bitrate-leds { display: flex; gap: 2px; align-items: center; }
+  .br-label { font-size: 8px; letter-spacing: 0.5px; color: #1a4a1a; margin-right: 4px; }
+  .br-led { width: 8px; height: 8px; border-radius: 0; background: rgba(51,255,51,0.06); }
+  .br-led.on { background: #00cc00; box-shadow: 0 0 4px rgba(0,204,0,0.5); }
+  .br-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    color: #00cc00;
+    text-shadow: 0 0 3px rgba(0,204,0,0.4);
+    margin-left: 4px;
+  }
+
+  .mockup-label {
+    position: fixed; top: 8px; right: 8px;
+    font-size: 9px; letter-spacing: 2px;
+    color: rgba(51,255,51,0.4);
+    font-family: 'Orbitron', monospace;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+<div class="mockup-label">MOCKUP 3/5: MILITARY TACTICAL</div>
+
+<header>
+  <div>
+    <div class="logo">RadioHub</div>
+    <div class="logo-sub">DIGITAL AUDIO SYSTEM</div>
+  </div>
+  <nav>
+    <button class="active">TUNER</button>
+    <button>RECORDER</button>
+    <button>PODCAST</button>
+    <button>SETUP</button>
+  </nav>
+  <div class="status-bar">
+    <span style="color:#1a4a1a">DARK</span>
+    <span class="status-dot"></span>
+    <span style="color:#00cc00">ONLINE</span>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div>
+      <div class="sidebar-section-title">COUNTRY</div>
+      <div class="sidebar-item active"><span>US USA</span><span class="sidebar-count">6.628</span></div>
+      <div class="sidebar-item"><span>DE Deutschland</span><span class="sidebar-count">5.544</span></div>
+      <div class="sidebar-item"><span>FR Frankreich</span><span class="sidebar-count">2.351</span></div>
+      <div class="sidebar-item"><span>AU Australien</span><span class="sidebar-count">1.975</span></div>
+    </div>
+    <div>
+      <div class="sidebar-section-title">BITRATE</div>
+      <div class="sidebar-item">&lt; 64</div>
+      <div class="sidebar-item active">128 - 192</div>
+      <div class="sidebar-item">192 - 256</div>
+      <div class="sidebar-item">256 - 320</div>
+    </div>
+    <div>
+      <div class="sidebar-section-title">VOTES</div>
+      <div class="sidebar-item">0</div>
+      <div class="sidebar-item">1 - 100</div>
+      <div class="sidebar-item">1k - 10k</div>
+    </div>
+  </aside>
+
+  <div class="content">
+    <div class="toolbar">
+      <span class="station-counter">50</span>
+      <span style="font-size:10px;color:#1a4a1a;letter-spacing:1px">STATIONS</span>
+      <input class="search-box" placeholder="Sender suchen..." />
+      <button style="padding:6px 14px;background:rgba(51,255,51,0.04);border:1px solid #1a3a1a;color:#1a6b1a;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:0">REFRESH</button>
+    </div>
+    <div class="table-header">
+      <span>NAME</span><span>COUNTRY</span><span>KBPS / CODEC</span><span>VOTES</span>
+    </div>
+    <div class="station-list">
+      <div class="station-row playing">
+        <span class="station-name">Arrow Classic Rock <span class="fav-dot"></span></span>
+        <span class="station-country">Niederlande</span>
+        <span class="station-bitrate">192 / MP3</span>
+        <span class="station-votes">648 / 93</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Fun Radio</span>
+        <span class="station-country">Slowakei</span>
+        <span class="station-bitrate">128 / MP3</span>
+        <span class="station-votes">668 / 58</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Hard Rock Radio FM</span>
+        <span class="station-country">USA</span>
+        <span class="station-bitrate">128 / MP3</span>
+        <span class="station-votes">783 / 111</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Polskie Radio Bialystok</span>
+        <span class="station-country">Polen</span>
+        <span class="station-bitrate">159 / AAC</span>
+        <span class="station-votes">312 / 34</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">psyradio * fm - progressive <span class="fav-dot"></span></span>
+        <span class="station-country">Deutschland</span>
+        <span class="station-bitrate">128 / MP3</span>
+        <span class="station-votes">455 / 49</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Radio Capital</span>
+        <span class="station-country">Italien</span>
+        <span class="station-bitrate">122 / AAC</span>
+        <span class="station-votes">210 / 29</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Radio Margherita <span class="fav-dot"></span></span>
+        <span class="station-country">Italien</span>
+        <span class="station-bitrate">320 / MP3</span>
+        <span class="station-votes">187 / 17</span>
+      </div>
+      <div class="station-row">
+        <span class="station-name">Radio Record - Russian Gold</span>
+        <span class="station-country">Russland</span>
+        <span class="station-bitrate">95 / AAC</span>
+        <span class="station-votes">943 / 65</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="source-badge">TUNER<br><span style="font-size:7px;color:#00cc00">HLS</span></div>
+
+  <div class="display">
+    <div class="display-text">Arrow Classic Rock</div>
+  </div>
+
+  <div class="volume-section">
+    <div class="vu-bar">
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-y"></div>
+      <div class="vu-led"></div>
+      <div class="vu-led"></div>
+      <div class="vu-led"></div>
+    </div>
+    <div class="knob-container"><div class="knob-indicator"></div></div>
+    <div class="vu-bar">
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-g"></div>
+      <div class="vu-led on-y"></div>
+      <div class="vu-led on-y"></div>
+      <div class="vu-led"></div>
+      <div class="vu-led"></div>
+      <div class="vu-led"></div>
+    </div>
+  </div>
+
+  <div class="timer">
+    <div class="timer-display">00:03:42</div>
+    <span class="timer-label">TIMESHIFT</span>
+  </div>
+
+  <div class="transport">
+    <div class="transport-header">
+      <span class="live-badge">LIVE</span>
+      <div class="seekbar"><div class="seekbar-fill"></div></div>
+    </div>
+    <div class="transport-buttons">
+      <div class="t-btn">&#9198;</div>
+      <div class="t-btn">&#9194;</div>
+      <div class="t-btn">&#9632;</div>
+      <div class="t-btn play">&#9654;</div>
+      <div class="t-btn rec">&#9679;</div>
+      <div class="t-btn">&#9193;</div>
+      <div class="t-btn">&#9197;</div>
+    </div>
+    <div class="bitrate-leds">
+      <span class="br-label">BITRATE</span>
+      <div class="br-led"></div>
+      <div class="br-led"></div>
+      <div class="br-led"></div>
+      <div class="br-led"></div>
+      <div class="br-led on"></div>
+      <div class="br-led"></div>
+      <div class="br-led"></div>
+      <div class="br-led"></div>
+      <span class="br-val">192k</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

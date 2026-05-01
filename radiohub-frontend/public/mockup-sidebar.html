@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Sidebar Mockup - RadioHub</title>
+<style>
+  /* === FONTS (lokal) === */
+  @font-face { font-family:'Roboto'; font-weight:400; src:url('/fonts/roboto-400.woff2') format('woff2'); }
+  @font-face { font-family:'Roboto'; font-weight:500; src:url('/fonts/roboto-500.woff2') format('woff2'); }
+  @font-face { font-family:'Roboto'; font-weight:700; src:url('/fonts/roboto-700.woff2') format('woff2'); }
+  @font-face { font-family:'Orbitron'; font-weight:400 900; src:url('/fonts/orbitron.woff2') format('woff2'); }
+  @font-face { font-family:'Share Tech Mono'; font-weight:400; src:url('/fonts/share-tech-mono.woff2') format('woff2'); }
+
+  /* === DARK THEME VARS === */
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252525;
+    --bg-tertiary: #181818;
+    --bg-panel: #222222;
+    --text-primary: #e0e0e0;
+    --text-secondary: #999;
+    --text-label: #aaa;
+    --accent: #4a90d9;
+    --led-green: #33cc33;
+    --led-yellow: #ffcc00;
+    --led-red: #ff4444;
+    --led-off: #333;
+    --led-off-border: #444;
+    --border-dark: rgba(0,0,0,0.3);
+    --row-hover: rgba(74,144,217,0.15);
+    --shadow-inset: inset 4px 4px 8px #141414, inset -4px -4px 8px #2a2a2a;
+    --shadow-button: 4px 4px 8px #141414, -4px -4px 8px #2a2a2a;
+    --radius-sm: 6px;
+    --font-body: 'Roboto', sans-serif;
+    --font-values: 'Orbitron', monospace;
+    --font-display: 'Share Tech Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 60px;
+  }
+
+  h2 {
+    font-family: var(--font-values);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .column { display:flex; flex-direction:column; align-items:center; }
+
+  /* === SIDEBAR === */
+  .sidebar {
+    width: 240px;
+    background: var(--bg-panel);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--border-dark);
+  }
+  .sidebar.wide {
+    width: 288px;
+    height: 560px;
+  }
+
+  /* --- SEARCH --- */
+  .search-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: var(--radius-sm);
+    outline: none;
+    box-shadow: var(--shadow-inset);
+  }
+  .search-input::placeholder { color: var(--text-secondary); }
+
+  /* --- ACTION BUTTONS --- */
+  .action-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: var(--shadow-button);
+  }
+  .action-btn:hover { background: var(--bg-secondary); }
+  .action-btn.square {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  /* --- LED (rechteckig) --- */
+  .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--led-off);
+    border: 1px solid var(--led-off-border);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .led.on-yellow {
+    background: var(--led-yellow);
+    border-color: var(--led-yellow);
+    box-shadow: 0 0 4px var(--led-yellow), 0 0 8px rgba(255,204,0,0.4);
+  }
+  .led.on-green {
+    background: var(--led-green);
+    border-color: var(--led-green);
+    box-shadow: 0 0 4px var(--led-green), 0 0 8px rgba(51,204,51,0.4);
+  }
+
+  /* --- DIVIDER --- */
+  .divider {
+    height: 1px;
+    background: var(--border-dark);
+    margin: 2px 0;
+  }
+
+  /* --- ACTIVE FILTERS CHIPS --- */
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    background: rgba(74,144,217,0.15);
+    border: 1px solid rgba(74,144,217,0.3);
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .filter-chip:hover {
+    background: rgba(74,144,217,0.25);
+  }
+
+  /* --- SECTION --- */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+  }
+  .section-count {
+    margin-left: auto;
+    font-family: var(--font-values);
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* --- FILTER LIST --- */
+  .filter-list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  /* Country-Section nimmt Restplatz, scrollt intern */
+  .section-flex {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .section-flex .filter-list {
+    flex: 1;
+    min-height: 0;
+  }
+  .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    text-align: left;
+  }
+  .filter-item:hover { background: var(--row-hover); }
+  .filter-item.active { color: var(--accent); }
+
+  /* --- 2-Spalten Grid für Bitrate/Votes --- */
+  .filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .filter-grid .filter-item {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+  .filter-grid .item-label {
+    font-family: var(--font-values);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* Country Code Badge */
+  .country-code {
+    font-family: var(--font-values);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    width: 22px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .filter-item.active .country-code { color: var(--accent); }
+
+  .item-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Zahlen: Orbitron, rechtsbuendig, feste Breite */
+  .item-count {
+    font-family: var(--font-values);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: right;
+    min-width: 38px;
+    letter-spacing: 0.3px;
+  }
+  .filter-item.active .item-count { color: var(--accent); }
+
+  /* --- CLEAR BUTTON --- */
+  .clear-btn {
+    width: 100%;
+    padding: 7px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .clear-btn:hover { background: var(--bg-secondary); }
+
+  /* === ANNOTATIONS === */
+  .annotation {
+    position: relative;
+    margin-top: 8px;
+  }
+  .annotation-label {
+    font-size: 10px;
+    color: #ff9944;
+    font-style: italic;
+    padding: 4px 8px;
+    background: rgba(255,153,68,0.08);
+    border-left: 2px solid #ff9944;
+    border-radius: 0 4px 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== ALT (VORHER) ====== -->
+<div class="column">
+  <h2>VORHER</h2>
+  <div class="sidebar">
+    <input class="search-input" placeholder="Suchen..." readonly>
+
+    <button class="action-btn" style="padding:8px;">
+      <span class="led"></span>
+      <span>FAVORITES ONLY</span>
+    </button>
+
+    <button class="action-btn" style="padding:8px;">
+      <span style="color:var(--accent);font-size:11px;">&#9776;</span>
+      <span>SENDER-FILTER</span>
+    </button>
+
+    <div>
+      <div class="section-header">
+        <span class="section-label">COUNTRY</span>
+      </div>
+      <div class="filter-list" style="margin-top:4px;">
+        <button class="filter-item active">
+          <span class="led on-yellow"></span>
+          <span class="item-label">The United States Of Am...</span>
+          <span class="item-count">6628</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">Germany</span>
+          <span class="item-count">5544</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">The Russian Federation</span>
+          <span class="item-count">2946</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">France</span>
+          <span class="item-count">2351</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">Australia</span>
+          <span class="item-count">1975</span>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <span class="section-label">BITRATE</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <span class="section-label">VOTES</span>
+      </div>
+    </div>
+
+    <div class="annotation">
+      <div class="annotation-label">Ländernamen abgeschnitten</div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Keine visuelle Hierarchie</div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Zahlen ohne Trenner, kein Orbitron</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== NEU (NACHHER) ====== -->
+<div class="column">
+  <h2>NACHHER</h2>
+  <div class="sidebar wide">
+
+    <!-- Action Row: Favs + Clear + Filter-Icon -->
+    <div class="action-row">
+      <button class="action-btn">
+        <span class="led on-yellow"></span>
+        <span>FAVORITEN</span>
+      </button>
+      <button class="action-btn square" title="Alle Filter zurücksetzen">
+        &#10005;
+      </button>
+      <button class="action-btn square" title="Sender-Filter">
+        &#9776;
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Active Filter Chips -->
+    <div class="active-filters">
+      <span class="filter-chip">US</span>
+      <span class="filter-chip">128+ kbps</span>
+      <span class="filter-chip">&gt; 100 Votes</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Countries: nimmt Restplatz, scrollt intern -->
+    <div class="section-flex">
+      <div class="section-header">
+        <span class="section-label">COUNTRY</span>
+        <span class="section-count">1</span>
+      </div>
+      <div class="filter-list" style="margin-top:4px;">
+        <button class="filter-item active">
+          <span class="led on-yellow"></span>
+          <span class="country-code">US</span>
+          <span class="item-label">USA</span>
+          <span class="item-count">6.628</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="country-code">DE</span>
+          <span class="item-label">Deutschland</span>
+          <span class="item-count">5.544</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="country-code">RU</span>
+          <span class="item-label">Russland</span>
+          <span class="item-count">2.946</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="country-code">FR</span>
+          <span class="item-label">Frankreich</span>
+          <span class="item-count">2.351</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="country-code">AU</span>
+          <span class="item-label">Australien</span>
+          <span class="item-count">1.975</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Bitrate: 2-spaltig, Orbitron -->
+    <div>
+      <div class="section-header">
+        <span class="section-label">BITRATE</span>
+        <span class="section-count">1</span>
+      </div>
+      <div class="filter-grid">
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">&lt; 64</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">64 - 128</span>
+        </button>
+        <button class="filter-item active">
+          <span class="led on-yellow"></span>
+          <span class="item-label">128 - 192</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">192 - 256</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">256 - 320</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">&gt; 320</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Votes: 2-spaltig, Orbitron, k-Format -->
+    <div>
+      <div class="section-header">
+        <span class="section-label">VOTES</span>
+        <span class="section-count">1</span>
+      </div>
+      <div class="filter-grid">
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">0</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">1 - 100</span>
+        </button>
+        <button class="filter-item active">
+          <span class="led on-yellow"></span>
+          <span class="item-label">101 - 1k</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">1k - 10k</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">10k - 100k</span>
+        </button>
+        <button class="filter-item">
+          <span class="led"></span>
+          <span class="item-label">&gt; 100k</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
