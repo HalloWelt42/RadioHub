@@ -101,13 +101,34 @@ radiohub-backend/     FastAPI REST-API (Port 9091)
     database.py       SQLite-Anbindung
 ```
 
-### Voraussetzungen
+### Installation per Docker (empfohlen, Pi und Mac)
 
-- Python 3.11+
-- Node.js 18+
-- FFmpeg
+Voraussetzung: Docker mit Compose-Plugin.
 
-### Installation
+```bash
+git clone git@github.com:HalloWelt42/RadioHub.git
+cd RadioHub
+docker compose up -d
+```
+
+Aufruf:
+
+- App: `http://localhost:9092` (bzw. `http://<host-ip>:9092` im LAN)
+- Backend-API direkt: `http://localhost:9091`
+- API-Docs: `http://localhost:9092/docs`
+
+Daten (Datenbank, Aufnahmen, Cache) liegen in `./data` neben dem Repo.
+
+Updates:
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+### Lokale Entwicklung (ohne Docker)
+
+Voraussetzungen: Python 3.11+, Node.js 18+, FFmpeg.
 
 ```bash
 # Backend
@@ -117,11 +138,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Frontend
-cd radiohub-frontend
+cd ../radiohub-frontend
 npm install
 ```
 
-### Starten
+Starten:
 
 ```bash
 # Backend (Port 9091)
@@ -129,12 +150,12 @@ cd radiohub-backend
 source .venv/bin/activate
 uvicorn backend.main:app --host 0.0.0.0 --port 9091 --reload
 
-# Frontend (Port 5180)
+# Frontend Dev-Server (Port 5180, mit Vite-Proxy auf 9091)
 cd radiohub-frontend
 npm run dev
 ```
 
-Die App ist dann unter `http://localhost:5180` erreichbar.
+Die App ist im Dev-Modus unter `http://localhost:5180` erreichbar.
 
 ---
 
