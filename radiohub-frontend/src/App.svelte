@@ -222,10 +222,11 @@
         <i class="fa-solid fa-circle-info"></i>
       </button>
 
-      <!-- Lernmodus -->
+      <!-- Lernmodus: vorläufig deaktiviert, Tour-Funktion noch nicht ausgereift
       <button class="tour-toggle-btn" class:active={tourState.active || tourState.menuOpen} onclick={() => { toggleMenu(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Lernmodus">
         <i class="fa-solid fa-life-ring"></i>
       </button>
+      -->
 
       <!-- Theme Switch -->
       <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
