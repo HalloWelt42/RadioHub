@@ -9,8 +9,9 @@ import asyncio
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import DATA_DIR, VERSION
 from .database import init_db, check_db_health
@@ -25,6 +26,9 @@ from .routers import stations_router, favorites_router, recording_router, record
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
 from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
+from .services.aufnahmen import AufnahmeFehler, aufnahmen
+from . import ablage as ablage_paket
+from .ablage import AblageFehler, Belegt, NichtEingerichtet, NichtErreichbar, NichtGefunden
 
 
 async def _podcast_refresh_loop():
@@ -43,16 +47,33 @@ async def _podcast_refresh_loop():
         await asyncio.sleep(podcast_service.refresh_interval)
 
 
+async def _liegengebliebene_ablegen():
+    """Aufnahmen, die ein Neustart oder eine fehlende Ablage im Arbeitsordner gelassen hat, nachträglich ablegen."""
+    try:
+        anzahl = await aufnahmen.liegengebliebene_ablegen()
+        if anzahl:
+            print(f"✓ Ablage: {anzahl} liegengebliebene Stücke nachgeholt")
+    except AblageFehler as e:
+        print(f"✗ Ablage: Nachholen nicht möglich: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """App Lifecycle"""
     # Startup -- init_db() lief bereits beim Modul-Import (s.o.)
+    ablage = ablage_paket.starten()
     hls_recorder.startup()  # Verwaiste HLS-REC-Sessions aufräumen
     get_config_service()  # Config initialisieren
     seed_domain_blacklist()  # Ad-Detection Domain-Blacklist befüllen
 
     # Periodischer Podcast-Refresh
     refresh_task = asyncio.create_task(_podcast_refresh_loop())
+
+    # Ablage: Stand melden, liegengebliebene Aufnahmen nachholen, alte Arbeitskopien räumen
+    zustand = await ablage.zustand()
+    print(f"{'✓' if zustand.get('verbunden') else '✗'} Ablage: {zustand.get('meldung')}")
+    aufnahmen.aufraeumen()
+    nachholen_task = asyncio.create_task(_liegengebliebene_ablegen())
 
     print(f"✓ RadioHub Backend v{VERSION} gestartet")
     print(f"✓ Daten-Verzeichnis: {DATA_DIR}")
@@ -69,6 +90,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     refresh_task.cancel()
+    nachholen_task.cancel()
     if hls_recorder.active_session:
         await hls_recorder.stop()
     if rec_manager.active_session:
@@ -77,6 +99,7 @@ async def lifespan(app: FastAPI):
     await timeshift_buffer.stop_buffering()
     await hls_buffer.stop()  # HLS Buffer stoppen
     await podcast_service.close()
+    await ablage.schliessen()
     print(f"✓ RadioHub Backend v{VERSION} gestoppt")
 
 
@@ -97,6 +120,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Fehler der Ablage und der Aufnahmen als HTTP-Status mit lesbarer Meldung
+_ABLAGE_STATUS = ((NichtGefunden, 404), (Belegt, 409), (NichtEingerichtet, 503), (NichtErreichbar, 503))
+
+
+@app.exception_handler(AblageFehler)
+async def _ablage_fehler(request: Request, fehler: AblageFehler):
+    status = next((code for art, code in _ABLAGE_STATUS if isinstance(fehler, art)), 502)
+    return JSONResponse(status_code=status, content={"detail": str(fehler)})
+
+
+@app.exception_handler(AufnahmeFehler)
+async def _aufnahme_fehler(request: Request, fehler: AufnahmeFehler):
+    return JSONResponse(status_code=fehler.status, content={"detail": str(fehler)})
+
 
 # Router einbinden
 app.include_router(stations_router)

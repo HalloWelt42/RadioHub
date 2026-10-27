@@ -10,10 +10,10 @@ Priorität: STORAGE_CONFIG Env > {DATA_PATH}/storage.json > Defaults
 
 Zonen:
   database   - SQLite-Datei (SSD empfohlen)
-  cache      - HLS-Buffer, temporäre Dateien (SSD empfohlen)
-  recordings - Radio-Aufnahmen (HDD reicht)
-  podcasts   - Podcast-Downloads + Cover (HDD reicht)
+  cache      - HLS-Buffer, Cover, Zwischenstände von Aufnahme, Download und Schnitt (SSD empfohlen)
   config     - App-Einstellungen (SSD empfohlen)
+
+Aufnahmen und Podcast-Folgen liegen nicht lokal, sondern in der Ablage (Kellerwolke, siehe backend/ablage).
 """
 import os
 import json
@@ -28,9 +28,7 @@ _DATA_DIR = Path(os.getenv("DATA_PATH", str(Path(__file__).resolve().parent.pare
 # Standardstruktur (matcht bestehende Verzeichnisstruktur exakt)
 _DEFAULT_ZONE_SUBDIRS = {
     "database": "",                     # radiohub.db liegt direkt in DATA_DIR
-    "cache": "cache",                   # HLS-Buffer, Temp
-    "recordings": "recordings/radio",   # Radio-Aufnahmen
-    "podcasts": "recordings/podcasts",  # Podcast-Downloads + Cover
+    "cache": "cache",                   # HLS-Buffer, Cover, Zwischenstände
     "config": "",                       # App-Einstellungen (in DATA_DIR)
 }
 
@@ -44,21 +42,9 @@ ZONE_INFO = {
     },
     "cache": {
         "label": "Cache / Buffer",
-        "description": "HLS-Buffer, temporäre Dateien",
+        "description": "HLS-Buffer, Cover, Zwischenstände von Aufnahme, Download und Schnitt",
         "icon": "fa-bolt",
         "recommended": "SSD",
-    },
-    "recordings": {
-        "label": "Aufnahmen",
-        "description": "Radio-Aufnahmen, große Dateien",
-        "icon": "fa-record-vinyl",
-        "recommended": "HDD",
-    },
-    "podcasts": {
-        "label": "Podcasts",
-        "description": "Podcast-Downloads und Cover-Bilder",
-        "icon": "fa-podcast",
-        "recommended": "HDD",
     },
     "config": {
         "label": "Konfiguration",
@@ -139,7 +125,9 @@ def _load_or_create() -> dict:
         _save_config()
 
     # Verzeichnisse erstellen
-    for zone_info in _storage_config["zones"].values():
+    for zone_name, zone_info in _storage_config["zones"].items():
+        if zone_name not in _DEFAULT_ZONE_SUBDIRS:
+            continue
         try:
             Path(zone_info["path"]).mkdir(parents=True, exist_ok=True)
         except OSError:
@@ -169,14 +157,14 @@ def get_zone_path(zone: str) -> Path:
     """Gibt den Pfad einer Storage-Zone zurück.
 
     Args:
-        zone: Name der Zone (database, cache, recordings, podcasts, config)
+        zone: Name der Zone (database, cache, config)
 
     Returns:
         Path-Objekt zum Zone-Verzeichnis
     """
     config = _load_or_create()
     zones = config.get("zones", {})
-    if zone not in zones:
+    if zone not in zones or zone not in _DEFAULT_ZONE_SUBDIRS:
         raise ValueError(f"Unbekannte Storage-Zone: {zone}")
     return Path(zones[zone]["path"])
 
@@ -187,6 +175,8 @@ def get_all_zones() -> dict:
     result = {}
 
     for zone_name, zone_conf in config.get("zones", {}).items():
+        if zone_name not in _DEFAULT_ZONE_SUBDIRS:
+            continue  # frühere Zonen (recordings, podcasts) liegen jetzt in der Ablage
         path = Path(zone_conf["path"])
         meta = ZONE_INFO.get(zone_name, {})
 
@@ -253,7 +243,7 @@ def update_zone(zone: str, new_path: str) -> dict:
     config = _load_or_create()
     zones = config.get("zones", {})
 
-    if zone not in zones:
+    if zone not in zones or zone not in _DEFAULT_ZONE_SUBDIRS:
         raise ValueError(f"Unbekannte Zone: {zone}")
 
     path = Path(new_path)

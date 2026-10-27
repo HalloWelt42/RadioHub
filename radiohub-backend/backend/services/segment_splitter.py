@@ -1,602 +1,147 @@
 """
-RadioHub v0.3.0 - Segment Splitter
+RadioHub v0.4.0 - Segment Splitter
 
-Schneidet Aufnahmen anhand von ICY-Metadata in atomare Segmente.
-Nutzt Audio-Byte-Positionen (nicht Wallclock) für präzise Schnitte.
-Stream-Copy (kein Re-Encoding). Reassembly via FFmpeg concat demuxer.
+Schneidet lokale Audio-Dateien in Stücke (Stream-Copy, kein Re-Encoding) und fügt Stücke wieder zusammen.
+Arbeitet nur mit lokalen Dateien im Arbeitsordner; Ablegen und Datenbank übernimmt `services.aufnahmen`.
 
-Carry-Forward: Entries mit ignored=True haben denselben Titel wie ihr
-Vorgänger und erzeugen keinen separaten Schnitt.
+Schnitt nach Titelliste: Audio-Byte-Positionen (nicht Wallclock) für präzise Schnitte. Carry-Forward: Einträge mit
+ignored=True haben denselben Titel wie ihr Vorgänger und erzeugen keinen eigenen Schnitt.
 """
+from __future__ import annotations
+
 import asyncio
-import json
-import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from ..database import db_session
-from ..config import get_cache_dir, RADIO_RECORDINGS_DIR
+
+@dataclass
+class Stueck:
+    """Ein geschnittenes Stück im Arbeitsordner, noch nicht abgelegt."""
+
+    titel: str
+    start_ms: int
+    end_ms: int
+    datei: Path
+
+    @property
+    def dauer_ms(self) -> int:
+        return self.end_ms - self.start_ms
 
 
-def _safe_filename(title: str, max_len: int = 80) -> str:
-    """Erzeugt einen sicheren Dateinamen aus einem Titel."""
-    safe = re.sub(r'[^\w\s\-]', '_', title)
-    safe = re.sub(r'\s+', '_', safe).strip('_')
-    return safe[:max_len] if safe else "segment"
+def titel_eintraege(titelliste: dict | list | None) -> list[dict]:
+    """Einträge einer Titelliste (neues Format: dict mit entries, alt: flache Liste)."""
+    if isinstance(titelliste, dict):
+        return titelliste.get("entries", [])
+    return titelliste or []
+
+
+async def _ffmpeg(cmd: list[str], timeout: float) -> tuple[bool, str]:
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.DEVNULL,
+                                                stderr=asyncio.subprocess.PIPE)
+    try:
+        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        return False, "Zeitüberschreitung"
+    return proc.returncode == 0, stderr.decode("utf-8", errors="replace")[-200:]
 
 
 class SegmentSplitter:
 
     def __init__(self):
-        # Aktive Split-Operationen tracken (verhindert Doppel-Splits)
-        self._active_splits: set[str] = set()
+        # Aktive Schnitte je Quelle (verhindert Doppel-Schnitte)
+        self._aktiv: set[str] = set()
 
-    async def split_session(self, session_id: str, audio_path: Path,
-                            meta_path: Path, total_duration: float,
-                            file_format: str) -> list[dict]:
-        """Schneidet Audio anhand .meta.json in Segmente.
+    async def _schneiden(self, audio: Path, start_sec: float, dauer_sec: float, ziel: Path) -> bool:
+        ok, fehler = await _ffmpeg(["ffmpeg", "-y", "-i", str(audio), "-ss", f"{start_sec:.3f}",
+                                    "-t", f"{dauer_sec:.3f}", "-c:a", "copy", str(ziel)], timeout=120)
+        if not ok:
+            print(f"  Split: FFmpeg-Fehler bei {ziel.name}, übersprungen: {fehler}")
+            ziel.unlink(missing_ok=True)
+        return ok and ziel.exists()
 
-        Returns: Liste der erstellten Segmente (leer wenn kein Split möglich).
-        """
-        if session_id in self._active_splits:
-            print(f"  Split: Session {session_id} wird bereits gesplittet")
-            return []
-        self._active_splits.add(session_id)
-
-        try:
-            return await self._split_session_impl(
-                session_id, audio_path, meta_path, total_duration, file_format
-            )
-        finally:
-            self._active_splits.discard(session_id)
-
-    async def _split_session_impl(self, session_id: str, audio_path: Path,
-                                   meta_path: Path, total_duration: float,
-                                   file_format: str) -> list[dict]:
-        """Interne Split-Implementierung (Guard bereits gesetzt)."""
-        if not audio_path or not audio_path.exists():
-            print(f"  Split: Audio-Datei nicht gefunden: {audio_path}")
-            return []
-
-        if not meta_path or not meta_path.exists():
-            return []
-
-        try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                raw_meta = json.load(f)
-        except Exception as e:
-            print(f"  Split: Meta-JSON Fehler: {e}")
-            return []
-
-        # Neues Format (dict mit entries) vs Legacy (flache Liste)
-        if isinstance(raw_meta, dict):
-            entries = raw_meta.get("entries", [])
-            total_audio_bytes = raw_meta.get("total_audio_bytes", 0)
-        else:
-            entries = raw_meta
-            total_audio_bytes = 0
-
-        if not entries or len(entries) == 0:
-            return []
-
-        # Carry-Forward: ignored-Entries rausfiltern, da sie denselben
-        # Titel tragen wie ihr Vorgänger und keinen Schnitt erzeugen sollen.
-        # Die Byte/Zeit-Grenzen des Vorgänger-Segments dehnen sich dadurch
-        # bis zum nächsten nicht-ignorierten Entry.
-        effective_entries = [e for e in entries if not e.get("ignored", False)]
-        if not effective_entries:
-            # Nur ignored-Entries -> alles als ein Segment
-            effective_entries = [entries[0]]
-
+    async def nach_titelliste(self, audio: Path, titelliste: dict | list, total_duration: float, endung: str,
+                              ziel_dir: Path) -> list[Stueck]:
+        """Schneidet an den Titelwechseln der Titelliste. Leer, wenn es nichts zu schneiden gibt."""
+        eintraege = titel_eintraege(titelliste)
+        total_audio_bytes = titelliste.get("total_audio_bytes", 0) if isinstance(titelliste, dict) else 0
         total_ms = int(total_duration * 1000)
-        if total_ms <= 0:
-            print("  Split: Keine gültige Gesamtdauer")
+        if not eintraege or total_ms <= 0 or not audio.exists():
             return []
 
-        # Byte-Ratio verfügbar?
-        use_byte_ratio = total_audio_bytes > 0 and "b" in effective_entries[0]
-        if use_byte_ratio:
-            print(f"  Split: Byte-Ratio Modus ({total_audio_bytes} total bytes)")
-        else:
-            print("  Split: Wallclock-Fallback (Legacy-Metadata)")
-
-        # Session-Verzeichnis: Wenn Audio-Datei in einem Session-Dir liegt,
-        # direkt dort die Segmente ablegen (kein zusaetzliches Unterverzeichnis)
-        parent = audio_path.parent
-        if parent.name == session_id or parent.name.startswith("rec_"):
-            session_dir = parent
-        else:
-            session_dir = parent / session_id
-        session_dir.mkdir(parents=True, exist_ok=True)
-
-        ext = file_format if file_format.startswith(".") else f".{file_format}"
-        segments = []
-        skipped = 0
-
-        for i, entry in enumerate(effective_entries):
-            if use_byte_ratio:
-                # Präzise Position via Byte-Ratio
-                entry_bytes = entry.get("b", 0)
-                start_ms = int((entry_bytes / total_audio_bytes) * total_ms)
-                if i + 1 < len(effective_entries):
-                    next_bytes = effective_entries[i + 1].get("b", 0)
-                    end_ms = int((next_bytes / total_audio_bytes) * total_ms)
-                else:
-                    end_ms = total_ms
+        wirksam = [e for e in eintraege if not e.get("ignored", False)] or [eintraege[0]]
+        nach_bytes = total_audio_bytes > 0 and "b" in wirksam[0]
+        grenzen: list[tuple[str, int, int]] = []
+        for i, eintrag in enumerate(wirksam):
+            if nach_bytes:
+                start_ms = int(eintrag.get("b", 0) / total_audio_bytes * total_ms)
+                end_ms = (int(wirksam[i + 1].get("b", 0) / total_audio_bytes * total_ms)
+                          if i + 1 < len(wirksam) else total_ms)
             else:
-                # Legacy: Wallclock-Timestamps
-                start_ms = entry.get("t", 0)
-                end_ms = effective_entries[i + 1]["t"] if i + 1 < len(effective_entries) else total_ms
-            duration_ms = end_ms - start_ms
+                start_ms = eintrag.get("t", 0)
+                end_ms = wirksam[i + 1]["t"] if i + 1 < len(wirksam) else total_ms
+            if end_ms > start_ms:
+                grenzen.append((eintrag.get("title", "") or f"Teil {len(grenzen) + 1}", start_ms, end_ms))
+        return await self._schneiden_alle(audio, grenzen, endung, ziel_dir)
 
-            if duration_ms <= 0:
+    async def an_zeiten(self, audio: Path, zeiten: list[float], total_duration: float, endung: str,
+                        ziel_dir: Path, titel: list[dict] | None = None) -> list[Stueck]:
+        """Schneidet an Zeitpunkten (Sekunden); ergibt len(zeiten) + 1 Stücke. Titel aus der Titelliste, wenn da."""
+        punkte = [0.0] + sorted({t for t in zeiten if 0 < t < total_duration}) + [total_duration]
+        grenzen: list[tuple[str, int, int]] = []
+        for i in range(len(punkte) - 1):
+            start_sec, end_sec = punkte[i], punkte[i + 1]
+            if end_sec - start_sec <= 0.01:
                 continue
+            name = f"Teil {i + 1}"
+            for eintrag in reversed(titel or []):
+                if eintrag.get("t", 0) / 1000.0 <= start_sec:
+                    name = eintrag.get("title", name) or name
+                    break
+            grenzen.append((name, int(start_sec * 1000), int(end_sec * 1000)))
+        return await self._schneiden_alle(audio, grenzen, endung, ziel_dir)
 
-            seg_idx = len(segments)  # Fortlaufender Index (übersprungene zählen nicht)
-            title = entry.get("title", f"Segment {seg_idx}")
-            safe_title = _safe_filename(title)
-            segment_file = session_dir / f"{seg_idx:03d}_{safe_title}{ext}"
-
-            # FFmpeg Stream-Copy Cut
-            start_sec = start_ms / 1000.0
-            duration_sec = duration_ms / 1000.0
-
-            cmd = [
-                "ffmpeg", "-y",
-                "-i", str(audio_path),
-                "-ss", f"{start_sec:.3f}",
-                "-t", f"{duration_sec:.3f}",
-                "-c:a", "copy",
-                str(segment_file)
-            ]
-
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    *cmd,
-                    stdout=asyncio.subprocess.DEVNULL,
-                    stderr=asyncio.subprocess.PIPE
-                )
-                _, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
-
-                if proc.returncode != 0:
-                    err = stderr.decode("utf-8", errors="replace")[-200:]
-                    print(f"  Split: FFmpeg Fehler bei Segment {seg_idx}, übersprungen: {err}")
-                    skipped += 1
-                    if segment_file.exists():
-                        segment_file.unlink()
-                    continue
-
-                file_size = segment_file.stat().st_size if segment_file.exists() else 0
-
-                segments.append({
-                    "session_id": session_id,
-                    "segment_index": seg_idx,
-                    "title": title,
-                    "start_ms": start_ms,
-                    "end_ms": end_ms,
-                    "duration_ms": duration_ms,
-                    "file_path": str(segment_file),
-                    "file_size": file_size
-                })
-
-            except asyncio.TimeoutError:
-                print(f"  Split: Timeout bei Segment {seg_idx}, übersprungen")
-                skipped += 1
-                continue
-            except Exception as e:
-                print(f"  Split: Fehler bei Segment {seg_idx}, übersprungen: {e}")
-                skipped += 1
-                continue
-
-        if len(segments) == 0:
-            # Kein einziges Segment erfolgreich
-            self._cleanup_dir(session_dir)
+    async def _schneiden_alle(self, audio: Path, grenzen: list[tuple[str, int, int]], endung: str,
+                              ziel_dir: Path) -> list[Stueck]:
+        schluessel = str(audio)
+        if schluessel in self._aktiv:
+            print(f"  Split: {audio.name} wird bereits geschnitten")
             return []
-
-        if skipped > 0:
-            print(f"  Split: {skipped} Segmente übersprungen (Fehler)")
-
-        # Segmente in DB speichern
-        with db_session() as conn:
-            c = conn.cursor()
-            for seg in segments:
-                c.execute('''INSERT INTO segments
-                    (session_id, segment_index, title, start_ms, end_ms,
-                     duration_ms, file_path, file_size)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (seg["session_id"], seg["segment_index"], seg["title"],
-                     seg["start_ms"], seg["end_ms"], seg["duration_ms"],
-                     seg["file_path"], seg["file_size"]))
-
-        # Originaldatei löschen
+        self._aktiv.add(schluessel)
         try:
-            audio_path.unlink()
-            print(f"  Split: Originaldatei gelöscht: {audio_path.name}")
-        except Exception as e:
-            print(f"  Split: Originaldatei nicht löschbar: {e}")
-
-        # Session file_path auf Verzeichnis updaten (Marker für Segmente)
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("UPDATE sessions SET file_path = ? WHERE id = ?",
-                      (str(session_dir), session_id))
-
-        print(f"  Split: {len(segments)} Segmente erstellt für {session_id}")
-        return segments
-
-    async def split_at_times(self, session_id: str, audio_path: Path,
-                              cut_times: list[float], total_duration: float,
-                              file_format: str,
-                              meta_entries: list[dict] | None = None) -> list[dict]:
-        """Schneidet Audio an expliziten Zeitpunkten (Sekunden).
-
-        cut_times: Sortierte Liste von Schnittpunkten (z.B. [30.0, 120.5, 300.0]).
-        Erzeugt len(cut_times) + 1 Segmente.
-        Falls meta_entries vorhanden: Titel aus ICY-Metadata zuordnen.
-        Returns: Liste der erstellten Segmente.
-        """
-        if session_id in self._active_splits:
-            print(f"  CustomSplit: Session {session_id} wird bereits gesplittet")
-            return []
-        self._active_splits.add(session_id)
-
-        try:
-            return await self._split_at_times_impl(
-                session_id, audio_path, cut_times, total_duration,
-                file_format, meta_entries
-            )
+            ziel_dir.mkdir(parents=True, exist_ok=True)
+            endung = endung if endung.startswith(".") else f".{endung}"
+            stuecke: list[Stueck] = []
+            for i, (titel, start_ms, end_ms) in enumerate(grenzen):
+                ziel = ziel_dir / f"teil_{i:03d}{endung}"
+                if await self._schneiden(audio, start_ms / 1000.0, (end_ms - start_ms) / 1000.0, ziel):
+                    stuecke.append(Stueck(titel, start_ms, end_ms, ziel))
+            print(f"  Split: {len(stuecke)} von {len(grenzen)} Stücken aus {audio.name}")
+            return stuecke
         finally:
-            self._active_splits.discard(session_id)
+            self._aktiv.discard(schluessel)
 
-    async def _split_at_times_impl(self, session_id: str, audio_path: Path,
-                                    cut_times: list[float], total_duration: float,
-                                    file_format: str,
-                                    meta_entries: list[dict] | None = None) -> list[dict]:
-        """Interne Split-Implementierung (Guard bereits gesetzt)."""
-        if not audio_path or not audio_path.exists():
-            print(f"  CustomSplit: Audio-Datei nicht gefunden: {audio_path}")
-            return []
-
-        # Bestehende Segmente löschen
-        existing = self.get_segments(session_id)
-        if existing:
-            for seg in existing:
-                fp = Path(seg["file_path"])
-                if fp.exists():
-                    fp.unlink()
-            with db_session() as conn:
-                c = conn.cursor()
-                c.execute("DELETE FROM segments WHERE session_id = ?", (session_id,))
-
-        # Session-Verzeichnis im Recordings-Ordner anlegen (nicht im Cache)
-        session_dir = RADIO_RECORDINGS_DIR / session_id
-        session_dir.mkdir(parents=True, exist_ok=True)
-
-        ext = file_format if file_format.startswith(".") else f".{file_format}"
-
-        # Zeitpunkte normalisieren: 0 am Anfang, total_duration am Ende
-        times = [0.0] + sorted(set(t for t in cut_times if 0 < t < total_duration)) + [total_duration]
-
-        segments = []
-        failed = False
-
-        for i in range(len(times) - 1):
-            start_sec = times[i]
-            end_sec = times[i + 1]
-            duration_sec = end_sec - start_sec
-
-            if duration_sec <= 0.01:
-                continue
-
-            # Titel aus Metadata ermitteln
-            title = f"Teil {i + 1}"
-            if meta_entries:
-                for entry in reversed(meta_entries):
-                    entry_sec = (entry.get("t", 0)) / 1000.0
-                    if entry_sec <= start_sec:
-                        title = entry.get("title", title)
-                        break
-
-            safe_title = _safe_filename(title)
-            segment_file = session_dir / f"{i:03d}_{safe_title}{ext}"
-
-            cmd = [
-                "ffmpeg", "-y",
-                "-i", str(audio_path),
-                "-ss", f"{start_sec:.3f}",
-                "-t", f"{duration_sec:.3f}",
-                "-c:a", "copy",
-                str(segment_file)
-            ]
-
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    *cmd,
-                    stdout=asyncio.subprocess.DEVNULL,
-                    stderr=asyncio.subprocess.PIPE
-                )
-                _, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
-
-                if proc.returncode != 0:
-                    err = stderr.decode("utf-8", errors="replace")[-200:]
-                    print(f"  CustomSplit: FFmpeg Fehler bei Segment {i}, übersprungen: {err}")
-                    if segment_file.exists():
-                        segment_file.unlink()
-                    continue
-
-                file_size = segment_file.stat().st_size if segment_file.exists() else 0
-                start_ms = int(start_sec * 1000)
-                end_ms = int(end_sec * 1000)
-
-                segments.append({
-                    "session_id": session_id,
-                    "segment_index": len(segments),
-                    "title": title,
-                    "start_ms": start_ms,
-                    "end_ms": end_ms,
-                    "duration_ms": end_ms - start_ms,
-                    "file_path": str(segment_file),
-                    "file_size": file_size
-                })
-
-            except asyncio.TimeoutError:
-                print(f"  CustomSplit: Timeout bei Segment {i}, übersprungen")
-                continue
-            except Exception as e:
-                print(f"  CustomSplit: Fehler bei Segment {i}, übersprungen: {e}")
-                continue
-
-        if len(segments) == 0:
-            self._cleanup_dir(session_dir)
-            return []
-
-        # Segmente in DB speichern
-        with db_session() as conn:
-            c = conn.cursor()
-            for seg in segments:
-                c.execute('''INSERT INTO segments
-                    (session_id, segment_index, title, start_ms, end_ms,
-                     duration_ms, file_path, file_size)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (seg["session_id"], seg["segment_index"], seg["title"],
-                     seg["start_ms"], seg["end_ms"], seg["duration_ms"],
-                     seg["file_path"], seg["file_size"]))
-
-        # Originaldatei löschen
+    async def zusammenfuegen(self, dateien: list[Path], ziel: Path) -> Optional[Path]:
+        """Fügt Stücke per concat-Demuxer zu einer Datei zusammen (Stream-Copy)."""
+        vorhanden = [d for d in dateien if d.exists()]
+        if not vorhanden:
+            return None
+        liste = ziel.with_name(f"{ziel.stem}_concat.txt")
+        with open(liste, "w", encoding="utf-8") as f:
+            for datei in vorhanden:
+                f.write("file '{}'\n".format(str(datei).replace("'", "'\\''")))
         try:
-            audio_path.unlink()
-            print(f"  CustomSplit: Originaldatei gelöscht: {audio_path.name}")
-        except Exception as e:
-            print(f"  CustomSplit: Originaldatei nicht löschbar: {e}")
-
-        # Session file_path auf Verzeichnis updaten
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("UPDATE sessions SET file_path = ? WHERE id = ?",
-                      (str(session_dir), session_id))
-
-        print(f"  CustomSplit: {len(segments)} Segmente erstellt für {session_id}")
-        return segments
-
-    async def concat_session(self, session_id: str) -> Optional[Path]:
-        """Reassembliert alle Segmente einer Session zu einer Datei.
-
-        Returns: Pfad zur zusammengebauten Datei (in CACHE_DIR) oder None.
-        Ueberspringt fehlende Segment-Dateien (mit Warnung).
-        """
-        segments = self.get_segments(session_id)
-        if not segments:
-            return None
-
-        # Fehlende Dateien filtern statt komplett abbrechen
-        valid_segments = []
-        for seg in segments:
-            fp = Path(seg["file_path"])
-            if fp.exists():
-                valid_segments.append(seg)
-            else:
-                print(f"  Concat: Segment-Datei fehlt, uebersprungen: {fp}")
-
-        if not valid_segments:
-            print(f"  Concat: Keine gueltige Segment-Datei fuer {session_id}")
-            return None
-
-        cache_dir = get_cache_dir()
-        ext = Path(valid_segments[0]["file_path"]).suffix
-
-        # Concat-Listdatei schreiben
-        concat_file = cache_dir / f"{session_id}_concat.txt"
-        with open(concat_file, "w", encoding="utf-8") as f:
-            for seg in valid_segments:
-                # Pfade mit einfachen Anführungszeichen escapen
-                safe_path = seg["file_path"].replace("'", "'\\''")
-                f.write(f"file '{safe_path}'\n")
-
-        output_file = cache_dir / f"{session_id}_full{ext}"
-
-        cmd = [
-            "ffmpeg", "-y",
-            "-f", "concat",
-            "-safe", "0",
-            "-i", str(concat_file),
-            "-c:a", "copy",
-            str(output_file)
-        ]
-
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.PIPE
-            )
-            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
-
-            if proc.returncode != 0:
-                err = stderr.decode("utf-8", errors="replace")[-200:]
-                print(f"  Concat: FFmpeg Fehler: {err}")
-                return None
-
-        except asyncio.TimeoutError:
-            print("  Concat: Timeout")
-            return None
-        except Exception as e:
-            print(f"  Concat: Fehler: {e}")
-            return None
+            ok, fehler = await _ffmpeg(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(liste),
+                                        "-c:a", "copy", str(ziel)], timeout=300)
         finally:
-            # Concat-Liste aufräumen
-            if concat_file.exists():
-                concat_file.unlink()
-
-        print(f"  Concat: {output_file.name} erstellt ({len(segments)} Segmente)")
-        return output_file
-
-    def get_segments(self, session_id: str) -> list[dict]:
-        """Alle Segmente einer Session aus DB."""
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute('''SELECT * FROM segments
-                WHERE session_id = ? ORDER BY segment_index''', (session_id,))
-            return [dict(row) for row in c.fetchall()]
-
-    def register_single_segment(self, session_id: str, audio_path: Path,
-                                 duration: float):
-        """Registriert die gesamte Audio-Datei als einzelnes Segment 'Teil 1'.
-
-        Fuer Sessions ohne ICY-Metadaten die sonst keine Segmente haetten.
-        """
-        duration_ms = int(duration * 1000)
-        file_size = audio_path.stat().st_size if audio_path.exists() else 0
-
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute('''INSERT INTO segments
-                (session_id, segment_index, title, start_ms, end_ms,
-                 duration_ms, file_path, file_size)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                (session_id, 0, "Teil 1", 0, duration_ms,
-                 duration_ms, str(audio_path), file_size))
-
-    def get_all_segments(self) -> list[dict]:
-        """Alle Segmente aller Sessions aus DB, sortiert nach Session und Index."""
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute('''SELECT * FROM segments ORDER BY session_id DESC, segment_index''')
-            return [dict(row) for row in c.fetchall()]
-
-    def get_segment(self, segment_id: int) -> Optional[dict]:
-        """Einzelnes Segment aus DB."""
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("SELECT * FROM segments WHERE id = ?", (segment_id,))
-            row = c.fetchone()
-            return dict(row) if row else None
-
-    def delete_segment(self, session_id: str, segment_id: int) -> bool:
-        """Löscht ein einzelnes Segment (Datei + DB).
-
-        Falls keine Segmente mehr: Session wird ebenfalls gelöscht.
-        Returns: True bei Erfolg.
-        """
-        segment = self.get_segment(segment_id)
-        if not segment or segment["session_id"] != session_id:
-            return False
-
-        # Datei löschen
-        fp = Path(segment["file_path"])
-        if fp.exists():
-            fp.unlink()
-
-        # DB-Eintrag löschen
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("DELETE FROM segments WHERE id = ?", (segment_id,))
-
-        # Verbleibende Segmente re-indexieren
-        remaining = self.get_segments(session_id)
-        if remaining:
-            with db_session() as conn:
-                c = conn.cursor()
-                for new_idx, seg in enumerate(remaining):
-                    if seg["segment_index"] != new_idx:
-                        c.execute("UPDATE segments SET segment_index = ? WHERE id = ?",
-                                  (new_idx, seg["id"]))
-        else:
-            # Keine Segmente mehr -> Session-Verzeichnis und Session löschen
-            # Verzeichnis aus dem Segment-Pfad ableiten (parent = session_dir)
-            session_dir = Path(segment["file_path"]).parent
-            self._cleanup_dir(session_dir)
-
-            with db_session() as conn:
-                c = conn.cursor()
-                # Meta-Datei löschen
-                c.execute("SELECT meta_file_path FROM sessions WHERE id = ?", (session_id,))
-                row = c.fetchone()
-                if row and row[0]:
-                    mp = Path(row[0])
-                    if mp.exists():
-                        mp.unlink()
-                c.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
-
-            print(f"  Segment: Letztes Segment gelöscht, Session {session_id} entfernt")
-
-        return True
-
-    def repair_session(self, session_id: str) -> dict:
-        """Bereinigt verwaiste Segmente (DB-Eintraege ohne Datei auf Platte).
-
-        Loescht DB-Eintraege deren Dateien fehlen, re-indexiert den Rest.
-        Returns: Dict mit removed (geloeschte), kept (beibehaltene) Anzahl.
-        """
-        segments = self.get_segments(session_id)
-        if not segments:
-            return {"removed": 0, "kept": 0, "removed_titles": []}
-
-        removed_titles = []
-        kept_ids = []
-
-        for seg in segments:
-            fp = Path(seg["file_path"])
-            if fp.exists() and fp.stat().st_size > 0:
-                kept_ids.append(seg["id"])
-            else:
-                removed_titles.append(seg.get("title", f"Segment {seg['segment_index']}"))
-                # DB-Eintrag loeschen (Datei existiert nicht, also nichts zu unlinken)
-                with db_session() as conn:
-                    c = conn.cursor()
-                    c.execute("DELETE FROM segments WHERE id = ?", (seg["id"],))
-
-        # Verbleibende re-indexieren
-        if kept_ids and len(kept_ids) < len(segments):
-            remaining = self.get_segments(session_id)
-            with db_session() as conn:
-                c = conn.cursor()
-                for new_idx, seg in enumerate(remaining):
-                    if seg["segment_index"] != new_idx:
-                        c.execute("UPDATE segments SET segment_index = ? WHERE id = ?",
-                                  (new_idx, seg["id"]))
-
-        removed_count = len(segments) - len(kept_ids)
-        if removed_count > 0:
-            print(f"  Repair: {session_id} -- {removed_count} verwaiste Segmente entfernt, "
-                  f"{len(kept_ids)} behalten")
-
-        return {
-            "removed": removed_count,
-            "kept": len(kept_ids),
-            "removed_titles": removed_titles
-        }
-
-    def _cleanup_dir(self, dir_path: Path):
-        """Löscht ein Verzeichnis und seinen Inhalt."""
-        if not dir_path.exists() or not dir_path.is_dir():
-            return
-        for f in dir_path.iterdir():
-            if f.is_file():
-                f.unlink()
-        try:
-            dir_path.rmdir()
-        except Exception:
-            pass
+            liste.unlink(missing_ok=True)
+        if not ok:
+            print(f"  Concat: FFmpeg-Fehler: {fehler}")
+            ziel.unlink(missing_ok=True)
+            return None
+        return ziel
 
 
 # Singleton

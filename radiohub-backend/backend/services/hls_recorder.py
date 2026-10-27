@@ -17,8 +17,10 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
+from ..ablage import orte
 from ..database import db_session
-from ..config import get_radio_recordings_dir, get_active_recording_dir
+from ..config import get_arbeit_dir, get_active_recording_folder
+from .aufnahmen import aufnahmen
 from .hls_buffer import hls_buffer
 from .recorder import rec_manager
 from .audio_utils import probe_duration
@@ -85,28 +87,16 @@ class HLSRecorderService:
         with db_session() as conn:
             c = conn.cursor()
             c.execute(
-                "SELECT id, file_path FROM sessions "
+                "SELECT id FROM sessions "
                 "WHERE status = 'recording' AND rec_type = 'hls-rec'"
             )
             stale = c.fetchall()
             for row in stale:
-                sid = row[0]
-                fp = row[1]
-                file_size = 0
-                if fp:
-                    p = Path(fp)
-                    # HLS-REC speichert Session-Dir als file_path während Aufnahme
-                    if p.is_dir():
-                        # .ts Verzeichnis aufräumen
-                        ts_dir = p / "ts"
-                        if ts_dir.exists():
-                            shutil.rmtree(ts_dir, ignore_errors=True)
-                    elif p.is_file():
-                        file_size = p.stat().st_size
+                # Gesammelte .ts-Stücke im Arbeitsordner sind ohne Zusammenfügen wertlos
+                shutil.rmtree(get_arbeit_dir("aufnahmen") / row[0], ignore_errors=True)
                 c.execute(
-                    "UPDATE sessions SET status = 'interrupted', file_size = ? "
-                    "WHERE id = ?",
-                    (file_size, sid)
+                    "UPDATE sessions SET status = 'interrupted', file_size = 0 WHERE id = ?",
+                    (row[0],)
                 )
             if stale:
                 print(f"  {len(stale)} verwaiste HLS-REC-Session(s) bereinigt")
@@ -130,10 +120,10 @@ class HLSRecorderService:
             return {"success": False, "error": "Direkt-Aufnahme läuft bereits"}
 
         # Aktiven Aufnahmeordner bestimmen
-        active_dir, folder_id = get_active_recording_dir()
+        folder_name, folder_id = get_active_recording_folder()
 
-        # Disk-Space prüfen
-        if not _check_disk_space(active_dir):
+        # Platz im Arbeitsordner prüfen (dort liegt die Aufnahme bis zur Ablage)
+        if not _check_disk_space(get_arbeit_dir("aufnahmen")):
             return {"success": False,
                     "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
 
@@ -153,8 +143,7 @@ class HLSRecorderService:
 
         # Session erstellen
         session_id = f"hlsrec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        ts_dir = active_dir / session_id / "ts"
-        ts_dir.mkdir(parents=True, exist_ok=True)
+        ts_dir = get_arbeit_dir("aufnahmen", session_id, "ts")
 
         session = HLSRecSession(
             session_id=session_id,
@@ -200,7 +189,8 @@ class HLSRecorderService:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                 (session_id, station_uuid, station_name, stream_url,
                  hls_status.get("output_bitrate", 0),
-                 session.start_time.isoformat(), str(ts_dir.parent),
+                 session.start_time.isoformat(),
+                 orte.aufnahmeordner(station_name, session.start_time, folder_name),
                  "recording", "aac", ".aac", None, "hls-rec", folder_id))
 
         print(f"HLS-REC gestartet: {session_id} "
@@ -353,7 +343,7 @@ class HLSRecorderService:
         file_size = output_file.stat().st_size if output_file.exists() else 0
 
         # ICY-Metadata filtern und speichern
-        meta_file = session_dir / f"{session.id}.meta.json"
+        meta_file = session_dir / orte.TITELLISTE
         meta_count = self._save_icy_metadata(session, meta_file, real_duration)
 
         # .ts Verzeichnis + concat-Datei aufräumen
@@ -362,16 +352,41 @@ class HLSRecorderService:
         if session.ts_dir.exists():
             shutil.rmtree(session.ts_dir, ignore_errors=True)
 
-        # DB finalisieren
+        # Stücke schneiden (mit Titelliste) und ablegen; lokal bleibt danach nichts
+        from .segment_splitter import splitter
+        stuecke = []
+        if meta_count > 0 and meta_file.exists():
+            try:
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    titelliste = json.load(f)
+                stuecke = await splitter.nach_titelliste(
+                    output_file, titelliste, real_duration, ".aac", session_dir / "teile")
+            except Exception as e:
+                print(f"  HLS-REC Split-Fehler: {e}")
+                stuecke = []
+
+        try:
+            if stuecke:
+                anzahl = await aufnahmen.stuecke_ablegen(session.id, stuecke)
+            else:
+                await aufnahmen.teil_ablegen(session.id, 0, "Teil 1", 0, int(real_duration * 1000), output_file)
+                anzahl = 1
+            await aufnahmen.titelliste_ablegen(session.id, meta_file if meta_count > 0 else None)
+            shutil.rmtree(session_dir, ignore_errors=True)
+            status = "completed"
+        except Exception as e:
+            # Bleibt im Arbeitsordner; der nächste Start holt das Ablegen nach
+            print(f"  HLS-REC Ablage-Fehler: {e}")
+            anzahl = len(aufnahmen.segmente(session.id))
+            status = "interrupted"
+
+        file_size = sum(s["file_size"] or 0 for s in aufnahmen.segmente(session.id))
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE sessions SET
-                end_time = ?, duration = ?, file_size = ?, file_path = ?,
-                meta_file_path = ?, status = ?
+                end_time = ?, duration = ?, file_size = ?, status = ?
                 WHERE id = ?''',
-                (datetime.now().isoformat(), real_duration, file_size,
-                 str(output_file), str(meta_file) if meta_count > 0 else None,
-                 "completed", session.id))
+                (datetime.now().isoformat(), real_duration, file_size, status, session.id))
 
         print(f"HLS-REC gestoppt: {session.id} "
               f"({total_segments} Segmente, {real_duration:.0f}s, "
@@ -382,34 +397,13 @@ class HLSRecorderService:
             "session_id": session.id,
             "duration": real_duration,
             "file_size": file_size,
-            "file_path": str(output_file),
+            "file_path": aufnahmen.sitzung(session.id)["file_path"],
             "codec": "aac",
             "file_format": ".aac",
             "meta_count": meta_count,
-            "total_segments": total_segments
+            "total_segments": total_segments,
+            "segments": anzahl,
         }
-
-        # Segment-Split wenn Metadata vorhanden
-        if meta_count > 0 and meta_file.exists():
-            from .segment_splitter import splitter
-            try:
-                segments = await splitter.split_session(
-                    session.id, output_file, meta_file,
-                    real_duration, ".aac"
-                )
-                if segments:
-                    result["segments"] = len(segments)
-            except Exception as e:
-                print(f"  HLS-REC Split-Fehler: {e}")
-
-        # Ohne ICY: Mindestens "Teil 1" als Segment registrieren
-        from .segment_splitter import splitter as seg_splitter
-        existing = seg_splitter.get_segments(session.id)
-        if not existing and output_file.exists():
-            seg_splitter.register_single_segment(
-                session.id, output_file, real_duration
-            )
-            result["segments"] = 1
 
         self.active_session = None
         self._collector_task = None

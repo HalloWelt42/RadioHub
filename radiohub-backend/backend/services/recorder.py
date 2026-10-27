@@ -22,8 +22,10 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
+from ..ablage import orte
 from ..database import db_session
-from ..config import get_radio_recordings_dir, get_active_recording_dir
+from ..config import get_arbeit_dir, get_active_recording_folder
+from .aufnahmen import aufnahmen
 from .config_service import config_service
 from .icy_metadata import IcyMetadataLogger
 from .audio_utils import probe_duration
@@ -104,6 +106,14 @@ class RecordingSession:
         self.logger: Optional[SessionLogger] = None
         self.events: list[dict] = []  # Gap/Stall/Codec-Events
 
+        # Ablage: fertige Stücke gehen der Reihe nach im Hintergrund in die Ablage
+        self.kumuliert_ms: int = 0
+        self.abgelegt_bytes: int = 0
+        self.abgelegte_segmente: int = 0
+        self.ablage_tasks: list[asyncio.Task] = []
+        self.ablage_lock = asyncio.Lock()
+        self.abgeschlossen: bool = False
+
         # Live-Split Felder
         self.segment_index: int = 0
         self.current_segment_file: Optional[Path] = None
@@ -116,24 +126,26 @@ class RecordingSession:
     def duration(self) -> float:
         return (datetime.now() - self.start_time).total_seconds()
 
+    def _lokale_segmente(self) -> list[Path]:
+        if not self.session_dir or not self.session_dir.exists():
+            return []
+        return [f for f in self.session_dir.iterdir() if f.is_file() and f.name.startswith("seg_")]
+
     @property
     def file_size(self) -> int:
-        """Gesamtgroesse aller Audio-Dateien im Session-Verzeichnis."""
-        audio_exts = {'.mp3', '.aac', '.ogg', '.opus', '.flac', '.wav'}
-        if self.session_dir and self.session_dir.exists():
-            return sum(
-                f.stat().st_size for f in self.session_dir.iterdir()
-                if f.is_file() and f.suffix in audio_exts
-            )
-        return 0
+        """Abgelegte Stücke plus was noch im Arbeitsordner liegt."""
+        lokal = 0
+        for f in self._lokale_segmente():
+            try:
+                lokal += f.stat().st_size
+            except OSError:
+                pass  # gerade abgelegt
+        return self.abgelegt_bytes + lokal
 
     @property
     def segment_count(self) -> int:
-        """Anzahl der bisher geschriebenen Segment-Dateien."""
-        if not self.session_dir or not self.session_dir.exists():
-            return 0
-        return len([f for f in self.session_dir.iterdir()
-                    if f.is_file() and f.name.startswith("seg_")])
+        """Anzahl der bisher geschriebenen Stücke (abgelegt und lokal)."""
+        return self.abgelegte_segmente + len(self._lokale_segmente())
 
 
 # FFmpeg stderr-Patterns die auf Codec-/Format-Wechsel hindeuten
@@ -160,26 +172,14 @@ class RecorderManager:
         aber die DB hat noch status='recording'."""
         with db_session() as conn:
             c = conn.cursor()
-            c.execute("SELECT id, file_path FROM sessions WHERE status = 'recording'")
+            c.execute("SELECT id FROM sessions WHERE status = 'recording' AND COALESCE(rec_type, 'direct') != 'hls-rec'")
             stale = c.fetchall()
             for row in stale:
-                sid = row[0]
-                fp = row[1]
-                file_size = 0
-                if fp:
-                    p = Path(fp)
-                    if p.is_dir():
-                        # Session-Verzeichnis: Audio-Dateien zaehlen
-                        audio_exts = {'.mp3', '.aac', '.ogg', '.opus', '.flac', '.wav'}
-                        file_size = sum(
-                            f.stat().st_size for f in p.iterdir()
-                            if f.is_file() and f.suffix in audio_exts
-                        )
-                    elif p.exists():
-                        file_size = p.stat().st_size
+                # Was noch im Arbeitsordner liegt, legt aufnahmen.liegengebliebene_ablegen beim Start ab
                 c.execute(
-                    "UPDATE sessions SET status = 'interrupted', file_size = ? WHERE id = ?",
-                    (file_size, sid)
+                    "UPDATE sessions SET status = 'interrupted', "
+                    "file_size = (SELECT COALESCE(SUM(file_size), 0) FROM segments WHERE session_id = ?) "
+                    "WHERE id = ?", (row[0], row[0])
                 )
             if stale:
                 print(f"  {len(stale)} verwaiste Recording-Session(s) bereinigt")
@@ -289,8 +289,8 @@ class RecorderManager:
                 "session_id": self.active_session.id
             }
 
-        # Disk-Space pruefen
-        rec_dir = get_radio_recordings_dir()
+        # Platz im Arbeitsordner prüfen (dort liegt die laufende Aufnahme bis zur Ablage)
+        rec_dir = get_arbeit_dir("aufnahmen")
         try:
             stat = shutil.disk_usage(str(rec_dir))
             free_mb = stat.free / (1024 * 1024)
@@ -304,12 +304,11 @@ class RecorderManager:
         codec, ext = await self._detect_codec(stream_url)
 
         # Aktiven Aufnahmeordner bestimmen
-        active_dir, folder_id = get_active_recording_dir()
+        folder_name, folder_id = get_active_recording_folder()
 
-        # Session-Verzeichnis anlegen (kein chunks/-Unterverzeichnis mehr)
+        # Arbeitsordner der laufenden Aufnahme; der Ort in der Ablage steht ab Start fest
         session_id = f"rec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        session_dir = active_dir / session_id
-        session_dir.mkdir(parents=True, exist_ok=True)
+        session_dir = get_arbeit_dir("aufnahmen", session_id)
 
         session = RecordingSession(
             session_id=session_id,
@@ -327,11 +326,12 @@ class RecorderManager:
         safe_name = "".join(
             c if c.isalnum() or c in " -_" else "_" for c in station_name
         )[:50]
-        log_path = active_dir / f"{session_id}_{safe_name}.log"
+        log_path = get_arbeit_dir("protokolle") / f"{session_id}_{safe_name}.log"
         session.logger = SessionLogger(log_path)
+        ablage_ordner = orte.aufnahmeordner(station_name, session.start_time, folder_name)
 
         # Erstes Segment starten
-        initial_file = session_dir / f"seg_000_Teil_1{ext}"
+        initial_file = session_dir / f"seg_000{ext}"
         session.current_segment_file = initial_file
         session.current_segment_title = "Teil 1"
         session.current_segment_start = datetime.now()
@@ -345,7 +345,7 @@ class RecorderManager:
             self._stderr_task = asyncio.create_task(self._watch_stderr(session))
 
             # ICY-Metadata-Logger mit Live-Split Callback starten
-            meta_path = active_dir / f"{session_id}_{safe_name}.meta.json"
+            meta_path = session_dir / orte.TITELLISTE
             session.meta_file_path = meta_path
             # Ignorier-Liste aus DB laden
             ignore_rules = []
@@ -364,7 +364,8 @@ class RecorderManager:
                 session.icy_logger.run(stream_url, meta_path)
             )
 
-            # In DB speichern (file_path = session_dir)
+            # In DB speichern (file_path = Ordner der Aufnahme in der Ablage; die Titelliste
+            # wird beim Ablegen eingetragen)
             with db_session() as conn:
                 c = conn.cursor()
                 c.execute('''INSERT INTO sessions
@@ -373,8 +374,8 @@ class RecorderManager:
                      meta_file_path, folder_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (session_id, station_uuid, station_name, stream_url, bitrate,
-                     session.start_time.isoformat(), str(session_dir), "recording",
-                     codec, ext, str(meta_path), folder_id))
+                     session.start_time.isoformat(), ablage_ordner, "recording",
+                     codec, ext, None, folder_id))
 
             mode = "Stream-Copy" if codec else "MP3-Encoding"
             print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, Live-Split)")
@@ -383,7 +384,7 @@ class RecorderManager:
             session.logger.log(f"  Codec: {codec or 'fallback->mp3'}, Mode: {mode}")
             session.logger.log(f"  Live-Split aktiv, Format: {ext}")
             try:
-                _stat = shutil.disk_usage(str(active_dir))
+                _stat = shutil.disk_usage(str(session_dir))
                 session.logger.log(f"  Disk frei: {_stat.free / 1024 / 1024:.0f}MB")
             except Exception:
                 pass
@@ -475,12 +476,9 @@ class RecorderManager:
                         session.file_format = new_ext
 
                     # Neues Segment
-                    from .segment_splitter import _safe_filename
                     session.segment_index += 1
-                    safe_title = _safe_filename(old_title or "Teil")
                     new_file = session.session_dir / (
-                        f"seg_{session.segment_index:03d}_{safe_title}"
-                        f"{session.file_format}")
+                        f"seg_{session.segment_index:03d}{session.file_format}")
 
                     try:
                         session.process = await self._start_ffmpeg(
@@ -497,11 +495,11 @@ class RecorderManager:
                     # Alten Prozess stoppen
                     await self._stop_ffmpeg_graceful(old_process)
 
-                    # Altes Segment registrieren
+                    # Altes Segment ablegen
                     if old_file and old_file.exists() and old_file.stat().st_size > 0:
                         dur = await probe_duration(old_file)
                         if dur > 0:
-                            self._register_segment(
+                            self._ablegen(
                                 session, session.segment_index - 1,
                                 old_title or f"Teil {session.segment_index}",
                                 old_file, int(dur * 1000))
@@ -537,13 +535,10 @@ class RecorderManager:
             old_file = session.current_segment_file
             old_title = session.current_segment_title
 
-            # Neues Segment vorbereiten
-            from .segment_splitter import _safe_filename
+            # Neues Segment vorbereiten (lokal nur nummeriert, den Titel bekommt es in der Ablage)
             session.segment_index += 1
-            safe_title = _safe_filename(title)
             ext = session.file_format
-            new_file = session.session_dir / (
-                f"seg_{session.segment_index:03d}_{safe_title}{ext}")
+            new_file = session.session_dir / f"seg_{session.segment_index:03d}{ext}"
 
             # Neuen FFmpeg starten BEVOR alter gestoppt wird (Overlap-Strategie)
             try:
@@ -561,11 +556,11 @@ class RecorderManager:
             # Alten FFmpeg sauber stoppen
             await self._stop_ffmpeg_graceful(old_process)
 
-            # Altes Segment finalisieren (DB-Insert)
+            # Altes Segment ablegen
             if old_file and old_file.exists() and old_file.stat().st_size > 0:
                 duration = await probe_duration(old_file)
                 if duration > 0:
-                    self._register_segment(
+                    self._ablegen(
                         session, session.segment_index - 1,
                         old_title or f"Teil {session.segment_index}",
                         old_file, int(duration * 1000)
@@ -575,32 +570,31 @@ class RecorderManager:
                 f"SPLIT #{session.segment_index}: {title}")
             print(f"  REC Split #{session.segment_index}: {title}")
 
-    def _register_segment(self, session: RecordingSession, index: int,
-                          title: str, file_path: Path, duration_ms: int):
-        """Registriert ein Live-Split-Segment in der DB."""
-        # Kumulative Start/End-Zeit berechnen
-        cumulative_ms = self._get_cumulative_ms(session.id)
-        start_ms = cumulative_ms
-        end_ms = cumulative_ms + duration_ms
-        file_size = file_path.stat().st_size if file_path.exists() else 0
+    def _ablegen(self, session: RecordingSession, index: int, title: str,
+                 file_path: Path, duration_ms: int):
+        """Fertiges Stück im Hintergrund ablegen, der Reihe nach, damit die Aufnahme weiterläuft.
+        Scheitert das Ablegen, bleibt die Datei im Arbeitsordner und wird beim Abschluss erneut versucht."""
+        start_ms = session.kumuliert_ms
+        session.kumuliert_ms += duration_ms
 
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute('''INSERT INTO segments
-                (session_id, segment_index, title, start_ms, end_ms,
-                 duration_ms, file_path, file_size)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                (session.id, index, title, start_ms, end_ms,
-                 duration_ms, str(file_path), file_size))
+        async def ablegen():
+            async with session.ablage_lock:
+                try:
+                    groesse = file_path.stat().st_size
+                    await aufnahmen.teil_ablegen(session.id, index, title, start_ms, duration_ms, file_path)
+                    session.abgelegt_bytes += groesse
+                    session.abgelegte_segmente += 1
+                except Exception as e:
+                    print(f"  REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner)")
+                    if session.logger:
+                        session.logger.log(f"ABLAGE-FEHLER {file_path.name}: {e}")
 
-    def _get_cumulative_ms(self, session_id: str) -> int:
-        """Summe aller bisherigen Segment-Dauern einer Session."""
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute(
-                "SELECT COALESCE(SUM(duration_ms), 0) FROM segments WHERE session_id = ?",
-                (session_id,))
-            return c.fetchone()[0]
+        session.ablage_tasks.append(asyncio.create_task(ablegen()))
+
+    async def _ablage_abwarten(self, session: RecordingSession):
+        if session.ablage_tasks:
+            await asyncio.gather(*session.ablage_tasks, return_exceptions=True)
+            session.ablage_tasks.clear()
 
     async def _monitor_process(self, session: RecordingSession):
         """Ueberwacht FFmpeg-Prozess: Stall-Detection + Disk-Space.
@@ -637,11 +631,11 @@ class RecorderManager:
                         if returncode != 0:
                             print(f"REC abgebrochen: {session.id} (exit {returncode})")
                             log.log(f"FFMPEG EXIT {returncode}")
-                            self._finalize_session(session, "failed")
+                            await asyncio.shield(self._abschliessen(session, "failed"))
                         else:
                             print(f"REC Stream beendet: {session.id}")
                             log.log("FFMPEG EXIT 0 (Stream beendet)")
-                            self._finalize_session(session, "completed")
+                            await asyncio.shield(self._abschliessen(session, "completed"))
                     return
 
                 except asyncio.TimeoutError:
@@ -703,12 +697,12 @@ class RecorderManager:
                         if session.process.returncode is None:
                             session.process.kill()
                             await session.process.wait()
-                        self._finalize_session(session, "stalled")
+                        await asyncio.shield(self._abschliessen(session, "stalled"))
                         return
 
                 # --- Disk-Space pruefen ---
                 try:
-                    rec_dir = get_radio_recordings_dir()
+                    rec_dir = get_arbeit_dir("aufnahmen")
                     stat = shutil.disk_usage(str(rec_dir))
                     free_mb = stat.free / (1024 * 1024)
                     if free_mb < MIN_FREE_DISK_MB:
@@ -724,7 +718,7 @@ class RecorderManager:
                             except asyncio.TimeoutError:
                                 session.process.kill()
                                 await session.process.wait()
-                        self._finalize_session(session, "disk_full")
+                        await asyncio.shield(self._abschliessen(session, "disk_full"))
                         return
                 except Exception:
                     pass
@@ -736,7 +730,7 @@ class RecorderManager:
                     elapsed_min = session.duration / 60
                     disk_info = ""
                     try:
-                        _s = shutil.disk_usage(str(get_radio_recordings_dir()))
+                        _s = shutil.disk_usage(str(get_arbeit_dir("aufnahmen")))
                         disk_info = f", Disk {_s.free/1024/1024:.0f}MB frei"
                     except Exception:
                         pass
@@ -770,32 +764,29 @@ class RecorderManager:
             "rating": rating
         })
 
-    def _finalize_session(self, session: RecordingSession, status: str,
-                          real_duration: float = 0):
-        """Finalisiert Session in DB."""
-        end_time = datetime.now()
-        duration = real_duration if real_duration > 0 else session.duration
-        file_size = session.file_size
+    async def _abschliessen(self, session: RecordingSession, status: str,
+                            real_duration: float = 0):
+        """Aufnahme abschließen: offene Stücke und Titelliste ablegen, Arbeitsordner räumen, DB finalisieren.
+        Was sich nicht ablegen lässt, bleibt im Arbeitsordner und wird beim nächsten Start nachgeholt."""
+        if session.abgeschlossen:
+            return
+        session.abgeschlossen = True
+        if self.active_session and self.active_session.id == session.id:
+            self.active_session = None
 
-        # meta_file_path bereinigen: NULL setzen wenn Datei nicht existiert
+        # Laufendes Stück (bei Abbruch, Stillstand, vollem Speicher) mit seinem Titel ablegen
+        rest = session.current_segment_file
+        if rest and rest.exists() and rest.stat().st_size > 0:
+            dauer = await probe_duration(rest)
+            if dauer > 0:
+                self._ablegen(session, session.segment_index,
+                              session.current_segment_title or f"Teil {session.segment_index + 1}",
+                              rest, int(dauer * 1000))
+        session.current_segment_file = None
+        await self._ablage_abwarten(session)
+
+        # Ereignisse in die Titelliste
         meta_path = session.meta_file_path
-        if meta_path and not meta_path.exists():
-            meta_path = None
-
-        # Quality-Summary aus Events berechnen
-        quality_json = self._build_quality_json(session) if session.events else None
-
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute('''UPDATE sessions SET
-                end_time = ?, duration = ?, file_size = ?, meta_file_path = ?,
-                status = ?, quality_json = ?
-                WHERE id = ?''',
-                (end_time.isoformat(), duration, file_size,
-                 str(meta_path) if meta_path else None, status,
-                 quality_json, session.id))
-
-        # Events in meta.json ergänzen (falls vorhanden)
         if session.events and meta_path and meta_path.exists():
             try:
                 with open(meta_path, "r", encoding="utf-8") as f:
@@ -806,8 +797,24 @@ class RecorderManager:
             except Exception:
                 pass
 
-        if self.active_session and self.active_session.id == session.id:
-            self.active_session = None
+        try:
+            await aufnahmen.rest_ablegen(session.id, session.session_dir, session.kumuliert_ms)
+        except Exception as e:
+            print(f"  REC Ablage beim Abschluss unvollständig: {e} (wird beim nächsten Start nachgeholt)")
+
+        segmente = aufnahmen.segmente(session.id)
+        if not segmente and status == "completed":
+            status = "empty"
+        duration = real_duration if real_duration > 0 else (
+            sum(s["duration_ms"] or 0 for s in segmente) / 1000.0 or session.duration)
+        quality_json = self._build_quality_json(session) if session.events else None
+        with db_session() as conn:
+            c = conn.cursor()
+            c.execute('''UPDATE sessions SET
+                end_time = ?, duration = ?, file_size = ?, status = ?, quality_json = ?
+                WHERE id = ?''',
+                (datetime.now().isoformat(), duration,
+                 sum(s["file_size"] or 0 for s in segmente), status, quality_json, session.id))
 
     async def stop(self) -> dict:
         """Stoppt aktive Aufnahme.
@@ -870,21 +877,20 @@ class RecorderManager:
         }
 
         if session.live_split:
-            # === Live-Split-Modus ===
-            # Letztes Segment finalisieren (ist noch nicht in DB)
+            # === Live-Split-Modus: letztes Stück ablegen, die anderen sind schon unterwegs ===
             last_file = session.current_segment_file
             if last_file and last_file.exists() and last_file.stat().st_size > 0:
                 duration = await probe_duration(last_file)
                 if duration > 0:
-                    self._register_segment(
+                    self._ablegen(
                         session, session.segment_index,
                         session.current_segment_title or f"Teil {session.segment_index + 1}",
                         last_file, int(duration * 1000)
                     )
+                    session.current_segment_file = None
 
-            total_duration = self._get_cumulative_ms(session.id) / 1000.0
-            self._finalize_session(session, "completed",
-                                   real_duration=total_duration)
+            total_duration = session.kumuliert_ms / 1000.0
+            await self._abschliessen(session, "completed", real_duration=total_duration)
 
             db_seg_count = self._count_segments(session.id)
             result["segments"] = db_seg_count
@@ -894,49 +900,50 @@ class RecorderManager:
             log.log(f"LIVE-SPLIT FERTIG: {total_duration:.0f}s, {db_seg_count} Segmente")
         else:
             # === Fallback: Kein ICY-Titelwechsel erkannt ===
-            # Einzeldatei als ein Segment registrieren
+            # Mit Titelliste nachträglich lokal schneiden, sonst die Einzeldatei als ein Stück ablegen
             seg_file = session.current_segment_file
             if seg_file and seg_file.exists() and seg_file.stat().st_size > 0:
                 real_duration = await probe_duration(seg_file)
                 duration = real_duration if real_duration > 0 else session.duration
                 file_size = seg_file.stat().st_size
 
-                self._finalize_session(session, "completed",
-                                       real_duration=duration)
-
-                # Als einzelnes Segment registrieren
-                self._register_segment(
-                    session, 0,
-                    session.current_segment_title or session.station_name,
-                    seg_file, int(duration * 1000)
-                )
-
-                # Wenn ICY-Metadata vorhanden -> nachtraeglich splitten
+                stuecke = []
                 has_icy = (meta_count > 0 and session.meta_file_path
                            and session.meta_file_path.exists())
                 if has_icy:
                     log.log(f"FALLBACK: Post-hoc Split ({meta_count} ICY-Eintraege)")
                     from .segment_splitter import splitter
                     try:
-                        segments = await splitter.split_session(
-                            session.id, seg_file, session.meta_file_path,
-                            duration, session.file_format
-                        )
-                        if segments:
-                            result["segments"] = len(segments)
-                            print(f"  REC Post-hoc Split: {len(segments)} Segmente")
-                            log.log(f"  Post-hoc Split: {len(segments)} Segmente")
+                        with open(session.meta_file_path, "r", encoding="utf-8") as f:
+                            titelliste = json.load(f)
+                        stuecke = await splitter.nach_titelliste(
+                            seg_file, titelliste, duration, session.file_format,
+                            session.session_dir / "teile")
                     except Exception as e:
                         print(f"  REC Split-Fehler: {e}")
                         log.log(f"  Split-Fehler: {e}")
+                        stuecke = []
+
+                if stuecke:
+                    seg_file.unlink(missing_ok=True)
+                    for i, stueck in enumerate(stuecke):
+                        self._ablegen(session, i, stueck.titel, stueck.datei, stueck.dauer_ms)
+                    print(f"  REC Post-hoc Split: {len(stuecke)} Segmente")
+                    log.log(f"  Post-hoc Split: {len(stuecke)} Segmente")
+                    result["segments"] = len(stuecke)
                 else:
+                    self._ablegen(session, 0,
+                                  session.current_segment_title or session.station_name,
+                                  seg_file, int(duration * 1000))
                     result["segments"] = 1
+                session.current_segment_file = None
+                await self._abschliessen(session, "completed", real_duration=duration)
 
                 result["duration"] = duration
                 result["file_size"] = file_size
             else:
                 log.log("LEER: Keine Audiodaten geschrieben")
-                self._finalize_session(session, "empty")
+                await self._abschliessen(session, "empty")
                 result["duration"] = 0
                 result["file_size"] = 0
                 result["segments"] = 0
@@ -945,7 +952,7 @@ class RecorderManager:
 
         log.log(f"FERTIG: {result.get('duration', 0):.0f}s, "
                 f"{result.get('segments', 0)} Segmente")
-        result["file_path"] = str(session.session_dir)
+        result["file_path"] = self.get_session(session.id)["file_path"]
         return result
 
     def _count_segments(self, session_id: str) -> int:
@@ -968,13 +975,13 @@ class RecorderManager:
         alive = session.process and session.process.returncode is None
 
         if not alive:
-            self._finalize_session(session, "interrupted")
+            asyncio.create_task(self._abschliessen(session, "interrupted"))
             return {"recording": False}
 
         # Disk-Space
         free_mb = None
         try:
-            rec_dir = get_radio_recordings_dir()
+            rec_dir = get_arbeit_dir("aufnahmen")
             stat = shutil.disk_usage(str(rec_dir))
             free_mb = round(stat.free / (1024 * 1024))
         except Exception:
@@ -1013,7 +1020,8 @@ class RecorderManager:
         return status
 
     def get_sessions(self, limit: int = 50) -> list:
-        """Alle Sessions aus DB. Bereinigt verwaiste Eintraege (Datei fehlt)."""
+        """Alle Sessions aus DB. Hängengebliebene 'recording'-Einträge ohne laufende Aufnahme werden 'interrupted'.
+        Fehlende Dateien in der Ablage bereinigt nur `repair` auf Anfrage, nie das Listen."""
 
         with db_session() as conn:
             c = conn.cursor()
@@ -1024,46 +1032,16 @@ class RecorderManager:
                 ORDER BY s.start_time DESC LIMIT ?''', (limit,))
             rows = [dict(row) for row in c.fetchall()]
 
-        orphans = []
-        valid = []
         active_id = self.active_session.id if self.active_session else None
         from .hls_recorder import hls_recorder
         hls_active_id = hls_recorder.active_session.id if hls_recorder.active_session else None
         for row in rows:
-            if row.get("status") == "recording":
-                if row["id"] == active_id or row["id"] == hls_active_id:
-                    valid.append(row)
-                else:
-                    row["status"] = "interrupted"
-                    with db_session() as conn2:
-                        conn2.cursor().execute(
-                            "UPDATE sessions SET status = 'interrupted' WHERE id = ?",
-                            (row["id"],))
-                    valid.append(row)
-                continue
-            fp = row.get("file_path")
-            if fp:
-                p = Path(fp)
-                if not p.exists():
-                    orphans.append(row)
-                else:
-                    valid.append(row)
-            else:
-                valid.append(row)
-
-        if orphans:
-            with db_session() as conn:
-                c = conn.cursor()
-                for orphan in orphans:
-                    c.execute("DELETE FROM sessions WHERE id = ?", (orphan["id"],))
-                    meta = orphan.get("meta_file_path")
-                    if meta:
-                        mp = Path(meta)
-                        if mp.exists():
-                            mp.unlink()
-            print(f"  {len(orphans)} verwaiste Session(s) bereinigt")
-
-        return valid
+            if row.get("status") == "recording" and row["id"] not in (active_id, hls_active_id):
+                row["status"] = "interrupted"
+                with db_session() as conn:
+                    conn.cursor().execute(
+                        "UPDATE sessions SET status = 'interrupted' WHERE id = ?", (row["id"],))
+        return rows
 
     def get_session(self, session_id: str) -> Optional[dict]:
         """Einzelne Session"""
@@ -1074,44 +1052,11 @@ class RecorderManager:
             row = c.fetchone()
             return dict(row) if row else None
 
-    def delete_session(self, session_id: str) -> bool:
-        """Session und Datei/Segmente loeschen"""
-
+    async def delete_session(self, session_id: str) -> bool:
+        """Session löschen: Dateien in den Papierkorb der Ablage, Einträge weg."""
         if self.active_session and self.active_session.id == session_id:
             return False
-
-        session = self.get_session(session_id)
-        if not session:
-            return False
-
-        # Audio-Datei oder Session-Verzeichnis loeschen
-        if session.get("file_path"):
-            file_path = Path(session["file_path"])
-            parent_dir = file_path.parent
-            if file_path.is_dir():
-                shutil.rmtree(file_path, ignore_errors=True)
-            elif file_path.is_file():
-                file_path.unlink()
-
-            # Verwaiste Cache-Dateien (.peaks) zum Session-Prefix aufraeumen
-            session_prefix = file_path.stem
-            if parent_dir.exists():
-                for cache_file in parent_dir.glob(f"{session_prefix}*"):
-                    if cache_file.suffix in (".peaks", ".tmp") and cache_file.is_file():
-                        cache_file.unlink(missing_ok=True)
-
-        # Meta-Datei loeschen
-        if session.get("meta_file_path"):
-            meta_path = Path(session["meta_file_path"])
-            if meta_path.exists():
-                meta_path.unlink()
-
-        # DB-Eintrag loeschen (CASCADE loescht auch segments)
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
-
-        return True
+        return await aufnahmen.sitzung_loeschen(session_id)
 
 
 # Singleton

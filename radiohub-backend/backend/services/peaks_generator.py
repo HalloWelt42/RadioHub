@@ -4,7 +4,7 @@ RadioHub v0.1.1 - Peaks Generator
 Erzeugt Waveform-Peaks aus Audio-Dateien via FFmpeg.
 Berechnet max(abs(sample)) pro 10ms-Fenster aus Full-Rate PCM.
 Ergebnis: 1 Float32 pro 10ms, normalisiert auf [0.0, 1.0].
-Wird als .peaks-Datei gecacht.
+Ergebnis als .peaks-Datei neben der Audio-Datei; services.aufnahmen legt sie in der Ablage ab.
 """
 import asyncio
 import struct
@@ -16,6 +16,17 @@ BYTES_PER_SAMPLE = 4  # float32
 INTERMEDIATE_RATE = 44100  # PCM-Rate für korrekte Peak-Berechnung
 WINDOW_SIZE = INTERMEDIATE_RATE // SAMPLE_RATE  # 441 Samples pro Fenster
 READ_CHUNK = 65536  # 64 KB Leseblöcke aus FFmpeg-Pipe
+
+
+def peaks_bereich(groesse: int, start_sec: float, duration_sec: float) -> tuple[int, int] | None:
+    """Byte-Bereich (start, ende einschließlich) der Peaks für einen Zeitabschnitt einer Wellenform mit `groesse`
+    Bytes; None, wenn der Abschnitt hinter dem Ende liegt."""
+    total_samples = groesse // BYTES_PER_SAMPLE
+    start_sample = max(0, min(int(start_sec * SAMPLE_RATE), total_samples))
+    end_sample = min(start_sample + int(duration_sec * SAMPLE_RATE), total_samples)
+    if end_sample <= start_sample:
+        return None
+    return start_sample * BYTES_PER_SAMPLE, end_sample * BYTES_PER_SAMPLE - 1
 
 
 class PeaksGenerator:
@@ -117,48 +128,6 @@ class PeaksGenerator:
         except Exception as e:
             print(f"  Peaks: Fehler: {e}")
             return None
-
-    def get_peaks_chunk(self, peaks_path: Path, start_sec: float,
-                        duration_sec: float) -> bytes:
-        """Liefert Peaks-Daten für einen Zeitbereich als raw bytes.
-
-        Returns: Raw float32 bytes (Little Endian).
-        """
-        if not peaks_path.exists():
-            return b""
-
-        file_size = peaks_path.stat().st_size
-        total_samples = file_size // BYTES_PER_SAMPLE
-
-        start_sample = int(start_sec * SAMPLE_RATE)
-        num_samples = int(duration_sec * SAMPLE_RATE)
-
-        # Clamp
-        start_sample = max(0, min(start_sample, total_samples))
-        end_sample = min(start_sample + num_samples, total_samples)
-        actual_count = end_sample - start_sample
-
-        if actual_count <= 0:
-            return b""
-
-        offset = start_sample * BYTES_PER_SAMPLE
-        length = actual_count * BYTES_PER_SAMPLE
-
-        with open(peaks_path, "rb") as f:
-            f.seek(offset)
-            return f.read(length)
-
-    def get_total_duration(self, peaks_path: Path) -> float:
-        """Gesamtdauer in Sekunden basierend auf Peaks-Dateigröße."""
-        if not peaks_path.exists():
-            return 0.0
-        total_samples = peaks_path.stat().st_size // BYTES_PER_SAMPLE
-        return total_samples / SAMPLE_RATE
-
-    def has_cache(self, audio_path: Path) -> bool:
-        """Prüft ob Peaks-Cache existiert."""
-        peaks_path = audio_path.with_suffix(".peaks")
-        return peaks_path.exists() and peaks_path.stat().st_size > 0
 
 
 # Singleton

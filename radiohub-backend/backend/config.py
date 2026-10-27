@@ -21,28 +21,11 @@ DATA_DIR = _get_data_dir()
 # Datenbank (Zone: database)
 DB_PATH = get_zone_path("database") / "radiohub.db"
 
-# Aufnahmen
-# RECORDINGS_DIR bleibt als Eltern-Verzeichnis für Sicherheitschecks
-RECORDINGS_DIR = DATA_DIR / "recordings"
-RADIO_RECORDINGS_DIR = get_zone_path("recordings")
-PODCAST_RECORDINGS_DIR = get_zone_path("podcasts")
-
 # Cache (Zone: cache)
 CACHE_DIR = get_zone_path("cache")
 
-
-def get_radio_recordings_dir() -> Path:
-    """Radio-Aufnahmen Verzeichnis (aus Storage-Zone)"""
-    path = get_zone_path("recordings")
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-def get_podcast_recordings_dir() -> Path:
-    """Podcast-Aufnahmen Verzeichnis (aus Storage-Zone)"""
-    path = get_zone_path("podcasts")
-    path.mkdir(parents=True, exist_ok=True)
-    return path
+# Aufnahmen, Podcast-Folgen und alles, was daraus entsteht, liegen in der Ablage (Kellerwolke, siehe backend/ablage).
+# Lokal bleiben nur Zwischenstände im Arbeitsordner (laufende Aufnahme, Download, Arbeitskopie beim Schneiden).
 
 
 def get_cache_dir() -> Path:
@@ -52,26 +35,26 @@ def get_cache_dir() -> Path:
     return path
 
 
-def get_active_recording_dir() -> tuple[Path, int | None]:
-    """Aktives Aufnahme-Verzeichnis (Ordner oder Root).
-    Returns: (Pfad, folder_id oder None)"""
+def get_arbeit_dir(*teile: str) -> Path:
+    """Arbeitsordner für Zwischenstände (im Cache), etwa get_arbeit_dir("aufnahmen", session_id)."""
+    path = get_cache_dir().joinpath("arbeit", *teile)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def get_active_recording_folder() -> tuple[str | None, int | None]:
+    """Aktiver Aufnahmeordner: (Name, folder_id) oder (None, None) für die Wurzel der Aufnahmen."""
     import sqlite3
-    rec_dir = get_zone_path("recordings")
     try:
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        c.execute("SELECT id, path FROM recording_folders WHERE is_active = 1 LIMIT 1")
-        row = c.fetchone()
+        row = conn.execute("SELECT id, name FROM recording_folders WHERE is_active = 1 LIMIT 1").fetchone()
         conn.close()
         if row:
-            active_dir = rec_dir / row["path"]
-            active_dir.mkdir(parents=True, exist_ok=True)
-            return active_dir, row["id"]
-    except Exception:
+            return row["name"], row["id"]
+    except sqlite3.Error:
         pass
-    rec_dir.mkdir(parents=True, exist_ok=True)
-    return rec_dir, None
+    return None, None
 
 
 # Zentrale Audio-Konstanten

@@ -8,10 +8,9 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
-from pathlib import Path
 
+from ..ablage.wiedergabe import ausliefern
 from ..services.podcast import podcast_service
-from ..config import AUDIO_MIMETYPES
 
 router = APIRouter(prefix="/api/podcasts", tags=["podcasts"])
 
@@ -299,24 +298,12 @@ async def get_episode_image(episode_id: int):
 # === Episode-Playback ===
 
 @router.get("/episodes/{episode_id}/play")
-async def play_episode(episode_id: int):
-    """Heruntergeladene Episode streamen"""
+async def play_episode(episode_id: int, request: Request):
+    """Heruntergeladene Episode aus der Ablage streamen (mit Range zum Spulen)"""
     path = podcast_service.get_episode_audio_path(episode_id)
     if not path:
-        raise HTTPException(404, "Episode nicht lokal vorhanden")
-
-    ext = path.suffix.lower()
-    media_type = AUDIO_MIMETYPES.get(ext, "audio/mpeg")
-
-    return FileResponse(
-        path=path,
-        media_type=media_type,
-        filename=path.name,
-        headers={
-            "Accept-Ranges": "bytes",
-            "Content-Length": str(path.stat().st_size),
-        }
-    )
+        raise HTTPException(404, "Episode nicht heruntergeladen")
+    return await ausliefern(path, request)
 
 
 @router.get("/episodes/{episode_id}/stream")

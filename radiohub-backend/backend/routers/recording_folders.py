@@ -2,16 +2,15 @@
 RadioHub - Recording Folders Router
 
 Ordner für Aufnahmen: CRUD, Aktivierung, Session-Verschiebung.
+Ein Aufnahmeordner ist in der Ablage `Aufnahmen/<Name>/`; Dateiarbeit über services.aufnahmen.
 """
-import re
-import shutil
-from pathlib import Path
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from ..ablage import orte
 from ..database import db_session
-from ..config import RADIO_RECORDINGS_DIR
+from ..services.aufnahmen import aufnahmen
 
 router = APIRouter(prefix="/api/recording/folders", tags=["recording-folders"])
 
@@ -27,13 +26,6 @@ class FolderUpdate(BaseModel):
 
 class MoveSessionRequest(BaseModel):
     folder_id: Optional[int] = None
-
-
-def _safe_path(name: str) -> str:
-    """Ordnername zu sicherem Dateisystem-Pfad."""
-    safe = re.sub(r'[<>:"/\\|?*]', '_', name.strip())
-    safe = re.sub(r'\.{2,}', '_', safe)
-    return safe[:100] or 'ordner'
 
 
 # === CRUD ===
@@ -59,9 +51,8 @@ async def create_folder(body: FolderCreate):
     if not name:
         raise HTTPException(400, "Ordnername darf nicht leer sein")
 
-    safe_path = _safe_path(name)
-    folder_dir = RADIO_RECORDINGS_DIR / safe_path
-    folder_dir.mkdir(parents=True, exist_ok=True)
+    # Der Ordner entsteht in der Ablage mit der ersten Aufnahme darin
+    safe_path = orte.eigener_ordner(name)
 
     with db_session() as conn:
         c = conn.cursor()
@@ -93,18 +84,13 @@ async def delete_folder(folder_id: int):
         if count > 0:
             raise HTTPException(400, f"Ordner enthält noch {count} Aufnahmen")
 
-        # Physisches Verzeichnis löschen (verwaiste leere Unterordner mit aufräumen)
-        folder_dir = RADIO_RECORDINGS_DIR / folder["path"]
-        if folder_dir.exists():
-            # Cache-Suffixe die beim Löschen ignoriert/aufgeräumt werden dürfen
-            cache_suffixes = {".peaks", ".peaks.tmp"}
-            # Prüfen ob noch echte Dateien vorhanden sind (Cache-Dateien ignorieren)
-            real_files = [f for f in folder_dir.rglob("*") if f.is_file() and f.suffix not in cache_suffixes]
-            if real_files:
-                raise HTTPException(400, f"Ordner enthält noch {len(real_files)} Dateien auf der Festplatte")
-            # Nur Cache-Dateien und leere Unterordner -> komplett aufräumen
-            shutil.rmtree(folder_dir, ignore_errors=True)
+        name = folder["name"]
 
+    # Leeren Ordner in der Ablage in den Papierkorb (mit Dateien darin bleibt alles)
+    await aufnahmen.ordner_loeschen(name)
+
+    with db_session() as conn:
+        c = conn.cursor()
         c.execute("DELETE FROM recording_folders WHERE id = ?", (folder_id,))
         conn.commit()
 
@@ -156,40 +142,19 @@ async def update_folder(folder_id: int, body: FolderUpdate):
             new_name = body.name.strip()
             if not new_name:
                 raise HTTPException(400, "Ordnername darf nicht leer sein")
-
-            old_path = folder["path"]
-            new_path = _safe_path(new_name)
-
-            # Physisches Verzeichnis umbenennen
-            old_dir = RADIO_RECORDINGS_DIR / old_path
-            new_dir = RADIO_RECORDINGS_DIR / new_path
-            if old_dir.exists() and old_path != new_path:
-                if new_dir.exists():
-                    raise HTTPException(409, "Zielordner existiert bereits")
-                old_dir.rename(new_dir)
-
-                # DB-Pfade in Sessions und Segmenten aktualisieren
-                old_prefix = str(RADIO_RECORDINGS_DIR / old_path)
-                new_prefix = str(RADIO_RECORDINGS_DIR / new_path)
-                c.execute(
-                    "UPDATE sessions SET file_path = REPLACE(file_path, ?, ?) WHERE folder_id = ?",
-                    (old_prefix, new_prefix, folder_id)
-                )
-                c.execute(
-                    "UPDATE sessions SET meta_file_path = REPLACE(meta_file_path, ?, ?) WHERE folder_id = ?",
-                    (old_prefix, new_prefix, folder_id)
-                )
-                # Segmente der betroffenen Sessions
-                c.execute("""
-                    UPDATE segments SET file_path = REPLACE(file_path, ?, ?)
-                    WHERE session_id IN (SELECT id FROM sessions WHERE folder_id = ?)
-                """, (old_prefix, new_prefix, folder_id))
-
+            c.execute("SELECT 1 FROM recording_folders WHERE name = ? AND id != ?", (new_name, folder_id))
+            if c.fetchone():
+                raise HTTPException(409, "Ordnername existiert bereits")
             updates["name"] = new_name
-            updates["path"] = new_path
+            updates["path"] = orte.eigener_ordner(new_name)
+            alter_name = folder["name"]
 
         if body.sort_order is not None:
             updates["sort_order"] = body.sort_order
+
+        if "name" in updates:
+            # Ordner in der Ablage umbenennen, Pfade der Aufnahmen darin folgen
+            await aufnahmen.ordner_umbenennen(folder_id, alter_name, updates["name"])
 
         if updates:
             set_clause = ", ".join(f"{k} = ?" for k in updates)
@@ -206,71 +171,13 @@ async def update_folder(folder_id: int, body: FolderUpdate):
 
 @router.put("/move-session/{session_id}")
 async def move_session(session_id: str, body: MoveSessionRequest):
-    """Session in einen Ordner verschieben (oder zurück zu Root)."""
-    with db_session() as conn:
-        c = conn.cursor()
-
-        # Session laden
-        c.execute("SELECT * FROM sessions WHERE id = ?", (session_id,))
-        session = c.fetchone()
-        if not session:
-            raise HTTPException(404, "Session nicht gefunden")
-        if session["status"] == "recording":
-            raise HTTPException(400, "Aktive Aufnahme kann nicht verschoben werden")
-
-        # Zielordner bestimmen
-        target_dir = RADIO_RECORDINGS_DIR
-        if body.folder_id is not None:
-            c.execute("SELECT * FROM recording_folders WHERE id = ?", (body.folder_id,))
-            folder = c.fetchone()
-            if not folder:
-                raise HTTPException(404, "Zielordner nicht gefunden")
-            target_dir = RADIO_RECORDINGS_DIR / folder["path"]
-            target_dir.mkdir(parents=True, exist_ok=True)
-
-        # Quellpfad bestimmen
-        src_path = Path(session["file_path"])
-        if not src_path.exists():
-            raise HTTPException(404, "Quelldatei/Verzeichnis nicht gefunden")
-
-        # Zielname = gleicher Basename
-        dst_path = target_dir / src_path.name
-        if dst_path == src_path:
-            # Schon am richtigen Ort, nur folder_id updaten
-            c.execute("UPDATE sessions SET folder_id = ? WHERE id = ?", (body.folder_id, session_id))
-            conn.commit()
-            return {"success": True, "moved": False}
-
-        if dst_path.exists():
-            raise HTTPException(409, "Ziel existiert bereits")
-
-        # Physisch verschieben
-        shutil.move(str(src_path), str(dst_path))
-
-        # Meta-Datei verschieben (falls vorhanden)
-        meta_path = Path(session["meta_file_path"]) if session["meta_file_path"] else None
-        new_meta_path = None
-        if meta_path and meta_path.exists():
-            new_meta = target_dir / meta_path.name
-            shutil.move(str(meta_path), str(new_meta))
-            new_meta_path = str(new_meta)
-
-        # DB-Pfade aktualisieren
-        old_prefix = str(src_path)
-        new_prefix = str(dst_path)
-
-        c.execute(
-            "UPDATE sessions SET file_path = ?, meta_file_path = ?, folder_id = ? WHERE id = ?",
-            (str(dst_path), new_meta_path or session["meta_file_path"], body.folder_id, session_id)
-        )
-
-        # Segment-Pfade aktualisieren (bei segmentierten Sessions ist file_path ein Verzeichnis)
-        if src_path.is_dir() or dst_path.is_dir():
-            c.execute(
-                "UPDATE segments SET file_path = REPLACE(file_path, ?, ?) WHERE session_id = ?",
-                (old_prefix, new_prefix, session_id)
-            )
-
-        conn.commit()
-
-    return {"success": True, "moved": True}
+    """Session in einen Ordner verschieben (oder zurück zu Root); die Dateien ziehen in der Ablage mit."""
+    ordner_name = None
+    if body.folder_id is not None:
+        with db_session() as conn:
+            folder = conn.execute("SELECT * FROM recording_folders WHERE id = ?", (body.folder_id,)).fetchone()
+        if not folder:
+            raise HTTPException(404, "Zielordner nicht gefunden")
+        ordner_name = folder["name"]
+    moved = await aufnahmen.sitzung_verschieben(session_id, ordner_name, body.folder_id)
+    return {"success": True, "moved": moved}

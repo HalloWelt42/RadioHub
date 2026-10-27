@@ -15,16 +15,15 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree as ET
 
+from ..ablage import AblageFehler, ablage, orte
 from ..database import db_session
-from ..config import get_podcast_recordings_dir, DATA_DIR, PODCAST_RECORDINGS_DIR, AUDIO_MIMETYPES
+from ..config import DATA_DIR, AUDIO_MIMETYPES, get_arbeit_dir, get_cache_dir
 from .config_service import config_service
 
 
-def _sanitize_filename(name: str) -> str:
-    """Dateinamen-sichere Version eines Strings"""
-    name = re.sub(r'[^\w\s\-.]', '', name)
-    name = re.sub(r'\s+', '_', name.strip())
-    return name[:80] or "untitled"
+def _bilder_dir(podcast_id: int) -> Path:
+    """Cover sind Zwischenspeicher (jederzeit neu ladbar) und liegen im Cache, nicht in der Ablage."""
+    return get_cache_dir() / "podcast-bilder" / str(podcast_id)
 
 
 @dataclass
@@ -573,7 +572,7 @@ class PodcastService:
         if not url:
             return None
 
-        image_dir = PODCAST_RECORDINGS_DIR / "images" / str(podcast_id)
+        image_dir = _bilder_dir(podcast_id)
         image_dir.mkdir(parents=True, exist_ok=True)
 
         filename = "cover.jpg" if not episode_id else f"ep_{episode_id}.jpg"
@@ -612,7 +611,7 @@ class PodcastService:
 
     def get_image_path(self, podcast_id: int, episode_id: int = None) -> Optional[Path]:
         """Lokalen Bild-Pfad ermitteln"""
-        image_dir = PODCAST_RECORDINGS_DIR / "images" / str(podcast_id)
+        image_dir = _bilder_dir(podcast_id)
 
         if episode_id:
             # Episode-Bild suchen
@@ -634,7 +633,8 @@ class PodcastService:
     # =========================================================================
 
     async def download_episode(self, episode_id: int) -> dict:
-        """Episode herunterladen"""
+        """Episode herunterladen: in den Arbeitsordner laden, in der Ablage unter Podcasts/<Abo>/ ablegen,
+        lokal löschen. local_path ist der Pfad in der Ablage."""
         if episode_id in self._downloading:
             return {"success": False, "error": "Download läuft bereits"}
 
@@ -642,18 +642,16 @@ class PodcastService:
         if not episode:
             return {"success": False, "error": "Episode nicht gefunden"}
 
-        if episode.get("is_downloaded") and episode.get("local_path"):
-            local = Path(episode["local_path"])
-            if local.exists():
-                return {"success": True, "already_downloaded": True, "path": str(local)}
+        try:
+            if episode.get("is_downloaded") and episode.get("local_path"):
+                if await ablage().eintrag(episode["local_path"]) is not None:
+                    return {"success": True, "already_downloaded": True, "path": episode["local_path"]}
+        except AblageFehler as e:
+            return {"success": False, "error": str(e)}
 
         audio_url = episode.get("audio_url")
         if not audio_url:
             return {"success": False, "error": "Keine Audio-URL"}
-
-        # Zielverzeichnis
-        audio_dir = PODCAST_RECORDINGS_DIR / "audio" / str(episode["podcast_id"])
-        audio_dir.mkdir(parents=True, exist_ok=True)
 
         # Dateiendung aus URL ableiten
         url_path = audio_url.split("?")[0]
@@ -661,12 +659,11 @@ class PodcastService:
         if ext not in AUDIO_MIMETYPES:
             ext = ".mp3"
 
-        safe_title = _sanitize_filename(episode.get("title", "episode"))
-        filename = f"{episode_id}_{safe_title}{ext}"
-        target = audio_dir / filename
+        arbeit = get_arbeit_dir("downloads")
+        target = arbeit / f"{episode_id}{ext}"
 
-        # Speicherplatz prüfen
-        total, used, free = shutil.disk_usage(DATA_DIR)
+        # Speicherplatz für den Zwischenstand prüfen
+        total, used, free = shutil.disk_usage(arbeit)
         if free < 100 * 1024 * 1024:  # 100 MB Minimum
             return {"success": False, "error": "Nicht genug Speicherplatz"}
 
@@ -683,21 +680,23 @@ class PodcastService:
                         f.write(chunk)
                         file_size += len(chunk)
 
-            # DB aktualisieren
+            ziel = await ablage().freier_pfad(orte.folge(
+                episode.get("podcast_title") or "", episode.get("title") or "",
+                episode.get("published_at"), ext))
+            eintrag = await ablage().ablegen(ziel, target)
+
             with db_session() as conn:
                 c = conn.cursor()
                 c.execute('''UPDATE podcast_episodes
                     SET is_downloaded = 1, local_path = ?, file_size = ?
-                    WHERE id = ?''', (str(target), file_size, episode_id))
+                    WHERE id = ?''', (ziel, eintrag.groesse, episode_id))
 
-            return {"success": True, "path": str(target), "size": file_size}
+            return {"success": True, "path": ziel, "size": eintrag.groesse}
 
         except Exception as e:
-            # Aufräumen bei Fehler
-            if target.exists():
-                target.unlink(missing_ok=True)
             return {"success": False, "error": str(e)}
         finally:
+            target.unlink(missing_ok=True)
             self._downloading.discard(episode_id)
 
     async def download_episodes_batch(self, episode_ids: List[int]) -> dict:
@@ -723,9 +722,7 @@ class PodcastService:
             return False
 
         if episode.get("local_path"):
-            path = Path(episode["local_path"])
-            if path.exists():
-                path.unlink(missing_ok=True)
+            await ablage().loeschen(episode["local_path"])  # Papierkorb der Ablage
 
         with db_session() as conn:
             c = conn.cursor()
@@ -737,18 +734,14 @@ class PodcastService:
 
         return True
 
-    def get_episode_audio_path(self, episode_id: int) -> Optional[Path]:
-        """Lokalen Audio-Pfad einer Episode ermitteln"""
+    def get_episode_audio_path(self, episode_id: int) -> Optional[str]:
+        """Pfad der heruntergeladenen Episode in der Ablage (None, wenn nicht heruntergeladen)"""
         with db_session() as conn:
             c = conn.cursor()
             c.execute("SELECT local_path FROM podcast_episodes WHERE id = ? AND is_downloaded = 1",
                       (episode_id,))
             row = c.fetchone()
-            if row and row[0]:
-                path = Path(row[0])
-                if path.exists():
-                    return path
-        return None
+            return row[0] if row and row[0] else None
 
     async def _auto_download_new(self, podcast_id: int):
         """Neue (ungehörte, nicht heruntergeladene) Episoden automatisch laden"""
@@ -770,20 +763,15 @@ class PodcastService:
             where += " AND podcast_id = ?"
             params.append(podcast_id)
 
-        deleted = 0
         with db_session() as conn:
-            c = conn.cursor()
-            c.execute(f"SELECT id, local_path FROM podcast_episodes {where}", params)
-            rows = c.fetchall()
+            rows = conn.execute(f"SELECT id, local_path FROM podcast_episodes {where}", params).fetchall()
 
-            for row in rows:
-                if row[1]:
-                    path = Path(row[1])
-                    if path.exists():
-                        path.unlink(missing_ok=True)
-                        deleted += 1
-
-                c.execute('''UPDATE podcast_episodes
+        deleted = 0
+        for row in rows:
+            if row[1] and await ablage().loeschen(row[1]):  # Papierkorb der Ablage
+                deleted += 1
+            with db_session() as conn:
+                conn.execute('''UPDATE podcast_episodes
                     SET is_downloaded = 0, local_path = NULL, file_size = 0
                     WHERE id = ?''', (row[0],))
 
@@ -873,7 +861,7 @@ class PodcastService:
     # =========================================================================
 
     async def get_stats(self) -> dict:
-        """Umfassende Podcast-Statistiken"""
+        """Umfassende Podcast-Statistiken (Speicher: der lokale für Zwischenstände)"""
         total, used, free = shutil.disk_usage(DATA_DIR)
 
         with db_session() as conn:

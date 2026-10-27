@@ -1,5 +1,5 @@
 """
-RadioHub - Audio Processing Router
+RadioHub v0.4.0 - Audio Processing Router
 
 Endpunkte für Audio-Nachbearbeitung:
 - Normalisierung (EBU R128)
@@ -7,49 +7,24 @@ Endpunkte für Audio-Nachbearbeitung:
 - Mono-Konvertierung
 - Audio-Info
 - Qualitäts-Presets
+
+Bearbeitet werden lokale Arbeitskopien der Stücke; das Ergebnis geht als neue Version (gleiches Format) oder als
+neue Datei (anderes Format, die alte in den Papierkorb) zurück in die Ablage (services.aufnahmen).
 """
 
 import asyncio
 import json
+from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from pathlib import Path
-from typing import Optional
 
 from ..services.audio_processor import audio_processor
-from ..services.recorder import rec_manager
-from ..services.segment_splitter import splitter
-from ..config import get_cache_dir
+from ..services.aufnahmen import AufnahmeFehler, aufnahmen
 
 router = APIRouter(prefix="/api/recording", tags=["audio-processing"])
-
-
-def _resolve_audio_path(session: dict, session_id: str) -> Path:
-    """Audio-Pfad einer Session auflösen (auch segmentierte)."""
-    file_path = session.get("file_path", "")
-    if not file_path:
-        raise HTTPException(400, "Keine Audio-Datei vorhanden")
-
-    audio_file = Path(file_path)
-
-    if audio_file.is_dir():
-        # Segmentierte Session -> zusammengebaute Datei aus Cache nutzen
-        segments = splitter.get_segments(session_id)
-        if not segments:
-            raise HTTPException(404, "Keine Segmente gefunden")
-        ext = Path(segments[0]["file_path"]).suffix
-        cache_dir = get_cache_dir()
-        cached = cache_dir / f"{session_id}_peaks_source{ext}"
-        if cached.exists() and cached.stat().st_size > 0:
-            return cached
-        raise HTTPException(400, "Session ist segmentiert. Bitte zuerst zusammenbauen.")
-
-    if not audio_file.is_file():
-        raise HTTPException(400, "Audio-Datei nicht gefunden")
-
-    return audio_file
 
 
 class ConvertRequest(BaseModel):
@@ -64,190 +39,111 @@ class NormalizeRequest(BaseModel):
     segment_ids: Optional[list[int]] = None  # None = alle
 
 
+def _sse(session_id: str, segment_ids: Optional[list[int]], bearbeitung, start_info: dict) -> StreamingResponse:
+    """Stücke bearbeiten und den Fortschritt als SSE-Strom melden (start, progress, done oder error)."""
+    queue: asyncio.Queue = asyncio.Queue()
+
+    def on_progress(step, total, message):
+        queue.put_nowait({"type": "progress", "step": step, "total": total, "message": message})
+
+    async def laufen():
+        try:
+            ergebnis = await aufnahmen.stuecke_bearbeiten(session_id, segment_ids,
+                                                          lambda pfade: bearbeitung(pfade, on_progress))
+            queue.put_nowait({"type": "done", "success": True, "segments": len(ergebnis)})
+        except Exception as e:
+            queue.put_nowait({"type": "error", "message": str(e)})
+
+    async def strom():
+        yield f"data: {json.dumps({'type': 'start', **start_info})}\n\n"
+        task = asyncio.create_task(laufen())
+        while True:
+            try:
+                evt = await asyncio.wait_for(queue.get(), timeout=1.0)
+            except asyncio.TimeoutError:
+                if task.done() and queue.empty():
+                    break
+                continue
+            yield f"data: {json.dumps(evt)}\n\n"
+            if evt["type"] in ("done", "error"):
+                break
+        await task
+
+    return StreamingResponse(strom(), media_type="text/event-stream")
+
+
+def _auswahl(session_id: str, segment_ids: Optional[list[int]]) -> list[dict]:
+    """Prüft vor dem Strom, dass es etwas zu bearbeiten gibt (Fehler als HTTP-Status statt im Strom)."""
+    sitzung = aufnahmen.sitzung(session_id)
+    if not sitzung:
+        raise HTTPException(404, "Session nicht gefunden")
+    if sitzung.get("status") == "recording":
+        raise HTTPException(400, "Aufnahme läuft noch")
+    segmente = [s for s in aufnahmen.segmente(session_id) if segment_ids is None or s["id"] in segment_ids]
+    if not segmente:
+        raise HTTPException(404, "Keine Segment-Dateien gefunden")
+    return segmente
+
+
 @router.get("/sessions/{session_id}/audio-info")
 async def get_audio_info(session_id: str):
-    """Audio-Metadaten einer Session auslesen."""
-    session = rec_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(404, "Session nicht gefunden")
-
-    audio_file = _resolve_audio_path(session, session_id)
-    info = await audio_processor.get_audio_info(audio_file)
+    """Audio-Metadaten einer Session auslesen (aus der Arbeitskopie)."""
+    info = await audio_processor.get_audio_info(await aufnahmen.arbeitskopie(session_id))
     if not info:
         raise HTTPException(500, "Audio-Info konnte nicht gelesen werden")
-
     return info
 
 
 @router.post("/sessions/{session_id}/normalize")
 async def normalize_session(session_id: str, req: Optional[NormalizeRequest] = None):
-    """Audio-Normalisierung (EBU R128) auf eine Session anwenden.
-
-    Bei segmentierten Sessions: Gemeinsame LUFS-Messung, gleicher Gain auf alle Segmente.
-    Response ist SSE-Stream mit Fortschritt und Endergebnis.
-    """
-    session = rec_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(404, "Session nicht gefunden")
-
-    if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme läuft noch")
-
+    """Audio-Normalisierung (EBU R128). Alle Stücke: gemeinsame LUFS-Messung, gleicher Gain; Auswahl: jedes Stück
+    für sich. Response ist SSE-Stream mit Fortschritt und Endergebnis."""
     target_lufs = req.target_lufs if req else -16.0
     segment_ids = req.segment_ids if req else None
+    segmente = _auswahl(session_id, segment_ids)
+    total_duration = sum(s.get("duration_ms") or 0 for s in segmente) / 1000
 
-    # Segmente prüfen
-    segments = splitter.get_segments(session_id)
+    async def bearbeitung(pfade: list[Path], on_progress) -> list[Path]:
+        if segment_ids is None:
+            return await audio_processor.normalize_segments(pfade, target_lufs, on_progress=on_progress)
+        fertig = []
+        for i, pfad in enumerate(pfade):
+            on_progress(i + 1, len(pfade), f"Segment {i + 1}/{len(pfade)}...")
+            fertig.append(await audio_processor.normalize(pfad, target_lufs))
+        return fertig
 
-    if segments:
-        # Optional: nur bestimmte Segmente
-        if segment_ids is not None:
-            segments = [s for s in segments if s.get("id") in segment_ids]
-
-        seg_paths = [Path(s["file_path"]) for s in segments if Path(s["file_path"]).is_file()]
-        if not seg_paths:
-            raise HTTPException(404, "Keine Segment-Dateien gefunden")
-
-        # Bei Teilauswahl: Jedes Segment einzeln normalisieren (eigene LUFS)
-        # Bei alle: Gemeinsame LUFS-Messung
-        is_partial = segment_ids is not None
-
-        total_duration = sum(s.get("duration_ms", 0) for s in segments) / 1000
-
-        async def sse_stream():
-            queue = asyncio.Queue()
-
-            def on_progress(step, total, message):
-                queue.put_nowait({"type": "progress", "step": step, "total": total, "message": message})
-
-            async def run_normalize():
-                try:
-                    if is_partial:
-                        # Einzelne Segmente: jeweils eigene LUFS-Analyse
-                        results = []
-                        for i, seg_path in enumerate(seg_paths):
-                            on_progress(i + 1, len(seg_paths),
-                                        f"Segment {i + 1}/{len(seg_paths)}...")
-                            result = await audio_processor.normalize(seg_path, target_lufs)
-                            results.append(result)
-                        queue.put_nowait({"type": "done", "success": True,
-                                          "segments": len(results)})
-                    else:
-                        # Alle: gemeinsame LUFS
-                        results = await audio_processor.normalize_segments(
-                            seg_paths, target_lufs, on_progress=on_progress
-                        )
-                        queue.put_nowait({"type": "done", "success": True,
-                                          "segments": len(results)})
-                except Exception as e:
-                    queue.put_nowait({"type": "error", "message": str(e)})
-
-            est_seconds = int(total_duration * 2)
-            yield f"data: {json.dumps({'type': 'start', 'segments': len(seg_paths), 'estimated_seconds': est_seconds})}\n\n"
-
-            task = asyncio.create_task(run_normalize())
-
-            while not task.done() or not queue.empty():
-                try:
-                    evt = await asyncio.wait_for(queue.get(), timeout=1.0)
-                    yield f"data: {json.dumps(evt)}\n\n"
-                    if evt["type"] in ("done", "error"):
-                        break
-                except asyncio.TimeoutError:
-                    pass
-
-            await task
-
-        return StreamingResponse(sse_stream(), media_type="text/event-stream")
-
-    # Einzelne Datei (nicht segmentiert)
-    audio_file = _resolve_audio_path(session, session_id)
-
-    try:
-        result = await audio_processor.normalize(audio_file, target_lufs)
-        info = await audio_processor.get_audio_info(result)
-        return {"success": True, "path": str(result), "info": info}
-    except RuntimeError as e:
-        raise HTTPException(500, str(e))
+    return _sse(session_id, segment_ids, bearbeitung,
+                {"segments": len(segmente), "estimated_seconds": int(total_duration * 2)})
 
 
 @router.post("/sessions/{session_id}/convert")
 async def convert_session(session_id: str, req: ConvertRequest):
-    """Audio konvertieren -- einzelne Datei oder alle Segmente.
+    """Stücke in ein anderes Format umwandeln. Response ist SSE-Stream mit Fortschritt."""
+    segmente = _auswahl(session_id, req.segment_ids)
 
-    Bei segmentierten Sessions: Jedes Segment einzeln konvertieren.
-    Response ist SSE-Stream mit Fortschritt.
-    """
-    session = rec_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(404, "Session nicht gefunden")
+    async def bearbeitung(pfade: list[Path], on_progress) -> list[Path]:
+        fertig = []
+        for i, pfad in enumerate(pfade):
+            on_progress(i + 1, len(pfade), f"Segment {i + 1}/{len(pfade)}...")
+            fertig.append(await audio_processor.convert(pfad, req.format, req.bitrate, req.mono))
+        return fertig
 
-    if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme läuft noch")
-
-    segments = splitter.get_segments(session_id)
-
-    if segments:
-        # Optional: nur bestimmte Segmente
-        if req.segment_ids is not None:
-            segments = [s for s in segments if s.get("id") in req.segment_ids]
-
-        seg_paths = [Path(s["file_path"]) for s in segments if Path(s["file_path"]).is_file()]
-        if not seg_paths:
-            raise HTTPException(404, "Keine Segment-Dateien gefunden")
-
-        async def sse_stream():
-            total = len(seg_paths)
-            yield f"data: {json.dumps({'type': 'start', 'segments': total})}\n\n"
-
-            for i, seg_path in enumerate(seg_paths):
-                yield f"data: {json.dumps({'type': 'progress', 'step': i + 1, 'total': total, 'message': f'Segment {i + 1}/{total}...'})}\n\n"
-                try:
-                    await audio_processor.convert(seg_path, req.format, req.bitrate, req.mono)
-                except Exception as e:
-                    yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
-                    return
-
-            yield f"data: {json.dumps({'type': 'done', 'success': True, 'segments': total})}\n\n"
-
-        return StreamingResponse(sse_stream(), media_type="text/event-stream")
-
-    # Einzelne Datei
-    audio_file = _resolve_audio_path(session, session_id)
-
-    try:
-        result = await audio_processor.convert(
-            audio_file, req.format, req.bitrate, req.mono
-        )
-        info = await audio_processor.get_audio_info(result)
-        return {
-            "success": True,
-            "path": str(result),
-            "new_format": req.format,
-            "info": info,
-        }
-    except (RuntimeError, ValueError) as e:
-        raise HTTPException(500, str(e))
+    return _sse(session_id, req.segment_ids, bearbeitung, {"segments": len(segmente)})
 
 
 @router.post("/sessions/{session_id}/to-mono")
 async def to_mono_session(session_id: str):
-    """Stereo -> Mono konvertieren."""
-    session = rec_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(404, "Session nicht gefunden")
+    """Stereo -> Mono für alle Stücke."""
+    _auswahl(session_id, None)
 
-    if session.get("status") == "recording":
-        raise HTTPException(400, "Aufnahme läuft noch")
-
-    audio_file = _resolve_audio_path(session, session_id)
+    async def bearbeitung(pfade: list[Path]) -> list[Path]:
+        return [await audio_processor.to_mono(p) for p in pfade]
 
     try:
-        result = await audio_processor.to_mono(audio_file)
-        info = await audio_processor.get_audio_info(result)
-        return {"success": True, "path": str(result), "info": info}
+        ergebnis = await aufnahmen.stuecke_bearbeiten(session_id, None, bearbeitung)
     except RuntimeError as e:
-        raise HTTPException(500, str(e))
+        raise AufnahmeFehler(str(e), 500) from e
+    return {"success": True, "segments": len(ergebnis)}
 
 
 @router.get("/audio-processing/presets")
