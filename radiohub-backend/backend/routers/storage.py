@@ -7,6 +7,7 @@ Ermöglicht Frontend-Konfiguration der Speicherpfade.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from ..ablage import ablage
 from ..storage import get_all_zones, update_zone, validate_path, reload as reload_storage
 
 router = APIRouter(prefix="/api/storage", tags=["storage"])
@@ -57,3 +58,9 @@ async def validate_storage_path(path: str):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ablage")
+async def ablage_zustand():
+    """Stand der Ablage (Kellerwolke): Ziel, Wurzelordner, verbunden, Meldung"""
+    return await ablage().zustand()

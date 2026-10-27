@@ -5,7 +5,13 @@
 #
 # Frontend: http://localhost:9092
 # Backend:  http://localhost:9091  (API direkt; im Frontend per Reverse-Proxy unter /api)
-# Daten:    ./data   (Datenbank, Aufnahmen, Cache -- im Repo-Verzeichnis)
+# Daten:    ./data   (Datenbank, Cache, Zwischenstände; Aufnahmen und Podcast-Folgen liegen in der Kellerwolke)
+#
+# Kellerwolke (Einstellungen in .env neben dieser Datei, siehe README):
+#   RADIOHUB_KELLERWOLKE_ADRESSE    Adresse der Kellerwolke
+#   RADIOHUB_KELLERWOLKE_SCHLUESSEL Schlüsseldatei im Container (Vorgabe /data/kellerwolke.schluessel)
+#   RADIOHUB_KELLERWOLKE_WURZEL     Wurzelordner (Vorgabe Apps/RadioHub)
+#   RADIOHUB_KELLERWOLKE_CA         Zertifikatsstelle im Container, etwa /zertifikate/rootCA.pem
 
 services:
   radiohub-backend:
@@ -16,10 +22,15 @@ services:
       - "9091:8000"
     volumes:
       - ./data:/data
+      - ./zertifikate:/zertifikate:ro
     environment:
       - DATA_PATH=/data
       - ALLOWED_ORIGINS=*
       - TZ=Europe/Berlin
+      - RADIOHUB_KELLERWOLKE_ADRESSE=${RADIOHUB_KELLERWOLKE_ADRESSE:-}
+      - RADIOHUB_KELLERWOLKE_SCHLUESSEL=${RADIOHUB_KELLERWOLKE_SCHLUESSEL:-/data/kellerwolke.schluessel}
+      - RADIOHUB_KELLERWOLKE_WURZEL=${RADIOHUB_KELLERWOLKE_WURZEL:-Apps/RadioHub}
+      - RADIOHUB_KELLERWOLKE_CA=${RADIOHUB_KELLERWOLKE_CA:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
