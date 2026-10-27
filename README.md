@@ -200,6 +200,60 @@ python -m pytest
 Mit `RADIOHUB_PROBE_KELLERWOLKE=1` und den Einstellungen oben laufen die Prüfungen der Ablage zusätzlich gegen
 eine echte Kellerwolke, in einem eigenen Probeordner unter dem Wurzelordner, der danach in den Papierkorb geht.
 
+### Umzug des Altbestands
+
+Das Werkzeug `python -m backend.umzug` bringt den Altbestand in die Kellerwolke und in die Datenbank:
+
+- heutiges RadioHub: Podcast-Folgen und Aufnahmen unter `data/recordings`; die Pfade in der Datenbank zeigen danach
+  auf die Kellerwolke, Ton ohne Eintrag zieht mit (`Podcasts/<Abo>/` oder `Aufnahmen/Ohne Zuordnung/`), Cover
+  kommen in den Cache
+- altes Radio (`--altes-radio`, Ordner mit `pyradio.db` und `recordings/`): Favoriten, Abos, Folgen und gemerkte
+  Folgen in die Datenbank, ohne Doppel (Favoriten nach uuid oder Adresse, Abos nach Feed-Adresse, Folgen nach guid);
+  gemerkte Folgen werden heruntergeladene Folgen in `Podcasts/<Abo>/`, eigene Aufnahmen werden Aufnahmen
+  "Altes Radio" unter `Aufnahmen/Altes Radio/`; nicht übernommen werden Senderliste, Wecker, `config.json` und
+  `backups/`
+
+Jede Datei wird abgelegt und gegen den Stand in der Kellerwolke geprüft (Größe und SHA-256); Ziel und Prüfsumme
+stehen in der Tabelle `umzug_dateien`. Ein abgebrochener Lauf wird einfach wiederholt und macht nur den Rest. Vor der
+ersten Änderung entsteht einmal `data/radiohub.db.vor-umzug`. Die Quellordner bleiben unangetastet, bis `--aufraeumen`
+sie nach einem vollständigen Lauf in `papierkorb-radiohub-<datum>/` verschiebt (nie löschen).
+
+Reihenfolge fürs Ausrollen auf dem Pi (Schritt 2 und 3 zusammen):
+
+```bash
+cd /home/pi/RadioHub
+
+# 1. App-Schlüssel (auf dem Rechner der Kellerwolke, nur in eine Datei mit 600)
+(cd /mnt/data/kellerwolke && backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
+  --datei /home/pi/RadioHub/data/kellerwolke.schluessel)
+
+# 2. Zertifikatsstelle der Hausstelle
+mkdir -p zertifikate && cp /mnt/data/transkription/zertifikate/rootCA.pem zertifikate/
+
+# 3. .env neben docker-compose.yml
+printf 'RADIOHUB_KELLERWOLKE_ADRESSE=https://192.168.178.49:39280\nRADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem\n' > .env
+
+# 4. Bauen; das laufende Backend für den Umzug anhalten
+git pull && docker compose build radiohub-backend && docker compose stop radiohub-backend
+
+# 5. Trockenlauf: zählt nur und zeigt die Zuordnung (Datenbank und Dateien bleiben, wie sie sind)
+docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio:ro radiohub-backend \
+  python -u -m backend.umzug --altes-radio /altes-radio --probe
+
+# 6. Umzug im Hintergrund mit Protokoll (Fortschritt in Prozent und GB); bei Fehlern denselben Befehl wiederholen
+nohup docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio:ro radiohub-backend \
+  python -u -m backend.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
+tail -f umzug.log
+
+# 7. Prüfung: der Trockenlauf aus 5. zeigt "0 offen"; dann starten und in der Oberfläche Folgen und Aufnahmen
+#    abspielen und spulen, Explorer ansehen; in der Kellerwolke liegt alles unter Apps/RadioHub
+docker compose up -d
+
+# 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach /mnt/data/papierkorb-radiohub-<datum>
+docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio -v /mnt/data:/papierkorb \
+  radiohub-backend python -u -m backend.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
+```
+
 ### Lokale Entwicklung (ohne Docker)
 
 Voraussetzungen: Python 3.11+, Node.js 18+, FFmpeg.
