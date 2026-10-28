@@ -91,6 +91,18 @@ export default {
     schlummertBis: 'Snoozing until',
     laeuft: 'playing',
     pausiert: 'paused',
+    zeitAnsagen: 'Say the time',
+    zeitansageAlle5: 'Time every 5 minutes',
+    zeitansageHinweis: 'Only in the alarm view (phone sideways); the radio is turned down meanwhile.',
+    zeitansageFehlt: 'Time announcement parts are missing',
+    zeitansageNachts: 'Time announcement in red night mode',
+    nachtsNormal: 'Normal',
+    nachtsLeise: 'Quiet',
+    nachtsAus: 'Off',
+    ansageAn: 'Time on',
+    ansageAus: 'Time off',
+    bausteineFehlen: '{n} parts of the time announcement are missing.',
+    bausteineErzeugen: 'Create parts',
     weckeransicht: 'Alarm view'
   },
 

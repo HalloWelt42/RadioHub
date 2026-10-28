@@ -22,7 +22,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 init_db()
 
 from .storage import get_all_zones
-from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router, file_explorer_router, recording_folders_router, storage_router, services_router, favicons_router, peaks_router, audio_processing_router, station_tags_router, station_custom_urls_router, wecker_router
+from .routers import stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router, config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router, file_explorer_router, recording_folders_router, storage_router, services_router, favicons_router, peaks_router, audio_processing_router, station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router
 from .services import rec_manager, podcast_service, buffer_manager, timeshift_buffer, hls_buffer, get_config_service
 from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
@@ -160,6 +160,7 @@ app.include_router(audio_processing_router)  # Audio-Nachbearbeitung
 app.include_router(station_tags_router)  # Sender-Bewertungen
 app.include_router(station_custom_urls_router)  # Custom Stream URLs
 app.include_router(wecker_router)  # Wecker und Ort für Sonnenzeiten
+app.include_router(zeitansage_router)  # Bausteine der Zeitansage
 
 
 @app.get("/")

@@ -5,6 +5,7 @@
     Aufnahmen/<Sender>/<JJJJ-MM-TT HH-MM-SS>/Wellenform.peaks     Wellenform für den Schnitt (entsteht bei Bedarf)
     Aufnahmen/<Ordner>/<Sender>/<JJJJ-MM-TT HH-MM-SS>/...         eine Aufnahme in einem eigenen Aufnahmeordner
     Podcasts/<Abo>/<JJJJ-MM-TT> <Folge>.mp3                       eine heruntergeladene Folge
+    Zeitansage/es-ist.mp3, stunde-05.mp3, minute-34.mp3          Bausteine der Zeitansage
 """
 
 from __future__ import annotations
@@ -69,3 +70,11 @@ def folge(abo: str, titel: str, veroeffentlicht: str | None, endung: str) -> str
     datum = datum if re.fullmatch(r"\d{4}-\d{2}-\d{2}", datum) else ""
     stamm = f"{datum} {name(titel, ersatz='Folge')}".strip()
     return f"{podcastordner(abo)}/{stamm}{endung.lower()}"
+
+
+ZEITANSAGE = "Zeitansage"
+
+
+def zeitansage(baustein: str) -> str:
+    """Ein Baustein der Zeitansage (`es-ist`, `stunde-05`, `minute-34`) als MP3."""
+    return f"{ZEITANSAGE}/{baustein}.mp3"

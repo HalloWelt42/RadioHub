@@ -5,11 +5,23 @@
   import { api } from '../../lib/api.js';
   import { wach, wachHaltenSetzen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden, ortSpeichern } from '../../lib/telefon/weckerdaten.svelte.js';
+  import { zeit, zeitansageSchalten, nachtsSetzen, stand as zeitStand } from '../../lib/telefon/zeitansage.svelte.js';
 
   let { onschliessen } = $props();
   let ort = $state({ name: '', breite: '', laenge: '' });
   let ortMeldung = $state('');
   let ablage = $state(null);
+  let bausteine = $state(null);   // Stand der Bausteine der Zeitansage
+
+  function bausteineAbfragen() {
+    zeitStand().then((s) => (bausteine = s)).catch(() => (bausteine = null));
+  }
+  $effect(() => { bausteineAbfragen(); });
+
+  async function bausteineErzeugen() {
+    await api.fetch('/api/zeitansage/erzeugen', { method: 'POST' });
+    setTimeout(bausteineAbfragen, 1500);
+  }
 
   $effect(() => {
     weckerLaden().then(() => {
@@ -79,6 +91,25 @@
   </section>
 
   <section>
+    <label class="schalter">
+      <span>{t('telefon.zeitansageAlle5')}</span>
+      <input type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
+    </label>
+    <p class="klein">{t('telefon.zeitansageHinweis')}</p>
+    <h3 class="abstand">{t('telefon.zeitansageNachts')}</h3>
+    <div class="wahl drei">
+      {#each [['normal', 'nachtsNormal'], ['leise', 'nachtsLeise'], ['aus', 'nachtsAus']] as [wert, text]}
+        <button class:an={zeit.nachts === wert} aria-pressed={zeit.nachts === wert} onclick={() => nachtsSetzen(wert)}>{t('telefon.' + text)}</button>
+      {/each}
+    </div>
+    {#if bausteine && bausteine.fehlend.length}
+      <p class="klein">{t('telefon.bausteineFehlen', { n: bausteine.fehlend.length })}
+        {#if bausteine.erzeugung?.meldung}<br />{bausteine.erzeugung.meldung}{/if}</p>
+      <button class="knopf" disabled={bausteine.erzeugung?.laeuft} onclick={bausteineErzeugen}>{t('telefon.bausteineErzeugen')}</button>
+    {/if}
+  </section>
+
+  <section>
     <h3>{t('telefon.thema')}</h3>
     <div class="wahl">
       <button class:an={appState.theme === 'light'} onclick={() => actions.setTheme('light')}>{t('telefon.hell')}</button>
@@ -140,6 +171,8 @@
   .schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }
   .klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
   .wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .wahl.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .abstand { margin-top: 12px; }
   .wahl button, .knopf {
     min-height: 48px;
     border: 1px solid var(--t-linie);

@@ -14,6 +14,8 @@
   import { beschreibung } from '../../lib/telefon/medien.js';
   import { weckeransichtOffen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden } from '../../lib/telefon/weckerdaten.svelte.js';
+  import { zeit, ansagen, abbrechen, entsperren, bausteineLaden, zeitansageSchalten } from '../../lib/telefon/zeitansage.svelte.js';
+  import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
 
   let { steuerung } = $props();
 
@@ -70,13 +72,33 @@
 
   weckeransichtOffen(true);
   weckerLaden();
-  const takt = setInterval(() => { jetzt = new Date(); pruefen(); }, 1000);
+  bausteineLaden();
+  let angesagt = '';
+  const takt = setInterval(() => { jetzt = new Date(); pruefen(); zeitPruefen(); }, 1000);
+
+  // Die Zeitansage gibt es nur, solange die Weckeransicht offen und sichtbar ist
+  function sichtbarkeit() {
+    if (document.visibilityState !== 'visible') abbrechen();
+  }
+  document.addEventListener('visibilitychange', sichtbarkeit);
 
   onDestroy(() => {
     clearInterval(takt);
     clearInterval(anstieg);
+    document.removeEventListener('visibilitychange', sichtbarkeit);
+    abbrechen();
+    freigeben('schlummern');
     weckeransichtOffen(false);
   });
+
+  /** Alle 5 Minuten zur vollen Minute, nicht während der Wecker klingelt. */
+  function zeitPruefen() {
+    const schluessel = `${jetzt.getHours()}:${jetzt.getMinutes()}`;
+    if (!zeit.an || klingelt || jetzt.getMinutes() % 5 !== 0 || angesagt === schluessel) return;
+    if (document.visibilityState !== 'visible') return;
+    angesagt = schluessel;
+    ansagen({ nacht, jetzt });
+  }
 
   const ort = $derived(weckerdaten.ort);
   const sonne = $derived(ort.breite != null && ort.laenge != null ? sonnenzeiten(jetzt, ort.breite, ort.laenge) : null);
@@ -102,6 +124,7 @@
       const w = schlummerWecker;
       schlummerBis = null;
       schlummerWecker = null;
+      freigeben('schlummern');
       if (w) ausloesen(w);
       return;
     }
@@ -116,6 +139,7 @@
   }
 
   async function ausloesen(w) {
+    abbrechen();
     klingelt = w;
     const ziel = w.lautstaerke || 60;
     const schritte = Math.max(1, w.anstieg_s || 0);
@@ -146,6 +170,7 @@
     klingelt = null;
     schlummerBis = null;
     schlummerWecker = null;
+    freigeben('schlummern');
     actions.stop();
   }
 
@@ -156,10 +181,11 @@
     actions.stop();
     schlummerWecker = w;
     schlummerBis = new Date(Date.now() + (w?.schlummern_min || 9) * 60000);
+    sperren('schlummern');   // keine Aktualisierung, solange geschlummert wird
   }
 </script>
 
-<div class="wecker" class:nacht>
+<div class="wecker" class:nacht onpointerdown={entsperren}>
   <div class="links" bind:this={uhrFlaeche}>
     <div class="uhr" style:font-size="{uhrGroesse}px">
       {#each hhmm(jetzt).split('') as zeichen, i (i)}
@@ -208,6 +234,18 @@
         {:else if !sonne}
           <span class="zusatz">{t('telefon.ortFehlt')}</span>
         {/if}
+      </div>
+
+      <div class="ansage">
+        <button class="ansage-jetzt" disabled={!zeit.bereit || zeit.laeuft}
+          onclick={() => ansagen({ nacht, jetzt: new Date() })}
+          title={zeit.bereit ? t('telefon.zeitAnsagen') : t('telefon.zeitansageFehlt')}>
+          <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : 'fa-comment-dots'}"></i> {t('telefon.zeitAnsagen')}
+        </button>
+        <button class="ansage-schalter" class:an={zeit.an} aria-pressed={zeit.an} onclick={() => zeitansageSchalten(!zeit.an)}
+          title={t('telefon.zeitansageAlle5')}>
+          <i class="fa-solid fa-clock-rotate-left"></i> {zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')}
+        </button>
       </div>
 
       <div class="nachtwahl" role="group" aria-label={t('telefon.nacht')}>
@@ -264,6 +302,12 @@
   .nachtwahl button { min-height: 44px; border: 1px solid var(--w-linie); border-radius: 22px; background: transparent; color: var(--w-text); font: inherit; font-size: 15px; }
   .nachtwahl button.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); font-weight: 600; }
   .klingeln { display: flex; flex-direction: column; gap: 12px; }
+  .ansage { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 6px; }
+  .ansage button { min-height: 48px; border: 1px solid var(--w-linie); border-radius: 24px; background: transparent; color: var(--w-text);
+    font: inherit; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; overflow: hidden; }
+  .ansage .ansage-jetzt { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); font-weight: 600; }
+  .ansage .ansage-jetzt:disabled { background: transparent; color: var(--w-text-2); border-color: var(--w-linie); }
+  .ansage .ansage-schalter.an { border-color: var(--w-text); font-weight: 600; }
   .gross-text { margin: 0; font-size: 24px; font-weight: 700; }
   .riesig { min-height: 72px; border: none; border-radius: 18px; background: var(--w-akzent); color: var(--w-akzent-text); font: inherit; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
   .riesig.aus { background: transparent; color: var(--w-text); border: 2px solid var(--w-text); }

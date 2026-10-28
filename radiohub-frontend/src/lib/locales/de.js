@@ -91,6 +91,18 @@ export default {
     schlummertBis: 'Schlummert bis',
     laeuft: 'läuft',
     pausiert: 'pausiert',
+    zeitAnsagen: 'Zeit ansagen',
+    zeitansageAlle5: 'Zeitansage alle 5 Minuten',
+    zeitansageHinweis: 'Nur in der Weckeransicht (Telefon quer); das Radio wird dafür leise gezogen.',
+    zeitansageFehlt: 'Bausteine der Zeitansage fehlen',
+    zeitansageNachts: 'Zeitansage bei Nachtrot',
+    nachtsNormal: 'Normal',
+    nachtsLeise: 'Leise',
+    nachtsAus: 'Aus',
+    ansageAn: 'Ansage an',
+    ansageAus: 'Ansage aus',
+    bausteineFehlen: 'Es fehlen {n} Bausteine der Zeitansage.',
+    bausteineErzeugen: 'Bausteine erzeugen',
     weckeransicht: 'Weckeransicht'
   },
 

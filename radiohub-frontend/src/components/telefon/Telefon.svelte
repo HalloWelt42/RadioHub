@@ -9,6 +9,7 @@
   import { t } from '../../lib/i18n.svelte.js';
   import { geraet } from '../../lib/geraet.svelte.js';
   import * as medien from '../../lib/telefon/medien.js';
+  import { radioSetzen } from '../../lib/telefon/zeitansage.svelte.js';
   import TelefonRadio from './TelefonRadio.svelte';
   import TelefonPodcasts from './TelefonPodcasts.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
@@ -23,7 +24,10 @@
   let einstellungenOffen = $state(false);
 
   $effect(() => {
-    if (audioEl) engine.init(audioEl, appState);
+    if (audioEl) {
+      engine.init(audioEl, appState);
+      radioSetzen(audioEl);
+    }
   });
 
   $effect(() => {

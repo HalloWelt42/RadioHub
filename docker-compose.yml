@@ -13,6 +13,8 @@
 #   RADIOHUB_KELLERWOLKE_WURZEL     Wurzelordner (Vorgabe Apps/RadioHub)
 #   RADIOHUB_KELLERWOLKE_CA         Zertifikatsstelle im Container, etwa /zertifikate/rootCA.pem
 #   RADIOHUB_ORTSSUCHE_ADRESSE      Kartensuche für den Ort der Sonnenzeiten (OSM lokal), etwa http://<pi>:8120
+#   RADIOHUB_VERTONUNG_ADRESSE      Vertonung für die Bausteine der Zeitansage, etwa https://<rechner>:8641
+#   RADIOHUB_ZEITSTIMME             Kennung der Zeit-Stimme der Vertonung (dort für RadioHub freigeben)
 
 services:
   radiohub-backend:
@@ -33,6 +35,9 @@ services:
       - RADIOHUB_KELLERWOLKE_WURZEL=${RADIOHUB_KELLERWOLKE_WURZEL:-Apps/RadioHub}
       - RADIOHUB_KELLERWOLKE_CA=${RADIOHUB_KELLERWOLKE_CA:-}
       - RADIOHUB_ORTSSUCHE_ADRESSE=${RADIOHUB_ORTSSUCHE_ADRESSE:-}
+      - RADIOHUB_VERTONUNG_ADRESSE=${RADIOHUB_VERTONUNG_ADRESSE:-}
+      - RADIOHUB_ZEITSTIMME=${RADIOHUB_ZEITSTIMME:-}
+      - RADIOHUB_ZEITSTIMME_TEMPO=${RADIOHUB_ZEITSTIMME_TEMPO:-1.0}
     healthcheck:
       # Python statt curl: curl ist im Abbild nicht enthalten
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
