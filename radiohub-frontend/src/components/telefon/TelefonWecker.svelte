@@ -66,6 +66,11 @@
     try { return localStorage.getItem(NACHT_SCHLUESSEL) || 'auto'; } catch { return 'auto'; }
   }
 
+  // ein Knopf, drei Stufen: automatisch nach Sonnenzeiten, immer Rot, immer normal
+  const NACHT_FOLGE = { auto: 'an', an: 'aus', aus: 'auto' };
+  const NACHT_SYMBOL = { auto: 'fa-circle-half-stroke', an: 'fa-moon', aus: 'fa-sun' };
+  const NACHT_TEXT = { auto: 'nachtAuto', an: 'nachtAn', aus: 'nachtAus' };
+
   function nachtSetzen(wert) {
     nachtWahl = wert;
     try { localStorage.setItem(NACHT_SCHLUESSEL, wert); } catch { /* privates Fenster */ }
@@ -200,8 +205,8 @@
     {#if klingelt}
       <div class="klingeln">
         <p class="gross-text">{t('telefon.klingelt')} {klingelt.zeit}</p>
-        <button class="riesig" onclick={schlummern}><i class="fa-solid fa-bed"></i> {t('telefon.schlummern')}</button>
-        <button class="riesig aus" onclick={aus}><i class="fa-solid fa-power-off"></i> {t('telefon.aus')}</button>
+        <button class="riesig" onclick={schlummern} aria-label={t('telefon.schlummern')} title={t('telefon.schlummern')}><i class="fa-solid fa-bed"></i></button>
+        <button class="riesig aus" onclick={aus} aria-label={t('telefon.aus')} title={t('telefon.aus')}><i class="fa-solid fa-power-off"></i></button>
       </div>
     {:else}
       <div class="block spielt-block">
@@ -235,22 +240,20 @@
         </div>
       {/if}
 
-      <div class="ansage">
-        <button class="ansage-jetzt" disabled={!zeit.bereit || zeit.laeuft}
+      <div class="symbolleiste">
+        <button class="symbol" disabled={!zeit.bereit || zeit.laeuft}
           onclick={() => ansagen({ nacht, jetzt: new Date() })}
-          title={zeit.bereit ? t('telefon.zeitAnsagen') : t('telefon.zeitansageFehlt')}>
-          <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : 'fa-comment-dots'}"></i> {t('telefon.zeitAnsagen')}
+          aria-label={t('telefon.zeitAnsagen')} title={zeit.bereit ? t('telefon.zeitAnsagen') : t('telefon.zeitansageFehlt')}>
+          <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : 'fa-comment-dots'}"></i>
         </button>
-        <button class="ansage-schalter" class:an={zeit.an} aria-pressed={zeit.an} onclick={() => zeitansageSchalten(!zeit.an)}
-          title={t('telefon.zeitansageAlle5')}>
-          <i class="fa-solid fa-clock-rotate-left"></i> {zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')}
+        <button class="symbol" class:an={zeit.an} aria-pressed={zeit.an} onclick={() => zeitansageSchalten(!zeit.an)}
+          aria-label={zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')} title={t('telefon.zeitansageAlle5')}>
+          <i class="fa-solid {zeit.an ? 'fa-bell' : 'fa-bell-slash'}"></i>
         </button>
-      </div>
-
-      <div class="nachtwahl" role="group" aria-label={t('telefon.nacht')}>
-        {#each [['auto', 'nachtAuto'], ['an', 'nachtAn'], ['aus', 'nachtAus']] as [wert, text]}
-          <button class:an={nachtWahl === wert} aria-pressed={nachtWahl === wert} onclick={() => nachtSetzen(wert)}>{t('telefon.' + text)}</button>
-        {/each}
+        <button class="symbol" class:an={nachtWahl !== 'aus'} onclick={() => nachtSetzen(NACHT_FOLGE[nachtWahl])}
+          aria-label={t('telefon.nacht') + ': ' + t('telefon.' + NACHT_TEXT[nachtWahl])} title={t('telefon.' + NACHT_TEXT[nachtWahl])}>
+          <i class="fa-solid {NACHT_SYMBOL[nachtWahl]}"></i>
+        </button>
       </div>
     {/if}
   </div>
@@ -299,17 +302,12 @@
   .wert { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .sonne { flex-direction: row; flex-wrap: wrap; gap: 4px 16px; font-size: 17px; }
   .rund { width: 52px; height: 52px; flex: none; border: none; border-radius: 50%; background: var(--w-akzent); color: var(--w-akzent-text); font-size: 20px; }
-  .nachtwahl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-  .nachtwahl button { min-height: 44px; border: 1px solid var(--w-linie); border-radius: 22px; background: transparent; color: var(--w-text); font: inherit; font-size: 15px; }
-  .nachtwahl button.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); font-weight: 600; }
   .klingeln { display: flex; flex-direction: column; gap: 12px; }
-  .ansage { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 6px; }
-  .ansage button { min-height: 48px; border: 1px solid var(--w-linie); border-radius: 24px; background: transparent; color: var(--w-text);
-    font: inherit; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; overflow: hidden; }
-  .ansage .ansage-jetzt { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); font-weight: 600; }
-  .ansage .ansage-jetzt:disabled { background: transparent; color: var(--w-text-2); border-color: var(--w-linie); }
-  .ansage .ansage-schalter.an { border-color: var(--w-text); font-weight: 600; }
   .gross-text { margin: 0; font-size: 24px; font-weight: 700; }
   .riesig { min-height: 72px; border: none; border-radius: 18px; background: var(--w-akzent); color: var(--w-akzent-text); font: inherit; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
   .riesig.aus { background: transparent; color: var(--w-text); border: 2px solid var(--w-text); }
+  .symbolleiste { display: flex; gap: 14px; flex-wrap: wrap; }
+  .symbol { width: 60px; height: 60px; flex: none; border: 1px solid var(--w-linie); border-radius: 50%; background: transparent; color: var(--w-text); font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .symbol.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); }
+  .symbol:disabled { opacity: 0.4; }
 </style>
