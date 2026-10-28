@@ -30,6 +30,7 @@
   let datumZeile = $state(null);
   let zifferBreite = $state(0.6);
   let doppelpunktBreite = $state(0.3);
+  let doppelpunktHoehe = $state(0); // so weit (in em) wird der Doppelpunkt angehoben, damit er mittig zu den Ziffern steht
   let uhrGroesse = $state(80);
 
   function uhrAnpassen() {
@@ -45,6 +46,8 @@
     ctx.font = UHR_SCHRIFT;
     zifferBreite = Math.max(...'0123456789'.split('').map((z) => ctx.measureText(z).width)) / 100;
     doppelpunktBreite = ctx.measureText(':').width / 100;
+    const mitte = (m) => (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+    doppelpunktHoehe = (mitte(ctx.measureText('0')) - mitte(ctx.measureText(':'))) / 100;
     uhrAnpassen();
   }
 
@@ -64,6 +67,20 @@
 
   function lesen() {
     try { return localStorage.getItem(NACHT_SCHLUESSEL) || 'auto'; } catch { return 'auto'; }
+  }
+
+  // Ansageknopf doppelt belegt: kurz = jetzt ansagen, lang (0,6 s) = 5-Minuten-Ansage an oder aus
+  let ansageDruck = null;
+  let ansageLang = false;
+  function ansageDruckBeginn() {
+    ansageLang = false;
+    ansageDruck = setTimeout(() => { ansageLang = true; zeitansageSchalten(!zeit.an); }, 600);
+  }
+  function ansageDruckAbbruch() { clearTimeout(ansageDruck); ansageDruck = null; }
+  function ansageDruckEnde() {
+    if (ansageDruck === null) return;
+    ansageDruckAbbruch();
+    if (!ansageLang && zeit.bereit && !zeit.laeuft) ansagen({ nacht, jetzt: new Date() });
   }
 
   // ein Knopf, drei Stufen: automatisch nach Sonnenzeiten, immer Rot, immer normal
@@ -195,7 +212,8 @@
   <div class="links" bind:this={uhrFlaeche}>
     <div class="uhr" style:font-size="{uhrGroesse}px" style:--streckung={UHR_STRECKUNG}>
       {#each hhmm(jetzt).split('') as zeichen, i (i)}
-        <span class="zeichen" style:width="{zeichen === ':' ? doppelpunktBreite : zifferBreite}em">{zeichen}</span>
+        <span class="zeichen" style:width="{zeichen === ':' ? doppelpunktBreite : zifferBreite}em"
+          style:transform={zeichen === ':' ? `translateY(${-doppelpunktHoehe}em)` : null}>{zeichen}</span>
       {/each}
     </div>
     <div class="datum" bind:this={datumZeile}>{datum}</div>
@@ -214,11 +232,6 @@
           <span class="titel">{info ? info.title : '-'}</span>
           {#if info}<span class="zusatz">{info.artist ? `${info.artist} · ` : ''}{spielt ? t('telefon.laeuft') : t('telefon.pausiert')}</span>{/if}
         </div>
-        {#if info}
-          <button class="rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
-            <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
-          </button>
-        {/if}
       </div>
 
       <div class="block">
@@ -241,14 +254,15 @@
       {/if}
 
       <div class="symbolleiste">
-        <button class="symbol" disabled={!zeit.bereit || zeit.laeuft}
-          onclick={() => ansagen({ nacht, jetzt: new Date() })}
-          aria-label={t('telefon.zeitAnsagen')} title={zeit.bereit ? t('telefon.zeitAnsagen') : t('telefon.zeitansageFehlt')}>
-          <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : 'fa-comment-dots'}"></i>
+        <button class="symbol" disabled={!info} onclick={steuerung.umschalten}
+          aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+          <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
         </button>
-        <button class="symbol" class:an={zeit.an} aria-pressed={zeit.an} onclick={() => zeitansageSchalten(!zeit.an)}
-          aria-label={zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')} title={t('telefon.zeitansageAlle5')}>
-          <i class="fa-solid {zeit.an ? 'fa-bell' : 'fa-bell-slash'}"></i>
+        <!-- antippen: Zeit jetzt ansagen; lange drücken: Ansage alle 5 Minuten an oder aus -->
+        <button class="symbol" class:an={zeit.an} aria-pressed={zeit.an}
+          onpointerdown={ansageDruckBeginn} onpointerup={ansageDruckEnde} onpointerleave={ansageDruckAbbruch} oncontextmenu={(e) => e.preventDefault()}
+          aria-label={t('telefon.zeitAnsagen')} title={`${t('telefon.zeitAnsagen')} · ${zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')}`}>
+          <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : zeit.an ? 'fa-bell' : 'fa-bell-slash'}"></i>
         </button>
         <button class="symbol" class:an={nachtWahl !== 'aus'} onclick={() => nachtSetzen(NACHT_FOLGE[nachtWahl])}
           aria-label={t('telefon.nacht') + ': ' + t('telefon.' + NACHT_TEXT[nachtWahl])} title={t('telefon.' + NACHT_TEXT[nachtWahl])}>
@@ -301,7 +315,6 @@
   .sonne .zusatz { white-space: normal; }
   .wert { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .sonne { flex-direction: row; flex-wrap: wrap; gap: 4px 16px; font-size: 17px; }
-  .rund { width: 52px; height: 52px; flex: none; border: none; border-radius: 50%; background: var(--w-akzent); color: var(--w-akzent-text); font-size: 20px; }
   .klingeln { display: flex; flex-direction: column; gap: 12px; }
   .gross-text { margin: 0; font-size: 24px; font-weight: 700; }
   .riesig { min-height: 72px; border: none; border-radius: 18px; background: var(--w-akzent); color: var(--w-akzent-text); font: inherit; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
