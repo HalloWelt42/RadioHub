@@ -221,27 +221,27 @@ sie nach einem vollständigen Lauf in `papierkorb-radiohub-<datum>/` verschiebt 
 Reihenfolge fürs Ausrollen auf dem Pi (Schritt 2 und 3 zusammen):
 
 ```bash
-cd /home/pi/RadioHub
+cd <Ordner des RadioHub>
 
 # 1. App-Schlüssel (auf dem Rechner der Kellerwolke, nur in eine Datei mit 600)
-(cd /mnt/data/kellerwolke && backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
-  --datei /home/pi/RadioHub/data/kellerwolke.schluessel)
+(cd <Ordner der Kellerwolke> && backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
+  --datei <Ordner des RadioHub>/data/kellerwolke.schluessel)
 
 # 2. Zertifikatsstelle der Hausstelle
-mkdir -p zertifikate && cp /mnt/data/transkription/zertifikate/rootCA.pem zertifikate/
+mkdir -p zertifikate && cp <rootCA.pem der Hausstelle> zertifikate/
 
 # 3. .env neben docker-compose.yml
-printf 'RADIOHUB_KELLERWOLKE_ADRESSE=https://192.168.178.49:39280\nRADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem\n' > .env
+printf 'RADIOHUB_KELLERWOLKE_ADRESSE=https://<Rechner der Kellerwolke>:<Port>\nRADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem\n' > .env
 
 # 4. Bauen; das laufende Backend für den Umzug anhalten
 git pull && docker compose build radiohub-backend && docker compose stop radiohub-backend
 
 # 5. Trockenlauf: zählt nur und zeigt die Zuordnung (Datenbank und Dateien bleiben, wie sie sind)
-docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio:ro radiohub-backend \
+docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
   python -u -m backend.umzug --altes-radio /altes-radio --probe
 
 # 6. Umzug im Hintergrund mit Protokoll (Fortschritt in Prozent und GB); bei Fehlern denselben Befehl wiederholen
-nohup docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio:ro radiohub-backend \
+nohup docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
   python -u -m backend.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
 tail -f umzug.log
 
@@ -249,10 +249,49 @@ tail -f umzug.log
 #    abspielen und spulen, Explorer ansehen; in der Kellerwolke liegt alles unter Apps/RadioHub
 docker compose up -d
 
-# 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach /mnt/data/papierkorb-radiohub-<datum>
-docker compose run --rm -T -v /home/pi/radio-uebernahme/pyradio-daten:/altes-radio -v /mnt/data:/papierkorb \
+# 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach <Papierkorb-Ordner>/papierkorb-radiohub-<datum>
+docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:/papierkorb \
   radiohub-backend python -u -m backend.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 ```
+
+### Am Telefon
+
+Unter 900 Pixeln Breite, im Querformat und bei Fingerbedienung zeigt das RadioHub eine eigene Telefonansicht: nur
+Radio und Podcasts, unten die Fußleiste, darüber die Spielerleiste; antippen öffnet den Spieler als Vollbild
+(bei Folgen Position, 15 s zurück, 30 s vor; beim Radio voriger und nächster Favorit). Am Sperrbildschirm stehen
+Titel, Sender oder Abo und Bild; dort lässt sich anhalten, spulen und der Favorit wechseln. Aufnahmen, Schneiden
+und die Einrichtung gibt es nur am Rechner.
+
+Als Web-App auf den Startbildschirm (iPhone: Safari, Teilen, "Zum Home-Bildschirm"):
+
+1. Das Telefon vertraut der Hausstelle (dasselbe Zertifikat wie bei Kellerwolke und Kiste; einmal als Profil
+   installiert und unter Einstellungen, Allgemein, Info, Zertifikatsvertrauenseinstellungen eingeschaltet)
+2. Die Adresse mit HTTPS öffnen: `https://<Rechner>:9093` (http auf 9092 bleibt, aber ohne sicheren Kontext gehen
+   Bildschirm wach halten und die Web-App nicht)
+3. Teilen, "Zum Home-Bildschirm"; ein früher angelegtes Symbol vorher entfernen
+
+Der HTTPS-Zugang ist ein Vorschaltdienst (`radiohub-vorne`, Caddy) mit einem Blattzertifikat der Hausstelle in
+`zertifikate/radiohub.pem` und `zertifikate/radiohub-schluessel.pem`. Ausstellen auf dem Rechner mit der Hausstelle
+(mkcert):
+
+```bash
+RADIOHUB_ZIEL=pi@<rechner> RADIOHUB_ORDNER=<Ordner des RadioHub> RADIOHUB_NAMEN="<ip> <rechnername>" tools/zertifikat.sh
+docker compose up -d radiohub-vorne
+```
+
+### Wecker und Weckeransicht
+
+Telefon quer gelegt zeigt die Weckeransicht für den Nachttisch: links die Uhr mit Datum, rechts was läuft, der
+nächste Wecker und Sonnenauf- und -untergang. Zwischen Sonnenuntergang und -aufgang schaltet sie auf Dunkelrot
+(Auto), von Hand geht Rot oder Normal. Der Bildschirm bleibt dabei wach.
+
+Wecker (Uhr-Symbol oben rechts, `/wecker`): Uhrzeit, Wochentage, ein Sender aus den Favoriten oder die neueste Folge
+eines Abos, Lautstärke und wie lange sie ansteigt. Gespeichert werden sie im Backend. Geweckt wird nur, solange die
+Weckeransicht offen ist: Web-Apps werden im Hintergrund nicht geweckt. Also Telefon quer legen, die Seite offen
+lassen und vorher einmal etwas abspielen, damit der Browser Ton erlaubt. Schlummern und Aus sind große Knöpfe.
+
+Den Ort für die Sonnenzeiten (Breite, Länge) trägt man in den Einstellungen am Telefon ein; berechnet wird lokal,
+ohne fremden Dienst.
 
 ### Lokale Entwicklung (ohne Docker)
 
