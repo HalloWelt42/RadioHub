@@ -53,7 +53,22 @@
   const nacht = $derived(nachtWahl === 'an' || (nachtWahl === 'auto' && istNacht(jetzt, ort.breite, ort.laenge) === true));
   const naechster = $derived(naechsterWecker(weckerdaten.liste, jetzt));
   const spielt = $derived(appState.isPlaying && !appState.isPaused);
-  const senderName = $derived(appState.currentStation?.name || appState.currentEpisode?.title || '');
+  // eingestellter Sender: was gerade gewählt ist, sonst der zuletzt gehörte (im Gerät gemerkt), sonst der des nächsten
+  // Weckers; so steht auch nach dem Öffnen oder einer neuen Fassung immer ein Sender da
+  const LETZTER_SENDER = 'radiohub.weckeransicht.sender';
+  let letzterSender = $state(lesenJson(LETZTER_SENDER));
+  function lesenJson(schluessel) {
+    try { return JSON.parse(localStorage.getItem(schluessel) || 'null'); } catch { return null; }
+  }
+  $effect(() => {
+    const s = appState.currentStation;
+    if (!s?.uuid) return;
+    letzterSender = s;
+    try { localStorage.setItem(LETZTER_SENDER, JSON.stringify(s)); } catch { /* ohne Speicher eben nur bis zum Neuladen */ }
+  });
+  const eingestellt = $derived(appState.currentStation || letzterSender
+    || (naechster?.wecker?.quelle === 'sender' ? naechster.wecker.sender : null));
+  const senderName = $derived(appState.currentStation?.name || appState.currentEpisode?.title || eingestellt?.name || '');
   const zwei = (n) => String(n).padStart(2, '0');
   const hhmm = (d) => (d ? `${zwei(d.getHours())}:${zwei(d.getMinutes())}` : '--:--');
   const tagKurz = (d) => d.toLocaleDateString(undefined, { weekday: 'short' });
@@ -167,6 +182,10 @@
 
   function umschalten() {
     wunsch.spielen = !spielt;
+    if (!spielt && !appState.currentStation && !appState.currentEpisode && eingestellt) {
+      actions.playStation(eingestellt);
+      return;
+    }
     steuerung.umschalten();
   }
 
