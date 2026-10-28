@@ -64,6 +64,10 @@ class RadioHubAPI {
     return this.fetch('/api/wecker/ort');
   }
 
+  async searchOrte(q) {
+    return this.fetch(`/api/wecker/orte?q=${encodeURIComponent(q)}`);
+  }
+
   async saveOrt(ort) {
     return this.fetch('/api/wecker/ort', { method: 'PUT', body: JSON.stringify(ort) });
   }

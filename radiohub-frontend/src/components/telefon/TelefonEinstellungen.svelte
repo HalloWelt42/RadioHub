@@ -21,6 +21,38 @@
 
   const zahl = (w) => (String(w).trim() === '' ? null : Number(String(w).replace(',', '.')));
 
+  let suche = $state('');
+  let fundorte = $state(null);
+  let sucht = $state(false);
+
+  async function orteSuchen() {
+    if (suche.trim().length < 2) return;
+    sucht = true;
+    try {
+      fundorte = (await api.searchOrte(suche.trim())).orte;
+    } catch (e) {
+      fundorte = [];
+      ortMeldung = e.message || t('telefon.fehler');
+    } finally {
+      sucht = false;
+    }
+  }
+
+  function ortWaehlen(f) {
+    ort = { name: f.name, breite: f.breite.toFixed(5), laenge: f.laenge.toFixed(5) };
+    fundorte = null;
+    ortSichern();
+  }
+
+  function standortUebernehmen() {
+    if (!navigator.geolocation) { ortMeldung = t('telefon.standortFehlt'); return; }
+    navigator.geolocation.getCurrentPosition(
+      (p) => ortWaehlen({ name: t('telefon.standortName'), breite: p.coords.latitude, laenge: p.coords.longitude }),
+      () => (ortMeldung = t('telefon.standortFehlt')),
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 3600000 },
+    );
+  }
+
   async function ortSichern() {
     try {
       await ortSpeichern({ name: ort.name.trim(), breite: zahl(ort.breite), laenge: zahl(ort.laenge) });
@@ -57,6 +89,19 @@
   <section>
     <h3>{t('telefon.ort')}</h3>
     {#if weckerdaten.ort.breite == null}<p class="klein">{t('telefon.ortFehlt')}</p>{/if}
+    <form class="suche" onsubmit={(e) => { e.preventDefault(); orteSuchen(); }}>
+      <label class="feld"><span>{t('telefon.ortSuchen')}</span><input bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
+      <button class="knopf" type="submit" disabled={sucht}>{t('telefon.suchen')}</button>
+    </form>
+    {#if fundorte}
+      {#if fundorte.length === 0}<p class="klein">{t('telefon.keineOrte')}</p>{/if}
+      <ul class="fundorte">
+        {#each fundorte as f (`${f.breite},${f.laenge}`)}
+          <li><button type="button" onclick={() => ortWaehlen(f)}>{f.name} <span class="klein">{f.breite.toFixed(2)}, {f.laenge.toFixed(2)}</span></button></li>
+        {/each}
+      </ul>
+    {/if}
+    <button class="knopf" type="button" onclick={standortUebernehmen}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.standort')}</button>
     <label class="feld"><span>{t('telefon.ortName')}</span><input bind:value={ort.name} autocomplete="off" /></label>
     <div class="zwei">
       <label class="feld"><span>{t('telefon.breite')}</span><input bind:value={ort.breite} inputmode="decimal" autocomplete="off" /></label>
@@ -122,4 +167,7 @@
   .punkt { font-size: 10px; color: var(--t-fehler); margin-right: 4px; }
   .punkt.gut { color: #3fb950; }
   :global([data-theme='light']) .punkt.gut { color: #1a7f37; }
+  .suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+  .fundorte { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .fundorte button { width: 100%; min-height: 44px; text-align: left; padding: 8px 12px; border: 1px solid var(--t-linie); border-radius: 10px; background: transparent; color: var(--t-text); font: inherit; font-size: 17px; }
 </style>

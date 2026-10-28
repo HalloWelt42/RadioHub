@@ -12,6 +12,7 @@
 #   RADIOHUB_KELLERWOLKE_SCHLUESSEL Schlüsseldatei im Container (Vorgabe /data/kellerwolke.schluessel)
 #   RADIOHUB_KELLERWOLKE_WURZEL     Wurzelordner (Vorgabe Apps/RadioHub)
 #   RADIOHUB_KELLERWOLKE_CA         Zertifikatsstelle im Container, etwa /zertifikate/rootCA.pem
+#   RADIOHUB_ORTSSUCHE_ADRESSE      Kartensuche für den Ort der Sonnenzeiten (OSM lokal), etwa http://<pi>:8120
 
 services:
   radiohub-backend:
@@ -31,6 +32,7 @@ services:
       - RADIOHUB_KELLERWOLKE_SCHLUESSEL=${RADIOHUB_KELLERWOLKE_SCHLUESSEL:-/data/kellerwolke.schluessel}
       - RADIOHUB_KELLERWOLKE_WURZEL=${RADIOHUB_KELLERWOLKE_WURZEL:-Apps/RadioHub}
       - RADIOHUB_KELLERWOLKE_CA=${RADIOHUB_KELLERWOLKE_CA:-}
+      - RADIOHUB_ORTSSUCHE_ADRESSE=${RADIOHUB_ORTSSUCHE_ADRESSE:-}
     healthcheck:
       # Python statt curl: curl ist im Abbild nicht enthalten
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]

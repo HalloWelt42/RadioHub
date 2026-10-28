@@ -5,6 +5,7 @@
    * wach und löst die Wecker aus, solange sie offen ist; Web-Apps werden im Hintergrund nicht geweckt.
    */
   import { onDestroy } from 'svelte';
+  import '@fontsource/chakra-petch/700.css';
   import { appState, actions } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
   import { api } from '../../lib/api.js';
@@ -18,6 +19,39 @@
 
   const NACHT_SCHLUESSEL = 'radiohub_nachtschaltung';
   let jetzt = $state(new Date());
+
+  // Uhr: Chakra Petch fett, so groß wie die linke Fläche erlaubt. Jede Ziffer steht in einer Zelle von der Breite der
+  // breitesten Ziffer, der Doppelpunkt in seiner eigenen; so wackelt nichts, wenn die Zahlen wechseln.
+  const UHR_SCHRIFT = '700 100px "Chakra Petch"';
+  let uhrFlaeche = $state(null);
+  let datumZeile = $state(null);
+  let zifferBreite = $state(0.6);
+  let doppelpunktBreite = $state(0.3);
+  let uhrGroesse = $state(80);
+
+  function uhrAnpassen() {
+    if (!uhrFlaeche) return;
+    const breite = uhrFlaeche.clientWidth;
+    const hoehe = uhrFlaeche.clientHeight - (datumZeile?.offsetHeight ?? 0) - 8;
+    uhrGroesse = Math.max(24, Math.floor(Math.min(breite / (4 * zifferBreite + doppelpunktBreite), hoehe)));
+  }
+
+  async function uhrVermessen() {
+    try { await document.fonts.load(UHR_SCHRIFT, '0123456789:'); } catch { /* Ersatzschrift misst dann */ }
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = UHR_SCHRIFT;
+    zifferBreite = Math.max(...'0123456789'.split('').map((z) => ctx.measureText(z).width)) / 100;
+    doppelpunktBreite = ctx.measureText(':').width / 100;
+    uhrAnpassen();
+  }
+
+  $effect(() => {
+    if (!uhrFlaeche) return;
+    uhrVermessen();
+    const beobachter = new ResizeObserver(uhrAnpassen);
+    beobachter.observe(uhrFlaeche);
+    return () => beobachter.disconnect();
+  });
   let nachtWahl = $state(lesen());
   let klingelt = $state(null);
   let schlummerBis = $state(null);
@@ -126,9 +160,13 @@
 </script>
 
 <div class="wecker" class:nacht>
-  <div class="links">
-    <div class="uhr">{hhmm(jetzt)}</div>
-    <div class="datum">{datum}</div>
+  <div class="links" bind:this={uhrFlaeche}>
+    <div class="uhr" style:font-size="{uhrGroesse}px">
+      {#each hhmm(jetzt).split('') as zeichen, i (i)}
+        <span class="zeichen" style:width="{zeichen === ':' ? doppelpunktBreite : zifferBreite}em">{zeichen}</span>
+      {/each}
+    </div>
+    <div class="datum" bind:this={datumZeile}>{datum}</div>
   </div>
 
   <div class="rechts">
@@ -208,7 +246,9 @@
     --w-akzent-text: #000000;
   }
   .links { display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 0; }
-  .uhr { font-size: min(34vh, 17vw); font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .links { height: 100%; }
+  .uhr { font-family: 'Chakra Petch', var(--hifi-font-body); font-weight: 700; line-height: 1; letter-spacing: 0; white-space: nowrap; display: flex; }
+  .zeichen { display: inline-block; text-align: center; }
   .datum { margin-top: 8px; font-size: 20px; color: var(--w-text-2); text-align: center; }
   .rechts { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-width: 0; overflow-y: auto; }
   .block { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid var(--w-linie); min-width: 0; }

@@ -174,6 +174,7 @@ Einrichtung (einmal je Rechner):
    ```bash
    RADIOHUB_KELLERWOLKE_ADRESSE=https://<Rechner der Kellerwolke>:<Port>
    RADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem
+`RADIOHUB_ORTSSUCHE_ADRESSE`: Adresse der hauseigenen Kartensuche (OSM lokal) für die Ortssuche der Sonnenzeiten; leer heißt keine Suche, der Standort des Telefons geht trotzdem.
    ```
 
 4. `docker compose up -d --build`; das Backend meldet beim Start `Ablage: Verbunden als App RadioHub ...`,

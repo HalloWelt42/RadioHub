@@ -6,10 +6,12 @@ Seite offen), weil Web-Apps im Hintergrund nicht geweckt werden. Dazu der Ort f�
 (Breite, Länge, Name) als Einstellung.
 """
 import json
+import os
 import re
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+import httpx
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 from ..database import db_session
@@ -69,6 +71,33 @@ class Ort(BaseModel):
     name: str = ""
     breite: Optional[float] = Field(None, ge=-90, le=90)
     laenge: Optional[float] = Field(None, ge=-180, le=180)
+
+
+# Ortssuche über die hauseigene Kartensuche (OSM lokal); Adresse in RADIOHUB_ORTSSUCHE_ADRESSE, leer: keine Suche
+ORTSSUCHE = os.environ.get("RADIOHUB_ORTSSUCHE_ADRESSE", "").strip().rstrip("/")
+
+
+class Fundort(BaseModel):
+    name: str
+    art: str = ""
+    breite: float
+    laenge: float
+
+
+@router.get("/orte")
+async def orte_suchen(q: str = Query(..., min_length=2, max_length=100)) -> dict:
+    """Orte zum Namen, für die Sonnenzeiten; nur Städte, Orte und Dörfer."""
+    if not ORTSSUCHE:
+        raise HTTPException(503, "Ortssuche nicht eingerichtet (RADIOHUB_ORTSSUCHE_ADRESSE)")
+    try:
+        async with httpx.AsyncClient(timeout=10) as c:
+            antwort = await c.get(f"{ORTSSUCHE}/api/v1/suche", params={"q": q, "limit": 20})
+            antwort.raise_for_status()
+    except httpx.HTTPError as f:
+        raise HTTPException(502, f"Ortssuche nicht erreichbar: {f.__class__.__name__}") from f
+    orte = [Fundort(name=e["name"], art=e.get("kind") or "", breite=e["lat"], laenge=e["lng"])
+            for e in antwort.json().get("results", []) if e.get("category") == "ort"]
+    return {"orte": orte[:8]}
 
 
 @router.get("/ort")
