@@ -5,9 +5,9 @@ WORKDIR /app
 # Install curl for font downloads
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Dependencies
-COPY package.json ./
-RUN npm install
+# Abhängigkeiten genau nach package-lock.json (npm install ohne Sperrdatei löst jedes Mal neu auf und scheiterte)
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Source
 COPY . .
