@@ -107,22 +107,33 @@ async function blenden(element, ziel, ms, lauf) {
 /** Die Uhrzeit ansagen; `nacht` (Nachtrot) wendet die Einstellung für nachts an. */
 export async function ansagen({ nacht = false, jetzt = new Date() } = {}) {
   if (zeit.laeuft || (nacht && zeit.nachts === 'aus')) return;
+  // Tonausgabe noch innerhalb des Tippens wecken (iOS erlaubt das nur in der Geste, nicht nach einem await);
+  // läuft das Radio, steht der Kontext dort oft auf "interrupted", nicht nur "suspended"
+  const c = kontext();
+  const wecken = c.state !== 'running' ? c.resume().catch(() => {}) : null;
   await bausteineLaden();
   if (!zeit.bereit) return;
-  const c = kontext();
-  if (c.state === 'suspended') { try { await c.resume(); } catch { return; } }
+  if (wecken) await wecken;
 
   const lauf = { aus: false };
   _lauf = lauf;
   zeit.laeuft = true;
   const radio = _radio && !_radio.paused && _radio.src ? _radio : null;
   const alt = radio ? radio.volume : 1;
+  let pausiert = false;
   try {
     if (radio) {
       await blenden(radio, 0, BLENDEN_MS, lauf);
       if (radio.volume > 0.01) radio.muted = true;   // Lautstärke nicht stellbar (iOS): stumm statt leise
     }
     if (lauf.aus) return;
+    if (c.state !== 'running' && radio) {
+      // iOS: solange das Radio die Tonausgabe hält, bleibt Web Audio stumm; dann kurz anhalten statt leise
+      radio.pause();
+      pausiert = true;
+      try { await c.resume(); } catch { /* bleibt stumm */ }
+    }
+    if (c.state !== 'running') return;
     const laut = c.createGain();
     laut.gain.value = nacht && zeit.nachts === 'leise' ? NACHTS_LEISE : 1;
     laut.connect(c.destination);
@@ -142,6 +153,7 @@ export async function ansagen({ nacht = false, jetzt = new Date() } = {}) {
     _quellen = [];
     if (radio) {
       radio.muted = false;
+      if (pausiert) { try { await radio.play(); } catch { /* der Wächter verbindet neu */ } }
       await blenden(radio, alt, lauf.aus ? 150 : BLENDEN_MS, null);
       radio.volume = alt;
     }
