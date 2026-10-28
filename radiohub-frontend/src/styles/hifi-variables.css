@@ -196,6 +196,8 @@
     /* Text auf hellem Grund dunkler -- Display-Farben bleiben hell (dunkler Hintergrund) */
     --hifi-text-green: #1e8c1e;
     --hifi-text-amber: #996600;
+    /* Akzent als Schriftfarbe auf hellem Grund: das helle Blau hatte nur etwa 2,5 zu 1 Kontrast */
+    --hifi-accent: #2a6cb0;
 }
 
 /* ==========================================

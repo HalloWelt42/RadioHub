@@ -18,6 +18,7 @@
   import Telefon from './components/telefon/Telefon.svelte';
 
   let backendOnline = $state(false);
+  let ablage = $state(null);   // Stand der Ablage (Kellerwolke): { verbunden, meldung }
 
   // Logo Glow Animation (nur Dark Mode)
   $effect(() => {
@@ -64,6 +65,7 @@
     api.health().then(() => {
       backendOnline = true;
       actions.initConfig();
+      api.getAblage().then((a) => (ablage = a)).catch(() => (ablage = null));
     }).catch(() => {
       actions.showToast(t('toast.backendOffline'), 'error');
       backendOnline = false;
@@ -248,6 +250,12 @@
         <HiFiLed color={backendOnline ? 'green' : 'red'} size="small" />
         <span class="hifi-font-label">{backendOnline ? t('nav.online') : t('nav.offline')}</span>
       </div>
+      {#if ablage}
+        <div class="hifi-status" title={ablage.meldung || ''}>
+          <HiFiLed color={ablage.verbunden ? 'green' : 'red'} size="small" />
+          <span class="hifi-font-label">{t('nav.ablage')}</span>
+        </div>
+      {/if}
     </div>
   </header>
   
@@ -368,6 +376,12 @@
 
   .logo-letter {
     display: inline-block;
+  }
+
+  /* Hell: dunkleres Blau, das helle Akzentblau hat auf dem hellen Kopf zu wenig Kontrast */
+  :global([data-theme="light"]) .hifi-logo-text,
+  :global([data-theme="light"]) .logo-letter {
+    color: #245d9c;
   }
 
   @keyframes -global-letterGlow {
@@ -540,6 +554,11 @@
   .hifi-footer a {
     color: inherit;
     text-decoration: none;
+  }
+
+  /* Hell: weiße Schrift auf hellem Grund war unlesbar */
+  :global([data-theme="light"]) .hifi-footer {
+    color: rgba(0, 0, 0, 0.6);
   }
 
   .hifi-footer a:hover {

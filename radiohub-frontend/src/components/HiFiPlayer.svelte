@@ -816,7 +816,7 @@
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #888;
+    color: var(--hifi-text-label);
     text-transform: uppercase;
     margin-bottom: 8px;
     height: 12px;

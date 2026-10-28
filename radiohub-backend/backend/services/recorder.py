@@ -916,9 +916,11 @@ class RecorderManager:
                     try:
                         with open(session.meta_file_path, "r", encoding="utf-8") as f:
                             titelliste = json.load(f)
+                        # Stücke direkt in den Arbeitsordner: was nicht abgelegt wird, holt der Abschluss
+                        # oder der nächste Start nach (ein Unterordner würde dabei übersehen)
                         stuecke = await splitter.nach_titelliste(
                             seg_file, titelliste, duration, session.file_format,
-                            session.session_dir / "teile")
+                            session.session_dir)
                     except Exception as e:
                         print(f"  REC Split-Fehler: {e}")
                         log.log(f"  Split-Fehler: {e}")

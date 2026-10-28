@@ -389,51 +389,29 @@ class TimeshiftBufferManager:
         
         return chunk.data
     
-    async def convert_to_recording(self, include_buffer: bool = True) -> dict:
-        """Konvertiert Buffer zu Recording"""
-        
+    async def convert_to_recording(self) -> dict:
+        """Startet eine Aufnahme des gepufferten Senders ab jetzt.
+
+        Den bisherigen Puffer vorne anzusetzen ging nie (die Aufnahme schreibt Stücke, die beim Abschluss in die
+        Ablage gehen); Aufnahmen mit Vorlauf macht HLS-REC (`/api/recording/hls-start` mit lookback_seconds).
+        """
         if not self.session:
             return {"success": False, "error": "Kein Buffer aktiv"}
-        
+
         from .recorder import rec_manager
-        
-        # Recording starten
-        result = rec_manager.start(
+
+        result = await rec_manager.start(
             station_uuid=self.session.station_uuid,
             station_name=self.session.station_name,
             stream_url=self.session.stream_url,
             bitrate=self.session.bitrate
         )
-        
         if not result.get("success"):
             return result
-        
-        # Buffer-Daten in Recording übernehmen
-        if include_buffer and self.session.chunks:
-            try:
-                from pathlib import Path
-                rec_path = Path(result.get("file_path", ""))
-                
-                if rec_path.exists():
-                    # Buffer-Daten sammeln
-                    buffer_data = b"".join(chunk.data for chunk in self.session.chunks)
-                    
-                    # An Recording-Datei voranstellen
-                    with open(rec_path, 'r+b') as f:
-                        existing = f.read()
-                        f.seek(0)
-                        f.write(buffer_data + existing)
-                    
-                    buffer_mb = len(buffer_data) / (1024 * 1024)
-                    print(f"✓ Buffer ({buffer_mb:.1f} MB) in Recording übernommen")
-            except Exception as e:
-                print(f"✗ Buffer-Übernahme fehlgeschlagen: {e}")
-        
+
         return {
             "success": True,
             "recording_session_id": result.get("session_id"),
-            "buffer_included": include_buffer,
-            "buffer_bytes": self.session.total_bytes if include_buffer else 0
         }
 
 

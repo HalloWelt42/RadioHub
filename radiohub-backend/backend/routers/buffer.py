@@ -100,16 +100,9 @@ async def go_live():
 
 
 @router.post("/to-recording")
-async def convert_to_recording(include_buffer: bool = Query(True)):
-    """
-    Konvertiert Buffer zu Recording und startet Aufnahme.
-    
-    - include_buffer: Buffer-Inhalt übernehmen? (Standard: ja)
-    
-    Wenn include_buffer=true, wird der gesamte Buffer-Inhalt
-    an den Anfang der Recording-Datei geschrieben.
-    """
-    result = await timeshift_buffer.convert_to_recording(include_buffer=include_buffer)
+async def convert_to_recording():
+    """Startet eine Aufnahme des gepufferten Senders ab jetzt (mit Vorlauf: /api/recording/hls-start)."""
+    result = await timeshift_buffer.convert_to_recording()
     if not result.get("success"):
         raise HTTPException(400, result.get("error", "Konvertierung fehlgeschlagen"))
     return result

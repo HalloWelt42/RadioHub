@@ -1,9 +1,10 @@
 /**
- * Welche Oberfläche gilt: eigene Telefonansicht unter 768 Pixeln Breite, bei niedriger Höhe (Telefon quer) oder
- * bei Fingerbedienung bis 1100 Pixel; quer und niedrig ist die Weckeransicht. Die Rechneransicht bleibt sonst.
+ * Welche Oberfläche gilt: eigene Telefonansicht unter 900 Pixeln Breite (die Rechneransicht braucht gemessen gut
+ * 830), bei niedriger Höhe (Telefon quer) oder bei Fingerbedienung bis 1100 Pixel; quer und niedrig ist die
+ * Weckeransicht. Die Rechneransicht bleibt sonst.
  */
 
-const TELEFON = '(max-width: 767px), (max-height: 500px), (pointer: coarse) and (max-width: 1100px)';
+const TELEFON = '(max-width: 899px), (max-height: 500px), (pointer: coarse) and (max-width: 1100px)';
 const QUER = '(orientation: landscape) and (max-height: 500px)';
 
 export const geraet = $state({ telefon: false, quer: false });

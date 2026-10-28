@@ -359,11 +359,15 @@ class HLSRecorderService:
             try:
                 with open(meta_file, "r", encoding="utf-8") as f:
                     titelliste = json.load(f)
+                # Stücke direkt in den Arbeitsordner: was nicht abgelegt wird, holt der nächste Start nach
                 stuecke = await splitter.nach_titelliste(
-                    output_file, titelliste, real_duration, ".aac", session_dir / "teile")
+                    output_file, titelliste, real_duration, ".aac", session_dir)
             except Exception as e:
                 print(f"  HLS-REC Split-Fehler: {e}")
                 stuecke = []
+        if stuecke:
+            # Die Stücke enthalten alles; die ganze Datei bliebe sonst liegen und käme beim Nachholen doppelt dazu
+            output_file.unlink(missing_ok=True)
 
         try:
             if stuecke:

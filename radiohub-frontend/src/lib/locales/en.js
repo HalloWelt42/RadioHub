@@ -97,7 +97,8 @@ export default {
     dark: 'DARK',
     light: 'LIGHT',
     online: 'ONLINE',
-    offline: 'OFFLINE'
+    offline: 'OFFLINE',
+    ablage: 'STORAGE'
   },
 
   // === Setup Tabs ===

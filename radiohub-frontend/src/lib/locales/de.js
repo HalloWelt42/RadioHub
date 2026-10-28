@@ -97,7 +97,8 @@ export default {
     dark: 'DUNKEL',
     light: 'HELL',
     online: 'ONLINE',
-    offline: 'OFFLINE'
+    offline: 'OFFLINE',
+    ablage: 'ABLAGE'
   },
 
   // === Setup Tabs ===
