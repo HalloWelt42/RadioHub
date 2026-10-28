@@ -174,7 +174,10 @@
   let angesagt = '';
   function zeitPruefen() {
     const schluessel = `${jetzt.getHours()}:${jetzt.getMinutes()}`;
-    if (!zeit.an || klingelt || jetzt.getMinutes() % 5 !== 0 || angesagt === schluessel) return;
+    // von selbst nur, solange ein Wecker scharf ist oder geschlummert wird (Nutzer: nicht ohne aktiven Wecker);
+    // ein Tipp auf die Ziffern sagt immer an
+    const weckerAktiv = !!naechster || !!schlummerBis;
+    if (!zeit.an || !weckerAktiv || klingelt || jetzt.getMinutes() % 5 !== 0 || angesagt === schluessel) return;
     if (document.visibilityState !== 'visible') return;
     angesagt = schluessel;
     ansagen({ nacht, jetzt });
