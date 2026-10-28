@@ -25,6 +25,7 @@
   // Uhr: Chakra Petch fett, so groß wie die linke Fläche erlaubt. Jede Ziffer steht in einer Zelle von der Breite der
   // breitesten Ziffer, der Doppelpunkt in seiner eigenen; so wackelt nichts, wenn die Zahlen wechseln.
   const UHR_SCHRIFT = '700 100px "Chakra Petch"';
+  const UHR_STRECKUNG = 1.6; // Ziffern in der Höhe gestreckt (Nutzer: "knapp 1,6-fache Höhe")
   let uhrFlaeche = $state(null);
   let datumZeile = $state(null);
   let zifferBreite = $state(0.6);
@@ -35,7 +36,7 @@
     if (!uhrFlaeche) return;
     const breite = uhrFlaeche.clientWidth;
     const hoehe = uhrFlaeche.clientHeight - (datumZeile?.offsetHeight ?? 0) - 8;
-    uhrGroesse = Math.max(24, Math.floor(Math.min(breite / (4 * zifferBreite + doppelpunktBreite), hoehe)));
+    uhrGroesse = Math.max(24, Math.floor(Math.min(breite / (4 * zifferBreite + doppelpunktBreite), hoehe / UHR_STRECKUNG)));
   }
 
   async function uhrVermessen() {
@@ -187,7 +188,7 @@
 
 <div class="wecker" class:nacht onpointerdown={entsperren}>
   <div class="links" bind:this={uhrFlaeche}>
-    <div class="uhr" style:font-size="{uhrGroesse}px">
+    <div class="uhr" style:font-size="{uhrGroesse}px" style:--streckung={UHR_STRECKUNG}>
       {#each hhmm(jetzt).split('') as zeichen, i (i)}
         <span class="zeichen" style:width="{zeichen === ':' ? doppelpunktBreite : zifferBreite}em">{zeichen}</span>
       {/each}
@@ -205,7 +206,7 @@
     {:else}
       <div class="block spielt-block">
         <div class="text">
-          <span class="titel">{info ? info.title : t('telefon.nichtsLaeuft')}</span>
+          <span class="titel">{info ? info.title : '-'}</span>
           {#if info}<span class="zusatz">{info.artist ? `${info.artist} · ` : ''}{spielt ? t('telefon.laeuft') : t('telefon.pausiert')}</span>{/if}
         </div>
         {#if info}
@@ -223,18 +224,16 @@
           <span class="wert">{naechster.zeitpunkt.toLocaleDateString(undefined, { weekday: 'short' })} {hhmm(naechster.zeitpunkt)}</span>
           <span class="zusatz">{quelleText(naechster.wecker)}</span>
         {:else}
-          <span class="zusatz">{t('telefon.keinWeckerAktiv')}</span>
+          <span class="wert">-</span>
         {/if}
       </div>
 
-      <div class="block sonne">
-        {#if sonne && !sonne.polar}
+      {#if sonne && !sonne.polar}
+        <div class="block sonne">
           <span><i class="fa-solid fa-sun"></i> {t('telefon.aufgang')} {hhmm(sonne.aufgang)}</span>
           <span><i class="fa-solid fa-moon"></i> {t('telefon.untergang')} {hhmm(sonne.untergang)}</span>
-        {:else if !sonne}
-          <span class="zusatz">{t('telefon.ortFehlt')}</span>
-        {/if}
-      </div>
+        </div>
+      {/if}
 
       <div class="ansage">
         <button class="ansage-jetzt" disabled={!zeit.bereit || zeit.laeuft}
@@ -285,7 +284,9 @@
   }
   .links { display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 0; }
   .links { height: 100%; }
-  .uhr { font-family: 'Chakra Petch', var(--hifi-font-body); font-weight: 700; line-height: 1; letter-spacing: 0; white-space: nowrap; display: flex; }
+  .uhr { font-family: 'Chakra Petch', var(--hifi-font-body); font-weight: 700; line-height: 1; letter-spacing: 0; white-space: nowrap; display: flex;
+    /* gestreckt ohne die Breite zu ändern; der Rand hält den Platz frei, den die Streckung oben und unten braucht */
+    transform: scaleY(var(--streckung)); margin: calc((var(--streckung) - 1) * 0.5em) 0; }
   .zeichen { display: inline-block; text-align: center; }
   .datum { margin-top: 8px; font-size: 20px; color: var(--w-text-2); text-align: center; }
   .rechts { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-width: 0; overflow-y: auto; }
