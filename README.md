@@ -282,9 +282,20 @@ docker compose up -d radiohub-vorne
 
 ### Wecker und Weckeransicht
 
-Telefon quer gelegt zeigt die Weckeransicht für den Nachttisch: links die Uhr mit Datum, rechts was läuft, der
-nächste Wecker und Sonnenauf- und -untergang. Zwischen Sonnenuntergang und -aufgang schaltet sie auf Dunkelrot
-(Auto), von Hand geht Rot oder Normal. Der Bildschirm bleibt dabei wach.
+Telefon quer gelegt zeigt die Weckeransicht für den Nachttisch, in zwei Layouts (Entwürfe B und D in
+`mockups/querformat.html`), umschaltbar durch Wischen nach links oder rechts:
+
+- Uhr mit Sonnenband: große Uhr, darunter 24 Stunden (Tag hell, Nacht dunkel, Strich für jetzt, Auf- und
+  Untergang), rechts Sender, Wecker und die drei Knöpfe (Wiedergabe, Ansage an/aus, Nachtschaltung)
+- Nur die Uhr: unten eine schmale Leiste mit Sender, Wecker und Sonne; die Knöpfe erscheinen nach Antippen
+
+Antippen der Ziffern sagt die Zeit an. Ein scharfer Wecker steht als Glocke mit Weckzeit in Akzentfarbe da, ohne Wecker
+eine durchgestrichene Glocke, beim Schlummern das Bett mit der Zeit. Zwischen Sonnenuntergang und -aufgang schaltet
+die Ansicht auf Dunkelrot (Auto), von Hand geht Rot oder Normal. Der Bildschirm bleibt dabei wach.
+
+Fällt der Sender aus oder bleibt stumm, verbindet die Weckeransicht neu (nach 2, 5, 10, 20 Sekunden, dann alle 30;
+ohne Wecker höchstens sechsmal). Beim Wecken kommt ab dem dritten Versuch zusätzlich ein Weckton aus dem Gerät
+(im Speicher erzeugt, ohne Netz), bis der Sender zu hören ist. Der Stand der Verbindung steht als Symbol beim Sender.
 
 Wecker (Uhr-Symbol oben rechts, `/wecker`): Uhrzeit, Wochentage, ein Sender aus den Favoriten oder die neueste Folge
 eines Abos, Lautstärke und wie lange sie ansteigt. Gespeichert werden sie im Backend. Geweckt wird nur, solange die
