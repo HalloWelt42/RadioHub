@@ -10,12 +10,15 @@ Zuordnung altes Radio (pyradio.db) -> RadioHub:
 - podcast_saved_episodes (gemerkte Folgen mit Datei) -> Folge heruntergeladen (is_downloaded, local_path = Pfad in der
   Ablage, file_size) und podcast_saved_episodes; ist die Folge im RadioHub schon heruntergeladen, bleibt es dabei
 - recordings/radio und recordings/edits -> je Datei eine Aufnahme "Altes Radio" mit einem Stück (sessions, segments)
+- alarms (Modus radio mit Sender) -> wecker (Zeit, Wochentage, Sender aus stations oder favorites, Lautstärke);
+  Wecker mit Ton statt Sender passen nicht und bleiben weg; jeder alte Wecker nur einmal (herkunft pyradio:<id>)
 - nicht übernommen: stations (Senderliste kommt aus dem Verzeichnis), sessions, schedules, export_jobs (leer),
-  alarms, config, config.json, backups/
+  config, config.json, backups/
 """
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import sqlite3
@@ -245,8 +248,45 @@ def altes_radio_datenbank(conn: sqlite3.Connection, alt: sqlite3.Connection, sch
                                 duration, published_at, resume_position) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                              (neu_id, e["guid"], e["title"], e["description"], e["audio_url"], e["duration"],
                               e["published_at"], e["resume_position"]))
+    _alte_wecker(conn, alt, schreiben, bericht)
     if schreiben:
         conn.commit()
+
+
+def _alte_wecker(conn: sqlite3.Connection, alt: sqlite3.Connection, schreiben: bool, bericht: Bericht) -> None:
+    try:
+        wecker = alt.execute("SELECT * FROM alarms ORDER BY id").fetchall()
+    except sqlite3.OperationalError:
+        return  # kein Wecker im alten Radio
+    for w in wecker:
+        herkunft = f"pyradio:{w['id']}"
+        if conn.execute("SELECT 1 FROM wecker WHERE herkunft = ?", (herkunft,)).fetchone():
+            bericht.zaehlen("Altes Radio: Wecker schon da")
+            continue
+        sender = None
+        if w["mode"] == "radio" and w["station_uuid"]:
+            for tabelle in ("stations", "favorites"):
+                try:
+                    zeile = alt.execute(f"SELECT uuid, name, url, url_resolved, favicon FROM {tabelle} WHERE uuid = ?",
+                                        (w["station_uuid"],)).fetchone()
+                except sqlite3.OperationalError:
+                    zeile = None
+                if zeile:
+                    sender = dict(zeile)
+                    break
+        if not sender:
+            bericht.zaehlen("Altes Radio: Wecker ohne Sender, nicht übernommen")
+            continue
+        try:
+            tage = sorted({7 if int(t) == 0 else int(t) for t in json.loads(w["days"] or "[]")} & set(range(1, 8)))
+        except (ValueError, TypeError):
+            tage = [1, 2, 3, 4, 5]
+        bericht.zaehlen("Altes Radio: Wecker neu")
+        if schreiben:
+            conn.execute("""INSERT INTO wecker (aktiv, zeit, tage, quelle, sender_json, lautstaerke, herkunft)
+                            VALUES (?, ?, ?, 'sender', ?, ?, ?)""",
+                         (int(bool(w["enabled"])), w["time"] or "07:00", json.dumps(tage), json.dumps(sender),
+                          max(5, min(100, int(w["volume"] or 60))), herkunft))
 
 
 def _folge_im_radiohub(conn: sqlite3.Connection, feed_url: str, guid: str):

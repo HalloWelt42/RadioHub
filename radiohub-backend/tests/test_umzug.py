@@ -24,6 +24,8 @@ CREATE TABLE podcast_subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, feed_u
 CREATE TABLE podcast_episodes (id INTEGER PRIMARY KEY AUTOINCREMENT, podcast_id INTEGER, guid TEXT, title TEXT,
     description TEXT, audio_url TEXT, duration INTEGER, published_at TEXT, resume_position INTEGER DEFAULT 0,
     is_downloaded INTEGER DEFAULT 0, local_path TEXT, UNIQUE(podcast_id, guid));
+CREATE TABLE alarms (id INTEGER PRIMARY KEY, enabled INTEGER, time TEXT, days TEXT, mode TEXT, station_uuid TEXT,
+    station_name TEXT, volume INTEGER);
 CREATE TABLE podcast_saved_episodes (id INTEGER PRIMARY KEY AUTOINCREMENT, podcast_id INTEGER, episode_id INTEGER,
     file_path TEXT, size_mb REAL DEFAULT 0, saved_at TEXT);
 """
@@ -60,8 +62,8 @@ def bestand(tmp_path):
         bild.write_bytes(b"jpg")
         stueck = ton(rec / "radio" / f"rec_{k}" / "seg_000.mp3", 2)
         c.execute("""INSERT INTO sessions (id, station_name, start_time, file_path, status, meta_file_path)
-                     VALUES (?, 'Heutefunk', '2026-03-13T01:15:14', ?, 'completed', ?)""",
-                  (f"rec_{k}", str(stueck.parent), str(rec / "radio" / "fehlt.meta.json")))
+                     VALUES (?, ?, '2026-03-13T01:15:14', ?, 'completed', ?)""",
+                  (f"rec_{k}", f"Heutefunk {k}", str(stueck.parent), str(rec / "radio" / "fehlt.meta.json")))
         c.execute("""INSERT INTO segments (session_id, segment_index, title, start_ms, end_ms, duration_ms, file_path)
                      VALUES (?, 0, 'Lied', 0, 2000, 2000, ?)""", (f"rec_{k}", str(stueck)))
         c.execute("INSERT OR IGNORE INTO favorites (uuid, name, url) VALUES ('fav-da', 'Da', 'http://da.test/stream')")
@@ -83,6 +85,8 @@ def bestand(tmp_path):
     db.execute("INSERT INTO podcast_saved_episodes (podcast_id, episode_id, file_path) VALUES (2, 2, ?)",
                (f"/data/recordings/podcasts/Alt {k}/Alte Folge.mp3",))
     ton(alt / "recordings" / "radio" / f"rec_20260110_021304_{k}.mp3", 1)
+    db.execute("INSERT INTO alarms VALUES (1, 1, '06:45', '[0,6]', 'radio', ?, 'Neu', 55)", (f"fav-neu-{k}",))
+    db.execute("INSERT INTO alarms VALUES (2, 0, '07:00', '[1]', 'wave', NULL, NULL, 70)")
     db.commit()
     db.close()
     return {"k": k, "alt": alt, "heute_abo": heute_abo, "heute_folge": heute_folge, "stueck": stueck}
@@ -114,9 +118,9 @@ def test_umzug_mit_abbruch_und_wiederaufnahme(bestand, capsys):
     assert _zeile("SELECT local_path FROM podcast_episodes WHERE id = ?", bestand["heute_folge"])[0] == folge
     assert folge in ablage.dateien and f"Podcasts/Heute {k}/9_ohne_eintrag.mp3" in ablage.dateien
     sitzung = _zeile("SELECT file_path, meta_file_path FROM sessions WHERE id = ?", f"rec_{k}")
-    assert sitzung[0] == "Aufnahmen/Heutefunk/2026-03-13 01-15-14" and sitzung[1] is None
+    assert sitzung[0] == f"Aufnahmen/Heutefunk {k}/2026-03-13 01-15-14" and sitzung[1] is None
     assert _zeile("SELECT file_path FROM segments WHERE session_id = ?", f"rec_{k}")[0] == \
-        "Aufnahmen/Heutefunk/2026-03-13 01-15-14/001 Lied.mp3"
+        f"Aufnahmen/Heutefunk {k}/2026-03-13 01-15-14/001 Lied.mp3"
     assert (get_cache_dir() / "podcast-bilder" / str(bestand["heute_abo"]) / "cover.jpg").exists()
     assert bestand["stueck"].exists()  # Quellen bleiben unangetastet
 
@@ -137,6 +141,10 @@ def test_umzug_mit_abbruch_und_wiederaufnahme(bestand, capsys):
     aufnahme = _zeile("SELECT * FROM sessions WHERE id = ?", f"alt_rec_20260110_021304_{k}")
     assert aufnahme["station_name"] == "Altes Radio" and aufnahme["file_path"] == "Aufnahmen/Altes Radio/2026-01-10 02-13-04"
     assert _zeile("SELECT file_path FROM segments WHERE session_id = ?", aufnahme["id"])[0] in ablage.dateien
+
+    wecker = _zeile("SELECT * FROM wecker WHERE herkunft = 'pyradio:1' AND sender_json LIKE ?", f"%fav-neu-{k}%")
+    assert wecker["zeit"] == "06:45" and wecker["tage"] == "[6, 7]" and wecker["lautstaerke"] == 55
+    assert _zeile("SELECT COUNT(*) FROM wecker WHERE herkunft = 'pyradio:2'")[0] == 0
 
     # Dritter Lauf: nichts mehr offen, nichts doppelt
     assert main(["--altes-radio", str(bestand["alt"]), "--probe"]) == 0

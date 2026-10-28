@@ -2,7 +2,7 @@
 RadioHub v0.1.1 - Datenbank
 
 SQLite mit WAL-Modus für bessere Concurrency.
-Nur Core-Tabellen (keine Alarms, Export, Waveform).
+Core-Tabellen und Wecker (kein Export, keine Waveform-Tabelle).
 """
 import sqlite3
 from datetime import datetime
@@ -376,6 +376,23 @@ def init_db():
             c.execute(f"ALTER TABLE podcast_episodes ADD COLUMN {col} {typedef}")
         except Exception:
             pass
+
+    # === Wecker (ausgelöst in der Weckeransicht am Telefon) ===
+    # tage: JSON-Liste der Wochentage 1 (Montag) bis 7 (Sonntag); quelle: 'sender' (sender_json) oder 'podcast'
+    # (neueste Folge des Abos podcast_id); Lautstärke steigt in anstieg_s Sekunden bis lautstaerke
+    c.execute('''CREATE TABLE IF NOT EXISTS wecker (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        aktiv INTEGER DEFAULT 1,
+        zeit TEXT NOT NULL,
+        tage TEXT NOT NULL DEFAULT '[1,2,3,4,5]',
+        quelle TEXT NOT NULL DEFAULT 'sender',
+        sender_json TEXT,
+        podcast_id INTEGER,
+        lautstaerke INTEGER DEFAULT 60,
+        anstieg_s INTEGER DEFAULT 60,
+        schlummern_min INTEGER DEFAULT 9,
+        herkunft TEXT
+    )''')
 
     # === ICY-Titel Ignorier-Liste ===
     c.execute('''CREATE TABLE IF NOT EXISTS icy_title_ignore (
