@@ -29,7 +29,7 @@
     if (appState.activeTab === 'settings'
         && appState.routeSegments?.[0] === 'allgemein'
         && !appState.routeSegments[1]) {
-      router.navigate('/setup/allgemein/einstellungen', { replace: true });
+      router.navigate('/einstellungen/allgemein/einstellungen', { replace: true });
       appState.routeSegments = ['allgemein', 'einstellungen'];
     }
   });
@@ -176,7 +176,7 @@
         class="pill-btn"
         class:active={activeSubTab === tab.id}
         class:bedanken={tab.special === 'bedanken'}
-        onclick={() => actions.navigateTo('/setup/allgemein/' + tab.id)}
+        onclick={() => actions.navigateTo('/einstellungen/allgemein/' + tab.id)}
       >
         <HiFiLed color={activeSubTab === tab.id ? (tab.special === 'bedanken' ? 'amber' : 'green') : 'off'} size="small" />
         <i class="fa-solid {tab.icon}" class:heart-icon={tab.special === 'bedanken'}></i>

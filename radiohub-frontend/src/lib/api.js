@@ -38,6 +38,36 @@ class RadioHubAPI {
     return this.fetch('/health');
   }
 
+  // === Ablage (Kellerwolke) ===
+  async getAblage() {
+    return this.fetch('/api/storage/ablage');
+  }
+
+  // === Wecker und Ort für Sonnenzeiten ===
+  async getWecker() {
+    return this.fetch('/api/wecker');
+  }
+
+  async saveWecker(wecker) {
+    const { id, ...daten } = wecker;
+    return this.fetch(id ? `/api/wecker/${id}` : '/api/wecker', {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(daten)
+    });
+  }
+
+  async deleteWecker(id) {
+    return this.fetch(`/api/wecker/${id}`, { method: 'DELETE' });
+  }
+
+  async getOrt() {
+    return this.fetch('/api/wecker/ort');
+  }
+
+  async saveOrt(ort) {
+    return this.fetch('/api/wecker/ort', { method: 'PUT', body: JSON.stringify(ort) });
+  }
+
   // === Cache & Stations ===
   async syncCache(force = false) {
     return this.fetch(`/api/cache/sync?force=${force}`, { method: 'POST' });

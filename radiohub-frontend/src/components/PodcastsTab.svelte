@@ -19,7 +19,7 @@
 
   // === View State (aus Route abgeleitet) ===
   const VIEW_MAP = { search: 'search', all: 'all-episodes', files: 'file-explorer' };
-  const VIEW_TO_ROUTE = { 'episodes': '/podcast', 'search': '/podcast/search', 'all-episodes': '/podcast/all', 'file-explorer': '/podcast/files' };
+  const VIEW_TO_ROUTE = { 'episodes': '/podcasts', 'search': '/podcasts/search', 'all-episodes': '/podcasts/all', 'file-explorer': '/podcasts/files' };
 
   let view = $derived.by(() => {
     if (appState.activeTab !== 'podcasts') return 'episodes';
@@ -30,7 +30,7 @@
   });
 
   function setView(v) {
-    actions.navigateTo(VIEW_TO_ROUTE[v] || '/podcast');
+    actions.navigateTo(VIEW_TO_ROUTE[v] || '/podcasts');
   }
   let selectedPodcastId = $state(null);
   let selectedPodcast = $state(null);
@@ -138,7 +138,7 @@
     await loadSubscriptions();
     const segs = appState.routeSegments;
 
-    // Deep-Link: Such-Query aus URL /podcast/search/[query]
+    // Deep-Link: Such-Query aus URL /podcasts/search/[query]
     if (segs?.[0] === 'search' && segs[1]) {
       const query = decodeURIComponent(segs[1]);
       searchInitialQuery = query;
@@ -258,7 +258,7 @@
   function handleSelectPodcast(podcast) {
     selectedPodcastId = podcast.id;
     selectedPodcast = podcast;
-    actions.navigateTo('/podcast/' + podcast.id);
+    actions.navigateTo('/podcasts/' + podcast.id);
     loadEpisodes(podcast.id);
   }
 
@@ -366,7 +366,7 @@
   async function handleSearch(query) {
     isSearching = true;
     if (query && query.length >= 2) {
-      actions.navigateTo('/podcast/search/' + encodeURIComponent(query), { replace: true });
+      actions.navigateTo('/podcasts/search/' + encodeURIComponent(query), { replace: true });
     } else {
       setView('search');
     }
@@ -595,10 +595,10 @@
   function handleEpisodeSelect(episode) {
     if (selectedEpisodeId === episode.id) {
       selectedEpisodeId = null;
-      if (selectedPodcastId) actions.navigateTo('/podcast/' + selectedPodcastId);
+      if (selectedPodcastId) actions.navigateTo('/podcasts/' + selectedPodcastId);
     } else {
       selectedEpisodeId = episode.id;
-      if (selectedPodcastId) actions.navigateTo('/podcast/' + selectedPodcastId + '/' + episode.id);
+      if (selectedPodcastId) actions.navigateTo('/podcasts/' + selectedPodcastId + '/' + episode.id);
     }
     sfx.click();
   }

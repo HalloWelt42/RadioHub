@@ -31,14 +31,14 @@
   // Redirect wenn /setup ohne Sub-Tab aufgerufen wird
   $effect(() => {
     if (appState.activeTab === 'settings' && (!appState.routeSegments || appState.routeSegments.length === 0)) {
-      router.navigate('/setup/allgemein/einstellungen', { replace: true });
+      router.navigate('/einstellungen/allgemein/einstellungen', { replace: true });
       appState.routeSegments = ['allgemein', 'einstellungen'];
     }
   });
 
   function selectSetupTab(tabId) {
     const subDefaults = router.getSubDefault(tabId);
-    const path = router.buildPath('setup', tabId, ...subDefaults);
+    const path = router.buildPath('einstellungen', tabId, ...subDefaults);
     actions.navigateTo(path);
   }
 </script>

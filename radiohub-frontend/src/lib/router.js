@@ -1,33 +1,37 @@
 /**
- * RadioHub Hash-Router v1.0
- * Leichtgewichtiges Hash-Routing ohne externe Abhängigkeiten.
+ * RadioHub Router v2.0
+ * Echte Pfade über die History-Schnittstelle, ohne externe Abhängigkeiten.
  *
- * Routen-Schema: #/segment1/segment2/segment3
+ * Routen-Schema: /bereich/segment1/segment2
  * Beispiele:
- *   #/tuner
- *   #/setup/radio/filter
- *   #/podcast/search
+ *   /radio, /radio/<sender-uuid>, /radio/search/<suche>
+ *   /podcasts, /podcasts/<abo>, /podcasts/<abo>/<folge>
+ *   /aufnahmen, /einstellungen/radio/filter, /wecker
+ *
+ * Alte Adressen (#/tuner, #/podcast/3 ...) aus Lesezeichen werden beim Start auf den neuen Pfad umgeleitet.
+ * Der Server liefert für unbekannte Pfade index.html (Dateien mit Endung nicht).
  */
 
 // Mapping: Store Tab-ID -> Route-Prefix
 const TAB_TO_ROUTE = {
-  radio: 'tuner',
-  recordings: 'recorder',
-  podcasts: 'podcast',
-  settings: 'setup'
+  radio: 'radio',
+  recordings: 'aufnahmen',
+  podcasts: 'podcasts',
+  settings: 'einstellungen',
+  wecker: 'wecker'
 };
 
 // Mapping: Route-Prefix -> Store Tab-ID
-const ROUTE_TO_TAB = {
-  tuner: 'radio',
-  recorder: 'recordings',
-  podcast: 'podcasts',
-  setup: 'settings'
-};
+const ROUTE_TO_TAB = Object.fromEntries(Object.entries(TAB_TO_ROUTE).map(([tab, route]) => [route, tab]));
+
+// Frühere Präfixe der Hash-Adressen
+const ALTE_PRAEFIXE = { tuner: 'radio', recorder: 'aufnahmen', podcast: 'podcasts', setup: 'einstellungen' };
+
+const STARTPFAD = '/radio';
 
 // Default-Suffixe für Tabs mit Sub-Navigation
 const ROUTE_DEFAULTS = {
-  setup: {
+  einstellungen: {
     _default: ['allgemein', 'einstellungen'],
     allgemein: ['einstellungen'],
     radio: ['filter']
@@ -35,42 +39,49 @@ const ROUTE_DEFAULTS = {
 };
 
 let _onNavigate = null;
-let _suppressHashChange = false;
 let _currentPath = null;
 let _initialized = false;
 
 /**
- * Parst einen Hash-String in strukturierte Route-Info.
- * @param {string} hash - z.B. "#/setup/radio/filter"
+ * Parst einen Pfad in strukturierte Route-Info.
+ * @param {string} pfad - z.B. "/einstellungen/radio/filter"
  * @returns {{ tab: string, segments: string[], path: string }}
  */
-export function parseHash(hash) {
-  const raw = (hash || '').replace(/^#\/?/, '');
-  const segments = raw.split('/').filter(Boolean);
-
-  if (segments.length === 0) {
-    return { tab: 'radio', segments: [], path: '/tuner' };
-  }
-
-  const routePrefix = segments[0].toLowerCase();
-  const tab = ROUTE_TO_TAB[routePrefix];
-
+export function parsePath(pfad) {
+  const segments = (pfad || '').split('?')[0].split('/').filter(Boolean).map((s) => {
+    try { return decodeURIComponent(s); } catch { return s; }
+  });
+  const tab = segments.length ? ROUTE_TO_TAB[segments[0].toLowerCase()] : null;
   if (!tab) {
-    return { tab: 'radio', segments: [], path: '/tuner' };
+    return { tab: 'radio', segments: [], path: STARTPFAD };
   }
-
   return {
     tab,
     segments: segments.slice(1),
-    path: '/' + segments.join('/')
+    path: '/' + [segments[0].toLowerCase(), ...segments.slice(1).map(encodeURIComponent)].join('/')
   };
 }
 
 /**
- * Baut einen Hash-Pfad aus Segmenten.
- * @param {string} routePrefix - z.B. 'setup'
+ * Wandelt eine alte Hash-Adresse (#/tuner/...) in den neuen Pfad; null, wenn es keine ist.
+ * @param {string} hash
+ * @returns {string|null}
+ */
+export function pfadAusAlterAdresse(hash) {
+  const roh = (hash || '').replace(/^#\/?/, '');
+  if (!roh) return null;
+  const teile = roh.split('/').filter(Boolean);
+  if (!teile.length) return null;
+  const erster = teile[0].toLowerCase();
+  teile[0] = ALTE_PRAEFIXE[erster] || erster;
+  return '/' + teile.join('/');
+}
+
+/**
+ * Baut einen Pfad aus Segmenten.
+ * @param {string} routePrefix - z.B. 'einstellungen'
  * @param {...string} rest - z.B. 'radio', 'filter'
- * @returns {string} - z.B. '/setup/radio/filter'
+ * @returns {string} - z.B. '/einstellungen/radio/filter'
  */
 export function buildPath(routePrefix, ...rest) {
   const parts = [routePrefix, ...rest].filter(Boolean);
@@ -80,11 +91,11 @@ export function buildPath(routePrefix, ...rest) {
 /**
  * Gibt den Default-Pfad für einen Tab zurück.
  * @param {string} tabId - Store Tab-ID (z.B. 'settings')
- * @returns {string} - z.B. '/setup/allgemein/einstellungen'
+ * @returns {string} - z.B. '/einstellungen/allgemein/einstellungen'
  */
 export function getDefaultPath(tabId) {
   const prefix = TAB_TO_ROUTE[tabId];
-  if (!prefix) return '/tuner';
+  if (!prefix) return STARTPFAD;
 
   const defaults = ROUTE_DEFAULTS[prefix];
   if (defaults && defaults._default) {
@@ -94,69 +105,60 @@ export function getDefaultPath(tabId) {
 }
 
 /**
- * Gibt den Default-Suffix für ein Setup-Sub-Tab zurück.
+ * Gibt den Default-Suffix für ein Einstellungs-Sub-Tab zurück.
  * @param {string} subTab - z.B. 'allgemein', 'radio'
  * @returns {string[]} - z.B. ['einstellungen']
  */
 export function getSubDefault(subTab) {
-  const defaults = ROUTE_DEFAULTS.setup;
+  const defaults = ROUTE_DEFAULTS.einstellungen;
   return (defaults && defaults[subTab]) || [];
 }
 
 /**
- * Navigiert zu einem Pfad und aktualisiert den Hash.
- * @param {string} path - z.B. '/setup/radio/filter'
+ * Navigiert zu einem Pfad (neuer Eintrag im Verlauf oder ersetzt den aktuellen).
+ * @param {string} path - z.B. '/einstellungen/radio/filter'
  * @param {{ replace?: boolean }} options
  */
 export function navigate(path, { replace = false } = {}) {
   if (_currentPath === path) return;
   _currentPath = path;
-  _suppressHashChange = true;
-
   if (replace) {
-    const url = new URL(window.location.href);
-    url.hash = path;
-    history.replaceState(null, '', url.toString());
+    history.replaceState(null, '', path);
   } else {
-    window.location.hash = path;
+    history.pushState(null, '', path);
   }
-
-  queueMicrotask(() => { _suppressHashChange = false; });
 }
 
 /**
- * Handler für hashchange (Browser Back/Forward, manuelle Eingabe).
+ * Handler für popstate (Browser Zurück/Vor).
  */
-function handleHashChange() {
-  if (_suppressHashChange) return;
-
-  const info = parseHash(window.location.hash);
+function handlePopState() {
+  const info = parsePath(window.location.pathname);
   _currentPath = info.path;
-
   if (_onNavigate) {
     _onNavigate(info);
   }
 }
 
 /**
- * Initialisiert den Router.
+ * Initialisiert den Router; leitet alte Hash-Adressen und die Wurzel auf echte Pfade um.
  * @param {function} onNavigate - Callback bei Route-Änderung durch Browser
  * @returns {{ tab: string, segments: string[], path: string }}
  */
 export function init(onNavigate) {
-  // Bei HMR: alten Listener entfernen
   if (_initialized) {
-    window.removeEventListener('hashchange', handleHashChange);
+    window.removeEventListener('popstate', handlePopState);
   }
-
   _onNavigate = onNavigate;
-  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('popstate', handlePopState);
   _initialized = true;
 
-  // Initialen Hash parsen
-  const info = parseHash(window.location.hash);
+  const alt = pfadAusAlterAdresse(window.location.hash);
+  const info = parsePath(alt || window.location.pathname);
+  if (alt || window.location.pathname !== info.path) {
+    history.replaceState(null, '', info.path);
+  }
   _currentPath = info.path;
-
   return info;
 }
 
@@ -164,7 +166,7 @@ export function init(onNavigate) {
  * Entfernt den Router-Listener.
  */
 export function destroy() {
-  window.removeEventListener('hashchange', handleHashChange);
+  window.removeEventListener('popstate', handlePopState);
   _onNavigate = null;
   _currentPath = null;
   _initialized = false;
@@ -174,7 +176,7 @@ export function destroy() {
  * Gibt den aktuellen geparsten Zustand zurück.
  */
 export function current() {
-  return parseHash(window.location.hash);
+  return parsePath(window.location.pathname);
 }
 
 export { TAB_TO_ROUTE, ROUTE_TO_TAB };

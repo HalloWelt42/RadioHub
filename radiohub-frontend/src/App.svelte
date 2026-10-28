@@ -14,6 +14,8 @@
   import { api } from './lib/api.js';
   import * as router from './lib/router.js';
   import * as sfx from './lib/uiSounds.js';
+  import { geraet } from './lib/geraet.svelte.js';
+  import Telefon from './components/telefon/Telefon.svelte';
 
   let backendOnline = $state(false);
 
@@ -47,19 +49,14 @@
   // Router init
   $effect(() => {
     const initial = router.init((info) => {
-      // Hash -> State (Browser Back/Forward, manuelle URL-Eingabe)
+      // Pfad -> State (Browser Zurück/Vor)
       appState.activeTab = info.tab;
       appState.routeSegments = info.segments;
     });
 
-    // Initialen Hash anwenden
+    // Initialen Pfad anwenden (alte #-Adressen und die Wurzel hat der Router schon umgeleitet)
     appState.activeTab = initial.tab;
     appState.routeSegments = initial.segments;
-
-    // Default-Hash setzen wenn keiner vorhanden
-    if (!location.hash || location.hash === '#' || location.hash === '#/') {
-      router.navigate('/tuner', { replace: true });
-    }
   });
   
   // Health Check + Config Init
@@ -109,8 +106,17 @@
     return playbackTab === tabId;
   }
 
+  // Interne Links in Texten (Rechtstexte) ohne Neuladen öffnen
+  function internerLink(e) {
+    const a = e.target.closest?.('a.md-link-internal');
+    if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    e.preventDefault();
+    actions.navigateTo(a.getAttribute('href'));
+  }
+
   // === Globale Tastatursteuerung ===
   function handleGlobalKeydown(e) {
+    if (geraet.telefon) return;
     // Nicht abfangen wenn in Input/Textarea
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -183,15 +189,18 @@
   }
 </script>
 
-<svelte:window onkeydown={handleGlobalKeydown} />
+<svelte:window onkeydown={handleGlobalKeydown} onclick={internerLink} />
 
+{#if geraet.telefon}
+  <Telefon />
+{:else}
 <div class="hifi-app">
   <!-- Header -->
   <header class="hifi-header">
     <div class="hifi-logo">
       <div class="hifi-logo-row">
         <span class="hifi-logo-text">{#each 'RadioHub'.split('') as ch, i}<span class="logo-letter" style="--i:{i}">{ch}</span>{/each}</span>
-        <button class="donate-heart" onclick={() => { actions.navigateTo('/setup/allgemein/bedanken'); sfx.select(); }} title={t('app.unterstuetzenTitle')}>
+        <button class="donate-heart" onclick={() => { actions.navigateTo('/einstellungen/allgemein/bedanken'); sfx.select(); }} title={t('app.unterstuetzenTitle')}>
           <i class="fa-solid fa-heart"></i>
         </button>
       </div>
@@ -244,7 +253,7 @@
   
   <!-- Main Content -->
   <main class="hifi-main">
-    {#if appState.activeTab === 'radio'}
+    {#if appState.activeTab === 'radio' || appState.activeTab === 'wecker'}
       <StationsTab />
     {:else if appState.activeTab === 'recordings'}
       <RecordingsTab />
@@ -269,6 +278,7 @@
 
 <!-- Lernmodus Tour-Overlay -->
 <HiFiTour />
+{/if}
 
 <style>
   .hifi-app {

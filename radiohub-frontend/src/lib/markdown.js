@@ -5,6 +5,8 @@
  * Template-Variablen: {{version}}, {{year}}, {{copyright}}
  */
 
+import { pfadAusAlterAdresse } from './router.js';
+
 const templateVars = {
   version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
   year: new Date().getFullYear().toString(),
@@ -22,10 +24,11 @@ function esc(s) {
 function inline(s) {
   s = esc(s);
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Interne Links (#/...) ohne target="_blank", externe mit
+  // Interne Links (#/... aus älteren Texten oder /...) ohne target="_blank", externe mit
   s = s.replace(/\[(.+?)\]\((.+?)\)/g, (_, text, href) => {
-    if (href.startsWith('#/')) {
-      return `<a href="${href}" class="md-link md-link-internal">${text}</a>`;
+    if (href.startsWith('#/') || (href.startsWith('/') && !href.startsWith('//'))) {
+      const pfad = pfadAusAlterAdresse(href) || href;
+      return `<a href="${pfad}" class="md-link md-link-internal">${text}</a>`;
     }
     return `<a href="${href}" target="_blank" rel="noopener" class="md-link">${text}</a>`;
   });

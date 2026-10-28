@@ -88,15 +88,15 @@ export const actions = {
   setTab(tab) {
     appState.activeTab = tab;
     const path = router.getDefaultPath(tab);
-    appState.routeSegments = router.parseHash('#' + path).segments;
+    appState.routeSegments = router.parsePath(path).segments;
     router.navigate(path);
   },
 
-  navigateTo(path) {
-    const info = router.parseHash('#' + path);
+  navigateTo(path, { replace = false } = {}) {
+    const info = router.parsePath(path);
     appState.activeTab = info.tab;
     appState.routeSegments = info.segments;
-    router.navigate(path);
+    router.navigate(path, { replace });
   },
 
   // Theme

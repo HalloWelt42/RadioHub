@@ -27,7 +27,7 @@
     if (appState.activeTab === 'settings'
         && appState.routeSegments?.[0] === 'radio'
         && !appState.routeSegments[1]) {
-      router.navigate('/setup/radio/filter', { replace: true });
+      router.navigate('/einstellungen/radio/filter', { replace: true });
       appState.routeSegments = ['radio', 'filter'];
     }
   });
@@ -39,7 +39,7 @@
       <button
         class="sub-tab-btn"
         class:active={subTab === tab.id}
-        onclick={() => actions.navigateTo('/setup/radio/' + tab.id)}
+        onclick={() => actions.navigateTo('/einstellungen/radio/' + tab.id)}
       >
         <HiFiLed color={subTab === tab.id ? 'green' : 'off'} size="small" />
         {t('setup.' + tab.id)}

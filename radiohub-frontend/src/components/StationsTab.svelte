@@ -313,7 +313,7 @@
     const segKey = seg.join('/');
     if (_deepLinkHandledValue === segKey) return;
 
-    // Such-Deep-Link: /tuner/search/[query]
+    // Such-Deep-Link: /radio/search/[query]
     if (seg[0] === 'search' && seg[1]) {
       _deepLinkHandledValue = segKey;
       searchQuery = decodeURIComponent(seg[1]);
@@ -361,9 +361,9 @@
       focusedIndex = -1; // Fix 5: Keyboard-Focus resetten
       if (searchQuery && searchQuery.length >= 2) {
         saveSearchHistory(searchQuery);
-        actions.navigateTo('/tuner/search/' + encodeURIComponent(searchQuery), { replace: true });
+        actions.navigateTo('/radio/search/' + encodeURIComponent(searchQuery), { replace: true });
       } else if (!searchQuery) {
-        actions.navigateTo('/tuner', { replace: true });
+        actions.navigateTo('/radio', { replace: true });
       }
     } else {
       isLoadingMore = true;
@@ -586,13 +586,13 @@
           _lastPlayTriggeredUuid = station.uuid; _lastPlayTriggeredTs = Date.now();
           actions.playStation(station);
           probeOnPlay(station);
-          actions.navigateTo('/tuner/' + station.uuid);
+          actions.navigateTo('/radio/' + station.uuid);
         }
         break;
       case 'Escape':
         e.preventDefault();
         selectedUuid = null;
-        actions.navigateTo('/tuner');
+        actions.navigateTo('/radio');
         break;
     }
   }
@@ -671,10 +671,10 @@
     // Nur auf/zuklappen, kein Play
     if (selectedUuid === station.uuid) {
       selectedUuid = null;
-      actions.navigateTo('/tuner');
+      actions.navigateTo('/radio');
     } else {
       selectedUuid = station.uuid;
-      actions.navigateTo('/tuner/' + station.uuid);
+      actions.navigateTo('/radio/' + station.uuid);
     }
   }
 
@@ -684,7 +684,7 @@
     _lastPlayTriggeredUuid = station.uuid; _lastPlayTriggeredTs = Date.now();
     actions.playStation(station);
     probeOnPlay(station);
-    actions.navigateTo('/tuner/' + station.uuid);
+    actions.navigateTo('/radio/' + station.uuid);
   }
   
   function toggleFavorite(station, e) {
@@ -799,7 +799,7 @@
 
 
   function openSetupFilter() {
-    actions.navigateTo('/setup/radio/filter');
+    actions.navigateTo('/einstellungen/radio/filter');
   }
 
   async function loadCategoryAssignments(stationList) {
@@ -1012,7 +1012,7 @@
           {/each}
         </div>
       {:else}
-        <div class="empty-hint" onclick={() => { actions.navigateTo('/setup/radio/kategorien'); sfx.click(); }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.navigateTo('/setup/radio/kategorien'); sfx.click(); } }}>
+        <div class="empty-hint" onclick={() => { actions.navigateTo('/einstellungen/radio/kategorien'); sfx.click(); }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.navigateTo('/einstellungen/radio/kategorien'); sfx.click(); } }}>
           {t('stations.kategorienErstellen')}
         </div>
       {/if}

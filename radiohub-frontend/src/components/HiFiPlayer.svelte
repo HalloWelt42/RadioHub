@@ -120,23 +120,23 @@
     if (mode === 'hls' || mode === 'direct') {
       const uuid = appState.currentStation?.uuid;
       appState.sourceJumpRequest = { type: 'radio', id: uuid, ts };
-      actions.navigateTo(uuid ? `/tuner/${uuid}` : '/tuner');
+      actions.navigateTo(uuid ? `/radio/${uuid}` : '/radio');
     } else if (mode === 'podcast') {
       const pod = appState.podcastPlaylistPodcast;
       const podId = pod?.id;
       appState.sourceJumpRequest = { type: 'podcast', id: podId, ts };
       if (podId) {
-        actions.navigateTo(`/podcast/${podId}`);
+        actions.navigateTo(`/podcasts/${podId}`);
       } else {
-        actions.navigateTo('/podcast');
+        actions.navigateTo('/podcasts');
       }
     } else if (mode === 'recording') {
       const rec = appState.currentRecording;
       appState.sourceJumpRequest = { type: 'recording', id: rec?.session_id, ts };
       if (rec?.session_id) {
-        actions.navigateTo(`/recorder/${rec.session_id}`);
+        actions.navigateTo(`/aufnahmen/${rec.session_id}`);
       } else {
-        actions.navigateTo('/recorder');
+        actions.navigateTo('/aufnahmen');
       }
       setTimeout(() => {
         const el = document.querySelector('.session-item.playing, .segment-entry.playing');

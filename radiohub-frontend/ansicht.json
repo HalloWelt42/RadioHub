@@ -1,0 +1,138 @@
+{
+  "anmeldung": false,
+  "thema": {
+    "schluessel": "radiohub-theme",
+    "hell": "light",
+    "dunkel": "dark"
+  },
+  "seiten": [
+    {
+      "name": "radio",
+      "pfad": "/radio",
+      "wechsel": [
+        {
+          "klick": ".kopf-knopf[aria-label='Einstellungen']"
+        }
+      ],
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "podcasts",
+      "pfad": "/podcasts",
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "abo",
+      "pfad": "/podcasts/1",
+      "wechsel": [
+        {
+          "klick": "Ungehört",
+          "fest": [
+            ".filter"
+          ]
+        }
+      ],
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "folge",
+      "pfad": "/podcasts/1/2",
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "gemerkt",
+      "pfad": "/podcasts/gemerkt",
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "wecker",
+      "pfad": "/wecker",
+      "wechsel": [
+        {
+          "klick": "Neuer Wecker"
+        }
+      ],
+      "nur": [
+        375,
+        390,
+        430
+      ]
+    },
+    {
+      "name": "quer",
+      "pfad": "/radio",
+      "nur": [
+        844,
+        932
+      ],
+      "wechsel": [
+        {
+          "klick": "Rot",
+          "fest": [
+            ".uhr"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "aufnahmen",
+      "pfad": "/aufnahmen",
+      "nur": [
+        768,
+        1024,
+        1440,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen",
+      "pfad": "/einstellungen/allgemein/einstellungen",
+      "nur": [
+        768,
+        1024,
+        1440,
+        1920
+      ]
+    },
+    {
+      "name": "rechner-radio",
+      "pfad": "/radio",
+      "nur": [
+        768,
+        1024,
+        1440,
+        1920
+      ]
+    },
+    {
+      "name": "rechner-podcasts",
+      "pfad": "/podcasts",
+      "nur": [
+        768,
+        1024,
+        1440,
+        1920
+      ]
+    }
+  ]
+}

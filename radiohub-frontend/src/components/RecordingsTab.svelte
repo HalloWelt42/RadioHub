@@ -32,9 +32,9 @@
   });
 
   function setView(v) {
-    if (v === 'file-explorer') actions.navigateTo('/recorder/files');
-    else if (v === 'cutter') actions.navigateTo('/recorder/cutter');
-    else actions.navigateTo('/recorder');
+    if (v === 'file-explorer') actions.navigateTo('/aufnahmen/files');
+    else if (v === 'cutter') actions.navigateTo('/aufnahmen/cutter');
+    else actions.navigateTo('/aufnahmen');
   }
 
   // Sidebar
@@ -52,7 +52,7 @@
     loadData();
     loadIgnoredTitles();
     startPolling();
-    // Deep-Link: Search-Query aus URL /recorder/search/[query]
+    // Deep-Link: Search-Query aus URL /aufnahmen/search/[query]
     const segs = appState.routeSegments;
     if (segs?.[0] === 'search' && segs[1]) {
       searchQuery = decodeURIComponent(segs[1]);
@@ -546,9 +546,9 @@
   function handleSearch(query) {
     searchQuery = query;
     if (query && query.length >= 2) {
-      actions.navigateTo('/recorder/search/' + encodeURIComponent(query), { replace: true });
+      actions.navigateTo('/aufnahmen/search/' + encodeURIComponent(query), { replace: true });
     } else if (!query) {
-      actions.navigateTo('/recorder', { replace: true });
+      actions.navigateTo('/aufnahmen', { replace: true });
     }
   }
 </script>

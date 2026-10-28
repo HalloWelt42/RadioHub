@@ -3,7 +3,7 @@
 # Ein-Befehl-Installation auf Pi und Mac:
 #   docker compose up -d
 #
-# Frontend: http://localhost:9092
+# Frontend: http://localhost:9092, mit HTTPS (Telefon, Web-App) https://<rechner>:9093 über radiohub-vorne
 # Backend:  http://localhost:9091  (API direkt; im Frontend per Reverse-Proxy unter /api)
 # Daten:    ./data   (Datenbank, Cache, Zwischenstände; Aufnahmen und Podcast-Folgen liegen in der Kellerwolke)
 #
@@ -32,7 +32,8 @@ services:
       - RADIOHUB_KELLERWOLKE_WURZEL=${RADIOHUB_KELLERWOLKE_WURZEL:-Apps/RadioHub}
       - RADIOHUB_KELLERWOLKE_CA=${RADIOHUB_KELLERWOLKE_CA:-}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      # Python statt curl: curl ist im Abbild nicht enthalten
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -47,3 +48,17 @@ services:
       - TZ=Europe/Berlin
     depends_on:
       - radiohub-backend
+
+  # HTTPS vor der Oberfläche (Zertifikat der Hausstelle in ./zertifikate, siehe tools/zertifikat.sh)
+  radiohub-vorne:
+    image: caddy:2.11.6-alpine
+    container_name: radiohub-vorne
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./zertifikate:/zertifikate:ro
+    depends_on:
+      - radiohub-frontend
