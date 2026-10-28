@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entwürfe Weckeransicht quer</title>
+<link rel="stylesheet" href="../radiohub-frontend/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<style>
+  @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('../radiohub-frontend/node_modules/@fontsource/chakra-petch/files/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Chakra Petch'; font-weight: 500; src: url('../radiohub-frontend/node_modules/@fontsource/chakra-petch/files/chakra-petch-latin-500-normal.woff2') format('woff2'); }
+  :root { --seite: #0b0f14; --text-seite: #c9d4e0; }
+  body { margin: 0; padding: 24px; background: var(--seite); color: var(--text-seite); font-family: 'Chakra Petch', system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 28px 0 4px; }
+  p.erkl { margin: 0 0 12px; font-size: 15px; max-width: 900px; opacity: .8; }
+  .paar { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  /* Telefon quer, 844 x 390 */
+  .tel { width: 844px; height: 390px; border-radius: 34px; overflow: hidden; position: relative; box-shadow: 0 0 0 10px #1c232c;
+    --grund: #0e141b; --text: #e9eef4; --text-2: #8b98a8; --linie: #222c37; --akzent: #f08a24; --akzent-text: #111; --fein: #18212b; }
+  .tel.nacht { --grund: #000; --text: #b3141a; --text-2: #7d0f13; --linie: #2a0507; --akzent: #b3141a; --akzent-text: #000; --fein: #120203; }
+  .flaeche { position: absolute; inset: 0; background: var(--grund); color: var(--text); padding: 18px 44px; box-sizing: border-box; }
+  .ziffern { font-family: 'Chakra Petch'; font-weight: 700; line-height: 1; display: flex; }
+  .ziffern span { display: inline-block; text-align: center; width: .6em; }
+  .ziffern .dp { width: .28em; transform: translateY(-.05em); }
+  .gestreckt { transform: scaleY(1.6); transform-origin: center; }
+  .knopf { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--linie); background: transparent; color: var(--text); font-size: 21px; display: grid; place-items: center; }
+  .knopf.an { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+  .klein { font-size: 15px; color: var(--text-2); font-family: 'Chakra Petch'; font-weight: 500; }
+  .wert { font-size: 22px; font-weight: 700; }
+
+  /* A: Nachttisch, Uhr links, ruhige Spalte rechts */
+  .a { display: grid; grid-template-columns: minmax(0, 1.7fr) 1px minmax(0, 1fr); gap: 28px; align-items: center; }
+  .a .uhr { font-size: 150px; justify-self: center; }
+  .a .trenn { width: 1px; height: 70%; background: var(--linie); }
+  .a .spalte { display: flex; flex-direction: column; gap: 16px; }
+  .a .zeile { display: flex; align-items: center; gap: 10px; }
+  .a .zeile i { width: 20px; color: var(--text-2); }
+  .a .knoepfe { display: flex; gap: 12px; margin-top: 6px; }
+
+  /* B: Uhr vollflächig, Infos als schmale Leiste unten, Knöpfe erst nach Antippen */
+  .b { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+  .b .uhr { font-size: 172px; justify-self: center; align-self: center; }
+  .b .leiste { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--linie); padding-top: 10px; }
+  .b .leiste span { display: flex; gap: 8px; align-items: center; }
+  .b .hinweis { position: absolute; right: 44px; top: 18px; display: flex; gap: 10px; opacity: .9; }
+
+  /* C: Zifferblatt mit Tagbogen, digital klein darunter */
+  .c { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 34px; align-items: center; }
+  .c svg { width: 330px; height: 330px; }
+  .c .spalte { display: flex; flex-direction: column; gap: 14px; }
+  .c .digital { font-size: 64px; }
+  .c .knoepfe { display: flex; gap: 12px; }
+
+  /* D: Uhr oben, Sonnenband darunter, Info rechts unten */
+  .d { display: grid; grid-template-columns: minmax(0, 1fr) 210px; grid-template-rows: minmax(0, 1fr) auto; gap: 8px 28px; }
+  .d .uhr { font-size: 150px; grid-column: 1; align-self: center; justify-self: center; }
+  .d .band { grid-column: 1; position: relative; height: 34px; }
+  .d .band .tag { position: absolute; top: 14px; height: 6px; border-radius: 3px; background: var(--akzent); opacity: .55; }
+  .d .band .nachtteil { position: absolute; top: 14px; height: 6px; left: 0; right: 0; border-radius: 3px; background: var(--fein); }
+  .d .band .jetzt { position: absolute; top: 6px; width: 3px; height: 22px; background: var(--text); border-radius: 2px; }
+  .d .band .m { position: absolute; top: 24px; font-size: 13px; color: var(--text-2); transform: translateX(-50%); }
+  .d .rechts { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; gap: 16px; border-left: 1px solid var(--linie); padding-left: 24px; }
+  .d .knoepfe { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+<h1>Weckeransicht im Querformat: vier Entwürfe</h1>
+<p class="erkl">Jeweils Tag und Nachtrot. Überall Chakra Petch fett, Ziffern in festen Zellen, höchstens drei Knöpfe (Wiedergabe, Ansage: kurz jetzt, lang an/aus, Nacht: automatisch, Rot, normal).</p>
+
+<h2>A · Nachttisch</h2>
+<p class="erkl">Uhr links, eine feine Trennlinie, rechts ruhig untereinander: was läuft, nächster Wecker, Sonne, darunter die drei Knöpfe. Klar und gewohnt.</p>
+<div class="paar">
+  <div class="tel"><div class="flaeche a">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="trenn"></div>
+    <div class="spalte">
+      <div><div class="wert">Morgenwelle</div><div class="klein">läuft · Musik und Nachrichten</div></div>
+      <div class="zeile"><i class="fa-solid fa-bell"></i><div><div class="wert">Mi 06:30</div><div class="klein">Morgenwelle, langsam lauter</div></div></div>
+      <div class="zeile klein"><i class="fa-solid fa-sun"></i>07:52 <i class="fa-solid fa-moon" style="margin-left:10px"></i>17:14</div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf"><i class="fa-solid fa-circle-half-stroke"></i></div></div>
+    </div>
+  </div></div>
+  <div class="tel nacht"><div class="flaeche a">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="trenn"></div>
+    <div class="spalte">
+      <div><div class="wert">Morgenwelle</div><div class="klein">läuft</div></div>
+      <div class="zeile"><i class="fa-solid fa-bell"></i><div><div class="wert">Mi 06:30</div><div class="klein">Morgenwelle</div></div></div>
+      <div class="zeile klein"><i class="fa-solid fa-sun"></i>07:52 <i class="fa-solid fa-moon" style="margin-left:10px"></i>17:14</div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf an"><i class="fa-solid fa-moon"></i></div></div>
+    </div>
+  </div></div>
+</div>
+
+<h2>B · Nur die Uhr</h2>
+<p class="erkl">Die Uhr füllt den Bildschirm. Unten eine schmale Leiste mit Sender, Wecker und Sonne. Die drei Knöpfe erscheinen erst nach Antippen für ein paar Sekunden (oben rechts) und verschwinden wieder. Am ruhigsten in der Nacht.</p>
+<div class="paar">
+  <div class="tel"><div class="flaeche b">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="leiste klein"><span><i class="fa-solid fa-radio"></i>Morgenwelle</span><span><i class="fa-solid fa-bell"></i>Mi 06:30</span><span><i class="fa-solid fa-sun"></i>07:52 <i class="fa-solid fa-moon"></i>17:14</span></div>
+    <div class="hinweis"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf"><i class="fa-solid fa-circle-half-stroke"></i></div></div>
+  </div></div>
+  <div class="tel nacht"><div class="flaeche b">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="leiste klein"><span><i class="fa-solid fa-radio"></i>Morgenwelle</span><span><i class="fa-solid fa-bell"></i>Mi 06:30</span><span><i class="fa-solid fa-sun"></i>07:52 <i class="fa-solid fa-moon"></i>17:14</span></div>
+  </div></div>
+</div>
+
+<h2>C · 24-Stunden-Zifferblatt mit Tagbogen</h2>
+<p class="erkl">Links ein 24-Stunden-Zifferblatt (oben Mitternacht, rechts 6 Uhr, unten Mittag) mit einem Zeiger; ein Bogen am Rand zeigt den hellen Teil des Tages (Sonnenauf- bis -untergang), ein Punkt markiert den Wecker. Rechts die digitale Zeit kleiner, darunter Infos und Knöpfe.</p>
+<div class="paar">
+  <div class="tel"><div class="flaeche c">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="var(--linie)" stroke-width="2"/>
+      <path d="M 181.2 143.2 A 92 92 0 0 1 9.8 118.3" fill="none" stroke="var(--akzent)" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+      <g stroke="var(--text-2)" stroke-width="2">
+        <line x1="100" y1="16" x2="100" y2="26"/><line x1="184" y1="100" x2="174" y2="100"/><line x1="100" y1="184" x2="100" y2="174"/><line x1="16" y1="100" x2="26" y2="100"/>
+      </g>
+      <line x1="100" y1="100" x2="169.6" y2="92.1" stroke="var(--text)" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="191.2" cy="112" r="5" fill="var(--text)"/>
+      <circle cx="100" cy="100" r="5" fill="var(--text)"/>
+    </svg>
+    <div class="spalte">
+      <div class="digital ziffern"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+      <div><div class="wert">Morgenwelle</div><div class="klein">läuft</div></div>
+      <div class="klein"><i class="fa-solid fa-bell"></i> Mi 06:30 · <i class="fa-solid fa-sun"></i> 07:52 · <i class="fa-solid fa-moon"></i> 17:14</div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf"><i class="fa-solid fa-circle-half-stroke"></i></div></div>
+    </div>
+  </div></div>
+  <div class="tel nacht"><div class="flaeche c">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="var(--linie)" stroke-width="2"/>
+      <path d="M 181.2 143.2 A 92 92 0 0 1 9.8 118.3" fill="none" stroke="var(--akzent)" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+      <line x1="100" y1="100" x2="169.6" y2="92.1" stroke="var(--text)" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="191.2" cy="112" r="5" fill="var(--text)"/><circle cx="100" cy="100" r="5" fill="var(--text)"/>
+    </svg>
+    <div class="spalte">
+      <div class="digital ziffern"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+      <div class="klein"><i class="fa-solid fa-bell"></i> Mi 06:30</div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf an"><i class="fa-solid fa-moon"></i></div></div>
+    </div>
+  </div></div>
+</div>
+
+<h2>D · Uhr mit Sonnenband</h2>
+<p class="erkl">Große Uhr, darunter ein Band über 24 Stunden: hell der Tag, dunkel die Nacht, der Strich ist jetzt. Rechts eine schmale Spalte mit Sender, Wecker und Knöpfen.</p>
+<div class="paar">
+  <div class="tel"><div class="flaeche d">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="band"><div class="nachtteil"></div><div class="tag" style="left:33%;right:28%"></div><div class="jetzt" style="left:23%"></div>
+      <span class="m" style="left:33%">07:52</span><span class="m" style="left:72%">17:14</span></div>
+    <div class="rechts">
+      <div><div class="wert">Morgenwelle</div><div class="klein">läuft</div></div>
+      <div><div class="klein"><i class="fa-solid fa-bell"></i> Wecker</div><div class="wert">Mi 06:30</div></div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf"><i class="fa-solid fa-circle-half-stroke"></i></div></div>
+    </div>
+  </div></div>
+  <div class="tel nacht"><div class="flaeche d">
+    <div class="uhr ziffern gestreckt"><span>0</span><span>5</span><span class="dp">:</span><span>3</span><span>4</span></div>
+    <div class="band"><div class="nachtteil"></div><div class="tag" style="left:33%;right:28%"></div><div class="jetzt" style="left:23%"></div>
+      <span class="m" style="left:33%">07:52</span><span class="m" style="left:72%">17:14</span></div>
+    <div class="rechts">
+      <div><div class="wert">Morgenwelle</div><div class="klein">läuft</div></div>
+      <div><div class="klein"><i class="fa-solid fa-bell"></i> Wecker</div><div class="wert">Mi 06:30</div></div>
+      <div class="knoepfe"><div class="knopf"><i class="fa-solid fa-pause"></i></div><div class="knopf an"><i class="fa-solid fa-bell"></i></div><div class="knopf an"><i class="fa-solid fa-moon"></i></div></div>
+    </div>
+  </div></div>
+</div>
+</body>
+</html>
