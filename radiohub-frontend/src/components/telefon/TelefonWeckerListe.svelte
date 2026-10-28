@@ -1,8 +1,10 @@
 <script>
+  import { untrack } from 'svelte';
   /** Wecker am Telefon (/wecker): Liste mit Schalter, Bearbeiten (Uhrzeit, Tage, Sender oder neueste Folge, Lautstärke). */
   import { appState } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
   import { weckerdaten, weckerLaden, weckerSpeichern, weckerLoeschen } from '../../lib/telefon/weckerdaten.svelte.js';
+  import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
 
   let entwurf = $state(null);
   let meldung = $state('');
@@ -11,6 +13,13 @@
   const MINUTEN = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   $effect(() => { weckerLaden(); });
+
+  // Offene Bearbeitung hält eine Aktualisierung auf
+  $effect(() => {
+    const offen = !!entwurf;
+    untrack(() => (offen ? sperren('wecker-bearbeiten') : freigeben('wecker-bearbeiten')));
+    return () => untrack(() => freigeben('wecker-bearbeiten'));
+  });
 
   function neu() {
     const sender = appState.favorites[0] || null;

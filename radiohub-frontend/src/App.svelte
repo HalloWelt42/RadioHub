@@ -16,6 +16,8 @@
   import * as sfx from './lib/uiSounds.js';
   import { geraet } from './lib/geraet.svelte.js';
   import Telefon from './components/telefon/Telefon.svelte';
+  import { starten as aktualisierungStarten, versuchen as aktualisierungVersuchen } from './lib/aktualisierung.svelte.js';
+  import { zeit } from './lib/telefon/zeitansage.svelte.js';
 
   let backendOnline = $state(false);
   let ablage = $state(null);   // Stand der Ablage (Kellerwolke): { verbunden, meldung }
@@ -75,6 +77,15 @@
   // Update-Check starten
   $effect(() => {
     startUpdateChecker();
+  });
+
+  // Selbst-Aktualisierung: neue Fassung erkennen und im nächsten ruhigen Moment wechseln
+  $effect(() => {
+    aktualisierungStarten(appState, () => zeit.laeuft);
+  });
+  $effect(() => {
+    appState.isPlaying; appState.isPaused; appState.activeTab; appState.routeSegments; zeit.laeuft;
+    aktualisierungVersuchen();
   });
   
   const tabs = [
