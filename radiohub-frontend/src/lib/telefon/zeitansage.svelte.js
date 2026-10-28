@@ -6,6 +6,9 @@
  * Nur die Weckeransicht ruft die Ansage auf; verlässt man sie, bricht `abbrechen` sauber ab.
  */
 import { api } from '../api.js';
+import { kontext, entsperren } from './tonkontext.js';
+
+export { entsperren };
 
 const SCHLUESSEL_AN = 'radiohub_zeitansage';
 const SCHLUESSEL_NACHTS = 'radiohub_zeitansage_nachts';
@@ -30,7 +33,6 @@ export const zeit = $state({
   laeuft: false
 });
 
-let _ctx = null;
 let _radio = null;
 let _laden = null;
 let _lauf = null;
@@ -51,21 +53,6 @@ export function nachtsSetzen(wert) {
 /** Das Audio-Element der Wiedergabe, das während der Ansage leise gezogen wird. */
 export function radioSetzen(element) {
   _radio = element;
-}
-
-function kontext() {
-  if (!_ctx) {
-    _ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // iOS: Web Audio auch bei Stummschalter wie Wiedergabe behandeln
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* älteres iOS */ }
-  }
-  return _ctx;
-}
-
-/** Bei jeder Berührung der Weckeransicht: Browser erlauben Ton erst nach einer Geste. */
-export function entsperren() {
-  const c = kontext();
-  if (c.state === 'suspended') c.resume().catch(() => {});
 }
 
 export async function stand() {

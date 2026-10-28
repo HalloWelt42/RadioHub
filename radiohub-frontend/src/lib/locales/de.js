@@ -35,7 +35,6 @@ export default {
     naechster: 'Nächster Favorit',
     spielerOeffnen: 'Spieler öffnen',
     spielerSchliessen: 'Spieler schließen',
-    nichtsLaeuft: 'Nichts läuft',
     live: 'Live',
     gehoert: 'gehört',
     min: 'min',
@@ -79,8 +78,6 @@ export default {
     abbrechen: 'Abbrechen',
     naechsterWecker: 'Nächster Wecker',
     keinWeckerAktiv: 'Kein Wecker aktiv',
-    aufgang: 'Aufgang',
-    untergang: 'Untergang',
     nacht: 'Nachtschaltung',
     nachtAuto: 'Auto',
     nachtAn: 'Rot',
@@ -91,10 +88,8 @@ export default {
     schlummertBis: 'Schlummert bis',
     laeuft: 'läuft',
     pausiert: 'pausiert',
-    zeitAnsagen: 'Zeit ansagen',
     zeitansageAlle5: 'Zeitansage alle 5 Minuten',
     zeitansageHinweis: 'Nur in der Weckeransicht (Telefon quer); das Radio wird dafür leise gezogen.',
-    zeitansageFehlt: 'Bausteine der Zeitansage fehlen',
     zeitansageNachts: 'Zeitansage bei Nachtrot',
     nachtsNormal: 'Normal',
     nachtsLeise: 'Leise',
@@ -103,7 +98,6 @@ export default {
     ansageAus: 'Ansage aus',
     bausteineFehlen: 'Es fehlen {n} Bausteine der Zeitansage.',
     bausteineErzeugen: 'Bausteine erzeugen',
-    weckeransicht: 'Weckeransicht'
   },
 
   // === Navigation ===

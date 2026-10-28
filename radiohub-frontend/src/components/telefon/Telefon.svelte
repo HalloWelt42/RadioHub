@@ -10,6 +10,7 @@
   import { geraet } from '../../lib/geraet.svelte.js';
   import * as medien from '../../lib/telefon/medien.js';
   import { radioSetzen } from '../../lib/telefon/zeitansage.svelte.js';
+  import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import TelefonRadio from './TelefonRadio.svelte';
   import TelefonPodcasts from './TelefonPodcasts.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
@@ -52,6 +53,7 @@
   }
 
   function abspielen() {
+    wunsch.spielen = true;   // ab jetzt soll etwas zu hören sein (der Wächter der Weckeransicht verbindet neu)
     if (appState.isPaused) return actions.resume();
     if (appState.isPlaying) return;
     if (appState.currentEpisode) {
@@ -62,6 +64,7 @@
   }
 
   function pause() {
+    wunsch.spielen = false;
     // Ein direkter Strom ohne Puffer lässt sich nicht anhalten, nur beenden
     if (appState.playerMode === 'direct') actions.stop();
     else actions.pause();
@@ -90,7 +93,7 @@
 
 <div class="telefon">
   {#if geraet.quer}
-    <TelefonWecker {steuerung} />
+    <TelefonWecker {steuerung} audio={audioEl} />
   {:else}
     <header class="kopf">
       <h1>{titel}</h1>

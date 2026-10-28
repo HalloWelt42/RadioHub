@@ -85,18 +85,48 @@
       ]
     },
     {
-      "name": "quer",
+      "name": "quer-sonne",
       "pfad": "/radio",
       "nur": [
         844,
         932
       ],
+      "speicher": {
+        "radiohub_weckerlayout": "sonne",
+        "radiohub_nachtschaltung": "aus"
+      },
       "wechsel": [
         {
-          "klick": "Rot",
+          "klick": ".knoepfe .symbol:last-child",
           "fest": [
-            ".uhr"
+            ".uhr-box"
           ]
+        },
+        {
+          "klick": ".knoepfe .symbol:last-child"
+        }
+      ]
+    },
+    {
+      "name": "quer-uhr",
+      "pfad": "/radio",
+      "nur": [
+        844,
+        932
+      ],
+      "speicher": {
+        "radiohub_weckerlayout": "sonne",
+        "radiohub_nachtschaltung": "an"
+      },
+      "wechsel": [
+        {
+          "wischen": "links",
+          "fest": [
+            ".leiste"
+          ]
+        },
+        {
+          "wischen": "rechts"
         }
       ]
     },

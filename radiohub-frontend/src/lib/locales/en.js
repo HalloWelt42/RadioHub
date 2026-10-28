@@ -35,7 +35,6 @@ export default {
     naechster: 'Next favourite',
     spielerOeffnen: 'Open player',
     spielerSchliessen: 'Close player',
-    nichtsLaeuft: 'Nothing playing',
     live: 'Live',
     gehoert: 'played',
     min: 'min',
@@ -79,8 +78,6 @@ export default {
     abbrechen: 'Cancel',
     naechsterWecker: 'Next alarm',
     keinWeckerAktiv: 'No alarm active',
-    aufgang: 'Sunrise',
-    untergang: 'Sunset',
     nacht: 'Night mode',
     nachtAuto: 'Auto',
     nachtAn: 'Red',
@@ -91,10 +88,8 @@ export default {
     schlummertBis: 'Snoozing until',
     laeuft: 'playing',
     pausiert: 'paused',
-    zeitAnsagen: 'Say the time',
     zeitansageAlle5: 'Time every 5 minutes',
     zeitansageHinweis: 'Only in the alarm view (phone sideways); the radio is turned down meanwhile.',
-    zeitansageFehlt: 'Time announcement parts are missing',
     zeitansageNachts: 'Time announcement in red night mode',
     nachtsNormal: 'Normal',
     nachtsLeise: 'Quiet',
@@ -103,7 +98,6 @@ export default {
     ansageAus: 'Time off',
     bausteineFehlen: '{n} parts of the time announcement are missing.',
     bausteineErzeugen: 'Create parts',
-    weckeransicht: 'Alarm view'
   },
 
   // === Navigation ===
