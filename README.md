@@ -294,6 +294,29 @@ lassen und vorher einmal etwas abspielen, damit der Browser Ton erlaubt. Schlumm
 Den Ort für die Sonnenzeiten (Breite, Länge) trägt man in den Einstellungen am Telefon ein; berechnet wird lokal,
 ohne fremden Dienst.
 
+### Zeitansage
+
+In der Weckeransicht sagt das RadioHub alle 5 Minuten die Uhrzeit an ("Es ist fünf Uhr vierunddreißig", zur vollen
+Stunde ohne Minuten), nur solange die Weckeransicht offen und sichtbar ist. Läuft Radio oder eine Folge, wird es sanft
+leise gezogen (auf dem iPhone stumm, dort lässt der Browser die Lautstärke nicht stellen), nach der Ansage folgen
+2 Sekunden Pause, dann wieder die alte Lautstärke. Der Knopf "Zeit ansagen" sagt sofort an; "Ansage an/aus" schaltet
+die regelmäßige Ansage (gespeichert im Gerät). Bei Nachtrot ist die Ansage leise, normal oder aus (Einstellungen).
+
+Gesprochen wird aus 84 Bausteinen ("Es ist", "null Uhr" bis "dreiundzwanzig Uhr", "eins" bis "neunundfünfzig") in
+der Kellerwolke unter `Apps/RadioHub/Zeitansage/`. Erzeugt werden fehlende einmal über die hauseigene Vertonung mit
+der Zeit-Stimme (Einstellungen am Telefon, "Bausteine erzeugen", oder `POST /api/zeitansage/erzeugen`):
+
+- `.env`: `RADIOHUB_VERTONUNG_ADRESSE=https://<rechner>:8641` und `RADIOHUB_ZEITSTIMME=<Kennung der Zeit-Stimme>`
+- in der Vertonung die Stimme für die App RadioHub freigeben (Private Stimmen für); angemeldet wird mit dem
+  App-Schlüssel der Kellerwolke
+- Stand: `GET /api/zeitansage` (fehlende Bausteine, Meldung der Erzeugung)
+
+### Neue Fassung
+
+Die geöffnete App erkennt eine neue Fassung von selbst (alle 5 Minuten und beim Zurückkehren auf die Seite) und
+wechselt im nächsten ruhigen Moment: nicht während Wiedergabe, Aufnahme, Ansage, Schlummern, offener Bearbeitung
+oder Eingabe. Pfad, Weckeransicht, Wachhalten und der gewählte Sender bleiben.
+
 ### Lokale Entwicklung (ohne Docker)
 
 Voraussetzungen: Python 3.11+, Node.js 18+, FFmpeg.
