@@ -5,7 +5,10 @@
   import { api } from '../../lib/api.js';
   import { wach, wachHaltenSetzen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden, ortSpeichern } from '../../lib/telefon/weckerdaten.svelte.js';
-  import { zeit, zeitansageSchalten, nachtsSetzen, stand as zeitStand } from '../../lib/telefon/zeitansage.svelte.js';
+  import { zeit, zeitansageSchalten, planSetzen, nachtsSetzen, stand as zeitStand } from '../../lib/telefon/zeitansage.svelte.js';
+  import { ABSTAENDE_MIN, SCHLUMMER_ABSTAND_MIN, zeitraumZeiten } from '../../lib/telefon/zeitplan.js';
+
+  const ZEITEN = zeitraumZeiten();
 
   let { onschliessen } = $props();
   let ort = $state({ name: '', breite: '', laenge: '' });
@@ -92,16 +95,44 @@
 
   <section>
     <label class="schalter">
-      <span>{t('telefon.zeitansageAlle5')}</span>
+      <span>{t('telefon.zeitansage')}</span>
       <input type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
     </label>
     <p class="klein">{t('telefon.zeitansageHinweis')}</p>
-    <h3 class="abstand">{t('telefon.zeitansageNachts')}</h3>
-    <div class="wahl drei">
-      {#each [['normal', 'nachtsNormal'], ['leise', 'nachtsLeise'], ['aus', 'nachtsAus']] as [wert, text]}
-        <button class:an={zeit.nachts === wert} aria-pressed={zeit.nachts === wert} onclick={() => nachtsSetzen(wert)}>{t('telefon.' + text)}</button>
-      {/each}
-    </div>
+    {#if zeit.an}
+      <h3 class="abstand">{t('telefon.ansageAbstand')}</h3>
+      <div class="wahl fuenf">
+        {#each ABSTAENDE_MIN as n (n)}
+          <button class:an={zeit.abstand === n} aria-pressed={zeit.abstand === n} aria-label={t('telefon.minuten', { n })}
+            title={t('telefon.minuten', { n })} onclick={() => planSetzen({ abstand: n })}>{n}</button>
+        {/each}
+      </div>
+      <h3 class="abstand">{t('telefon.ansageZeitraum')}</h3>
+      <div class="zwei">
+        {#each [['von', 'ansageVon'], ['bis', 'ansageBis']] as [feld, text] (feld)}
+          <label class="feld"><span>{t('telefon.' + text)}</span>
+            <select value={zeit[feld]} onchange={(e) => planSetzen({ [feld]: e.currentTarget.value })}>
+              <option value="">-</option>
+              {#each ZEITEN as z (z)}<option value={z}>{z}</option>{/each}
+            </select>
+          </label>
+        {/each}
+      </div>
+      <p class="klein">{t('telefon.ansageZeitraumHinweis')}</p>
+      <h3 class="abstand">{t('telefon.ansageWann')}</h3>
+      <div class="wahl">
+        {#each [['wecker', 'ansageNurWecker'], ['immer', 'ansageImmer']] as [wert, text] (wert)}
+          <button class:an={zeit.bedingung === wert} aria-pressed={zeit.bedingung === wert} onclick={() => planSetzen({ bedingung: wert })}>{t('telefon.' + text)}</button>
+        {/each}
+      </div>
+      <p class="klein">{t('telefon.ansageWecken', { n: SCHLUMMER_ABSTAND_MIN })}</p>
+      <h3 class="abstand">{t('telefon.zeitansageNachts')}</h3>
+      <div class="wahl drei">
+        {#each [['normal', 'nachtsNormal'], ['leise', 'nachtsLeise'], ['aus', 'nachtsAus']] as [wert, text]}
+          <button class:an={zeit.nachts === wert} aria-pressed={zeit.nachts === wert} onclick={() => nachtsSetzen(wert)}>{t('telefon.' + text)}</button>
+        {/each}
+      </div>
+    {/if}
     {#if bausteine && bausteine.fehlend.length}
       <p class="klein">{t('telefon.bausteineFehlen', { n: bausteine.fehlend.length })}
         {#if bausteine.erzeugung?.meldung}<br />{bausteine.erzeugung.meldung}{/if}</p>
@@ -172,6 +203,7 @@
   .klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
   .wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .wahl.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wahl.fuenf { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .abstand { margin-top: 12px; }
   .wahl button, .knopf {
     min-height: 48px;
@@ -185,7 +217,7 @@
   .wahl button.an { background: var(--t-akzent); border-color: var(--t-akzent); color: var(--t-akzent-text); font-weight: 600; }
   .knopf { width: 100%; margin-top: 10px; }
   .feld { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 15px; color: var(--t-text-2); min-width: 0; }
-  .feld input {
+  .feld input, .feld select {
     min-height: 48px;
     padding: 0 12px;
     border: 1px solid var(--t-linie);

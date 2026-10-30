@@ -3,15 +3,18 @@
  * Die Bausteine werden einmal geladen und als dekodierte Puffer gehalten; abgespielt wird über Web Audio, so
  * schließen sie ohne Lücke aneinander an. Läuft etwas, wird es sanft leise gezogen (wo der Browser die Lautstärke
  * nicht stellen lässt, etwa iOS, stumm geschaltet), nach der Ansage 2 Sekunden Pause, dann wieder die alte Lautstärke.
- * Nur die Weckeransicht ruft die Ansage auf; verlässt man sie, bricht `abbrechen` sauber ab.
+ * Nur die Weckeransicht ruft die Ansage auf; verlässt man sie, bricht `abbrechen` sauber ab. Die Einstellungen
+ * (an/aus, Abstand, Zeitraum, Bedingung, nachts) liegen hier und im Gerät; wann angesagt wird, rechnet zeitplan.js.
  */
 import { api } from '../api.js';
-import { kontext, entsperren } from './tonkontext.js';
+import { kontext, entsperren } from './tonkontext.svelte.js';
+import { planPruefen } from './zeitplan.js';
 
 export { entsperren };
 
 const SCHLUESSEL_AN = 'radiohub_zeitansage';
 const SCHLUESSEL_NACHTS = 'radiohub_zeitansage_nachts';
+const SCHLUESSEL_PLAN = 'radiohub_zeitansage_plan';
 const BLENDEN_MS = 600;
 const PAUSE_NACH_ANSAGE_MS = 2000;
 const LUECKE_S = 0.06;          // Atempause zwischen den Bausteinen
@@ -25,8 +28,13 @@ function schreiben(schluessel, wert) {
   try { localStorage.setItem(schluessel, wert); } catch { /* privates Fenster */ }
 }
 
+function planLesen() {
+  try { return planPruefen(JSON.parse(lesen(SCHLUESSEL_PLAN, 'null'))); } catch { return planPruefen(null); }
+}
+
 export const zeit = $state({
   an: lesen(SCHLUESSEL_AN, '1') === '1',
+  ...planLesen(),                               // abstand, von, bis, bedingung
   nachts: lesen(SCHLUESSEL_NACHTS, 'leise'),   // 'normal' | 'leise' | 'aus'
   bereit: false,
   fehlend: 0,
@@ -43,6 +51,13 @@ export function zeitansageSchalten(an) {
   zeit.an = an;
   schreiben(SCHLUESSEL_AN, an ? '1' : '0');
   if (!an) abbrechen();
+}
+
+/** Teile des Plans ändern (abstand, von, bis, bedingung); gespeichert wird der geprüfte ganze Plan. */
+export function planSetzen(teil) {
+  const plan = planPruefen({ abstand: zeit.abstand, von: zeit.von, bis: zeit.bis, bedingung: zeit.bedingung, ...teil });
+  Object.assign(zeit, plan);
+  schreiben(SCHLUESSEL_PLAN, JSON.stringify(plan));
 }
 
 export function nachtsSetzen(wert) {

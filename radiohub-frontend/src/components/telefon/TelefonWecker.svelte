@@ -4,7 +4,9 @@
    * "sonne" (D: große Uhr, darunter das Sonnenband, rechts Sender, Wecker, Knöpfe) und "uhr" (B: Uhr vollflächig,
    * unten eine schmale Leiste, die Knöpfe erst nach Antippen). Ein scharfer Wecker ist in beiden unübersehbar.
    * Nachts (nach Sonnenzeiten oder von Hand) dunkelrot auf schwarz. Hält den Bildschirm wach, löst die Wecker aus,
-   * sagt die Zeit an und verbindet neu, wenn der Sender ausfällt; nur solange sie offen ist.
+   * sagt die Zeit an (nach dem Zeitplan der Einstellungen) und verbindet neu, wenn der Sender ausfällt; nur solange
+   * sie offen ist. Solange die Tonausgabe entsperrt ist, wartet eine neue Fassung, denn nach dem Neuladen wäre sie
+   * bis zum nächsten Tippen wieder gesperrt.
    */
   import { onDestroy } from 'svelte';
   import { appState, actions } from '../../lib/store.svelte.js';
@@ -18,6 +20,8 @@
   import { weckeransichtOffen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden } from '../../lib/telefon/weckerdaten.svelte.js';
   import { zeit, ansagen, abbrechen, entsperren, bausteineLaden, zeitansageSchalten } from '../../lib/telefon/zeitansage.svelte.js';
+  import { ansageFaellig } from '../../lib/telefon/zeitplan.js';
+  import { ton, loslassen } from '../../lib/telefon/tonkontext.svelte.js';
   import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
   import WeckerUhr from './WeckerUhr.svelte';
   import WeckerSonnenband from './WeckerSonnenband.svelte';
@@ -190,16 +194,21 @@
   }
 
   // --- Zeitansage -----------------------------------------------------------------------------------------------------
+  // von selbst nach dem Zeitplan (Einstellungen am Telefon); ein Tipp auf die Ziffern sagt immer an
   let angesagt = '';
   function zeitPruefen() {
     const schluessel = `${jetzt.getHours()}:${jetzt.getMinutes()}`;
-    // von selbst nur, solange ein Wecker scharf ist oder geschlummert wird (Nutzer: nicht ohne aktiven Wecker);
-    // ein Tipp auf die Ziffern sagt immer an
-    const weckerAktiv = !!naechster || !!schlummerBis;
-    if (!zeit.an || !weckerAktiv || klingelt || jetzt.getMinutes() % 5 !== 0 || angesagt === schluessel) return;
-    if (document.visibilityState !== 'visible') return;
+    if (angesagt === schluessel || document.visibilityState !== 'visible') return;
+    if (!ansageFaellig(zeit, jetzt, { weckerScharf: !!naechster, schlummert: !!schlummerBis, klingelt: !!klingelt })) return;
     angesagt = schluessel;
     ansagen({ nacht, jetzt });
+  }
+
+  // Ansage-Knopf: ist die Tonausgabe gesperrt (etwa nach dem Neuladen), gibt der erste Tipp nur den Ton frei
+  let tonWarGesperrt = false;
+  function ansageKnopf() {
+    if (zeit.an && tonWarGesperrt) { entsperren(); return; }
+    zeitansageSchalten(!zeit.an);
   }
 
   // Antippen der Ziffern sagt die Zeit sofort an; ohne fertige Bausteine zucken die Ziffern nur kurz
@@ -223,11 +232,13 @@
   function zeigeKnoepfe() { knoepfeBis = Date.now() + KNOEPFE_MS; jetzt = new Date(); }
 
   function down(e) {
-    entsperren();
+    tonWarGesperrt = !ton.laeuft;
+    entsperren();   // mit der Maus zählt schon das Drücken als Geste
     start = { x: e.clientX, y: e.clientY, t: Date.now() };
     if (layout === 'uhr' && knoepfeSichtbar) zeigeKnoepfe();   // jede Berührung hält die Knöpfe offen
   }
   function up(e) {
+    entsperren();   // mit dem Finger erst das Loslassen
     if (!start) return;
     const art = geste(start, { x: e.clientX, y: e.clientY, t: Date.now() });
     start = null;
@@ -248,6 +259,7 @@
   // --- Lebenslauf -----------------------------------------------------------------------------------------------------
   weckeransichtOffen(true);
   weckerLaden();
+  entsperren();   // ohne Geste bleibt der Ton gesperrt, bis getippt wird; die Ansicht zeigt das am Ansage-Knopf
   bausteineLaden();
   try { wecktonVorbereiten(); } catch { /* ohne Web Audio kein Weckton */ }
   const takt = setInterval(() => {
@@ -263,13 +275,20 @@
   }
   document.addEventListener('visibilitychange', sichtbarkeit);
 
+  $effect(() => {
+    if (ton.laeuft) sperren('tonausgabe');
+    else freigeben('tonausgabe');
+  });
+
   onDestroy(() => {
     clearInterval(takt);
     clearInterval(anstieg);
     document.removeEventListener('visibilitychange', sichtbarkeit);
     abbrechen();
+    loslassen();
     waechter.lassen();
     freigeben('schlummern');
+    freigeben('tonausgabe');
     weckeransichtOffen(false);
   });
 
@@ -303,10 +322,11 @@
       aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
       <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
     </button>
-    <!-- Ansage alle 5 Minuten an oder aus; sofort ansagen: auf die Ziffern tippen -->
-    <button class="symbol" class:an={zeit.an} aria-pressed={zeit.an} onclick={() => zeitansageSchalten(!zeit.an)}
-      aria-label={t('telefon.zeitansageAlle5')} title={zeit.an ? t('telefon.ansageAn') : t('telefon.ansageAus')}>
-      <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : zeit.an ? 'fa-comment-dots' : 'fa-comment-slash'}"></i>
+    <!-- Ansage nach Zeitplan an oder aus; ohne Ton (gesperrt) gibt der Tipp erst den Ton frei; sofort: Ziffern -->
+    <button class="symbol" class:an={zeit.an && ton.laeuft} class:gesperrt={zeit.an && !ton.laeuft} aria-pressed={zeit.an}
+      onclick={ansageKnopf} aria-label={t('telefon.zeitansage')}
+      title={zeit.an ? (ton.laeuft ? t('telefon.ansageAn') : t('telefon.tonGesperrt')) : t('telefon.ansageAus')}>
+      <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : !zeit.an ? 'fa-comment-slash' : ton.laeuft ? 'fa-comment-dots' : 'fa-volume-xmark'}"></i>
     </button>
     <button class="symbol" class:an={nachtWahl !== 'aus'} onclick={() => nachtSetzen(NACHT_FOLGE[nachtWahl])}
       aria-label={t('telefon.nacht') + ': ' + t('telefon.' + NACHT_TEXT[nachtWahl])} title={t('telefon.' + NACHT_TEXT[nachtWahl])}>
@@ -429,6 +449,7 @@
     color: var(--w-text); font-size: 22px; display: flex; align-items: center; justify-content: center; touch-action: none; }
   .symbol.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); }
   .symbol:disabled { opacity: 0.4; }
+  .symbol.gesperrt { border-color: var(--w-akzent); color: var(--w-akzent); }
 
   .punkte { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
   .punkte span { width: 6px; height: 6px; border-radius: 50%; background: var(--w-linie); }

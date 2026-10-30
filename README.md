@@ -307,11 +307,21 @@ ohne fremden Dienst.
 
 ### Zeitansage
 
-In der Weckeransicht sagt das RadioHub alle 5 Minuten die Uhrzeit an ("Es ist fünf Uhr vierunddreißig", zur vollen
-Stunde ohne Minuten), nur solange die Weckeransicht offen und sichtbar ist. Läuft Radio oder eine Folge, wird es sanft
+In der Weckeransicht sagt das RadioHub die Uhrzeit an ("Es ist fünf Uhr vierunddreißig", zur vollen Stunde ohne
+Minuten), nur solange die Weckeransicht offen und sichtbar ist. Wann, steht in den Einstellungen am Telefon,
+unabhängig vom Wecker und im Gerät gespeichert: an oder aus, alle 5, 10, 15, 30 oder 60 Minuten (ab Mitternacht
+gezählt), ein Zeitraum von bis (auch über Mitternacht; ohne von und bis rund um die Uhr) und ob nur mit
+eingeschaltetem Wecker oder immer. Beim Wecken gilt der Wecker, bis er aus ist: während er klingelt keine Ansage,
+beim Schlummern alle 5 Minuten. Läuft Radio oder eine Folge, wird es sanft
 leise gezogen (auf dem iPhone stumm, dort lässt der Browser die Lautstärke nicht stellen), nach der Ansage folgen
 2 Sekunden Pause, dann wieder die alte Lautstärke. Der Knopf "Zeit ansagen" sagt sofort an; "Ansage an/aus" schaltet
 die regelmäßige Ansage (gespeichert im Gerät). Bei Nachtrot ist die Ansage leise, normal oder aus (Einstellungen).
+
+Ton gibt der Browser erst nach einem Tippen frei. Die Weckeransicht hält ihn danach offen (eine stille Schleife), damit
+die Ansage auch von selbst zu hören ist. Ist er gesperrt, etwa direkt nach dem Öffnen, steht am Ansage-Knopf ein
+durchgestrichener Lautsprecher in Akzentfarbe: einmal irgendwo tippen gibt den Ton frei (ein Tipp auf den Knopf
+selbst schaltet dann die Ansage nicht aus). Solange der Ton frei ist, wartet eine neue Fassung, bis man die
+Weckeransicht verlässt, denn nach dem Neuladen wäre er wieder gesperrt.
 
 Gesprochen wird aus 84 Bausteinen ("Es ist", "null Uhr" bis "dreiundzwanzig Uhr", "eins" bis "neunundfünfzig") in
 der Kellerwolke unter `Apps/RadioHub/Zeitansage/`. Erzeugt werden fehlende einmal über die hauseigene Vertonung mit
@@ -325,8 +335,8 @@ der Zeit-Stimme (Einstellungen am Telefon, "Bausteine erzeugen", oder `POST /api
 ### Neue Fassung
 
 Die geöffnete App erkennt eine neue Fassung von selbst (alle 5 Minuten und beim Zurückkehren auf die Seite) und
-wechselt im nächsten ruhigen Moment: nicht während Wiedergabe, Aufnahme, Ansage, Schlummern, offener Bearbeitung
-oder Eingabe. Pfad, Weckeransicht, Wachhalten und der gewählte Sender bleiben.
+wechselt im nächsten ruhigen Moment: nicht während Wiedergabe, Aufnahme, Ansage, Schlummern, offener Bearbeitung,
+Eingabe oder solange die Weckeransicht den Ton freigegeben hat. Pfad, Weckeransicht, Wachhalten und der gewählte Sender bleiben.
 
 ### Lokale Entwicklung (ohne Docker)
 

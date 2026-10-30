@@ -2,7 +2,7 @@
  * Weckton aus dem Gerät, ohne Netz: ein im Speicher erzeugter Puffer (Doppelpiep, Pause), der in Schleife läuft,
  * solange der Sender beim Wecken nicht zu hören ist.
  */
-import { kontext } from './tonkontext.js';
+import { kontext } from './tonkontext.svelte.js';
 
 let _puffer = null;
 let _quelle = null;
