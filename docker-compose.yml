@@ -58,7 +58,7 @@ services:
 
   # HTTPS vor der Oberfläche (Zertifikat der Hausstelle in ./zertifikate, siehe tools/zertifikat.sh)
   radiohub-vorne:
-    image: caddy:2.11.6-alpine
+    image: caddy:2.11.7-alpine
     container_name: radiohub-vorne
     restart: unless-stopped
     security_opt: ["no-new-privileges:true"]
