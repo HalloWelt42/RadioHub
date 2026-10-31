@@ -457,3 +457,12 @@ body {
 @media (max-width: 768px) {
     .hifi-show-mobile { display: block; }
 }
+
+/* Tippen ohne Zoom am Telefon (HELF-69, dieselbe Regel wie im Appkern, appkern-oberflaeche/stil/rahmen.css): auf Geräten
+   mit Finger jedes Eingabefeld 17 px; unter 16 px vergrößert iOS beim Tippen die Seite und sie bleibt so. Zoomen mit
+   zwei Fingern bleibt erlaubt. :root doppelt, damit Klassen mit Element es nicht unterbieten. */
+@media (pointer: coarse) {
+  :root:root :is(input, select, textarea, [contenteditable]:not([contenteditable="false"]), .cm-editor) {
+    font-size: 17px;
+  }
+}
