@@ -38,7 +38,7 @@
     align-items: center;
     gap: 12px;
     min-height: 68px;
-    padding: 8px 4px 8px 16px;
+    padding: 8px 4px 8px 0;
     border: none;
     background: transparent;
     color: var(--t-text);

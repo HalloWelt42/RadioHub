@@ -167,14 +167,14 @@
 
 <style>
   .podcasts { padding: 4px 0 16px; }
-  .tf-hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis { margin: 16px 0; color: var(--t-text-2); font-size: 15px; }
   .zurueck {
     display: flex;
     align-items: center;
     gap: 8px;
     max-width: 100%;
     min-height: 48px;
-    padding: 0 16px;
+    padding: 0;
     border: none;
     background: transparent;
     color: var(--t-akzent);
@@ -184,12 +184,12 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-  .tf-titel { margin: 0 16px 8px; font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
+  .tf-titel { margin: 0 0 8px; font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
   .tf-filter {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    margin: 0 12px 8px;
+    margin: 0 0 8px;
   }
   .tf-filter button {
     min-height: 44px;
@@ -210,7 +210,7 @@
     align-items: center;
     gap: 12px;
     min-height: 68px;
-    padding: 8px 8px 8px 16px;
+    padding: 8px 8px 8px 0;
     border: none;
     background: transparent;
     color: var(--t-text);
@@ -229,9 +229,9 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: calc(100% - 32px);
+    width: 100%;
     min-height: 52px;
-    margin: 12px 16px;
+    margin: 12px 0;
     border: none;
     border-radius: 14px;
     background: var(--t-akzent-flaeche);
@@ -242,7 +242,7 @@
   }
   .tf-gross.leise { background: var(--t-flaeche-2); color: var(--t-text); }
   .folge { display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
-  .folge h2 { margin: 12px 16px 4px; font-size: 20px; text-align: center; overflow-wrap: anywhere; }
-  .folge .zusatz { white-space: normal; text-align: center; margin: 0 16px; }
-  .tf-beschreibung { align-self: stretch; margin: 4px 16px; color: var(--t-text-2); font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+  .folge h2 { margin: 12px 0 4px; font-size: 20px; text-align: center; overflow-wrap: anywhere; }
+  .folge .zusatz { white-space: normal; text-align: center; margin: 0; }
+  .tf-beschreibung { align-self: stretch; margin: 4px 0; color: var(--t-text-2); font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
 </style>

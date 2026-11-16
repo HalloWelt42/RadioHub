@@ -146,20 +146,20 @@
 
 <style>
   .wecker { padding: 8px 0 16px; }
-  .tf-hinweis { margin: 8px 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis { margin: 8px 0; color: var(--t-text-2); font-size: 15px; }
   .tf-hinweis.tf-fehler { color: var(--t-fehler); }
   .liste { list-style: none; margin: 0; padding: 0; }
   .tf-zeile { display: flex; align-items: center; border-bottom: 1px solid var(--rand); }
-  .tf-haupt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 8px 8px 8px 16px;
+  .tf-haupt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 8px 8px 8px 0;
     border: none; background: transparent; color: var(--t-text); text-align: left; font: inherit; }
   .uhr { font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .uhr.tf-aus { color: var(--t-text-2); }
   .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .tage-text { font-size: 15px; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tf-schalter { padding: 0 16px; }
+  .tf-schalter { padding: 0; }
   .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); }
-  .form { display: flex; flex-direction: column; gap: 8px; padding: 8px 16px; }
+  .form { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
   .beschriftung { margin-top: 8px; font-size: 15px; color: var(--t-text-2); }
   .tf-zeit { display: flex; align-items: center; gap: 8px; font-size: 28px; }
   select, .tf-wahl button, .tage button, .loeschen, .tf-gross {
@@ -181,5 +181,5 @@
   .regler { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--t-text-2); margin-top: 8px; }
   .regler input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .loeschen { color: var(--t-fehler); }
-  .tf-gross { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 32px); margin: 16px; }
+  .tf-gross { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin: 16px 0; }
 </style>

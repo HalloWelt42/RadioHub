@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/data/kellerwolke.schluessel`, Modus 0600: der App-Schlüssel von vor RAD-6; gilt nur noch, solange die .env keinen festen hat"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: b02c2d0
+stand: 6b871d5
 ---
 
 # RadioHub
@@ -77,12 +77,13 @@ Probe: im Ordner `{{wurzel}}` liegt `.umzug-fertig`; ein zweiter Lauf meldet "sc
 ### 3. Betrieb auf dem Pi
 
 `tools/ausrollen.sh` ausführen. Es prüft, dass Oberfläche und Backend den Appkern vom selben veröffentlichten Commit
-nehmen (nicht aus `frontend/vendor`), dazu Stand, harte Regeln und Tests (Backend, Oberfläche, Typen, Bau) am Mac, stellt das
-Zertifikat aus, holt den Stand nach `{{wurzel}}`, baut, wartet eine laufende Aufnahme ab, sichert beide Datenbanken,
-besorgt die Zugänge (Abschnitt `[zugaenge]`: Adresse und App-Schlüssel der Kellerwolke als feste Einstellungen in die
-`.env`, solange sie dort fehlen), startet neu und prüft über HTTPS Fassung, Datenbank, HTTP/2 und Symbole. Vorher läuft
-die Freigabe des Handbuchs (Seite, Einrichtungsskript, Probelauf). Beim ersten Ausrollen nach RAD-6 gehen die Container
-von davor (Backend, Oberfläche mit nginx) als verwaiste mit; die Datenbank wird ohne Umbau als Stufe 1 übernommen.
+nehmen (nicht aus `frontend/vendor`), dazu Stand, harte Regeln und Tests (Backend, Oberfläche, Typen, Bau) am Mac,
+stellt das Zertifikat aus, holt den Stand nach `{{wurzel}}`, baut, wartet eine laufende Aufnahme ab, sichert beide
+Datenbanken, besorgt die Zugänge (Abschnitt `[zugaenge]`: Adresse und App-Schlüssel der Kellerwolke als feste
+Einstellungen in die `.env`, solange sie dort fehlen), startet neu und prüft über HTTPS Fassung, Datenbank, HTTP/2 und
+Symbole. Vorher läuft die Freigabe des Handbuchs (Seite, Einrichtungsskript, Probelauf). Beim ersten Ausrollen nach
+RAD-6 gehen die Container von davor (Backend, Oberfläche mit nginx) als verwaiste mit; die Datenbank wird ohne Umbau als
+Stufe 1 übernommen.
 
 Probe: die Ausgabe endet mit "Ausgerollt" und nennt den Besitzer; `/health` meldet Fassung {{fassung}} und die
 Datenbank gesund; das Protokoll der App nennt "Bestand ohne Änderung als Stufe 1 übernommen".

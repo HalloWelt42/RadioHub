@@ -72,7 +72,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 12px 12px;
+    margin: 0 0 12px;
     padding: 0 14px;
     min-height: 48px;
     border-radius: 12px;
@@ -90,13 +90,13 @@
     outline: none;
   }
   h2 {
-    margin: 4px 16px 6px;
+    margin: 4px 0 6px;
     font-size: 15px;
     font-weight: 600;
     color: var(--t-text-2);
     text-transform: none;
     letter-spacing: 0;
   }
-  .tf-hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis { margin: 16px 0; color: var(--t-text-2); font-size: 15px; }
   .liste { list-style: none; margin: 0; padding: 0; }
 </style>
