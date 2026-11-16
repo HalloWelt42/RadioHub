@@ -1,0 +1,29 @@
+# Probelauf des Handbuchs (einrichten.sh --probe), zusätzlich zu compose.pi.yml: eigene Namen statt der festen des
+# Betriebs, Backend und Oberfläche ohne Weg nach draußen (das Netz "abgeschottet" hat keinen Ausgang, das Netz haus des
+# Pi gibt es hier nicht; nur der Vorschaltdienst hängt zusätzlich am üblichen Netz, damit sein Port auf diesem Rechner
+# erreichbar ist), kein veröffentlichter Port außer dem des Vorschaltdienstes, nur an 127.0.0.1 und verschoben um den
+# Versatz (PROBE_PORT setzt das Einrichtungsskript in die .env des Probeordners).
+networks:
+  abgeschottet:
+    internal: true
+
+services:
+  radiohub-backend:
+    container_name: ${COMPOSE_PROJECT_NAME:?}-backend
+    image: ${COMPOSE_PROJECT_NAME:?}-backend
+    networks: !override
+      abgeschottet:
+        aliases: [radiohub-backend]
+    ports: !reset []
+  radiohub-frontend:
+    container_name: ${COMPOSE_PROJECT_NAME:?}-frontend
+    image: ${COMPOSE_PROJECT_NAME:?}-frontend
+    networks: !override
+      abgeschottet:
+        aliases: [radiohub-frontend]
+    ports: !reset []
+  vorne:
+    container_name: ${COMPOSE_PROJECT_NAME:?}-vorne
+    networks: [abgeschottet, default]
+    ports: !override
+      - "127.0.0.1:${PROBE_PORT:?}:9093"

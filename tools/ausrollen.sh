@@ -8,6 +8,18 @@
 #   tools/ausrollen.sh            ausrollen
 #   tools/ausrollen.sh --sofort   nicht auf eine laufende Aufnahme warten
 set -euo pipefail
+# >>> handbuch: vorher Seite, Einrichtungsskript, Probelauf und Bau des Handbuchs (eingesetzt von "handbuch einbinden")
+handbuch_befehl="$(command -v handbuch || true)"
+[ -n "$handbuch_befehl" ] || handbuch_befehl="$HOME/.local/bin/handbuch"
+if [ ! -x "$handbuch_befehl" ]; then
+  echo "Abbruch: das Werkzeug handbuch fehlt (Handbuch, Grundlage Mac)" >&2
+  exit 1
+fi
+"$handbuch_befehl" freigabe "$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)" || {
+  echo "Abbruch: das Handbuch ist nicht in Ordnung, nichts ausgerollt" >&2
+  exit 1
+}
+# <<< handbuch
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source tools/werkzeug-python.sh
 ergaenzung="$(mktemp)"

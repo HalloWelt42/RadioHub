@@ -69,4 +69,4 @@ kennung = "G4"
 titel = "Architektur, Plan, Fassung und Betrieb sind da"
 art = "pflicht"
 warum = "Erst das Design, dann der Bau; Entscheidungen und Regeln haben einen festen Ort."
-dateien = ["docs/ARCHITEKTUR.md", "docs/umbau/PLAN.md", "architektur/regeln.toml", "version.json", "compose.pi.yml", "deploy/ausrollen.toml", "deploy/Caddyfile"]
+dateien = ["docs/ARCHITEKTUR.md", "docs/umbau/PLAN.md", "architektur/regeln.toml", "version.json", "compose.pi.yml", "deploy/ausrollen.toml", "deploy/Caddyfile", "docs/handbuch.md", "einrichten.sh"]

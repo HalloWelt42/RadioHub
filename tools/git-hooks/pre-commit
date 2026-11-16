@@ -4,6 +4,15 @@
 # Architekturregeln aus architektur/regeln.toml). Befunde halten den Commit auf; Ausnahmen nur mit Freigabe des Nutzers
 # am Ticket. Die Prüfungen stehen an einer Stelle im Appkern (appkern.werkzeuge).
 set -euo pipefail
+# >>> handbuch: Seite und Einrichtungsskript prüfen (eingesetzt von "handbuch einbinden", nicht von Hand ändern)
+handbuch_befehl="$(command -v handbuch || true)"
+[ -n "$handbuch_befehl" ] || handbuch_befehl="$HOME/.local/bin/handbuch"
+if [ ! -x "$handbuch_befehl" ]; then
+  echo "Abbruch: das Werkzeug handbuch fehlt (Handbuch, Grundlage Mac)" >&2
+  exit 1
+fi
+"$handbuch_befehl" vor-commit "$(git rev-parse --show-toplevel)" || exit 1
+# <<< handbuch
 cd "$(git rev-parse --show-toplevel)"
 source tools/werkzeug-python.sh
 exec "$WERKZEUG_PYTHON" -m appkern.werkzeuge vor-dem-commit
