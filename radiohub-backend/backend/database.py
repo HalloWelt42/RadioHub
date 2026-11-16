@@ -9,6 +9,7 @@ from datetime import datetime
 from contextlib import contextmanager
 
 from .config import DB_PATH, DATA_DIR
+from . import sender_merkmale
 
 # === Konfiguration ===
 DB_TIMEOUT = 30.0
@@ -31,7 +32,8 @@ def get_db() -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous = NORMAL")
     conn.execute("PRAGMA busy_timeout = 30000")
     conn.execute("PRAGMA cache_size = -64000")  # 64MB Cache
-    
+    sender_merkmale.anmelden(conn)
+
     return conn
 
 

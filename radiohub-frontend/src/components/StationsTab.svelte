@@ -361,9 +361,6 @@
       focusedIndex = -1; // Fix 5: Keyboard-Focus resetten
       if (searchQuery && searchQuery.length >= 2) {
         saveSearchHistory(searchQuery);
-        actions.navigateTo('/radio/search/' + encodeURIComponent(searchQuery), { replace: true });
-      } else if (!searchQuery) {
-        actions.navigateTo('/radio', { replace: true });
       }
     } else {
       isLoadingMore = true;
@@ -523,11 +520,27 @@
     isRefreshing = false;
   }
   
+  // Die Adresse folgt nur der Eingabe des Nutzers. Früher schrieb search() sie bei jedem Lauf, auch beim Start,
+  // und warf so jeden direkten Aufruf (/aufnahmen, /radio/<kennung> ...) auf /radio zurück (RAD-2).
+  function adresseZurSuche() {
+    if (appState.activeTab !== 'radio') return;
+    if (searchQuery && searchQuery.length >= 2) {
+      actions.navigateTo('/radio/search/' + encodeURIComponent(searchQuery), { replace: true });
+    } else if (!searchQuery) {
+      actions.navigateTo('/radio', { replace: true });
+    }
+  }
+
+  function sucheDurchNutzer() {
+    adresseZurSuche();
+    return search();
+  }
+
   function handleSearchInput() {
     clearTimeout(searchTimeout);
     showSearchHistory = false;
     if (searchQuery.length >= 2 || searchQuery.length === 0) {
-      searchTimeout = setTimeout(() => search(), 300);
+      searchTimeout = setTimeout(() => sucheDurchNutzer(), 300);
     }
   }
 
@@ -540,7 +553,7 @@
   function selectFromHistory(query) {
     searchQuery = query;
     showSearchHistory = false;
-    search();
+    sucheDurchNutzer();
   }
 
   function clearSearchHistory() {
@@ -1085,7 +1098,7 @@
           onblur={() => { setTimeout(() => showSearchHistory = false, 200); }}
         />
         {#if searchQuery}
-          <button class="search-clear" onclick={() => { searchQuery = ''; search(); }} title={t('common.loeschen')}>&#10005;</button>
+          <button class="search-clear" onclick={() => { searchQuery = ''; sucheDurchNutzer(); }} title={t('common.loeschen')}>&#10005;</button>
         {/if}
         {#if showSearchHistory && searchHistory.length > 0}
           <div class="search-history">

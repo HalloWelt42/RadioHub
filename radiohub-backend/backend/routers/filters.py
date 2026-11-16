@@ -10,15 +10,20 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from ..database import db_session
+from ..services import filtersperren
+from .. import sender_merkmale
 
 router = APIRouter(prefix="/api/filters", tags=["filters"])
 
 
 class FilterCriteria(BaseModel):
     excluded_languages: List[str] = []
-    excluded_countries: List[str] = []
     excluded_tags: List[str] = []
     min_votes: int = 0
+
+    def kriterien(self) -> filtersperren.FilterKriterien:
+        return filtersperren.FilterKriterien(
+            sprachen=self.excluded_languages, tags=self.excluded_tags, mindeststimmen=self.min_votes)
 
 
 class ReleaseRequest(BaseModel):
@@ -27,99 +32,38 @@ class ReleaseRequest(BaseModel):
     all: bool = False
 
 
-def _build_filter_query(criteria: FilterCriteria):
-    """Baut SQL-Bedingungen für Filter-Kriterien"""
-    conditions = []
-    params = []
-
-    for lang in criteria.excluded_languages:
-        conditions.append("language LIKE ?")
-        params.append(f"%{lang}%")
-
-    for cc in criteria.excluded_countries:
-        conditions.append("countrycode = ?")
-        params.append(cc)
-
-    for tag in criteria.excluded_tags:
-        conditions.append("tags LIKE ?")
-        params.append(f"%{tag}%")
-
-    if criteria.min_votes > 0:
-        conditions.append("votes < ?")
-        params.append(criteria.min_votes)
-
-    return conditions, params
+def _noch_frei(conn, kriterien: filtersperren.FilterKriterien) -> list[filtersperren.Sperre]:
+    """Treffer der Kriterien, die noch nicht gesperrt sind (aus welchem Grund auch immer)."""
+    gesperrt = {z[0] for z in conn.execute("SELECT uuid FROM blocklist")}
+    return [s for s in filtersperren.treffer(conn, kriterien) if s.uuid not in gesperrt]
 
 
 @router.post("/preview")
 async def filter_preview(criteria: FilterCriteria):
-    """Vorschau: Welche Sender würden blockiert?"""
-    conditions, params = _build_filter_query(criteria)
-
-    if not conditions:
-        return {"count": 0, "sample": []}
-
+    """Vorschau: Welche Sender würden zusätzlich ausgeblendet?"""
     with db_session() as conn:
-        c = conn.cursor()
-
-        where = " OR ".join(conditions)
-        sql = f"""
-            SELECT uuid, name, country, language, tags, votes
-            FROM stations
-            WHERE ({where})
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
-            ORDER BY votes DESC
-        """
-        c.execute(sql, params)
-        rows = c.fetchall()
-
-        sample = [dict(r) for r in rows[:20]]
-        return {"count": len(rows), "sample": sample}
+        sperren = _noch_frei(conn, criteria.kriterien())
+        if not sperren:
+            return {"count": 0, "sample": []}
+        uuids = [s.uuid for s in sperren]
+        platz = ",".join("?" * len(uuids))
+        sample = [dict(z) for z in conn.execute(
+            f"SELECT uuid, name, country, language, tags, votes FROM stations WHERE uuid IN ({platz})"
+            " ORDER BY votes DESC LIMIT 20", uuids)]
+        return {"count": len(sperren), "sample": sample}
 
 
 @router.post("/push")
 async def filter_push(criteria: FilterCriteria):
-    """Sender blockieren (kumulativ) -- alles in blocklist"""
-    conditions, params = _build_filter_query(criteria)
-
-    if not conditions:
-        return {"hidden_count": 0, "total_hidden": 0}
-
-    # Grund-Strings für jede Kategorie
-    reasons = []
-    for lang in criteria.excluded_languages:
-        reasons.append(f"language:{lang}")
-    for cc in criteria.excluded_countries:
-        reasons.append(f"country:{cc}")
-    for tag in criteria.excluded_tags:
-        reasons.append(f"tag:{tag}")
-    if criteria.min_votes > 0:
-        reasons.append(f"votes<{criteria.min_votes}")
-    reason_str = ", ".join(reasons)
-
+    """Sender ausblenden, die die Kriterien treffen (kommt zu den bestehenden Sperren hinzu)."""
     with db_session() as conn:
-        c = conn.cursor()
-
-        where = " OR ".join(conditions)
-        sql = f"""
-            SELECT uuid, name FROM stations
-            WHERE ({where})
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
-        """
-        c.execute(sql, params)
-        to_block = c.fetchall()
-
-        now = datetime.now().isoformat()
-        for row in to_block:
-            c.execute(
-                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, 'filter', ?)",
-                (row["uuid"], row["name"], reason_str, now)
-            )
-
-        c.execute("SELECT COUNT(*) FROM blocklist")
-        total = c.fetchone()[0]
-
-    return {"hidden_count": len(to_block), "total_hidden": total}
+        sperren = _noch_frei(conn, criteria.kriterien())
+        jetzt = datetime.now().isoformat()
+        conn.executemany(
+            "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, ?, ?)",
+            [(s.uuid, s.name, s.grund, filtersperren.KATEGORIE, jetzt) for s in sperren])
+        total = conn.execute("SELECT COUNT(*) FROM blocklist").fetchone()[0]
+    return {"hidden_count": len(sperren), "total_hidden": total}
 
 
 @router.get("/hidden")
@@ -199,9 +143,9 @@ async def get_languages():
 
         lang_counts = {}
         for row in c.fetchall():
-            for lang in row[0].split(","):
-                lang = lang.strip().lower()
-                if lang and len(lang) > 1:
+            # dieselbe Zerlegung wie beim Ausschließen, damit Liste und Vergleich übereinstimmen
+            for lang in sender_merkmale.eintraege(row[0]):
+                if len(lang) > 1:
                     lang_counts[lang] = lang_counts.get(lang, 0) + 1
 
         sorted_langs = sorted(lang_counts.items(), key=lambda x: x[1], reverse=True)

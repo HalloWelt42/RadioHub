@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from ..database import db_session
+from .. import sender_merkmale
 from .config_service import config_service
 
 # Fallback falls Config nicht geladen
@@ -271,15 +272,14 @@ class CacheService:
                         params.append(f"%{tag}%")
                     conditions.append(f"({' OR '.join(tag_conditions)})")
 
+                # Ausschlüsse vergleichen ganze Einträge, nie Wortteile (RAD-2)
                 if exclude_languages:
-                    for lang in exclude_languages:
-                        conditions.append("NOT (language LIKE ?)")
-                        params.append(f"%{lang}%")
+                    conditions.append(f"{sender_merkmale.SQL_FUNKTION}(language, ?) = 0")
+                    params.append(sender_merkmale.liste_als_parameter(exclude_languages))
 
                 if exclude_tags:
-                    for tag in exclude_tags:
-                        conditions.append("NOT (tags LIKE ?)")
-                        params.append(f"%{tag}%")
+                    conditions.append(f"{sender_merkmale.SQL_FUNKTION}(tags, ?) = 0")
+                    params.append(sender_merkmale.liste_als_parameter(exclude_tags))
 
                 if bitrate_min is not None:
                     conditions.append("bitrate >= ?")

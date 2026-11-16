@@ -168,15 +168,21 @@ class PodcastService:
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute('''INSERT OR REPLACE INTO podcast_subscriptions
+            # Erneutes Abonnieren frischt nur die Angaben des Feeds auf. Früher ersetzte INSERT OR REPLACE die Zeile;
+            # über ON DELETE CASCADE verschwanden dabei alle Folgen mit Hörstand, Kategorien und Einstellungen (RAD-2).
+            c.execute('''INSERT INTO podcast_subscriptions
                 (feed_url, title, author, description, image_url, last_updated, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(feed_url) DO UPDATE SET
+                    title = excluded.title, author = excluded.author, description = excluded.description,
+                    image_url = excluded.image_url, last_updated = excluded.last_updated''',
                 (feed_url, feed_data["title"], feed_data["author"],
                  feed_data["description"][:1000] if feed_data["description"] else "",
                  feed_data["image_url"], datetime.now().isoformat(),
                  datetime.now().isoformat()))
 
-            podcast_id = c.lastrowid
+            podcast_id = c.execute("SELECT id FROM podcast_subscriptions WHERE feed_url = ?",
+                                   (feed_url,)).fetchone()[0]
 
             # Kategorien aus Feed speichern
             if feed_data.get("categories"):
