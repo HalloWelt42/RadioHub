@@ -1,7 +1,7 @@
 """Fassung der App aus version.json, der einzigen Quelle ({version, id, voll}, gezählt vom Git-Haken).
 
 Gesucht wird die nächste version.json oberhalb dieses Pakets: im Repo liegt sie im Wurzelordner, im Abbild des Backends
-neben dem Paket (/app/version.json, siehe radiohub-backend/Dockerfile).
+neben dem Paket (/app/version.json, siehe Dockerfile).
 """
 
 import json

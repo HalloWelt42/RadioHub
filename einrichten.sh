@@ -19,8 +19,8 @@ PROBE_COMPOSE=(-f compose.pi.yml -f deploy/probelauf.compose.yml)
 PROBE_WARTEN_S=300
 
 entwicklung() {
-  cd "$HIER/radiohub-backend"
-  [ -x .venv/bin/python ] || python3 -m venv .venv
+  cd "$HIER/backend"
+  [ -x .venv/bin/python ] || python3.12 -m venv .venv
   .venv/bin/pip install -q --upgrade pip
   .venv/bin/pip install -q -r requirements-test.txt
   cd "$HIER/radiohub-frontend"
@@ -29,7 +29,7 @@ entwicklung() {
   if [ "$(git -C "$HIER" rev-parse --show-toplevel 2>/dev/null)" = "$HIER" ]; then
     git -C "$HIER" config core.hooksPath tools/git-hooks
   fi
-  echo "RadioHub eingerichtet. Tests: radiohub-backend/.venv/bin/python -m pytest (in radiohub-backend), npx vitest run (in radiohub-frontend)"
+  echo "RadioHub eingerichtet. Tests: backend/.venv/bin/python -m pytest (in backend), npx vitest run (in radiohub-frontend)"
 }
 
 # veröffentlichter Port des Vorschaltdienstes laut compose.pi.yml (er steht nur dort)

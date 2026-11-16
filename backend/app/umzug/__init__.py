@@ -9,5 +9,5 @@ Quellen:
 Wiederaufnehmbar: jede Datei steht mit Ziel und Prüfsumme in `umzug_dateien`; ein zweiter Lauf macht nur den Rest.
 Die Quellen bleiben unangetastet; erst `--aufraeumen` verschiebt die Quellordner (nie löschen) in einen Papierkorb.
 
-    python -m backend.umzug [--altes-radio PFAD] [--probe | --aufraeumen --papierkorb PFAD]
+    python -m app.umzug [--altes-radio PFAD] [--probe | --aufraeumen --papierkorb PFAD]
 """

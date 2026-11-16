@@ -8,12 +8,12 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-from backend.ablage import orte
-from backend.config import get_arbeit_dir
-from backend.database import db_session
-from backend.services.aufnahmen import aufnahmen
-from backend.services.audio_utils import probe_duration
-from backend.services.recorder import RecordingSession, rec_manager
+from app.ablage import orte
+from app.config import get_arbeit_dir
+from app.database import db_session
+from app.services.aufnahmen import aufnahmen
+from app.services.audio_utils import probe_duration
+from app.services.recorder import RecordingSession, rec_manager
 from conftest import ton
 
 
@@ -166,7 +166,7 @@ async def test_liegengebliebene_aufnahme_wird_nachgeholt(speicher, tmp_path):
 
 
 async def test_ohne_ablage_kommt_eine_klare_meldung(client, tmp_path):
-    from backend.ablage import KeineAblage, vorgeben
+    from app.ablage import KeineAblage, vorgeben
     vorgeben(KeineAblage("Kellerwolke nicht eingerichtet"))
     antwort = client.get("/api/files/recordings")
     assert antwort.status_code == 503 and "nicht eingerichtet" in antwort.json()["detail"]

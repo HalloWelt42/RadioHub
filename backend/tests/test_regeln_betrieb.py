@@ -56,7 +56,7 @@ def test_nur_der_vorschaltdienst_ist_veroeffentlicht(datei):
 
 
 def test_container_nicht_als_root():
-    backend = (WURZEL / "radiohub-backend/Dockerfile").read_text(encoding="utf-8")
+    backend = (WURZEL / "Dockerfile").read_text(encoding="utf-8")
     assert re.search(r"^USER 1000:1000$", backend, re.MULTILINE)
     oberflaeche = (WURZEL / "radiohub-frontend/Dockerfile").read_text(encoding="utf-8")
     letzte_stufe = oberflaeche.rsplit("\nFROM ", 1)[1]

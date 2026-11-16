@@ -8,10 +8,10 @@ import uuid
 import httpx
 import pytest
 
-from backend import database
-from backend.config import erlaubte_urspruenge
-from backend.database import db_session
-from backend.services import durchleiter
+from app import database
+from app.config import erlaubte_urspruenge
+from app.database import db_session
+from app.services import durchleiter
 
 
 # ----- CORS --------------------------------------------------------------------------------------------------------------

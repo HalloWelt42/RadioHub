@@ -16,13 +16,13 @@ kennung = "S1"
 titel = "Schichten des Backends"
 art = "schichten"
 warum = "Die Schnittstelle nutzt Dienste, nie umgekehrt; die Ablage (Port und Adapter) kennt nur die Grundlagen, damit sie austauschbar bleibt (Kellerwolke, Speicher für Tests)."
-dateien = ["radiohub-backend/backend/**"]
+dateien = ["backend/app/**"]
 schichten = [
-  { name = "schnittstelle", dateien = ["radiohub-backend/backend/routers/**", "radiohub-backend/backend/main.py"] },
-  { name = "werkzeuge", dateien = ["radiohub-backend/backend/umzug/**", "radiohub-backend/backend/werkzeuge/**"] },
-  { name = "dienste", dateien = ["radiohub-backend/backend/services/**"] },
-  { name = "ablage", dateien = ["radiohub-backend/backend/ablage/**"] },
-  { name = "grundlagen", dateien = ["radiohub-backend/backend/config.py", "radiohub-backend/backend/database.py", "radiohub-backend/backend/storage.py", "radiohub-backend/backend/fassung.py", "radiohub-backend/backend/sender_merkmale.py"] },
+  { name = "schnittstelle", dateien = ["backend/app/routers/**", "backend/app/main.py"] },
+  { name = "werkzeuge", dateien = ["backend/app/umzug/**", "backend/app/werkzeuge/**"] },
+  { name = "dienste", dateien = ["backend/app/services/**"] },
+  { name = "ablage", dateien = ["backend/app/ablage/**"] },
+  { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/sender_merkmale.py"] },
 ]
 erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen"], werkzeuge = ["dienste", "ablage", "grundlagen"], dienste = ["ablage", "grundlagen"], ablage = ["grundlagen"] }
 
@@ -45,7 +45,7 @@ kennung = "G1"
 titel = "Keine Bibliotheken aus dem Netz"
 art = "verboten"
 warum = "Schriften, Symbole und Bibliotheken kommen über npm oder pip, nie über CDN-Links zur Laufzeit."
-dateien = ["radiohub-frontend/src/**", "radiohub-frontend/index.html", "radiohub-backend/backend/**"]
+dateien = ["radiohub-frontend/src/**", "radiohub-frontend/index.html", "backend/app/**"]
 muster = 'https?://(cdn|unpkg|cdnjs|fonts\.googleapis|fonts\.gstatic|use\.fontawesome)'
 
 [[regel]]
@@ -61,7 +61,7 @@ kennung = "G3"
 titel = "Keine feste Fassung im Code"
 art = "verboten"
 warum = "version.json ist die einzige Quelle der Fassung; Backend (backend/fassung.py) und Oberfläche (Vite define) lesen sie, nichts schreibt sie von Hand ab."
-dateien = ["radiohub-frontend/src/**", "radiohub-frontend/*.js", "radiohub-frontend/package.json", "radiohub-backend/backend/**"]
+dateien = ["radiohub-frontend/src/**", "radiohub-frontend/*.js", "radiohub-frontend/package.json", "backend/app/**"]
 muster = '''(?i)["']?version["']?\s*[=:]\s*["']v?\d+\.\d+\.\d+'''
 
 [[regel]]
@@ -78,7 +78,7 @@ kennung = "B1"
 titel = "Durchleiter nur per Kennung"
 art = "verboten"
 warum = "Ein Durchleiter für beliebige Adressen öffnet das Heimnetz für jeden, der die App erreicht (SSRF). Die Oberfläche nennt nur Sender oder Folge, die Adresse kommt aus der Datenbank (services/durchleiter.py)."
-dateien = ["radiohub-frontend/src/**", "radiohub-backend/backend/**"]
+dateien = ["radiohub-frontend/src/**", "backend/app/**"]
 muster = '(/stream/proxy|getStreamProxyUrl|proxy\?url=)'
 
 [[regel]]
@@ -86,7 +86,7 @@ kennung = "B2"
 titel = "TLS-Prüfung bleibt an"
 art = "verboten"
 warum = "Ohne Prüfung des Zertifikats kann sich jeder im Weg als Sender, Kellerwolke oder Vertonung ausgeben."
-dateien = ["radiohub-backend/backend/**"]
+dateien = ["backend/app/**"]
 muster = '(verify\s*=\s*False|CERT_NONE|_create_unverified_context|check_hostname\s*=\s*False)'
 
 [[regel]]
@@ -102,7 +102,7 @@ kennung = "B4"
 titel = "Keine CORS-Freigabe für alle Ursprünge"
 art = "verboten"
 warum = "Die Oberfläche spricht /api über denselben Ursprung; eine Freigabe für alle ließe jede fremde Seite im Browser des Nutzers die Schnittstelle bedienen. Fremde Ursprünge nur ausdrücklich über ALLOWED_ORIGINS."
-dateien = ["radiohub-backend/backend/**", "radiohub-frontend/nginx.conf", "radiohub-frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
+dateien = ["backend/app/**", "radiohub-frontend/nginx.conf", "radiohub-frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
 muster = '''(allow_origins\s*=\s*\[\s*["']\*|ALLOWED_ORIGINS\s*[=:]\s*["']?\*|Access-Control-Allow-Origin\s+\*|cors:\s*true)'''
 
 [[regel]]

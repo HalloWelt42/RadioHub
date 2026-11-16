@@ -7,11 +7,11 @@ import uuid
 
 import pytest
 
-from backend import sender_merkmale
-from backend.database import db_session
-from backend.services import filtersperren
-from backend.services.cache import cache_service
-from backend.services.podcast import podcast_service
+from app import sender_merkmale
+from app.database import db_session
+from app.services import filtersperren
+from app.services.cache import cache_service
+from app.services.podcast import podcast_service
 
 PRAEFIX = "rad2-"
 

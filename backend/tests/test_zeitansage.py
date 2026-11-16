@@ -5,8 +5,8 @@ import subprocess
 
 import httpx
 
-from backend.ablage import AblageEinstellungen
-from backend.services.zeitansage import Zeitansage, ZeitansageEinstellungen, ansage, bausteine, stunde_text, zahlwort
+from app.ablage import AblageEinstellungen
+from app.services.zeitansage import Zeitansage, ZeitansageEinstellungen, ansage, bausteine, stunde_text, zahlwort
 
 
 def test_zahlwoerter_und_bausteine():

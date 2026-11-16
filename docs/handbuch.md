@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/.env`, Modus 0600: Adressen der Kellerwolke und der Vertonung, Zertifikatsstelle, Kennung der Zeit-Stimme (keine Schlüssel)"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: b7034e3
+stand: cbd9a3d
 ---
 
 # RadioHub
@@ -42,7 +42,7 @@ Regeln stehen in `docs/ARCHITEKTUR.md`, der Plan der Überarbeitung in `docs/umb
   [[Vertonung]] für die Bausteine der Zeitansage.
 - Ein Zertifikat aus der Hausstelle für den Vorschaltdienst (stellt das Ausrollen aus, mit der Adresse des Pi, damit
   der Vorbau es prüfen kann).
-- Am Mac für Entwicklung und Ausrollen: Python 3.11 oder neuer, Node.js, Docker, mkcert mit der Hausstelle, das
+- Am Mac für Entwicklung und Ausrollen: Python 3.12, Node.js, Docker, mkcert mit der Hausstelle, das
   Werkzeug `handbuch` und der [[Appkern]] mit seiner Umgebung (Prüfungen vor jedem Commit, Bausteine des Ausrollens).
 
 ## Neu einrichten
@@ -56,8 +56,8 @@ Im Ordner des Repos `./einrichten.sh` ausführen: Python-Umgebung des Backends m
 Oberfläche und die Git-Haken (`tools/git-hooks`: Fassung zählen, Zeichen und Stil, harte Regeln aus
 `architektur/regeln.toml`, Kennung RAD-n in jeder Commit-Nachricht).
 
-Probe: `git config core.hooksPath` zeigt `tools/git-hooks`; `radiohub-backend/.venv/bin/python -m pytest` (im Ordner
-`radiohub-backend`) und `npx vitest run` (im Ordner `radiohub-frontend`) melden alle Tests grün.
+Probe: `git config core.hooksPath` zeigt `tools/git-hooks`; `backend/.venv/bin/python -m pytest` (im Ordner
+`backend`) und `npx vitest run` (im Ordner `radiohub-frontend`) melden alle Tests grün.
 
 ### 2. Einmalig: Umzug in den Ordner des Betriebs
 

@@ -6,10 +6,10 @@ Es gelten die Sprachen der Einstellungen und die Tags früherer Ausblendungen (E
 beim Anwenden landen diese Tags auch in den Einstellungen. Sperren von Hand und aus der Werbeerkennung bleiben
 unberührt.
 
-    python -m backend.werkzeuge.filtersperren_neu              Vorschau, ändert nichts
-    python -m backend.werkzeuge.filtersperren_neu --anwenden   Sperren umschreiben
+    python -m app.werkzeuge.filtersperren_neu              Vorschau, ändert nichts
+    python -m app.werkzeuge.filtersperren_neu --anwenden   Sperren umschreiben
 
-Im Betrieb im Container: docker exec radiohub-backend python -m backend.werkzeuge.filtersperren_neu
+Im Betrieb im Container: docker exec radiohub python -m app.werkzeuge.filtersperren_neu
 """
 from __future__ import annotations
 

@@ -21,7 +21,7 @@ services:
   radiohub-backend:
     build:
       context: .
-      dockerfile: radiohub-backend/Dockerfile
+      dockerfile: Dockerfile
     container_name: radiohub-backend
     restart: unless-stopped
     security_opt: ["no-new-privileges:true"]

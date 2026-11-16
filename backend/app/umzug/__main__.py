@@ -1,8 +1,8 @@
 """Umzug des Altbestands: Trockenlauf, Umzug, Aufräumen (siehe README, "Umzug des Altbestands").
 
-    python -m backend.umzug --altes-radio /altes-radio --probe
-    python -m backend.umzug --altes-radio /altes-radio
-    python -m backend.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
+    python -m app.umzug --altes-radio /altes-radio --probe
+    python -m app.umzug --altes-radio /altes-radio
+    python -m app.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def zeigen(dateien: list[Datei], bericht: Bericht, umzug: Umzug) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    teiler = argparse.ArgumentParser(prog="python -m backend.umzug", description="Umzug des Altbestands")
+    teiler = argparse.ArgumentParser(prog="python -m app.umzug", description="Umzug des Altbestands")
     teiler.add_argument("--altes-radio", type=Path, help="Ordner des alten Radios (pyradio.db, recordings/)")
     art = teiler.add_mutually_exclusive_group()
     art.add_argument("--probe", action="store_true", help="Trockenlauf: nur zählen und die Zuordnung zeigen")

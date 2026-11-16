@@ -7,9 +7,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_DIR="$SCRIPT_DIR/radiohub-backend"
+BACKEND_DIR="$SCRIPT_DIR/backend"
 FRONTEND_DIR="$SCRIPT_DIR/radiohub-frontend"
-DATA_DIR="$BACKEND_DIR/data"
+DATA_DIR="$SCRIPT_DIR/data"
 BACKUP_DIR="$SCRIPT_DIR/backups"
 DB_FILE="$DATA_DIR/radiohub.db"
 VENV_UVICORN="$BACKEND_DIR/.venv/bin/uvicorn"
@@ -82,7 +82,7 @@ start_backend() {
     fi
     echo -e "  Backend: ${CYAN}starte...${NC}"
     cd "$BACKEND_DIR"
-    DATA_PATH="$DATA_DIR" nohup "$VENV_UVICORN" backend.main:app \
+    DATA_PATH="$DATA_DIR" nohup "$VENV_UVICORN" app.main:app \
         --host 0.0.0.0 --port $BACKEND_PORT --reload \
         > "$BACKEND_LOG" 2>&1 &
     echo $! > "$BACKEND_PID"
@@ -574,7 +574,7 @@ cmd_dev() {
 
     # Backend starten
     cd "$BACKEND_DIR"
-    DATA_PATH="$DATA_DIR" "$VENV_UVICORN" backend.main:app \
+    DATA_PATH="$DATA_DIR" "$VENV_UVICORN" app.main:app \
         --host 0.0.0.0 --port $BACKEND_PORT --reload &
     local be_pid=$!
 

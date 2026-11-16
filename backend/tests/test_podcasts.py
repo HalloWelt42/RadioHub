@@ -7,9 +7,9 @@ import uuid
 
 import httpx
 
-from backend.config import get_arbeit_dir
-from backend.database import db_session
-from backend.services.podcast import podcast_service
+from app.config import get_arbeit_dir
+from app.database import db_session
+from app.services.podcast import podcast_service
 
 
 def _folge(abo: str, titel: str) -> int:

@@ -7,9 +7,9 @@ import uuid
 
 import pytest
 
-from backend.ablage import AblageEinstellungen, Belegt, KeineAblage, NichtEingerichtet, SpeicherAblage, einrichten
-from backend.ablage import orte
-from backend.ablage.port import sauberer_pfad
+from app.ablage import AblageEinstellungen, Belegt, KeineAblage, NichtEingerichtet, SpeicherAblage, einrichten
+from app.ablage import orte
+from app.ablage.port import sauberer_pfad
 
 PROBE = os.environ.get("RADIOHUB_PROBE_KELLERWOLKE") == "1"
 
@@ -19,7 +19,7 @@ async def adapter(request):
     if request.param == "speicher":
         yield SpeicherAblage()
         return
-    from backend.ablage.kellerwolke import KellerwolkeAblage
+    from app.ablage.kellerwolke import KellerwolkeAblage
     e = AblageEinstellungen.aus_umgebung()
     probe = KellerwolkeAblage.aus_einstellungen(e.model_copy(update={"wurzel": f"{e.wurzel}/Probe-{uuid.uuid4().hex[:8]}"}))
     try:

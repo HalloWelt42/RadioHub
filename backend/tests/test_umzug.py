@@ -9,10 +9,10 @@ from pathlib import Path
 
 import pytest
 
-from backend.ablage import SpeicherAblage, vorgeben
-from backend.config import DATA_DIR, get_cache_dir
-from backend.database import db_session
-from backend.umzug.__main__ import main
+from app.ablage import SpeicherAblage, vorgeben
+from app.config import DATA_DIR, get_cache_dir
+from app.database import db_session
+from app.umzug.__main__ import main
 from conftest import ton
 
 PYRADIO_SCHEMA = """

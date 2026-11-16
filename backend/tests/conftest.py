@@ -19,9 +19,9 @@ _DATEN = Path(tempfile.mkdtemp(prefix="radiohub-test-"))
 os.environ["DATA_PATH"] = str(_DATEN)
 os.environ.pop("STORAGE_CONFIG", None)
 
-import backend.main  # noqa: E402,F401  legt die Datenbank im Testordner an, bevor Dienste sie lesen
-from backend import ablage as ablage_paket  # noqa: E402
-from backend.ablage import SpeicherAblage  # noqa: E402
+import app.main  # noqa: E402,F401  legt die Datenbank im Testordner an, bevor Dienste sie lesen
+from app import ablage as ablage_paket  # noqa: E402
+from app.ablage import SpeicherAblage  # noqa: E402
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -37,7 +37,7 @@ def speicher() -> SpeicherAblage:
 @pytest.fixture
 def client(speicher):
     from fastapi.testclient import TestClient
-    from backend.main import app
+    from app.main import app
     return TestClient(app)
 
 

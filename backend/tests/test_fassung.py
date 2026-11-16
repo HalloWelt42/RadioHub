@@ -4,7 +4,7 @@ melden sie (RAD-5)."""
 import json
 from pathlib import Path
 
-from backend.fassung import FASSUNG, fassung_datei, fassung_lesen
+from app.fassung import FASSUNG, fassung_datei, fassung_lesen
 
 WURZEL = Path(__file__).resolve().parents[2]
 

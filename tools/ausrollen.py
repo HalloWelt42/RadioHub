@@ -1,6 +1,6 @@
 """Ausrollen von RadioHub auf den Pi, vom Mac aus über tools/ausrollen.sh. Ablauf und Bausteine wie im Appkern
 (appkern.werkzeuge.ausrollen: Ziel, Zertifikat, Stand holen, Bauen, Aufräumen); eigen sind bis Etappe 2 nur die Teile,
-die am Aufbau des Radios hängen (Ordner radiohub-backend und radiohub-frontend, Datenbank data/radiohub.db, Fassung
+die am Aufbau des Radios hängen (Ordner backend und radiohub-frontend, Datenbank data/radiohub.db, Fassung
 über /health und die Startseite statt /api/v1/app). Bricht beim ersten Fehler ab:
 
 1. Stand und Tests am Mac: sauberer Baum, gepusht, harte Architekturregeln über das ganze Repo, Tests des Backends,
@@ -90,7 +90,7 @@ def tests(wurzel: Path = WURZEL) -> None:
         print("\n".join(str(b) for b in befunde[:20]))
         raise Abbruch(f"{len(befunde)} Befunde der Architekturregeln (python -m appkern.werkzeuge regeln)")
     print("Architekturregeln eingehalten")
-    backend, oberflaeche = wurzel / "radiohub-backend", wurzel / "radiohub-frontend"
+    backend, oberflaeche = wurzel / "backend", wurzel / "radiohub-frontend"
     _pruefen_lassen("Backend", [".venv/bin/python", "-m", "pytest", "--tb=short"], backend)   # -q steht in pytest.ini
     _pruefen_lassen("Oberflaeche", ["npx", "vitest", "run"], oberflaeche)
     _pruefen_lassen("Bau", ["npm", "run", "build"], oberflaeche)

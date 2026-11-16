@@ -2,8 +2,8 @@
 # Daten, Zertifikate, Sicherungen, Umgebung oder Entwürfe.
 *
 !version.json
-!radiohub-backend/requirements.txt
-!radiohub-backend/backend
+!backend/requirements.txt
+!backend/app
 !radiohub-frontend
 radiohub-frontend/node_modules
 radiohub-frontend/dist

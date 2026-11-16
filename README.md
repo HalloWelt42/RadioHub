@@ -94,8 +94,8 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 
 ```
 radiohub-frontend/    Svelte 5 SPA (im Betrieb nginx, beim Entwickeln Vite)
-radiohub-backend/     FastAPI REST-API
-  backend/
+backend/              FastAPI REST-API (Python 3.12, Paket app nach dem Schema des Appkerns)
+  app/
     ablage/           Ablage der Dateien (Schnittstelle, Kellerwolke, Testablage, Ordnerstruktur)
     routers/          API-Endpunkte
     services/         Business-Logik, Audio-Verarbeitung
@@ -217,7 +217,7 @@ Einstellungen (Umgebung, in Docker über `.env`):
 Prüfungen des Backends (mit einer Testablage im Speicher, nie mit echten Daten):
 
 ```bash
-cd radiohub-backend
+cd backend
 .venv/bin/python -m pytest
 ```
 
@@ -226,7 +226,7 @@ eine echte Kellerwolke, in einem eigenen Probeordner unter dem Wurzelordner, der
 
 ### Umzug des Altbestands
 
-Das Werkzeug `python -m backend.umzug` bringt den Altbestand in die Kellerwolke und in die Datenbank:
+Das Werkzeug `python -m app.umzug` bringt den Altbestand in die Kellerwolke und in die Datenbank:
 
 - heutiges RadioHub: Podcast-Folgen und Aufnahmen unter `data/recordings`; die Pfade in der Datenbank zeigen danach
   auf die Kellerwolke, Ton ohne Eintrag zieht mit (`Podcasts/<Abo>/` oder `Aufnahmen/Ohne Zuordnung/`), Cover
@@ -263,11 +263,11 @@ git pull && dc build radiohub-backend && dc stop radiohub-backend
 
 # 5. Trockenlauf: zählt nur und zeigt die Zuordnung (Datenbank und Dateien bleiben, wie sie sind)
 dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
-  python -u -m backend.umzug --altes-radio /altes-radio --probe
+  python -u -m app.umzug --altes-radio /altes-radio --probe
 
 # 6. Umzug im Hintergrund mit Protokoll (Fortschritt in Prozent und GB); bei Fehlern denselben Befehl wiederholen
 nohup dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
-  python -u -m backend.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
+  python -u -m app.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
 tail -f umzug.log
 
 # 7. Prüfung: der Trockenlauf aus 5. zeigt "0 offen"; dann starten und in der Oberfläche Folgen und Aufnahmen
@@ -276,7 +276,7 @@ dc up -d
 
 # 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach <Papierkorb-Ordner>/papierkorb-radiohub-<datum>
 dc run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:/papierkorb \
-  radiohub-backend python -u -m backend.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
+  radiohub-backend python -u -m app.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 ```
 
 ### Am Telefon
@@ -374,9 +374,9 @@ Starten:
 
 ```bash
 # Backend (Port 9091)
-cd radiohub-backend
+cd backend
 source .venv/bin/activate
-uvicorn backend.main:app --host 127.0.0.1 --port 9091 --reload
+uvicorn app.main:app --host 127.0.0.1 --port 9091 --reload
 
 # Frontend Dev-Server (Port 5180, mit Vite-Proxy auf 9091)
 cd radiohub-frontend

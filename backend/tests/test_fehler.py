@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from backend.services import timeshift_buffer as puffer
-from backend.services.recorder import rec_manager
+from app.services import timeshift_buffer as puffer
+from app.services.recorder import rec_manager
 
 
 async def test_timeshift_startet_aufnahme_mit_await(monkeypatch):
@@ -23,10 +23,10 @@ async def test_timeshift_startet_aufnahme_mit_await(monkeypatch):
 
 async def test_nachholen_nach_teilweisem_ablegen_legt_nichts_doppelt_ab(speicher, tmp_path):
     from datetime import datetime
-    from backend.ablage import orte
-    from backend.config import get_arbeit_dir
-    from backend.database import db_session
-    from backend.services.aufnahmen import aufnahmen
+    from app.ablage import orte
+    from app.config import get_arbeit_dir
+    from app.database import db_session
+    from app.services.aufnahmen import aufnahmen
     from conftest import ton
 
     sid = "hlsrec_probe_doppelt"
