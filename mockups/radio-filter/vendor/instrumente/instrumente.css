@@ -1,0 +1,415 @@
+/* Entwurf RAD-3 (RadioHub, Radio mit Filterung): Kopie aus hifi-regler/appkern/instrumente.css, Stand hifi-regler 9a7c0fe vom 09.11.2026.
+   Laut Plan RAD-1 (Entscheidung 7) wandert die Vorlage HiFi samt Instrumenten in den Appkern; dann kommt diese Datei von
+   dort. Im Entwurf unverändert lassen, eigene Regeln stehen in radio-marken.css und radio-bausteine.css. */
+/* Instrumente: Regler und Anzeigen als neue Bausteine des Appkerns. Grundaussehen flach aus den Marken
+   des Appkerns; eine Vorlage (etwa HiFi) gibt ihnen Material, Licht und Tiefe nur über die Marken unten (--ak-*), nie über
+   eigene Regeln je Baustein. Verhalten in instrumente.js (Regler) und anzeigen.js (Anzeigen).
+
+   Maßsystem (ausführlich auf skalierung.html):
+   - Jedes Instrument ist ein Behälter (container-type: inline-size). Seine Grafik misst sich an der eigenen Zelle (cqi),
+     nie am Fenster: ein Regler weiß nicht, ob er im Knoten, im Rack oder im Inspektor steht.
+   - Die Zelle gibt das Raster des Geräts vor: höchstens --ak-spalten Spalten, jede mindestens --ak-zelle-min breit;
+     darunter bricht die Reihe um.
+   - Drehregler: Ø = clamp(Ø min, 0,72 · Zelle, Ø max) (--ak-d). Alles an der Kappe ist ein Vielfaches von Ø (Riffelrand,
+     Zeiger, Schatten, Glanz); die Skala ist Vektorgrafik mit festem Koordinatensystem (100 Einheiten = 1,32 · Ø).
+   - Schrift und Trefferfläche schrumpfen nie mit: Beschriftung in den Stufen des Appkerns, Trefferfläche ist die ganze
+     Zelle, mindestens 44 Pixel.
+   - Detailstufen statt Verkleinern: ein Skalenstrich braucht 8 Pixel Bogen bis zum nächsten. Der Bogen ist 3/4 · π · Ø,
+     also passen 11 Striche ab Ø 34, 21 ab Ø 68 und Grenzwörter ab Ø 100; mit Ø = 0,72 · Zelle schalten die Abfragen
+     unten bei 47, 94 und 139 Pixel Zellbreite. */
+
+/* Die Marken stehen an der Wurzel und an jedem Teil mit eigenem Thema: dort rechnen sie mit dessen Farben neu */
+:root, [data-theme] {
+  /* == Maße == */
+  --ak-zelle-min: 88px;           /* schmalste Zelle eines Reglers im Raster; darunter bricht die Reihe um */
+  --ak-spalten: 4;                /* höchstens so viele Regler nebeneinander */
+  --ak-luecke: 10px;              /* Abstand der Zellen */
+  --ak-d-min: 40px;               /* kleinste Kappe */
+  --ak-d-anteil: 0.72;            /* Kappe im Verhältnis zur Zelle */
+  --ak-d-max: 112px;              /* größte Kappe */
+  --ak-treffer: 44px;             /* kleinste Trefferfläche (Finger) */
+  --ak-led-d: 12px;               /* Leuchte mittel */
+
+  /* == Flächen == im Grunddesign flach, die Vorlage setzt Material */
+  --ak-front: var(--flaeche);                 /* Front eines Geräts */
+  --ak-front-bild: none;                      /* Struktur der Front: Bürstung, Körnung */
+  --ak-front-licht: none;                     /* Licht über der Front: oben heller, unten dunkler */
+  --ak-tinte: var(--text);                    /* Beschriftung auf der Front */
+  --ak-tinte-2: var(--text-2);                /* Nebenbeschriftung auf der Front */
+  --ak-kante: 0 0 0 1px var(--rand);          /* Kante eines Geräts */
+  --ak-tiefe: var(--schatten);                /* Schatten eines Geräts */
+  --ak-mulde: var(--mulde);                   /* eingelassen: Schiene, Fassung, Schlitz */
+  --ak-mulde-tiefe: inset 0 0 0 1px var(--rand); /* Innenschatten der Mulde */
+  --ak-mulde-tinte: var(--text-2);            /* Schrift in der Mulde (Schiebeschalter) */
+  --ak-mulde-tinte-an: var(--text);           /* gewählte Schrift in der Mulde */
+  --ak-glas: #0b0f14;                         /* Anzeigeglas: in beiden Themen dunkel, Leuchtschrift braucht Nacht */
+  --ak-glas-tinte: #d8e2ee;                   /* Schrift hinter dem Glas */
+  --ak-glas-bild: none;                       /* Spiegelung über dem Glas */
+  --ak-glas-tiefe: inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* Fassung des Glases */
+  --ak-kappe: var(--flaeche-2);               /* Deckel eines Drehreglers */
+  --ak-kappe-bild: none;                      /* Drehschliff des Deckels */
+  --ak-riffel: var(--rand-stark);             /* Riffelrand (Farbe) */
+  --ak-riffel-bild: none;                     /* Riffelrand (Muster, dreht mit) */
+  --ak-kappe-schatten: 0 1px 2px color-mix(in srgb, var(--schattenfarbe) 30%, transparent); /* kleine Teile: Griff, Taster, Mutter */
+  --ak-tiefe-n: .25;                          /* Tiefe der Drehkappe (0 bis 1); Schattenlänge folgt dem Durchmesser */
+  --ak-weich-n: 1;                            /* Weichheit ihres Schattens */
+  --ak-zeiger: var(--text);                   /* Zeigerstrich auf der Kappe */
+  --ak-metall: var(--flaeche-2);              /* Chrom an Tastern, Muttern, Schrauben, Hebeln */
+  --ak-metall-bild: none;
+  --ak-glanz: 0;                              /* Deckkraft der Glanzlichter (0 bis 1) */
+  /* Lichtmodell der Teile: Licht oben links; ein Teil wirft je Millimeter Höhe so weit Schatten (mal Tiefe der Stufe) */
+  --ak-mm-x: calc(1px * var(--ak-tiefe-n));   /* nach rechts je Millimeter */
+  --ak-mm-y: calc(1.5px * var(--ak-tiefe-n)); /* nach unten je Millimeter */
+  --ak-leuchten: 0.35;                        /* Stärke des Überstrahlens (0 bis 1) */
+  --ak-skala: var(--text-3);                  /* Skalenstriche */
+  --ak-bahn: var(--rand-stark);               /* Bahn unter dem Wertbogen */
+  --ak-wert: var(--akzent-flaeche);           /* Wertbogen, Füllung, Griff */
+  --ak-mod: var(--tuerkis);                   /* Modulation (Steuerung türkis) */
+  --ak-farbe: var(--akzent-flaeche);          /* Farbe des Geräts (Modul); die App setzt sie */
+  --ak-auf-farbe: var(--auf-akzent);          /* Schrift auf der Gerätefarbe (Schild); die App setzt sie mit der Farbe als Paar */
+  --ak-aktiv: var(--akzent);                  /* Schrift im aktiven Zustand (gezogen, Fokus) auf der Front; folgt der Front, nicht nur dem Thema */
+  --ak-auswahl-licht: color-mix(in srgb, var(--akzent-flaeche) 22%, rgb(255 255 255 / .16)); /* Lichtkegel über dem gewählten Regler */
+  --ak-lack: var(--flaeche-2);                /* Lack der Front in kleinen Bauformen; die App setzt ihn */
+  --ak-lack-tinte: var(--text);               /* Schrift auf dem Lack */
+
+  /* == Leuchtfarben == in beiden Themen gleich: Licht ist Licht */
+  --led-rot: #ff3b30;
+  --led-gruen: #36e46f;
+  --led-bernstein: #ffae1a;
+  --led-gelb: #ffe14a;
+  --led-blau: #3d8bff;
+  --led-weiss: #f4f8ff;
+  --led-tuerkis: #2ee6d6;
+  --led-violett: #b76bff;
+  --led-cyan: #5ff2ff;
+  --pegel-gut: var(--led-gruen);
+  --pegel-warn: var(--led-gelb);
+  --pegel-spitze: var(--led-rot);
+}
+
+/* ═══ Raster und Gerät ═══ */
+/* höchstens --ak-spalten Spalten, jede mindestens --ak-zelle-min breit (die Formel in max() hält die Spaltenzahl) */
+.ak-raster {
+  display: grid; gap: 14px var(--ak-luecke); justify-items: center; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(max(var(--ak-zelle-min), (100% - (var(--ak-spalten) - 1) * var(--ak-luecke)) / var(--ak-spalten)), 1fr));
+}
+.ak-geraet {
+  container: geraet / inline-size; position: relative; min-width: 0;
+  background-color: var(--ak-front); background-image: var(--ak-front-licht), var(--ak-front-bild);
+  color: var(--ak-tinte); border-radius: var(--r3); box-shadow: var(--ak-kante), var(--ak-tiefe);
+  padding: clamp(10px, 4cqi, 22px);
+}
+.ak-geraet-kopf { display: flex; align-items: center; gap: 10px; min-width: 0; margin-bottom: 12px; }
+.ak-geraet-kopf b { font-size: var(--titel); min-width: 0; overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; line-height: 1.15; }
+/* schmale Geräte: die Leuchte im Kopf ohne Wort (es steht in ihrem Namen für Vorleser), der Name darf umbrechen */
+@container geraet (max-width: 420px) { .ak-geraet-kopf .ak-led-text { display: none; } }
+.ak-geraet-kopf .ak-led { margin-left: auto; }
+.ak-schild { display: inline-flex; align-items: center; gap: 8px; padding: 2px 10px; border-radius: var(--r1); font-weight: 600;
+             background-color: var(--ak-farbe); color: var(--ak-auf-farbe); min-width: 0; }
+.ak-etikett { font-size: var(--marke); color: var(--ak-tinte-2); letter-spacing: .04em; }
+
+/* ═══ Drehregler ═══ */
+ak-dreh {
+  container: regler / inline-size; inline-size: var(--ak-zelle, 100%); min-inline-size: var(--ak-treffer); min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding-block: 2px;
+  touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; outline: none; position: relative;
+  --d: clamp(var(--ak-d-min), calc(var(--ak-d-anteil) * 100cqi), var(--ak-d-max));
+  --a: 0; --winkel: calc(-135deg + var(--a) * 270deg);
+}
+ak-dreh.zieht { cursor: grabbing; }
+ak-dreh[aria-disabled="true"] { cursor: default; opacity: .45; }
+.ak-dreh-koerper { position: relative; inline-size: calc(var(--d) * 1.32); block-size: calc(var(--d) * 1.32); display: grid; place-items: center; }
+.ak-dreh-skala { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.ak-dreh-skala .bahn { fill: none; stroke: var(--ak-bahn); stroke-width: 3.2; stroke-linecap: round; }
+.ak-dreh-skala .wert { fill: none; stroke: var(--ak-wert); stroke-width: 3.2; stroke-linecap: round; }
+.ak-dreh-skala .schein { fill: none; stroke: var(--ak-wert); stroke-width: 9; stroke-linecap: round; opacity: calc(var(--ak-leuchten) * .32); }
+.ak-dreh-skala .mod { fill: none; stroke: var(--ak-mod); stroke-width: 1.8; stroke-linecap: round; }
+.ak-dreh-skala .striche { fill: none; stroke: var(--ak-skala); stroke-width: 1.4px; vector-effect: non-scaling-stroke; stroke-linecap: round; display: none; }
+.ak-dreh-skala .rasten { fill: var(--ak-skala); }
+.ak-dreh-kappe {
+  position: relative; inline-size: var(--d); block-size: var(--d); border-radius: 50%;
+  background-color: var(--ak-riffel);
+  box-shadow: 0 calc(var(--d) * .07 * var(--ak-tiefe-n)) calc(var(--d) * .1 * var(--ak-weich-n)) rgb(0 0 0 / calc(.55 * var(--ak-tiefe-n))),
+              0 calc(var(--d) * .2 * var(--ak-tiefe-n)) calc(var(--d) * .32 * var(--ak-weich-n)) calc(var(--d) * -.06) rgb(0 0 0 / calc(.45 * var(--ak-tiefe-n)));
+}
+/* Riffelrand: dreht mit der Kappe */
+.ak-dreh-kappe::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background-image: var(--ak-riffel-bild); transform: rotate(var(--winkel)); }
+/* Deckel mit Drehschliff: steht still, das Licht kommt immer von oben */
+.ak-dreh-deckel { position: absolute; inset: 15%; border-radius: 50%; background-color: var(--ak-kappe); background-image: var(--ak-kappe-bild);
+                  box-shadow: 0 0 0 1px color-mix(in srgb, var(--schattenfarbe) 35%, transparent); }
+/* Zeigerstrich: dreht */
+.ak-dreh-zeiger { position: absolute; inset: 0; transform: rotate(var(--winkel)); }
+.ak-dreh-zeiger::after { content: ""; position: absolute; left: 50%; top: 8%; inline-size: max(2px, calc(var(--d) * .055)); block-size: 30%;
+                         translate: -50% 0; border-radius: 99px; background: var(--ak-zeiger); }
+/* Schatten des Zeigerstrichs: der Strich steht erhaben auf der Kappe, das Licht kommt fest von oben links, also fällt
+   der Schatten auf dem Bildschirm immer nach rechts unten. Der Strich dreht mit; sein Versatz wird um den Drehwinkel
+   zurückgedreht (x' = dx · cos w + dy · sin w, y' = dy · cos w - dx · sin w). Flach gehalten, mit der Tiefe der Stufe. */
+ak-dreh {
+  --zs-dx: calc(var(--d) * .03 * var(--ak-tiefe-n));
+  --zs-dy: calc(var(--d) * .045 * var(--ak-tiefe-n));
+  --zs-x: calc(var(--zs-dx) * cos(var(--winkel)) + var(--zs-dy) * sin(var(--winkel)));
+  --zs-y: calc(var(--zs-dy) * cos(var(--winkel)) - var(--zs-dx) * sin(var(--winkel)));
+}
+.ak-dreh-zeiger::after {
+  box-shadow:
+    calc(var(--zs-x) * .45) calc(var(--zs-y) * .45) calc(var(--d) * .012) rgb(0 0 0 / calc(.72 * var(--ak-tiefe-n))),   /* Kernschatten */
+    var(--zs-x) var(--zs-y) calc(var(--d) * .024) rgb(0 0 0 / calc(.5 * var(--ak-tiefe-n))),                            /* Halbschatten */
+    calc(var(--zs-x) * -.18) calc(var(--zs-y) * -.18) 0 rgb(255 255 255 / calc(.8 * var(--ak-glanz)));                  /* Lichtkante */
+}
+/* Glanzlicht oben links: steht still */
+.ak-dreh-kappe::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; opacity: var(--ak-glanz);
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 38%),
+              radial-gradient(circle at 50% 50%, transparent 62%, rgba(255, 255, 255, .10) 64%, transparent 70%); }
+.ak-dreh-name, .ak-dreh-wert { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+/* lange Namen brechen deutsch getrennt auf zwei Zeilen statt abgeschnitten zu werden */
+ak-dreh .ak-dreh-name { font-size: var(--marke); color: var(--ak-tinte-2); white-space: normal; text-align: center; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere;
+                        display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.15; }
+.ak-dreh-name { font-size: var(--marke); color: var(--ak-tinte-2); }
+.ak-dreh-wert { font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--ak-tinte); font-variant-numeric: tabular-nums; cursor: text; }
+/* Grenzwörter neben dem unteren Ende des Bogens, so breit wie die Skala (nicht wie die Zelle, sonst laufen Nachbarn zusammen) */
+.ak-dreh-grenzen { display: none; order: -1; inline-size: min(100%, calc(var(--d) * 1.45)); justify-content: space-between; gap: 4px; margin-top: calc(var(--d) * -.2);
+                   font-size: var(--marke); line-height: 1.2; color: var(--ak-tinte-2); pointer-events: none; }
+ak-dreh .ak-dreh-koerper { order: -2; }
+.ak-dreh-grenzen span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ak-dreh-rastname { position: absolute; font-size: var(--marke); color: var(--ak-tinte-2); white-space: nowrap; translate: -50% -50%; pointer-events: none; display: none; }
+.ak-dreh-rastname.an { color: var(--ak-tinte); font-weight: 600; }
+/* Endlosdreher mit Leuchtkranz: Punkte statt Bogen */
+.ak-dreh-skala .kranz circle { fill: color-mix(in srgb, var(--ak-wert) 18%, transparent); }
+.ak-dreh-skala .kranz circle.an { fill: var(--ak-wert); }
+ak-dreh[kappe="ring"] .ak-dreh-skala :is(.bahn, .wert, .schein) { display: none; }
+ak-dreh:not([kappe="ring"]) .ak-dreh-skala .kranz { display: none; }
+/* Detailstufen nach der Zellbreite (Herleitung oben) */
+@container regler (min-width: 47px) { .ak-dreh-skala .striche.s11 { display: inline; } }
+@container regler (min-width: 94px) { .ak-dreh-skala .striche.s11 { display: none; } .ak-dreh-skala .striche.s21 { display: inline; } }
+@container regler (min-width: 139px) { .ak-dreh-grenzen { display: flex; } }
+/* Drehwahl mit Rasten: Namen rund um die Kappe ab einer Zelle, in der sie lesbar Platz haben */
+@container regler (min-width: 150px) { .ak-dreh-rastname { display: block; } ak-dreh[raster] .ak-dreh-koerper { margin: 18px 0 10px; } }
+/* Fokus und Ziehen: Ring um die Kappe, Wert hervorgehoben */
+/* Auswahl und Fokus aller Bedienelemente: kein Rahmen und keine Markierung im
+   Element; ein weicher Lichtkegel fällt auf die Front hinter dem gewählten Element, wie eine kleine Leuchte über dem Pult.
+   Gilt für den Fokus der Tastatur, beim Ziehen und für ein gewähltes Element (Attribut `gewaehlt`, etwa der Regler, den ein
+   Inspektor zeigt). Das Licht ist eine Fläche innerhalb des Elements mit weichem Schein (box-shadow): so ragt nichts über
+   den Rand hinaus, das die Rollfläche vergrößert (Schein ist kein größeres Element). Lage und Größe je Bauform über
+   --licht-flaeche (inset), --licht-weich (Unschärfe) und --licht-weite (Ausdehnung). */
+:is(ak-dreh, ak-schieber, ak-taster, ak-kipp, ak-wahl) { isolation: isolate; }
+:is(ak-schieber, ak-taster, ak-kipp, ak-wahl) { position: relative; }
+:is(ak-dreh, ak-schieber, ak-taster, ak-kipp, ak-wahl)::before { content: ""; position: absolute; inset: var(--licht-flaeche, 6% 16% 40%); z-index: -1;
+  border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity var(--ruhig); background: var(--ak-auswahl-licht);
+  box-shadow: 0 0 var(--licht-weich, 30px) var(--licht-weite, 14px) var(--ak-auswahl-licht); }
+ak-dreh { --licht-weich: calc(var(--d) * .55); --licht-weite: calc(var(--d) * .14); }
+ak-schieber { --licht-flaeche: 26% 10% 30%; --licht-weich: 34px; --licht-weite: 12px; }
+ak-schieber[richtung="senkrecht"] { --licht-flaeche: 6% 30% 22%; --licht-weich: 26px; --licht-weite: 6px; }
+ak-kipp { --licht-flaeche: 14% 22% 32%; --licht-weich: 24px; --licht-weite: 8px; }
+ak-taster { --licht-flaeche: 6% 4% 24%; --licht-weich: 34px; --licht-weite: 22px; }
+ak-wahl { --licht-flaeche: 30% 4% 4%; --licht-weich: 32px; --licht-weite: 20px; }
+:is(ak-dreh, ak-schieber):is(:focus-visible, .zieht, [gewaehlt])::before,
+:is(ak-taster, ak-kipp, ak-wahl):is(:has(:focus-visible), [gewaehlt])::before { opacity: 1; }
+/* die allgemeine Fokusregel der Schale (Rahmen) gilt für die Bedienelemente nicht */
+:is(ak-dreh, ak-schieber):focus-visible, :is(.ak-taster-knopf, .ak-kipp-knopf, .ak-wahl-reihe button):focus-visible { outline: none; }
+ak-dreh:is(.zieht, :focus-visible) .ak-dreh-wert { color: var(--ak-aktiv); }
+.ak-eingabe { font: inherit; font-family: var(--schrift-zahl); font-size: max(17px, var(--klein)); inline-size: 100%; max-inline-size: 9em; text-align: center;
+              border: 0; border-radius: var(--r1); padding: 2px 4px; background: var(--ak-glas); color: var(--ak-glas-tinte); outline: 2px solid var(--akzent-flaeche); }
+
+/* ═══ Schieber ═══ */
+ak-schieber {
+  container: regler / inline-size; inline-size: var(--ak-zelle, 100%); min-width: 0; display: flex; flex-direction: column; gap: 6px;
+  user-select: none; -webkit-user-select: none; outline: none; --a: 0; --griff: 22px; --bahn-h: 10px;
+}
+ak-schieber[aria-disabled="true"] { opacity: .45; }
+.ak-schieber-kopf { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.ak-schieber-kopf .ak-dreh-name { flex: 1; min-width: 0; }
+.ak-schieber-feld { position: relative; block-size: var(--ak-treffer); touch-action: pan-y; cursor: pointer; display: grid; align-items: center; }
+.ak-schieber-bahn { position: relative; block-size: var(--bahn-h); border-radius: 99px; background-color: var(--ak-mulde); box-shadow: var(--ak-mulde-tiefe); overflow: hidden; }
+/* Füllung über transform (nur Zusammensetzen, kein Layout); zweipolig ab der Mitte */
+.ak-schieber-fuellung { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--a)); background: var(--ak-wert); border-radius: inherit; }
+ak-schieber[bipolar] .ak-schieber-fuellung { transform-origin: center; transform: scaleX(calc((var(--a) - .5) * 2)); }
+.ak-schieber-griff {
+  position: absolute; left: 0; top: 50%; inline-size: var(--griff); block-size: var(--griff); margin-top: calc(var(--griff) / -2); border-radius: 50%;
+  transform: translateX(calc(var(--a) * (100cqi - var(--griff)))); background-color: var(--ak-metall); background-image: var(--ak-metall-bild);
+  box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark);
+}
+.ak-schieber-grenzen { display: flex; justify-content: space-between; gap: 8px; font-size: var(--marke); color: var(--ak-tinte-2); margin-top: -6px; }
+.ak-schieber-grenzen span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ak-schieber-grenzen span.an { color: var(--ak-tinte); font-weight: 600; }
+ak-schieber:is(.zieht, :focus-visible) .ak-dreh-wert { color: var(--ak-aktiv); }
+/* Fader: Rille, flacher Griff mit Querstrich */
+ak-schieber[art="fader"] { --griff: 30px; --bahn-h: 6px; }
+ak-schieber[art="fader"] .ak-schieber-griff { border-radius: var(--r2); block-size: 40px; margin-top: -20px; }
+ak-schieber[art="fader"] .ak-schieber-griff::after { content: ""; position: absolute; left: 50%; top: 18%; bottom: 18%; inline-size: 2px; translate: -50% 0; background: var(--ak-zeiger); }
+ak-schieber[art="fader"] .ak-schieber-fuellung { display: none; }
+/* Leuchtschiene: Segmente, Füllung leuchtet, Griff als Lichtpunkt */
+.ak-schieber-bahn .segmente { position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, transparent 0 calc(var(--seg-w, 22px) - 2px), color-mix(in srgb, var(--ak-glas) 70%, transparent) calc(var(--seg-w, 22px) - 2px) var(--seg-w, 22px)); }
+ak-schieber[art="leuchte"] { --bahn-h: 16px; --griff: 24px; }
+ak-schieber[art="leuchte"] .ak-schieber-bahn { border-radius: var(--r1); background-color: var(--ak-glas); }
+ak-schieber[art="leuchte"] .ak-schieber-fuellung { border-radius: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--ak-wert) 55%, transparent), var(--ak-wert)); }
+ak-schieber[art="leuchte"] .ak-schieber-griff { background: radial-gradient(circle, #fff 0 40%, color-mix(in srgb, var(--ak-wert) 70%, #fff) 70%);
+  box-shadow: 0 0 calc(18px * var(--ak-leuchten)) var(--ak-wert), 0 0 0 2px color-mix(in srgb, var(--ak-wert) 40%, transparent); }
+/* Leuchtbalken: LED-Kette als Eingabe, kein Griff */
+ak-schieber[art="balken"] { --bahn-h: 18px; }
+ak-schieber[art="balken"] .ak-schieber-bahn { border-radius: var(--r1); background-color: var(--ak-glas); }
+ak-schieber[art="balken"] .ak-schieber-fuellung { border-radius: 0; }
+ak-schieber[art="balken"] .ak-schieber-griff { display: none; }
+/* senkrecht: feste Bahnhöhe, Griff über translateY */
+ak-schieber[richtung="senkrecht"] { align-items: center; --hoehe: clamp(150px, 26vh, 240px); inline-size: var(--ak-zelle, 72px); }
+ak-schieber[richtung="senkrecht"] .ak-schieber-kopf { flex-direction: column; align-items: center; gap: 0; order: 2; }
+ak-schieber[richtung="senkrecht"] .ak-schieber-feld { block-size: var(--hoehe); inline-size: var(--ak-treffer); touch-action: pan-x; justify-items: center; align-items: stretch; }
+ak-schieber[richtung="senkrecht"] .ak-schieber-bahn { inline-size: var(--bahn-h); block-size: 100%; }
+ak-schieber[richtung="senkrecht"] .ak-schieber-fuellung { transform-origin: center bottom; transform: scaleY(var(--a)); }
+ak-schieber[richtung="senkrecht"] .ak-schieber-griff { left: 50%; top: 0; margin: 0; translate: -50% 0; transform: translateY(calc((1 - var(--a)) * (var(--hoehe) - var(--griff-h, var(--griff))))); }
+ak-schieber[richtung="senkrecht"][art="fader"] .ak-schieber-griff { inline-size: 40px; block-size: 26px; --griff-h: 26px; }
+ak-schieber[richtung="senkrecht"][art="fader"] .ak-schieber-griff::after { top: 50%; bottom: auto; left: 16%; right: 16%; inline-size: auto; block-size: 2px; translate: 0 -50%; }
+ak-schieber[richtung="senkrecht"] .ak-schieber-grenzen { display: none; }
+
+/* ═══ Taster ═══ */
+ak-taster { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.ak-taster-knopf {
+  position: relative; display: inline-grid; place-items: center; min-inline-size: var(--ak-treffer); min-block-size: var(--ak-treffer);
+  border: 0; padding: 0 16px; border-radius: var(--r2); cursor: pointer; font: inherit; font-size: var(--klein); font-weight: 600; letter-spacing: .04em;
+  color: var(--ak-tinte); background-color: var(--ak-metall); background-image: var(--ak-metall-bild); box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark);
+  transition: transform var(--schnell), box-shadow var(--schnell);
+}
+.ak-taster-knopf:active, ak-taster.gedrueckt .ak-taster-knopf { transform: translateY(1px) scale(.985); }
+.ak-taster-text { font-size: var(--marke); color: var(--ak-tinte-2); letter-spacing: .04em; text-align: center; }
+/* Fußtaster: runder Stößel in Sechskantmutter */
+ak-taster[art="fuss"] .ak-taster-knopf { inline-size: 72px; block-size: 72px; padding: 0; border-radius: 50%; background: none; box-shadow: none; }
+.ak-taster-mutter { position: absolute; inset: 0; clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+  background-color: var(--ak-metall); background-image: var(--ak-metall-bild), linear-gradient(160deg, rgba(255,255,255,calc(.35 * var(--ak-glanz))), rgba(0,0,0,.35)); }
+ak-taster[art="fuss"] .ak-taster-knopf::before { content: ""; position: absolute; inset: 15px; z-index: 1; border-radius: 50%; background-color: var(--ak-metall); background-image: var(--ak-metall-bild);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--schattenfarbe) 45%, transparent), inset 0 1px 1px rgba(255, 255, 255, calc(.5 * var(--ak-glanz))); transition: transform var(--schnell); }
+ak-taster[art="fuss"].gedrueckt .ak-taster-knopf::before { transform: scale(.94); }
+/* gedrückt sinkt nur der Stößel, die Mutter bleibt stehen */
+ak-taster[art="fuss"] .ak-taster-knopf:active, ak-taster[art="fuss"].gedrueckt .ak-taster-knopf { transform: none; }
+/* Pillentaster: rund mit Leuchtring */
+ak-taster[art="pille"] .ak-taster-knopf { inline-size: 76px; block-size: 76px; padding: 0; border-radius: 50%; font-size: var(--klein); }
+ak-taster[art="pille"] .ak-taster-knopf::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--farbe, var(--led-weiss)) 22%, transparent); transition: box-shadow var(--ruhig); }
+ak-taster[art="pille"][an] .ak-taster-knopf::before, ak-taster[art="pille"].gedrueckt .ak-taster-knopf::before {
+  box-shadow: 0 0 0 3px var(--farbe, var(--led-weiss)), 0 0 calc(22px * var(--ak-leuchten)) var(--farbe, var(--led-weiss)); }
+/* Flachtaster: rechteckig mit Leuchtstreifen über dem Wort */
+ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 120px; block-size: 48px; flex-direction: column; gap: 6px; }
+.ak-taster-streifen { display: block; inline-size: 26px; block-size: 4px; border-radius: 2px; background: color-mix(in srgb, var(--farbe, var(--led-gruen)) 20%, var(--ak-glas)); transition: background var(--schnell), box-shadow var(--schnell); }
+ak-taster[an] .ak-taster-streifen { background: var(--farbe, var(--led-gruen)); box-shadow: 0 0 calc(10px * var(--ak-leuchten)) var(--farbe, var(--led-gruen)); }
+/* Glastaster: die ganze Kappe leuchtet */
+ak-taster[art="glas"] .ak-taster-knopf { inline-size: 56px; block-size: 56px; padding: 0; font-size: 20px;
+  background-color: color-mix(in srgb, var(--farbe, var(--led-rot)) 22%, var(--ak-glas)); color: color-mix(in srgb, var(--farbe, var(--led-rot)) 60%, #fff); }
+ak-taster[art="glas"][an] .ak-taster-knopf { background-color: var(--farbe, var(--led-rot)); color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .3), 0 0 calc(24px * var(--ak-leuchten)) var(--farbe, var(--led-rot)), inset 0 0 12px rgba(255, 255, 255, .35); }
+
+/* ═══ Kippschalter ═══ */
+ak-kipp { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.ak-kipp-knopf { position: relative; inline-size: 56px; block-size: 92px; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; display: grid; place-items: center; }
+.ak-kipp-mutter { position: absolute; inline-size: 34px; block-size: 34px; border-radius: 50%; background-color: var(--ak-metall); background-image: var(--ak-metall-bild);
+  box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark); }
+.ak-kipp-mutter::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: radial-gradient(circle, #111 0 40%, #3a3d42 100%); }
+/* Hebel: oben, Mitte (zeigt zum Betrachter, verkürzt) oder unten */
+.ak-kipp-hebel { position: absolute; left: 50%; top: 50%; inline-size: 14px; block-size: 40px; margin: -40px 0 0 -7px; border-radius: 7px;
+  transform-origin: 50% 100%; transition: transform var(--schnell);
+  background-color: var(--ak-metall); background-image: linear-gradient(90deg, rgba(0,0,0,.25), rgba(255,255,255,calc(.55 * var(--ak-glanz))) 40%, rgba(0,0,0,.3));
+  box-shadow: 0 6px 6px color-mix(in srgb, var(--schattenfarbe) calc(40% * var(--ak-glanz) + 15%), transparent); }
+ak-kipp[stellung="unten"] .ak-kipp-hebel { transform: scaleY(-1); }
+ak-kipp[stellung="mitte"] .ak-kipp-hebel { transform: scaleY(.32); }
+.ak-kipp-text { font-size: var(--marke); color: var(--ak-tinte-2); line-height: 1.15; }
+.ak-kipp-text.an { color: var(--ak-tinte); font-weight: 600; }
+
+/* ═══ Wahltasten und Schiebeschalter ═══ */
+ak-wahl { display: inline-flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ak-wahl-reihe { display: inline-flex; padding: 3px; gap: 3px; border-radius: var(--r2); background-color: var(--ak-glas); box-shadow: var(--ak-glas-tiefe); max-inline-size: 100%; }
+.ak-wahl-reihe button { min-inline-size: 48px; min-block-size: var(--ak-treffer); padding: 0 12px; border: 0; border-radius: var(--r1); cursor: pointer; font: inherit;
+  font-family: var(--schrift-zahl); font-size: var(--klein); font-weight: 600; color: #8b97a6; background-color: #1a1f26;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,calc(.10 * var(--ak-glanz))), 0 1px 2px rgba(0,0,0,.5); transition: color var(--schnell), text-shadow var(--schnell); }
+.ak-wahl-reihe button[aria-checked="true"] { color: var(--farbe, var(--led-gruen)); background-color: #12161b;
+  text-shadow: 0 0 calc(10px * var(--ak-leuchten)) var(--farbe, var(--led-gruen)); box-shadow: inset 0 2px 4px rgba(0,0,0,.6); }
+/* Schiebeschalter: Schlitz mit geriffeltem Schieber */
+ak-wahl[art="schiebe"] .ak-wahl-reihe { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(44px, 1fr); padding: 4px; background-color: var(--ak-mulde); box-shadow: var(--ak-mulde-tiefe); }
+ak-wahl[art="schiebe"] .ak-wahl-reihe button { background: none; box-shadow: none; color: var(--ak-mulde-tinte); z-index: 1; font-family: var(--schrift); }
+ak-wahl[art="schiebe"] .ak-wahl-reihe button[aria-checked="true"] { color: var(--ak-mulde-tinte-an); text-shadow: none; }
+.ak-wahl-schieber { position: absolute; top: 4px; bottom: 4px; left: 4px; inline-size: calc((100% - 8px) / var(--n)); border-radius: var(--r1);
+  transform: translateX(calc(var(--i) * 100%)); transition: transform var(--schnell); background-color: var(--ak-metall);
+  background-image: repeating-linear-gradient(90deg, transparent 0 3px, rgba(0,0,0,.22) 3px 4px), var(--ak-metall-bild); box-shadow: var(--ak-kappe-schatten); opacity: .55; }
+
+/* ═══ Leuchte ═══ */
+ak-led { display: inline-flex; align-items: center; gap: 8px; --farbe: var(--led-rot); --d: var(--ak-led-d); min-width: 0; }
+ak-led[groesse="klein"] { --d: 8px; }
+ak-led[groesse="gross"] { --d: 18px; }
+.ak-led-licht { position: relative; flex: none; inline-size: var(--d); block-size: var(--d); border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--farbe) 30%, #3a3f46) 0%, color-mix(in srgb, var(--farbe) 18%, #0b0d10) 75%);
+  box-shadow: 0 0 0 max(1.5px, calc(var(--d) * .14)) var(--ak-metall), 0 1px 2px max(1.5px, calc(var(--d) * .14)) color-mix(in srgb, var(--schattenfarbe) 40%, transparent); }
+/* das Licht: eigene Ebene, die nur ihre Deckkraft ändert (blinken und atmen ohne Neuzeichnen) */
+.ak-led-licht::after { content: ""; position: absolute; inset: 0; border-radius: 50%; opacity: 0; transition: opacity var(--schnell);
+  background: radial-gradient(circle at 42% 38%, #fff 0 14%, color-mix(in srgb, var(--farbe) 70%, #fff) 30%, var(--farbe) 62%, color-mix(in srgb, var(--farbe) 75%, #000) 100%);
+  box-shadow: 0 0 calc(var(--d) * .9 * var(--ak-leuchten)) var(--farbe), 0 0 calc(var(--d) * 2.6 * var(--ak-leuchten)) color-mix(in srgb, var(--farbe) 55%, transparent); }
+ak-led:is([zustand="an"], [zustand="blinkt"], [zustand="atmet"], [zustand="flackert"]) .ak-led-licht::after { opacity: 1; }
+ak-led[zustand="blinkt"] .ak-led-licht::after { animation: ak-blinkt 1s steps(1, end) infinite; }
+ak-led[zustand="atmet"] .ak-led-licht::after { animation: ak-atmet 2.4s ease-in-out infinite; }
+ak-led[zustand="flackert"] .ak-led-licht::after { animation: ak-flackert .9s linear infinite; }
+@keyframes ak-blinkt { 50% { opacity: 0; } }
+@keyframes ak-atmet { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+@keyframes ak-flackert { 0%, 100% { opacity: 1; } 12% { opacity: .35; } 20% { opacity: 1; } 47% { opacity: .6; } 55% { opacity: 1; } 80% { opacity: .2; } 86% { opacity: 1; } }
+.ak-led-text { font-size: var(--marke); color: var(--ak-tinte-2); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ak-led[zustand="an"] .ak-led-text { color: var(--ak-tinte); }
+
+/* ═══ Anzeigen hinter Glas ═══ */
+.ak-glas {
+  position: relative; border-radius: var(--r2); background-color: var(--ak-glas); color: var(--ak-glas-tinte);
+  box-shadow: var(--ak-glas-tiefe); overflow: hidden; isolation: isolate;
+}
+/* Spiegelung: schräger Lichtstreif über dem Glas, steht still */
+.ak-glas::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: var(--ak-glas-bild); z-index: 2; }
+ak-segmente { container: anzeige / inline-size; display: block; inline-size: var(--ak-zelle, 100%); min-width: 0; --farbe: var(--led-rot); --stellen: 4; }
+/* Ziffernhöhe aus der Breite der Anzeige: (Breite - Rand) / Stellen / Seitenverhältnis einer Zelle, höchstens --ak-zeichen-max.
+   --stellen zählt Doppelpunkte als Bruchteil einer Stelle (setzt anzeigen.js) */
+ak-segmente { --seitenverhaeltnis: .62; }
+ak-segmente[art="14"] { --seitenverhaeltnis: .566; }
+ak-segmente[art="punkt"] { --seitenverhaeltnis: .75; }
+.ak-segmente-glas { display: flex; justify-content: center; align-items: center; gap: 0; padding: clamp(8px, 4cqi, 16px) 18px;
+  --zeichen-h: min(calc((100cqi - 38px) / var(--stellen) / var(--seitenverhaeltnis)), var(--ak-zeichen-max, 84px)); }
+.ak-segmente-glas svg { display: block; block-size: var(--zeichen-h); inline-size: auto; overflow: visible; }
+.ak-segmente-glas .aus { fill: var(--farbe); opacity: .07; }
+.ak-segmente-glas .an { fill: var(--farbe); }
+.ak-segmente-glas .schein { fill: none; stroke: var(--farbe); stroke-width: 7; stroke-linejoin: round; opacity: calc(var(--ak-leuchten) * .26); }
+.ak-segmente-glas .schein:not(.an) { display: none; }
+.ak-segmente-glas .kern { fill: color-mix(in srgb, var(--farbe) 45%, #fff); opacity: calc(var(--ak-leuchten) * .55); }
+.ak-segmente-glas .kern:not(.an) { display: none; }
+/* Leuchtschirm: echte Schrift hinter Glas (wie ein kleiner Bildschirm im Gerät) */
+.ak-schirmtext { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px 14px; min-block-size: 64px; text-align: center; }
+.ak-schirmtext b { font-family: var(--schrift-zahl); font-weight: 600; font-size: var(--titel); letter-spacing: .06em; color: var(--farbe, var(--led-cyan));
+                   text-shadow: 0 0 calc(12px * var(--ak-leuchten)) var(--farbe, var(--led-cyan)); }
+.ak-schirmtext span { font-family: var(--schrift-zahl); font-size: var(--klein); color: color-mix(in srgb, var(--farbe, var(--led-cyan)) 65%, #fff); }
+
+/* Zeigerinstrument: beleuchtete Skala, Zeiger dreht über transform */
+ak-zeiger { container: instrument / inline-size; display: block; inline-size: var(--ak-zelle, 100%); min-width: 0; --farbe: #ffd27a; }
+/* beleuchtete Skala: Grundfarbe hell (die Zahlen stehen dunkel darauf), Licht von unten hinter der Skala als Verlauf */
+.ak-glas.ak-zeiger-fenster { position: relative; aspect-ratio: 16 / 10; background-color: var(--farbe);
+  background-image: radial-gradient(ellipse 90% 80% at 50% 100%, rgb(255 250 235 / .7) 0%, rgb(255 250 235 / .3) 55%, rgb(60 40 10 / .3) 100%); }
+ak-zeiger svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+ak-zeiger .bogen { fill: none; stroke: #2b2116; stroke-width: 1.2; }
+ak-zeiger .rot { fill: none; stroke: #c3261b; stroke-width: 3.2; }
+ak-zeiger .strich { stroke: #2b2116; stroke-width: 1.3; }
+ak-zeiger .strich.rot { stroke: #c3261b; }
+.ak-zeiger-zahl { position: absolute; translate: -50% -50%; font-family: var(--schrift-zahl); font-weight: 600; font-size: max(var(--marke), 5.4cqi); color: #2b2116; white-space: nowrap; }
+.ak-zeiger-zahl.rot { color: #a11c12; }
+/* Detailstufe: unter 240 Pixel Breite nur die Hauptzahlen (Anfang, Null, Ende), sonst stehen sie aufeinander */
+@container instrument (max-width: 239px) { .ak-zeiger-zahl.neben { display: none; } }
+.ak-zeiger-name { position: absolute; left: 50%; bottom: 13%; translate: -50% 0; font-weight: 600; font-size: max(var(--marke), 6cqi); color: #2b2116; letter-spacing: .1em; }
+.ak-zeiger-nadel { position: absolute; left: 50%; bottom: -18%; inline-size: max(2px, .7cqi); block-size: 96%; translate: -50% 0; transform-origin: 50% 100%;
+  transform: rotate(var(--zeiger-winkel, -48deg)); background: linear-gradient(#1b130b, #1b130b 70%, transparent 70%); border-radius: 2px; will-change: transform; }
+.ak-zeiger-nabe { position: absolute; left: 50%; bottom: -6%; inline-size: 16%; aspect-ratio: 2 / 1; translate: -50% 0; border-radius: 99px 99px 0 0; background-color: var(--ak-metall); background-image: var(--ak-metall-bild); }
+.ak-zeiger-spitze { position: absolute; right: 7%; top: 9%; }
+
+/* Pegel und Schirme zeichnen in eine Leinwand; die Beschriftung bleibt Schrift */
+ak-pegel, ak-schirm { display: block; inline-size: var(--ak-zelle, 100%); min-width: 0; --farbe: var(--led-cyan); }
+ak-pegel canvas, ak-schirm canvas { display: block; inline-size: 100%; block-size: 100%; }
+.ak-pegel-glas { block-size: var(--pegel-h, 26px); padding: 4px; }
+ak-pegel[richtung="senkrecht"] { inline-size: auto; }
+ak-pegel[richtung="senkrecht"] .ak-pegel-glas { block-size: var(--pegel-h, 220px); inline-size: var(--pegel-b, 34px); }
+.ak-pegel-skala { display: flex; justify-content: space-between; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); margin-top: 4px; padding: 0 2px; }
+ak-pegel[richtung="senkrecht"] .ak-pegel-skala { flex-direction: column; margin: 0; }
+.ak-schirm-glas { aspect-ratio: var(--verhaeltnis, 16 / 9); }
+.ak-schirm-fuss { display: flex; justify-content: space-between; gap: 8px; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); margin-top: 4px; }
+
+/* Bewegung nur auf Wunsch: blinken und atmen werden ruhig */
+@media (prefers-reduced-motion: reduce) {
+  ak-led[zustand] .ak-led-licht::after { animation: none; }
+  .ak-dreh-kappe::before, .ak-dreh-zeiger, .ak-kipp-hebel, .ak-wahl-schieber { transition: none; }
+}

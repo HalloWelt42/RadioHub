@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Radio am Telefon</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/schriften/orbitron/900.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="telefon.css">
+</head>
+<body>
+<div class="rh-buehne-seite">
+  <div class="rh-entwurf">
+    <span class="pille">Entwurf RAD-3</span>
+    <a href="index.html"><i class="fa-solid fa-table-cells-large"></i>Übersicht</a>
+    <a href="rechner.html"><i class="fa-solid fa-display"></i>Rechner</a>
+    <a href="regeln.html"><i class="fa-solid fa-filter-circle-xmark"></i>Regeln</a>
+  </div>
+  <div class="rh-buehne-rollt">
+    <div class="rh-buehne-kopf">
+      <h1>Radio am Telefon</h1>
+      <p>Eigene Oberfläche mit denselben Bausteinen wie am Rechner. Oben 1 cm Luft unter der Insel, unten kein Abstand über dem Home-Balken. Jeder Rahmen ist bedienbar: Filter öffnen, Spielerleiste antippen, Ton holen.</p>
+    </div>
+    <div class="rh-buehne">
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">1</span><span>Liste</span><span>spielt auf diesem Telefon</span></p><div class="rh-telefon" data-telefon="liste"></div></div>
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">2</span><span>Filter</span><span>Blatt von unten</span></p><div class="rh-telefon" data-telefon="blatt"></div></div>
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">3</span><span>Spieler groß</span><span>mit Hausempfang</span></p><div class="rh-telefon" data-telefon="gross"></div></div>
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">4</span><span>Anderes Gerät</span><span>Fernbedienung, Holen</span></p><div class="rh-telefon" data-telefon="fern"></div></div>
+    </div>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+<script src="daten.js"></script>
+<script src="radio.js"></script>
+<script src="telefon.js"></script>
+</body>
+</html>

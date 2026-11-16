@@ -1,0 +1,9 @@
+/* Herkunft: radiohub-frontend/node_modules/@fontsource/orbitron (npm, OFL), nur Latin 900. Nur für den Schriftzug
+   RadioHub im Kopf, wie in der heutigen App; alle übrigen Texte stehen in Barlow und Chakra Petch. */
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url(./files/orbitron-latin-900-normal.woff2) format('woff2');
+}

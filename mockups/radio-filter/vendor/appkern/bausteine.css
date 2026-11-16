@@ -1,0 +1,174 @@
+/* Entwurf RAD-3 (RadioHub, Radio mit Filterung): Kopie aus hifi-regler/vendor/appkern/bausteine.css (Stile des Appkerns), Stand hifi-regler 9a7c0fe vom 09.11.2026.
+   Laut Plan RAD-1 (Entscheidung 7) wandert die Vorlage HiFi samt Instrumenten in den Appkern; dann kommt diese Datei von
+   dort. Im Entwurf unverändert lassen, eigene Regeln stehen in radio-marken.css und radio-bausteine.css. */
+/* Gemeinsame Bausteine der Apps: Spieler und Wellenform (Rechner und Telefon), Sprecherfarben, Rückfrage, Hochladen,
+   Hinweisband, Listen und Dateiwahl, Rekorder, Gruppen der Seitenleiste. Kommen mit `appkern-oberflaeche/stil.css`; die Apps ergänzen nur, was ihnen eigen ist. */
+
+.spieler { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; gap: 14px; align-items: center;
+           padding: 10px 22px 12px; background: var(--flaeche); box-shadow: 0 1px 0 var(--rand); }
+.spieler .gross { width: 46px; height: 46px; border-radius: 23px; border: 0; background: var(--akzent-flaeche); color: var(--auf-akzent); }
+.spieler .gross i, .mobil .t-spieler .gross i { font-size: 18px; }
+.spieler .zeitangabe { font-family: var(--schrift-code); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
+.welle { position: relative; height: 54px; }
+.welle .saeulen { position: absolute; inset: 8px 0 8px 0; display: flex; align-items: center; gap: 1px; }
+.welle .saeulen span { flex: 1; min-width: 1px; border-radius: 1px; background: var(--rand); }
+.welle .saeulen span.gespielt { background: var(--akzent); }
+.welle .abspielkopf { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--text); }
+.welle i.fahne { position: absolute; top: -2px; transform: translateX(-50%); font-size: 12px; color: var(--warn); }
+.welle .sprecherspur { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; display: flex; border-radius: 2px; overflow: hidden; }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 6px; }
+/* schmaler als 1000 Pixel: der Spieler behält Abspielen, Welle und Zeit */
+@media (max-width: 999px) {
+  .spieler { grid-template-columns: auto minmax(0, 1fr) auto; padding: 10px 16px; }
+  .spieler .knopfreihe, .spieler > .knopf { display: none; }
+}
+.mobil .t-spieler { flex: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 16px;
+                    background: var(--flaeche); box-shadow: 0 -1px 0 var(--rand); }
+.mobil .t-spieler .gross { width: 46px; height: 46px; border-radius: 23px; border: 0; background: var(--akzent-flaeche); color: var(--auf-akzent); }
+.mobil .t-spieler .welle { height: 40px; }
+.mobil .t-spieler .zeitangabe { font-family: var(--schrift-code); font-size: var(--marke); color: var(--text-2); }
+.upload { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px;
+          background: var(--flaeche); border-radius: var(--r2); margin-bottom: 6px; font-size: var(--klein); }
+.upload .balken { grid-column: 2 / -1; }
+.welle .leinwand { position: absolute; inset: 6px 0 8px 0; width: 100%; height: calc(100% - 14px); cursor: pointer; touch-action: none; }
+.welle .sprecherspur { position: absolute; }
+.welle i.fahne { pointer-events: none; }
+.welle .abspielkopf { pointer-events: none; }
+.mobil .t-spieler { position: sticky; bottom: calc(-1 * var(--rahmen-rand)); margin: 8px calc(-1 * var(--rahmen-rand)) calc(-1 * var(--rahmen-rand)); z-index: 2; }
+.rund.aktiv { background: var(--akzent-weich); color: var(--akzent); }
+.rueckfrage { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 14px; margin: 4px 0 10px;
+  background: var(--flaeche-2); border-radius: var(--r2); box-shadow: 0 0 0 1px var(--rand); font-size: var(--klein); }
+.rueckfrage .frage { font-weight: 600; color: var(--text); }
+.rueckfrage .aktionen { display: flex; gap: 8px; margin-left: auto; }
+.hinweis-band { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 12px; border-radius: var(--r2, 10px);
+  background: var(--akzent-weich); color: var(--text); font-size: var(--klein); }
+.hinweis-band > i { color: var(--akzent); }
+.hinweis-band b { font-weight: 600; }
+.hinweis-band .knopfzeile { margin-left: auto; flex: none; }
+.mobil .t-spieler.t-wahlleiste { display: flex; justify-content: space-between; }
+
+/* Listen: Zeile mit Symbol, Name und Eckdaten, Stand als Pille, Optionsleiste über der Liste, Dateiwahl (Ordner,
+   nicht wählbare Dateien); am Telefon füllt die Ansicht die Spalte, die Leiste unten bleibt unten. */
+.zeile { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 14px; align-items: center; cursor: pointer;
+         padding: 12px 16px; background: var(--flaeche); border-radius: var(--r3); box-shadow: var(--schatten); margin-bottom: 8px; border: 2px solid transparent; }
+.zeile .art { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--flaeche-2); color: var(--text-2); }
+.zeile .art i { font-size: 18px; }
+.zeile .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zeile .meta { font-size: var(--klein); color: var(--text-3); margin-top: 2px; }
+.zeile.gewaehlt { border-color: var(--akzent); }
+.zeile.ordner-zeile .art { color: var(--akzent); }
+.zeile.nicht-waehlbar { opacity: .55; cursor: default; }
+.stand-pille { font-size: var(--marke); padding: 2px 10px; border-radius: 10px; white-space: nowrap; font-weight: 600; }
+.stand-pille.fertig { background: var(--gut-weich); color: var(--gut); }
+.stand-pille.laeuft { background: var(--akzent-weich); color: var(--akzent); }
+.stand-pille.offen { background: var(--flaeche-2); color: var(--text-3); font-weight: 400; }
+.stand-pille.warn { background: var(--warn-weich); color: var(--warn); }
+.optionen { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; padding: 14px 16px; background: var(--akzent-weich);
+            border-radius: var(--r3); margin-bottom: 14px; }
+.optionen .titel { font-weight: 600; }
+.optionen label { font-size: var(--klein); color: var(--text-2); display: inline-flex; gap: 8px; align-items: center; }
+.knopfzeile { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mobil .t-ansicht { display: flex; flex-direction: column; min-height: 100%; }
+.mobil .t-ansicht > .t-spieler { margin-top: auto; }
+.mobil .t-ansicht > [role="region"] { padding-bottom: 8px; }
+.mobil .t-zeile .t-text .auswahl { margin-top: 2px; }
+.knopf.klein { height: 32px; padding: 0 12px; }
+
+/* kleine Eingaben und Schalter mit Beschriftung */
+.eingabe.klein-eingabe { height: 36px; gap: 8px; }
+.schalter-zeile { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: var(--klein); color: var(--text-2); }
+
+/* Rekorder: Live-Mitschrift und Entscheidung nach dem Beenden (die Knöpfe bringt die App mit) */
+.rekorder.kompakt { background: var(--flaeche); border-radius: var(--r3); box-shadow: var(--schatten); padding: 6px 16px 16px; margin-bottom: 14px; }
+.mitschrift { max-width: 760px; margin: 14px auto 0; background: var(--flaeche); border-radius: var(--r3); box-shadow: var(--schatten); overflow: hidden; }
+.rekorder.kompakt .mitschrift { box-shadow: none; background: var(--flaeche-2); }
+.mitschrift-kopf { display: flex; gap: 8px; align-items: center; padding: 10px 14px; font-size: var(--klein); font-weight: 600; color: var(--text-2);
+                   border-bottom: 1px solid var(--rand); }
+.mitschrift-stand { margin-left: auto; font-weight: 400; color: var(--text-3); }
+.mitschrift-text { max-height: 220px; overflow-y: auto; padding: 8px 14px 12px; }
+.mitschrift-text p { margin: 6px 0; line-height: 1.55; }
+.mitschrift-text .zeit { font-family: var(--schrift-code); font-size: var(--klein); color: var(--text-3); margin-right: 10px; }
+.mitschrift-leer { color: var(--text-3); font-size: var(--klein); }
+.rekorder-gespeichert { display: flex; gap: 12px; align-items: flex-start; max-width: 760px; margin: 16px auto 0; font-size: var(--gross); }
+.rekorder-gespeichert > i { color: var(--gut); font-size: 22px; margin-top: 2px; }
+.entscheidung { max-width: 760px; margin: 16px auto 4px; display: flex; flex-direction: column; gap: 14px; }
+.entscheidung-optionen { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; }
+.entscheidung-optionen label { display: inline-flex; gap: 8px; align-items: center; font-size: var(--klein); color: var(--text-2); }
+
+/* Rekorder als Leiste wie der Spieler (Entwurf 2): am Rechner oben an der Stelle des Spielers, am Telefon unten über den
+   Reitern; darüber bzw. darunter der Live-Text. Status, Mikrofon, Name und Verwerfen sind kleine Symbole an festen
+   Plätzen; ein Klick zeigt ihre Erklärung als Blase über dem Text. Nichts verschiebt sich. */
+.rek { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.rek-leiste { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto auto; grid-template-areas: "stopp pause pegel zeit marken symbole";
+  align-items: center; gap: 14px;
+  padding: 10px 16px; background: var(--flaeche); border-radius: var(--r3); box-shadow: var(--schatten); position: relative; }
+.rek-leiste .stopp { grid-area: stopp; width: 52px; height: 52px; border-radius: 26px; border: 0; background: var(--gefahr-flaeche); color: var(--auf-farbe); cursor: pointer; }
+.rek-leiste .stopp i { font-size: 20px; }
+.rek-leiste .rund { width: 40px; height: 40px; border-radius: 20px; }
+/* der Knopf heißt pause, die Zeit zeigt den Zustand als angehalten: eine Klasse für beides legte die Zeit in die Zelle des Knopfs */
+.rek-leiste .pause { grid-area: pause; }
+.rek-leiste .marken { grid-area: marken; position: relative; }
+.rek-leiste .marken .zahl { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px;
+  background: var(--akzent-flaeche); color: var(--auf-akzent); font-size: var(--marke); display: grid; place-items: center; }
+.rek-pegel { grid-area: pegel; display: flex; align-items: center; justify-content: flex-end; gap: 2px; height: 40px; min-width: 0; overflow: hidden; }
+.rek-pegel span { flex: 0 0 3px; border-radius: 2px; background: var(--gefahr); transition: height .1s; }
+.rek-leiste:has(.rek-zeit.angehalten) .rek-pegel span { background: var(--text-3); }
+.rek-zeit { grid-area: zeit; font-family: var(--schrift-code); font-size: calc(var(--gross) + 5px); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.rek-zeit .punkt { width: 9px; height: 9px; border-radius: 5px; background: var(--gefahr); }
+.rek-zeit.angehalten .punkt { background: var(--text-3); }
+.rek-symbole { grid-area: symbole; display: flex; gap: 4px; align-items: center; position: relative; }
+.rek-symbol { width: 34px; height: 34px; border-radius: 17px; border: 0; background: var(--flaeche-2); color: var(--text-2);
+  display: grid; place-items: center; cursor: pointer; }
+.rek-symbol i { font-size: 15px; }
+.rek-symbol.aus { color: var(--text-3); opacity: .6; }
+.rek-symbol.gut { color: var(--gut); }
+.rek-symbol.warn { color: var(--warn); background: var(--warn-weich); }
+.rek-symbol.fehler { color: var(--gefahr); background: var(--gefahr-weich); }
+.rek-symbol.offen { box-shadow: 0 0 0 2px var(--akzent); }
+.rek-blase { position: absolute; top: calc(100% + 8px); right: 0; z-index: 5; width: min(320px, 86vw); padding: 12px 14px;
+  border-radius: var(--r3); background: var(--flaeche); box-shadow: var(--schatten), 0 0 0 1px var(--rand); font-size: var(--klein); color: var(--text-2); }
+.rek-blase b { display: block; color: var(--text); margin-bottom: 4px; }
+.rek-blase .knopfreihe { margin-top: 10px; }
+.rek-live { flex: 1; min-height: 160px; display: flex; flex-direction: column; background: var(--flaeche-2); border-radius: var(--r3); overflow: hidden; }
+.rek-live .kopf-zeile { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: var(--klein); color: var(--text-3); }
+.rek-live .text { flex: 1; overflow-y: auto; padding: 0 12px 10px; line-height: 1.55; }
+.rek-live .text p { margin: 6px 0; }
+.rek-live .text .zeit { font-family: var(--schrift-code); font-size: var(--klein); color: var(--text-3); margin-right: 8px; }
+/* Telefon: Text oben, Symbole darüber an die Leiste gerückt, die Leiste unten über den Reitern wie der Spieler */
+.mobil .rek { flex: 1; }
+.mobil .rek-symbole { justify-content: center; gap: 10px; }
+.mobil .rek-symbol { width: 40px; height: 40px; border-radius: 20px; }
+.mobil .rek-blase { top: auto; bottom: calc(100% + 8px); left: 50%; right: auto; transform: translateX(-50%); }
+.mobil .rek-leiste { grid-template-columns: auto minmax(0, 1fr) auto auto auto; grid-template-areas: "stopp pegel zeit pause marken"; gap: 10px; margin: 0 calc(-1 * var(--rahmen-rand)) calc(-1 * var(--rahmen-rand)); border-radius: 0;
+  box-shadow: 0 -1px 0 var(--rand); position: sticky; bottom: calc(-1 * var(--rahmen-rand)); }
+.mobil .rek-leiste .stopp { width: 48px; height: 48px; }
+.mobil .rek-zeit { font-size: var(--gross); }
+/* die laufende Aufnahme füllt die Fläche: am Rechner das Rollfeld, am Telefon die Spalte über die ganze Höhe */
+.rek-flaeche { display: flex; flex-direction: column; }
+.rekorder:has(> .rek) { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.rek { flex: 1; }
+
+/* Seitenleiste: Gruppen mit kleiner Überschrift, kurze Listen mit Zeit; Sprecher und Rollen mit Farbpunkt
+   (Transkription: Sprecher, Vertonung: Rollen) */
+.sprecher { display: inline-flex; align-items: center; gap: 7px; font-size: var(--klein); font-weight: 600; white-space: nowrap; height: 28px; }
+.sprecher .punkt { width: 10px; height: 10px; border-radius: 5px; flex: none; }
+.leiste .gruppe, .leiste-inhalt .gruppe { padding: 14px 20px; border-bottom: 1px solid var(--rand); }
+.leiste-inhalt .gruppe:last-child { border-bottom: 0; }
+.leiste .gruppe h3, .leiste-inhalt .gruppe h3 { margin: 0 0 10px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); font-weight: 600; }
+.leiste .gruppe .knopfreihe, .leiste-inhalt .gruppe .knopfreihe { margin-top: 8px; align-items: center; }
+.leiste-inhalt { padding: 0; }
+.mobil .leiste-inhalt .gruppe { padding: 14px 16px; }
+/* am Telefon sind auch stille Knöpfe als Knopf erkennbar und groß genug zum Tippen */
+.mobil .leiste-inhalt .knopf.still { background: var(--flaeche-2); box-shadow: 0 0 0 1px var(--rand); min-height: 40px; }
+.liste-klein div { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: var(--klein); }
+.liste-klein .zeit { font-family: var(--schrift-code); color: var(--text-3); width: 60px; flex: none; }
+
+/* Seite mit eigener Leiste daneben (Liste links, Gewähltes rechts); unter 1280 Pixel wird die Leiste eine
+   einschiebbare Tafel (wie in der Schale), ein Knopf "nur-schmal" öffnet sie */
+.geruest-innen { display: grid; grid-template-columns: minmax(0, 1fr) 380px; flex: 1; min-height: 0; }
+.geruest-innen > .seite { min-height: 0; }
+.nur-schmal { display: none; }
+@media (max-width: 1279px) {
+  .geruest-innen { grid-template-columns: minmax(0, 1fr); }
+  .nur-schmal { display: inline-flex; }
+}

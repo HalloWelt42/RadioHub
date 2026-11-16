@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Übersicht</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/schriften/orbitron/900.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="uebersicht.css">
+</head>
+<body>
+<div class="rh-buehne-seite">
+  <div class="rh-entwurf"><span class="pille">Entwurf RAD-3</span><span>Radio mit Filterung, Etappe 3 laut Plan RAD-1</span></div>
+  <div class="rh-buehne-rollt">
+    <main class="rh-uebersicht">
+
+      <section class="rh-ue-kopf">
+        <div class="rh-marke"><span class="rh-marke-zeile"><span class="rh-logo">RadioHub</span><span class="rh-herz" aria-hidden="true"><i class="fa-solid fa-heart"></i></span></span><span class="rh-unterzeile">Digitales Audiosystem</span></div>
+        <h1>Radio mit Filterung</h1>
+        <p>Die überarbeitete Radio-Ansicht auf Appkern und Vorlage HiFi: Schnellfilter als Facetten mit Zahlen, dauerhafte Ausschlüsse nur als lebende Regeln mit Vorschau, Dubletten als Gruppe, Qualität aus der eigenen Messung und eine Abspielleiste mit Hausempfang. Alles ist bedienbar; die Daten sind Beispiele.</p>
+      </section>
+
+      <section class="rh-ue-oben">
+        <div class="ak-geraet rh-ue-schau" data-bauform="inspektor">
+          <span class="ak-schraube lo" style="--dreh:18deg"></span><span class="ak-schraube ro" style="--dreh:66deg"></span><span class="ak-schraube lu" style="--dreh:-24deg"></span><span class="ak-schraube ru" style="--dreh:40deg"></span>
+          <div class="ak-geraet-kopf"><ak-led farbe="rot" zustand="an" text="Power" hilfe="Strom"></ak-led><b>Lichtsprache</b><ak-led farbe="gruen" zustand="atmet" text="Bereit" hilfe="bereit"></ak-led></div>
+          <div class="ak-glas rh-ue-matrix"><ak-segmente art="punkt" stellen="16" lauf="260" farbe="gruen" text="RADIOHUB RADIO MIT FILTERUNG"></ak-segmente></div>
+          <ul class="rh-ue-leds">
+            <li><ak-led farbe="gruen" zustand="an"></ak-led><span><b>Grün</b> aktiv, bereit, Regel an</span></li>
+            <li><ak-led farbe="gelb" zustand="an"></ak-led><span><b>Gelb</b> gewählt, Nur Favoriten</span></li>
+            <li><ak-led farbe="blau" zustand="an"></ak-led><span><b>Blau</b> spielt, Hausempfang</span></li>
+            <li><ak-led farbe="rot" zustand="blinkt"></ak-led><span><b>Rot</b> Aufnahme, Fehler</span></li>
+            <li><ak-led farbe="bernstein" zustand="an"></ak-led><span><b>Bernstein</b> gesperrt, ausgeblendet</span></li>
+          </ul>
+        </div>
+        <div class="karte rh-karte rh-ue-darstellung">
+          <div class="rh-karte-kopf"><h2><i class="fa-solid fa-circle-half-stroke"></i>Darstellung</h2><span class="rh-still">gilt für alle Seiten, gemerkt in diesem Browser</span></div>
+          <h3>Vorlage</h3>
+          <div class="segment" role="group" aria-label="Vorlage"><button type="button" data-vorlage-wahl="hifi"><i class="fa-solid fa-compact-disc"></i>HiFi</button><button type="button" data-vorlage-wahl="ruhig"><i class="fa-solid fa-feather"></i>Ruhig</button></div>
+          <h3>Thema</h3>
+          <div class="segment" role="group" aria-label="Thema"><button type="button" data-thema-wahl="hell"><i class="fa-solid fa-sun"></i>Hell</button><button type="button" data-thema-wahl="dunkel"><i class="fa-solid fa-moon"></i>Dunkel</button><button type="button" data-thema-wahl="system"><i class="fa-solid fa-display"></i>System</button></div>
+          <h3>Schrift</h3>
+          <div class="rh-schrift-wahl"><button class="knopf" type="button" data-schrift-schritt="-1" aria-label="Schrift kleiner" title="Schrift kleiner"><i class="fa-solid fa-minus"></i></button><output data-schrift-anzeige>Normal</output><button class="knopf" type="button" data-schrift-schritt="1" aria-label="Schrift größer" title="Schrift größer"><i class="fa-solid fa-plus"></i></button></div>
+          <p class="rh-still">Vorlage HiFi mit Material und Licht, Ruhig flach; ein neues Thema braucht nur vorlagen/&lt;name&gt;/marken.css. Schrift Normal: Grundschrift 17, klein 15 Pixel.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="rh-ue-titel"><i class="fa-solid fa-table-cells-large"></i>Seiten</h2>
+        <div class="rh-ue-karten">
+          <div class="karte rh-ue-karte"><i class="fa-solid fa-display"></i><span><a href="rechner.html"><b>Radio am Rechner</b></a>
+            <span>Kopf mit Pillen-Navigation, Seitenleiste mit Schnellfiltern (Länder, Genres, Qualität, Codec, Bewertung, Kategorien, Favoriten, Stimmen, Bitrate), Trefferzähler, Chips, Hinweis auf Regeln, Senderliste mit Varianten und Details, Ausblenden mit Rückgängig, Abspielleiste mit Hausempfang in sieben Zuständen, dazu die Webversion ohne Dienst (Teile nach Fähigkeiten, Hinweis "Demo").</span>
+            <span class="rh-ue-links"><a href="rechner.html">Öffnen</a><a href="rechner.html?f=1&amp;favoriten=1">Nur Favoriten</a><a href="rechner.html?f=1&amp;guete=verlustfrei,hoch&amp;genre=Klassik">Klassik, hohe Qualität</a><a href="rechner.html?zustand=web">Webversion</a></span></span></div>
+          <div class="karte rh-ue-karte"><i class="fa-solid fa-filter-circle-xmark"></i><span><a href="regeln.html"><b>Einstellungen: Ausschlussregeln</b></a>
+            <span>Bestand als Zählwerke, lebende Regeln mit Zahl, Schalter und Entfernen mit Rückfrage, neue Regel mit Vorschau beim Tippen, Anlegen erst danach, Rückgängig; ausgeblendete Sender seitenweise mit Grund; Länderwahl getrennt.</span>
+            <span class="rh-ue-links"><a href="regeln.html?reiter=regeln&amp;sprache=chin">Vorschau beim Tippen</a><a href="regeln.html?reiter=ausgeblendet">Ausgeblendete Sender</a><a href="regeln.html?reiter=laender">Länder der Seitenleiste</a></span></span></div>
+          <div class="karte rh-ue-karte"><i class="fa-solid fa-mobile-screen"></i><span><a href="telefon.html"><b>Radio am Telefon</b></a>
+            <span>Vier Rahmen mit 375 Pixel: Liste, Filter als Blatt von unten, Spieler groß mit Zeitversatz und Geräten, anderes Gerät spielt mit Holen.</span>
+            <span class="rh-ue-links"><a href="telefon.html">Öffnen</a></span></span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="rh-ue-titel"><i class="fa-solid fa-cubes"></i>Bausteine</h2>
+        <div class="rh-ue-karten">
+          <div class="karte rh-ue-text"><b>Aus der Vorlage HiFi</b>
+            <ul><li>Drehregler (Lautstärke, Drehwahl Stimmen), Schieber als Leuchtbalken (Bitrate, Zeitversatz, Mindeststimmen)</li>
+              <li>Glastaster mit Leuchte (Transport), Flachtaster (Nur Favoriten), Wahltasten (Werbeverdacht)</li>
+              <li>Segmentanzeigen 7 und 14 Segmente, Punktmatrix, Pegel, Leuchten</li>
+              <li>Material: Aluminium, Glas, Schrauben, Lichtkante; Knöpfe, Segmente, Reiter, Felder, Chips im ruhigen Stil</li></ul></div>
+          <div class="karte rh-ue-text"><b>Aus der Appkern-Schale</b>
+            <ul><li>Marken für Farben, Schriftstufen und Abstände</li>
+              <li>Suche, Aufklappliste, Segment, Reiterleiste, Schalter, Rückfrage, Hinweisband, Seitenzeile</li>
+              <li>Telefon als eigene Oberfläche mit Reitern unten</li></ul></div>
+          <div class="karte rh-ue-text"><b>Neu für das Radio</b>
+            <ul><li>Qualitätsleiste: vier Lichter je Stufe (verlustfrei, hoch, mittel, niedrig, unbekannt)</li>
+              <li>Senderlogo als neutrale Lackfläche mit Kürzel</li>
+              <li>Spielerkanzel mit Anzeige, Quelle und Zeit, Lautstärkegehäuse, Steuerung, Hausempfang</li>
+              <li>Tastenlicht: die Leuchte sitzt als Lichtschlitz in der Taste, alle Tasten einer Reihe gleich hoch</li>
+              <li>Schriftstufe "Sehr groß" als Vorschlag für den Appkern</li></ul></div>
+          <div class="karte rh-ue-text"><b>Themen in drei Schichten</b>
+            <ul><li>Marken: radio-marken.css (Maße, Schriften, Farben der Marke) und je Vorlage vorlagen/&lt;name&gt;/marken.css (Material, Licht, Schatten, Flächen)</li>
+              <li>Bausteine: radio-bausteine.css, nur Marken, keine festen Farben</li>
+              <li>Seiten: rahmen.css, rechner.css, regeln.css, telefon.css, uebersicht.css, nur Anordnung</li>
+              <li>Ein neues Thema: eine Datei vorlagen/&lt;name&gt;/marken.css, optional bausteine.css daneben; Ruhig zeigt es</li></ul></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+</body>
+</html>

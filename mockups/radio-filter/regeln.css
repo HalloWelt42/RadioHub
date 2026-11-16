@@ -1,0 +1,35 @@
+/* Seite Einstellungen > Radio: nur Anordnung. Bereiche links (schmal als Zeile oben), Kopf mit Pfad und Reitern,
+   darunter das Rollfeld mit Karten; die Formen (Regelzeile, Vorschau, Zeilen der ausgeblendeten Sender) stehen in
+   radio-bausteine.css. */
+
+.rh-einst { min-height: 0; display: grid; grid-template-columns: calc(var(--gross) * 13) minmax(0, 1fr); padding-top: var(--rh-ueberstand); }
+.rh-einst-nav { min-height: 0; overflow-y: auto; overflow-x: clip; display: flex; flex-direction: column; gap: 4px; padding: calc(var(--rh-ueberstand) + 14px) 10px 14px;
+  margin-top: calc(-1 * var(--rh-ueberstand)); }
+.rh-einst-haupt { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); position: relative; }
+.rh-einst-kopf { padding: 12px var(--rh-rand) 0; display: grid; gap: 8px; }
+.rh-einst-rollt { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand) 48px; }
+.rh-reiter { display: grid; gap: 18px; padding-top: 18px; max-inline-size: 1280px; }
+.rh-reiter[hidden] { display: none; }
+
+.rh-bestand { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 18px; padding: 22px 26px 16px; }
+.rh-regeln, .rh-a-liste { display: grid; gap: 8px; }
+.rh-neu { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.rh-neu-eingabe { display: grid; gap: 14px; min-width: 0; }
+.rh-vorschau { position: sticky; top: 12px; }
+.rh-a-werkzeug, .rh-l-werkzeug { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-bottom: 12px; }
+.rh-a-werkzeug .suche, .rh-l-werkzeug .suche { flex: 1 1 260px; }
+.rh-seiten { justify-content: flex-end; padding-top: 14px; }
+.rh-laender { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--gross) * 15)), 1fr)); gap: 4px 12px; }
+
+@media (max-width: 1099px) {
+  .rh-einst { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .rh-einst-nav { flex-direction: row; flex-wrap: wrap; margin-top: 0; padding: 8px var(--rh-rand); overflow: visible; }
+  .rh-einst-nav a { min-block-size: 40px; padding: 0 10px; }
+  .rh-neu { grid-template-columns: minmax(0, 1fr); }
+  .rh-vorschau { position: static; }
+}
+@media (max-width: 760px) {
+  .rh-bestand { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 20px 14px 14px; }
+  .rh-karte { padding: 4px 12px 14px; }
+  .rh-vorschau-zahl { grid-template-columns: minmax(0, 1fr); }
+}

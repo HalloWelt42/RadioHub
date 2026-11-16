@@ -1,0 +1,59 @@
+/* Entwurf RAD-3 (RadioHub, Radio mit Filterung): Kopie aus hifi-regler/vendor/appkern/rahmen.css (Stile des Appkerns), Stand hifi-regler 9a7c0fe vom 09.11.2026.
+   Laut Plan RAD-1 (Entscheidung 7) wandert die Vorlage HiFi samt Instrumenten in den Appkern; dann kommt diese Datei von
+   dort. Im Entwurf unverändert lassen, eigene Regeln stehen in radio-marken.css und radio-bausteine.css. */
+/* Rahmen der App am Telefon: die eine Wahrheit für Höhe der App, Kopf, Fußleiste, sichere Ränder und Rollfelder (HELF-13).
+   Vorbild ist die Codeschmiede, die als Web-App vom Home-Bildschirm Kopf und Fußleiste richtig zeigt:
+   - die Seite selbst rollt nie (html und body fest, overflow hidden), nur Rollfelder im Inhalt; sonst schiebt iOS nach der
+     Tastatur oder beim Federn die ganze App samt Kopf unter die Statusleiste;
+   - die App ist genau so hoch wie der Schirm (100dvh, 100vh für alte Browser);
+   - der Kopf beginnt ganz oben, seine Fläche liegt unter der Statusleiste, sein Inhalt erst unter dem sicheren Rand
+     (env(safe-area-inset-top), ohne Zusatzluft und ohne eigene Regel für die Web-App-Ansicht);
+   - die Fußleiste steht ganz unten, ohne Abstand über dem Home-Balken (nie safe-area-inset-bottom);
+   - schmale Ränder (HELF-70): ein Seitenrand --rahmen-rand (12 px wie die Codeschmiede), Karten ohne zusätzlichen
+     Außenrand, innen knapp; der Inhalt nutzt mindestens 90 Prozent der Breite;
+   - Eingaben am Telefon 17 px, sonst vergrößert iOS beim Tippen die Seite und sie bleibt verschoben (unten).
+   Seiten der index.html: viewport-fit=cover, apple-mobile-web-app-capable, nie black-translucent.
+
+   Keine App regelt das selbst. Jede Telefonansicht kennzeichnet nur ihre Teile:
+     data-rahmen="app"     Wurzel der Telefonansicht
+     data-rahmen="kopf"    Kopf (Höhe und oberer Innenabstand kommen von hier; die App setzt nur padding-inline)
+     data-rahmen="inhalt"  der Teil dazwischen; er selbst oder seine Teile rollen
+     data-rahmen="fuss"    Fußleiste (Reiter), wenn es eine gibt
+   Schwebende Ebenen (Auswahltafeln, Vollbild) richten sich nach --rahmen-kopf-unten, --rahmen-fuss und
+   --rahmen-sicher-oben, nie nach env() oder eigenen Zahlen.
+   Apps mit der Schale bekommen das über stil.css, Apps mit eigener Schale über leitstand.css oder
+   import "appkern-oberflaeche/rahmen.css". Die Ansichtsprüfung (werkzeuge/ansicht.mjs, am Telefon und mit --rahmen) misst
+   genau diese Regeln mit sicheren Rändern wie am iPhone; das Ausrollen verlangt sie für den Stand. */
+
+:root {
+  --rahmen-kopf: 48px;     /* Kopf ohne den sicheren Rand */
+  --rahmen-fuss: 56px;     /* Fußleiste */
+  --rahmen-sicher-oben: env(safe-area-inset-top);                               /* für Ebenen über der App */
+  --rahmen-kopf-unten: calc(var(--rahmen-kopf) + env(safe-area-inset-top));     /* Unterkante des Kopfs */
+  --rahmen-rand: 12px;     /* Seitenrand am Telefon (HELF-70): einmal außen, Karten und Kästen setzen keinen eigenen
+                              Außenrand darauf und innen nicht mehr als diesen */
+}
+
+:root:has([data-rahmen="app"]), :root:has([data-rahmen="app"]) body { height: 100%; margin: 0; overflow: hidden; }
+
+[data-rahmen="app"] {
+  box-sizing: border-box; display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh;
+  margin: 0; padding: 0; overflow: hidden;
+}
+[data-rahmen="kopf"] {
+  flex: none; box-sizing: border-box; height: calc(var(--rahmen-kopf) + env(safe-area-inset-top));
+  margin: 0; padding-top: env(safe-area-inset-top); padding-bottom: 0;
+}
+[data-rahmen="inhalt"] { flex: 1; min-height: 0; min-width: 0; }
+[data-rahmen="fuss"] { flex: none; box-sizing: border-box; height: var(--rahmen-fuss); margin: 0; padding-top: 0; padding-bottom: 0; }
+
+/* Tippen ohne Zoom (HELF-69): auf Geräten mit Finger jedes Eingabefeld 17 px (Hausregel; unter 16 px vergrößert iOS beim
+   Tippen die Seite und sie bleibt so), auch Auswahl, Textfläche, bearbeitbare Flächen und der Code-Editor, unabhängig von
+   Schriftstufe oder Zoom der App. Gilt auch für Anmeldung und Einrichtung. Das Zoomen mit zwei Fingern bleibt erlaubt
+   (viewport ohne maximum-scale und user-scalable). :root doppelt, damit eine Klasse mit Element (etwa .eingabe input
+   oder ein Baustein mit eigener Klasse) es nicht unterbietet. */
+@media (pointer: coarse) {
+  :root:root :is(input, select, textarea, [contenteditable]:not([contenteditable="false"]), .cm-editor) {
+    font-size: 17px; /* Ausnahme: 17 Pixel verhindern das Vergrößern beim Tippen am iPhone */
+  }
+}

@@ -1,0 +1,47 @@
+/* Vorlage HiFi für das Radio: Marken des Aussehens. Rechnet mit den Marken der Vorlage HiFi des Appkerns
+   (vendor/instrumente/vorlagen/hifi: Bürstung, Korn, Licht von oben, Tiefe, Glanz) und gilt mit data-vorlage="hifi" am
+   Wurzelelement, in allen Breiten (auch am Telefon), hell und dunkel. Nur Marken; die Formen stehen in
+   radio-bausteine.css. */
+
+:root[data-vorlage="hifi"], :root[data-vorlage="hifi"] :is([data-theme], [data-effekte]) {
+  /* ruhige Flächen: Lichtkante, flache Wölbung, weicher Schatten */
+  --rh-erhaben: var(--hifi-erhaben);
+  --rh-kante: var(--hifi-kante-ruhig);
+  --rh-schatten: var(--hifi-schatten-ruhig);
+  --rh-schatten-klein: 0 1px 2px rgb(0 0 0 / calc(.18 * var(--hifi-tiefe)));
+  --rh-schatten-hover: 0 0 0 1px var(--rand-stark), 0 4px 12px rgb(0 0 0 / calc(.25 * var(--hifi-tiefe)));
+  --rh-mulde: var(--hifi-mulde);
+  --rh-leiste-bild: var(--hifi-erhaben), var(--hifi-buerste);
+  --rh-glanz-kante: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz)));
+  --rh-ecke-geraet: calc(var(--r3) + 4px);
+  --rh-ecke-zeile: var(--r3);
+
+  /* Geräte: gebürstetes Aluminium mit Licht von oben */
+  --rh-geraet: var(--hifi-metall-front);
+  --rh-geraet-bild: var(--hifi-licht-oben), var(--hifi-buerste);
+  --rh-geraet-tinte: var(--hifi-metall-tinte);
+  --rh-geraet-tinte-2: var(--hifi-metall-tinte-2);
+  --rh-geraet-kante: var(--hifi-kante-geraet);
+  --rh-geraet-schatten: var(--hifi-schatten-geraet);
+  --rh-geraet-schatten-klein: var(--hifi-kante-geraet), 0 2px 6px rgb(0 0 0 / calc(.35 * var(--hifi-tiefe)));
+  --rh-kanzel-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -1px 0 rgb(0 0 0 / .45), 0 -12px 26px -10px rgb(0 0 0 / calc(.55 * var(--hifi-tiefe)));
+  --rh-tafel-dunkel: rgb(0 0 0 / calc(.10 + .1 * var(--hifi-tiefe)));
+  --rh-zeile-auf-geraet: rgb(255 255 255 / calc(.04 * var(--hifi-glanz)));
+
+  /* Navigation: Metallplatte, gewählter Bereich erhaben auf dunkler Schiene */
+  --rh-nav-an: #2a2e35;
+  --rh-nav-an-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.14 * var(--hifi-glanz))), 0 1px 3px rgb(0 0 0 / .6);
+  --rh-nav-tinte: var(--ak-mulde-tinte);
+  --rh-nav-tinte-an: var(--ak-mulde-tinte-an);
+  --rh-nav-schiene: var(--ak-mulde);
+
+  /* Logo und Prägung */
+  --rh-lack-bild: var(--hifi-licht-oben), var(--hifi-koernung);
+  --rh-praegung: 0 1px 1px rgb(0 0 0 / .4);
+  --rh-logo-schein: 0 1px 0 rgb(0 0 0 / calc(.35 * var(--hifi-tiefe))), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-logo) 45%, transparent);
+
+  /* Schleier und Blätter */
+  --rh-schleier: rgb(0 0 0 / .42);
+  --rh-blatt-schatten: 0 -12px 34px rgb(0 0 0 / .5);
+  --rh-spieler-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -8px 18px -8px rgb(0 0 0 / .5);
+}
