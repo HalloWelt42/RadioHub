@@ -346,7 +346,7 @@
       </div>
       <div class="rechts">
         <div class="block">{@render senderAnzeige()}
-          {#if senderName}<i class="fa-solid {spielt ? 'fa-play' : 'fa-pause'} zustand" aria-label={spielt ? t('telefon.laeuft') : t('telefon.pausiert')}></i>{/if}
+          {#if senderName}<i class="fa-solid {spielt ? 'fa-play' : 'fa-pause'} tf-zustand" aria-label={spielt ? t('telefon.laeuft') : t('telefon.pausiert')}></i>{/if}
         </div>
         <div class="block">{@render weckerAnzeige(true)}</div>
         {@render knoepfe()}
@@ -355,7 +355,7 @@
   {:else}
     <div class="layout-uhr">
       <div class="uhr-box" class:zucken><WeckerUhr text={hhmm(jetzt)} /></div>
-      <div class="leiste">
+      <div class="tf-leiste">
         {@render senderAnzeige()}
         {@render weckerAnzeige(true)}
         <span class="sonnenzeiten">
@@ -418,15 +418,13 @@
   .uhr-box { flex: 1; min-height: 0; min-width: 0; }
   .uhr-box.zucken { animation: zucken 0.3s ease-in-out; }
   @keyframes zucken { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-6px); } 70% { transform: translateX(6px); } }
-  .layout-sonne .rechts { display: flex; flex-direction: column; justify-content: center; gap: 16px; padding-left: 20px;
-    border-left: 1px solid var(--w-linie); min-width: 0; }
+  .layout-sonne .rechts { display: flex; flex-direction: column; justify-content: center; gap: 16px; padding-left: 20px; min-width: 0; }
   .block { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .zustand { color: var(--w-text-2); font-size: 15px; flex: none; }
+  .tf-zustand { color: var(--w-text-2); font-size: 15px; flex: none; }
 
   /* B: Uhr vollflächig, unten eine schmale Leiste, Knöpfe nach Antippen */
   .layout-uhr { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .leiste { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 8px;
-    border-top: 1px solid var(--w-linie); font-size: 17px; color: var(--w-text-2); min-width: 0; }
+  .tf-leiste { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 8px; font-size: 17px; color: var(--w-text-2); min-width: 0; }
   .sonnenzeiten { display: flex; align-items: center; gap: 6px; flex: none; font-variant-numeric: tabular-nums; }
   .sonnenzeiten i { margin-left: 6px; }
   .schwebend { position: absolute; top: 12px; right: max(env(safe-area-inset-right, 0px), 20px); }
@@ -456,7 +454,7 @@
   .punkte span.an { background: var(--w-text-2); }
 
   .klingeln { position: absolute; top: 0; right: 0; bottom: 0; width: 42%; display: flex; flex-direction: column; justify-content: center;
-    gap: 14px; padding: 16px max(env(safe-area-inset-right, 0px), 20px) 16px 20px; background: var(--w-grund); border-left: 1px solid var(--w-linie); }
+    gap: 14px; padding: 16px max(env(safe-area-inset-right, 0px), 20px) 16px 20px; background: var(--w-grund); }
   .riesig { min-height: 76px; border: none; border-radius: 18px; background: var(--w-akzent); color: var(--w-akzent-text); font: inherit;
     font-size: 30px; display: flex; align-items: center; justify-content: center; }
   .riesig.aus { background: transparent; color: var(--w-text); border: 2px solid var(--w-text); }

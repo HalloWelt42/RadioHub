@@ -12,7 +12,7 @@
   );
 </script>
 
-<div class="band" aria-hidden="true">
+<div class="tf-band" aria-hidden="true">
   <div class="nachtteil"></div>
   {#if tag}<div class="tag" style:left="{tag.von}%" style:right="{100 - tag.bis}%"></div>{/if}
   <div class="jetzt" style:left="{anteil(jetzt)}%"></div>
@@ -23,7 +23,7 @@
 </div>
 
 <style>
-  .band { position: relative; height: 40px; flex: none; margin: 0 24px; }
+  .tf-band { position: relative; height: 40px; flex: none; margin: 0 24px; }
   .nachtteil, .tag { position: absolute; top: 12px; height: 6px; border-radius: 3px; }
   .nachtteil { left: 0; right: 0; background: var(--w-fein); }
   .tag { background: var(--w-akzent); opacity: 0.6; }
