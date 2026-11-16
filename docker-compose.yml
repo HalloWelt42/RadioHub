@@ -18,7 +18,9 @@
 
 services:
   radiohub-backend:
-    build: ./radiohub-backend
+    build:
+      context: .
+      dockerfile: radiohub-backend/Dockerfile
     container_name: radiohub-backend
     restart: unless-stopped
     ports:
@@ -46,7 +48,9 @@ services:
       retries: 3
 
   radiohub-frontend:
-    build: ./radiohub-frontend
+    build:
+      context: .
+      dockerfile: radiohub-frontend/Dockerfile
     container_name: radiohub-frontend
     restart: unless-stopped
     ports:

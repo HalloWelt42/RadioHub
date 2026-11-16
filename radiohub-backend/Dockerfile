@@ -1,3 +1,5 @@
+# Backend von RadioHub. Gebaut aus dem Wurzelordner des Repos (docker-compose.yml, compose.pi.yml: context .), damit
+# version.json, die einzige Quelle der Fassung, mit ins Abbild kommt.
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -8,11 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Python-Dependencies
-COPY requirements.txt .
+COPY radiohub-backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App kopieren
-COPY backend/ ./backend/
+# App kopieren, die Fassung daneben (backend/fassung.py sucht sie oberhalb des Pakets)
+COPY version.json ./
+COPY radiohub-backend/backend/ ./backend/
 
 # Port
 EXPOSE 8000

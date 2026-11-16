@@ -1,0 +1,13 @@
+# Gebaut wird aus dem Wurzelordner (wegen version.json); in den Bau gehen nur Fassung, Backend und Oberfläche, nie
+# Daten, Zertifikate, Sicherungen, Umgebung oder Entwürfe.
+*
+!version.json
+!radiohub-backend/requirements.txt
+!radiohub-backend/backend
+!radiohub-frontend
+radiohub-frontend/node_modules
+radiohub-frontend/dist
+radiohub-frontend/tests
+**/__pycache__
+**/*.pyc
+**/.DS_Store

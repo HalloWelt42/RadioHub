@@ -2,12 +2,18 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { readFileSync } from 'fs';
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
+// Fassung aus version.json im Wurzelordner des Repos (einzige Quelle, gezählt vom Git-Haken): eingebaut ins Skript
+// (__APP_VERSION__) und als Meta in die Startseite, an der das Ausrollen die ausgelieferte Fassung prüft.
+const FASSUNG = JSON.parse(readFileSync(new URL('../version.json', import.meta.url), 'utf-8')).version;
+const fassungEinsetzen = {
+  name: 'fassung-einsetzen',
+  transformIndexHtml: (html) => html.replace('</head>', `  <meta name="app-fassung" content="${FASSUNG}">\n</head>`)
+};
 
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), fassungEinsetzen],
   define: {
-    __APP_VERSION__: JSON.stringify(pkg.version)
+    __APP_VERSION__: JSON.stringify(FASSUNG)
   },
   test: {
     environment: 'node',
