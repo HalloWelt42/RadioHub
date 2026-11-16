@@ -1,0 +1,17 @@
+# Ausrollen auf den Pi mit tools/ausrollen.sh (Ablauf in tools/ausrollen.py, gebaut aus den Teilen des Appkerns:
+# appkern.werkzeuge.ausrollen). Rechner, Ordner, Adresse und Namen im Zertifikat gehören dem Haus und stehen nicht im
+# Repo: tools/ausrollen.sh holt sie aus der privaten Wahrheit (handbuch ziel radiohub --toml) als Ergänzung.
+kennung = "radiohub"
+repo = "https://github.com/HalloWelt42/RadioHub.git"
+compose = "compose.pi.yml"
+# ton: RadioHub nutzt keinen Tondienst der Leitstelle (die Vertonung der Zeitansage fragt es selbst)
+ton = false
+
+# Dienst im Abbild, in dem die Sicherung läuft, und die Datenbank relativ zum Ordner der App (bis Etappe 2 nicht nach
+# dem Schema des Appkerns: daten/<kennung>.sqlite)
+[radio]
+backend = "radiohub-backend"
+datenbank = "data/radiohub.db"
+# Ordner vor dem Umzug nach Entscheidung 21 (docs/umbau/PLAN.md): liegt RadioHub noch dort, bricht das Ausrollen ab und
+# verweist auf tools/umzug-mnt-data.sh
+umzug_von = "/home/pi/RadioHub"

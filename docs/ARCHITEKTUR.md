@@ -51,7 +51,7 @@ logik           lib/**                                 Zustand, Wiedergabe (play
 | G1 | Keine Bibliotheken aus dem Netz (CDN, Google Fonts) in Quellen und Startseite |
 | G2 | Keine Browser-Dialoge (alert, confirm, prompt) |
 | G3 | Keine feste Fassung im Code; nur `version.json` |
-| G4 | Architektur, Plan, Regeln und Fassung sind da |
+| G4 | Architektur, Plan, Regeln, Fassung und die Dateien des Betriebs (compose.pi.yml, deploy/) sind da |
 
 Dazu prüft der Haken jede vorgemerkte Datei auf gerade Zeichen und auf den Stil (kein `!important`, keine einseitigen
 Streifen); die Marken der Gestaltung werden nur gemeldet, bis die Oberfläche in Etappe 2 auf die Bausteine des

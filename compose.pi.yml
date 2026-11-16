@@ -1,0 +1,75 @@
+# RadioHub auf dem Pi (tools/ausrollen.sh: docker compose -f compose.pi.yml). Vorne Caddy mit dem Zertifikat der
+# Hausstelle (das Ausrollen stellt es aus) auf Port 9093, dahinter die Oberfläche (nginx) und das Backend. Im Heimnetz
+# nur TLS (HELF-169, Handbuch: Grundlage Pi): die http-Ports gelten nur am Pi selbst (127.0.0.1); die frühere Adresse
+# auf 9092 leitet der Vorbau des Pi auf 9093 um, radio.<Rufname>.lan reicht er an 9093 weiter.
+# Daten in ./data (Datenbank, Cache, storage.json, kellerwolke.schluessel), Zertifikate in ./zertifikate, Einstellungen
+# des Hauses (Kellerwolke, Ortssuche, Vertonung, Zeit-Stimme) in ./.env (Modus 600, nicht im Repo).
+services:
+  radiohub-backend:
+    build:
+      context: .
+      dockerfile: radiohub-backend/Dockerfile
+    image: radiohub-backend:aktuell
+    container_name: radiohub-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9091:8000"
+    networks:
+      default: {}
+      # die Ortssuche (Sonnenzeiten) fragt OSMLocal über das gemeinsame Netz der Apps auf dem Pi
+      haus: {}
+    volumes:
+      - ./data:/data
+      - ./zertifikate:/zertifikate:ro
+    environment:
+      - DATA_PATH=/data
+      - ALLOWED_ORIGINS=*
+      - TZ=Europe/Berlin
+      - RADIOHUB_KELLERWOLKE_ADRESSE=${RADIOHUB_KELLERWOLKE_ADRESSE:-}
+      - RADIOHUB_KELLERWOLKE_SCHLUESSEL=${RADIOHUB_KELLERWOLKE_SCHLUESSEL:-/data/kellerwolke.schluessel}
+      - RADIOHUB_KELLERWOLKE_WURZEL=${RADIOHUB_KELLERWOLKE_WURZEL:-Apps/RadioHub}
+      - RADIOHUB_KELLERWOLKE_CA=${RADIOHUB_KELLERWOLKE_CA:-/zertifikate/rootCA.pem}
+      # OSMLocal heißt im Netz haus osmlocal (Alias in seiner Compose-Datei auf dem Pi)
+      - RADIOHUB_ORTSSUCHE_ADRESSE=http://osmlocal:8120
+      - RADIOHUB_VERTONUNG_ADRESSE=${RADIOHUB_VERTONUNG_ADRESSE:-}
+      - RADIOHUB_ZEITSTIMME=${RADIOHUB_ZEITSTIMME:-}
+      - RADIOHUB_ZEITSTIMME_TEMPO=${RADIOHUB_ZEITSTIMME_TEMPO:-1.0}
+    healthcheck:
+      # Python statt curl: curl ist im Abbild nicht enthalten
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  radiohub-frontend:
+    build:
+      context: .
+      dockerfile: radiohub-frontend/Dockerfile
+    image: radiohub-frontend:aktuell
+    container_name: radiohub-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9092:80"
+    environment:
+      - TZ=Europe/Berlin
+    depends_on:
+      - radiohub-backend
+
+  # HTTPS vor der Oberfläche mit dem Blattzertifikat der Hausstelle (zertifikate/radiohub.pem, vom Ausrollen)
+  vorne:
+    image: caddy:2.11.7-alpine
+    container_name: radiohub-vorne
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./zertifikate:/zertifikate:ro
+    depends_on:
+      - radiohub-frontend
+
+networks:
+  haus:
+    external: true
+    name: haus
