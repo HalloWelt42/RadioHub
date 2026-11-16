@@ -7,6 +7,7 @@ Mit adaptiver Bitrate-Anpassung und ICY-Metadata-Tracking.
 
 © HalloWelt42 - Nur für private Nutzung
 """
+import logging
 import asyncio
 import shutil
 import json
@@ -16,6 +17,8 @@ from typing import Optional
 from dataclasses import dataclass, field
 
 from .icy_metadata import IcyMetadataLogger
+
+logger = logging.getLogger("radiohub.hls_buffer")
 
 
 # Standard-Bitrate-Stufen (kbps)
@@ -86,7 +89,7 @@ class HLSBufferService:
         if self.buffer_dir.exists():
             shutil.rmtree(self.buffer_dir)
         self.buffer_dir.mkdir(parents=True, exist_ok=True)
-        print(f"  Buffer-Verzeichnis: {self.buffer_dir}")
+        logger.info(f"Buffer-Verzeichnis: {self.buffer_dir}")
     
     async def _detect_stream_info(self, stream_url: str, timeout: float = 8.0) -> StreamInfo:
         """
@@ -124,7 +127,7 @@ class HLSBufferService:
                 )
             except asyncio.TimeoutError:
                 process.kill()
-                print(f"  ⚠ ffprobe Timeout nach {timeout}s - nutze Defaults")
+                logger.warning(f"ffprobe Timeout nach {timeout}s - nutze Defaults")
                 return info
             
             if process.returncode == 0 and stdout:
@@ -143,10 +146,10 @@ class HLSBufferService:
                     info.sample_rate = int(stream.get("sample_rate", 44100))
                     info.channels = int(stream.get("channels", 2))
                     
-                    print(f"  📊 Stream erkannt: {info.codec} @ {info.bitrate} kbps, {info.sample_rate} Hz")
+                    logger.info(f"Stream erkannt: {info.codec} @ {info.bitrate} kbps, {info.sample_rate} Hz")
                     
         except Exception as e:
-            print(f"  ⚠ Stream-Erkennung fehlgeschlagen: {e}")
+            logger.warning(f"Stream-Erkennung fehlgeschlagen: {e}")
         
         return info
     
@@ -272,10 +275,10 @@ class HLSBufferService:
         max_segments = 14400 if is_podcast else max_minutes * 60
 
         mode_label = "Podcast" if is_podcast else "Radio"
-        print(f"✓ HLS Buffer starten ({mode_label}): {station_name}")
+        logger.info(f"HLS Buffer starten ({mode_label}): {station_name}")
         
         # Stream-Info erkennen
-        print(f"  🔍 Erkenne Stream-Eigenschaften...")
+        logger.info(f"Erkenne Stream-Eigenschaften...")
         stream_info = await self._detect_stream_info(stream_url)
         
         # Input-Bitrate: Erkannt oder Fallback
@@ -289,7 +292,7 @@ class HLSBufferService:
             override_bitrate=override_bitrate
         )
         
-        print(f"  📈 Bitrate: Input {input_bitrate} kbps → Output {output_bitrate} kbps (Range: {min_bitrate}-{max_bitrate})")
+        logger.info(f"Bitrate: Input {input_bitrate} kbps → Output {output_bitrate} kbps (Range: {min_bitrate}-{max_bitrate})")
         
         self.session = HLSSession(
             session_id=session_id,
@@ -314,7 +317,7 @@ class HLSBufferService:
         # ffmpeg starten
         try:
             cmd = self._build_ffmpeg_cmd(stream_url)
-            print(f"  ffmpeg: {' '.join(cmd[:5])}...")
+            logger.info(f"ffmpeg: {' '.join(cmd[:5])}...")
             
             self._ffmpeg_process = await asyncio.create_subprocess_exec(
                 *cmd,
@@ -340,12 +343,12 @@ class HLSBufferService:
         except FileNotFoundError:
             self.session = None
             error_msg = "ffmpeg nicht gefunden. Bitte installieren: sudo apt install ffmpeg"
-            print(f"✗ {error_msg}")
+            logger.warning(f"{error_msg}")
             return {"status": "error", "error": error_msg}
             
         except Exception as e:
             self.session = None
-            print(f"✗ HLS Start Fehler: {e}")
+            logger.warning(f"HLS Start Fehler: {e}")
             return {"status": "error", "error": str(e)}
     
     def _start_icy_tracking(self, stream_url: str):
@@ -355,7 +358,7 @@ class HLSBufferService:
         self._icy_task = asyncio.create_task(
             self._icy_logger.run(stream_url, icy_path)
         )
-        print("  ICY-Tracking gestartet (parallel zum HLS-Buffer)")
+        logger.info("ICY-Tracking gestartet (parallel zum HLS-Buffer)")
 
     def _stop_icy_tracking(self):
         """Stoppt ICY-Metadata-Logger."""
@@ -369,7 +372,7 @@ class HLSBufferService:
                 pass
         entries = len(self._icy_logger.entries) if self._icy_logger else 0
         if entries > 0:
-            print(f"  ICY-Tracking gestoppt ({entries} Titelwechsel)")
+            logger.info(f"ICY-Tracking gestoppt ({entries} Titelwechsel)")
             # DB aktualisieren: icy=1 wenn Probe das nicht erkannt hatte
             if self.session and self.session.station_uuid:
                 self._update_icy_flag(self.session.station_uuid)
@@ -387,9 +390,9 @@ class HLSBufferService:
                     (uuid,)
                 )
                 if c.rowcount > 0:
-                    print(f"  ICY-Flag in DB korrigiert für {uuid[:12]}")
+                    logger.info(f"ICY-Flag in DB korrigiert für {uuid[:12]}")
         except Exception as e:
-            print(f"  ICY-Flag Update fehlgeschlagen: {e}")
+            logger.warning(f"ICY-Flag Update fehlgeschlagen: {e}")
 
     def get_icy_entries(self) -> list[dict]:
         """Aktuelle ICY-Metadata-Einträge aus Memory."""
@@ -415,7 +418,7 @@ class HLSBufferService:
                 stderr_text = stderr_data.decode('utf-8', errors='ignore')[-500:]
                 if return_code != 0:
                     self.session.error = f"ffmpeg beendet (Code {return_code}): {stderr_text}"
-                    print(f"✗ ffmpeg Fehler: {stderr_text}")
+                    logger.warning(f"ffmpeg Fehler: {stderr_text}")
                 self.session.is_active = False
                 
         except asyncio.CancelledError:
@@ -464,7 +467,7 @@ class HLSBufferService:
         if self.buffer_dir.exists():
             shutil.rmtree(self.buffer_dir, ignore_errors=True)
         
-        print(f"✓ HLS Buffer gestoppt: {station_name}")
+        logger.info(f"HLS Buffer gestoppt: {station_name}")
         return {"status": "stopped"}
     
     def get_status(self) -> dict:
@@ -555,7 +558,7 @@ class HLSBufferService:
                     lines.append(line)
             return '\n'.join(lines)
         except Exception as e:
-            print(f"Playlist lesen Fehler: {e}")
+            logger.warning(f"Playlist lesen Fehler: {e}")
             return None
     
     def get_segment_path(self, segment_id: int) -> Optional[Path]:

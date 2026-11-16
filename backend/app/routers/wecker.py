@@ -6,7 +6,6 @@ Seite offen), weil Web-Apps im Hintergrund nicht geweckt werden. Dazu der Ort f�
 (Breite, Länge, Name) als Einstellung.
 """
 import json
-import os
 import re
 from typing import Literal, Optional
 
@@ -14,6 +13,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
+from .. import einstellungen
 from ..database import db_session
 from ..services.config_service import config_service
 
@@ -73,8 +73,9 @@ class Ort(BaseModel):
     laenge: Optional[float] = Field(None, ge=-180, le=180)
 
 
-# Ortssuche über die hauseigene Kartensuche (OSM lokal); Adresse in RADIOHUB_ORTSSUCHE_ADRESSE, leer: keine Suche
-ORTSSUCHE = os.environ.get("RADIOHUB_ORTSSUCHE_ADRESSE", "").strip().rstrip("/")
+def ortssuche() -> str:
+    """Hauseigene Kartensuche (OSM lokal) aus der Einstellung ortssuche_adresse (RADIOHUB_ORTSSUCHE_ADRESSE); leer: keine."""
+    return einstellungen.stand().ortssuche_adresse.strip().rstrip("/")
 
 
 class Fundort(BaseModel):
@@ -87,11 +88,12 @@ class Fundort(BaseModel):
 @router.get("/orte")
 async def orte_suchen(q: str = Query(..., min_length=2, max_length=100)) -> dict:
     """Orte zum Namen, für die Sonnenzeiten; nur Städte, Orte und Dörfer."""
-    if not ORTSSUCHE:
-        raise HTTPException(503, "Ortssuche nicht eingerichtet (RADIOHUB_ORTSSUCHE_ADRESSE)")
+    adresse = ortssuche()
+    if not adresse:
+        raise HTTPException(503, "Ortssuche nicht eingerichtet (Einstellung Ortssuche, RADIOHUB_ORTSSUCHE_ADRESSE)")
     try:
         async with httpx.AsyncClient(timeout=10) as c:
-            antwort = await c.get(f"{ORTSSUCHE}/api/v1/suche", params={"q": q, "limit": 20})
+            antwort = await c.get(f"{adresse}/api/v1/suche", params={"q": q, "limit": 20})
             antwort.raise_for_status()
     except httpx.HTTPError as f:
         raise HTTPException(502, f"Ortssuche nicht erreichbar: {f.__class__.__name__}") from f

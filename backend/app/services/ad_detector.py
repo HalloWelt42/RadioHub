@@ -8,6 +8,7 @@ Werbeerkennung für Radiosender:
 Ergebnisse werden in station_ad_status + ad_detections_log gespeichert.
 KEIN automatisches Blocken -- User entscheidet über /api/ad-detection/decide.
 """
+import logging
 import json
 import re
 import httpx
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 from typing import Optional
 
 from ..database import db_session
+
+logger = logging.getLogger("radiohub.ad_detector")
 
 
 # === Bekannte Werbenetzwerk-Domains ===
@@ -807,4 +810,4 @@ def seed_domain_blacklist():
         inserted = c.rowcount
 
     if inserted > 0:
-        print(f"  {inserted} Domains in Blacklist eingetragen")
+        logger.info(f"{inserted} Domains in Blacklist eingetragen")

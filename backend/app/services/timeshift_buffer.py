@@ -7,12 +7,15 @@ Ermöglicht Zurückspulen im Live-Stream und Übernahme in Recording.
 Bei 16 GB RAM problemlos 60+ Minuten Buffer möglich.
 Kein SD-Karten-Verschleiß, schnelleres Seeking.
 """
+import logging
 import asyncio
 import httpx
 from collections import deque
 from datetime import datetime
 from typing import Optional, List
 from dataclasses import dataclass, field
+
+logger = logging.getLogger("radiohub.timeshift_buffer")
 
 
 @dataclass
@@ -155,7 +158,7 @@ class TimeshiftBufferManager:
         # Buffer-Task starten
         self._task = asyncio.create_task(self._buffer_loop())
         
-        print(f"✓ Timeshift-Buffer gestartet: {station_name} ({audio_format}, max {max_minutes} Min)")
+        logger.info(f"Timeshift-Buffer gestartet: {station_name} ({audio_format}, max {max_minutes} Min)")
         
         return {
             "status": "started",
@@ -193,7 +196,7 @@ class TimeshiftBufferManager:
         self.session.chunks.clear()
         self.session = None
         
-        print(f"✓ Timeshift-Buffer gestoppt ({total_mb:.1f} MB freigegeben)")
+        logger.info(f"Timeshift-Buffer gestoppt ({total_mb:.1f} MB freigegeben)")
         
         return {"status": "stopped", "session_id": session_id}
     
@@ -248,7 +251,7 @@ class TimeshiftBufferManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            print(f"✗ Buffer error: {e}")
+            logger.warning(f"Buffer error: {e}")
             if self.session:
                 self.session.error = str(e)
                 self.session.is_active = False

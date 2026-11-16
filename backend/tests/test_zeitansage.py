@@ -5,7 +5,6 @@ import subprocess
 
 import httpx
 
-from app.ablage import AblageEinstellungen
 from app.services.zeitansage import Zeitansage, ZeitansageEinstellungen, ansage, bausteine, stunde_text, zahlwort
 
 
@@ -24,9 +23,7 @@ def _wav() -> bytes:
                            "[0][1][0]concat=n=3:v=0:a=1", "-f", "wav", "-"], capture_output=True, check=True).stdout
 
 
-async def test_erzeugen_legt_fehlende_bausteine_ab(speicher, tmp_path, client):
-    schluessel = tmp_path / "schluessel"
-    schluessel.write_text("kw_app_probe")
+async def test_erzeugen_legt_fehlende_bausteine_ab(speicher, client):
     wav = _wav()
     anfragen = []
 
@@ -36,8 +33,7 @@ async def test_erzeugen_legt_fehlende_bausteine_ab(speicher, tmp_path, client):
         return httpx.Response(200, content=wav)
 
     await speicher.schreiben("Zeitansage/es-ist.mp3", b"schon da")
-    e = ZeitansageEinstellungen(adresse="https://vertonung.test", stimme="stimme-1",
-                                ablage=AblageEinstellungen(schluessel_datei=str(schluessel)))
+    e = ZeitansageEinstellungen(adresse="https://vertonung.test", stimme="stimme-1", schluessel="kw_app_probe")
     dienst = Zeitansage()
     assert await dienst.erzeugen(e, transport=httpx.MockTransport(vertonung)) == 83
     texte = [json.loads(a.content)["text"] for a in anfragen]

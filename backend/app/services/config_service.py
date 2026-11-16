@@ -1,113 +1,116 @@
-"""
-RadioHub v0.2.5 - Config Service
+"""Werte unter /api/config: Einstellungen des Servers und Stand der Oberfläche unter einem Dach (bis Teil 2c).
 
-Globale App-Einstellungen in der Datenbank speichern.
+Die Schlüssel in `einstellungen.CONFIG_FELDER` sind Einstellungen des Servers; sie kommen aus den Einstellungen des
+Appkerns (eine Quelle, RAD-6) und werden dort geändert. Alle übrigen Schlüssel sind Stand der Oberfläche (Sprache,
+Klickgeräusche, zuletzt gehörter Sender, Länder der Seitenleiste, Filter, Ort der Sonnenzeiten) und bleiben in der
+Tabelle config der Datenbank des RadioHub.
 """
 import json
-from typing import Any, Optional
+import logging
+from typing import Any
 
+from .. import einstellungen
 from ..database import db_session
+from ..einstellungen import CONFIG_FELDER
 
-# Standard-Einstellungen (thematisch gruppiert)
+log = logging.getLogger("radiohub.config")
+
+# Vorgaben des Stands der Oberfläche (die der Einstellungen stehen in einstellungen.AppEinstellungen)
 DEFAULT_CONFIG = {
     # --- UI ---
     "language": "de",
     "ui_click_sounds": True,
     # --- Audio / Aufnahme ---
     "recording_format": "mp3",
-    "recording_bitrate": 192,
-    "hls_min_bitrate": 32,    # Minimum kbps
-    "hls_max_bitrate": 320,   # Maximum kbps
-    "hls_sample_rate": 44100, # Sample Rate (Hz)
-    # --- Podcast ---
-    "podcast_auto_refresh": True,
-    "podcast_refresh_interval": 21600,  # 6 Stunden in Sekunden
     # --- Session ---
     "last_station_uuid": None,
     "last_station_name": None,
     # --- Filter ---
     "sidebar_countries": None, # JSON-Array mit sichtbaren Country-Codes
-    # --- Externe Dienste ---
-    "service_radio_browser_servers": [
-        "https://de1.api.radio-browser.info",
-        "https://at1.api.radio-browser.info",
-        "https://nl1.api.radio-browser.info"
-    ],
-    "service_itunes_search_url": "https://itunes.apple.com/search",
-    "service_fyyd_search_url": "https://api.fyyd.de/0.2/search/podcast",
 }
 
 
 class ConfigService:
-    """Verwaltet globale Einstellungen"""
-    
+    """Liest und schreibt die Werte unter /api/config."""
+
     def __init__(self):
         self._cache: dict = {}
         self._loaded = False
-    
+
     def _ensure_loaded(self):
-        """Lädt Config aus DB wenn noch nicht geladen"""
+        """Lädt den Stand der Oberfläche aus der Datenbank, wenn noch nicht geladen"""
         if not self._loaded:
             self._load_from_db()
             self._loaded = True
-    
+
     def _load_from_db(self):
-        """Lädt alle Config-Werte aus DB"""
+        """Lädt alle Werte der Tabelle config außer denen, die jetzt Einstellungen sind"""
         with db_session() as conn:
-            c = conn.cursor()
-            c.execute("SELECT key, value FROM config")
-            for row in c.fetchall():
+            for row in conn.execute("SELECT key, value FROM config"):
+                if row[0] in CONFIG_FELDER:
+                    continue
                 try:
                     self._cache[row[0]] = json.loads(row[1])
-                except:
+                except (TypeError, ValueError):
                     self._cache[row[0]] = row[1]
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """Einzelnen Wert holen"""
+        if key in CONFIG_FELDER:
+            return getattr(einstellungen.stand(), key)
         self._ensure_loaded()
-        
         if key in self._cache:
             return self._cache[key]
-        
         if key in DEFAULT_CONFIG:
             return DEFAULT_CONFIG[key]
-        
         return default
-    
+
     def set(self, key: str, value: Any):
-        """Einzelnen Wert setzen"""
+        """Einen Wert des Stands der Oberfläche setzen (Einstellungen gehen über `aendern`)"""
+        if key in CONFIG_FELDER:
+            raise ValueError(f"{key} ist eine Einstellung des Servers; ändern über aendern()")
         self._ensure_loaded()
         self._cache[key] = value
-        
         with db_session() as conn:
-            c = conn.cursor()
-            c.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
-                     (key, json.dumps(value)))
-    
+            conn.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, json.dumps(value)))
+
     def get_all(self) -> dict:
-        """Alle Einstellungen holen (mit Defaults)"""
+        """Alle Werte (mit Vorgaben)"""
         self._ensure_loaded()
-        
         result = dict(DEFAULT_CONFIG)
         result.update(self._cache)
+        stand = einstellungen.stand()
+        result.update({k: getattr(stand, k) for k in sorted(CONFIG_FELDER)})
         return result
-    
+
+    async def aendern(self, updates: dict) -> dict:
+        """Mehrere Werte ändern: Einstellungen zusammen (alles oder nichts, `None` heißt Vorgabe), danach der Stand der
+        Oberfläche."""
+        felder = {k: v for k, v in updates.items() if k in CONFIG_FELDER}
+        if felder:
+            await einstellungen.aendern(felder)
+        for key, value in updates.items():
+            if key not in CONFIG_FELDER:
+                self.set(key, value)
+        return self.get_all()
+
     def update(self, updates: dict) -> dict:
-        """Mehrere Werte aktualisieren"""
+        """Mehrere Werte des Stands der Oberfläche setzen (ohne Einstellungen; die gehen über `aendern`)"""
         for key, value in updates.items():
             self.set(key, value)
-
         return self.get_all()
-    
-    def reset(self) -> dict:
-        """Auf Standardwerte zurücksetzen"""
+
+    async def reset(self) -> dict:
+        """Auf die Vorgaben zurücksetzen: den Stand der Oberfläche und die hier gespeicherten Einstellungen (feste
+        Einstellungen vom Ausrollen bleiben)"""
         with db_session() as conn:
-            c = conn.cursor()
-            c.execute("DELETE FROM config")
-        
+            platzhalter = ",".join("?" * len(CONFIG_FELDER))
+            conn.execute(f"DELETE FROM config WHERE key NOT IN ({platzhalter})", tuple(CONFIG_FELDER))
         self._cache = {}
         self._loaded = False
-        
+        zurueck = {k: None for k in CONFIG_FELDER if einstellungen.herkunft(k) == "gespeichert"}
+        if zurueck:
+            await einstellungen.aendern(zurueck)
         return self.get_all()
 
 

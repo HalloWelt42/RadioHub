@@ -1,5 +1,5 @@
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
+# Appkern mit den Schnittstellen für FastAPI (Gerüst, Einstellungen, Anmeldung, Protokoll, Sicherung), gebunden an
+# einen Commit: eine Adresse, die sich nie ändert, nähme Docker sonst aus einer alten Schicht (tools/appkern.sh hebt ihn)
+appkern[web] @ https://github.com/HalloWelt42/appkern/archive/fd7ee479ac42cd221d6074fa1658cf942f73e7f8.tar.gz
+uvicorn[standard]>=0.30
 httpx==0.27.2
-# Zugang zur Kellerwolke (nur der Grundteil des Appkerns: httpx und pydantic, keine Extras)
-appkern @ https://github.com/HalloWelt42/appkern/archive/c34ab4181b4a6d7ee96ef51640d296a0b4534de2.tar.gz

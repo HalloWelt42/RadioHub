@@ -4,11 +4,14 @@ RadioHub v0.1.7 - Stream Buffer Service
 Buffert Live-Streams für stabiles Playback und Seek-Funktion.
 Speichert Chunks im Speicher für schnelles Zurückspulen.
 """
+import logging
 import asyncio
 import httpx
 from datetime import datetime
 from typing import Optional, List
 from dataclasses import dataclass, field
+
+logger = logging.getLogger("radiohub.stream_buffer")
 
 
 @dataclass
@@ -65,7 +68,7 @@ class StreamBufferManager:
         # Buffer-Task starten
         self._task = asyncio.create_task(self._buffer_loop())
         
-        print(f"✓ Buffer gestartet: {stream_url[:50]}...")
+        logger.info(f"Buffer gestartet: {stream_url[:50]}...")
         return {"status": "started", "stream_url": stream_url}
     
     async def stop_buffering(self) -> dict:
@@ -93,7 +96,7 @@ class StreamBufferManager:
         url = self.state.stream_url
         self.state = BufferState()
         
-        print(f"✓ Buffer gestoppt")
+        logger.info(f"Buffer gestoppt")
         return {"status": "stopped", "stream_url": url}
     
     async def _buffer_loop(self):
@@ -140,7 +143,7 @@ class StreamBufferManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            print(f"✗ Buffer error: {e}")
+            logger.warning(f"Buffer error: {e}")
             self.state.is_buffering = False
     
     def get_status(self) -> dict:

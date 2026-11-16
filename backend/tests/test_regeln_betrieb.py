@@ -28,6 +28,12 @@ BEISPIELE = {
            ['<a href="https://github.com/HalloWelt42/RadioHub">']),
     "B4": (["      - ALLOWED_ORIGINS=*", "    add_header Access-Control-Allow-Origin *;", 'allow_origins=["*"],', "    cors: true,"],
            ["      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}", "allow_origins=_urspruenge,"]),
+    "P1": (["print(f'Start {x}')", "        print(\"fertig\")"],
+           ["logger.info('Start %s', x)", "self.print_queue()", "blueprint(x)"]),
+    "K1": (["os.environ.get('RADIOHUB_ZEITSTIMME')", "x = os.getenv('DATA_PATH')", "from os import getenv; getenv('X')"],
+           ["einstellungen.stand().zeitstimme", "ort.daten_ordner()"]),
+    "D1": (["c.execute('ALTER TABLE stations ADD COLUMN x TEXT')", "alter table blocklist add column y"],
+           ["CREATE TABLE IF NOT EXISTS x (a)", "# die Spalte kommt mit Stufe 2"]),
     "B5": (['      - "9091:8000"', '      - "127.0.0.1:9092:8080"', "      - 9092:80"],
            ['      - "9093:9093"', '      - "8000"', '      - "127.0.0.1:${PROBE_PORT:?}:9093"']),
 }

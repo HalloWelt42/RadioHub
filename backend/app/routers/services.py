@@ -130,20 +130,18 @@ async def update_service_url(service_id: str, body: ServiceUrlUpdate):
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Dieser Dienst ist nicht konfigurierbar")
 
-    config_service.set(svc["config_key"], body.value)
+    await config_service.aendern({svc["config_key"]: body.value})
 
     return {
         "success": True,
         "service_id": service_id,
-        "value": body.value
+        "value": config_service.get(svc["config_key"])
     }
 
 
 @router.post("/{service_id}/reset")
 async def reset_service_url(service_id: str):
     """Endpunkt eines Dienstes auf Standard zurücksetzen"""
-    from ..services.config_service import DEFAULT_CONFIG
-
     svc = next((s for s in SERVICE_DEFINITIONS if s["id"] == service_id), None)
     if not svc:
         from fastapi import HTTPException
@@ -153,12 +151,10 @@ async def reset_service_url(service_id: str):
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Dieser Dienst ist nicht konfigurierbar")
 
-    default_value = DEFAULT_CONFIG.get(svc["config_key"])
-    if default_value is not None:
-        config_service.set(svc["config_key"], default_value)
+    await config_service.aendern({svc["config_key"]: None})   # None: zurück auf die Vorgabe der Einstellung
 
     return {
         "success": True,
         "service_id": service_id,
-        "value": default_value
+        "value": config_service.get(svc["config_key"])
     }

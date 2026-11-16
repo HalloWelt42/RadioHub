@@ -6,9 +6,12 @@ Berechnet max(abs(sample)) pro 10ms-Fenster aus Full-Rate PCM.
 Ergebnis: 1 Float32 pro 10ms, normalisiert auf [0.0, 1.0].
 Ergebnis als .peaks-Datei neben der Audio-Datei; services.aufnahmen legt sie in der Ablage ab.
 """
+import logging
 import asyncio
 import struct
 from pathlib import Path
+
+logger = logging.getLogger("radiohub.peaks_generator")
 
 
 SAMPLE_RATE = 100  # Peaks pro Sekunde (= 10ms-Fenster)
@@ -105,7 +108,7 @@ class PeaksGenerator:
             await proc.wait()
 
             if proc.returncode != 0 or len(peaks) == 0:
-                print(f"  Peaks: FFmpeg Fehler (rc={proc.returncode}) für {audio_path.name}")
+                logger.warning(f"Peaks: FFmpeg Fehler (rc={proc.returncode}) für {audio_path.name}")
                 return None
 
             # Normalisieren auf [0.0, 1.0]
@@ -115,18 +118,18 @@ class PeaksGenerator:
             raw = struct.pack(f"<{len(normalized)}f", *normalized)
 
             peaks_path.write_bytes(raw)
-            print(f"  Peaks: {len(peaks)} Samples generiert für {audio_path.name}")
+            logger.info(f"Peaks: {len(peaks)} Samples generiert für {audio_path.name}")
             return peaks_path
 
         except asyncio.TimeoutError:
-            print(f"  Peaks: Timeout für {audio_path.name}")
+            logger.warning(f"Peaks: Timeout für {audio_path.name}")
             try:
                 proc.kill()
             except Exception:
                 pass
             return None
         except Exception as e:
-            print(f"  Peaks: Fehler: {e}")
+            logger.warning(f"Peaks: Fehler: {e}")
             return None
 
 

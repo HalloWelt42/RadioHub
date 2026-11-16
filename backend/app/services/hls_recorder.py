@@ -10,6 +10,7 @@ Edge-Case-Härtung:
 - Auto-Finalisierung wenn HLS-Buffer während Aufnahme stirbt
 - Disk-Space-Guard vor Start und während Aufnahme
 """
+import logging
 import asyncio
 import json
 import shutil
@@ -24,6 +25,8 @@ from .aufnahmen import aufnahmen
 from .hls_buffer import hls_buffer
 from .recorder import rec_manager
 from .audio_utils import probe_duration
+
+logger = logging.getLogger("radiohub.hls_recorder")
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
@@ -74,7 +77,7 @@ class HLSRecorderService:
         self._stopping = False  # Guard gegen doppeltes stop()
 
     def startup(self):
-        """Wird vom Lifespan-Startup nach init_db() aufgerufen."""
+        """Beim Start der App, nachdem die Datenbank eingerichtet ist (betrieb.Radiobetrieb)."""
         self._cleanup_stale_sessions()
 
     def _cleanup_stale_sessions(self):
@@ -99,7 +102,7 @@ class HLSRecorderService:
                     (row[0],)
                 )
             if stale:
-                print(f"  {len(stale)} verwaiste HLS-REC-Session(s) bereinigt")
+                logger.info(f"{len(stale)} verwaiste HLS-REC-Session(s) bereinigt")
 
     async def start(self, lookback_seconds: int = 300) -> dict:
         """Startet HLS-REC.
@@ -193,7 +196,7 @@ class HLSRecorderService:
                  orte.aufnahmeordner(station_name, session.start_time, folder_name),
                  "recording", "aac", ".aac", None, "hls-rec", folder_id))
 
-        print(f"HLS-REC gestartet: {session_id} "
+        logger.info(f"HLS-REC gestartet: {session_id} "
               f"(Lookback: {copied} Segmente / {lookback_seconds}s)")
 
         return {
@@ -219,7 +222,7 @@ class HLSRecorderService:
                 await asyncio.sleep(0.5)
 
                 if not hls_buffer.is_active():
-                    print("  HLS-REC: Buffer gestoppt, beende Collector")
+                    logger.info("HLS-REC: Buffer gestoppt, beende Collector")
                     buffer_dead = True
                     break
 
@@ -228,7 +231,7 @@ class HLSRecorderService:
                 if disk_check_counter >= 30:
                     disk_check_counter = 0
                     if not _check_disk_space(session.ts_dir):
-                        print("  HLS-REC: Speicherplatz knapp, beende Collector")
+                        logger.warning("HLS-REC: Speicherplatz knapp, beende Collector")
                         buffer_dead = True  # Triggert Auto-Finalisierung
                         break
 
@@ -258,7 +261,7 @@ class HLSRecorderService:
 
         # Buffer-Tod oder Disk-Space: Automatisch finalisieren
         if buffer_dead and self.active_session:
-            print("  HLS-REC: Auto-Finalisierung nach Collector-Abbruch")
+            logger.warning("HLS-REC: Auto-Finalisierung nach Collector-Abbruch")
             asyncio.create_task(self._auto_finalize())
 
     async def stop(self) -> dict:
@@ -329,12 +332,12 @@ class HLSRecorderService:
 
             if proc.returncode != 0:
                 err = stderr.decode("utf-8", errors="replace")[-300:]
-                print(f"  HLS-REC Concat-Fehler: {err}")
+                logger.warning(f"HLS-REC Concat-Fehler: {err}")
                 self._cleanup(session)
                 return {"success": False, "error": f"Concat fehlgeschlagen: {err[:100]}"}
 
         except asyncio.TimeoutError:
-            print("  HLS-REC Concat-Timeout")
+            logger.warning("HLS-REC Concat-Timeout")
             self._cleanup(session)
             return {"success": False, "error": "Concat Timeout"}
 
@@ -363,7 +366,7 @@ class HLSRecorderService:
                 stuecke = await splitter.nach_titelliste(
                     output_file, titelliste, real_duration, ".aac", session_dir)
             except Exception as e:
-                print(f"  HLS-REC Split-Fehler: {e}")
+                logger.warning(f"HLS-REC Split-Fehler: {e}")
                 stuecke = []
         if stuecke:
             # Die Stücke enthalten alles; die ganze Datei bliebe sonst liegen und käme beim Nachholen doppelt dazu
@@ -380,7 +383,7 @@ class HLSRecorderService:
             status = "completed"
         except Exception as e:
             # Bleibt im Arbeitsordner; der nächste Start holt das Ablegen nach
-            print(f"  HLS-REC Ablage-Fehler: {e}")
+            logger.warning(f"HLS-REC Ablage-Fehler: {e}")
             anzahl = len(aufnahmen.segmente(session.id))
             status = "interrupted"
 
@@ -392,7 +395,7 @@ class HLSRecorderService:
                 WHERE id = ?''',
                 (datetime.now().isoformat(), real_duration, file_size, status, session.id))
 
-        print(f"HLS-REC gestoppt: {session.id} "
+        logger.info(f"HLS-REC gestoppt: {session.id} "
               f"({total_segments} Segmente, {real_duration:.0f}s, "
               f"{file_size / 1024 / 1024:.1f}MB, {meta_count} ICY-Einträge)")
 
@@ -469,7 +472,7 @@ class HLSRecorderService:
             with open(meta_file, "w", encoding="utf-8") as f:
                 json.dump(meta, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            print(f"  HLS-REC Meta-Speichern fehlgeschlagen: {e}")
+            logger.warning(f"HLS-REC Meta-Speichern fehlgeschlagen: {e}")
             return 0
 
         return len(filtered)
@@ -497,11 +500,11 @@ class HLSRecorderService:
         try:
             result = await self.stop()
             if result.get("success"):
-                print(f"  HLS-REC Auto-Finalisierung erfolgreich: {result.get('session_id')}")
+                logger.info(f"HLS-REC Auto-Finalisierung erfolgreich: {result.get('session_id')}")
             else:
-                print(f"  HLS-REC Auto-Finalisierung fehlgeschlagen: {result.get('error')}")
+                logger.warning(f"HLS-REC Auto-Finalisierung fehlgeschlagen: {result.get('error')}")
         except Exception as e:
-            print(f"  HLS-REC Auto-Finalisierung Fehler: {e}")
+            logger.warning(f"HLS-REC Auto-Finalisierung Fehler: {e}")
             # Im schlimmsten Fall: Session aufräumen
             if self.active_session:
                 self._cleanup(self.active_session)

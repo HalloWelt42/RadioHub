@@ -4,6 +4,7 @@ RadioHub v0.1.9 - Cache Service
 Lädt Sender von radio-browser.info und cached sie lokal.
 Mit Sortierung nach name, country, bitrate, votes
 """
+import logging
 import httpx
 from datetime import datetime
 from typing import List, Optional
@@ -11,6 +12,8 @@ from typing import List, Optional
 from ..database import db_session
 from .. import sender_merkmale
 from .config_service import config_service
+
+logger = logging.getLogger("radiohub.cache")
 
 # Fallback falls Config nicht geladen
 _DEFAULT_API_SERVERS = [
@@ -90,7 +93,7 @@ class CacheService:
                     })
 
                     if resp.status_code != 200:
-                        print(f"✗ API Fehler bei Offset {offset}: Status {resp.status_code}")
+                        logger.warning(f"API Fehler bei Offset {offset}: Status {resp.status_code}")
                         break
 
                     batch = resp.json()
@@ -98,16 +101,16 @@ class CacheService:
                         break
 
                     all_stations.extend(batch)
-                    print(f"  Batch geladen: {len(batch)} Sender (gesamt: {len(all_stations)})")
+                    logger.info(f"Batch geladen: {len(batch)} Sender (gesamt: {len(all_stations)})")
 
                     if len(batch) < BATCH_SIZE:
                         break
 
                     offset += BATCH_SIZE
         except Exception as e:
-            print(f"✗ Fehler beim Laden bei Offset {offset}: {e}")
+            logger.warning(f"Fehler beim Laden bei Offset {offset}: {e}")
 
-        print(f"✓ {len(all_stations)} Sender insgesamt geladen")
+        logger.info(f"{len(all_stations)} Sender insgesamt geladen")
         return all_stations
     
     def _save_stations(self, stations: List[dict]) -> int:
@@ -133,9 +136,9 @@ class CacheService:
                          now, now))
                     count += 1
                 except Exception as e:
-                    print(f"✗ Station speichern fehlgeschlagen: {e}")
+                    logger.warning(f"Station speichern fehlgeschlagen: {e}")
 
-        print(f"✓ {count} Sender gespeichert")
+        logger.info(f"{count} Sender gespeichert")
         return count
     
     def get_stats(self) -> dict:

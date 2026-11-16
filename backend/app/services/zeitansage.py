@@ -5,25 +5,26 @@ Bausteine der Zeitansage ("Es ist", "fünf Uhr", "vierunddreißig"), einmal gesp
 mit der Zeit-Stimme und als MP3 in der Ablage unter Zeitansage/. Das Telefon setzt sie zusammen ("Es ist fünf Uhr
 vierunddreißig", zur vollen Stunde ohne Minuten); so reichen 84 kurze Dateien statt einer je Minute.
 
-Einstellungen (Umgebung):
-    RADIOHUB_VERTONUNG_ADRESSE  Adresse der Vertonung, etwa https://<rechner>:8641
-    RADIOHUB_ZEITSTIMME         Kennung der Zeit-Stimme (Klonstimme der Vertonung; dort für die App RadioHub unter
-                                "Private Stimmen für" freigeben)
-    RADIOHUB_ZEITSTIMME_TEMPO   Sprechtempo, Vorgabe 1.0
+Einstellungen (einstellungen.AppEinstellungen, in der Umgebung wie früher):
+    vertonung_adresse   RADIOHUB_VERTONUNG_ADRESSE, Adresse der Vertonung, etwa https://<rechner>:8641
+    zeitstimme          RADIOHUB_ZEITSTIMME, Kennung der Zeit-Stimme (Klonstimme der Vertonung; dort für die App RadioHub
+                        unter "Private Stimmen für" freigeben)
+    zeitstimme_tempo    RADIOHUB_ZEITSTIMME_TEMPO, Sprechtempo, Vorgabe 1.0
 Angemeldet wird mit dem App-Schlüssel der Kellerwolke (Verbund der Apps), geprüft mit derselben Zertifikatsstelle.
 """
 from __future__ import annotations
 
 import asyncio
-import os
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
 
-from ..ablage import AblageEinstellungen, ablage, orte
+from ..einstellungen import stand as einstellungen_stand
+from ..ablage import ablage, orte
 from ..ablage.kellerwolke import tls_pruefung
+from ..einstellungen import AppEinstellungen
 
 _EINER = ["", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun"]
 _ZEHN_BIS_NEUNZEHN = ["zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn",
@@ -68,18 +69,18 @@ class ZeitansageEinstellungen:
     adresse: str = ""
     stimme: str = ""
     tempo: float = 1.0
-    ablage: AblageEinstellungen = field(default_factory=AblageEinstellungen)
+    schluessel: str = ""        # App-Schlüssel der Kellerwolke, der Zugang zur Vertonung
+    ca_datei: str = ""
 
     @property
     def eingerichtet(self) -> bool:
-        return bool(self.adresse and self.stimme and self.ablage.schluessel_datei)
+        return bool(self.adresse and self.stimme and self.schluessel)
 
     @classmethod
-    def aus_umgebung(cls) -> ZeitansageEinstellungen:
-        return cls(adresse=os.environ.get("RADIOHUB_VERTONUNG_ADRESSE", "").strip().rstrip("/"),
-                   stimme=os.environ.get("RADIOHUB_ZEITSTIMME", "").strip(),
-                   tempo=float(os.environ.get("RADIOHUB_ZEITSTIMME_TEMPO", "") or 1.0),
-                   ablage=AblageEinstellungen.aus_umgebung())
+    def aus(cls, stand: AppEinstellungen) -> ZeitansageEinstellungen:
+        return cls(adresse=stand.vertonung_adresse.strip().rstrip("/"), stimme=stand.zeitstimme.strip(),
+                   tempo=stand.zeitstimme_tempo, schluessel=stand.kellerwolke_schluessel.get_secret_value().strip(),
+                   ca_datei=stand.ca_datei.strip())
 
 
 async def _kuerzen(wav: bytes) -> bytes:
@@ -114,17 +115,18 @@ class Zeitansage:
         """Fehlende Bausteine sprechen lassen und ablegen; liefert die Zahl der neuen. Nur ein Lauf zugleich."""
         if self.laeuft:
             return 0
-        e = einstellungen or ZeitansageEinstellungen.aus_umgebung()
+        e = einstellungen or ZeitansageEinstellungen.aus(einstellungen_stand())
         if not e.eingerichtet:
-            self.meldung = "Zeitansage nicht eingerichtet: RADIOHUB_VERTONUNG_ADRESSE und RADIOHUB_ZEITSTIMME setzen"
+            self.meldung = ("Zeitansage nicht eingerichtet: Vertonung und Zeit-Stimme in den Einstellungen "
+                            "(RADIOHUB_VERTONUNG_ADRESSE, RADIOHUB_ZEITSTIMME) und die Kellerwolke")
             return 0
         self.laeuft, neu = True, 0
         try:
             texte = bausteine()
             fehlend = (await self.stand())["fehlend"]
-            schluessel = Path(e.ablage.schluessel_datei).expanduser().read_text(encoding="utf-8").strip()
+            schluessel = e.schluessel
             async with httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0), transport=transport,
-                                         verify=tls_pruefung(e.ablage.ca_datei)) as client:
+                                         verify=tls_pruefung(e.ca_datei)) as client:
                 for i, name in enumerate(fehlend, 1):
                     self.meldung = f"Spreche {name} ({i} von {len(fehlend)})"
                     antwort = await client.post(f"{e.adresse}/api/v1/sprechen", headers={"Authorization": f"Bearer {schluessel}"},

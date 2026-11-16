@@ -1,13 +1,16 @@
 """Ablage des RadioHub: Schnittstelle, Adapter und die eine Instanz der laufenden App.
 
-Beim Start richtet `main` die Ablage aus den Einstellungen ein (`starten`), außer ein Test hat vorher eine
-`SpeicherAblage` vorgegeben (`vorgeben`). Alle Dienste holen sie über `ablage()`.
+Die laufende App richtet die Ablage nach jedem Aufbau der Zugänge des Gerüsts ein (`starten` mit dem Zugang zur
+Kellerwolke), außer ein Test hat vorher eine `SpeicherAblage` vorgegeben (`vorgeben`). Alle Dienste holen sie über
+`ablage()`.
 """
 
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from pathlib import Path
+
+from appkern.kellerwolke import Kellerwolke
 
 from .einstellungen import AblageEinstellungen
 from .port import Ablage, AblageFehler, Belegt, Eintrag, NichtEingerichtet, NichtErreichbar, NichtGefunden, eltern
@@ -70,22 +73,23 @@ def vorgeben(neu: Ablage) -> Ablage:
     return setzen(neu)
 
 
-def starten() -> Ablage:
-    """Beim Start der App: die vorgegebene Ablage oder die aus den Einstellungen."""
-    return _aktuell if _vorgegeben else einrichten()
+NICHT_EINGERICHTET = ("Kellerwolke nicht eingerichtet: Adresse und App-Schlüssel in den Einstellungen unter "
+                      "Verbindungen (RADIOHUB_KELLERWOLKE_ADRESSE und RADIOHUB_KELLERWOLKE_SCHLUESSEL)")
 
 
-def einrichten(einstellungen: AblageEinstellungen | None = None) -> Ablage:
-    """Ablage nach den Einstellungen: Kellerwolke, wenn Adresse und Schlüssel da sind, sonst der Platzhalter."""
-    e = einstellungen or AblageEinstellungen.aus_umgebung()
-    if not e.eingerichtet:
-        return setzen(KeineAblage("Kellerwolke nicht eingerichtet: RADIOHUB_KELLERWOLKE_ADRESSE und "
-                                  "RADIOHUB_KELLERWOLKE_SCHLUESSEL setzen (siehe README)"))
+def starten(zugang: Kellerwolke | None, einstellungen: AblageEinstellungen | None = None) -> Ablage:
+    """Nach jedem Aufbau der Zugänge: die vorgegebene Ablage oder die über diesen Zugang."""
+    return _aktuell if _vorgegeben else einrichten(zugang, einstellungen)
+
+
+def einrichten(zugang: Kellerwolke | None, einstellungen: AblageEinstellungen | None = None) -> Ablage:
+    """Ablage über den Zugang zur Kellerwolke (der des Gerüsts, er gehört nicht der Ablage); ohne Zugang der
+    Platzhalter, der bei jeder Dateiarbeit sagt, was fehlt."""
+    if zugang is None:
+        return setzen(KeineAblage(NICHT_EINGERICHTET))
     from .kellerwolke import KellerwolkeAblage
-    try:
-        return setzen(KellerwolkeAblage.aus_einstellungen(e))
-    except OSError as f:
-        return setzen(KeineAblage(f"Schlüssel oder Zertifikat nicht lesbar: {f}"))
+    e = einstellungen or AblageEinstellungen()
+    return setzen(KellerwolkeAblage(zugang, e.wurzel, e.geduld_s))
 
 
 __all__ = [

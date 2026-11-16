@@ -24,4 +24,6 @@ def test_naechste_version_json_oberhalb_gilt(tmp_path):
 
 def test_server_meldet_die_fassung(client):
     assert client.get("/health").json()["version"] == FASSUNG
-    assert client.get("/openapi.json").json()["info"]["version"] == FASSUNG
+    assert client.get("/api/v1/app").json()["fassung"] == FASSUNG
+    # die Schnittstellenbeschreibung nur angemeldet (das Gerüst zeigt seinen Aufbau niemandem ohne Anmeldung)
+    assert client.get("/api/v1/schnittstelle").json()["info"]["version"] == FASSUNG

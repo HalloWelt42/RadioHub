@@ -17,7 +17,7 @@ VERSION = FASSUNG
 
 
 def erlaubte_urspruenge(wert: str) -> list[str]:
-    """Ursprünge, denen das Backend Antworten an fremde Seiten erlaubt (ALLOWED_ORIGINS, durch Komma getrennt).
+    """Ursprünge, denen das Backend Antworten an fremde Seiten erlaubt (Einstellung erlaubte_urspruenge, durch Komma).
     Vorgabe leer: die Oberfläche spricht über denselben Ursprung. "*" gilt nie, auch wenn es dasteht."""
     return [u.strip() for u in wert.split(",") if u.strip() and u.strip() != "*"]
 

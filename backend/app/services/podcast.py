@@ -4,6 +4,7 @@ RadioHub v0.2.4 - Podcast Service
 Podcast-Suche (iTunes + fyyd), Abonnements, Episoden, Downloads,
 Cover-Art-Persistierung, erweiterte Filter/Sortierung, Statistiken.
 """
+import logging
 import httpx
 import hashlib
 import shutil
@@ -19,6 +20,8 @@ from ..ablage import AblageFehler, ablage, orte
 from ..database import db_session
 from ..config import DATA_DIR, AUDIO_MIMETYPES, get_arbeit_dir, get_cache_dir
 from .config_service import config_service
+
+logger = logging.getLogger("radiohub.podcast")
 
 
 def _bilder_dir(podcast_id: int) -> Path:
@@ -127,7 +130,7 @@ class PodcastService:
                 ))
             return results
         except Exception as e:
-            print(f"iTunes search error: {e}")
+            logger.warning(f"iTunes search error: {e}")
             return []
 
     async def _search_fyyd(self, query: str, limit: int) -> List[PodcastSearchResult]:
@@ -153,7 +156,7 @@ class PodcastService:
                 ))
             return results
         except Exception as e:
-            print(f"fyyd search error: {e}")
+            logger.warning(f"fyyd search error: {e}")
             return []
 
     # =========================================================================
@@ -206,7 +209,7 @@ class PodcastService:
             try:
                 await self.download_image(feed_data["image_url"], podcast_id)
             except Exception as e:
-                print(f"Cover-Art download fehlgeschlagen: {e}")
+                logger.warning(f"Cover-Art download fehlgeschlagen: {e}")
 
         return {"id": podcast_id, "title": feed_data["title"], "feed_url": feed_url}
 
@@ -306,7 +309,7 @@ class PodcastService:
             try:
                 await self._auto_download_new(podcast_id)
             except Exception as e:
-                print(f"Auto-Download fehlgeschlagen: {e}")
+                logger.warning(f"Auto-Download fehlgeschlagen: {e}")
 
         return {"success": True, "new_episodes": new_episodes}
 
@@ -612,7 +615,7 @@ class PodcastService:
 
             return local_path
         except Exception as e:
-            print(f"Bild-Download fehlgeschlagen ({url}): {e}")
+            logger.warning(f"Bild-Download fehlgeschlagen ({url}): {e}")
             return None
 
     def get_image_path(self, podcast_id: int, episode_id: int = None) -> Optional[Path]:
@@ -838,7 +841,7 @@ class PodcastService:
             return text
 
         except Exception as e:
-            print(f"Transkript-Download fehlgeschlagen: {e}")
+            logger.warning(f"Transkript-Download fehlgeschlagen: {e}")
             return None
 
     def _subtitle_to_text(self, content: str) -> str:
@@ -1035,7 +1038,7 @@ class PodcastService:
             }
 
         except Exception as e:
-            print(f"Feed parse error: {e}")
+            logger.warning(f"Feed parse error: {e}")
             return None
 
     def _get_text(self, element, tag: str) -> str:

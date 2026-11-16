@@ -18,11 +18,11 @@ art = "schichten"
 warum = "Die Schnittstelle nutzt Dienste, nie umgekehrt; die Ablage (Port und Adapter) kennt nur die Grundlagen, damit sie austauschbar bleibt (Kellerwolke, Speicher für Tests)."
 dateien = ["backend/app/**"]
 schichten = [
-  { name = "schnittstelle", dateien = ["backend/app/routers/**", "backend/app/main.py"] },
+  { name = "schnittstelle", dateien = ["backend/app/routers/**", "backend/app/main.py", "backend/app/betrieb.py"] },
   { name = "werkzeuge", dateien = ["backend/app/umzug/**", "backend/app/werkzeuge/**"] },
   { name = "dienste", dateien = ["backend/app/services/**"] },
   { name = "ablage", dateien = ["backend/app/ablage/**"] },
-  { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/sender_merkmale.py"] },
+  { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/sender_merkmale.py", "backend/app/einstellungen.py", "backend/app/uebergang.py", "backend/app/ort.py"] },
 ]
 erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen"], werkzeuge = ["dienste", "ablage", "grundlagen"], dienste = ["ablage", "grundlagen"], ablage = ["grundlagen"] }
 
@@ -70,6 +70,35 @@ titel = "Architektur, Plan, Fassung und Betrieb sind da"
 art = "pflicht"
 warum = "Erst das Design, dann der Bau; Entscheidungen und Regeln haben einen festen Ort."
 dateien = ["docs/ARCHITEKTUR.md", "docs/umbau/PLAN.md", "architektur/regeln.toml", "version.json", "compose.pi.yml", "deploy/ausrollen.toml", "deploy/Caddyfile", "docs/handbuch.md", "einrichten.sh"]
+
+# ----- Appkern-Grundlage (RAD-6, Etappe 2) -----------------------------------------------------------------------------
+
+[[regel]]
+kennung = "P1"
+titel = "Protokoll statt print"
+art = "verboten"
+warum = "Was der Server meldet, geht ins Log (logging, Logger radiohub.*) und Wichtiges zusätzlich ins Protokoll der App; print geht im Container an jeder Stufe vorbei und lässt sich nicht filtern. Ausgenommen sind die Befehle für die Kommandozeile, deren Ausgabe das Ergebnis ist."
+dateien = ["backend/app/**"]
+ausser = ["backend/app/umzug/__main__.py", "backend/app/werkzeuge/**"]
+muster = '(^|[^.\w])print\('
+
+[[regel]]
+kennung = "K1"
+titel = "Einstellungen aus einer Quelle"
+art = "verboten"
+warum = "Einstellungen kommen nur aus den Einstellungen des Appkerns (app/einstellungen.py: Datenbank, Umgebung RADIOHUB_*, Vorgabe); Orte des Datenordners nur aus app/ort.py, frühere Namen nur über app/uebergang.py. Ein os.environ irgendwo sonst wäre eine fünfte Quelle, die die Oberfläche nicht zeigt."
+dateien = ["backend/app/**"]
+ausser = ["backend/app/ort.py", "backend/app/uebergang.py"]
+muster = '(os\.environ|os\.getenv|getenv\()'
+
+[[regel]]
+kennung = "D1"
+titel = "Schema nur in Stufen"
+art = "verboten"
+warum = "Das Schema der Datenbank ändert sich nur über eine neue Stufe am Ende von database.STUFEN (Datenbank des Appkerns mit Stand je Baustein), nie über ALTER in try/except beim Start. Die Nachträge für ältere Bestände stehen allein in database.py."
+dateien = ["backend/app/**"]
+ausser = ["backend/app/database.py"]
+muster = '(?i)alter\s+table'
 
 # ----- Absichern (RAD-5) -----------------------------------------------------------------------------------------------
 

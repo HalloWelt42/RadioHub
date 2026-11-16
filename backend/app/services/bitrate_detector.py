@@ -6,6 +6,7 @@ ICY-Metadata-Support via Raw-TCP HEAD-Check.
 Fallback: URL-Analyse für Bitrate/Codec-Hinweise.
 Ergebnisse werden in detected_bitrates gecacht.
 """
+import logging
 import asyncio
 import json
 import re
@@ -15,6 +16,8 @@ from typing import Optional, List
 from urllib.parse import unquote, urlparse
 
 from ..database import db_session
+
+logger = logging.getLogger("radiohub.bitrate_detector")
 
 
 # Max gleichzeitige ffprobe-Prozesse
@@ -124,12 +127,12 @@ async def probe_bitrate(stream_url: str, timeout: float = PROBE_TIMEOUT) -> Opti
                     }
 
     except Exception as e:
-        print(f"  ffprobe Fehler: {e}")
+        logger.warning(f"ffprobe Fehler: {e}")
 
     # 2. Fallback: URL-Analyse
     hints = parse_url_hints(stream_url)
     if hints:
-        print(f"  URL-Hinweis: {stream_url[:60]}... -> {hints['bitrate']}kbps/{hints['codec']}")
+        logger.info(f"URL-Hinweis: {stream_url[:60]}... -> {hints['bitrate']}kbps/{hints['codec']}")
     return hints
 
 
@@ -390,7 +393,7 @@ async def probe_stations(stations: List[dict]):
                     icy=has_icy
                 )
                 icy_tag = " [ICY]" if has_icy else ""
-                print(f"  Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']}kbps/{result.get('codec', '?')}{icy_tag}")
+                logger.info(f"Bitrate erkannt: {station.get('name', uuid)} -> {result['bitrate']}kbps/{result.get('codec', '?')}{icy_tag}")
             else:
                 save_detected_bitrate(uuid, 0, icy=has_icy)
 

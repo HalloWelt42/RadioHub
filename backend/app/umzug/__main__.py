@@ -13,8 +13,13 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import httpx
+from appkern.kellerwolke import Kellerwolke
+
+from .. import database, einstellungen
+from ..ablage.kellerwolke import tls_pruefung
 from ..config import DATA_DIR, DB_PATH, get_cache_dir
-from ..database import get_db, init_db
+from ..database import get_db
 from .lauf import GB, Umzug, aufraeumen, sicherung, tabellen
 from .plan import (Bericht, Datei, altes_radio_dateien, altes_radio_datenbank, eindeutig, radiohub_bilder,
                    radiohub_dateien, radiohub_datenbank)
@@ -79,14 +84,26 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if a.aufraeumen:
         return _aufraeumen(conn, a)
-    init_db()
+    asyncio.run(database.einrichten())
     tabellen(conn)
     return asyncio.run(_umziehen(conn, a.altes_radio))
 
 
+def _zugang() -> Kellerwolke | None:
+    """Zugang zur Kellerwolke aus den Einstellungen der App (nur lesend, wie in der laufenden App)."""
+    stand = einstellungen.stand()
+    schluessel = stand.kellerwolke_schluessel.get_secret_value()
+    if not (stand.kellerwolke_adresse and schluessel):
+        return None
+    client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=300.0), verify=tls_pruefung(stand.ca_datei))
+    return Kellerwolke(stand.kellerwolke_adresse, schluessel, client=client)
+
+
 async def _umziehen(conn: sqlite3.Connection, altes_radio: Path | None) -> int:
     from .. import ablage as ablage_paket
-    ablage = ablage_paket.starten()
+    from ..ablage import AblageEinstellungen
+    zugang = _zugang()
+    ablage = ablage_paket.starten(zugang, AblageEinstellungen.aus(einstellungen.stand()))
     try:
         zustand = await ablage.zustand()
         if not zustand.get("verbunden"):
@@ -108,6 +125,8 @@ async def _umziehen(conn: sqlite3.Connection, altes_radio: Path | None) -> int:
         return 0
     finally:
         await ablage.schliessen()
+        if zugang is not None:
+            await zugang._client.aclose()   # der Client gehört diesem Lauf
 
 
 def _aufraeumen(conn: sqlite3.Connection, a) -> int:

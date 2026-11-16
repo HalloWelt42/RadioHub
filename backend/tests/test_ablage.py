@@ -7,11 +7,24 @@ import uuid
 
 import pytest
 
+import httpx
+from appkern.einstellungen.dienst import aus_umgebung
+from appkern.kellerwolke import Kellerwolke
+
+from app import uebergang
 from app.ablage import AblageEinstellungen, Belegt, KeineAblage, NichtEingerichtet, SpeicherAblage, einrichten
 from app.ablage import orte
+from app.ablage.kellerwolke import tls_pruefung
 from app.ablage.port import sauberer_pfad
+from app.einstellungen import PRAEFIX, AppEinstellungen
 
 PROBE = os.environ.get("RADIOHUB_PROBE_KELLERWOLKE") == "1"
+
+
+def _aus_umgebung(umgebung) -> AppEinstellungen:
+    """Der Stand, den die App aus dieser Umgebung bekäme (mit dem Übergang der früheren Namen)."""
+    uebergang.alte_umgebung_uebernehmen(umgebung)
+    return AppEinstellungen.model_validate(aus_umgebung(AppEinstellungen, PRAEFIX, umgebung))
 
 
 @pytest.fixture(params=["speicher"] + (["kellerwolke"] if PROBE else []))
@@ -20,13 +33,15 @@ async def adapter(request):
         yield SpeicherAblage()
         return
     from app.ablage.kellerwolke import KellerwolkeAblage
-    e = AblageEinstellungen.aus_umgebung()
-    probe = KellerwolkeAblage.aus_einstellungen(e.model_copy(update={"wurzel": f"{e.wurzel}/Probe-{uuid.uuid4().hex[:8]}"}))
+    stand = _aus_umgebung(dict(os.environ))
+    client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=300.0), verify=tls_pruefung(stand.ca_datei))
+    zugang = Kellerwolke(stand.kellerwolke_adresse, stand.kellerwolke_schluessel.get_secret_value(), client=client)
+    probe = KellerwolkeAblage(zugang, f"{stand.kellerwolke_wurzel}/Probe-{uuid.uuid4().hex[:8]}", stand.kellerwolke_geduld_s)
     try:
         yield probe
     finally:
         await probe.loeschen("")
-        await probe.schliessen()
+        await client.aclose()
 
 
 async def test_ablegen_lesen_und_bereich(adapter, tmp_path):
@@ -101,21 +116,23 @@ def test_orte_lesbar():
 
 
 async def test_ohne_einstellungen_meldet_die_ablage_was_fehlt():
-    ablage = einrichten(AblageEinstellungen())
+    ablage = einrichten(None, AblageEinstellungen())
     assert isinstance(ablage, KeineAblage)
     with pytest.raises(NichtEingerichtet):
         await ablage.liste("Aufnahmen")
     assert (await ablage.zustand())["verbunden"] is False
 
 
-async def test_einstellungen_aus_der_umgebung(monkeypatch, tmp_path):
+async def test_einstellungen_aus_der_umgebung(tmp_path):
+    """Die früheren Umgebungswerte (Schlüssel als Pfad einer Datei) richten die Ablage wie vorher ein."""
     schluessel = tmp_path / "schluessel"
     schluessel.write_text("kw_app_test\n")
-    monkeypatch.setenv("RADIOHUB_KELLERWOLKE_ADRESSE", "https://kellerwolke.test:39280")
-    monkeypatch.setenv("RADIOHUB_KELLERWOLKE_SCHLUESSEL", str(schluessel))
-    monkeypatch.delenv("RADIOHUB_KELLERWOLKE_WURZEL", raising=False)
-    e = AblageEinstellungen.aus_umgebung()
-    assert e.eingerichtet and e.wurzel == "Apps/RadioHub"
-    ablage = einrichten(e)
-    assert "kw_app_test" not in repr(ablage)
+    stand = _aus_umgebung({"RADIOHUB_KELLERWOLKE_ADRESSE": "https://kellerwolke.test:39280",
+                           "RADIOHUB_KELLERWOLKE_SCHLUESSEL": str(schluessel)})
+    e = AblageEinstellungen.aus(stand)
+    assert stand.kellerwolke_schluessel.get_secret_value() == "kw_app_test" and e.wurzel == "Apps/RadioHub"
+    zugang = Kellerwolke(stand.kellerwolke_adresse, stand.kellerwolke_schluessel.get_secret_value())
+    ablage = einrichten(zugang, e)
+    assert "kw_app_test" not in repr(ablage) and "kellerwolke.test:39280" in repr(ablage)
     await ablage.schliessen()
+    await zugang.schliessen()

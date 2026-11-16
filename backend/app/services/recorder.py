@@ -14,6 +14,7 @@ Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
 Stall nach 60s ohne Wachstum -> FFmpeg Kill.
 Events werden in Session und meta.json gespeichert.
 """
+import logging
 import asyncio
 import json
 import shutil
@@ -29,6 +30,8 @@ from .aufnahmen import aufnahmen
 from .config_service import config_service
 from .icy_metadata import IcyMetadataLogger
 from .audio_utils import probe_duration
+
+logger = logging.getLogger("radiohub.recorder")
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
@@ -164,6 +167,9 @@ class RecorderManager:
         self.active_session: Optional[RecordingSession] = None
         self._monitor_task: Optional[asyncio.Task] = None
         self._stderr_task: Optional[asyncio.Task] = None
+
+    def startup(self):
+        """Beim Start der App, nachdem die Datenbank eingerichtet ist (betrieb.Radiobetrieb)."""
         self._cleanup_stale_sessions()
 
     def _cleanup_stale_sessions(self):
@@ -182,7 +188,7 @@ class RecorderManager:
                     "WHERE id = ?", (row[0], row[0])
                 )
             if stale:
-                print(f"  {len(stale)} verwaiste Recording-Session(s) bereinigt")
+                logger.info(f"{len(stale)} verwaiste Recording-Session(s) bereinigt")
 
     async def _detect_codec(self, stream_url: str) -> tuple[str, str]:
         """Erkennt Audio-Codec via ffprobe. Gibt (codec_name, extension) zurueck."""
@@ -208,14 +214,14 @@ class RecorderManager:
                 codec = streams[0].get("codec_name", "").lower()
                 ext = CODEC_EXTENSIONS.get(codec, "")
                 if ext:
-                    print(f"  Codec erkannt: {codec} -> {ext}")
+                    logger.info(f"Codec erkannt: {codec} -> {ext}")
                     return codec, ext
-                print(f"  Unbekannter Codec: {codec}, Fallback auf MP3")
+                logger.warning(f"Unbekannter Codec: {codec}, Fallback auf MP3")
 
         except asyncio.TimeoutError:
-            print("  ffprobe Timeout, Fallback auf MP3")
+            logger.warning("ffprobe Timeout, Fallback auf MP3")
         except Exception as e:
-            print(f"  ffprobe Fehler: {e}, Fallback auf MP3")
+            logger.warning(f"ffprobe Fehler: {e}, Fallback auf MP3")
 
         return "", ".mp3"
 
@@ -378,7 +384,7 @@ class RecorderManager:
                      codec, ext, None, folder_id))
 
             mode = "Stream-Copy" if codec else "MP3-Encoding"
-            print(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, Live-Split)")
+            logger.info(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, Live-Split)")
             session.logger.log(f"START {station_name}")
             session.logger.log(f"  Stream: {stream_url}")
             session.logger.log(f"  Codec: {codec or 'fallback->mp3'}, Mode: {mode}")
@@ -399,7 +405,7 @@ class RecorderManager:
             # Aufraumen bei Fehler
             if session_dir.exists():
                 shutil.rmtree(session_dir, ignore_errors=True)
-            print(f"REC fehlgeschlagen: {e}")
+            logger.warning(f"REC fehlgeschlagen: {e}")
             return {"success": False, "error": str(e)}
 
     async def _watch_stderr(self, session: RecordingSession):
@@ -447,7 +453,7 @@ class RecorderManager:
                 last_codec_restart = now
 
                 session.logger.log(f"CODEC-FEHLER: {text[:200]}")
-                print(f"  REC Codec-Fehler: {text[:100]}")
+                logger.warning(f"REC Codec-Fehler: {text[:100]}")
 
                 # Event loggen
                 elapsed_ms = int(session.duration * 1000)
@@ -484,7 +490,7 @@ class RecorderManager:
                         session.process = await self._start_ffmpeg(
                             session, new_file)
                     except Exception as e:
-                        print(f"  REC Codec-Recovery fehlgeschlagen: {e}")
+                        logger.warning(f"REC Codec-Recovery fehlgeschlagen: {e}")
                         session.process = old_process
                         continue
 
@@ -506,7 +512,7 @@ class RecorderManager:
 
                     session.logger.log(
                         f"CODEC-RECOVERY: Neues Segment #{session.segment_index}")
-                    print(f"  REC Codec-Recovery: Segment #{session.segment_index}")
+                    logger.info(f"REC Codec-Recovery: Segment #{session.segment_index}")
 
         except asyncio.CancelledError:
             pass
@@ -544,7 +550,7 @@ class RecorderManager:
             try:
                 session.process = await self._start_ffmpeg(session, new_file)
             except Exception as e:
-                print(f"  REC Split-Fehler: Neuer FFmpeg fehlgeschlagen: {e}")
+                logger.warning(f"REC Split-Fehler: Neuer FFmpeg fehlgeschlagen: {e}")
                 session.process = old_process  # Alten behalten
                 return
 
@@ -568,7 +574,7 @@ class RecorderManager:
 
             session.logger.log(
                 f"SPLIT #{session.segment_index}: {title}")
-            print(f"  REC Split #{session.segment_index}: {title}")
+            logger.info(f"REC Split #{session.segment_index}: {title}")
 
     def _ablegen(self, session: RecordingSession, index: int, title: str,
                  file_path: Path, duration_ms: int):
@@ -585,7 +591,7 @@ class RecorderManager:
                     session.abgelegt_bytes += groesse
                     session.abgelegte_segmente += 1
                 except Exception as e:
-                    print(f"  REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner)")
+                    logger.warning(f"REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner)")
                     if session.logger:
                         session.logger.log(f"ABLAGE-FEHLER {file_path.name}: {e}")
 
@@ -629,11 +635,11 @@ class RecorderManager:
                             continue  # Neuer FFmpeg laeuft, weiter ueberwachen
                     if self.active_session and self.active_session.id == session.id:
                         if returncode != 0:
-                            print(f"REC abgebrochen: {session.id} (exit {returncode})")
+                            logger.warning(f"REC abgebrochen: {session.id} (exit {returncode})")
                             log.log(f"FFMPEG EXIT {returncode}")
                             await asyncio.shield(self._abschliessen(session, "failed"))
                         else:
-                            print(f"REC Stream beendet: {session.id}")
+                            logger.info(f"REC Stream beendet: {session.id}")
                             log.log("FFMPEG EXIT 0 (Stream beendet)")
                             await asyncio.shield(self._abschliessen(session, "completed"))
                     return
@@ -689,7 +695,7 @@ class RecorderManager:
                             "t": int(session.duration * 1000),
                             "detail": f"Stillstand seit {elapsed}s -- FFmpeg gekillt"
                         })
-                        print(f"REC STALLED: {session.id} "
+                        logger.warning(f"REC STALLED: {session.id} "
                               f"({current_segs} Segmente, "
                               f"unverändert seit {elapsed}s, "
                               f"{current_size/1024/1024:.1f}MB)")
@@ -706,7 +712,7 @@ class RecorderManager:
                     stat = shutil.disk_usage(str(rec_dir))
                     free_mb = stat.free / (1024 * 1024)
                     if free_mb < MIN_FREE_DISK_MB:
-                        print(f"REC DISK FULL: {session.id} "
+                        logger.warning(f"REC DISK FULL: {session.id} "
                               f"(nur {free_mb:.0f}MB frei)")
                         log.log(f"DISK FULL: {free_mb:.0f}MB frei -- Aufnahme beendet")
                         if session.process.returncode is None:
@@ -800,7 +806,7 @@ class RecorderManager:
         try:
             await aufnahmen.rest_ablegen(session.id, session.session_dir, session.kumuliert_ms)
         except Exception as e:
-            print(f"  REC Ablage beim Abschluss unvollständig: {e} (wird beim nächsten Start nachgeholt)")
+            logger.warning(f"REC Ablage beim Abschluss unvollständig: {e} (wird beim nächsten Start nachgeholt)")
 
         segmente = aufnahmen.segmente(session.id)
         if not segmente and status == "completed":
@@ -860,7 +866,7 @@ class RecorderManager:
         log = session.logger
         seg_count = session.segment_count
 
-        print(f"REC gestoppt: {session.id} "
+        logger.info(f"REC gestoppt: {session.id} "
               f"({seg_count} Segmente, {session.file_size/1024/1024:.1f}MB, "
               f"{meta_count} ICY-Eintraege, "
               f"{'live-split' if session.live_split else 'fallback'})")
@@ -922,7 +928,7 @@ class RecorderManager:
                             seg_file, titelliste, duration, session.file_format,
                             session.session_dir)
                     except Exception as e:
-                        print(f"  REC Split-Fehler: {e}")
+                        logger.warning(f"REC Split-Fehler: {e}")
                         log.log(f"  Split-Fehler: {e}")
                         stuecke = []
 
@@ -930,7 +936,7 @@ class RecorderManager:
                     seg_file.unlink(missing_ok=True)
                     for i, stueck in enumerate(stuecke):
                         self._ablegen(session, i, stueck.titel, stueck.datei, stueck.dauer_ms)
-                    print(f"  REC Post-hoc Split: {len(stuecke)} Segmente")
+                    logger.info(f"REC Post-hoc Split: {len(stuecke)} Segmente")
                     log.log(f"  Post-hoc Split: {len(stuecke)} Segmente")
                     result["segments"] = len(stuecke)
                 else:

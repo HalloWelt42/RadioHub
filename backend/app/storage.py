@@ -6,7 +6,7 @@ Ermöglicht es, Datenbank, Cache, Aufnahmen und Podcasts auf
 verschiedene Laufwerke/Pfade zu verteilen.
 
 Konfiguration: storage.json
-Priorität: STORAGE_CONFIG Env > {DATA_PATH}/storage.json > Defaults
+Priorität: STORAGE_CONFIG (ort.speicherzonen_datei) > {Datenordner}/storage.json > Defaults
 
 Zonen:
   database   - SQLite-Datei (SSD empfohlen)
@@ -17,13 +17,17 @@ Aufnahmen und Podcast-Folgen liegen nicht lokal, sondern in der Ablage (Kellerwo
 """
 import os
 import json
+import logging
 import shutil
 from pathlib import Path
 from typing import Optional
 
+from .ort import daten_ordner, speicherzonen_datei
 
-# === Basis-Datenverzeichnis (gleiche Logik wie bisheriges config.py) ===
-_DATA_DIR = Path(os.getenv("DATA_PATH", str(Path(__file__).resolve().parent.parent / "data")))
+log = logging.getLogger("radiohub.speicherzonen")
+
+# === Basis-Datenverzeichnis (ort.daten_ordner: RADIOHUB_DATEN, früher DATA_PATH) ===
+_DATA_DIR = daten_ordner()
 
 # Standardstruktur (matcht bestehende Verzeichnisstruktur exakt)
 _DEFAULT_ZONE_SUBDIRS = {
@@ -60,11 +64,9 @@ _storage_config: Optional[dict] = None
 def _find_config_path() -> Optional[Path]:
     """Sucht storage.json in Prioritätsreihenfolge"""
     # 1. STORAGE_CONFIG Env-Variable
-    env_path = os.getenv("STORAGE_CONFIG")
-    if env_path:
-        p = Path(env_path)
-        if p.exists():
-            return p
+    p = speicherzonen_datei()
+    if p is not None and p.exists():
+        return p
     # 2. {DATA_PATH}/storage.json
     data_path = _DATA_DIR / "storage.json"
     if data_path.exists():
@@ -93,7 +95,7 @@ def _load_or_create() -> dict:
         return _storage_config
 
     config_path = _find_config_path()
-    multi_volume = bool(os.getenv("STORAGE_CONFIG"))
+    multi_volume = speicherzonen_datei() is not None
     data_dir_str = str(_DATA_DIR)
     config_changed = False
 
@@ -109,8 +111,7 @@ def _load_or_create() -> dict:
                 continue
             current = zones[zone].get("path", "")
             if not multi_volume and not current.startswith(data_dir_str):
-                print(f"  storage.json: Zone '{zone}' hatte fremden Pfad '{current}' "
-                      f"-- ersetzt durch Default '{default_path}'")
+                log.warning("storage.json: Zone %s hatte fremden Pfad %s, ersetzt durch %s", zone, current, default_path)
                 zones[zone]["path"] = default_path
                 config_changed = True
     else:
@@ -141,8 +142,7 @@ def _save_config():
     if _storage_config is None:
         return
 
-    env_path = os.getenv("STORAGE_CONFIG")
-    save_path = Path(env_path) if env_path else _DATA_DIR / "storage.json"
+    save_path = speicherzonen_datei() or _DATA_DIR / "storage.json"
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(save_path, "w") as f:

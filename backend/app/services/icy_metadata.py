@@ -18,6 +18,7 @@ Byte-Tracking:
 - Splitter nutzt Byte-Ratio für präzise Schnitt-Positionen:
   audio_pos = (entry_bytes / total_bytes) * total_duration
 """
+import logging
 import asyncio
 import json
 import re
@@ -25,6 +26,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
 from urllib.parse import urlparse
+
+logger = logging.getLogger("radiohub.icy_metadata")
 
 
 ICY_MAX_RECONNECTS = 10       # Maximale Reconnect-Versuche
@@ -60,7 +63,7 @@ class IcyMetadataLogger:
                 timeout=timeout
             )
         except (asyncio.TimeoutError, OSError) as e:
-            print(f"  ICY: Verbindung fehlgeschlagen: {e}")
+            logger.warning(f"ICY: Verbindung fehlgeschlagen: {e}")
             return 0
 
         request = (
@@ -96,18 +99,18 @@ class IcyMetadataLogger:
             path += f"?{parsed.query}"
 
         if not host:
-            print(f"  ICY: Ungültige URL: {stream_url}")
+            logger.warning(f"ICY: Ungültige URL: {stream_url}")
             return
 
         try:
             metaint = await self._connect(host, port, path, timeout)
             if not metaint:
-                print("  ICY: Kein icy-metaint Header, Stream ohne ICY")
+                logger.info("ICY: Kein icy-metaint Header, Stream ohne ICY")
                 return
 
             self._metaint = metaint
             self._start_time = asyncio.get_event_loop().time()
-            print(f"  ICY: Metadata-Interval: {metaint} Bytes")
+            logger.info(f"ICY: Metadata-Interval: {metaint} Bytes")
 
             # Metadata-Loop mit Reconnect
             while self._running:
@@ -120,10 +123,10 @@ class IcyMetadataLogger:
                     # Reconnect-Versuch
                     self._reconnect_count += 1
                     if self._reconnect_count > ICY_MAX_RECONNECTS:
-                        print(f"  ICY: Max Reconnects erreicht ({ICY_MAX_RECONNECTS})")
+                        logger.warning(f"ICY: Max Reconnects erreicht ({ICY_MAX_RECONNECTS})")
                         break
 
-                    print(f"  ICY: Stream unterbrochen, "
+                    logger.warning(f"ICY: Stream unterbrochen, "
                           f"Reconnect {self._reconnect_count}/{ICY_MAX_RECONNECTS} "
                           f"in {ICY_RECONNECT_DELAY}s...")
                     await asyncio.sleep(ICY_RECONNECT_DELAY)
@@ -133,12 +136,12 @@ class IcyMetadataLogger:
 
                     new_metaint = await self._connect(host, port, path, timeout)
                     if not new_metaint:
-                        print(f"  ICY: Reconnect fehlgeschlagen")
+                        logger.warning(f"ICY: Reconnect fehlgeschlagen")
                         # Nächsten Versuch abwarten
                         continue
 
                     metaint = new_metaint
-                    print(f"  ICY: Reconnect erfolgreich "
+                    logger.info(f"ICY: Reconnect erfolgreich "
                           f"({self._reconnect_count}/{ICY_MAX_RECONNECTS})")
                     self._reconnect_count = 0
 
@@ -146,7 +149,7 @@ class IcyMetadataLogger:
                     raise
                 except Exception as e:
                     if self._running:
-                        print(f"  ICY: Loop-Fehler: {e}")
+                        logger.warning(f"ICY: Loop-Fehler: {e}")
                         self._reconnect_count += 1
                         if self._reconnect_count > ICY_MAX_RECONNECTS:
                             break
@@ -156,7 +159,7 @@ class IcyMetadataLogger:
             pass
         except Exception as e:
             if self._running:
-                print(f"  ICY: Fehler: {e}")
+                logger.warning(f"ICY: Fehler: {e}")
         finally:
             self._save(output_path)
             self._close_connection()
@@ -192,7 +195,7 @@ class IcyMetadataLogger:
                     timeout=30
                 )
                 if not data:
-                    print("  ICY: Stream beendet")
+                    logger.info("ICY: Stream beendet")
                     return
                 remaining -= len(data)
 
@@ -226,11 +229,11 @@ class IcyMetadataLogger:
                 if ignored:
                     # Carry-Forward: Letzten gültigen Titel beibehalten
                     display_title = self._last_valid_title or title
-                    print(f"  ICY [{elapsed_ms/1000:.1f}s] Sperrtext: {title} -> behalte: {display_title}")
+                    logger.info(f"ICY [{elapsed_ms/1000:.1f}s] Sperrtext: {title} -> behalte: {display_title}")
                 else:
                     display_title = title
                     self._last_valid_title = title
-                    print(f"  ICY [{elapsed_ms/1000:.1f}s, {self._cumulative_bytes} bytes]: {title}")
+                    logger.info(f"ICY [{elapsed_ms/1000:.1f}s, {self._cumulative_bytes} bytes]: {title}")
 
                 self.entries.append({
                     "t": elapsed_ms,
@@ -251,7 +254,7 @@ class IcyMetadataLogger:
                             display_title, elapsed_ms, self._cumulative_bytes
                         )
                     except Exception as e:
-                        print(f"  ICY: Callback-Fehler: {e}")
+                        logger.warning(f"ICY: Callback-Fehler: {e}")
 
     def _parse_stream_title(self, meta_str: str) -> str:
         """Extrahiert StreamTitle aus ICY-Metadata-String."""
@@ -288,7 +291,7 @@ class IcyMetadataLogger:
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(meta, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            print(f"  ICY: Speichern fehlgeschlagen: {e}")
+            logger.warning(f"ICY: Speichern fehlgeschlagen: {e}")
 
     def _close_connection(self):
         """Schließt die TCP-Verbindung (ohne _running zu ändern)."""

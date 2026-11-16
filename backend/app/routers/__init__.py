@@ -24,7 +24,16 @@ from .station_custom_urls import router as station_custom_urls_router
 from .wecker import router as wecker_router
 from .zeitansage import router as zeitansage_router
 
+# In dieser Reihenfolge eingebunden (main.app_bauen), alle hinter der Anmeldung
+ALLE = [
+    stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router,
+    config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router,
+    file_explorer_router, recording_folders_router, storage_router, services_router, favicons_router, peaks_router,
+    audio_processing_router, station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router,
+]
+
 __all__ = [
+    "ALLE",
     "stations_router",
     "favorites_router",
     "recording_router",

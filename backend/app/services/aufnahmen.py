@@ -11,6 +11,8 @@ Zwischenstände im Arbeitsordner: die laufende Aufnahme (`arbeit/aufnahmen/<id>`
 """
 from __future__ import annotations
 
+import logging
+
 import asyncio
 import json
 import shutil
@@ -25,6 +27,8 @@ from ..database import db_session
 from .audio_utils import probe_duration
 from .peaks_generator import peaks_gen
 from .segment_splitter import Stueck, splitter, titel_eintraege
+
+logger = logging.getLogger("radiohub.aufnahmen")
 
 ARBEITSKOPIE_HALTEN_S = 6 * 3600
 
@@ -170,7 +174,7 @@ class Aufnahmen:
                     conn.execute("UPDATE sessions SET duration = MAX(duration, ?), file_size = ? WHERE id = ?",
                                  (dauer, self._groesse(ordner.name), ordner.name))
             except Exception as f:  # die nächste Aufnahme soll trotzdem drankommen
-                print(f"  Ablage: Aufnahme {ordner.name} nicht nachgeholt: {f}")
+                logger.warning(f"Ablage: Aufnahme {ordner.name} nicht nachgeholt: {f}")
         return gesamt
 
     def _groesse(self, session_id: str) -> int:

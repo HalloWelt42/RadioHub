@@ -9,10 +9,14 @@ ignored=True haben denselben Titel wie ihr Vorgänger und erzeugen keinen eigene
 """
 from __future__ import annotations
 
+import logging
+
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger("radiohub.segment_splitter")
 
 
 @dataclass
@@ -58,7 +62,7 @@ class SegmentSplitter:
         ok, fehler = await _ffmpeg(["ffmpeg", "-y", "-i", str(audio), "-ss", f"{start_sec:.3f}",
                                     "-t", f"{dauer_sec:.3f}", "-c:a", "copy", str(ziel)], timeout=120)
         if not ok:
-            print(f"  Split: FFmpeg-Fehler bei {ziel.name}, übersprungen: {fehler}")
+            logger.warning(f"Split: FFmpeg-Fehler bei {ziel.name}, übersprungen: {fehler}")
             ziel.unlink(missing_ok=True)
         return ok and ziel.exists()
 
@@ -107,7 +111,7 @@ class SegmentSplitter:
                               ziel_dir: Path) -> list[Stueck]:
         schluessel = str(audio)
         if schluessel in self._aktiv:
-            print(f"  Split: {audio.name} wird bereits geschnitten")
+            logger.info(f"Split: {audio.name} wird bereits geschnitten")
             return []
         self._aktiv.add(schluessel)
         try:
@@ -118,7 +122,7 @@ class SegmentSplitter:
                 ziel = ziel_dir / f"teil_{i:03d}{endung}"
                 if await self._schneiden(audio, start_ms / 1000.0, (end_ms - start_ms) / 1000.0, ziel):
                     stuecke.append(Stueck(titel, start_ms, end_ms, ziel))
-            print(f"  Split: {len(stuecke)} von {len(grenzen)} Stücken aus {audio.name}")
+            logger.info(f"Split: {len(stuecke)} von {len(grenzen)} Stücken aus {audio.name}")
             return stuecke
         finally:
             self._aktiv.discard(schluessel)
@@ -138,7 +142,7 @@ class SegmentSplitter:
         finally:
             liste.unlink(missing_ok=True)
         if not ok:
-            print(f"  Concat: FFmpeg-Fehler: {fehler}")
+            logger.warning(f"Concat: FFmpeg-Fehler: {fehler}")
             ziel.unlink(missing_ok=True)
             return None
         return ziel

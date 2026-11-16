@@ -3,9 +3,12 @@ RadioHub - Audio-Hilfsfunktionen
 
 Gemeinsame Funktionen für Audio-Verarbeitung (ffprobe etc.).
 """
+import logging
 import asyncio
 import json
 from pathlib import Path
+
+logger = logging.getLogger("radiohub.audio_utils")
 
 
 async def probe_duration(file_path: Path) -> float:
@@ -37,5 +40,5 @@ async def probe_duration(file_path: Path) -> float:
         if dur > 0:
             return dur
     except Exception as e:
-        print(f"  ffprobe Duration-Fehler: {e}")
+        logger.warning(f"ffprobe Duration-Fehler: {e}")
     return 0.0

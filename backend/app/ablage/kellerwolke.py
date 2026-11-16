@@ -1,4 +1,5 @@
-"""Ablage in der Kellerwolke über den Zugang des Appkerns (App-Schlüssel, Pfade unter dem Wurzelordner).
+"""Ablage in der Kellerwolke über den Zugang des Appkerns (App-Schlüssel, Pfade unter dem Wurzelordner). Den Zugang
+baut das Gerüst aus den Einstellungen; die Ablage nutzt ihn nur und schließt ihn nie.
 
 Lesen, Listen, Verschieben und Löschen kommen aus der Oberfläche und warten nicht auf eine fehlende Kellerwolke;
 Ablegen läuft im Hintergrund (nach Aufnahme, Download, Schnitt) und wartet so lange, wie die Einstellung
@@ -12,13 +13,11 @@ import ssl
 from collections.abc import AsyncIterator
 from pathlib import Path
 
-import httpx
 from appkern.kellerwolke import (
     Kellerwolke, KellerwolkeFehler, Knoten, Konflikt, StandVeraltet,
     NichtErreichbar as KwNichtErreichbar, NichtGefunden as KwNichtGefunden,
 )
 
-from .einstellungen import AblageEinstellungen
 from .port import Ablage, AblageFehler, Belegt, Eintrag, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
 
 log = logging.getLogger("radiohub.ablage")
@@ -44,21 +43,11 @@ def tls_pruefung(ca_datei: str) -> ssl.SSLContext | bool:
 
 
 class KellerwolkeAblage(Ablage):
-    def __init__(self, zugang: Kellerwolke, wurzel: str, geduld_s: float,
-                 client: httpx.AsyncClient | None = None) -> None:
+    def __init__(self, zugang: Kellerwolke, wurzel: str, geduld_s: float) -> None:
         self._wurzel = sauberer_pfad(wurzel)
         self._schreiben = zugang.mit_geduld(geduld_s)
         self._sofort = zugang.mit_geduld(0)
         self._zugang = zugang
-        self._client = client
-
-    @classmethod
-    def aus_einstellungen(cls, e: AblageEinstellungen, *, transport: httpx.AsyncBaseTransport | None = None,
-                          ) -> KellerwolkeAblage:
-        schluessel = Path(e.schluessel_datei).expanduser().read_text(encoding="utf-8").strip()
-        client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=300.0), verify=tls_pruefung(e.ca_datei),
-                                   transport=transport)
-        return cls(Kellerwolke(e.adresse, schluessel, client=client), e.wurzel, e.geduld_s, client)
 
     def __repr__(self) -> str:
         return f"KellerwolkeAblage({self._zugang.adresse!r}, {self._wurzel!r})"
@@ -163,6 +152,4 @@ class KellerwolkeAblage(Ablage):
                 "meldung": f"Verbunden als App {ich.app} im Konto {ich.konto}"}
 
     async def schliessen(self) -> None:
-        await self._zugang.schliessen()
-        if self._client is not None:
-            await self._client.aclose()
+        """Der Zugang gehört dem Gerüst; es schließt ihn selbst."""
