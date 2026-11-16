@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Prüft die Commit-Nachricht: beginnt mit der Kennung eines Tickets im Board Radio ("RAD-12: ..."), keine
+# Attributionszeilen (Co-Authored-By, "Generated with"), keine Namen von Werkzeugen der Codeerstellung, nur gerade
+# Zeichen. Danach die allgemeine Prüfung des Appkerns (appkern.werkzeuge nachricht). Kommentarzeilen zählen nicht.
+set -euo pipefail
+datei="$1"
+cd "$(git rev-parse --show-toplevel)"
+text="$(grep -v '^#' "$datei" || true)"
+erste="$(printf '%s\n' "$text" | grep -m1 -v '^[[:space:]]*$' || true)"
+
+case "$erste" in
+  Merge\ *|Revert\ *) ;;
+  *)
+    if ! printf '%s\n' "$erste" | grep -Eq '^RAD-[0-9]+(, RAD-[0-9]+)*: [^[:space:]]'; then
+      echo "Abbruch: die Commit-Nachricht beginnt nicht mit der Kennung eines Tickets im Board Radio (etwa \"RAD-12: ...\")" >&2
+      exit 1
+    fi
+    ;;
+esac
+if printf '%s\n' "$text" | grep -Eiq 'co-authored-by|generated with|claude|anthropic|codex|chatgpt|openai|copilot'; then
+  echo "Abbruch: Attributionszeile oder Name eines Werkzeugs der Codeerstellung in der Commit-Nachricht" >&2
+  exit 1
+fi
+if printf '%s\n' "$text" | LC_ALL=C grep -q -e $'\xe2\x80\x93' -e $'\xe2\x80\x94' -e $'\xe2\x80\x98' -e $'\xe2\x80\x99' \
+     -e $'\xe2\x80\x9c' -e $'\xe2\x80\x9d' -e $'\xe2\x80\x9e'; then
+  echo "Abbruch: typografisches Zeichen in der Commit-Nachricht (nur gerade Zeichen: \" ' -)" >&2
+  exit 1
+fi
+
+source tools/werkzeug-python.sh
+exec "$WERKZEUG_PYTHON" -m appkern.werkzeuge nachricht "$datei"

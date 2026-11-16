@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Vor jedem Commit: Fassung hochzählen (nur neue Kennung, wenn version.json schon vorgemerkt ist) und vormerken, dann die
+# vorgemerkten Dateien prüfen (nur gerade Zeichen; Stil ohne !important und ohne einseitige Streifen; harte
+# Architekturregeln aus architektur/regeln.toml). Befunde halten den Commit auf; Ausnahmen nur mit Freigabe des Nutzers
+# am Ticket. Die Prüfungen stehen an einer Stelle im Appkern (appkern.werkzeuge).
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+source tools/werkzeug-python.sh
+exec "$WERKZEUG_PYTHON" -m appkern.werkzeuge vor-dem-commit
