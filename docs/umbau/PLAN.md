@@ -16,6 +16,7 @@ Git-Marke `vor-RAD-1`.
 | 8 | Backend | Ganz auf Appkern: Einstellungen, Datenbank mit Versionsstufen, Protokoll, Aufträge, Anmeldung mit Kellerwolke-Konto |
 | 20 | Telefon und Wecker | Mitwachsen je Etappe: jeder Bereich kommt für Rechner und Telefon zugleich; Wecker als eigene Etappe nach dem Player |
 | 21 | Betrieb | Ganz angleichen: Ordner frontend/backend, Haken, version.json, Ausrollen mit Prüfungen, Handbuch; Umzug nach /mnt/data/radiohub beim ersten Ausrollen |
+| 24 | Mehrere Themes | Alles so gebaut, dass weitere Themes ohne großen Aufwand dazukommen: drei Schichten wie die Vorlagen des Appkerns (Marken mit allen Farben, Material, Licht, Maßen und Schriften als Variablen; Bausteine nur mit Marken; Seiten nur Anordnung), umgeschaltet über data-vorlage, auch am Telefon; ein neues Theme braucht eine Marken-Datei und optional Bausteine (Nutzer 16.11.2026) |
 
 ### Filterung
 
