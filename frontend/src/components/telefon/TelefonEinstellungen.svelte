@@ -86,32 +86,32 @@
   </header>
 
   <section>
-    <label class="schalter">
+    <label class="tf-schalter">
       <span>{t('telefon.wachHalten')}</span>
       <input type="checkbox" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
         onchange={(e) => wachHaltenSetzen(e.currentTarget.checked)} />
     </label>
-    <p class="klein">{wach.unterstuetzt ? t('telefon.wachHaltenHinweis') : t('telefon.wachNichtMoeglich')}</p>
+    <p class="tf-klein">{wach.unterstuetzt ? t('telefon.wachHaltenHinweis') : t('telefon.wachNichtMoeglich')}</p>
   </section>
 
   <section>
-    <label class="schalter">
+    <label class="tf-schalter">
       <span>{t('telefon.zeitansage')}</span>
       <input type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
     </label>
-    <p class="klein">{t('telefon.zeitansageHinweis')}</p>
+    <p class="tf-klein">{t('telefon.zeitansageHinweis')}</p>
     {#if zeit.an}
       <h3 class="abstand">{t('telefon.ansageAbstand')}</h3>
-      <div class="wahl fuenf">
+      <div class="tf-wahl fuenf">
         {#each ABSTAENDE_MIN as n (n)}
-          <button class:an={zeit.abstand === n} aria-pressed={zeit.abstand === n} aria-label={t('telefon.minuten', { n })}
+          <button class:tf-an={zeit.abstand === n} aria-pressed={zeit.abstand === n} aria-label={t('telefon.minuten', { n })}
             title={t('telefon.minuten', { n })} onclick={() => planSetzen({ abstand: n })}>{n}</button>
         {/each}
       </div>
       <h3 class="abstand">{t('telefon.ansageZeitraum')}</h3>
       <div class="zwei">
         {#each [['von', 'ansageVon'], ['bis', 'ansageBis']] as [feld, text] (feld)}
-          <label class="feld"><span>{t('telefon.' + text)}</span>
+          <label class="tf-feld"><span>{t('telefon.' + text)}</span>
             <select value={zeit[feld]} onchange={(e) => planSetzen({ [feld]: e.currentTarget.value })}>
               <option value="">-</option>
               {#each ZEITEN as z (z)}<option value={z}>{z}</option>{/each}
@@ -119,25 +119,25 @@
           </label>
         {/each}
       </div>
-      <p class="klein">{t('telefon.ansageZeitraumHinweis')}</p>
+      <p class="tf-klein">{t('telefon.ansageZeitraumHinweis')}</p>
       <h3 class="abstand">{t('telefon.ansageWann')}</h3>
-      <div class="wahl">
+      <div class="tf-wahl">
         {#each [['wecker', 'ansageNurWecker'], ['immer', 'ansageImmer']] as [wert, text] (wert)}
-          <button class:an={zeit.bedingung === wert} aria-pressed={zeit.bedingung === wert} onclick={() => planSetzen({ bedingung: wert })}>{t('telefon.' + text)}</button>
+          <button class:tf-an={zeit.bedingung === wert} aria-pressed={zeit.bedingung === wert} onclick={() => planSetzen({ bedingung: wert })}>{t('telefon.' + text)}</button>
         {/each}
       </div>
-      <p class="klein">{t('telefon.ansageWecken', { n: SCHLUMMER_ABSTAND_MIN })}</p>
+      <p class="tf-klein">{t('telefon.ansageWecken', { n: SCHLUMMER_ABSTAND_MIN })}</p>
       <h3 class="abstand">{t('telefon.zeitansageNachts')}</h3>
-      <div class="wahl drei">
+      <div class="tf-wahl drei">
         {#each [['normal', 'nachtsNormal'], ['leise', 'nachtsLeise'], ['aus', 'nachtsAus']] as [wert, text]}
-          <button class:an={zeit.nachts === wert} aria-pressed={zeit.nachts === wert} onclick={() => nachtsSetzen(wert)}>{t('telefon.' + text)}</button>
+          <button class:tf-an={zeit.nachts === wert} aria-pressed={zeit.nachts === wert} onclick={() => nachtsSetzen(wert)}>{t('telefon.' + text)}</button>
         {/each}
       </div>
     {/if}
     {#if bausteine && bausteine.fehlend.length}
-      <p class="klein">{t('telefon.bausteineFehlen', { n: bausteine.fehlend.length })}
+      <p class="tf-klein">{t('telefon.bausteineFehlen', { n: bausteine.fehlend.length })}
         {#if bausteine.erzeugung?.meldung}<br />{bausteine.erzeugung.meldung}{/if}</p>
-      <button class="knopf" disabled={bausteine.erzeugung?.laeuft} onclick={bausteineErzeugen}>{t('telefon.bausteineErzeugen')}</button>
+      <button class="tf-knopf" disabled={bausteine.erzeugung?.laeuft} onclick={bausteineErzeugen}>{t('telefon.bausteineErzeugen')}</button>
     {/if}
   </section>
 
@@ -146,33 +146,33 @@
 
   <section>
     <h3>{t('telefon.ort')}</h3>
-    {#if weckerdaten.ort.breite == null}<p class="klein">{t('telefon.ortFehlt')}</p>{/if}
-    <form class="suche" onsubmit={(e) => { e.preventDefault(); orteSuchen(); }}>
-      <label class="feld"><span>{t('telefon.ortSuchen')}</span><input bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
-      <button class="knopf" type="submit" disabled={sucht}>{t('telefon.suchen')}</button>
+    {#if weckerdaten.ort.breite == null}<p class="tf-klein">{t('telefon.ortFehlt')}</p>{/if}
+    <form class="tf-suche" onsubmit={(e) => { e.preventDefault(); orteSuchen(); }}>
+      <label class="tf-feld"><span>{t('telefon.ortSuchen')}</span><input bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
+      <button class="tf-knopf" type="submit" disabled={sucht}>{t('telefon.suchen')}</button>
     </form>
     {#if fundorte}
-      {#if fundorte.length === 0}<p class="klein">{t('telefon.keineOrte')}</p>{/if}
+      {#if fundorte.length === 0}<p class="tf-klein">{t('telefon.keineOrte')}</p>{/if}
       <ul class="fundorte">
         {#each fundorte as f (`${f.breite},${f.laenge}`)}
-          <li><button type="button" onclick={() => ortWaehlen(f)}>{f.name} <span class="klein">{f.breite.toFixed(2)}, {f.laenge.toFixed(2)}</span></button></li>
+          <li><button type="button" onclick={() => ortWaehlen(f)}>{f.name} <span class="tf-klein">{f.breite.toFixed(2)}, {f.laenge.toFixed(2)}</span></button></li>
         {/each}
       </ul>
     {/if}
-    <button class="knopf" type="button" onclick={standortUebernehmen}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.standort')}</button>
-    <label class="feld"><span>{t('telefon.ortName')}</span><input bind:value={ort.name} autocomplete="off" /></label>
+    <button class="tf-knopf" type="button" onclick={standortUebernehmen}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.standort')}</button>
+    <label class="tf-feld"><span>{t('telefon.ortName')}</span><input bind:value={ort.name} autocomplete="off" /></label>
     <div class="zwei">
-      <label class="feld"><span>{t('telefon.breite')}</span><input bind:value={ort.breite} inputmode="decimal" autocomplete="off" /></label>
-      <label class="feld"><span>{t('telefon.laenge')}</span><input bind:value={ort.laenge} inputmode="decimal" autocomplete="off" /></label>
+      <label class="tf-feld"><span>{t('telefon.breite')}</span><input bind:value={ort.breite} inputmode="decimal" autocomplete="off" /></label>
+      <label class="tf-feld"><span>{t('telefon.laenge')}</span><input bind:value={ort.laenge} inputmode="decimal" autocomplete="off" /></label>
     </div>
-    <button class="knopf" onclick={ortSichern}>{t('telefon.speichern')}</button>
-    {#if ortMeldung}<p class="klein">{ortMeldung}</p>{/if}
+    <button class="tf-knopf" onclick={ortSichern}>{t('telefon.speichern')}</button>
+    {#if ortMeldung}<p class="tf-klein">{ortMeldung}</p>{/if}
   </section>
 
   {#if ablage}
     <section>
       <h3>{t('telefon.ablage')}</h3>
-      <p class="klein"><i class="fa-solid fa-circle punkt" class:gut={ablage.verbunden}></i>
+      <p class="tf-klein"><i class="fa-solid fa-circle tf-punkt" class:tf-gut={ablage.verbunden}></i>
         {ablage.verbunden ? t('telefon.ablageVerbunden') : t('telefon.ablageGetrennt')}{ablage.meldung ? `: ${ablage.meldung}` : ''}</p>
     </section>
   {/if}
@@ -183,7 +183,7 @@
     position: fixed;
     inset: 0;
     z-index: 30;
-    padding: max(env(safe-area-inset-top, 0px), 1cm) 16px 24px;
+    padding: var(--rahmen-sicher-oben) var(--rahmen-rand) 24px;
     background: var(--t-grund);
     color: var(--t-text);
     overflow-y: auto;
@@ -195,14 +195,14 @@
   .zu { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
   section { padding: 14px 0; border-bottom: 1px solid var(--rand); }
   .darstellung { display: grid; gap: 14px; }
-  .schalter { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 17px; }
-  .schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }
-  .klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
-  .wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .wahl.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .wahl.fuenf { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .tf-schalter { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 17px; }
+  .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }
+  .tf-klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
+  .tf-wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tf-wahl.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tf-wahl.fuenf { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .abstand { margin-top: 12px; }
-  .wahl button, .knopf {
+  .tf-wahl button, .tf-knopf {
     min-height: 48px;
     border: 1px solid var(--t-linie);
     border-radius: 12px;
@@ -211,10 +211,10 @@
     font: inherit;
     font-size: 17px;
   }
-  .wahl button.an { background: var(--t-akzent); border-color: var(--t-akzent); color: var(--t-akzent-text); font-weight: 600; }
-  .knopf { width: 100%; margin-top: 10px; }
-  .feld { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 15px; color: var(--t-text-2); min-width: 0; }
-  .feld input, .feld select {
+  .tf-wahl button.tf-an { background: var(--t-akzent-flaeche); border-color: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 600; }
+  .tf-knopf { width: 100%; margin-top: 10px; }
+  .tf-feld { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 15px; color: var(--t-text-2); min-width: 0; }
+  .tf-feld input, .tf-feld select {
     min-height: 48px;
     padding: 0 12px;
     border: 1px solid var(--t-linie);
@@ -226,10 +226,10 @@
     width: 100%;
   }
   .zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .punkt { font-size: 10px; color: var(--t-fehler); margin-right: 4px; }
-  .punkt.gut { color: #3fb950; }
-  :global([data-theme='hell']) .punkt.gut { color: #1a7f37; }
-  .suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+  .tf-punkt { font-size: 10px; color: var(--t-fehler); margin-right: 4px; }
+  .tf-punkt.tf-gut { color: #3fb950; }
+  :global([data-theme='hell']) .tf-punkt.tf-gut { color: #1a7f37; }
+  .tf-suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
   .fundorte { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .fundorte button { width: 100%; min-height: 44px; text-align: left; padding: 8px 12px; border: 1px solid var(--t-linie); border-radius: 10px; background: transparent; color: var(--t-text); font: inherit; font-size: 17px; }
 </style>

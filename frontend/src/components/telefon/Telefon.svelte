@@ -1,8 +1,10 @@
 <script>
   /**
    * Telefonansicht: nur Radio und Podcasts, Spielerleiste über der Fußleiste, Spieler als Vollbild, quer die
-   * Weckeransicht. Eigenes Audio-Element (die Rechneransicht ist nicht geladen); die Wiedergabe steuert dieselbe
-   * playerEngine wie am Rechner.
+   * Weckeransicht. Kopf, Fußleiste, Höhe und sichere Ränder kommen allein aus dem Rahmen des Appkerns (data-rahmen,
+   * Klassen der Telefonansicht .mobil, .t-kopf, .t-inhalt, .t-reiter); quer zeichnet die Weckeransicht den ganzen Schirm
+   * selbst. Eigenes Audio-Element (die Rechneransicht ist nicht geladen), es bleibt beim Drehen dasselbe; die
+   * Wiedergabe steuert dieselbe playerEngine wie am Rechner.
    */
   import * as engine from '../../lib/playerEngine.js';
   import { appState, actions } from '../../lib/store.svelte.js';
@@ -17,6 +19,7 @@
   import TelefonWecker from './TelefonWecker.svelte';
   import TelefonWeckerListe from './TelefonWeckerListe.svelte';
   import TelefonEinstellungen from './TelefonEinstellungen.svelte';
+  import Meldung from '../../schale/Meldung.svelte';
 
   let audioEl = $state();
   let zeit = $state(0);
@@ -31,9 +34,17 @@
     }
   });
 
+  // Favoriten und Abos beim Start und wieder, wenn die App nach vorn kommt (die Ansicht bleibt am Telefon und am
+  // Nachttisch tagelang offen; ein einmal gescheitertes Laden bliebe sonst bis zum Neuladen leer)
   $effect(() => {
-    actions.loadFavorites();
-    actions.loadPodcasts();
+    const laden = () => {
+      actions.loadFavorites();
+      actions.loadPodcasts();
+    };
+    laden();
+    const sichtbar = () => { if (document.visibilityState === 'visible') laden(); };
+    document.addEventListener('visibilitychange', sichtbar);
+    return () => document.removeEventListener('visibilitychange', sichtbar);
   });
 
   function zeitAktualisieren() {
@@ -91,24 +102,22 @@
   );
 </script>
 
-<div class="telefon">
+<div class="rh-telefon" class:mobil={!geraet.quer} data-rahmen={geraet.quer ? undefined : 'app'}>
   {#if geraet.quer}
     <TelefonWecker {steuerung} audio={audioEl} />
   {:else}
-    <header class="kopf">
+    <div class="t-kopf mit-aktionen" data-rahmen="kopf">
       <h1>{titel}</h1>
-      <button class="kopf-knopf" class:aktiv={appState.activeTab === 'wecker'}
-        onclick={() => actions.navigateTo(appState.activeTab === 'wecker' ? '/radio' : '/wecker')}
-        aria-label={t('telefon.wecker')} title={t('telefon.wecker')}>
-        <i class="fa-solid fa-clock"></i>
-      </button>
-      <button class="kopf-knopf" onclick={() => (einstellungenOffen = true)}
-        aria-label={t('telefon.einstellungen')} title={t('telefon.einstellungen')}>
-        <i class="fa-solid fa-sliders"></i>
-      </button>
-    </header>
+      <span class="t-aktionen">
+        <button class="rund" class:aktiv={appState.activeTab === 'wecker'}
+          onclick={() => actions.navigateTo(appState.activeTab === 'wecker' ? '/radio' : '/wecker')}
+          aria-label={t('telefon.wecker')} title={t('telefon.wecker')}><i class="fa-solid fa-clock"></i></button>
+        <button class="rund" onclick={() => (einstellungenOffen = true)}
+          aria-label={t('telefon.einstellungen')} title={t('telefon.einstellungen')}><i class="fa-solid fa-sliders"></i></button>
+      </span>
+    </div>
 
-    <main class="inhalt">
+    <main class="t-inhalt rh-alt" data-rahmen="inhalt">
       {#if appState.activeTab === 'podcasts'}
         <TelefonPodcasts />
       {:else if appState.activeTab === 'wecker'}
@@ -118,20 +127,17 @@
       {/if}
     </main>
 
-    {#if appState.toast}
-      <div class="meldung" class:fehler={appState.toast.type === 'error'} role="status">{appState.toast.message}</div>
-    {/if}
+    <div class="rh-alt"><TelefonSpieler bind:offen={spielerOffen} {zeit} {dauer} {steuerung} /></div>
 
-    <TelefonSpieler bind:offen={spielerOffen} {zeit} {dauer} {steuerung} />
-
-    <nav class="fuss">
+    <nav class="t-reiter" data-rahmen="fuss">
       <button class:aktiv={appState.activeTab === 'radio'} onclick={() => actions.navigateTo('/radio')}>
-        <i class="fa-solid fa-radio"></i><span>{t('telefon.radio')}</span>
+        <i class="fa-solid fa-radio"></i><span class="t-reiter-name">{t('telefon.radio')}</span>
       </button>
       <button class:aktiv={appState.activeTab === 'podcasts'} onclick={() => actions.navigateTo('/podcasts')}>
-        <i class="fa-solid fa-podcast"></i><span>{t('telefon.podcasts')}</span>
+        <i class="fa-solid fa-podcast"></i><span class="t-reiter-name">{t('telefon.podcasts')}</span>
       </button>
     </nav>
+    <Meldung />
   {/if}
 
   {#if einstellungenOffen}
@@ -144,115 +150,8 @@
 </div>
 
 <style>
-  .telefon {
-    --t-grund: #121417;
-    --t-flaeche: #1c2025;
-    --t-flaeche-2: #272c33;
-    --t-linie: #313840;
-    --t-text: #f1f3f5;
-    --t-text-2: #b9c1c9;
-    --t-akzent: #5aa0e9;
-    --t-akzent-text: #0b0d10;
-    --t-fehler: #ff8a80;
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    background: var(--t-grund);
-    color: var(--t-text);
-    font-family: var(--hifi-font-body);
-    font-size: 17px;
-    line-height: 1.35;
-    overflow: hidden;
-    -webkit-text-size-adjust: 100%;
-  }
-  :global([data-theme='hell']) .telefon {
-    --t-grund: #f3f4f6;
-    --t-flaeche: #ffffff;
-    --t-flaeche-2: #e9ecef;
-    --t-linie: #d5dae0;
-    --t-text: #15181c;
-    --t-text-2: #48515a;
-    --t-akzent: #2564a8;
-    --t-akzent-text: #ffffff;
-    --t-fehler: #b3261e;
-  }
-
-  .kopf {
-    position: sticky;
-    top: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: max(env(safe-area-inset-top, 0px), 1cm) 12px 8px 16px;
-    background: var(--t-grund);
-    border-bottom: 1px solid var(--rand);
-    flex: none;
-  }
-  .kopf h1 {
-    flex: 1;
-    min-width: 0;
-    margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-    font-family: var(--hifi-font-body);
-    letter-spacing: 0;
-  }
-  .kopf-knopf {
-    width: 48px;
-    height: 48px;
-    flex: none;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    color: var(--t-text);
-    font-size: 20px;
-  }
-  .kopf-knopf.aktiv {
-    background: var(--t-flaeche-2);
-    color: var(--t-akzent);
-  }
-
-  .inhalt {
-    flex: 1;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .meldung {
-    flex: none;
-    margin: 0 12px 6px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: var(--t-flaeche-2);
-    color: var(--t-text);
-    font-size: 15px;
-  }
-  .meldung.fehler { color: var(--t-fehler); }
-
-  .fuss {
-    flex: none;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    background: var(--t-flaeche);
-    border-top: 1px solid var(--rand);
-  }
-  .fuss button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    min-height: 60px;
-    padding: 8px 4px;
-    border: none;
-    background: transparent;
-    color: var(--t-text-2);
-    font-family: var(--hifi-font-body);
-    font-size: 15px;
-  }
-  .fuss button i { font-size: 22px; }
-  .fuss button.aktiv { color: var(--t-akzent); font-weight: 600; }
+  /* quer zeichnet die Weckeransicht den ganzen Schirm; hochkant gibt der Rahmen des Appkerns Höhe und Ränder vor */
+  .rh-telefon:not(.mobil) { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+  /* Meldung über Spielerleiste und Fußleiste */
+  .rh-telefon { --rh-band-unten: calc(var(--rahmen-fuss) + 84px); }
 </style>

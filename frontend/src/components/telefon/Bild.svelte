@@ -5,7 +5,7 @@
   $effect(() => { src; kaputt = false; });
 </script>
 
-<span class="bild" style="--g: {groesse}px">
+<span class="tf-bild" style="--g: {groesse}px">
   {#if src && !kaputt}
     <img {src} alt="" loading="lazy" onerror={() => (kaputt = true)}
       onload={(e) => { if (e.currentTarget.naturalWidth < 4) kaputt = true; }} />
@@ -15,7 +15,7 @@
 </span>
 
 <style>
-  .bild {
+  .tf-bild {
     width: var(--g);
     height: var(--g);
     flex: none;

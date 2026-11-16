@@ -124,3 +124,19 @@
   --hifi-z-modal: 3000;
   --hifi-z-toast: 4000;
 }
+
+/* ═══ Telefonansichten ═══ ihre Marken --t-* (und über sie die der Weckeransicht --w-*) aus denen des Appkerns statt
+   eigener Farben; Akzent als Schrift und als Fläche getrennt wie im Appkern. Die Nachtschaltung der Weckeransicht
+   behält ihr festes Rot auf Schwarz. */
+.rh-telefon {
+  --t-grund: var(--hg);
+  --t-flaeche: var(--flaeche);
+  --t-flaeche-2: var(--flaeche-2);
+  --t-linie: var(--rand);
+  --t-text: var(--text);
+  --t-text-2: var(--text-2);
+  --t-akzent: var(--akzent);
+  --t-akzent-flaeche: var(--akzent-flaeche);
+  --t-akzent-text: var(--auf-akzent);
+  --t-fehler: var(--gefahr);
+}

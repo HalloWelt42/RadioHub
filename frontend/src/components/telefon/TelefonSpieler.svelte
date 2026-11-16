@@ -30,15 +30,15 @@
 </script>
 
 {#if info}
-  <div class="leiste">
+  <div class="tf-leiste">
     <button class="leiste-info" onclick={() => (offen = true)} aria-label={t('telefon.spielerOeffnen')}>
       <Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
-      <span class="text">
-        <span class="titel">{info.title}</span>
+      <span class="tf-text">
+        <span class="tf-titel">{info.title}</span>
         <span class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</span>
       </span>
     </button>
-    <button class="rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+    <button class="tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
       <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
     </button>
   </div>
@@ -66,25 +66,25 @@
         <div class="zeiten"><span>{uhr(ziehen ?? zeit)}</span><span>-{uhr(Math.max(0, dauer - (ziehen ?? zeit)))}</span></div>
       </div>
       <div class="knoepfe">
-        <button class="rund mittel" onclick={() => steuerung.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
-          <i class="fa-solid fa-rotate-left"></i><span class="zahl">15</span>
+        <button class="tf-rund mittel" onclick={() => steuerung.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
+          <i class="fa-solid fa-rotate-left"></i><span class="tf-zahl">15</span>
         </button>
-        <button class="rund gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
-        <button class="rund mittel" onclick={() => steuerung.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
-          <i class="fa-solid fa-rotate-right"></i><span class="zahl">30</span>
+        <button class="tf-rund mittel" onclick={() => steuerung.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
+          <i class="fa-solid fa-rotate-right"></i><span class="tf-zahl">30</span>
         </button>
       </div>
     {:else}
       <div class="knoepfe">
-        <button class="rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
+        <button class="tf-rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
           <i class="fa-solid fa-backward-step"></i>
         </button>
-        <button class="rund gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.stopp') : t('telefon.abspielen')}>
+        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.stopp') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
         </button>
-        <button class="rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
+        <button class="tf-rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
           <i class="fa-solid fa-forward-step"></i>
         </button>
       </div>
@@ -93,14 +93,14 @@
 {/if}
 
 <style>
-  .leiste {
+  .tf-leiste {
     flex: none;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 10px 8px 12px;
     background: var(--t-flaeche);
-    border-top: 1px solid var(--t-linie);
+    border-top: 1px solid var(--rand);
   }
   .leiste-info {
     flex: 1;
@@ -115,23 +115,23 @@
     font: inherit;
     padding: 0;
   }
-  .text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .titel { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .tf-titel { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rund {
+  .tf-rund {
     position: relative;
     width: 52px;
     height: 52px;
     flex: none;
     border: none;
     border-radius: 50%;
-    background: var(--t-akzent);
+    background: var(--t-akzent-flaeche);
     color: var(--t-akzent-text);
     font-size: 20px;
   }
-  .rund.mittel { width: 64px; height: 64px; background: var(--t-flaeche-2); color: var(--t-text); font-size: 24px; }
-  .rund.gross { width: 84px; height: 84px; font-size: 32px; }
-  .zahl { position: absolute; left: 0; right: 0; bottom: 6px; font-size: 15px; font-weight: 700; }
+  .tf-rund.mittel { width: 64px; height: 64px; background: var(--t-flaeche-2); color: var(--t-text); font-size: 24px; }
+  .tf-rund.tf-gross { width: 84px; height: 84px; font-size: 32px; }
+  .tf-zahl { position: absolute; left: 0; right: 0; bottom: 6px; font-size: 15px; font-weight: 700; }
 
   .vollbild {
     position: fixed;
@@ -139,7 +139,7 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    padding: max(env(safe-area-inset-top, 0px), 1cm) 16px 24px;
+    padding: var(--rahmen-sicher-oben) var(--rahmen-rand) 24px;
     background: var(--t-grund);
     color: var(--t-text);
     overflow-y: auto;

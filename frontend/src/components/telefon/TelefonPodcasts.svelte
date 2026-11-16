@@ -95,37 +95,37 @@
         <Bild src={folge.image_url || folge.podcast_image_url ? api.getEpisodeImageUrl(folge.id) : null} symbol="fa-podcast" groesse={120} />
         <h2>{folge.title}</h2>
         <p class="zusatz">{[datum(folge.published_at), minuten(folge.duration), rest(folge)].filter(Boolean).join(' · ')}</p>
-        <button class="gross" onclick={() => spielen(folge)}><i class="fa-solid fa-play"></i> {t('telefon.abspielen')}</button>
-        <p class="beschreibung">{text(folge.description)}</p>
+        <button class="tf-gross" onclick={() => spielen(folge)}><i class="fa-solid fa-play"></i> {t('telefon.abspielen')}</button>
+        <p class="tf-beschreibung">{text(folge.description)}</p>
       </article>
     {:else}
-      <p class="hinweis">{t('telefon.laden')}</p>
+      <p class="tf-hinweis">{t('telefon.laden')}</p>
     {/if}
   {:else if aboId || gemerkt}
     <button class="zurueck" onclick={() => actions.navigateTo('/podcasts')}>
       <i class="fa-solid fa-chevron-left"></i> {t('telefon.abos')}
     </button>
-    <h2 class="titel">{gemerkt ? t('telefon.gemerkt') : abo?.title || ''}</h2>
+    <h2 class="tf-titel">{gemerkt ? t('telefon.gemerkt') : abo?.title || ''}</h2>
     {#if !gemerkt}
-      <div class="filter" role="tablist">
+      <div class="tf-filter" role="tablist">
         {#each FILTER as [wert, text]}
-          <button role="tab" aria-selected={filter === wert} class:an={filter === wert} onclick={() => (filter = wert)}>
+          <button role="tab" aria-selected={filter === wert} class:tf-an={filter === wert} onclick={() => (filter = wert)}>
             {t('telefon.' + text)}
           </button>
         {/each}
       </div>
     {/if}
     {#if fehler}
-      <p class="hinweis">{t('telefon.fehler')}</p>
+      <p class="tf-hinweis">{t('telefon.fehler')}</p>
     {:else if !folgen.length && !laedt}
-      <p class="hinweis">{gemerkt ? t('telefon.keineGemerkt') : t('telefon.keineFolgen')}</p>
+      <p class="tf-hinweis">{gemerkt ? t('telefon.keineGemerkt') : t('telefon.keineFolgen')}</p>
     {/if}
     <ul class="liste">
       {#each folgen as f (f.id)}
-        <li class="zeile" class:laeuft={appState.currentEpisode?.id === f.id}>
-          <button class="haupt" onclick={() => spielen(f)}>
-            <span class="text">
-              <span class="name">{f.title}</span>
+        <li class="tf-zeile" class:tf-laeuft={appState.currentEpisode?.id === f.id}>
+          <button class="tf-haupt" onclick={() => spielen(f)}>
+            <span class="tf-text">
+              <span class="tf-name">{f.title}</span>
               <span class="zusatz">
                 {[gemerkt ? f.podcast_title : '', datum(f.published_at), minuten(f.duration), rest(f)].filter(Boolean).join(' · ')}
                 {#if f.is_downloaded}<i class="fa-solid fa-circle-down gemerkt" title={t('telefon.gemerktKurz')}></i>{/if}
@@ -138,26 +138,26 @@
       {/each}
     </ul>
     {#if folgen.length < gesamt}
-      <button class="gross leise" disabled={laedt} onclick={() => laden(false)}>{laedt ? t('telefon.laden') : t('telefon.mehr')}</button>
+      <button class="tf-gross leise" disabled={laedt} onclick={() => laden(false)}>{laedt ? t('telefon.laden') : t('telefon.mehr')}</button>
     {/if}
   {:else}
     <ul class="liste">
-      <li class="zeile">
-        <button class="haupt" onclick={() => actions.navigateTo('/podcasts/gemerkt')}>
+      <li class="tf-zeile">
+        <button class="tf-haupt" onclick={() => actions.navigateTo('/podcasts/gemerkt')}>
           <Bild symbol="fa-circle-down" />
-          <span class="text"><span class="name">{t('telefon.gemerkt')}</span></span>
-          <i class="fa-solid fa-chevron-right pfeil"></i>
+          <span class="tf-text"><span class="tf-name">{t('telefon.gemerkt')}</span></span>
+          <i class="fa-solid fa-chevron-right tf-pfeil"></i>
         </button>
       </li>
       {#each appState.podcasts as p (p.id)}
-        <li class="zeile">
-          <button class="haupt" onclick={() => actions.navigateTo(`/podcasts/${p.id}`)}>
+        <li class="tf-zeile">
+          <button class="tf-haupt" onclick={() => actions.navigateTo(`/podcasts/${p.id}`)}>
             <Bild src={p.image_url ? api.getPodcastImageUrl(p.id) : null} symbol="fa-podcast" />
-            <span class="text">
-              <span class="name">{p.title}</span>
+            <span class="tf-text">
+              <span class="tf-name">{p.title}</span>
               {#if p.unplayed_count}<span class="zusatz">{p.unplayed_count} {t('telefon.ungehoert').toLowerCase()}</span>{/if}
             </span>
-            <i class="fa-solid fa-chevron-right pfeil"></i>
+            <i class="fa-solid fa-chevron-right tf-pfeil"></i>
           </button>
         </li>
       {/each}
@@ -167,7 +167,7 @@
 
 <style>
   .podcasts { padding: 4px 0 16px; }
-  .hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
   .zurueck {
     display: flex;
     align-items: center;
@@ -184,14 +184,14 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-  .titel { margin: 0 16px 8px; font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
-  .filter {
+  .tf-titel { margin: 0 16px 8px; font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
+  .tf-filter {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     margin: 0 12px 8px;
   }
-  .filter button {
+  .tf-filter button {
     min-height: 44px;
     border: 1px solid var(--t-linie);
     border-radius: 22px;
@@ -200,10 +200,10 @@
     font: inherit;
     font-size: 15px;
   }
-  .filter button.an { background: var(--t-akzent); border-color: var(--t-akzent); color: var(--t-akzent-text); font-weight: 600; }
+  .tf-filter button.tf-an { background: var(--t-akzent-flaeche); border-color: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 600; }
   .liste { list-style: none; margin: 0; padding: 0; }
-  .zeile { display: flex; align-items: stretch; border-bottom: 1px solid var(--t-linie); }
-  .haupt {
+  .tf-zeile { display: flex; align-items: stretch; border-bottom: 1px solid var(--rand); }
+  .tf-haupt {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -217,14 +217,14 @@
     text-align: left;
     font: inherit;
   }
-  .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .name { font-size: 17px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tf-name { font-size: 17px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gemerkt { margin-left: 6px; color: var(--t-akzent); }
-  .laeuft .name { color: var(--t-akzent); }
-  .pfeil { color: var(--t-text-2); flex: none; }
+  .tf-laeuft .tf-name { color: var(--t-akzent); }
+  .tf-pfeil { color: var(--t-text-2); flex: none; }
   .mehr { width: 52px; flex: none; border: none; background: transparent; color: var(--t-text-2); font-size: 17px; }
-  .gross {
+  .tf-gross {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -234,15 +234,15 @@
     margin: 12px 16px;
     border: none;
     border-radius: 14px;
-    background: var(--t-akzent);
+    background: var(--t-akzent-flaeche);
     color: var(--t-akzent-text);
     font: inherit;
     font-size: 17px;
     font-weight: 600;
   }
-  .gross.leise { background: var(--t-flaeche-2); color: var(--t-text); }
+  .tf-gross.leise { background: var(--t-flaeche-2); color: var(--t-text); }
   .folge { display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
   .folge h2 { margin: 12px 16px 4px; font-size: 20px; text-align: center; overflow-wrap: anywhere; }
   .folge .zusatz { white-space: normal; text-align: center; margin: 0 16px; }
-  .beschreibung { align-self: stretch; margin: 4px 16px; color: var(--t-text-2); font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+  .tf-beschreibung { align-self: stretch; margin: 4px 16px; color: var(--t-text-2); font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
 </style>

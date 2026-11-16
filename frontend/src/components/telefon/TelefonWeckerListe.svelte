@@ -69,12 +69,12 @@
 </script>
 
 <div class="wecker">
-  <p class="hinweis">{t('telefon.weckerHinweis')}</p>
+  <p class="tf-hinweis">{t('telefon.weckerHinweis')}</p>
 
   {#if entwurf}
     <section class="form">
       <span class="beschriftung">{t('telefon.uhrzeit')}</span>
-      <div class="zeit">
+      <div class="tf-zeit">
         <select bind:value={entwurf.stunde} aria-label={t('telefon.uhrzeit')}>
           {#each STUNDEN as h}<option value={h}>{h}</option>{/each}
         </select>
@@ -87,14 +87,14 @@
       <span class="beschriftung">{t('telefon.tage')}</span>
       <div class="tage">
         {#each tageKurz as name, i}
-          <button class:an={entwurf.tage.includes(i + 1)} aria-pressed={entwurf.tage.includes(i + 1)} onclick={() => tag(i + 1)}>{name}</button>
+          <button class:tf-an={entwurf.tage.includes(i + 1)} aria-pressed={entwurf.tage.includes(i + 1)} onclick={() => tag(i + 1)}>{name}</button>
         {/each}
       </div>
 
       <span class="beschriftung">{t('telefon.quelle')}</span>
-      <div class="wahl">
-        <button class:an={entwurf.quelle === 'sender'} onclick={() => (entwurf.quelle = 'sender')}>{t('telefon.sender')}</button>
-        <button class:an={entwurf.quelle === 'podcast'} onclick={() => (entwurf.quelle = 'podcast')}>{t('telefon.folge')}</button>
+      <div class="tf-wahl">
+        <button class:tf-an={entwurf.quelle === 'sender'} onclick={() => (entwurf.quelle = 'sender')}>{t('telefon.sender')}</button>
+        <button class:tf-an={entwurf.quelle === 'podcast'} onclick={() => (entwurf.quelle = 'podcast')}>{t('telefon.folge')}</button>
       </div>
       {#if entwurf.quelle === 'sender'}
         <select bind:value={entwurf.sender_uuid} aria-label={t('telefon.senderWaehlen')}>
@@ -114,55 +114,55 @@
       <label class="regler"><span>{t('telefon.anstieg')}: {entwurf.anstieg_s}</span>
         <input type="range" min="0" max="300" step="15" bind:value={entwurf.anstieg_s} /></label>
 
-      {#if meldung}<p class="hinweis fehler">{meldung}</p>{/if}
-      <div class="wahl">
+      {#if meldung}<p class="tf-hinweis tf-fehler">{meldung}</p>{/if}
+      <div class="tf-wahl">
         <button onclick={() => (entwurf = null)}>{t('telefon.abbrechen')}</button>
-        <button class="an" onclick={sichern}>{t('telefon.speichern')}</button>
+        <button class="tf-an" onclick={sichern}>{t('telefon.speichern')}</button>
       </div>
       {#if entwurf.id}
         <button class="loeschen" onclick={async () => { await weckerLoeschen(entwurf.id); entwurf = null; }}>{t('telefon.loeschen')}</button>
       {/if}
     </section>
   {:else}
-    {#if !weckerdaten.liste.length}<p class="hinweis">{t('telefon.keineWecker')}</p>{/if}
+    {#if !weckerdaten.liste.length}<p class="tf-hinweis">{t('telefon.keineWecker')}</p>{/if}
     <ul class="liste">
       {#each weckerdaten.liste as w (w.id)}
-        <li class="zeile">
-          <button class="haupt" onclick={() => bearbeiten(w)}>
-            <span class="uhr" class:aus={!w.aktiv}>{w.zeit}</span>
-            <span class="text">
+        <li class="tf-zeile">
+          <button class="tf-haupt" onclick={() => bearbeiten(w)}>
+            <span class="uhr" class:tf-aus={!w.aktiv}>{w.zeit}</span>
+            <span class="tf-text">
               <span class="tage-text">{w.tage.map((n) => tageKurz[n - 1]).join(' ')}</span>
               <span class="zusatz">{quelleText(w)}</span>
             </span>
           </button>
-          <span class="schalter">
+          <span class="tf-schalter">
             <input type="checkbox" checked={w.aktiv} onchange={() => umschalten(w)} aria-label="{t('telefon.aktiv')} {w.zeit}" /></span>
         </li>
       {/each}
     </ul>
-    <button class="gross" onclick={neu}><i class="fa-solid fa-plus"></i> {t('telefon.neuerWecker')}</button>
+    <button class="tf-gross" onclick={neu}><i class="fa-solid fa-plus"></i> {t('telefon.neuerWecker')}</button>
   {/if}
 </div>
 
 <style>
   .wecker { padding: 8px 0 16px; }
-  .hinweis { margin: 8px 16px; color: var(--t-text-2); font-size: 15px; }
-  .hinweis.fehler { color: var(--t-fehler); }
+  .tf-hinweis { margin: 8px 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis.tf-fehler { color: var(--t-fehler); }
   .liste { list-style: none; margin: 0; padding: 0; }
-  .zeile { display: flex; align-items: center; border-bottom: 1px solid var(--t-linie); }
-  .haupt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 8px 8px 8px 16px;
+  .tf-zeile { display: flex; align-items: center; border-bottom: 1px solid var(--rand); }
+  .tf-haupt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 8px 8px 8px 16px;
     border: none; background: transparent; color: var(--t-text); text-align: left; font: inherit; }
   .uhr { font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .uhr.aus { color: var(--t-text-2); }
-  .text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .uhr.tf-aus { color: var(--t-text-2); }
+  .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .tage-text { font-size: 15px; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .schalter { padding: 0 16px; }
-  .schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); }
+  .tf-schalter { padding: 0 16px; }
+  .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); }
   .form { display: flex; flex-direction: column; gap: 8px; padding: 8px 16px; }
   .beschriftung { margin-top: 8px; font-size: 15px; color: var(--t-text-2); }
-  .zeit { display: flex; align-items: center; gap: 8px; font-size: 28px; }
-  select, .wahl button, .tage button, .loeschen, .gross {
+  .tf-zeit { display: flex; align-items: center; gap: 8px; font-size: 28px; }
+  select, .tf-wahl button, .tage button, .loeschen, .tf-gross {
     min-height: 48px;
     border: 1px solid var(--t-linie);
     border-radius: 12px;
@@ -173,13 +173,13 @@
     padding: 0 10px;
     min-width: 0;
   }
-  .zeit select { width: 88px; font-size: 24px; text-align: center; }
+  .tf-zeit select { width: 88px; font-size: 24px; text-align: center; }
   .tage { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
   .tage button { padding: 0; font-size: 15px; }
-  .wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .wahl button.an, .tage button.an { background: var(--t-akzent); border-color: var(--t-akzent); color: var(--t-akzent-text); font-weight: 600; }
+  .tf-wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tf-wahl button.tf-an, .tage button.tf-an { background: var(--t-akzent-flaeche); border-color: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 600; }
   .regler { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--t-text-2); margin-top: 8px; }
   .regler input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .loeschen { color: var(--t-fehler); }
-  .gross { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 32px); margin: 16px; }
+  .tf-gross { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 32px); margin: 16px; }
 </style>

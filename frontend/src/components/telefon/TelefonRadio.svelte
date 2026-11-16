@@ -32,7 +32,7 @@
 </script>
 
 <div class="radio">
-  <label class="suche">
+  <label class="tf-suche">
     <i class="fa-solid fa-magnifying-glass"></i>
     <input type="search" placeholder={t('telefon.senderSuchen')} bind:value={suche} oninput={suchen}
       enterkeyhint="search" autocomplete="off" />
@@ -40,11 +40,11 @@
 
   {#if suche.trim().length >= 2}
     {#if laedt && !treffer.length}
-      <p class="hinweis">{t('telefon.laden')}</p>
+      <p class="tf-hinweis">{t('telefon.laden')}</p>
     {:else if fehler}
-      <p class="hinweis">{t('telefon.fehler')}</p>
+      <p class="tf-hinweis">{t('telefon.fehler')}</p>
     {:else if !treffer.length}
-      <p class="hinweis">{t('telefon.keineTreffer')}</p>
+      <p class="tf-hinweis">{t('telefon.keineTreffer')}</p>
     {:else}
       <ul class="liste">
         {#each treffer as sender (sender.uuid)}
@@ -55,7 +55,7 @@
   {:else}
     <h2>{t('telefon.favoriten')}</h2>
     {#if !appState.favorites.length}
-      <p class="hinweis">{t('telefon.keineFavoriten')}</p>
+      <p class="tf-hinweis">{t('telefon.keineFavoriten')}</p>
     {:else}
       <ul class="liste">
         {#each appState.favorites as sender (sender.uuid)}
@@ -68,7 +68,7 @@
 
 <style>
   .radio { padding: 12px 0 16px; }
-  .suche {
+  .tf-suche {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -79,7 +79,7 @@
     background: var(--t-flaeche-2);
     color: var(--t-text-2);
   }
-  .suche input {
+  .tf-suche input {
     flex: 1;
     min-width: 0;
     border: none;
@@ -97,6 +97,6 @@
     text-transform: none;
     letter-spacing: 0;
   }
-  .hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
+  .tf-hinweis { margin: 16px; color: var(--t-text-2); font-size: 15px; }
   .liste { list-style: none; margin: 0; padding: 0; }
 </style>
