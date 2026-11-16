@@ -59,7 +59,7 @@
 
     {#if folge}
       <div class="position">
-        <input type="range" min="0" max={Math.max(1, Math.floor(dauer))} step="1"
+        <input name="position" type="range" min="0" max={Math.max(1, Math.floor(dauer))} step="1"
           value={ziehen ?? Math.floor(zeit)} aria-label={t('telefon.abspielen')}
           oninput={(e) => (ziehen = Number(e.currentTarget.value))}
           onchange={(e) => { steuerung.springen(Number(e.currentTarget.value)); ziehen = null; }} />

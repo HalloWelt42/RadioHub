@@ -16,7 +16,10 @@
         {
           "klick": ".rh-darstellung > .knopf"
         }
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "rechner-aufnahmen",
@@ -24,7 +27,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "rechner-podcasts",
@@ -32,7 +38,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-einstellungen",
@@ -40,7 +49,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-tastatur",
@@ -48,7 +60,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-info",
@@ -56,7 +71,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-lizenz",
@@ -64,7 +82,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-recht",
@@ -72,7 +93,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-allgemein-bedanken",
@@ -80,7 +104,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-radio-filter",
@@ -88,7 +115,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-radio-sender",
@@ -96,7 +126,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-radio-kategorien",
@@ -104,7 +137,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-podcast",
@@ -112,7 +148,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-aufnahmen",
@@ -120,7 +159,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-speicher",
@@ -128,7 +170,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "einstellungen-dienste",
@@ -136,7 +181,10 @@
       "nur": [
         1280,
         1920
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-radio",
@@ -149,7 +197,10 @@
         {
           "klick": "[aria-label='Einstellungen']"
         }
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-podcasts",
@@ -157,7 +208,10 @@
       "nur": [
         375,
         768
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-abo",
@@ -165,7 +219,10 @@
       "nur": [
         375,
         768
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-folge",
@@ -174,7 +231,10 @@
         375,
         768
       ],
-      "abfrage": "/api/podcasts/21/episodes?limit=1"
+      "abfrage": "/api/podcasts/21/episodes?limit=1",
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-gemerkt",
@@ -182,7 +242,10 @@
       "nur": [
         375,
         768
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "telefon-wecker",
@@ -190,7 +253,10 @@
       "nur": [
         375,
         768
-      ]
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
     },
     {
       "name": "quer-sonne",
@@ -200,7 +266,8 @@
       ],
       "speicher": {
         "radiohub_weckerlayout": "sonne",
-        "radiohub_nachtschaltung": "aus"
+        "radiohub_nachtschaltung": "aus",
+        "radiohub_schrift": "mittel"
       },
       "wechsel": [
         {
@@ -222,7 +289,8 @@
       ],
       "speicher": {
         "radiohub_weckerlayout": "sonne",
-        "radiohub_nachtschaltung": "an"
+        "radiohub_nachtschaltung": "an",
+        "radiohub_schrift": "mittel"
       },
       "wechsel": [
         {

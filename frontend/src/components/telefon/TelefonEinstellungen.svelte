@@ -88,7 +88,7 @@
   <section>
     <label class="tf-schalter">
       <span>{t('telefon.wachHalten')}</span>
-      <input type="checkbox" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
+      <input name="wach-halten" type="checkbox" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
         onchange={(e) => wachHaltenSetzen(e.currentTarget.checked)} />
     </label>
     <p class="tf-klein">{wach.unterstuetzt ? t('telefon.wachHaltenHinweis') : t('telefon.wachNichtMoeglich')}</p>
@@ -97,7 +97,7 @@
   <section>
     <label class="tf-schalter">
       <span>{t('telefon.zeitansage')}</span>
-      <input type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
+      <input name="zeitansage" type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
     </label>
     <p class="tf-klein">{t('telefon.zeitansageHinweis')}</p>
     {#if zeit.an}
@@ -112,7 +112,7 @@
       <div class="zwei">
         {#each [['von', 'ansageVon'], ['bis', 'ansageBis']] as [feld, text] (feld)}
           <label class="tf-feld"><span>{t('telefon.' + text)}</span>
-            <select value={zeit[feld]} onchange={(e) => planSetzen({ [feld]: e.currentTarget.value })}>
+            <select name="zeitraum-{feld}" value={zeit[feld]} onchange={(e) => planSetzen({ [feld]: e.currentTarget.value })}>
               <option value="">-</option>
               {#each ZEITEN as z (z)}<option value={z}>{z}</option>{/each}
             </select>
@@ -148,7 +148,7 @@
     <h3>{t('telefon.ort')}</h3>
     {#if weckerdaten.ort.breite == null}<p class="tf-klein">{t('telefon.ortFehlt')}</p>{/if}
     <form class="tf-suche" onsubmit={(e) => { e.preventDefault(); orteSuchen(); }}>
-      <label class="tf-feld"><span>{t('telefon.ortSuchen')}</span><input bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
+      <label class="tf-feld"><span>{t('telefon.ortSuchen')}</span><input name="ort-suche" bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
       <button class="tf-knopf" type="submit" disabled={sucht}>{t('telefon.suchen')}</button>
     </form>
     {#if fundorte}
@@ -160,10 +160,10 @@
       </ul>
     {/if}
     <button class="tf-knopf" type="button" onclick={standortUebernehmen}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.standort')}</button>
-    <label class="tf-feld"><span>{t('telefon.ortName')}</span><input bind:value={ort.name} autocomplete="off" /></label>
+    <label class="tf-feld"><span>{t('telefon.ortName')}</span><input name="ort-name" bind:value={ort.name} autocomplete="off" /></label>
     <div class="zwei">
-      <label class="tf-feld"><span>{t('telefon.breite')}</span><input bind:value={ort.breite} inputmode="decimal" autocomplete="off" /></label>
-      <label class="tf-feld"><span>{t('telefon.laenge')}</span><input bind:value={ort.laenge} inputmode="decimal" autocomplete="off" /></label>
+      <label class="tf-feld"><span>{t('telefon.breite')}</span><input name="ort-breite" bind:value={ort.breite} inputmode="decimal" autocomplete="off" /></label>
+      <label class="tf-feld"><span>{t('telefon.laenge')}</span><input name="ort-laenge" bind:value={ort.laenge} inputmode="decimal" autocomplete="off" /></label>
     </div>
     <button class="tf-knopf" onclick={ortSichern}>{t('telefon.speichern')}</button>
     {#if ortMeldung}<p class="tf-klein">{ortMeldung}</p>{/if}

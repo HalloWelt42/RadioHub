@@ -478,7 +478,7 @@
   .resize-handle {
     position: absolute;
     top: 0;
-    right: -3px;
+    right: 0;
     width: 6px;
     height: 100%;
     cursor: col-resize;

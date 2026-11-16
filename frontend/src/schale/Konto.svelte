@@ -24,7 +24,7 @@
   <h3>{t("schale.konto")}</h3>
   <div class="rh-konto">
     <span class="rh-konto-name">{konto?.name ?? ""}<br /><span class="rh-still">{ohneAnmeldung() ? t("schale.ohneAnmeldung")
-      : geraet ? t("schale.gekoppelt") : t("schale.mitPasswort")} · {t("schale.fassung")} {__APP_FASSUNG__}</span></span>
+      : geraet ? t("schale.gekoppelt") : t("schale.mitPasswort")}</span><br /><span class="rh-still">{t("schale.fassung")} {__APP_FASSUNG__}</span></span>
     {#if !ohneAnmeldung()}
       {#if geraet}
         <button class="knopf" type="button" onclick={() => (fragen = true)} disabled={fragen}><i class="fa-solid fa-link-slash"></i>{t("schale.trennen")}</button>

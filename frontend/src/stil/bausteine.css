@@ -22,7 +22,7 @@ html, body { height: 100%; overflow: hidden; }
 .rh-herz:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
 @keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
 .rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
-:root[data-theme="dunkel"] .rh-unterzeile { color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
+:root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
 
 /* Navigation: Pillenleiste als Gerät, ragt in den Inhalt; gewählter Bereich erhaben mit leuchtender Schrift */
 .rh-nav { padding: 6px; border-radius: var(--rh-pille); min-width: 0; max-inline-size: 100%;

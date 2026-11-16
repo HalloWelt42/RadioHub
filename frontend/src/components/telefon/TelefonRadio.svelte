@@ -34,7 +34,7 @@
 <div class="radio">
   <label class="tf-suche">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="search" placeholder={t('telefon.senderSuchen')} bind:value={suche} oninput={suchen}
+    <input name="sender-suche" type="search" placeholder={t('telefon.senderSuchen')} bind:value={suche} oninput={suchen}
       enterkeyhint="search" autocomplete="off" />
   </label>
 

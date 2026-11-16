@@ -75,11 +75,11 @@
     <section class="form">
       <span class="beschriftung">{t('telefon.uhrzeit')}</span>
       <div class="tf-zeit">
-        <select bind:value={entwurf.stunde} aria-label={t('telefon.uhrzeit')}>
+        <select name="wecker-stunde" bind:value={entwurf.stunde} aria-label={t('telefon.uhrzeit')}>
           {#each STUNDEN as h}<option value={h}>{h}</option>{/each}
         </select>
         <span>:</span>
-        <select bind:value={entwurf.minute} aria-label={t('telefon.uhrzeit')}>
+        <select name="wecker-minute" bind:value={entwurf.minute} aria-label={t('telefon.uhrzeit')}>
           {#each MINUTEN as m}<option value={m}>{m}</option>{/each}
         </select>
       </div>
@@ -97,22 +97,22 @@
         <button class:tf-an={entwurf.quelle === 'podcast'} onclick={() => (entwurf.quelle = 'podcast')}>{t('telefon.folge')}</button>
       </div>
       {#if entwurf.quelle === 'sender'}
-        <select bind:value={entwurf.sender_uuid} aria-label={t('telefon.senderWaehlen')}>
+        <select name="wecker-sender" bind:value={entwurf.sender_uuid} aria-label={t('telefon.senderWaehlen')}>
           {#if entwurf.sender && !appState.favorites.some((f) => f.uuid === entwurf.sender.uuid)}
             <option value={entwurf.sender.uuid}>{entwurf.sender.name}</option>
           {/if}
           {#each appState.favorites as f (f.uuid)}<option value={f.uuid}>{f.name}</option>{/each}
         </select>
       {:else}
-        <select bind:value={entwurf.podcast_id} aria-label={t('telefon.aboWaehlen')}>
+        <select name="wecker-abo" bind:value={entwurf.podcast_id} aria-label={t('telefon.aboWaehlen')}>
           {#each appState.podcasts as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
         </select>
       {/if}
 
       <label class="regler"><span>{t('telefon.lautstaerke')}: {entwurf.lautstaerke} %</span>
-        <input type="range" min="5" max="100" step="5" bind:value={entwurf.lautstaerke} /></label>
+        <input name="wecker-lautstaerke" type="range" min="5" max="100" step="5" bind:value={entwurf.lautstaerke} /></label>
       <label class="regler"><span>{t('telefon.anstieg')}: {entwurf.anstieg_s}</span>
-        <input type="range" min="0" max="300" step="15" bind:value={entwurf.anstieg_s} /></label>
+        <input name="wecker-anstieg" type="range" min="0" max="300" step="15" bind:value={entwurf.anstieg_s} /></label>
 
       {#if meldung}<p class="tf-hinweis tf-fehler">{meldung}</p>{/if}
       <div class="tf-wahl">
@@ -136,7 +136,7 @@
             </span>
           </button>
           <span class="tf-schalter">
-            <input type="checkbox" checked={w.aktiv} onchange={() => umschalten(w)} aria-label="{t('telefon.aktiv')} {w.zeit}" /></span>
+            <input name="wecker-aktiv-{w.id}" type="checkbox" checked={w.aktiv} onchange={() => umschalten(w)} aria-label="{t('telefon.aktiv')} {w.zeit}" /></span>
         </li>
       {/each}
     </ul>

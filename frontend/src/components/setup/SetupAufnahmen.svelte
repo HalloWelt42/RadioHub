@@ -183,7 +183,7 @@
           <div class="folder-form">
             <div class="form-group">
               <span class="form-label">{t('aufnahmen.ordnername')}</span>
-              <input
+              <input name="aufnahmen-feld"
                 type="text"
                 class="form-input"
                 placeholder="z.B. Jazz, Nachrichten..."
@@ -258,14 +258,14 @@
 
         <!-- Hinzufügen-Formular -->
         <div class="ignore-add-form">
-          <input
+          <input name="icy-muster"
             type="text"
             class="form-input ignore-input"
             placeholder={t('aufnahmen.musterHinzufuegen')}
             bind:value={ignorePattern}
             onkeydown={handleIgnoreKeydown}
           />
-          <select class="form-input ignore-select" bind:value={ignoreMatchType}>
+          <select name="icy-art" class="form-input ignore-select" bind:value={ignoreMatchType}>
             <option value="exact">{t('aufnahmen.exact')}</option>
             <option value="contains">{t('aufnahmen.contains')}</option>
           </select>
