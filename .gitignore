@@ -6,7 +6,7 @@ __pycache__/
 venv/
 
 # Build
-radiohub-frontend/dist/
+frontend/dist/
 
 # Daten
 data/

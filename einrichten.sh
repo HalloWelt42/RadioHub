@@ -23,13 +23,13 @@ entwicklung() {
   [ -x .venv/bin/python ] || python3.12 -m venv .venv
   .venv/bin/pip install -q --upgrade pip
   .venv/bin/pip install -q -r requirements-test.txt
-  cd "$HIER/radiohub-frontend"
+  cd "$HIER/frontend"
   npm ci --no-audit --no-fund
   # Haken nur, wenn dieser Ordner selbst das Repo ist (nie in einem Repo, in dem er zufällig liegt)
   if [ "$(git -C "$HIER" rev-parse --show-toplevel 2>/dev/null)" = "$HIER" ]; then
     git -C "$HIER" config core.hooksPath tools/git-hooks
   fi
-  echo "RadioHub eingerichtet. Tests: backend/.venv/bin/python -m pytest (in backend), npx vitest run (in radiohub-frontend)"
+  echo "RadioHub eingerichtet. Tests: backend/.venv/bin/python -m pytest (in backend), npx vitest run (in frontend)"
 }
 
 # veröffentlichter Port des Vorschaltdienstes laut compose.pi.yml (er steht nur dort)

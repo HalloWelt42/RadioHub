@@ -31,10 +31,10 @@ kennung = "S2"
 titel = "Schichten der Oberfläche"
 art = "schichten"
 warum = "Logik, Zustand und Zugriff aufs Backend (src/lib) kennen keine Bausteine der Oberfläche; so bleiben sie testbar und für Rechner, Telefon und Webversion dieselben."
-dateien = ["radiohub-frontend/src/**"]
+dateien = ["frontend/src/**"]
 schichten = [
-  { name = "oberflaeche", dateien = ["radiohub-frontend/src/components/**", "radiohub-frontend/src/App.svelte", "radiohub-frontend/src/main.js"] },
-  { name = "logik", dateien = ["radiohub-frontend/src/lib/**"] },
+  { name = "oberflaeche", dateien = ["frontend/src/components/**", "frontend/src/App.svelte", "frontend/src/main.js"] },
+  { name = "logik", dateien = ["frontend/src/lib/**"] },
 ]
 erlaubt = { oberflaeche = ["logik"] }
 
@@ -45,7 +45,7 @@ kennung = "G1"
 titel = "Keine Bibliotheken aus dem Netz"
 art = "verboten"
 warum = "Schriften, Symbole und Bibliotheken kommen über npm oder pip, nie über CDN-Links zur Laufzeit."
-dateien = ["radiohub-frontend/src/**", "radiohub-frontend/index.html", "backend/app/**"]
+dateien = ["frontend/src/**", "frontend/index.html", "backend/app/**"]
 muster = 'https?://(cdn|unpkg|cdnjs|fonts\.googleapis|fonts\.gstatic|use\.fontawesome)'
 
 [[regel]]
@@ -53,7 +53,7 @@ kennung = "G2"
 titel = "Keine Browser-Dialoge"
 art = "verboten"
 warum = "Rückfragen und Meldungen laufen über eigene Bausteine der App; alert, confirm und prompt blockieren, sehen fremd aus und lassen sich nicht gestalten."
-dateien = ["radiohub-frontend/src/**"]
+dateien = ["frontend/src/**"]
 muster = '(^|[^.\w])(window\.)?(alert|confirm|prompt)\('
 
 [[regel]]
@@ -61,7 +61,7 @@ kennung = "G3"
 titel = "Keine feste Fassung im Code"
 art = "verboten"
 warum = "version.json ist die einzige Quelle der Fassung; Backend (backend/fassung.py) und Oberfläche (Vite define) lesen sie, nichts schreibt sie von Hand ab."
-dateien = ["radiohub-frontend/src/**", "radiohub-frontend/*.js", "radiohub-frontend/package.json", "backend/app/**"]
+dateien = ["frontend/src/**", "frontend/*.js", "frontend/package.json", "backend/app/**"]
 muster = '''(?i)["']?version["']?\s*[=:]\s*["']v?\d+\.\d+\.\d+'''
 
 [[regel]]
@@ -107,7 +107,7 @@ kennung = "B1"
 titel = "Durchleiter nur per Kennung"
 art = "verboten"
 warum = "Ein Durchleiter für beliebige Adressen öffnet das Heimnetz für jeden, der die App erreicht (SSRF). Die Oberfläche nennt nur Sender oder Folge, die Adresse kommt aus der Datenbank (services/durchleiter.py)."
-dateien = ["radiohub-frontend/src/**", "backend/app/**"]
+dateien = ["frontend/src/**", "backend/app/**"]
 muster = '(/stream/proxy|getStreamProxyUrl|proxy\?url=)'
 
 [[regel]]
@@ -123,7 +123,7 @@ kennung = "B3"
 titel = "Kein Abruf fremder Dienste aus der Oberfläche"
 art = "verboten"
 warum = "Die Oberfläche spricht nur mit dem eigenen Backend; neue Fassungen erkennt sie an der eigenen Startseite (lib/aktualisierung.svelte.js), nicht über GitHub."
-dateien = ["radiohub-frontend/src/**"]
+dateien = ["frontend/src/**"]
 muster = '(raw\.githubusercontent\.com|api\.github\.com)'
 
 [[regel]]
@@ -131,7 +131,7 @@ kennung = "B4"
 titel = "Keine CORS-Freigabe für alle Ursprünge"
 art = "verboten"
 warum = "Die Oberfläche spricht /api über denselben Ursprung; eine Freigabe für alle ließe jede fremde Seite im Browser des Nutzers die Schnittstelle bedienen. Fremde Ursprünge nur ausdrücklich über die Einstellung erlaubte_urspruenge (RADIOHUB_ERLAUBTE_URSPRUENGE, früher ALLOWED_ORIGINS)."
-dateien = ["backend/app/**", "deploy/Caddyfile", "radiohub-frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
+dateien = ["backend/app/**", "deploy/Caddyfile", "frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
 muster = '''(allow_origins\s*=\s*\[\s*["']\*|ALLOWED_ORIGINS\s*[=:]\s*["']?\*|Access-Control-Allow-Origin\s+\*|cors:\s*true)'''
 
 [[regel]]

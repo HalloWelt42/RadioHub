@@ -2,15 +2,15 @@
 # liefert die gebaute Oberfläche selbst aus. Gebaut aus dem Wurzelordner, damit version.json, die einzige Quelle der
 # Fassung, in beide Stufen kommt.
 
-# --- Oberfläche bauen (bis Teil 2c die heutige aus radiohub-frontend) ------------------------------------------------
+# --- Oberfläche bauen ------------------------------------------------------------------------------------------------
 FROM node:22-slim AS oberflaeche
 WORKDIR /bau
 COPY version.json ./
 # Abhängigkeiten genau nach package-lock.json; Schriften und Symbole kommen über npm, nichts aus dem Netz zur Laufzeit
-COPY radiohub-frontend/package.json radiohub-frontend/package-lock.json ./radiohub-frontend/
-RUN cd radiohub-frontend && npm ci --no-audit --no-fund
-COPY radiohub-frontend ./radiohub-frontend
-RUN cd radiohub-frontend && npm run build
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+RUN cd frontend && npm ci --no-audit --no-fund
+COPY frontend ./frontend
+RUN cd frontend && npm run build
 
 # --- Backend ----------------------------------------------------------------------------------------------------------
 FROM python:3.12-slim
@@ -21,10 +21,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -r
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 # Fassung, Backend und Oberfläche wie im Repo (app/fassung.py findet version.json oberhalb des Pakets, app/main.py die
-# Oberfläche unter radiohub-frontend/dist)
+# Oberfläche unter frontend/dist)
 COPY version.json ./
 COPY backend/app ./backend/app
-COPY --from=oberflaeche /bau/radiohub-frontend/dist ./radiohub-frontend/dist
+COPY --from=oberflaeche /bau/frontend/dist ./frontend/dist
 WORKDIR /app/backend
 # Nicht als root (der Nutzer pi, 1000, besitzt die Daten auf dem Pi); ohne eigenes Heimverzeichnis, darum HOME in /tmp
 USER 1000:1000

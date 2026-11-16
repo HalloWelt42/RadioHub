@@ -28,7 +28,7 @@ import cairosvg
 from PIL import Image
 
 WURZEL = Path(__file__).resolve().parent.parent
-OEFFENTLICH = WURZEL / "radiohub-frontend" / "public"   # Ordner, den der Server der App als Wurzel ausliefert
+OEFFENTLICH = WURZEL / "frontend" / "public"           # Ordner, den der Server der App als Wurzel ausliefert
 QUELLE = OEFFENTLICH / "favicon.svg"           # Logo der App (Funkwellen)
 MANIFEST = OEFFENTLICH / "site.webmanifest"
 SVG = "http://www.w3.org/2000/svg"

@@ -1,7 +1,7 @@
 """Ausrollen von RadioHub auf den Pi, vom Mac aus über tools/ausrollen.sh. Ablauf und Bausteine wie im Appkern
-(appkern.werkzeuge.ausrollen: Ziel, Zertifikat, Stand holen, Bauen, Zugänge, Aufräumen); eigen sind bis Teil 2c nur die
-Teile, die am Aufbau des Radios hängen (Oberfläche noch in radiohub-frontend ohne die Schale des Appkerns, Daten in
-data/ mit radiohub.db und dem Gerüst in data/appkern, laufende Aufnahmen statt Aufträgen). Bricht beim ersten Fehler ab:
+(appkern.werkzeuge.ausrollen: Ziel, Zertifikat, Stand holen, Bauen, Zugänge, Aufräumen); eigen sind nur die Teile, die
+am Aufbau des Radios hängen (Daten in data/ mit radiohub.db und dem Gerüst in data/appkern, laufende Aufnahmen statt
+Aufträgen). Bricht beim ersten Fehler ab:
 
 1. Stand und Tests am Mac: sauberer Baum, gepusht, harte Architekturregeln über das ganze Repo, Tests des Backends,
    Tests und Bau der Oberfläche; entschieden wird am Rückgabewert, nie an der Ausgabe
@@ -96,7 +96,7 @@ def tests(wurzel: Path = WURZEL) -> None:
         print("\n".join(str(b) for b in befunde[:20]))
         raise Abbruch(f"{len(befunde)} Befunde der Architekturregeln (python -m appkern.werkzeuge regeln)")
     print("Architekturregeln eingehalten")
-    backend, oberflaeche = wurzel / "backend", wurzel / "radiohub-frontend"
+    backend, oberflaeche = wurzel / "backend", wurzel / "frontend"
     _pruefen_lassen("Backend", [".venv/bin/python", "-m", "pytest", "--tb=short"], backend)   # -q steht in pytest.ini
     _pruefen_lassen("Oberflaeche", ["npx", "vitest", "run"], oberflaeche)
     _pruefen_lassen("Bau", ["npm", "run", "build"], oberflaeche)

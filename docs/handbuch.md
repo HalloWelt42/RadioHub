@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/data/kellerwolke.schluessel`, Modus 0600: der App-Schlüssel von vor RAD-6; gilt nur noch, solange die .env keinen festen hat"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: d789e76
+stand: 97e05e6
 ---
 
 # RadioHub
@@ -59,7 +59,7 @@ Oberfläche und die Git-Haken (`tools/git-hooks`: Fassung zählen, Zeichen und S
 `architektur/regeln.toml`, Kennung RAD-n in jeder Commit-Nachricht).
 
 Probe: `git config core.hooksPath` zeigt `tools/git-hooks`; `backend/.venv/bin/python -m pytest` (im Ordner
-`backend`) und `npx vitest run` (im Ordner `radiohub-frontend`) melden alle Tests grün.
+`backend`) und `npx vitest run` (im Ordner `frontend`) melden alle Tests grün.
 
 ### 2. Einmalig: Umzug in den Ordner des Betriebs
 

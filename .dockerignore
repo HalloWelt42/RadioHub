@@ -4,10 +4,10 @@
 !version.json
 !backend/requirements.txt
 !backend/app
-!radiohub-frontend
-radiohub-frontend/node_modules
-radiohub-frontend/dist
-radiohub-frontend/tests
+!frontend
+frontend/node_modules
+frontend/dist
+frontend/tests
 **/__pycache__
 **/*.pyc
 **/.DS_Store

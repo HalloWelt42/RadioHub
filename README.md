@@ -93,7 +93,7 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 ### Architektur
 
 ```
-radiohub-frontend/    Svelte 5 SPA (im Betrieb vom Backend ausgeliefert, beim Entwickeln Vite)
+frontend/             Svelte 5 SPA (im Betrieb vom Backend ausgeliefert, beim Entwickeln Vite)
 backend/              FastAPI REST-API (Python 3.12, Paket app nach dem Schema des Appkerns)
   app/
     ablage/           Ablage der Dateien (Schnittstelle, Kellerwolke, Testablage, Ordnerstruktur)
@@ -393,7 +393,7 @@ source .venv/bin/activate
 uvicorn app.main:app --host 127.0.0.1 --port 9091 --reload
 
 # Frontend Dev-Server (Port 5180, mit Vite-Proxy auf 9091)
-cd radiohub-frontend
+cd frontend
 npm run dev
 ```
 

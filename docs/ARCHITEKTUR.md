@@ -46,7 +46,7 @@ Bestand bis 0.15.6). Frühere Namen und Formen der Einstellungen gelten über `u
 eine Datei für beide (Name der Datenbank im Gerüst wählbar) und ein Haken für eigene SQL-Funktionen in seinen
 Verbindungen (`merkmal_trifft`); bis dahin lesen und schreiben die Dienste über `database.get_db`.
 
-Oberfläche (Svelte 5, `radiohub-frontend/src`):
+Oberfläche (Svelte 5, `frontend/src`):
 
 ```
 oberflaeche     components/**, App.svelte, main.js     Ansichten für Rechner, Telefon und Wecker

@@ -38,7 +38,7 @@ from .services.aufnahmen import AufnahmeFehler
 from .services.durchleiter import DurchleiterFehler
 from .services.hls_recorder import hls_recorder
 
-OBERFLAECHE = ort.WURZEL / "radiohub-frontend" / "dist"
+OBERFLAECHE = ort.WURZEL / "frontend" / "dist"
 LESEZUGANG = "/api"        # unter diesem Pfad gilt der Keks des Lesezugangs (Ton, Bilder, Ereignisströme)
 
 # Fehler der Ablage als HTTP-Status mit lesbarer Meldung
