@@ -4,6 +4,10 @@
 
 # --- Oberfläche bauen ------------------------------------------------------------------------------------------------
 FROM node:22-slim AS oberflaeche
+# git für die Oberfläche des Appkerns von GitHub (wie in der Vorlage des Appkerns), über https statt ssh
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/* && \
+    git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
+    git config --global --add url."https://github.com/".insteadOf "git@github.com:"
 WORKDIR /bau
 COPY version.json ./
 # Abhängigkeiten genau nach package-lock.json; Schriften und Symbole kommen über npm, nichts aus dem Netz zur Laufzeit.

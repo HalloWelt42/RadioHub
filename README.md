@@ -83,12 +83,12 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 
 | Komponente | Technologie |
 |------------|-------------|
-| Frontend | Svelte 5 (Runes), Vite, hls.js |
+| Frontend | Svelte 5 (Runes) mit TypeScript, Vite, hls.js, Schale und Vorlagen des Appkerns |
 | Backend | Python, FastAPI, FFmpeg |
 | Audio | HLS-Streaming, ICY-Metadata, LUFS-Normalisierung |
 | Datenbank | SQLite |
-| Icons | Font Awesome 7 |
-| Fonts | Orbitron (Logo), Barlow (UI) |
+| Icons | Font Awesome (über den Appkern) |
+| Fonts | Orbitron (Schriftzug), Barlow (Text), Chakra Petch (Zahlen) |
 
 ### Architektur
 

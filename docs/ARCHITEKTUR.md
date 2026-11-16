@@ -1,9 +1,9 @@
 # RadioHub: Architektur
 
-Stand 16.11.2026 (RAD-5, Etappe 1, und RAD-6, Teil 2b: Backend auf dem Appkern). Dieses Dokument beschreibt Aufbau, Schichten und harte Regeln von
-RadioHub. Die Regeln stehen maschinenlesbar in `architektur/regeln.toml`; der Git-Haken und das Ausrollen setzen sie
-durch. Entscheidungen und Etappen der Überarbeitung stehen in `docs/umbau/PLAN.md`, der Befund davor in
-`docs/umbau/BEFUND.md`.
+Stand 16.11.2026 (RAD-5, Etappe 1, und RAD-6, Teile 2b und 2c: Backend und Schale der Oberfläche auf dem Appkern).
+Dieses Dokument beschreibt Aufbau, Schichten und harte Regeln von RadioHub. Die Regeln stehen maschinenlesbar in
+`architektur/regeln.toml`; der Git-Haken und das Ausrollen setzen sie durch. Entscheidungen und Etappen der
+Überarbeitung stehen in `docs/umbau/PLAN.md`, der Befund davor in `docs/umbau/BEFUND.md`.
 
 ## Leitgedanken
 
@@ -46,14 +46,35 @@ Bestand bis 0.15.6). Frühere Namen und Formen der Einstellungen gelten über `u
 eine Datei für beide (Name der Datenbank im Gerüst wählbar) und ein Haken für eigene SQL-Funktionen in seinen
 Verbindungen (`merkmal_trifft`); bis dahin lesen und schreiben die Dienste über `database.get_db`.
 
-Oberfläche (Svelte 5, `frontend/src`):
+Oberfläche (Svelte 5 mit TypeScript für neue Teile, `frontend/src`; svelte-check im Skript `check`):
 
 ```
-oberflaeche     components/**, App.svelte, main.js     Ansichten für Rechner, Telefon und Wecker
+oberflaeche     schale/**, components/**, App.svelte, main.ts
+   │            schale/       Wurzel (Sitzung, Anmeldung, Koppeln, Einrichtung über den Appkern), Kopf mit
+   │                          Pillen-Navigation, Darstellung, Konto, Meldung (Entwurf RAD-3)
+   │            components/   die bisherigen Bereiche Radio, Aufnahmen, Podcasts, Einstellungen, Spieler und die
+   │                          Telefonansichten, bis zu ihrem Neubau (Etappen 3, 4 und 6)
    │  darf logik
-logik           lib/**                                 Zustand, Wiedergabe (playerEngine), Backend (api.js), Router,
-                                                       Übersetzungen, Zeitpläne, Erkennung neuer Fassungen
+logik           lib/**        Zustand, Wiedergabe (playerEngine), Backend (api.js mit der Sitzung aus lib/sitzung.ts),
+                              Router, Übersetzungen, Zeitpläne, Darstellung, Erkennung neuer Fassungen
 ```
+
+Gestaltung in Schichten (Entscheidung 24): die Marken, Schale, Instrumente und Vorlagen des Appkerns
+(`appkern-oberflaeche/stil.css`, `instrumente.css`, `vorlagen-alle-breiten.css`: jede Vorlage auch am Telefon), darauf
+die Marken des Radios (`stil/radio-marken.css`, je Vorlage `stil/vorlagen/<name>.css`, `grund.css` für jede Vorlage ohne
+eigene), Bausteine (`stil/bausteine.css`) und Anordnung (`stil/rechner.css`). Ein neues Thema braucht eine Marken-Datei
+unter `stil/vorlagen/`. Die Darstellung (Vorlage, Thema Hell/Dunkel/System, Schriftstufe Normal/Groß/Sehr groß) gilt je
+Gerät und wird vor dem Einhängen angewendet (`lib/darstellung-vorab.ts`, als Skript in den Kopf der Startseite gesetzt).
+
+Brücke der alten Bereiche (`styles/bruecke.css`, bis zum Neubau): ihre Variablen `--hifi-*` und die der
+Telefonansichten `--t-*` sind nur aus Marken abgeleitet; die Schriftstufe wirkt auf sie als Ganzes (`zoom` mit
+`--rh-alt-zoom`), weil ihre Schriftgrößen und Breiten in Pixeln stehen. `styles/hifi-base.css` und
+`styles/hifi-components.css` (nur noch genutzte Regeln) entfallen Bereich für Bereich. Klassen der Telefonansichten,
+die der Appkern auch führt, tragen die Vorsilbe `tf-`.
+
+Die Oberfläche des Appkerns liegt bis zu seiner Veröffentlichung als Paket in `frontend/vendor` (Commit im
+Dateinamen); das Ausrollen verweigert diesen Stand, bis `frontend/package.json` den Appkern von GitHub am selben Commit
+wie `backend/requirements.txt` nimmt (`tools/ausrollen.py`, `appkern_gebunden`).
 
 ## Harte Regeln (geprüft)
 
@@ -91,8 +112,8 @@ Diese Regeln erfüllt der Code heute noch nicht; sie kommen mit der Etappe, die 
 
 | Etappe | Regel |
 |---|---|
-| 2 Appkern-Grundlage | Ordner `frontend/` nach dem Schema des Appkerns (Teil 2c; `backend/` ist umgestellt); Backend-Schichten api, fach, anschluesse, modell; Antworten als Pydantic-Modelle statt Dicts |
-| 2 Appkern-Grundlage | Oberfläche in TypeScript mit svelte-check ohne Fehler; Marken der Gestaltung scharf (`gestaltung.toml`), keine festen Farben, Schriftgrößen und Schriften; Darstellung mit Schriftstufen und Hell, Dunkel, System |
+| 2 Appkern-Grundlage | Backend-Schichten api, fach, anschluesse, modell; Antworten als Pydantic-Modelle statt Dicts (Ordner `frontend/` und `backend/` sind umgestellt, Teile 2b und 2c) |
+| 3, 4 und 6 | Oberfläche ganz in TypeScript (svelte-check läuft schon, die alten Bereiche bleiben bis zum Neubau JavaScript); Marken der Gestaltung scharf (`gestaltung.toml`): keine festen Farben, Schriftgrößen und Schriften, sobald die Brücke entfällt (Schale und Darstellung mit Schriftstufen und Hell, Dunkel, System sind seit Teil 2c da) |
 | 2 Appkern-Grundlage | Kein rohes `fetch` außerhalb der Datenschicht (heute an fünf Stellen an `api.js` vorbei); keine Adressen wie `localhost:9091` in der Oberfläche |
 | 3 Filterung | Router ohne SQL: jede Abfrage über die Datenschicht; Sender nur über die Schnittstelle Senderquelle (Backend oder statisch für die Webversion) |
 | 3 Filterung | Werbeprüfung nur mit der Senderkennung (heute nimmt `/api/ad-detection/check` noch eine `stream_url` aus der Oberfläche an) |

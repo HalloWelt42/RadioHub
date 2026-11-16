@@ -9,8 +9,10 @@
    weil ihre rund 430 Schriftgrößen und festen Breiten in Pixeln stehen; so wachsen Text, Knöpfe und Spalten im selben
    Verhältnis und nichts schneidet ab. */
 
-/* ═══ Schriftstufe der alten Bereiche ═══ */
-.rh-alt { zoom: var(--rh-alt-zoom); }
+/* ═══ Schriftstufe der alten Bereiche ═══ Grundschrift wie bisher (16 Pixel, am Telefon 17), dann als Ganzes
+   vergrößert; ohne die feste Grundschrift wüchse geerbter Text doppelt (Grundschrift der Stufe und zoom) */
+.rh-alt { zoom: var(--rh-alt-zoom); font-size: 16px; line-height: 1.5; }
+.rh-telefon .rh-alt { font-size: 17px; line-height: 1.35; }
 
 :root, :root [data-theme] {
   /* Flächen */

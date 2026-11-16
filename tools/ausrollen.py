@@ -3,8 +3,9 @@
 am Aufbau des Radios hängen (Daten in data/ mit radiohub.db und dem Gerüst in data/appkern, laufende Aufnahmen statt
 Aufträgen). Bricht beim ersten Fehler ab:
 
-1. Stand und Tests am Mac: sauberer Baum, gepusht, harte Architekturregeln über das ganze Repo, Tests des Backends,
-   Tests und Bau der Oberfläche; entschieden wird am Rückgabewert, nie an der Ausgabe
+1. Stand und Tests am Mac: Oberfläche und Backend am selben veröffentlichten Commit des Appkerns (nicht aus
+   frontend/vendor), sauberer Baum, gepusht, harte Architekturregeln über das ganze Repo, Tests des Backends, Tests,
+   Typen (svelte-check) und Bau der Oberfläche; entschieden wird am Rückgabewert, nie an der Ausgabe
 2. Pi: Docker Compose und das gemeinsame Netz haus; liegt RadioHub noch im Ordner vor dem Umzug, Abbruch mit Verweis
    auf tools/umzug-mnt-data.sh
 3. Zertifikat der Hausstelle für den Vorschaltdienst (noch mindestens 60 Tage gültig, sonst neu)
@@ -99,11 +100,26 @@ def tests(wurzel: Path = WURZEL) -> None:
     backend, oberflaeche = wurzel / "backend", wurzel / "frontend"
     _pruefen_lassen("Backend", [".venv/bin/python", "-m", "pytest", "--tb=short"], backend)   # -q steht in pytest.ini
     _pruefen_lassen("Oberflaeche", ["npx", "vitest", "run"], oberflaeche)
+    _pruefen_lassen("Typen", ["npm", "run", "check"], oberflaeche)
     _pruefen_lassen("Bau", ["npm", "run", "build"], oberflaeche)
+
+
+def appkern_gebunden(wurzel: Path = WURZEL) -> None:
+    """Oberfläche und Backend nutzen den Appkern vom selben veröffentlichten Commit (Lehre 5 des Appkerns). Solange die
+    Oberfläche ihn aus frontend/vendor nimmt (Fassung vor der Veröffentlichung), rollt nichts aus."""
+    paket = json.loads((wurzel / "frontend" / "package.json").read_text())["dependencies"]["appkern-oberflaeche"]
+    if paket.startswith("file:"):
+        raise Abbruch(f"Oberfläche des Appkerns noch aus {paket[5:]}: Appkern veröffentlichen, in frontend/package.json "
+                      "github:HalloWelt42/appkern#<commit> eintragen (derselbe wie in backend/requirements.txt), vendor löschen")
+    vorne = re.search(r"#([0-9a-f]{7,40})$", paket)
+    hinten = re.search(r"appkern/archive/([0-9a-f]{7,40})\.tar\.gz", (wurzel / "backend" / "requirements.txt").read_text())
+    if not vorne or not hinten or not hinten.group(1).startswith(vorne.group(1)):
+        raise Abbruch(f"Appkern nicht an einen Commit gebunden: Oberfläche {paket}, Backend {hinten.group(1) if hinten else '?'}")
 
 
 def stand_und_tests(z: Ziel, wurzel: Path = WURZEL) -> None:
     _schritt("Stand und Tests")
+    appkern_gebunden(wurzel)
     if _lauf(["git", "status", "--porcelain"], ort=wurzel):
         raise Abbruch("Erst committen.")
     _lauf(["git", "fetch", "-q", "origin"], ort=wurzel)

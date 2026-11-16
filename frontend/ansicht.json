@@ -1,86 +1,194 @@
 {
-  "anmeldung": false,
   "thema": {
-    "schluessel": "radiohub-theme",
-    "hell": "light",
-    "dunkel": "dark"
+    "schluessel": "radiohub_thema",
+    "hell": "hell",
+    "dunkel": "dunkel"
   },
   "seiten": [
     {
-      "name": "radio",
+      "name": "rechner-radio",
       "pfad": "/radio",
+      "nur": [
+        1280,
+        1920
+      ],
       "wechsel": [
         {
-          "klick": ".kopf-knopf[aria-label='Einstellungen']"
+          "klick": ".rh-darstellung > .knopf"
         }
-      ],
-      "nur": [
-        375,
-        390,
-        430,
-        768
       ]
     },
     {
-      "name": "podcasts",
+      "name": "rechner-aufnahmen",
+      "pfad": "/aufnahmen",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "rechner-podcasts",
+      "pfad": "/podcasts",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-einstellungen",
+      "pfad": "/einstellungen/allgemein/einstellungen",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-tastatur",
+      "pfad": "/einstellungen/allgemein/tastatur",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-info",
+      "pfad": "/einstellungen/allgemein/info",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-lizenz",
+      "pfad": "/einstellungen/allgemein/lizenz",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-recht",
+      "pfad": "/einstellungen/allgemein/recht",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-allgemein-bedanken",
+      "pfad": "/einstellungen/allgemein/bedanken",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-radio-filter",
+      "pfad": "/einstellungen/radio/filter",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-radio-sender",
+      "pfad": "/einstellungen/radio/sender",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-radio-kategorien",
+      "pfad": "/einstellungen/radio/kategorien",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-podcast",
+      "pfad": "/einstellungen/podcast",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-aufnahmen",
+      "pfad": "/einstellungen/aufnahmen",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-speicher",
+      "pfad": "/einstellungen/speicher",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "einstellungen-dienste",
+      "pfad": "/einstellungen/dienste",
+      "nur": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "name": "telefon-radio",
+      "pfad": "/radio",
+      "nur": [
+        375,
+        768
+      ],
+      "wechsel": [
+        {
+          "klick": "[aria-label='Einstellungen']"
+        }
+      ]
+    },
+    {
+      "name": "telefon-podcasts",
       "pfad": "/podcasts",
       "nur": [
         375,
-        390,
-        430,
         768
       ]
     },
     {
-      "name": "abo",
-      "pfad": "/podcasts/1",
-      "wechsel": [
-        {
-          "klick": "Ungehört",
-          "fest": [
-            ".filter"
-          ]
-        }
+      "name": "telefon-abo",
+      "pfad": "/podcasts/21",
+      "nur": [
+        375,
+        768
+      ]
+    },
+    {
+      "name": "telefon-folge",
+      "pfad": "/podcasts/21/{episodes.0.id}",
+      "nur": [
+        375,
+        768
       ],
-      "nur": [
-        375,
-        390,
-        430,
-        768
-      ]
+      "abfrage": "/api/podcasts/21/episodes?limit=1"
     },
     {
-      "name": "folge",
-      "pfad": "/podcasts/1/2",
-      "nur": [
-        375,
-        390,
-        430,
-        768
-      ]
-    },
-    {
-      "name": "gemerkt",
+      "name": "telefon-gemerkt",
       "pfad": "/podcasts/gemerkt",
       "nur": [
         375,
-        390,
-        430,
         768
       ]
     },
     {
-      "name": "wecker",
+      "name": "telefon-wecker",
       "pfad": "/wecker",
-      "wechsel": [
-        {
-          "klick": "Neuer Wecker"
-        }
-      ],
       "nur": [
         375,
-        390,
-        430,
         768
       ]
     },
@@ -88,8 +196,7 @@
       "name": "quer-sonne",
       "pfad": "/radio",
       "nur": [
-        844,
-        932
+        844
       ],
       "speicher": {
         "radiohub_weckerlayout": "sonne",
@@ -111,8 +218,7 @@
       "name": "quer-uhr",
       "pfad": "/radio",
       "nur": [
-        844,
-        932
+        844
       ],
       "speicher": {
         "radiohub_weckerlayout": "sonne",
@@ -131,39 +237,302 @@
       ]
     },
     {
-      "name": "aufnahmen",
-      "pfad": "/aufnahmen",
-      "nur": [
-        1024,
-        1440,
-        1920
-      ]
-    },
-    {
-      "name": "einstellungen",
-      "pfad": "/einstellungen/allgemein/einstellungen",
-      "nur": [
-        1024,
-        1440,
-        1920
-      ]
-    },
-    {
-      "name": "rechner-radio",
+      "name": "rechner-radio-sehr-gross",
       "pfad": "/radio",
       "nur": [
-        1024,
-        1440,
+        1280,
         1920
+      ],
+      "wechsel": [
+        {
+          "klick": ".rh-darstellung > .knopf"
+        }
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "rechner-aufnahmen-sehr-gross",
+      "pfad": "/aufnahmen",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "rechner-podcasts-sehr-gross",
+      "pfad": "/podcasts",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-einstellungen-sehr-gross",
+      "pfad": "/einstellungen/allgemein/einstellungen",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-tastatur-sehr-gross",
+      "pfad": "/einstellungen/allgemein/tastatur",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-info-sehr-gross",
+      "pfad": "/einstellungen/allgemein/info",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-lizenz-sehr-gross",
+      "pfad": "/einstellungen/allgemein/lizenz",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-recht-sehr-gross",
+      "pfad": "/einstellungen/allgemein/recht",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-allgemein-bedanken-sehr-gross",
+      "pfad": "/einstellungen/allgemein/bedanken",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-filter-sehr-gross",
+      "pfad": "/einstellungen/radio/filter",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-sender-sehr-gross",
+      "pfad": "/einstellungen/radio/sender",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-kategorien-sehr-gross",
+      "pfad": "/einstellungen/radio/kategorien",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-podcast-sehr-gross",
+      "pfad": "/einstellungen/podcast",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-aufnahmen-sehr-gross",
+      "pfad": "/einstellungen/aufnahmen",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-speicher-sehr-gross",
+      "pfad": "/einstellungen/speicher",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-dienste-sehr-gross",
+      "pfad": "/einstellungen/dienste",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-radio-sehr-gross",
+      "pfad": "/radio",
+      "nur": [
+        375,
+        768
+      ],
+      "wechsel": [
+        {
+          "klick": "[aria-label='Einstellungen']"
+        }
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-podcasts-sehr-gross",
+      "pfad": "/podcasts",
+      "nur": [
+        375,
+        768
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-abo-sehr-gross",
+      "pfad": "/podcasts/21",
+      "nur": [
+        375,
+        768
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-folge-sehr-gross",
+      "pfad": "/podcasts/21/{episodes.0.id}",
+      "nur": [
+        375,
+        768
+      ],
+      "abfrage": "/api/podcasts/21/episodes?limit=1",
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-gemerkt-sehr-gross",
+      "pfad": "/podcasts/gemerkt",
+      "nur": [
+        375,
+        768
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "telefon-wecker-sehr-gross",
+      "pfad": "/wecker",
+      "nur": [
+        375,
+        768
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "quer-sonne-sehr-gross",
+      "pfad": "/radio",
+      "nur": [
+        844
+      ],
+      "speicher": {
+        "radiohub_weckerlayout": "sonne",
+        "radiohub_nachtschaltung": "aus",
+        "radiohub_schrift": "sehr-gross"
+      },
+      "wechsel": [
+        {
+          "klick": ".knoepfe .symbol:last-child",
+          "fest": [
+            ".uhr-box"
+          ]
+        },
+        {
+          "klick": ".knoepfe .symbol:last-child"
+        }
       ]
     },
     {
-      "name": "rechner-podcasts",
-      "pfad": "/podcasts",
+      "name": "quer-uhr-sehr-gross",
+      "pfad": "/radio",
       "nur": [
-        1024,
-        1440,
-        1920
+        844
+      ],
+      "speicher": {
+        "radiohub_weckerlayout": "sonne",
+        "radiohub_nachtschaltung": "an",
+        "radiohub_schrift": "sehr-gross"
+      },
+      "wechsel": [
+        {
+          "wischen": "links",
+          "fest": [
+            ".leiste"
+          ]
+        },
+        {
+          "wischen": "rechts"
+        }
       ]
     }
   ]
