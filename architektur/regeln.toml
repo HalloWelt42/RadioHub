@@ -33,7 +33,7 @@ art = "schichten"
 warum = "Logik, Zustand und Zugriff aufs Backend (src/lib) kennen keine Bausteine der Oberfläche; so bleiben sie testbar und für Rechner, Telefon und Webversion dieselben."
 dateien = ["frontend/src/**"]
 schichten = [
-  { name = "oberflaeche", dateien = ["frontend/src/components/**", "frontend/src/App.svelte", "frontend/src/main.js"] },
+  { name = "oberflaeche", dateien = ["frontend/src/components/**", "frontend/src/App.svelte", "frontend/src/main.ts"] },
   { name = "logik", dateien = ["frontend/src/lib/**"] },
 ]
 erlaubt = { oberflaeche = ["logik"] }
@@ -61,7 +61,7 @@ kennung = "G3"
 titel = "Keine feste Fassung im Code"
 art = "verboten"
 warum = "version.json ist die einzige Quelle der Fassung; Backend (backend/fassung.py) und Oberfläche (Vite define) lesen sie, nichts schreibt sie von Hand ab."
-dateien = ["frontend/src/**", "frontend/*.js", "frontend/package.json", "backend/app/**"]
+dateien = ["frontend/src/**", "frontend/*.js", "frontend/*.ts", "frontend/package.json", "backend/app/**"]
 muster = '''(?i)["']?version["']?\s*[=:]\s*["']v?\d+\.\d+\.\d+'''
 
 [[regel]]
@@ -131,7 +131,7 @@ kennung = "B4"
 titel = "Keine CORS-Freigabe für alle Ursprünge"
 art = "verboten"
 warum = "Die Oberfläche spricht /api über denselben Ursprung; eine Freigabe für alle ließe jede fremde Seite im Browser des Nutzers die Schnittstelle bedienen. Fremde Ursprünge nur ausdrücklich über die Einstellung erlaubte_urspruenge (RADIOHUB_ERLAUBTE_URSPRUENGE, früher ALLOWED_ORIGINS)."
-dateien = ["backend/app/**", "deploy/Caddyfile", "frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
+dateien = ["backend/app/**", "deploy/Caddyfile", "frontend/vite.config.ts", "compose.pi.yml", "docker-compose.yml"]
 muster = '''(allow_origins\s*=\s*\[\s*["']\*|ALLOWED_ORIGINS\s*[=:]\s*["']?\*|Access-Control-Allow-Origin\s+\*|cors:\s*true)'''
 
 [[regel]]

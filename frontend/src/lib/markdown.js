@@ -8,7 +8,7 @@
 import { pfadAusAlterAdresse } from './router.js';
 
 const templateVars = {
-  version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
+  version: typeof __APP_FASSUNG__ !== 'undefined' ? __APP_FASSUNG__ : '0.0.0',
   year: new Date().getFullYear().toString(),
   copyright: `2025-${new Date().getFullYear()}`
 };
