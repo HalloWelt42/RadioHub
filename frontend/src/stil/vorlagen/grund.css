@@ -1,0 +1,38 @@
+/* Radio-Marken für jede Vorlage des Appkerns ohne eigene (Klassisch, Futur, Glas, Papyrus, Klar, Plakat): ruhige Flächen
+   aus den Marken der gewählten Vorlage, feine Linie rundum, weicher Schatten, keine Wölbung. Gilt immer; eine Vorlage
+   mit eigenen Radio-Marken (vorlagen/hifi.css) überschreibt sie. Aus der Vorlage Ruhig des Entwurfs (RAD-3), ohne deren
+   eigene Ecken und Akzentfarbe: die kommen hier aus der Vorlage des Appkerns. Nur Marken. */
+
+:root, :root [data-theme] {
+  --rh-erhaben: none;
+  --rh-kante: 0 0 0 1px var(--rand);
+  --rh-schatten: var(--schatten);
+  --rh-schatten-klein: 0 0 0 0 transparent;
+  --rh-mulde: inset 0 0 0 1px var(--rand);
+  --rh-leiste-bild: none;
+  --rh-ecke-geraet: var(--r3);
+
+  /* Geräte: ruhige Leiste statt Metall */
+  --rh-geraet: var(--leiste);
+  --rh-geraet-bild: none;
+  --rh-geraet-tinte: var(--text);
+  --rh-geraet-kante: 0 0 0 1px var(--rand);
+  --rh-geraet-schatten: var(--schatten);
+  --rh-geraet-schatten-klein: 0 0 0 1px var(--rand);
+  --rh-tafel-dunkel: var(--flaeche-2);
+
+  /* Navigation: helle Schiene, gewählter Bereich als Fläche */
+  --rh-nav-an: var(--flaeche);
+  --rh-nav-an-schatten: var(--schatten);
+  --rh-nav-tinte: var(--text-2);
+  --rh-nav-tinte-an: var(--text);
+  --rh-nav-schiene: var(--flaeche-2);
+
+  /* Logo ohne Prägung */
+  --rh-praegung: none;
+  --rh-logo-schein: none;
+
+  /* Schleier und Spieler */
+  --rh-schleier: color-mix(in srgb, var(--schattenfarbe) 40%, transparent);
+  --rh-spieler-schatten: 0 -1px 0 var(--rand);
+}

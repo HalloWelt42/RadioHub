@@ -1,12 +1,21 @@
 import { mount } from "svelte";
-import Zugang from "./components/Zugang.svelte";
+import Wurzel from "./schale/Wurzel.svelte";
 
-// Gestaltung des Appkerns (Schriften, Symbole, Marken, Schale), dann das HiFi-CSS der alten Bereiche
+// Gestaltung in Schichten (Entscheidung 24): Schriften, Symbole, Marken und Schale des Appkerns, seine Instrumente und
+// Vorlagen in allen Breiten (auch am Telefon), dann die Marken des Radios mit seiner Vorlage, Bausteine und Anordnung.
 import "appkern-oberflaeche/stil.css";
-import "./styles/fonts.css";
-import "./styles/hifi-variables.css";
+import "appkern-oberflaeche/instrumente.css";
+import "appkern-oberflaeche/vorlagen-alle-breiten.css";
+import "appkern-oberflaeche/instrumente";
+import "@fontsource/orbitron/900.css";
+import "./stil/radio-marken.css";
+import "./stil/vorlagen/grund.css";
+import "./stil/vorlagen/hifi.css";
+import "./stil/bausteine.css";
+import "./stil/rechner.css";
+// Alte Bereiche bis zu ihrem Neubau (Etappen 3, 4 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
+import "./styles/bruecke.css";
 import "./styles/hifi-base.css";
 import "./styles/hifi-components.css";
 
-// erst die Anmeldung (Konto der Kellerwolke), dann die App
-mount(Zugang, { target: document.getElementById("app")! });
+mount(Wurzel, { target: document.getElementById("app")! });

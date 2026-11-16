@@ -39,12 +39,12 @@ let _reconnectAttempts = 0;
 const _MAX_RECONNECT = 3;
 
 /**
- * Zeigt Fehlermeldung als Toast (nutzt das zentrale HiFiToast-System).
+ * Zeigt die Fehlermeldung als Meldung der Schale (schale/Meldung.svelte).
  */
 function _showPlayerError(msg) {
   if (!_appState) return;
   _appState.toast = { message: msg, type: 'error' };
-  // Auto-Dismiss nach 4s (HiFiToast hat eigene Animation)
+  // verschwindet nach 4 s
   clearTimeout(_errorTimer);
   _errorTimer = setTimeout(() => {
     if (_appState) _appState.toast = null;

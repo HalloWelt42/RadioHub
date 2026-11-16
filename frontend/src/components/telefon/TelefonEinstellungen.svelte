@@ -1,12 +1,13 @@
 <script>
   /** Sparsame Einstellungen am Telefon: wach halten, Darstellung, Ort für Sonnenzeiten, Stand der Ablage. */
-  import { appState, actions } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
   import { api } from '../../lib/api.js';
   import { wach, wachHaltenSetzen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden, ortSpeichern } from '../../lib/telefon/weckerdaten.svelte.js';
   import { zeit, zeitansageSchalten, planSetzen, nachtsSetzen, stand as zeitStand } from '../../lib/telefon/zeitansage.svelte.js';
   import { ABSTAENDE_MIN, SCHLUMMER_ABSTAND_MIN, zeitraumZeiten } from '../../lib/telefon/zeitplan.js';
+  import Darstellung from '../../schale/Darstellung.svelte';
+  import Konto from '../../schale/Konto.svelte';
 
   const ZEITEN = zeitraumZeiten();
 
@@ -140,13 +141,8 @@
     {/if}
   </section>
 
-  <section>
-    <h3>{t('telefon.thema')}</h3>
-    <div class="wahl">
-      <button class:an={appState.theme === 'light'} onclick={() => actions.setTheme('light')}>{t('telefon.hell')}</button>
-      <button class:an={appState.theme === 'dark'} onclick={() => actions.setTheme('dark')}>{t('telefon.dunkel')}</button>
-    </div>
-  </section>
+  <!-- Darstellung und Konto aus der Schale, wie am Rechner in der Tafel des Kopfs -->
+  <section class="darstellung"><Darstellung /><Konto /></section>
 
   <section>
     <h3>{t('telefon.ort')}</h3>
@@ -197,7 +193,8 @@
   h2 { flex: 1; margin: 0; font-size: 24px; font-weight: 700; }
   h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
   .zu { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
-  section { padding: 14px 0; border-bottom: 1px solid var(--t-linie); }
+  section { padding: 14px 0; border-bottom: 1px solid var(--rand); }
+  .darstellung { display: grid; gap: 14px; }
   .schalter { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 17px; }
   .schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }
   .klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
@@ -231,7 +228,7 @@
   .zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .punkt { font-size: 10px; color: var(--t-fehler); margin-right: 4px; }
   .punkt.gut { color: #3fb950; }
-  :global([data-theme='light']) .punkt.gut { color: #1a7f37; }
+  :global([data-theme='hell']) .punkt.gut { color: #1a7f37; }
   .suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
   .fundorte { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .fundorte button { width: 100%; min-height: 44px; text-align: left; padding: 8px 12px; border: 1px solid var(--t-linie); border-radius: 10px; background: transparent; color: var(--t-text); font: inherit; font-size: 17px; }

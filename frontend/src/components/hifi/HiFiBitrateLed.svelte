@@ -83,7 +83,7 @@
   :root .br-led {
     border: 1px solid rgba(0,0,0,0.3);
   }
-  :global([data-theme="dark"]) .br-led {
+  :global([data-theme="dunkel"]) .br-led {
     border: none;
   }
 

@@ -16,10 +16,9 @@ import { t } from './i18n.svelte.js';
 export const appState = $state({
   // Navigation
   activeTab: 'radio',
-  routeSegments: [],    // Sub-Pfad-Segmente nach Tab-Prefix (z.B. ['radio', 'filter'] für /setup/radio/filter)
+  routeSegments: /** @type {string[]} */ ([]),    // Sub-Pfad-Segmente nach Tab-Prefix (z.B. ['radio', 'filter'] für /setup/radio/filter)
 
-  // Theme
-  theme: 'dark', // 'dark' | 'light'
+  // Thema, Vorlage und Schriftstufe führt lib/darstellung.svelte.ts
 
   // Player - Core
   isPlaying: false,
@@ -99,28 +98,9 @@ export const actions = {
     router.navigate(path, { replace });
   },
 
-  // Theme
-  setTheme(theme) {
-    appState.theme = theme;
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('radiohub-theme', theme);
-  },
-
-  toggleTheme() {
-    const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
-    actions.setTheme(newTheme);
-  },
-
   toggleDevMode() {
     appState.devMode = !appState.devMode;
     localStorage.setItem('radiohub_devmode', String(appState.devMode));
-  },
-
-  initTheme() {
-    const saved = localStorage.getItem('radiohub-theme');
-    if (saved) {
-      actions.setTheme(saved);
-    }
   },
 
   async initConfig() {

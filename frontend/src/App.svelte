@@ -1,499 +1,128 @@
-<script>
-  import HiFiPlayer from './components/HiFiPlayer.svelte';
-  import HiFiToast from './components/hifi/HiFiToast.svelte';
-  import HiFiLed from './components/hifi/HiFiLed.svelte';
-  import StationsTab from './components/StationsTab.svelte';
-  import RecordingsTab from './components/RecordingsTab.svelte';
-  import PodcastsTab from './components/PodcastsTab.svelte';
-  import SettingsTab from './components/SettingsTab.svelte';
-  import { appState, actions } from './lib/store.svelte.js';
-  import { t } from './lib/i18n.svelte.js';
-  import { api } from './lib/api.js';
-  import * as router from './lib/router.js';
-  import * as sfx from './lib/uiSounds.js';
-  import { geraet } from './lib/geraet.svelte.js';
-  import Telefon from './components/telefon/Telefon.svelte';
-  import { starten as aktualisierungStarten, versuchen as aktualisierungVersuchen } from './lib/aktualisierung.svelte.js';
-  import { zeit } from './lib/telefon/zeitansage.svelte.js';
+<script lang="ts">
+  // RadioHub nach der Anmeldung: am Rechner Kopf, Bereich und Abspielleiste, am Telefon die eigene Ansicht (quer die
+  // Weckeransicht). Die Bereiche Radio, Aufnahmen, Podcasts, Einstellungen und der Spieler sind die bisherigen; sie
+  // stehen in .rh-alt und wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
+  import HiFiPlayer from "./components/HiFiPlayer.svelte";
+  import StationsTab from "./components/StationsTab.svelte";
+  import RecordingsTab from "./components/RecordingsTab.svelte";
+  import PodcastsTab from "./components/PodcastsTab.svelte";
+  import SettingsTab from "./components/SettingsTab.svelte";
+  import Telefon from "./components/telefon/Telefon.svelte";
+  import Kopf from "./schale/Kopf.svelte";
+  import Meldung from "./schale/Meldung.svelte";
+  import { appState, actions } from "./lib/store.svelte.js";
+  import { t } from "./lib/i18n.svelte.js";
+  import { api } from "./lib/api.js";
+  import * as router from "./lib/router.js";
+  import { geraet } from "./lib/geraet.svelte.js";
+  import { starten as aktualisierungStarten, versuchen as aktualisierungVersuchen } from "./lib/aktualisierung.svelte.js";
+  import { zeit } from "./lib/telefon/zeitansage.svelte.js";
 
-  let backendOnline = $state(false);
-  let ablage = $state(null);   // Stand der Ablage (Kellerwolke): { verbunden, meldung }
+  let online = $state<boolean | null>(null);
+  let ablage = $state<{ verbunden: boolean; meldung?: string } | null>(null);   // Stand der Ablage (Kellerwolke)
 
-  // Logo Glow Animation (nur Dark Mode)
+  // Adresse und Bereich (Zurück und Vor im Browser; alte #-Adressen und die Wurzel leitet der Router um)
   $effect(() => {
-    if (appState.theme !== 'dark') return;
-    let forward = true;
-    const letters = document.querySelectorAll('.logo-letter');
-    if (!letters.length) return;
-
-    function runSweep() {
-      letters.forEach((sp, i) => {
-        const delay = forward ? i * 0.15 : (letters.length - 1 - i) * 0.15;
-        sp.style.animation = 'none';
-        sp.offsetHeight;
-        sp.style.animation = `letterGlow 0.6s ease-in-out ${delay}s both`;
-      });
-      forward = !forward;
-    }
-
-    runSweep();
-    const iv = setInterval(runSweep, 7000);
-    return () => clearInterval(iv);
-  });
-
-  // Theme init
-  $effect(() => {
-    actions.initTheme();
-  });
-
-  // Router init
-  $effect(() => {
-    const initial = router.init((info) => {
-      // Pfad -> State (Browser Zurück/Vor)
+    const anfang = router.init((info: { tab: string; segments: string[] }) => {
       appState.activeTab = info.tab;
       appState.routeSegments = info.segments;
     });
-
-    // Initialen Pfad anwenden (alte #-Adressen und die Wurzel hat der Router schon umgeleitet)
-    appState.activeTab = initial.tab;
-    appState.routeSegments = initial.segments;
+    appState.activeTab = anfang.tab;
+    appState.routeSegments = anfang.segments;
   });
-  
-  // Health Check + Config Init
+
+  // Dienst erreichbar, Einstellungen des Radios, Stand der Ablage
   $effect(() => {
     api.health().then(() => {
-      backendOnline = true;
+      online = true;
       actions.initConfig();
-      api.getAblage().then((a) => (ablage = a)).catch(() => (ablage = null));
+      api.getAblage().then((a: { verbunden: boolean; meldung?: string }) => (ablage = a)).catch(() => (ablage = null));
     }).catch(() => {
-      actions.showToast(t('toast.backendOffline'), 'error');
-      backendOnline = false;
+      actions.showToast(t("toast.backendOffline"), "error");
+      online = false;
     });
   });
 
-  // Selbst-Aktualisierung: neue Fassung erkennen und im nächsten ruhigen Moment wechseln
+  // Neue Fassung erkennen und im nächsten ruhigen Moment wechseln (nie während Wiedergabe, Aufnahme oder Ansage)
   $effect(() => {
     aktualisierungStarten(appState, () => zeit.laeuft);
   });
   $effect(() => {
-    appState.isPlaying; appState.isPaused; appState.activeTab; appState.routeSegments; zeit.laeuft;
+    void appState.isPlaying; void appState.isPaused; void appState.activeTab; void appState.routeSegments; void zeit.laeuft;
     aktualisierungVersuchen();
   });
-  
-  const tabs = [
-    { id: 'radio', key: 'nav.tuner' },
-    { id: 'recordings', key: 'nav.recorder' },
-    { id: 'podcasts', key: 'nav.podcast' },
-    { id: 'settings', key: 'nav.setup' }
-  ];
-
-  // === Nav-LED Logik ===
-  // Welcher Tab "besitzt" die aktuelle Wiedergabe?
-  let playbackTab = $derived(
-    !appState.isPlaying && !appState.isPaused ? null :
-    appState.playerMode === 'podcast' ? 'podcasts' :
-    appState.playerMode === 'recording' ? 'recordings' :
-    appState.playerMode === 'hls' || appState.playerMode === 'direct' ? 'radio' :
-    null
-  );
-
-  function navLedColor(tabId) {
-    if (appState.activeTab === tabId) return 'green';
-    // Aufnahme hat Vorrang: rot blinkend
-    if (tabId === 'radio' && appState.isRecording) return 'red';
-    // Wiedergabe-Herkunft: grün pulsierend
-    if (playbackTab === tabId) return 'green';
-    return 'off';
-  }
-
-  function navLedPulse(tabId) {
-    if (appState.activeTab === tabId) return false;
-    return playbackTab === tabId;
-  }
 
   // Interne Links in Texten (Rechtstexte) ohne Neuladen öffnen
-  function internerLink(e) {
-    const a = e.target.closest?.('a.md-link-internal');
+  function internerLink(e: MouseEvent) {
+    const a = (e.target as Element | null)?.closest?.("a.md-link-internal");
     if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
-    actions.navigateTo(a.getAttribute('href'));
+    actions.navigateTo(a.getAttribute("href"));
   }
 
-  // === Globale Tastatursteuerung ===
-  function handleGlobalKeydown(e) {
+  // Tastatur am Rechner: Leertaste spielt oder hält an, S beendet, Pfeile für Lautstärke und Sender, M stumm, 1 bis 4
+  // wählen den Bereich. Bei laufender Aufnahme sind Anhalten, Beenden und Senderwechsel gesperrt.
+  function taste(e: KeyboardEvent) {
     if (geraet.telefon) return;
-    // Nicht abfangen wenn in Input/Textarea
-    const tag = e.target.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-    const rec = appState.isRecording;
-
+    const ziel = e.target as HTMLElement;
+    if (ziel.tagName === "INPUT" || ziel.tagName === "TEXTAREA" || ziel.tagName === "SELECT" || ziel.isContentEditable) return;
+    const aufnahme = appState.isRecording;
     switch (e.key) {
-      case ' ':  // Space = Play/Pause (Direct: Stop statt Pause)
+      case " ":
         e.preventDefault();
-        if (rec) break;  // Bei Aufnahme gesperrt
-        if (appState.playerMode === 'direct') {
-          actions.stop();
-        } else if (appState.playerMode !== 'none') {
-          actions.togglePause();
-        }
+        if (aufnahme) break;
+        if (appState.playerMode === "direct") actions.stop();          // ein direkter Strom lässt sich nur beenden
+        else if (appState.playerMode !== "none") actions.togglePause();
         break;
-
-      case 's':  // S = Stop
-        if (rec) break;  // Bei Aufnahme gesperrt
-        if (!e.ctrlKey && !e.metaKey) {
-          actions.stop();
-        }
+      case "s":
+        if (!aufnahme && !e.ctrlKey && !e.metaKey) actions.stop();
         break;
-
-      case 'ArrowUp':  // Pfeil hoch = Lauter
+      case "ArrowUp":
         e.preventDefault();
         actions.setVolume(Math.min(100, appState.volume + 5));
         break;
-
-      case 'ArrowDown':  // Pfeil runter = Leiser
+      case "ArrowDown":
         e.preventDefault();
         actions.setVolume(Math.max(0, appState.volume - 5));
         break;
-
-      case 'ArrowLeft':  // Pfeil links = Vorheriger Sender
+      case "ArrowLeft":
         e.preventDefault();
-        if (rec) break;  // Bei Aufnahme gesperrt
-        actions.navigatePrev();
+        if (!aufnahme) actions.navigatePrev();
         break;
-
-      case 'ArrowRight':  // Pfeil rechts = Nächster Sender
+      case "ArrowRight":
         e.preventDefault();
-        if (rec) break;  // Bei Aufnahme gesperrt
-        actions.navigateNext();
+        if (!aufnahme) actions.navigateNext();
         break;
-
-      case 'm':  // M = Mute toggle
-        if (!e.ctrlKey && !e.metaKey) {
-          actions.setVolume(appState.volume > 0 ? 0 : 70);
-        }
+      case "m":
+        if (!e.ctrlKey && !e.metaKey) actions.setVolume(appState.volume > 0 ? 0 : 70);
         break;
-
-      case '1':  // 1-4 = Tab wechseln
-        actions.setTab('radio');
-        break;
-      case '2':
-        actions.setTab('recordings');
-        break;
-      case '3':
-        actions.setTab('podcasts');
-        break;
-      case '4':
-        actions.setTab('settings');
-        break;
-
-      case 'Escape':  // Escape = Overlays schließen
-        // Wird von Komponenten selbst behandelt
-        break;
+      case "1": actions.setTab("radio"); break;
+      case "2": actions.setTab("recordings"); break;
+      case "3": actions.setTab("podcasts"); break;
+      case "4": actions.setTab("settings"); break;
     }
   }
 </script>
 
-<svelte:window onkeydown={handleGlobalKeydown} onclick={internerLink} />
+<svelte:window onkeydown={taste} onclick={internerLink} />
 
 {#if geraet.telefon}
   <Telefon />
 {:else}
-<div class="hifi-app">
-  <!-- Header -->
-  <header class="hifi-header">
-    <div class="hifi-logo">
-      <div class="hifi-logo-row">
-        <span class="hifi-logo-text">{#each 'RadioHub'.split('') as ch, i}<span class="logo-letter" style="--i:{i}">{ch}</span>{/each}</span>
-        <button class="donate-heart" onclick={() => { actions.navigateTo('/einstellungen/allgemein/bedanken'); sfx.select(); }} title={t('app.unterstuetzenTitle')}>
-          <i class="fa-solid fa-heart"></i>
-        </button>
-      </div>
-      <span class="hifi-logo-sub">{t('app.digitalAudioSystem')}</span>
-    </div>
-    
-    <nav class="hifi-nav">
-      {#each tabs as tab, i}
-        <button
-          class="hifi-nav-btn"
-          class:active={appState.activeTab === tab.id}
-          onclick={() => { actions.setTab(tab.id); sfx.select(); }}
-          onmouseenter={sfx.hoverSoft}
-          title={t(tab.key) + ' (' + (i + 1) + ')'}
-        >
-          <HiFiLed color={navLedColor(tab.id)} size="small" blink={tab.id === 'radio' && appState.isRecording && appState.activeTab !== 'radio'} pulse={navLedPulse(tab.id)} />
-          {t(tab.key)}
-        </button>
-      {/each}
-    </nav>
-    
-    <div class="hifi-header-right">
-      <!-- Theme Switch -->
-      <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
-        <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
-        {appState.theme === 'dark' ? t('nav.dark') : t('nav.light')}
-      </button>
-      
-      <!-- Status -->
-      <div class="hifi-status">
-        <HiFiLed color={backendOnline ? 'green' : 'red'} size="small" />
-        <span class="hifi-font-label">{backendOnline ? t('nav.online') : t('nav.offline')}</span>
-      </div>
-      {#if ablage}
-        <div class="hifi-status" title={ablage.meldung || ''}>
-          <HiFiLed color={ablage.verbunden ? 'green' : 'red'} size="small" />
-          <span class="hifi-font-label">{t('nav.ablage')}</span>
-        </div>
+  <div class="rh-app">
+    <Kopf {online} {ablage} />
+    <main class="rh-mitte rh-alt">
+      {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}
+        <StationsTab />
+      {:else if appState.activeTab === "recordings"}
+        <RecordingsTab />
+      {:else if appState.activeTab === "podcasts"}
+        <PodcastsTab />
+      {:else if appState.activeTab === "settings"}
+        <SettingsTab />
       {/if}
-    </div>
-  </header>
-  
-  <!-- Main Content -->
-  <main class="hifi-main">
-    {#if appState.activeTab === 'radio' || appState.activeTab === 'wecker'}
-      <StationsTab />
-    {:else if appState.activeTab === 'recordings'}
-      <RecordingsTab />
-    {:else if appState.activeTab === 'podcasts'}
-      <PodcastsTab />
-    {:else if appState.activeTab === 'settings'}
-      <SettingsTab />
-    {/if}
-  </main>
-  
-  <!-- Player -->
-  <HiFiPlayer />
-
-  <!-- Footer -->
-  <footer class="hifi-footer">
-    <span>&copy; {new Date().getFullYear()} <a href="https://github.com/HalloWelt42/RadioHub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> HalloWelt42</a> - RadioHub v{__APP_FASSUNG__}</span>
-  </footer>
-</div>
-
-<!-- Toast außerhalb hifi-app für korrektes z-index Stacking -->
-<HiFiToast />
-
+    </main>
+    <div class="rh-alt"><HiFiPlayer /></div>
+  </div>
+  <Meldung />
 {/if}
-
-<style>
-  .hifi-app {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    background: var(--hifi-bg-primary);
-    color: var(--hifi-text-primary);
-    font-family: var(--hifi-font-values);
-  }
-  
-  .hifi-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background:
-        linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(0,0,0,0.03) 100%),
-        var(--hifi-brushed-metal),
-        var(--hifi-bg-panel);
-    border-bottom: 1px solid var(--rand);
-    border-radius: 0;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.08),
-        0 2px 4px rgba(0,0,0,0.15);
-  }
-  
-  .hifi-logo {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .hifi-logo-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  @keyframes -global-heartPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-  }
-
-  .donate-heart {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    font-size: 16px;
-    color: #cc2244;
-    text-shadow:
-        0 0 6px rgba(204, 34, 68, 0.6),
-        0 0 12px rgba(204, 34, 68, 0.3),
-        0 1px 1px rgba(0,0,0,0.4),
-        0 -1px 0 rgba(255,255,255,0.15);
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
-    transition: all 0.2s ease;
-    animation: heartPulse 2s ease-in-out infinite;
-  }
-
-  .donate-heart:hover {
-    color: #ee3355;
-    text-shadow:
-        0 0 10px rgba(238, 51, 85, 0.8),
-        0 0 20px rgba(238, 51, 85, 0.5),
-        0 0 30px rgba(238, 51, 85, 0.3),
-        0 1px 1px rgba(0,0,0,0.4);
-    transform: scale(1.2);
-    animation: none;
-  }
-
-  .donate-heart:active {
-    transform: scale(0.95);
-  }
-  
-  /* Logo bleibt bei separater Schrift */
-  .hifi-logo-text {
-    font-family: var(--hifi-font-segment);
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--hifi-accent);
-    letter-spacing: 2px;
-  }
-
-  .logo-letter {
-    display: inline-block;
-  }
-
-  /* Hell: dunkleres Blau, das helle Akzentblau hat auf dem hellen Kopf zu wenig Kontrast */
-  :global([data-theme="light"]) .hifi-logo-text,
-  :global([data-theme="light"]) .logo-letter {
-    color: #245d9c;
-  }
-
-  @keyframes -global-letterGlow {
-    0%   { text-shadow: none; }
-    40%  { text-shadow: 0 0 8px rgba(74,144,217,0.9), 0 0 20px rgba(74,144,217,0.5), 0 0 40px rgba(74,144,217,0.3); }
-    100% { text-shadow: none; }
-  }
-  
-  .hifi-logo-sub {
-    font-family: var(--hifi-font-values);
-    font-size: 8px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #555;
-  }
-
-  :global([data-theme="dark"]) .hifi-logo-sub {
-    color: transparent;
-    text-shadow: none;
-    background: linear-gradient(90deg,
-        #dd3366, #dd6633, #ddaa33, #33dd77, #33bbdd, #5533dd, #cc33dd,
-        #dd3366, #dd6633, #ddaa33, #33dd77, #33bbdd, #5533dd, #cc33dd, #dd3366
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: specFlow 20s linear infinite;
-  }
-
-  @keyframes specFlow {
-    0%   { background-position: 0% center; }
-    100% { background-position: -200% center; }
-  }
-  
-  .hifi-nav {
-    display: flex;
-    gap: 4px;
-    background:
-        linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.04) 100%),
-        var(--hifi-brushed-metal),
-        var(--hifi-bg-panel);
-    padding: 10px 16px;
-    border-radius: var(--hifi-border-radius-pill);
-    /* Lichtkanten oben und unten mit 1px Unschärfe wie die Vorlagen des Appkerns */
-    box-shadow:
-        var(--hifi-shadow-button),
-        inset 0 1px 1px rgba(255,255,255,0.1),
-        inset 0 -1px 1px rgba(0,0,0,0.06);
-    position: relative;
-    z-index: 2;
-    transform: translateY(20px);
-  }
-
-  .hifi-nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: var(--hifi-bg-tertiary);
-    border: none;
-    border-radius: var(--hifi-border-radius-pill);
-    color: var(--hifi-text-secondary);
-    font-family: var(--hifi-font-values);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  
-  .hifi-nav-btn:hover {
-    background: var(--hifi-bg-secondary);
-  }
-  
-  .hifi-nav-btn.active {
-    background: var(--hifi-bg-panel);
-    color: var(--hifi-accent);
-    box-shadow: var(--hifi-shadow-inset);
-  }
-  
-  .hifi-header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  
-  .hifi-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--hifi-font-values);
-    font-size: 10px;
-  }
-  
-  .hifi-main {
-    flex: 1;
-    overflow: hidden;
-    background: var(--hifi-bg-secondary);
-  }
-
-  .hifi-footer {
-    position: absolute;
-    bottom: 2px;
-    left: 8px;
-    font-family: var(--hifi-font-values);
-    font-size: 8px;
-    color: rgba(255, 255, 255, 0.35);
-    letter-spacing: 0.5px;
-    z-index: 100;
-  }
-
-  .hifi-footer a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  /* Hell: weiße Schrift auf hellem Grund war unlesbar */
-  :global([data-theme="light"]) .hifi-footer {
-    color: rgba(0, 0, 0, 0.6);
-  }
-
-  .hifi-footer a:hover {
-    color: rgba(255, 255, 255, 0.6);
-    text-decoration: underline;
-  }
-</style>

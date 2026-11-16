@@ -1,8 +1,8 @@
 /**
  * RadioHub API Client v0.1.0
- * Kommunikation mit Backend; jede Anfrage trägt die Sitzung (lib/sitzung.svelte.js), eine abgewiesene beendet sie
+ * Kommunikation mit Backend; jede Anfrage trägt die Sitzung (lib/sitzung.ts), eine abgewiesene beendet sie
  */
-import { antwortPruefen, kopf } from './sitzung.svelte.js';
+import { antwortPruefen, kopf } from './sitzung';
 
 // API Base URL - relativ für Vite-Proxy, überschreibbar für Docker/Produktion
 const API_BASE = window.RADIOHUB_API_URL || '';

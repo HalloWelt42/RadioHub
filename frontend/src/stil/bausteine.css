@@ -1,0 +1,70 @@
+/* Bausteine der Schale des Radios: Formen der Teile, die nur das Radio hat (Kopf mit Schriftzug und Herz,
+   Pillen-Navigation, Status, Darstellung, Meldung). Übernommen aus dem abgenommenen Entwurf
+   (mockups/radio-filter/radio-bausteine.css, RAD-3), Abschnitte Kopf und Rückgängig-Band; die übrigen Bausteine des
+   Entwurfs kommen mit ihren Bereichen (Etappen 3 und 4). Nur Marken: --rh-* (radio-marken.css und die Vorlage), die
+   Marken des Appkerns (--text, --flaeche, --akzent ...) und der Instrumente (--ak-*, --led-*). Das Tastenlicht der
+   Navigation ist die Leuchte art="schlitz" der Instrumente des Appkerns. */
+
+html, body { height: 100%; overflow: hidden; }
+.rh-tafel[hidden], .rh-band[hidden] { display: none; }
+.rh-still { color: var(--text-3); font-size: var(--klein); }
+
+/* ═══ Kopf: Schriftzug, Navigation, Status, Darstellung ═══ */
+.rh-kopf { position: relative; z-index: 5; background-color: var(--leiste); background-image: var(--rh-leiste-bild); box-shadow: var(--rh-kante), var(--rh-schatten); }
+.rh-marke { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-decoration: none; }
+.rh-marke-zeile { display: flex; align-items: center; gap: 10px; }
+.rh-logo { font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 7px); letter-spacing: .07em; line-height: 1.05; color: var(--rh-logo);
+  text-shadow: var(--rh-logo-schein); white-space: nowrap; text-decoration: none; }
+.rh-herz { display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer;
+  color: var(--rh-herz); font-size: 19px; text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-herz) 75%, transparent), var(--rh-praegung); }
+.rh-herz i { animation: rh-pochen 2.2s ease-in-out infinite; }
+.rh-herz:hover i { animation: none; transform: scale(1.18); }
+.rh-herz:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+@keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
+.rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
+:root[data-theme="dunkel"] .rh-unterzeile { color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
+
+/* Navigation: Pillenleiste als Gerät, ragt in den Inhalt; gewählter Bereich erhaben mit leuchtender Schrift */
+.rh-nav { padding: 6px; border-radius: var(--rh-pille); min-width: 0; max-inline-size: 100%;
+  background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-geraet-kante), var(--rh-geraet-schatten); }
+.rh-nav-schiene { display: flex; gap: 4px; padding: 4px; border-radius: var(--rh-pille); background-color: var(--rh-nav-schiene); box-shadow: var(--rh-mulde); }
+.rh-nav-knopf { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-block-size: var(--rh-taste-klein); padding: 0 18px; border: 0;
+  border-radius: var(--rh-pille); cursor: pointer; text-decoration: none; font-size: var(--klein); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+  color: var(--rh-nav-tinte); background: transparent; transition: color var(--schnell), background-color var(--schnell); --ak-schlitz-oben: 4px; }
+.rh-nav-knopf:hover { color: var(--rh-nav-tinte-an); }
+.rh-nav-knopf[aria-current="page"] { color: var(--akzent-flaeche); background-color: var(--rh-nav-an); background-image: var(--rh-erhaben); box-shadow: var(--rh-nav-an-schatten);
+  text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--akzent-flaeche) 60%, transparent); }
+.rh-nav-knopf:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-nav-knopf i { display: none; }
+
+.rh-status { display: inline-flex; align-items: center; gap: 12px; min-block-size: var(--rh-taste-klein); padding: 0 12px; border-radius: var(--r2); background-color: var(--ak-glas);
+  box-shadow: var(--ak-glas-tiefe); --ak-tinte: var(--ak-glas-tinte); --ak-tinte-2: color-mix(in srgb, var(--ak-glas-tinte) 70%, transparent); }
+.rh-status ak-led .ak-led-text { font-family: var(--schrift-zahl); }
+.rh-darstellung { position: relative; }
+.rh-darstellung > .knopf { block-size: var(--rh-taste-klein); }
+.rh-tafel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; inline-size: min(340px, calc(100vw - 24px)); padding: 14px; display: grid; gap: 14px;
+  border-radius: var(--r3); background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-schwebend); }
+.rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
+.rh-wahl .segment { display: flex; }
+.rh-wahl .segment button { flex: 1; min-block-size: var(--rh-taste-klein); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.rh-schrift-wahl { display: grid; grid-template-columns: var(--rh-taste) minmax(0, 1fr) var(--rh-taste); gap: 8px; align-items: center; }
+.rh-schrift-wahl .knopf { block-size: var(--rh-taste); justify-content: center; padding: 0; }
+.rh-schrift-wahl output { text-align: center; font-family: var(--schrift-zahl); font-size: var(--gross); padding: 8px; border-radius: var(--r2); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
+/* Wahl der Vorlage: sieben Vorlagen des Appkerns statt zweier im Entwurf, darum als Auswahl über die ganze Breite */
+.rh-wahl .auswahl, .rh-wahl .auswahl-knopf { inline-size: 100%; }
+.rh-konto { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.rh-konto-name { min-width: 0; overflow-wrap: anywhere; }
+.rh-konto .knopf { block-size: var(--rh-taste-klein); }
+.rh-konto .rueckfrage { grid-column: 1 / -1; }
+
+/* ═══ Meldung ═══ schwebt unten über der Abspielleiste, nie mitten im Lesefluss (Form des Rückgängig-Bands im Entwurf) */
+.rh-band { position: fixed; left: 0; right: 0; margin-inline: auto; inline-size: fit-content; bottom: var(--rh-band-unten, 150px); z-index: 60; display: flex; flex-wrap: wrap;
+  align-items: center; gap: 8px 12px; max-inline-size: calc(100% - 24px); padding: 10px 16px; border-radius: var(--r3); background-color: var(--karte);
+  background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-schwebend); font-size: var(--klein); color: var(--text); animation: rh-ein var(--ruhig) ease-out; }
+.rh-band > i { color: var(--led-bernstein); }
+.rh-band.gut > i { color: var(--gut); }
+.rh-band.fehler > i { color: var(--gefahr); }
+.rh-band span { min-width: 0; }
+@keyframes rh-ein { from { opacity: 0; translate: 0 10px; } }
+
+@media (prefers-reduced-motion: reduce) { .rh-herz i, .rh-band { animation: none; } }

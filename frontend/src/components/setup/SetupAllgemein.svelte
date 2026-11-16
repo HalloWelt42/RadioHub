@@ -188,24 +188,7 @@
   <!-- === EINSTELLUNGEN === -->
   {#if activeSubTab === 'einstellungen'}
     <div class="allgemein-grid">
-      <!-- Theme -->
-      <div class="hifi-panel">
-        <div class="hifi-panel-header">
-          <i class="fa-solid fa-palette header-icon"></i>
-          <span class="hifi-font-label">{t('allgemein.displayTheme')}</span>
-        </div>
-        <div class="hifi-flex hifi-gap-md" style="padding:16px; align-items:center;">
-          <button class="pill-btn" class:active={appState.theme === 'dark'} onclick={() => actions.setTheme('dark')}>
-            <HiFiLed color={appState.theme === 'dark' ? 'green' : 'off'} />
-            <span>{t('allgemein.dark')}</span>
-          </button>
-          <button class="pill-btn" class:active={appState.theme === 'light'} onclick={() => actions.setTheme('light')}>
-            <HiFiLed color={appState.theme === 'light' ? 'green' : 'off'} />
-            <span>{t('allgemein.light')}</span>
-          </button>
-        </div>
-      </div>
-
+      <!-- Thema, Vorlage und Schrift stehen in der Darstellung im Kopf (ein Ort für alle Bereiche) -->
       <!-- UI Sounds -->
       <div class="hifi-panel">
         <div class="hifi-panel-header">
@@ -604,7 +587,7 @@
     font-family: var(--hifi-font-body);
     font-size: 11px;
     color: var(--hifi-text-muted);
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
     flex-shrink: 0;
   }
 
@@ -639,7 +622,7 @@
     color: var(--hifi-text-muted);
     margin-bottom: 8px;
     padding-bottom: 4px;
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
   }
 
   .hotkey-row {
@@ -658,13 +641,12 @@
     padding: 0 8px;
     background: var(--hifi-bg-tertiary);
     border: 1px solid var(--hifi-border-dark);
-    border-bottom-width: 2px;
     border-radius: 5px;
     font-family: var(--hifi-font-values);
     font-size: 11px;
     font-weight: 700;
     color: var(--hifi-text-primary);
-    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 2px 2px var(--hifi-shadow-dark);
   }
 
   .hotkey-label {
@@ -716,7 +698,7 @@
     color: var(--hifi-text-primary);
     margin: 12px 0 4px 0;
     padding-bottom: 4px;
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
   }
 
   .md-body :global(.md-h4) {
@@ -759,12 +741,12 @@
   }
 
   .md-body :global(.md-link-internal) {
-    text-decoration: none;
-    border-bottom: 1px dashed var(--hifi-accent);
+    text-decoration: underline dashed var(--hifi-accent);
+    text-underline-offset: 3px;
   }
 
   .md-body :global(.md-link-internal:hover) {
-    border-bottom-style: solid;
+    text-decoration-style: solid;
   }
 
   .md-body :global(.md-code) {
@@ -778,7 +760,7 @@
 
   .md-body :global(.md-hr) {
     border: none;
-    border-top: 1px solid var(--hifi-border-dark);
+    border-top: 1px solid var(--rand);
     margin: 12px 0;
   }
 

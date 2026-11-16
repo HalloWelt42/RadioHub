@@ -530,7 +530,7 @@
 .hifi-table th:hover { background: var(--hifi-bg-secondary); }
 
 .hifi-table tr:not(:last-child) td {
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
 }
 
 .hifi-table tbody tr {
@@ -764,7 +764,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
 }
 
 .hifi-modal-title {
@@ -794,7 +794,7 @@
     justify-content: flex-end;
     gap: 10px;
     padding: 20px;
-    border-top: 1px solid var(--hifi-border-dark);
+    border-top: 1px solid var(--rand);
 }
 
 /* Toast */
@@ -893,7 +893,7 @@
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
 }
 
 .hifi-card-title {
@@ -941,7 +941,7 @@
 :root .hifi-led {
     border: 1px solid rgba(0,0,0,0.3);
 }
-[data-theme="dark"] .hifi-led {
+[data-theme="dunkel"] .hifi-led {
     border: none;
 }
 

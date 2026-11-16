@@ -105,56 +105,56 @@
   }
 
   /* -- Light-Mode: dunklere Farben für Lesbarkeit -- */
-  :global([data-theme="light"]) .badge-blue,
-  :global(:root:not([data-theme="dark"])) .badge-blue {
+  :global([data-theme="hell"]) .badge-blue,
+  :global(:root:not([data-theme="dunkel"])) .badge-blue {
     color: #2070c0;
     background: rgba(32, 112, 192, 0.12);
     border-color: rgba(32, 112, 192, 0.3);
   }
-  :global([data-theme="light"]) .badge-purple,
-  :global(:root:not([data-theme="dark"])) .badge-purple {
+  :global([data-theme="hell"]) .badge-purple,
+  :global(:root:not([data-theme="dunkel"])) .badge-purple {
     color: #6a40d0;
     background: rgba(106, 64, 208, 0.12);
     border-color: rgba(106, 64, 208, 0.3);
   }
-  :global([data-theme="light"]) .badge-green,
-  :global(:root:not([data-theme="dark"])) .badge-green {
+  :global([data-theme="hell"]) .badge-green,
+  :global(:root:not([data-theme="dunkel"])) .badge-green {
     color: #2e7d32;
     background: rgba(46, 125, 50, 0.12);
     border-color: rgba(46, 125, 50, 0.3);
   }
-  :global([data-theme="light"]) .badge-green-bright,
-  :global(:root:not([data-theme="dark"])) .badge-green-bright {
+  :global([data-theme="hell"]) .badge-green-bright,
+  :global(:root:not([data-theme="dunkel"])) .badge-green-bright {
     color: #00875a;
     background: rgba(0, 135, 90, 0.12);
     border-color: rgba(0, 135, 90, 0.3);
   }
-  :global([data-theme="light"]) .badge-amber,
-  :global(:root:not([data-theme="dark"])) .badge-amber {
+  :global([data-theme="hell"]) .badge-amber,
+  :global(:root:not([data-theme="dunkel"])) .badge-amber {
     color: #b07800;
     background: rgba(176, 120, 0, 0.12);
     border-color: rgba(176, 120, 0, 0.3);
   }
-  :global([data-theme="light"]) .badge-red,
-  :global(:root:not([data-theme="dark"])) .badge-red {
+  :global([data-theme="hell"]) .badge-red,
+  :global(:root:not([data-theme="dunkel"])) .badge-red {
     color: #c62828;
     background: rgba(198, 40, 40, 0.12);
     border-color: rgba(198, 40, 40, 0.3);
   }
-  :global([data-theme="light"]) .badge-gold,
-  :global(:root:not([data-theme="dark"])) .badge-gold {
+  :global([data-theme="hell"]) .badge-gold,
+  :global(:root:not([data-theme="dunkel"])) .badge-gold {
     color: #a68600;
     background: rgba(166, 134, 0, 0.12);
     border-color: rgba(166, 134, 0, 0.3);
   }
-  :global([data-theme="light"]) .badge-muted,
-  :global(:root:not([data-theme="dark"])) .badge-muted {
+  :global([data-theme="hell"]) .badge-muted,
+  :global(:root:not([data-theme="dunkel"])) .badge-muted {
     color: var(--hifi-text-secondary);
     background: rgba(0, 0, 0, 0.06);
     border-color: rgba(0, 0, 0, 0.15);
   }
-  :global([data-theme="light"]) .badge-accent,
-  :global(:root:not([data-theme="dark"])) .badge-accent {
+  :global([data-theme="hell"]) .badge-accent,
+  :global(:root:not([data-theme="dunkel"])) .badge-accent {
     color: #2060b0;
     background: rgba(32, 96, 176, 0.12);
     border-color: rgba(32, 96, 176, 0.3);

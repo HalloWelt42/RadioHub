@@ -804,5 +804,41 @@ export default {
     kopiert: 'KOPIERT',
     adresseKopieren: 'ADRESSE KOPIEREN',
     danke: 'Vielen Dank für deine Unterstützung!'
+  },
+
+  // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
+  schale: {
+    laedt: 'Lädt ...',
+    bereiche: 'Bereiche',
+    radio: 'Radio',
+    aufnahmen: 'Aufnahmen',
+    podcasts: 'Podcasts',
+    einstellungen: 'Einstellungen',
+    dienstDa: 'Dienst erreichbar',
+    dienstWeg: 'Dienst nicht erreichbar',
+    ablageDa: 'Ablage verbunden',
+    ablageWeg: 'Ablage nicht verbunden',
+    darstellung: 'Darstellung',
+    darstellungTitel: 'Darstellung: Vorlage, Thema und Schrift',
+    vorlage: 'Vorlage',
+    thema: 'Thema',
+    thema_hell: 'Hell',
+    thema_dunkel: 'Dunkel',
+    thema_system: 'System',
+    schrift: 'Schrift',
+    kleiner: 'Schrift kleiner',
+    groesser: 'Schrift größer',
+    schrift_mittel: 'Normal',
+    schrift_gross: 'Groß',
+    'schrift_sehr-gross': 'Sehr groß',
+    konto: 'Konto',
+    mitPasswort: 'angemeldet mit Passwort',
+    gekoppelt: 'gekoppeltes Gerät',
+    ohneAnmeldung: 'ohne Anmeldung',
+    fassung: 'Fassung',
+    abmelden: 'Abmelden',
+    trennen: 'Trennen',
+    trennenFrage: 'Dieses Gerät trennen?',
+    trennenHinweis: 'Zum Wiederkommen das Gerät mit einem Code aus der Kellerwolke neu koppeln.'
   }
 };

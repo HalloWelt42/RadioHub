@@ -181,14 +181,14 @@
   }
 
   /* -- Light-Mode -- */
-  :global([data-theme="light"]) .tag-btn.active,
-  :global(:root:not([data-theme="dark"])) .tag-btn.active {
+  :global([data-theme="hell"]) .tag-btn.active,
+  :global(:root:not([data-theme="dunkel"])) .tag-btn.active {
     background: rgba(176, 120, 0, 0.1);
     color: #8a6200;
     border-color: #b07800;
   }
-  :global([data-theme="light"]) .tag-btn.readonly:hover,
-  :global(:root:not([data-theme="dark"])) .tag-btn.readonly:hover {
+  :global([data-theme="hell"]) .tag-btn.readonly:hover,
+  :global(:root:not([data-theme="dunkel"])) .tag-btn.readonly:hover {
     background: rgba(176, 120, 0, 0.1);
   }
 </style>

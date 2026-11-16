@@ -29,7 +29,7 @@
   .zeile {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--t-linie);
+    border-bottom: 1px solid var(--rand);
   }
   .haupt {
     flex: 1;
@@ -60,5 +60,5 @@
     font-size: 20px;
   }
   .stern.an { color: #e0a526; }
-  :global([data-theme='light']) .stern.an { color: #8a5d00; }
+  :global([data-theme='hell']) .stern.an { color: #8a5d00; }
 </style>

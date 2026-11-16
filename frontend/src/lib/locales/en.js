@@ -804,5 +804,41 @@ export default {
     kopiert: 'COPIED',
     adresseKopieren: 'COPY ADDRESS',
     danke: 'Thank you for your support!'
+  },
+
+  // === Shell: header, navigation, display, account (RAD-6) ===
+  schale: {
+    laedt: 'Loading ...',
+    bereiche: 'Sections',
+    radio: 'Radio',
+    aufnahmen: 'Recordings',
+    podcasts: 'Podcasts',
+    einstellungen: 'Settings',
+    dienstDa: 'Service reachable',
+    dienstWeg: 'Service not reachable',
+    ablageDa: 'Storage connected',
+    ablageWeg: 'Storage not connected',
+    darstellung: 'Display',
+    darstellungTitel: 'Display: template, theme and text size',
+    vorlage: 'Template',
+    thema: 'Theme',
+    thema_hell: 'Light',
+    thema_dunkel: 'Dark',
+    thema_system: 'System',
+    schrift: 'Text size',
+    kleiner: 'Smaller text',
+    groesser: 'Larger text',
+    schrift_mittel: 'Normal',
+    schrift_gross: 'Large',
+    'schrift_sehr-gross': 'Very large',
+    konto: 'Account',
+    mitPasswort: 'signed in with password',
+    gekoppelt: 'paired device',
+    ohneAnmeldung: 'without sign-in',
+    fassung: 'Version',
+    abmelden: 'Sign out',
+    trennen: 'Unpair',
+    trennenFrage: 'Unpair this device?',
+    trennenHinweis: 'To come back, pair the device again with a code from the Kellerwolke.'
   }
 };

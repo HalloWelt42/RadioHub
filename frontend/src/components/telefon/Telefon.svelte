@@ -166,7 +166,7 @@
     overflow: hidden;
     -webkit-text-size-adjust: 100%;
   }
-  :global([data-theme='light']) .telefon {
+  :global([data-theme='hell']) .telefon {
     --t-grund: #f3f4f6;
     --t-flaeche: #ffffff;
     --t-flaeche-2: #e9ecef;
@@ -186,7 +186,7 @@
     gap: 6px;
     padding: max(env(safe-area-inset-top, 0px), 1cm) 12px 8px 16px;
     background: var(--t-grund);
-    border-bottom: 1px solid var(--t-linie);
+    border-bottom: 1px solid var(--rand);
     flex: none;
   }
   .kopf h1 {
@@ -238,7 +238,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     background: var(--t-flaeche);
-    border-top: 1px solid var(--t-linie);
+    border-top: 1px solid var(--rand);
   }
   .fuss button {
     display: flex;

@@ -1,0 +1,126 @@
+/* Brücke der alten Bereiche (Radio, Aufnahmen, Podcasts, Einstellungen, Spieler) auf die Marken des Appkerns (RAD-6,
+   Teil 2c). Die Bereiche lesen weiter ihre Variablen --hifi-*; sie sind hier alle aus den Marken des Appkerns, der
+   Instrumente und des Radios abgeleitet, darum folgen Farben, Flächen, Licht und Schriften der gewählten Vorlage und
+   dem Thema (Hell, Dunkel), ohne eine feste Farbe. Ersetzt hifi-variables.css und fonts.css; entfällt Bereich für
+   Bereich mit dem Neubau (Etappen 3, 4 und 6), wenn die Bausteine die Marken direkt lesen.
+
+   Was bleibt, wie es war: Abstände (--hifi-spacing-*), Schriftgrößen (--hifi-font-size-*) und Ebenen (--hifi-z-*) als
+   feste Maße. Die Schriftstufe wirkt auf die alten Bereiche als Ganzes (zoom mit --rh-alt-zoom aus radio-marken.css),
+   weil ihre rund 430 Schriftgrößen und festen Breiten in Pixeln stehen; so wachsen Text, Knöpfe und Spalten im selben
+   Verhältnis und nichts schneidet ab. */
+
+/* ═══ Schriftstufe der alten Bereiche ═══ */
+.rh-alt { zoom: var(--rh-alt-zoom); }
+
+:root, :root [data-theme] {
+  /* Flächen */
+  --hifi-bg-primary: var(--hg);
+  --hifi-bg-secondary: var(--bereich);
+  --hifi-bg-tertiary: var(--flaeche-2);
+  --hifi-bg-panel: var(--flaeche);
+
+  /* Schrift */
+  --hifi-text-primary: var(--text);
+  --hifi-text-secondary: var(--text-2);
+  --hifi-text-label: var(--text-3);
+  --hifi-text-value: var(--text);
+  --hifi-text-muted: var(--text-3);           /* war nie definiert */
+  --hifi-text-green: var(--gut);
+  --hifi-text-amber: var(--warn);
+  --hifi-text-red: var(--gefahr);             /* war nie definiert */
+  --hifi-accent: var(--akzent);
+
+  /* Leuchten (Instrumente des Appkerns) */
+  --hifi-led-green: var(--led-gruen);
+  --hifi-led-yellow: var(--led-gelb);
+  --hifi-led-red: var(--led-rot);
+  --hifi-led-blue: var(--led-blau);
+  --hifi-led-amber: var(--led-bernstein);
+  --hifi-led-green-glow: color-mix(in srgb, var(--led-gruen) 80%, transparent);
+  --hifi-led-yellow-glow: color-mix(in srgb, var(--led-gelb) 80%, transparent);
+  --hifi-led-red-glow: color-mix(in srgb, var(--led-rot) 80%, transparent);
+  --hifi-led-blue-glow: color-mix(in srgb, var(--led-blau) 80%, transparent);
+  --hifi-led-amber-glow: color-mix(in srgb, var(--led-bernstein) 80%, transparent);
+  --hifi-led-off: color-mix(in srgb, var(--text-3) 55%, var(--rh-licht-aus));
+  --hifi-led-off-dim: color-mix(in srgb, var(--text-3) 30%, transparent);
+  --hifi-red: var(--led-rot);                 /* war nie definiert */
+  --hifi-yellow: var(--led-gelb);             /* war nie definiert */
+
+  /* Anzeigen hinter Glas */
+  --hifi-display-bg: var(--ak-glas);
+  --hifi-display-text: var(--rh-anzeige);
+  --hifi-display-text-dim: color-mix(in srgb, var(--rh-anzeige) 15%, transparent);
+  --hifi-display-border: var(--rand-stark);
+  --hifi-display-amber: var(--led-bernstein);
+  --hifi-display-blue: var(--led-blau);
+  --hifi-display-red: var(--led-rot);
+  --hifi-display-cyan: var(--led-cyan);
+
+  /* Licht und Schatten: aus den Marken der Vorlage statt der früheren Neumorphie */
+  --hifi-shadow-light: color-mix(in srgb, var(--licht) 8%, transparent);
+  --hifi-shadow-dark: color-mix(in srgb, var(--schattenfarbe) 35%, transparent);
+  --hifi-shadow-raised: var(--rh-geraet-schatten-klein);
+  --hifi-shadow-inset: var(--rh-mulde);
+  --hifi-shadow-button: var(--rh-kante), var(--rh-schatten-klein);
+  --hifi-shadow-knob: var(--rh-geraet-schatten-klein);
+  --hifi-shadow-outset: var(--rh-kante), var(--rh-schatten-klein);   /* war nie definiert */
+
+  /* Linien und Ecken */
+  --hifi-border-light: color-mix(in srgb, var(--licht) 10%, transparent);
+  --hifi-border-dark: var(--rand);
+  --hifi-border-radius: var(--r3);            /* war nie definiert */
+  --hifi-border-radius-sm: var(--r3);
+  --hifi-border-radius-md: var(--rh-ecke-geraet);
+  --hifi-border-radius-lg: calc(var(--rh-ecke-geraet) * 2);
+  --hifi-border-radius-round: 50%;
+  --hifi-border-radius-pill: var(--rh-pille);
+
+  /* Regler */
+  --hifi-knob-bg: linear-gradient(145deg, var(--flaeche-2), var(--mulde));
+  --hifi-knob-indicator: var(--text);
+  --hifi-knob-tick: var(--text-3);
+  --hifi-knob-tick-active: var(--text-2);
+  --hifi-fader-track: var(--mulde);
+  --hifi-fader-cap: linear-gradient(180deg, var(--flaeche), var(--flaeche-2));
+
+  /* Zeilen */
+  --hifi-row-hover: var(--akzent-weich);
+  --hifi-row-selected: color-mix(in srgb, var(--akzent-flaeche) 25%, transparent);
+
+  /* Material: Bürstung der Vorlage (HiFi) oder keine */
+  --hifi-brushed-metal: var(--rh-geraet-bild);
+
+  /* Schriften: Grundschrift und Zahlen aus den Marken; Orbitron trägt nur noch den Schriftzug */
+  --hifi-font-family: var(--schrift);
+  --hifi-font-body: var(--schrift);
+  --hifi-font-display: var(--schrift);
+  --hifi-font-values: var(--schrift-zahl);
+  --hifi-font-segment: var(--schrift-zahl);
+  --hifi-font-labels: var(--schrift-zahl);    /* war nie definiert */
+  --hifi-font-mono: var(--schrift-code);
+
+  /* Bewegung */
+  --hifi-transition-fast: var(--schnell) ease;
+  --hifi-transition-normal: 0.2s ease;
+  --hifi-transition-slow: var(--ruhig) ease;
+}
+
+/* Feste Maße der alten Bereiche, unverändert bis zum Neubau */
+:root {
+  --hifi-font-size-xs: 9px;
+  --hifi-font-size-sm: 11px;
+  --hifi-font-size-md: 13px;
+  --hifi-font-size-lg: 16px;
+  --hifi-font-size-xl: 20px;
+  --hifi-font-size-xxl: 28px;
+  --hifi-font-size-display: 32px;
+  --hifi-spacing-xs: 5px;
+  --hifi-spacing-sm: 10px;
+  --hifi-spacing-md: 15px;
+  --hifi-spacing-lg: 20px;
+  --hifi-spacing-xl: 30px;
+  --hifi-z-dropdown: 1000;
+  --hifi-z-context: 2000;
+  --hifi-z-modal: 3000;
+  --hifi-z-toast: 4000;
+}
