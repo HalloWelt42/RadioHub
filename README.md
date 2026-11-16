@@ -87,47 +87,71 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 | Backend | Python, FastAPI, FFmpeg |
 | Audio | HLS-Streaming, ICY-Metadata, LUFS-Normalisierung |
 | Datenbank | SQLite |
-| Icons | Font Awesome 6 |
+| Icons | Font Awesome 7 |
 | Fonts | Orbitron (Logo), Barlow (UI) |
 
 ### Architektur
 
 ```
-radiohub-frontend/    Svelte 5 SPA (Port 5180)
-radiohub-backend/     FastAPI REST-API (Port 9091)
+radiohub-frontend/    Svelte 5 SPA (im Betrieb nginx, beim Entwickeln Vite)
+radiohub-backend/     FastAPI REST-API
   backend/
     ablage/           Ablage der Dateien (Schnittstelle, Kellerwolke, Testablage, Ordnerstruktur)
     routers/          API-Endpunkte
     services/         Business-Logik, Audio-Verarbeitung
     database.py       SQLite-Anbindung
+    fassung.py        Fassung aus version.json
   tests/              Prüfungen des Backends (pytest)
+architektur/          harte Architekturregeln (regeln.toml), geprüft vor jedem Commit und beim Ausrollen
+deploy/               Vorschaltdienst (Caddyfile), Ziel des Ausrollens, Probelauf des Handbuchs
+docs/                 Architektur, Handbuchseite, Plan der Überarbeitung
+tools/                Git-Haken, Fassung, Ausrollen, Umzug, Symbole, Zertifikat
+compose.pi.yml        Betrieb auf dem Pi
+docker-compose.yml    Betrieb auf einem anderen Rechner
+version.json          die eine Fassung für Backend und Oberfläche
 ```
 
-### Installation per Docker (empfohlen, Pi und Mac)
+Schichten, Regeln und die Regeln der kommenden Etappen stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md),
+Einrichtung, Sicherung und Fehlerbilder in [docs/handbuch.md](docs/handbuch.md).
 
-Voraussetzung: Docker mit Compose-Plugin.
+### Betrieb auf dem Pi
+
+Ausgerollt wird vom Mac aus mit einem Befehl:
 
 ```bash
-git clone git@github.com:HalloWelt42/RadioHub.git
-cd RadioHub
-docker compose up -d
+./einrichten.sh            # einmal: Python-Umgebung, Pakete der Oberfläche, Git-Haken
+tools/ausrollen.sh         # prüft, baut auf dem Pi, sichert die Datenbank, startet neu und prüft die Fassung
 ```
+
+Rechner, Ordner (`/mnt/data/radiohub`) und Namen kommen aus dem Verzeichnis des Handbuchs (`handbuch ziel radiohub`).
+Das Ausrollen nimmt nur gepushte Stände mit grünen Tests und eingehaltenen Architekturregeln, stellt das Zertifikat
+des Vorschaltdienstes aus der Hausstelle aus und wartet eine laufende Aufnahme ab. Lag RadioHub noch im alten Ordner,
+zieht `tools/umzug-mnt-data.sh` es einmalig um (vorher `--probe`).
 
 Aufruf:
 
-- App: `http://localhost:9092` (bzw. `http://<host-ip>:9092` im LAN)
-- Backend-API direkt: `http://localhost:9091`
-- API-Docs: `http://localhost:9092/docs`
+- App: `https://radio.<Rufname des Pi>.lan` (über den Vorbau des Pi) oder `https://<Pi>:9093`
+- API-Docs: `https://radio.<Rufname des Pi>.lan/docs`
 
-Datenbank, Cache und Zwischenstände liegen in `./data` neben dem Repo; Aufnahmen und heruntergeladene
+Im Heimnetz ist nur der Vorschaltdienst (Caddy, HTTPS) erreichbar; Backend und Oberfläche (nginx) sprechen nur im
+eigenen Netz der Container, die Container laufen als Nutzer 1000. Die frühere Adresse ohne TLS leitet der Vorbau auf
+HTTPS um.
+
+Datenbank, Cache und Zwischenstände liegen in `data/` im Ordner der App; Aufnahmen und heruntergeladene
 Podcast-Folgen liegen in der Kellerwolke (siehe "Ablage in der Kellerwolke").
 
-Updates:
+### Betrieb auf einem anderen Rechner
+
+Voraussetzung: Docker mit Compose-Plugin und ein Zertifikat für den Rechner (etwa mit mkcert) als
+`zertifikate/radiohub.pem` und `zertifikate/radiohub-schluessel.pem`.
 
 ```bash
-git pull
+git clone https://github.com/HalloWelt42/RadioHub.git
+cd RadioHub
 docker compose up -d --build
 ```
+
+Danach ist die App unter `https://<Rechner>:9093` erreichbar.
 
 ### Ablage in der Kellerwolke
 
@@ -167,9 +191,9 @@ Einrichtung (einmal je Rechner):
      --datei <RadioHub>/data/kellerwolke.schluessel
    ```
 
-2. Zertifikatsstelle der Hausstelle als `zertifikate/rootCA.pem` neben `docker-compose.yml` ablegen
-   (nur nötig, wenn die Kellerwolke über HTTPS mit eigenem Zertifikat erreichbar ist)
-3. `.env` neben `docker-compose.yml` anlegen:
+2. Zertifikatsstelle der Hausstelle als `zertifikate/rootCA.pem` im Ordner der App ablegen
+   (auf dem Pi legt das Ausrollen sie mit dem Zertifikat des Vorschaltdienstes ab)
+3. `.env` im Ordner der App anlegen (Modus 600):
 
    ```bash
    RADIOHUB_KELLERWOLKE_ADRESSE=https://<Rechner der Kellerwolke>:<Port>
@@ -177,8 +201,8 @@ Einrichtung (einmal je Rechner):
 `RADIOHUB_ORTSSUCHE_ADRESSE`: Adresse der hauseigenen Kartensuche (OSM lokal) für die Ortssuche der Sonnenzeiten; leer heißt keine Suche, der Standort des Telefons geht trotzdem.
    ```
 
-4. `docker compose up -d --build`; das Backend meldet beim Start `Ablage: Verbunden als App RadioHub ...`,
-   den Stand zeigt auch `GET /api/storage/ablage`
+4. Ausrollen (auf dem Pi `tools/ausrollen.sh`, sonst `docker compose up -d --build`); das Backend meldet beim Start
+   `Ablage: Verbunden als App RadioHub ...`, den Stand zeigt auch `GET /api/storage/ablage`
 
 Einstellungen (Umgebung, in Docker über `.env`):
 
@@ -194,8 +218,7 @@ Prüfungen des Backends (mit einer Testablage im Speicher, nie mit echten Daten)
 
 ```bash
 cd radiohub-backend
-pip install -r requirements-test.txt
-python -m pytest
+.venv/bin/python -m pytest
 ```
 
 Mit `RADIOHUB_PROBE_KELLERWOLKE=1` und den Einstellungen oben laufen die Prüfungen der Ablage zusätzlich gegen
@@ -219,10 +242,11 @@ stehen in der Tabelle `umzug_dateien`. Ein abgebrochener Lauf wird einfach wiede
 ersten Änderung entsteht einmal `data/radiohub.db.vor-umzug`. Die Quellordner bleiben unangetastet, bis `--aufraeumen`
 sie nach einem vollständigen Lauf in `papierkorb-radiohub-<datum>/` verschiebt (nie löschen).
 
-Reihenfolge fürs Ausrollen auf dem Pi (Schritt 2 und 3 zusammen):
+Reihenfolge auf dem Pi (Schritt 2 und 3 zusammen; `dc` steht für `docker compose -f compose.pi.yml`):
 
 ```bash
 cd <Ordner des RadioHub>
+alias dc='docker compose -f compose.pi.yml'
 
 # 1. App-Schlüssel (auf dem Rechner der Kellerwolke, nur in eine Datei mit 600)
 (cd <Ordner der Kellerwolke> && backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
@@ -231,27 +255,27 @@ cd <Ordner des RadioHub>
 # 2. Zertifikatsstelle der Hausstelle
 mkdir -p zertifikate && cp <rootCA.pem der Hausstelle> zertifikate/
 
-# 3. .env neben docker-compose.yml
+# 3. .env im Ordner der App
 printf 'RADIOHUB_KELLERWOLKE_ADRESSE=https://<Rechner der Kellerwolke>:<Port>\nRADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem\n' > .env
 
 # 4. Bauen; das laufende Backend für den Umzug anhalten
-git pull && docker compose build radiohub-backend && docker compose stop radiohub-backend
+git pull && dc build radiohub-backend && dc stop radiohub-backend
 
 # 5. Trockenlauf: zählt nur und zeigt die Zuordnung (Datenbank und Dateien bleiben, wie sie sind)
-docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
+dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
   python -u -m backend.umzug --altes-radio /altes-radio --probe
 
 # 6. Umzug im Hintergrund mit Protokoll (Fortschritt in Prozent und GB); bei Fehlern denselben Befehl wiederholen
-nohup docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
+nohup dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
   python -u -m backend.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
 tail -f umzug.log
 
 # 7. Prüfung: der Trockenlauf aus 5. zeigt "0 offen"; dann starten und in der Oberfläche Folgen und Aufnahmen
 #    abspielen und spulen, Explorer ansehen; in der Kellerwolke liegt alles unter Apps/RadioHub
-docker compose up -d
+dc up -d
 
 # 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach <Papierkorb-Ordner>/papierkorb-radiohub-<datum>
-docker compose run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:/papierkorb \
+dc run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:/papierkorb \
   radiohub-backend python -u -m backend.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 ```
 
@@ -267,17 +291,17 @@ Als Web-App auf den Startbildschirm (iPhone: Safari, Teilen, "Zum Home-Bildschir
 
 1. Das Telefon vertraut der Hausstelle (dasselbe Zertifikat wie bei Kellerwolke und Kiste; einmal als Profil
    installiert und unter Einstellungen, Allgemein, Info, Zertifikatsvertrauenseinstellungen eingeschaltet)
-2. Die Adresse mit HTTPS öffnen: `https://<Rechner>:9093` (http auf 9092 bleibt, aber ohne sicheren Kontext gehen
-   Bildschirm wach halten und die Web-App nicht)
+2. Die Adresse mit HTTPS öffnen: `https://radio.<Rufname des Pi>.lan` (Bildschirm wach halten und die Web-App
+   brauchen den sicheren Kontext)
 3. Teilen, "Zum Home-Bildschirm"; ein früher angelegtes Symbol vorher entfernen
 
-Der HTTPS-Zugang ist ein Vorschaltdienst (`radiohub-vorne`, Caddy) mit einem Blattzertifikat der Hausstelle in
-`zertifikate/radiohub.pem` und `zertifikate/radiohub-schluessel.pem`. Ausstellen auf dem Rechner mit der Hausstelle
-(mkcert):
+Der HTTPS-Zugang ist ein Vorschaltdienst (`vorne`, Caddy) mit einem Blattzertifikat der Hausstelle in
+`zertifikate/radiohub.pem` und `zertifikate/radiohub-schluessel.pem`. Auf dem Pi stellt das Ausrollen es aus, sobald
+es fehlt oder in weniger als 60 Tagen abläuft. Für einen anderen Rechner auf dem Mac mit der Hausstelle (mkcert):
 
 ```bash
-RADIOHUB_ZIEL=pi@<rechner> RADIOHUB_ORDNER=<Ordner des RadioHub> RADIOHUB_NAMEN="<ip> <rechnername>" tools/zertifikat.sh
-docker compose up -d radiohub-vorne
+RADIOHUB_ZIEL=<nutzer>@<rechner> RADIOHUB_ORDNER=<Ordner des RadioHub> RADIOHUB_NAMEN="<ip> <rechnername>" tools/zertifikat.sh
+docker compose up -d vorne
 ```
 
 ### Wecker und Weckeransicht
@@ -343,15 +367,7 @@ Eingabe oder solange die Weckeransicht den Ton freigegeben hat. Pfad, Weckeransi
 Voraussetzungen: Python 3.11+, Node.js 18+, FFmpeg.
 
 ```bash
-# Backend
-cd radiohub-backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Frontend
-cd ../radiohub-frontend
-npm install
+./einrichten.sh     # Python-Umgebung des Backends, Pakete der Oberfläche, Git-Haken
 ```
 
 Starten:
@@ -360,24 +376,48 @@ Starten:
 # Backend (Port 9091)
 cd radiohub-backend
 source .venv/bin/activate
-uvicorn backend.main:app --host 0.0.0.0 --port 9091 --reload
+uvicorn backend.main:app --host 127.0.0.1 --port 9091 --reload
 
 # Frontend Dev-Server (Port 5180, mit Vite-Proxy auf 9091)
 cd radiohub-frontend
 npm run dev
 ```
 
-Die App ist im Dev-Modus unter `http://localhost:5180` erreichbar.
+Die App ist im Dev-Modus unter `http://localhost:5180` erreichbar (nur am eigenen Rechner).
+
+### Fassung, Git-Haken und Regeln
+
+Die Fassung steht nur in `version.json`; Backend (`/health`, API-Docs) und Oberfläche (Fußleiste) lesen sie. Vor jedem
+Commit zählt der Haken den Patch hoch und prüft die vorgemerkten Dateien: gerade Zeichen, Stil, harte
+Architekturregeln aus `architektur/regeln.toml`, Seite und Einrichtungsskript des Handbuchs. Jede Commit-Nachricht
+beginnt mit der Kennung eines Tickets (`RAD-12: ...`). Ein Feature hebt die Fassung vorher mit `tools/version.sh minor`.
 
 ---
 
 ## Lizenz
 
-Nicht-kommerzielle Lizenz v1.0 (`LicenseRef-RadioHub-NC-1.0`)
-Basierend auf [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de) mit Ergänzungen.
+**Nicht-kommerzielle Nutzung** - Siehe [LICENSE](LICENSE)
 
-Copyright 2025-2026 HalloWelt42
+Erlaubt: Private Nutzung, Installation, persönliche Anpassungen, Teilen mit Quellenangabe
 
-Private, nicht-kommerzielle Nutzung und private Modifikation erlaubt.
-Kommerzielle Nutzung, Verkauf und Veröffentlichung modifizierter Versionen untersagt.
-Vollständige Lizenzbedingungen: [lizenz.md](radiohub-frontend/public/legal/de/lizenz.md)
+Verboten: Kommerzielle Nutzung, Verkauf, Einbindung in kommerzielle Produkte
+
+---
+
+## Unterstützen
+
+RadioHub ist ein privates Hobby-Projekt. Kein Tracking, keine Werbung, keine Kompromisse.
+
+Wenn dir das Projekt gefällt, kannst du ihm einen Stern auf GitHub geben - oder direkt hier:
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/HalloWelt42)
+
+**Crypto:**
+
+| Coin | Adresse |
+|------|---------|
+| BTC | `bc1qnd599khdkv3v3npmj9ufxzf6h4fzanny2acwqr` |
+| DOGE | `DL7tuiYCqm3xQjMDXChdxeQxqUGMACn1ZV` |
+| ETH | `0x8A28fc47bFFFA03C8f685fa0836E2dBe1CA14F27` |
+
+Copyright (c) 2025-2026 HalloWelt42

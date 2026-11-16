@@ -1,0 +1,64 @@
+Nicht-kommerzielle Lizenz v1.0
+
+SPDX-License-Identifier: LicenseRef-RadioHub-NC-1.0
+Basierend auf CC BY-NC-ND 4.0 mit Ergänzungen
+
+Copyright (c) 2025-2026 HalloWelt42
+Alle Rechte vorbehalten.
+
+1. Erlaubte Nutzung
+
+   - Private, nicht-kommerzielle Nutzung und Installation
+   - Persönliche Anpassungen für den Eigengebrauch
+   - Erstellung privater Forks (nicht eigenständig veröffentlicht)
+   - Beiträge via Pull Request an das Originalprojekt
+   - Weitergabe des unveränderten Originalwerks mit vollständiger
+     Namensnennung
+
+2. Verbotene Nutzung
+
+   - Jegliche kommerzielle Nutzung, Verkauf oder Lizenzierung
+   - Öffentliche Verbreitung modifizierter Versionen
+   - Darstellung von Forks als eigenständige Projekte
+   - Entfernung oder Änderung von Urheberrechtshinweisen
+   - Weiterverbreitung unter einer anderen Lizenz
+   - Nutzung des Namens "RadioHub" oder des Logos für
+     abgeleitete Projekte ohne schriftliche Genehmigung
+
+3. Modifikationen
+
+   Modifizierte Versionen dürfen nicht öffentlich verbreitet, gehostet
+   oder Dritten zugänglich gemacht werden. Ausnahme: Pull Requests an
+   das Originalprojekt.
+
+4. Beiträge
+
+   Mit dem Einreichen eines Pull Requests erklärt sich der Beitragende
+   damit einverstanden, dass der Beitrag unter dieser Lizenz steht und
+   die Rechte an HalloWelt42 übertragen werden.
+
+5. Haftungsausschluss
+
+   DIE SOFTWARE WIRD "WIE BESEHEN" BEREITGESTELLT, OHNE JEGLICHE
+   GEWÄHRLEISTUNG, WEDER AUSDRÜCKLICH NOCH STILLSCHWEIGEND.
+   IN KEINEM FALL HAFTEN DIE AUTOREN FÜR SCHÄDEN JEGLICHER ART,
+   DIE AUS DER NUTZUNG DER SOFTWARE ENTSTEHEN.
+
+6. Drittanbieter-Komponenten
+
+   Diese Software nutzt folgende Open-Source-Bibliotheken:
+   - Svelte (MIT)
+   - Vite (MIT)
+   - hls.js (Apache 2.0)
+   - Font Awesome (SIL OFL 1.1 / MIT / CC BY 4.0)
+   - Barlow, Chakra Petch, Orbitron (SIL OFL 1.1)
+   - FastAPI, Uvicorn, HTTPX (MIT / BSD-3-Clause)
+   - FFmpeg (LGPL 2.1 oder später, je nach Bau GPL)
+   - Caddy (Apache 2.0), nginx (BSD-2-Clause)
+
+   Die jeweiligen Lizenzen dieser Komponenten bleiben unberührt.
+
+7. Verstoß
+
+   Bei Verstoß gegen diese Lizenzbedingungen erlischt das Nutzungsrecht
+   automatisch. Alle Kopien müssen unverzüglich gelöscht werden.
