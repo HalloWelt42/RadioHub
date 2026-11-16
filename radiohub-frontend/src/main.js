@@ -1,5 +1,5 @@
 import { mount } from 'svelte';
-import App from './App.svelte';
+import Zugang from './components/Zugang.svelte';
 
 // Font Awesome (solid + brands + base)
 import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
@@ -12,7 +12,8 @@ import './styles/hifi-variables.css';
 import './styles/hifi-base.css';
 import './styles/hifi-components.css';
 
-const app = mount(App, {
+// erst die Anmeldung (Konto der Kellerwolke), dann die App
+const app = mount(Zugang, {
   target: document.getElementById('app')
 });
 

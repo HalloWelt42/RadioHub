@@ -1,7 +1,8 @@
 /**
  * RadioHub API Client v0.1.0
- * Kommunikation mit Backend
+ * Kommunikation mit Backend; jede Anfrage trägt die Sitzung (lib/sitzung.svelte.js), eine abgewiesene beendet sie
  */
+import { antwortPruefen, kopf } from './sitzung.svelte.js';
 
 // API Base URL - relativ für Vite-Proxy, überschreibbar für Docker/Produktion
 const API_BASE = window.RADIOHUB_API_URL || '';
@@ -15,12 +16,13 @@ class RadioHubAPI {
     const url = `${this.baseUrl}${path}`;
     const response = await fetch(url, {
       ...options,
-      headers: {
+      headers: kopf({
         'Content-Type': 'application/json',
         ...options.headers
-      }
+      })
     });
-    
+    antwortPruefen(response);
+
     if (!response.ok) {
       let detail = `API Error: ${response.status}`;
       try {
@@ -368,7 +370,7 @@ class RadioHubAPI {
     if (segmentIds) body.segment_ids = segmentIds;
     return fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: kopf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body)
     });
   }
@@ -379,7 +381,7 @@ class RadioHubAPI {
     if (segmentIds) body.segment_ids = segmentIds;
     return fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: kopf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body)
     });
   }
@@ -559,7 +561,7 @@ class RadioHubAPI {
     const url = `${this.baseUrl}/api/files/download-zip`;
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: kopf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ files, include_playlist: includePlaylist })
     });
     if (!response.ok) throw new Error(`ZIP-Download fehlgeschlagen: ${response.status}`);
