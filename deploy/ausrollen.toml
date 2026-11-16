@@ -7,11 +7,21 @@ compose = "compose.pi.yml"
 # ton: RadioHub nutzt keinen Tondienst der Leitstelle (die Vertonung der Zeitansage fragt es selbst)
 ton = false
 
-# Dienst im Abbild, in dem die Sicherung läuft, und die Datenbank relativ zum Ordner der App (bis Etappe 2 nicht nach
-# dem Schema des Appkerns: daten/<kennung>.sqlite)
+# Zugänge, die das Ausrollen besorgt (HELF-77, Appkern docs/ZUGAENGE.md): Adresse und App-Schlüssel der Kellerwolke als
+# feste Einstellungen in der .env (RADIOHUB_FEST_KELLERWOLKE_ADRESSE und _SCHLUESSEL), solange sie dort fehlen. Der
+# Schlüssel gilt für Anmeldung, Ablage und Vertonung; dem Konto gehört RadioHub (nur es meldet sich an, weitere unter
+# Einstellungen, Zugang). Name wie der bisherige Zugang (Ordner Apps/RadioHub), sonst entstünde ein leerer Zweig.
+[zugaenge]
+name = "RadioHub"
+kellerwolke = "admin"
+
 [radio]
-backend = "radiohub-backend"
+# Dienst der App in compose.pi.yml (dort läuft die Sicherung) und die Dateien relativ zum Ordner der App: Daten bleiben
+# seit dem Umzug in data/ (kein zweiter Umzug), das Gerüst des Appkerns hält seine in data/appkern
+app = "radiohub"
 datenbank = "data/radiohub.db"
+geruest = "data/appkern/radiohub.sqlite"
+einrichtungscode = "data/appkern/einrichtungscode"
 # Ordner vor dem Umzug nach Entscheidung 21 (docs/umbau/PLAN.md): liegt RadioHub noch dort, bricht das Ausrollen ab und
 # verweist auf tools/umzug-mnt-data.sh
 umzug_von = "/home/pi/RadioHub"

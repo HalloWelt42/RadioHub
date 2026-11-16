@@ -43,13 +43,14 @@ probe_aufbauen() {
   local ziel="$1" versatz="$2" port
   port=$(( $(grundport "$ziel") + versatz ))
   cd "$ziel"
-  mkdir -p data zertifikate
+  mkdir -p data sicherungen zertifikate
   # Wegwerf-Hausstelle in DIR, nie die echte: das Blattzertifikat gilt nur für diesen Rechner, mit dem Namen, den der
   # Vorschaltdienst ohne Servernamen nimmt (radiohub.local, deploy/Caddyfile)
   CAROOT="$ziel/hausstelle" mkcert -cert-file "zertifikate/$KENNUNG.pem" -key-file "zertifikate/$KENNUNG-schluessel.pem" \
     127.0.0.1 localhost "$KENNUNG.local" >/dev/null 2>&1
   cp hausstelle/rootCA.pem zertifikate/rootCA.pem
-  # ohne Kellerwolke, Vertonung und Zeit-Stimme: die Werte des Hauses bleiben leer
+  # ohne Kellerwolke, Vertonung und Zeit-Stimme: die Werte des Hauses bleiben leer (die App wartet dann auf die erste
+  # Einrichtung, /health und die Anmeldeseite antworten trotzdem)
   ( umask 077; printf 'PROBE_PORT=%s\n' "$port" > .env )
   docker compose "${PROBE_COMPOSE[@]}" up -d --build --quiet-pull
   local ende=$(( $(date +%s) + PROBE_WARTEN_S ))
@@ -70,7 +71,7 @@ probe_abbauen() {
   cd "$1"
   [ -f .env ] || return 0
   docker compose "${PROBE_COMPOSE[@]}" down --volumes --remove-orphans
-  docker image rm -f "${COMPOSE_PROJECT_NAME:?}-backend" "${COMPOSE_PROJECT_NAME:?}-frontend" >/dev/null 2>&1 || true
+  docker image rm -f "${COMPOSE_PROJECT_NAME:?}-radiohub" >/dev/null 2>&1 || true
 }
 
 probe=0; abbauen=0; ziel=""; versatz=""

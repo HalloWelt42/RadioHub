@@ -1,5 +1,5 @@
 # Gebaut wird aus dem Wurzelordner (wegen version.json); in den Bau gehen nur Fassung, Backend und Oberfläche, nie
-# Daten, Zertifikate, Sicherungen, Umgebung oder Entwürfe.
+# Daten, Zertifikate, Sicherungen, Umgebung, Tests oder Entwürfe.
 *
 !version.json
 !backend/requirements.txt

@@ -1,6 +1,7 @@
-"""Die harten Regeln (architektur/regeln.toml) greifen, und der Betrieb ist abgesichert (RAD-5): Muster der verbotenen
-Regeln an Beispielzeilen, Compose-Dateien veröffentlichen nur den Vorschaltdienst, Container nicht als root, nginx
-ohne CORS-Köpfe. Die Schichtenregeln prüft der Appkern selbst (python -m appkern.werkzeuge regeln)."""
+"""Die harten Regeln (architektur/regeln.toml) greifen, und der Betrieb ist abgesichert (RAD-5, RAD-6): Muster der
+verbotenen Regeln an Beispielzeilen, Compose-Dateien veröffentlichen nur den Vorschaltdienst, ein Container für die App
+nicht als root, Vorschaltdienst ohne CORS-Köpfe. Die Schichtenregeln prüft der Appkern selbst (python -m appkern.werkzeuge
+regeln)."""
 
 import re
 import tomllib
@@ -56,20 +57,19 @@ def test_nur_der_vorschaltdienst_ist_veroeffentlicht(datei):
     dienste = yaml.safe_load((WURZEL / datei).read_text(encoding="utf-8"))["services"]
     assert [n for n, d in dienste.items() if d.get("ports")] == ["vorne"]
     assert [p.split(":")[-1] for p in dienste["vorne"]["ports"]] == ["9093"]
-    assert dienste["radiohub-backend"]["expose"] == ["8000"] and dienste["radiohub-frontend"]["expose"] == ["8080"]
-    for name in ("radiohub-backend", "radiohub-frontend", "vorne"):
+    assert sorted(dienste) == ["radiohub", "vorne"]                  # ein Container für die App (RAD-6)
+    assert dienste["radiohub"]["expose"] == ["8000"] and dienste["radiohub"]["user"] == "1000:1000"
+    for name in ("radiohub", "vorne"):
         assert "no-new-privileges:true" in dienste[name]["security_opt"]
+    assert "./data:/data" in dienste["radiohub"]["volumes"]               # die Daten bleiben, wo sie sind
 
 
 def test_container_nicht_als_root():
-    backend = (WURZEL / "Dockerfile").read_text(encoding="utf-8")
-    assert re.search(r"^USER 1000:1000$", backend, re.MULTILINE)
-    oberflaeche = (WURZEL / "radiohub-frontend/Dockerfile").read_text(encoding="utf-8")
-    letzte_stufe = oberflaeche.rsplit("\nFROM ", 1)[1]
-    assert letzte_stufe.startswith("nginxinc/nginx-unprivileged:")
+    abbild = (WURZEL / "Dockerfile").read_text(encoding="utf-8")
+    assert re.search(r"^USER 1000:1000$", abbild, re.MULTILINE)
+    assert "ffmpeg" in abbild and "FROM python:3.12-slim" in abbild
 
 
-def test_nginx_ohne_cors_und_vorschaltdienst_auf_8080():
-    nginx = (WURZEL / "radiohub-frontend/nginx.conf").read_text(encoding="utf-8")
-    assert "Access-Control-" not in nginx and "listen 8080;" in nginx
-    assert "reverse_proxy radiohub-frontend:8080" in (WURZEL / "deploy/Caddyfile").read_text(encoding="utf-8")
+def test_vorschaltdienst_ohne_cors_vor_der_app():
+    caddy = (WURZEL / "deploy/Caddyfile").read_text(encoding="utf-8")
+    assert "Access-Control-" not in caddy and "reverse_proxy radiohub:8000" in caddy

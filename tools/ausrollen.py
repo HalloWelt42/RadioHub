@@ -1,7 +1,7 @@
 """Ausrollen von RadioHub auf den Pi, vom Mac aus über tools/ausrollen.sh. Ablauf und Bausteine wie im Appkern
-(appkern.werkzeuge.ausrollen: Ziel, Zertifikat, Stand holen, Bauen, Aufräumen); eigen sind bis Etappe 2 nur die Teile,
-die am Aufbau des Radios hängen (Ordner backend und radiohub-frontend, Datenbank data/radiohub.db, Fassung
-über /health und die Startseite statt /api/v1/app). Bricht beim ersten Fehler ab:
+(appkern.werkzeuge.ausrollen: Ziel, Zertifikat, Stand holen, Bauen, Zugänge, Aufräumen); eigen sind bis Teil 2c nur die
+Teile, die am Aufbau des Radios hängen (Oberfläche noch in radiohub-frontend ohne die Schale des Appkerns, Daten in
+data/ mit radiohub.db und dem Gerüst in data/appkern, laufende Aufnahmen statt Aufträgen). Bricht beim ersten Fehler ab:
 
 1. Stand und Tests am Mac: sauberer Baum, gepusht, harte Architekturregeln über das ganze Repo, Tests des Backends,
    Tests und Bau der Oberfläche; entschieden wird am Rückgabewert, nie an der Ausgabe
@@ -10,12 +10,16 @@ die am Aufbau des Radios hängen (Ordner backend und radiohub-frontend, Datenban
 3. Zertifikat der Hausstelle für den Vorschaltdienst (noch mindestens 60 Tage gültig, sonst neu)
 4. Stand holen, Abbilder bauen (der alte Stand läuft weiter)
 5. keine laufende Aufnahme abschießen: warten, bis keine läuft (--sofort überspringt das)
-6. Datenbank sichern nach der Regel des Appkerns (appkern.sicherung im eben gebauten Abbild: nur, wenn die jüngste
-   älter als 24 Stunden ist und sich etwas geändert hat; höchstens drei bleiben)
-7. neu starten, der Vorschaltdienst jedes Mal (geänderte eingehängte Dateien bemerkt Docker nicht)
-8. über HTTPS: Server (/health) und ausgelieferte Oberfläche (Meta app-fassung) melden die Fassung aus version.json, die
-   Seite kommt über HTTP/2, Symbole und Manifest antworten richtig, Startbildschirm-Symbole sind deckend
-9. nur nach Erfolg: verwaiste Abbilder und Baucache auf dem Pi aufräumen
+6. beide Datenbanken sichern nach der Regel des Appkerns (appkern.sicherung im eben gebauten Abbild: nur, wenn die
+   jüngste älter als 24 Stunden ist und sich etwas geändert hat; höchstens drei bleiben): radiohub.db nach sicherungen/,
+   die des Gerüsts nach sicherungen/appkern/
+7. Zugänge ([zugaenge]): Adresse und App-Schlüssel der Kellerwolke als feste Einstellungen in die .env, solange sie dort
+   fehlen (appkern.werkzeuge.ausrollen.zugaenge_besorgen)
+8. neu starten (die Container von vor RAD-6 gehen als verwaiste mit), der Vorschaltdienst jedes Mal (geänderte
+   eingehängte Dateien bemerkt Docker nicht)
+9. über HTTPS: Server (/health, /api/v1/app) und ausgelieferte Oberfläche (Meta app-fassung) melden die Fassung aus
+   version.json, die Seite kommt über HTTP/2, Symbole und Manifest antworten richtig, Startbildschirm-Symbole deckend
+10. nur nach Erfolg: verwaiste Abbilder und Baucache auf dem Pi aufräumen
 
     python tools/ausrollen.py --ergaenzung DATEI [--sofort]
     python tools/ausrollen.py --nur-tests          nur Schritt 1 ohne Git-Prüfung (Regeln, Tests, Bau)
@@ -36,7 +40,7 @@ from pydantic import BaseModel
 
 from appkern.werkzeuge.ausrollen import (DECKEND, SYMBOLE, ZIEL_DATEI, Abbruch, Ziel, _curl, _deckend, _lauf, _schritt,
                                          _ssh, aufraeumen, bauen, fehlerzeilen, laden, pi_pruefen, stand_holen,
-                                         testprotokoll, zertifikat)
+                                         testprotokoll, zertifikat, zugaenge_besorgen)
 from appkern.werkzeuge.regeln import regeln_pruefen
 
 WURZEL = Path(__file__).resolve().parents[1]
@@ -49,8 +53,10 @@ UMZUG_FERTIG = ".umzug-fertig"   # Merkzeichen von tools/umzug-mnt-data.sh im ne
 class Radio(BaseModel):
     """Angaben unter [radio] in deploy/ausrollen.toml."""
 
-    backend: str               # Dienst des Backends in compose.pi.yml (dort läuft die Sicherung)
-    datenbank: str             # Datenbank relativ zum Ordner der App
+    app: str                   # Dienst der App in compose.pi.yml (dort läuft die Sicherung)
+    datenbank: str             # Datenbank des Radios relativ zum Ordner der App
+    geruest: str               # Datenbank des Gerüsts (Einstellungen, Protokoll, Aufträge) relativ zum Ordner der App
+    einrichtungscode: str      # Datei des Einrichtungscodes relativ zum Ordner der App
     umzug_von: str | None = None   # Ordner vor dem Umzug (Entscheidung 21)
 
 
@@ -123,13 +129,17 @@ def ordner_pruefen(z: Ziel, r: Radio) -> None:
                           f"tools/umzug-mnt-data.sh), danach ausrollen")
         print(f"Ordner {z.wurzel}" + (" (ohne Umzug)" if stand == "leer" else ""))
     if _ssh(z, f"test -f {w}/.env && echo da || echo fehlt") == "fehlt":
-        print(f"WARNUNG: {z.wurzel}/.env fehlt; ohne sie arbeitet RadioHub ohne Kellerwolke, Vertonung und Zeit-Stimme "
-              "(Werte: handbuch ziel radiohub --env)")
+        print(f"WARNUNG: {z.wurzel}/.env fehlt; die Zugänge zur Kellerwolke legt das Ausrollen an, Vertonung und "
+              "Zeit-Stimme fehlen ohne sie (Werte: handbuch ziel radiohub --env, oder in der App unter Einstellungen)")
 
 
 # ----- 5. bis 7. Ruhe, Sicherung, Start --------------------------------------------------------------------------------
 
-RUHE_SKRIPT = """laeuft() { for p in status hls-status; do
+# /health sagt seit RAD-6 ohne Anmeldung, ob eine Aufnahme läuft; die Wege /api/recording/... fragen nur einen Stand von
+# davor (ohne Anmeldung), bei dem /health das noch nicht sagt
+RUHE_SKRIPT = """laeuft() {
+  curl -sf -m 10 --cacert %(ca)s %(adresse)s/health | grep -q '"aufnahme": *true' && return 0
+  for p in status hls-status; do
     curl -sf -m 10 --cacert %(ca)s %(adresse)s/api/recording/$p | grep -q '"recording": *true' && return 0; done; return 1; }
 if ! laeuft; then echo "Keine laufende Aufnahme"; exit 0; fi
 echo "Eine Aufnahme läuft, warte auf ihr Ende ..."
@@ -156,16 +166,22 @@ def ruhe_abwarten(z: Ziel, sofort: bool) -> None:
 
 
 def sicherungs_skript(z: Ziel, r: Radio) -> str:
-    """Ordner als Nutzer des Pi anlegen (sonst legte Docker sie für root an), dann die Sicherung des Appkerns im Abbild."""
+    """Ordner als Nutzer des Pi anlegen (sonst legte Docker sie für root an), dann die Sicherung des Appkerns im Abbild:
+    radiohub.db nach sicherungen/, die Datenbank des Gerüsts nach sicherungen/appkern/ (getrennt, weil beide Kopien
+    radiohub-<Zeit>.sqlite heißen und jede Regel nur ihre eigenen zählt)."""
     q = shlex.quote
-    daten, datei = Path(r.datenbank).parent, Path(r.datenbank).name
+    daten = Path(r.datenbank).parent
+    geruest = Path(r.geruest)
+    befehle = []
+    for datei, ordner in ((Path(r.datenbank), SICHERUNGEN), (geruest, f"{SICHERUNGEN}/{geruest.parent.name}")):
+        befehle.append(f"""docker compose -f {q(z.compose)} run --rm --no-deps -T \\
+    -v {q(f"{z.wurzel}/{daten}")}:{IM_ABBILD}/daten -v {q(f"{z.wurzel}/{SICHERUNGEN}")}:{IM_ABBILD}/{SICHERUNGEN} \\
+    {q(r.app)} python -m appkern.sicherung vor-ausrollen --kennung {q(z.kennung)} \\
+    --datenbank {q(f"{IM_ABBILD}/daten/{datei.relative_to(daten)}")} --ordner {q(f"{IM_ABBILD}/{ordner}")}""")
     return f"""set -e
   cd {q(z.wurzel)}
-  mkdir -p {q(str(daten))} {SICHERUNGEN}
-  docker compose -f {q(z.compose)} run --rm --no-deps -T \\
-    -v {q(f"{z.wurzel}/{daten}")}:{IM_ABBILD}/daten -v {q(f"{z.wurzel}/{SICHERUNGEN}")}:{IM_ABBILD}/{SICHERUNGEN} \\
-    {q(r.backend)} python -m appkern.sicherung vor-ausrollen --kennung {q(z.kennung)} \\
-    --datenbank {q(f"{IM_ABBILD}/daten/{datei}")} --ordner {IM_ABBILD}/{SICHERUNGEN}"""
+  mkdir -p {q(str(daten))} {q(str(geruest.parent))} {SICHERUNGEN} {q(f"{SICHERUNGEN}/{geruest.parent.name}")}
+  """ + "\n  ".join(befehle)
 
 
 def sichern(z: Ziel, r: Radio) -> None:
@@ -173,10 +189,14 @@ def sichern(z: Ziel, r: Radio) -> None:
     print(_ssh(z, sicherungs_skript(z, r)))
 
 
-def starten(z: Ziel) -> None:
+def starten(z: Ziel, r: Radio) -> None:
+    """Mit dem Ort des Einrichtungscodes für Menschen (rechner:ordner, gehört dem Haus und steht nicht in compose.pi.yml);
+    --remove-orphans nimmt die Container von vor RAD-6 (Backend, Oberfläche) mit."""
     _schritt("Starten")
     c = shlex.quote(z.compose)
-    _ssh(z, f"cd {shlex.quote(z.wurzel)} && docker compose -f {c} up -d --remove-orphans && docker compose -f {c} restart vorne")
+    ort = shlex.quote(f"{z.rechner}:{z.wurzel}/{r.einrichtungscode}")
+    _ssh(z, f"cd {shlex.quote(z.wurzel)} && EINRICHTUNGSCODE_ORT={ort} docker compose -f {c} up -d --remove-orphans && "
+            f"docker compose -f {c} restart vorne")
 
 
 # ----- 8. Prüfen -------------------------------------------------------------------------------------------------------
@@ -195,11 +215,17 @@ def pruefen(z: Ziel, wurzel: Path = WURZEL) -> None:
     _ssh(z, f"cd {w} && for i in $(seq 1 45); do curl -sf --cacert zertifikate/rootCA.pem {shlex.quote(z.adresse)}/health "
             ">/dev/null && exit 0; sleep 2; done; echo 'RadioHub antwortet nicht'; exit 1")
     server = json.loads(_ssh(z, f"curl -sf --cacert {w}/zertifikate/rootCA.pem {shlex.quote(z.adresse)}/health"))
+    app = json.loads(_ssh(z, f"curl -sf --cacert {w}/zertifikate/rootCA.pem {shlex.quote(z.adresse)}/api/v1/app"))
     seite = fassung_der_seite(_curl(z, f"{z.adresse}/"))
     fassung = json.loads((wurzel / "version.json").read_text())["version"]
-    print(f"Server {server.get('version')}, Oberfläche {seite}, version.json {fassung}, Datenbank {server.get('database')}")
-    if not server.get("version") == fassung == seite:
+    print(f"Server {server.get('version')}, Oberfläche {seite} (laut App {app.get('oberflaeche')}), version.json {fassung}, "
+          f"Datenbank {server.get('database')}, Appkern {app.get('appkern')}, Besitzer {app.get('besitzer')}")
+    if not server.get("version") == fassung == seite == app.get("oberflaeche"):
         raise Abbruch("Fassungen passen nicht zusammen")
+    if server.get("database") != "healthy":
+        raise Abbruch(f"Die Datenbank antwortet nicht: docker compose -f {z.compose} logs radiohub")
+    if app.get("einrichtung_noetig"):
+        print("WARNUNG: RadioHub braucht die erste Einrichtung (Kellerwolke); der Zugang aus [zugaenge] kam nicht an")
     if _curl(z, "-o", "/dev/null", "-w", "%{http_version}", "--http2", f"{z.adresse}/") != "2":
         raise Abbruch(f"Die Seite kommt nicht über HTTP/2: Vorschaltdienst prüfen (docker compose -f {z.compose} logs vorne)")
     for pfad, typ in SYMBOLE.items():
@@ -232,7 +258,8 @@ def ausrollen(ergaenzung: Path, sofort: bool, wurzel: Path = WURZEL) -> int:
         bauen(z)
         ruhe_abwarten(z, sofort)
         sichern(z, r)
-        starten(z)
+        zugaenge_besorgen(z)
+        starten(z, r)
         pruefen(z, wurzel)
     except Abbruch as f:
         print(f"\nAbbruch: {f}", file=sys.stderr)

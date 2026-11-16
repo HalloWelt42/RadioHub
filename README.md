@@ -93,7 +93,7 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 ### Architektur
 
 ```
-radiohub-frontend/    Svelte 5 SPA (im Betrieb nginx, beim Entwickeln Vite)
+radiohub-frontend/    Svelte 5 SPA (im Betrieb vom Backend ausgeliefert, beim Entwickeln Vite)
 backend/              FastAPI REST-API (Python 3.12, Paket app nach dem Schema des Appkerns)
   app/
     ablage/           Ablage der Dateien (Schnittstelle, Kellerwolke, Testablage, Ordnerstruktur)
@@ -120,7 +120,7 @@ Ausgerollt wird vom Mac aus mit einem Befehl:
 
 ```bash
 ./einrichten.sh            # einmal: Python-Umgebung, Pakete der Oberfläche, Git-Haken
-tools/ausrollen.sh         # prüft, baut auf dem Pi, sichert die Datenbank, startet neu und prüft die Fassung
+tools/ausrollen.sh         # prüft, baut auf dem Pi, sichert die Datenbanken, besorgt die Zugänge, startet neu, prüft
 ```
 
 Rechner, Ordner (`/mnt/data/radiohub`) und Namen kommen aus dem Verzeichnis des Handbuchs (`handbuch ziel radiohub`).
@@ -131,13 +131,19 @@ zieht `tools/umzug-mnt-data.sh` es einmalig um (vorher `--probe`).
 Aufruf:
 
 - App: `https://radio.<Rufname des Pi>.lan` (über den Vorbau des Pi) oder `https://<Pi>:9093`
-- API-Docs: `https://radio.<Rufname des Pi>.lan/docs`
+- Schnittstelle: angemeldet unter `/api/v1/schnittstelle` (OpenAPI); `/docs` nur in der Entwicklung mit
+  `RADIOHUB_SCHNITTSTELLEN_DOKU=1`
 
-Im Heimnetz ist nur der Vorschaltdienst (Caddy, HTTPS) erreichbar; Backend und Oberfläche (nginx) sprechen nur im
-eigenen Netz der Container, die Container laufen als Nutzer 1000. Die frühere Adresse ohne TLS leitet der Vorbau auf
-HTTPS um.
+Angemeldet wird mit dem Konto der Kellerwolke, dem der App-Schlüssel gehört (Gerüst des Appkerns); ein Telefon koppelt
+man einmal mit einem Code aus der Kellerwolke (Einstellungen, Geräte), am iPhone in der Web-App vom Startbildschirm.
+Alle Wege unter `/api` brauchen die Anmeldung, frei sind nur `/health`, `/api/v1/app` und die Anmeldung selbst.
 
-Datenbank, Cache und Zwischenstände liegen in `data/` im Ordner der App; Aufnahmen und heruntergeladene
+Im Heimnetz ist nur der Vorschaltdienst (Caddy, HTTPS) erreichbar; die App (ein Container, das Backend liefert die
+Oberfläche aus) spricht nur im eigenen Netz der Container und läuft als Nutzer 1000. Die frühere Adresse ohne TLS
+leitet der Vorbau auf HTTPS um.
+
+Datenbank, Cache und Zwischenstände liegen in `data/` im Ordner der App (die Einstellungen, das Protokoll und die
+Aufträge des Appkerns in `data/appkern/`), Sicherungen in `sicherungen/`; Aufnahmen und heruntergeladene
 Podcast-Folgen liegen in der Kellerwolke (siehe "Ablage in der Kellerwolke").
 
 ### Betrieb auf einem anderen Rechner
@@ -178,17 +184,18 @@ So arbeiten die Funktionen mit der Ablage:
 - Schneiden, Normalisieren und Umwandeln arbeiten an einer lokalen Arbeitskopie; gleicher Dateiname wird eine
   neue Version in der Kellerwolke, ein anderes Format eine neue Datei (die alte geht in den Papierkorb)
 - Löschen legt in den Papierkorb der Kellerwolke (wiederherstellbar)
-- Ist die Kellerwolke beim Ablegen nicht erreichbar, wartet das RadioHub (`RADIOHUB_KELLERWOLKE_GEDULD_S`); was dann
-  noch fehlt, bleibt im Arbeitsordner und wird beim nächsten Start nachgeholt
+- Ist die Kellerwolke beim Ablegen nicht erreichbar, wartet das RadioHub (Einstellung "Geduld beim Ablegen",
+  `RADIOHUB_KELLERWOLKE_GEDULD_S`); was dann noch fehlt, bleibt im Arbeitsordner und wird beim nächsten Start nachgeholt
 
-Einrichtung (einmal je Rechner):
+Einrichtung (einmal je Rechner; auf dem Pi besorgt das Ausrollen Adresse und App-Schlüssel selbst, `[zugaenge]` in
+`deploy/ausrollen.toml`):
 
-1. App-Schlüssel auf dem Rechner der Kellerwolke anlegen; er geht nur in eine Datei mit den Rechten 600:
+1. App-Schlüssel auf dem Rechner der Kellerwolke anlegen; er geht nur in eine Datei mit den Rechten 600 und von dort
+   als `RADIOHUB_KELLERWOLKE_SCHLUESSEL` in die `.env` (oder in der App bei der ersten Einrichtung eintragen):
 
    ```bash
    cd <Ordner der Kellerwolke>
-   backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
-     --datei <RadioHub>/data/kellerwolke.schluessel
+   backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub --datei <Datei>
    ```
 
 2. Zertifikatsstelle der Hausstelle als `zertifikate/rootCA.pem` im Ordner der App ablegen
@@ -201,18 +208,25 @@ Einrichtung (einmal je Rechner):
 `RADIOHUB_ORTSSUCHE_ADRESSE`: Adresse der hauseigenen Kartensuche (OSM lokal) für die Ortssuche der Sonnenzeiten; leer heißt keine Suche, der Standort des Telefons geht trotzdem.
    ```
 
-4. Ausrollen (auf dem Pi `tools/ausrollen.sh`, sonst `docker compose up -d --build`); das Backend meldet beim Start
-   `Ablage: Verbunden als App RadioHub ...`, den Stand zeigt auch `GET /api/storage/ablage`
+4. Ausrollen (auf dem Pi `tools/ausrollen.sh`, sonst `docker compose up -d --build`); das Protokoll der App nennt
+   `Verbunden als App RadioHub ...`, den Stand zeigt auch `GET /api/storage/ablage`
 
-Einstellungen (Umgebung, in Docker über `.env`):
+Einstellungen: eine Quelle, die Einstellungen des Appkerns (`backend/app/einstellungen.py`). Ein Wert kommt aus der App
+(gespeichert), sonst aus der Umgebung (`RADIOHUB_<FELD>`, in Docker über `.env`), sonst aus der Vorgabe; fest ist er
+mit `RADIOHUB_FEST_<FELD>` (vom Ausrollen). Die wichtigsten:
 
 | Variable | Bedeutung | Vorgabe |
 |----------|-----------|---------|
-| `RADIOHUB_KELLERWOLKE_ADRESSE` | Adresse der Kellerwolke | leer (dann keine Ablage, Dateiarbeit meldet das) |
-| `RADIOHUB_KELLERWOLKE_SCHLUESSEL` | Pfad der Schlüsseldatei (nie der Schlüssel selbst) | `/data/kellerwolke.schluessel` |
+| `RADIOHUB_KELLERWOLKE_ADRESSE` | Adresse der Kellerwolke (Anmeldung und Ablage) | leer (dann erste Einrichtung) |
+| `RADIOHUB_KELLERWOLKE_SCHLUESSEL` | App-Schlüssel; wie früher auch der Pfad einer Datei mit ihm | leer, dann `data/kellerwolke.schluessel`, wenn es sie gibt |
 | `RADIOHUB_KELLERWOLKE_WURZEL` | Wurzelordner in der Kellerwolke | `Apps/RadioHub` |
-| `RADIOHUB_KELLERWOLKE_CA` | Zertifikatsstelle (PEM) | leer (nur die üblichen Stellen) |
+| `RADIOHUB_CA_DATEI` | Zertifikatsstelle (PEM), früher `RADIOHUB_KELLERWOLKE_CA` (gilt weiter) | leer (übliche Stellen und Hausstelle) |
 | `RADIOHUB_KELLERWOLKE_GEDULD_S` | Wartezeit beim Ablegen, wenn die Kellerwolke fehlt | `900` |
+| `RADIOHUB_ORTSSUCHE_ADRESSE`, `RADIOHUB_VERTONUNG_ADRESSE`, `RADIOHUB_ZEITSTIMME`, `RADIOHUB_ZEITSTIMME_TEMPO` | Ortssuche, Vertonung und Stimme der Zeitansage | leer, `1.0` |
+| `RADIOHUB_DATEN`, `RADIOHUB_SICHERUNGEN` | Datenordner (früher `DATA_PATH`, gilt weiter) und Ordner der Sicherungen | `data/`, `sicherungen/` |
+
+Werte, die früher in der Tabelle `config` standen und Einstellungen des Servers sind (Abruf der Podcasts, Bitraten,
+Adressen der Verzeichnisse), übernimmt der erste Start einmal; `/api/config` zeigt und ändert sie weiter.
 
 Prüfungen des Backends (mit einer Testablage im Speicher, nie mit echten Daten):
 
@@ -248,7 +262,7 @@ Reihenfolge auf dem Pi (Schritt 2 und 3 zusammen; `dc` steht für `docker compos
 cd <Ordner des RadioHub>
 alias dc='docker compose -f compose.pi.yml'
 
-# 1. App-Schlüssel (auf dem Rechner der Kellerwolke, nur in eine Datei mit 600)
+# 1. App-Schlüssel (auf dem Rechner der Kellerwolke, nur in eine Datei mit 600; seit RAD-6 besorgt ihn das Ausrollen)
 (cd <Ordner der Kellerwolke> && backend/.venv/bin/python tools/app_zugang.py --konto <Konto> --app RadioHub \
   --datei <Ordner des RadioHub>/data/kellerwolke.schluessel)
 
@@ -259,14 +273,14 @@ mkdir -p zertifikate && cp <rootCA.pem der Hausstelle> zertifikate/
 printf 'RADIOHUB_KELLERWOLKE_ADRESSE=https://<Rechner der Kellerwolke>:<Port>\nRADIOHUB_KELLERWOLKE_CA=/zertifikate/rootCA.pem\n' > .env
 
 # 4. Bauen; das laufende Backend für den Umzug anhalten
-git pull && dc build radiohub-backend && dc stop radiohub-backend
+git pull && dc build radiohub && dc stop radiohub
 
 # 5. Trockenlauf: zählt nur und zeigt die Zuordnung (Datenbank und Dateien bleiben, wie sie sind)
-dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
+dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub \
   python -u -m app.umzug --altes-radio /altes-radio --probe
 
 # 6. Umzug im Hintergrund mit Protokoll (Fortschritt in Prozent und GB); bei Fehlern denselben Befehl wiederholen
-nohup dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub-backend \
+nohup dc run --rm -T -v <Ordner des alten Radios>:/altes-radio:ro radiohub \
   python -u -m app.umzug --altes-radio /altes-radio > umzug.log 2>&1 &
 tail -f umzug.log
 
@@ -276,7 +290,7 @@ dc up -d
 
 # 8. Aufräumen: Quellordner (data/recordings, pyradio-daten/recordings) nach <Papierkorb-Ordner>/papierkorb-radiohub-<datum>
 dc run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:/papierkorb \
-  radiohub-backend python -u -m app.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
+  radiohub python -u -m app.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 ```
 
 ### Am Telefon

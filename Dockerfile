@@ -1,29 +1,34 @@
-# Backend von RadioHub. Gebaut aus dem Wurzelordner des Repos (docker-compose.yml, compose.pi.yml: context .), damit
-# version.json, die einzige Quelle der Fassung, mit ins Abbild kommt.
-FROM python:3.12-slim
+# RadioHub in einem Container wie in der Vorlage des Appkerns (gebaut auf dem Pi von tools/ausrollen.sh): das Backend
+# liefert die gebaute Oberfläche selbst aus. Gebaut aus dem Wurzelordner, damit version.json, die einzige Quelle der
+# Fassung, in beide Stufen kommt.
 
-WORKDIR /app
-
-# System-Dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-
-# Python-Dependencies
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# App kopieren, die Fassung daneben (app/fassung.py sucht sie oberhalb des Pakets)
+# --- Oberfläche bauen (bis Teil 2c die heutige aus radiohub-frontend) ------------------------------------------------
+FROM node:22-slim AS oberflaeche
+WORKDIR /bau
 COPY version.json ./
-COPY backend/app/ ./app/
+# Abhängigkeiten genau nach package-lock.json; Schriften und Symbole kommen über npm, nichts aus dem Netz zur Laufzeit
+COPY radiohub-frontend/package.json radiohub-frontend/package-lock.json ./radiohub-frontend/
+RUN cd radiohub-frontend && npm ci --no-audit --no-fund
+COPY radiohub-frontend ./radiohub-frontend
+RUN cd radiohub-frontend && npm run build
 
-# Nicht als root (wie die Vorlage des Appkerns: 1000:1000, der Nutzer pi besitzt die Daten auf dem Pi); ohne eigenes
-# Heimverzeichnis, darum HOME in /tmp
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/tmp
+# --- Backend ----------------------------------------------------------------------------------------------------------
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 RADIOHUB_DATEN=/data RADIOHUB_SICHERUNGEN=/sicherungen HOME=/tmp
+WORKDIR /app
+# FFmpeg für Aufnahme, Zeitversatz, Schnitt, Wellenform und Zeitansage
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+COPY backend/requirements.txt backend/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
+# Fassung, Backend und Oberfläche wie im Repo (app/fassung.py findet version.json oberhalb des Pakets, app/main.py die
+# Oberfläche unter radiohub-frontend/dist)
+COPY version.json ./
+COPY backend/app ./backend/app
+COPY --from=oberflaeche /bau/radiohub-frontend/dist ./radiohub-frontend/dist
+WORKDIR /app/backend
+# Nicht als root (der Nutzer pi, 1000, besitzt die Daten auf dem Pi); ohne eigenes Heimverzeichnis, darum HOME in /tmp
 USER 1000:1000
-
-# Nur im Netz der Container (vor der Oberfläche steht der Vorschaltdienst)
+# Nur im Netz der Container; TLS macht der Vorschaltdienst (deploy/Caddyfile), er reicht die Adresse des Aufrufers weiter
 EXPOSE 8000
-
-# Start
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "warning", \
+     "--proxy-headers", "--forwarded-allow-ips", "*"]

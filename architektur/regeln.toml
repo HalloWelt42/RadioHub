@@ -130,14 +130,14 @@ muster = '(raw\.githubusercontent\.com|api\.github\.com)'
 kennung = "B4"
 titel = "Keine CORS-Freigabe für alle Ursprünge"
 art = "verboten"
-warum = "Die Oberfläche spricht /api über denselben Ursprung; eine Freigabe für alle ließe jede fremde Seite im Browser des Nutzers die Schnittstelle bedienen. Fremde Ursprünge nur ausdrücklich über ALLOWED_ORIGINS."
-dateien = ["backend/app/**", "radiohub-frontend/nginx.conf", "radiohub-frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
+warum = "Die Oberfläche spricht /api über denselben Ursprung; eine Freigabe für alle ließe jede fremde Seite im Browser des Nutzers die Schnittstelle bedienen. Fremde Ursprünge nur ausdrücklich über die Einstellung erlaubte_urspruenge (RADIOHUB_ERLAUBTE_URSPRUENGE, früher ALLOWED_ORIGINS)."
+dateien = ["backend/app/**", "deploy/Caddyfile", "radiohub-frontend/vite.config.js", "compose.pi.yml", "docker-compose.yml"]
 muster = '''(allow_origins\s*=\s*\[\s*["']\*|ALLOWED_ORIGINS\s*[=:]\s*["']?\*|Access-Control-Allow-Origin\s+\*|cors:\s*true)'''
 
 [[regel]]
 kennung = "B5"
-titel = "Backend und nginx nicht veröffentlicht"
+titel = "Die App nicht veröffentlicht"
 art = "verboten"
-warum = "Nach außen nur der Vorschaltdienst mit TLS; Backend (8000) und Oberfläche (8080) sprechen nur im Netz der Container (expose)."
+warum = "Nach außen nur der Vorschaltdienst mit TLS; die App (8000, liefert auch die Oberfläche aus) spricht nur im Netz der Container (expose)."
 dateien = ["compose.pi.yml", "docker-compose.yml"]
 muster = '''^\s*-\s*["']?[\d.]*:?\d+:(8000|8080|80)["']?\s*$'''
