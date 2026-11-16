@@ -1,0 +1,72 @@
+# Harte Architekturregeln von RadioHub (RAD-5). Geprüft vom Appkern (python -m appkern.werkzeuge regeln) vor jedem
+# Commit (tools/git-hooks/pre-commit) und beim Ausrollen (tools/ausrollen.sh). Eine Regel ändern oder umgehen geht nur
+# mit Zustimmung des Nutzers: Ausnahmen stehen in architektur/ausnahmen.toml und gelten erst, wenn der Nutzer am Ticket
+# "Ausnahme freigegeben: <Regel>" kommentiert hat. Begründungen, Bild der Schichten und die Regeln der kommenden Etappen:
+# docs/ARCHITEKTUR.md. Aufgenommen ist nur, was der Code heute erfüllt; jede Etappe bringt ihre Regeln mit.
+
+[freigabe]
+pinnwand = "https://192.168.178.49:8420/api/v1"
+schluessel = "~/.config/pinnwand/helfer.schluessel"
+stichwort = "Ausnahme freigegeben"
+
+# ----- Schichten -----------------------------------------------------------------------------------------------------
+
+[[regel]]
+kennung = "S1"
+titel = "Schichten des Backends"
+art = "schichten"
+warum = "Die Schnittstelle nutzt Dienste, nie umgekehrt; die Ablage (Port und Adapter) kennt nur die Grundlagen, damit sie austauschbar bleibt (Kellerwolke, Speicher für Tests)."
+dateien = ["radiohub-backend/backend/**"]
+schichten = [
+  { name = "schnittstelle", dateien = ["radiohub-backend/backend/routers/**", "radiohub-backend/backend/main.py"] },
+  { name = "werkzeuge", dateien = ["radiohub-backend/backend/umzug/**", "radiohub-backend/backend/werkzeuge/**"] },
+  { name = "dienste", dateien = ["radiohub-backend/backend/services/**"] },
+  { name = "ablage", dateien = ["radiohub-backend/backend/ablage/**"] },
+  { name = "grundlagen", dateien = ["radiohub-backend/backend/config.py", "radiohub-backend/backend/database.py", "radiohub-backend/backend/storage.py", "radiohub-backend/backend/fassung.py", "radiohub-backend/backend/sender_merkmale.py"] },
+]
+erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen"], werkzeuge = ["dienste", "ablage", "grundlagen"], dienste = ["ablage", "grundlagen"], ablage = ["grundlagen"] }
+
+[[regel]]
+kennung = "S2"
+titel = "Schichten der Oberfläche"
+art = "schichten"
+warum = "Logik, Zustand und Zugriff aufs Backend (src/lib) kennen keine Bausteine der Oberfläche; so bleiben sie testbar und für Rechner, Telefon und Webversion dieselben."
+dateien = ["radiohub-frontend/src/**"]
+schichten = [
+  { name = "oberflaeche", dateien = ["radiohub-frontend/src/components/**", "radiohub-frontend/src/App.svelte", "radiohub-frontend/src/main.js"] },
+  { name = "logik", dateien = ["radiohub-frontend/src/lib/**"] },
+]
+erlaubt = { oberflaeche = ["logik"] }
+
+# ----- Allgemein -------------------------------------------------------------------------------------------------------
+
+[[regel]]
+kennung = "G1"
+titel = "Keine Bibliotheken aus dem Netz"
+art = "verboten"
+warum = "Schriften, Symbole und Bibliotheken kommen über npm oder pip, nie über CDN-Links zur Laufzeit."
+dateien = ["radiohub-frontend/src/**", "radiohub-frontend/index.html", "radiohub-backend/backend/**"]
+muster = 'https?://(cdn|unpkg|cdnjs|fonts\.googleapis|fonts\.gstatic|use\.fontawesome)'
+
+[[regel]]
+kennung = "G2"
+titel = "Keine Browser-Dialoge"
+art = "verboten"
+warum = "Rückfragen und Meldungen laufen über eigene Bausteine der App; alert, confirm und prompt blockieren, sehen fremd aus und lassen sich nicht gestalten."
+dateien = ["radiohub-frontend/src/**"]
+muster = '(^|[^.\w])(window\.)?(alert|confirm|prompt)\('
+
+[[regel]]
+kennung = "G3"
+titel = "Keine feste Fassung im Code"
+art = "verboten"
+warum = "version.json ist die einzige Quelle der Fassung; Backend (backend/fassung.py) und Oberfläche (Vite define) lesen sie, nichts schreibt sie von Hand ab."
+dateien = ["radiohub-frontend/src/**", "radiohub-frontend/*.js", "radiohub-frontend/package.json", "radiohub-backend/backend/**"]
+muster = '''(?i)["']?version["']?\s*[=:]\s*["']v?\d+\.\d+\.\d+'''
+
+[[regel]]
+kennung = "G4"
+titel = "Architektur, Plan und Fassung sind da"
+art = "pflicht"
+warum = "Erst das Design, dann der Bau; Entscheidungen und Regeln haben einen festen Ort."
+dateien = ["docs/ARCHITEKTUR.md", "docs/umbau/PLAN.md", "architektur/regeln.toml", "version.json"]
