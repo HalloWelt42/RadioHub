@@ -65,6 +65,21 @@ Git-Marke `vor-RAD-1`.
 - Fehlende Logos aus der Homepage nachholen; Karte nach Region.
 - Werbeverdacht neu gewichten (Cache-Kopf allein reicht nicht).
 
+### Webversion nur mit Radio (RAD-4, Nutzer 16.11.2026)
+
+| Nr | Frage | Entscheidung |
+|---|---|---|
+| 25 | Sender | Nur abspielbare: https-Stream und zuletzt erreichbar (GitHub Pages läuft über https, ohne Backend gibt es keinen Durchleiter) |
+| 26 | Aktualisierung | Vorerst eine statische Liste im Repo, die wir unabhängig per Skript neu erzeugen und einspielen; ein Cronjob kann dasselbe Skript später aufrufen |
+| 27 | Umfang | Suche, Schnellfilter, Ausschlussregeln und Favoriten im Browser gespeichert, Favoriten als Datei exportieren und importieren, Themes mit Hell/Dunkel/System und Schriftstufen, Rechner- und Telefonansicht, Wiedergabe direkt im Browser, dazu der Wecker (solange die Seite offen ist). Ohne Zeitversatz, Aufnahmen, Übergabe, laufende Titel, Podcasts; die Oberfläche zeigt nur, was die Webversion kann |
+| 28 | Zeitpunkt | Mit der Filterung: Etappe 3 baut gegen die Schnittstelle "Senderquelle" (Backend oder statisch), direkt danach Etappe 3b Webbau mit statischer Liste; Wecker der Webversion mit Etappe 5 |
+
+Aufbau: eine Oberfläche, zwei Bauziele. Die Radio-Bausteine kennen nur die Schnittstellen Senderquelle (Abfrage,
+Facetten, Favoriten, Regeln) und Wiedergabe (Fähigkeiten je Quelle); die volle App verdrahtet sie mit dem Backend,
+die Webversion mit statischen Dateien, Browser-Speicher und direktem Abspielen. Die Aufbereitung der Senderdaten
+(exakte Sprachen, Genres, Dubletten, Qualität) ist ein gemeinsamer Baustein für den Abgleich im Backend und das
+Skript der statischen Liste.
+
 ## Etappen
 
 Jede Etappe endet mit Tests, Ausrollen nach grünem Lauf, Bildschirmfotos am Ticket. Rechner und Telefon wachsen
@@ -76,8 +91,9 @@ gemeinsam (Entscheidung 20).
 | 1 Fundament | Ordner frontend/backend, Git-Haken, version.json, Architekturregeln, Ausrollen, Handbuch, LICENSE und README nach Vorlage; Absichern (Ports nur über den Vorbau, kein CORS, Durchleiter per Kennung, Container nicht als root); Umzug nach /mnt/data/radiohub |
 | 2 Appkern-Grundlage | Vorlage HiFi und Instrumente in den Appkern; Oberfläche auf die Appkern-Schale (TypeScript, Darstellung mit Schriftstufen und Hell/Dunkel/System, Telefonrahmen, Rückfrage, Meldungen); Backend auf Appkern-Unterbau mit Anmeldung |
 | 3 Filterung | Entwurf zuerst (Frage 23); Regeln, Abfrage mit Facetten und Adresse, Ausgeblendete Sender mit Grund, Bewertungen, Werbung; Senderdaten (Felder, Abgleich, Dubletten, Qualität, Genres) |
+| 3b Webversion | Webbau nur Radio für GitHub Pages: statische Senderliste per Skript, Senderquelle im Browser (Filter, Regeln, Favoriten lokal, Export/Import), direkte Wiedergabe |
 | 4 Player | Ein Tonausgang, Zustandsmaschine, Quellen-Schnittstelle, Hausempfang mit Übergabe (Appkern-Baustein), Zeitversatz im Speicher, Aufnahme sauber, Podcasts direkt, Ereignisstrom statt drei Abfragen, Titelverlauf |
-| 5 Wecker | Modernisiert im HiFi-Baukasten, eigenständig, zuverlässig auch bei gesperrtem Ton |
+| 5 Wecker | Modernisiert im HiFi-Baukasten, eigenständig, zuverlässig auch bei gesperrtem Ton; auch in der Webversion |
 | 6 Übrige Bereiche | Aufnahmen, Schnitt, Podcasts, Einstellungen auf die Bausteine; Löschen mit Folgenvorschau; Übersetzungen |
 | 7 Mehrwert | Ähnliche Sender, Logos, Karte |
 | Abschluss | Drehbuch der Browsertests, Abnahme, Design-Dauerkarten im Board |
