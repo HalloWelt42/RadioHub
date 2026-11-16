@@ -27,6 +27,7 @@
   --rh-nav-an-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.14 * var(--hifi-glanz))), 0 1px 3px rgb(0 0 0 / .6);
   --rh-nav-tinte: var(--ak-mulde-tinte);
   --rh-nav-tinte-an: var(--ak-mulde-tinte-an);
+  --rh-nav-tinte-aktiv: var(--akzent-flaeche); /* gewählter Bereich leuchtet auf dunklem Metall */
   --rh-nav-schiene: var(--ak-mulde);
 
   /* Logo und Prägung */

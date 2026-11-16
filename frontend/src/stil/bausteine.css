@@ -32,7 +32,7 @@ html, body { height: 100%; overflow: hidden; }
   border-radius: var(--rh-pille); cursor: pointer; text-decoration: none; font-size: var(--klein); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
   color: var(--rh-nav-tinte); background: transparent; transition: color var(--schnell), background-color var(--schnell); --ak-schlitz-oben: 4px; }
 .rh-nav-knopf:hover { color: var(--rh-nav-tinte-an); }
-.rh-nav-knopf[aria-current="page"] { color: var(--akzent-flaeche); background-color: var(--rh-nav-an); background-image: var(--rh-erhaben); box-shadow: var(--rh-nav-an-schatten);
+.rh-nav-knopf[aria-current="page"] { color: var(--rh-nav-tinte-aktiv); background-color: var(--rh-nav-an); background-image: var(--rh-erhaben); box-shadow: var(--rh-nav-an-schatten);
   text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--akzent-flaeche) 60%, transparent); }
 .rh-nav-knopf:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
 .rh-nav-knopf i { display: none; }
