@@ -1,8 +1,8 @@
 # Vorschaltdienst wie bei Kellerwolke und Transkription: TLS mit dem Blattzertifikat der Hausstelle und HTTP/2 auf
-# 9093, dahinter die Oberfläche (nginx, Port 80 im Netz von compose). HTTPS braucht das Telefon für Bildschirm wach
-# halten und als Web-App. Beim Zugriff per IP steht kein Servername im Handschlag, darum default_sni: radiohub.local
-# steht in jedem Zertifikat (tools/zertifikat.sh nimmt es immer auf). Kein HSTS: unter einem Rechnernamen würde es
-# alle Ports des Rechners auf HTTPS zwingen. Die Adresse über http (9092) bleibt.
+# 9093, dahinter die Oberfläche (nginx, Port 8080 nur im Netz von compose). Er ist der einzige veröffentlichte Port.
+# HTTPS braucht das Telefon für Bildschirm wach halten und als Web-App. Beim Zugriff per IP steht kein Servername im
+# Handschlag, darum default_sni: radiohub.local steht in jedem Zertifikat (das Ausrollen und tools/zertifikat.sh nehmen
+# es immer auf). Kein HSTS: unter einem Rechnernamen würde es alle Ports des Rechners auf HTTPS zwingen.
 {
 	admin off
 	auto_https off
@@ -17,7 +17,7 @@
 		-Server
 	}
 	# Ton und Ereignisströme gehen ungepuffert durch
-	reverse_proxy radiohub-frontend:80 {
+	reverse_proxy radiohub-frontend:8080 {
 		flush_interval -1
 	}
 }

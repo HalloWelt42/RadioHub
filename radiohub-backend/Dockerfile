@@ -17,7 +17,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY version.json ./
 COPY radiohub-backend/backend/ ./backend/
 
-# Port
+# Nicht als root (wie die Vorlage des Appkerns: 1000:1000, der Nutzer pi besitzt die Daten auf dem Pi); ohne eigenes
+# Heimverzeichnis, darum HOME in /tmp
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/tmp
+USER 1000:1000
+
+# Nur im Netz der Container (vor der Oberfläche steht der Vorschaltdienst)
 EXPOSE 8000
 
 # Start

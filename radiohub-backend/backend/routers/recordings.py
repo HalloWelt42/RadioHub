@@ -1,13 +1,14 @@
 """
-RadioHub v0.4.0 - Recordings Router
+RadioHub - Recordings Router
 
 Statistik der Aufnahmen und Wiedergabe einer Datei aus der Ablage (Pfad relativ zur Wurzel der Ablage).
 Ordner und Dateien zeigt der Datei-Explorer (routers/file_explorer.py).
 """
 import shutil
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 
+from ..ablage import orte
 from ..ablage.wiedergabe import ausliefern
 from ..config import get_arbeit_dir
 from ..database import db_session
@@ -31,5 +32,9 @@ async def get_stats():
 
 @router.get("/play")
 async def play_file(request: Request, path: str = Query(..., description="Pfad in der Ablage")):
-    """Audio-Datei aus der Ablage streamen, mit Range zum Spulen"""
-    return await ausliefern(path, request)
+    """Audio-Datei unter Aufnahmen oder Podcasts aus der Ablage streamen, mit Range zum Spulen; andere Pfade 400"""
+    try:
+        pfad = orte.im_bereich(path)
+    except ValueError as f:
+        raise HTTPException(400, str(f)) from None
+    return await ausliefern(pfad, request)

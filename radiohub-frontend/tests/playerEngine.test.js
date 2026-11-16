@@ -65,7 +65,7 @@ vi.mock('../src/lib/api.js', () => {
         const base = `${BASE}/api/hls/playlist.m3u8`;
         return sid ? `${base}?sid=${sid}` : base;
       }),
-      getStreamProxyUrl: vi.fn((url) => `${BASE}/api/stream/proxy?url=${encodeURIComponent(url)}`),
+      getStationStreamUrl: vi.fn((uuid) => `${BASE}/api/stream/sender/${encodeURIComponent(uuid)}`),
       getEpisodePlayUrl: vi.fn((id) => `${BASE}/api/podcasts/episodes/${id}/play`),
       getEpisodeStreamUrl: vi.fn((id) => `${BASE}/api/podcasts/episodes/${id}/stream`),
       markEpisodePlayed: vi.fn(() => Promise.resolve({})),
@@ -234,7 +234,7 @@ describe('PlayerEngine', () => {
     it('TC-A2: Audio-Source nutzt Backend-Proxy', async () => {
       await engine.playStation(STATION_A);
 
-      expect(audioEl.src).toBe(api.getStreamProxyUrl(STATION_A.url_resolved));
+      expect(audioEl.src).toBe(api.getStationStreamUrl(STATION_A.uuid));
       expect(audioEl.load).toHaveBeenCalled();
       expect(audioEl.play).toHaveBeenCalled();
     });
@@ -519,7 +519,7 @@ describe('PlayerEngine', () => {
       await engine.playStation(STATION_B);
 
       expect(state.currentStation).toEqual(STATION_B);
-      expect(audioEl.src).toBe(api.getStreamProxyUrl(STATION_B.url_resolved));
+      expect(audioEl.src).toBe(api.getStationStreamUrl(STATION_B.uuid));
     });
 
     it('TC-SW4: Schneller Wechsel A->B->C: Nur C spielt', async () => {
@@ -534,7 +534,7 @@ describe('PlayerEngine', () => {
 
       // Nur C darf aktiv sein
       expect(state.currentStation.name).toBe('TestRadio C');
-      expect(audioEl.src).toBe(api.getStreamProxyUrl('http://c.example.com'));
+      expect(audioEl.src).toBe(api.getStationStreamUrl('c'));
     });
 
     it('TC-SW5: Generation Counter verhindert veraltete State-Updates', async () => {
@@ -846,7 +846,8 @@ describe('PlayerEngine', () => {
       engine.toggleStreamMode();
 
       expect(state.playerMode).toBe('direct');
-      expect(audioEl.src).toBe(STATION_A.url_resolved);
+      expect(audioEl.src).toBe(api.getStationStreamUrl(STATION_A.uuid));
+      expect(audioEl.src).not.toContain('stream-a');
       expect(state.isLive).toBe(true);
     });
 
@@ -874,6 +875,26 @@ describe('PlayerEngine', () => {
       engine.toggleStreamMode();
 
       expect(state.playerMode).toBe('direct'); // Keine Änderung
+    });
+
+    it('TC-SM6: Rückfall nach fatalem HLS-Fehler spielt über den Durchleiter, nie die rohe Adresse', async () => {
+      vi.useRealTimers();
+      await engine.playStation(STATION_A);
+      state.playerMode = 'direct';
+      state.canPlayHLS = true;
+      state.canPlayDirect = true;
+      engine.toggleStreamMode();
+      for (let i = 0; i < 40 && !engine._getHLSInstance(); i++) await new Promise(r => setTimeout(r, 50));
+      const hls = engine._getHLSInstance();
+      expect(hls).toBeTruthy();
+      audioEl.src = 'blob:hls';
+
+      hls._handlers.hlsError(null, { fatal: true, type: 'otherError', details: 'probe' });
+
+      expect(state.playerMode).toBe('direct');
+      expect(audioEl.src).toBe(api.getStationStreamUrl(STATION_A.uuid));
+      expect(audioEl.src).not.toContain('stream-a');
+      vi.useFakeTimers();
     });
 
     it('TC-SM4: toggleStreamMode ignoriert wenn Direct nicht abspielbar', () => {

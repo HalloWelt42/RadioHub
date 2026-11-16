@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/.env`, Modus 0600: Adressen der Kellerwolke und der Vertonung, Zertifikatsstelle, Kennung der Zeit-Stimme (keine Schlüssel)"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: 89ecc24
+stand: b7034e3
 ---
 
 # RadioHub
@@ -34,7 +34,8 @@ Regeln stehen in `docs/ARCHITEKTUR.md`, der Plan der Überarbeitung in `docs/umb
 ## Was sie braucht
 
 - Den Pi ({{rechner}}) nach [[Grundlage Pi]] mit Docker und dem gemeinsamen Netz `haus`; RadioHub läuft dort mit
-  `compose.pi.yml` in drei Containern: Backend (FastAPI, FFmpeg), Oberfläche (nginx) und Vorschaltdienst (Caddy).
+  `compose.pi.yml` in drei Containern: Backend (FastAPI, FFmpeg, Nutzer 1000), Oberfläche (nginx ohne root) und
+  Vorschaltdienst (Caddy); veröffentlicht ist nur der Vorschaltdienst.
 - Die [[Kellerwolke]] als Ablage (App RadioHub mit eigenem App-Schlüssel); ohne sie läuft das Radio, aber Aufnehmen,
   Herunterladen und die Zeitansage melden, dass die Ablage fehlt.
 - Ohne die es auch geht: OSMLocal für die Ortssuche der Sonnenzeiten (über das Netz `haus`, Name `osmlocal`) und die
@@ -111,5 +112,11 @@ Vor jedem Ausrollen entsteht nach der Regel des Appkerns eine Kopie der Datenban
 - **Commit wird abgelehnt:** Der Haken nennt den Befund (Zeichen, Stil, harte Regel, Kennung RAD-n fehlt). Ursache
   beheben; eine Ausnahme von einer harten Regel gilt nur mit einem Kommentar des Nutzers am Ticket "Ausnahme
   freigegeben: <Regel>" und einem Eintrag in `architektur/ausnahmen.toml`.
+- **Ein Sender spielt nicht, andere schon:** Der Durchleiter spielt nur bekannte Sender (Kennung, die Adresse kommt aus
+  der Datenbank), prüft TLS und folgt Weiterleitungen nur auf http und https; ein Sender mit abgelaufenem Zertifikat
+  bleibt stumm (502 im Protokoll des Backends). In den Senderdetails eine eigene Adresse eintragen, sie gilt vor der
+  aus dem Senderverzeichnis.
+- **Die Datenbank soll ganz geprüft werden:** `/health` fragt nur, ob sie antwortet; die volle Prüfung über die ganze
+  Datei ist `GET /api/datenbank/pruefung` (dauert bei der großen Datenbank eine Weile).
 - **Ortssuche findet nichts:** OSMLocal läuft nicht oder hängt nicht im Netz `haus`; der Standort des Telefons geht
   trotzdem.

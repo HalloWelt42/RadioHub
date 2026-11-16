@@ -96,6 +96,9 @@
        ========================================== */
     --hifi-border-light: rgba(255, 255, 255, 0.5);
     --hifi-border-dark: rgba(0, 0, 0, 0.1);
+    /* Randfarbe für Trennlinien von 1px zwischen Flächen, unter dem Namen der Marke des Appkerns (die Stilprüfung
+       erlaubt einseitige Linien nur in dieser Farbe); folgt dem Thema über --hifi-border-dark */
+    --rand: var(--hifi-border-dark);
     --hifi-border-radius-sm: 6px;
     --hifi-border-radius-md: 12px;
     --hifi-border-radius-lg: 20px;
@@ -186,7 +189,6 @@
     --hifi-z-context: 2000;
     --hifi-z-modal: 3000;
     --hifi-z-toast: 4000;
-    --hifi-z-tour: 4500;
 }
 
 /* ==========================================

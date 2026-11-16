@@ -13,8 +13,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .config import DATA_DIR, VERSION
-from .database import init_db, check_db_health
+from .config import DATA_DIR, VERSION, erlaubte_urspruenge
+from .database import init_db, datenbank_erreichbar, datenbank_pruefen
 
 # DB-Schema VOR Service-Imports initialisieren -- einige Service-Singletons
 # greifen bereits im Konstruktor auf DB-Tabellen zu (config, sessions ...).
@@ -27,6 +27,7 @@ from .services import rec_manager, podcast_service, buffer_manager, timeshift_bu
 from .services.hls_recorder import hls_recorder
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import AufnahmeFehler, aufnahmen
+from .services.durchleiter import DurchleiterFehler
 from . import ablage as ablage_paket
 from .ablage import AblageFehler, Belegt, NichtEingerichtet, NichtErreichbar, NichtGefunden
 
@@ -110,16 +111,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS - erlaubt Zugriff von separatem Frontend
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS: die Oberfläche spricht /api über denselben Ursprung (im Betrieb nginx hinter dem Vorschaltdienst, beim Entwickeln
+# der Proxy von Vite); fremde Ursprünge nur, wenn ALLOWED_ORIGINS sie ausdrücklich nennt (nie "*")
+_urspruenge = erlaubte_urspruenge(os.getenv("ALLOWED_ORIGINS", ""))
+if _urspruenge:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_urspruenge,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Fehler der Ablage und der Aufnahmen als HTTP-Status mit lesbarer Meldung
 _ABLAGE_STATUS = ((NichtGefunden, 404), (Belegt, 409), (NichtEingerichtet, 503), (NichtErreichbar, 503))
@@ -133,6 +135,11 @@ async def _ablage_fehler(request: Request, fehler: AblageFehler):
 
 @app.exception_handler(AufnahmeFehler)
 async def _aufnahme_fehler(request: Request, fehler: AufnahmeFehler):
+    return JSONResponse(status_code=fehler.status, content={"detail": str(fehler)})
+
+
+@app.exception_handler(DurchleiterFehler)
+async def _durchleiter_fehler(request: Request, fehler: DurchleiterFehler):
     return JSONResponse(status_code=fehler.status, content={"detail": str(fehler)})
 
 
@@ -178,10 +185,16 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """Health Check für Docker/Monitoring"""
-    db_health = check_db_health()
+    """Health Check für Docker/Monitoring: Fassung und ob die Datenbank antwortet (SELECT 1, keine volle Prüfung)"""
+    db_health = datenbank_erreichbar()
     return {
         "status": "healthy" if db_health["status"] == "healthy" else "degraded",
         "version": VERSION,
         "database": db_health["status"]
     }
+
+
+@app.get("/api/datenbank/pruefung")
+async def datenbank_pruefung():
+    """Volle Prüfung der Datenbank (integrity_check über die ganze Datei); läuft neben der Ereignisschleife"""
+    return await asyncio.to_thread(datenbank_pruefen)

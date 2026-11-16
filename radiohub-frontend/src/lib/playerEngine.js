@@ -156,8 +156,7 @@ export async function playStation(station) {
   }
 
 
-  const url = station.custom_url || station.url_resolved || station.url;
-  _audioEl.src = api.getStreamProxyUrl(url);
+  _audioEl.src = api.getStationStreamUrl(station.uuid);
   _audioEl.load();
 
   try {
@@ -680,8 +679,8 @@ function _switchToDirect() {
   // HLS.js Instanz zerstören, aber Backend-Buffer + Polling behalten
   _destroyHLS();
 
-  const url = _appState.currentStation.url_resolved || _appState.currentStation.url;
-  _audioEl.src = url;
+  // auch hier über den Durchleiter: unter HTTPS lädt der Browser keinen http-Strom, und die Adresse kennt das Backend
+  _audioEl.src = api.getStationStreamUrl(_appState.currentStation.uuid);
   _audioEl.load();
   _audioEl.play().catch(e => console.error('Direct play error:', e));
 
@@ -1473,8 +1472,7 @@ function _switchToHLSPodcast(gen, episode) {
 
 function _playDirectFallback(gen) {
   if (_generation !== gen || !_audioEl || !_appState?.currentStation) return;
-  const url = _appState.currentStation.url_resolved || _appState.currentStation.url;
-  _audioEl.src = url;
+  _audioEl.src = api.getStationStreamUrl(_appState.currentStation.uuid);
   _audioEl.load();
   _audioEl.play().catch(e => console.error('Fallback play error:', e));
 }

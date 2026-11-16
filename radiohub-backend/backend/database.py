@@ -489,31 +489,34 @@ def init_db():
     print("✓ Datenbank initialisiert")
 
 
-def check_db_health() -> dict:
-    """Prüft Datenbank-Gesundheit"""
+def datenbank_erreichbar() -> dict:
+    """Leichte Probe für /health (alle 30 Sekunden vom Docker-Healthcheck): öffnet die Datenbank und fragt SELECT 1.
+    Die volle Prüfung über die ganze Datei steht in datenbank_pruefen."""
+    try:
+        with db_session() as conn:
+            conn.execute("SELECT 1").fetchone()
+        return {"status": "healthy"}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+def datenbank_pruefen() -> dict:
+    """Volle Prüfung (PRAGMA integrity_check über die ganze Datei, dauert bei der großen Datenbank lange) und WAL-Modus;
+    nur auf ausdrücklichen Aufruf (GET /api/datenbank/pruefung)."""
     result = {
         "status": "healthy",
         "timestamp": datetime.now().isoformat()
     }
-    
     try:
         with db_session() as conn:
             c = conn.cursor()
-            
-            # Integrity Check
             c.execute("PRAGMA integrity_check")
-            integrity = c.fetchone()[0]
-            result["integrity"] = integrity == "ok"
-            
-            # WAL-Modus aktiv?
+            result["integrity"] = c.fetchone()[0] == "ok"
             c.execute("PRAGMA journal_mode")
             result["wal_mode"] = c.fetchone()[0] == "wal"
-            
             if not result["integrity"]:
                 result["status"] = "unhealthy"
-                
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
     return result

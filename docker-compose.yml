@@ -1,20 +1,21 @@
-# RadioHub - Top-Level Compose
+# RadioHub auf einem anderen Rechner (auf dem Pi gilt compose.pi.yml, ausgerollt mit tools/ausrollen.sh):
 #
-# Ein-Befehl-Installation auf Pi und Mac:
-#   docker compose up -d
+#   docker compose up -d --build
 #
-# Frontend: http://localhost:9092, mit HTTPS (Telefon, Web-App) https://<rechner>:9093 über radiohub-vorne
-# Backend:  http://localhost:9091  (API direkt; im Frontend per Reverse-Proxy unter /api)
+# Vorher ein Zertifikat für den Rechner als zertifikate/radiohub.pem und zertifikate/radiohub-schluessel.pem (etwa mit
+# mkcert, siehe tools/zertifikat.sh) und ./data für den Nutzer 1000 (sudo chown -R 1000:1000 data). Erreichbar ist nur
+# der Vorschaltdienst: https://<Rechner>:9093. Backend und Oberfläche (nginx) sprechen nur im Netz der Container.
 # Daten:    ./data   (Datenbank, Cache, Zwischenstände; Aufnahmen und Podcast-Folgen liegen in der Kellerwolke)
 #
-# Kellerwolke (Einstellungen in .env neben dieser Datei, siehe README):
+# Kellerwolke und weitere Einstellungen in .env neben dieser Datei (Modus 600, siehe README):
 #   RADIOHUB_KELLERWOLKE_ADRESSE    Adresse der Kellerwolke
 #   RADIOHUB_KELLERWOLKE_SCHLUESSEL Schlüsseldatei im Container (Vorgabe /data/kellerwolke.schluessel)
 #   RADIOHUB_KELLERWOLKE_WURZEL     Wurzelordner (Vorgabe Apps/RadioHub)
 #   RADIOHUB_KELLERWOLKE_CA         Zertifikatsstelle im Container, etwa /zertifikate/rootCA.pem
-#   RADIOHUB_ORTSSUCHE_ADRESSE      Kartensuche für den Ort der Sonnenzeiten (OSM lokal), etwa http://<pi>:8120
+#   RADIOHUB_ORTSSUCHE_ADRESSE      Kartensuche für den Ort der Sonnenzeiten (OSM lokal), etwa http://<rechner>:8120
 #   RADIOHUB_VERTONUNG_ADRESSE      Vertonung für die Bausteine der Zeitansage, etwa https://<rechner>:8641
 #   RADIOHUB_ZEITSTIMME             Kennung der Zeit-Stimme der Vertonung (dort für RadioHub freigeben)
+#   ALLOWED_ORIGINS                 nur, wenn eine fremde Seite die Schnittstelle nutzen soll (durch Komma getrennt, nie *)
 
 services:
   radiohub-backend:
@@ -23,14 +24,15 @@ services:
       dockerfile: radiohub-backend/Dockerfile
     container_name: radiohub-backend
     restart: unless-stopped
-    ports:
-      - "9091:8000"
+    security_opt: ["no-new-privileges:true"]
+    expose:
+      - "8000"
     volumes:
       - ./data:/data
       - ./zertifikate:/zertifikate:ro
     environment:
       - DATA_PATH=/data
-      - ALLOWED_ORIGINS=*
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
       - TZ=Europe/Berlin
       - RADIOHUB_KELLERWOLKE_ADRESSE=${RADIOHUB_KELLERWOLKE_ADRESSE:-}
       - RADIOHUB_KELLERWOLKE_SCHLUESSEL=${RADIOHUB_KELLERWOLKE_SCHLUESSEL:-/data/kellerwolke.schluessel}
@@ -53,15 +55,16 @@ services:
       dockerfile: radiohub-frontend/Dockerfile
     container_name: radiohub-frontend
     restart: unless-stopped
-    ports:
-      - "9092:80"
+    security_opt: ["no-new-privileges:true"]
+    expose:
+      - "8080"
     environment:
       - TZ=Europe/Berlin
     depends_on:
       - radiohub-backend
 
-  # HTTPS vor der Oberfläche (Zertifikat der Hausstelle in ./zertifikate, siehe tools/zertifikat.sh)
-  radiohub-vorne:
+  # HTTPS vor der Oberfläche (Zertifikat in ./zertifikate, siehe tools/zertifikat.sh)
+  vorne:
     image: caddy:2.11.7-alpine
     container_name: radiohub-vorne
     restart: unless-stopped

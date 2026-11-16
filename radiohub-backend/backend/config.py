@@ -15,6 +15,12 @@ from .fassung import FASSUNG
 # === Fassung (einzige Quelle: version.json) ===
 VERSION = FASSUNG
 
+
+def erlaubte_urspruenge(wert: str) -> list[str]:
+    """Ursprünge, denen das Backend Antworten an fremde Seiten erlaubt (ALLOWED_ORIGINS, durch Komma getrennt).
+    Vorgabe leer: die Oberfläche spricht über denselben Ursprung. "*" gilt nie, auch wenn es dasteht."""
+    return [u.strip() for u in wert.split(",") if u.strip() and u.strip() != "*"]
+
 # === Pfade (delegiert an Storage-Zonen) ===
 # Basis-Verzeichnis (Docker: /data, Lokal: ./data)
 DATA_DIR = _get_data_dir()

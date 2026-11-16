@@ -52,6 +52,11 @@ logik           lib/**                                 Zustand, Wiedergabe (play
 | G2 | Keine Browser-Dialoge (alert, confirm, prompt) |
 | G3 | Keine feste Fassung im Code; nur `version.json` |
 | G4 | Architektur, Plan, Regeln, Fassung, die Dateien des Betriebs (compose.pi.yml, deploy/) und Handbuchseite mit Einrichtungsskript sind da |
+| B1 | Durchleiter nur über Senderkennung oder Folge, nie über eine rohe Adresse aus der Oberfläche |
+| B2 | TLS-Prüfung bleibt an (kein `verify=False`) |
+| B3 | Kein Abruf fremder Dienste aus der Oberfläche (die Fassungserkennung fragt nur die eigene Startseite) |
+| B4 | Keine CORS-Freigabe für alle Ursprünge (Backend, nginx, Vite, Compose) |
+| B5 | Backend und nginx nicht veröffentlicht; nach außen nur der Vorschaltdienst |
 
 Dazu prüft der Haken jede vorgemerkte Datei auf gerade Zeichen und auf den Stil (kein `!important`, keine einseitigen
 Streifen); die Marken der Gestaltung werden nur gemeldet, bis die Oberfläche in Etappe 2 auf die Bausteine des
@@ -74,5 +79,6 @@ Diese Regeln erfüllt der Code heute noch nicht; sie kommen mit der Etappe, die 
 | 2 Appkern-Grundlage | Oberfläche in TypeScript mit svelte-check ohne Fehler; Marken der Gestaltung scharf (`gestaltung.toml`), keine festen Farben, Schriftgrößen und Schriften; Darstellung mit Schriftstufen und Hell, Dunkel, System |
 | 2 Appkern-Grundlage | Kein rohes `fetch` außerhalb der Datenschicht (heute an fünf Stellen an `api.js` vorbei); keine Adressen wie `localhost:9091` in der Oberfläche |
 | 3 Filterung | Router ohne SQL: jede Abfrage über die Datenschicht; Sender nur über die Schnittstelle Senderquelle (Backend oder statisch für die Webversion) |
-| 4 Player | Ein Tonausgang: nur die Wiedergabe greift auf das `<audio>`-Element zu; Zeitversatz und Aufnahme starten nur mit der Senderkennung (keine `stream_url` aus der Oberfläche) |
+| 3 Filterung | Werbeprüfung nur mit der Senderkennung (heute nimmt `/api/ad-detection/check` noch eine `stream_url` aus der Oberfläche an) |
+| 4 Player | Ein Tonausgang: nur die Wiedergabe greift auf das `<audio>`-Element zu; Zeitversatz und Aufnahme starten nur mit der Senderkennung (heute senden `startHLS` und die Aufnahme noch `stream_url`, das Backend öffnet sie mit FFmpeg) |
 | 6 Übrige Bereiche | Kleine Dateien (höchstens 400 Zeilen je Baustein und Modul); Löschen nur mit Folgenvorschau und abschließender Bestätigung |

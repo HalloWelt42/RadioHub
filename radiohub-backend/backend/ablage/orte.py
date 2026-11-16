@@ -15,10 +15,19 @@ from datetime import datetime
 
 AUFNAHMEN = "Aufnahmen"
 PODCASTS = "Podcasts"
+BEREICHE = (AUFNAHMEN, PODCASTS)   # was Explorer und Wiedergabe zeigen dürfen (nicht etwa die Bausteine der Zeitansage)
 TITELLISTE = "Titelliste.json"
 WELLENFORM = "Wellenform.peaks"
 
 _UNERLAUBT = re.compile(r'[/\\:*?"<>|\x00-\x1f]+')
+
+
+def im_bereich(pfad: str) -> str:
+    """Pfad unter Aufnahmen oder Podcasts ohne leere Teile; ValueError bei "." oder ".." und außerhalb der Bereiche."""
+    teile = [t for t in str(pfad).replace("\\", "/").split("/") if t]
+    if not teile or teile[0] not in BEREICHE or any(t in (".", "..") for t in teile):
+        raise ValueError(f"Pfad außerhalb der Aufnahmen und Podcasts: {pfad!r}")
+    return "/".join(teile)
 
 
 def name(text: str, laenge: int = 80, ersatz: str = "Ohne Namen") -> str:

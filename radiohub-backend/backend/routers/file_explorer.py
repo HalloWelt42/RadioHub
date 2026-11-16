@@ -25,10 +25,10 @@ router = APIRouter(prefix="/api/files", tags=["file-explorer"])
 
 def _in_bereich(pfad: str) -> str:
     """Nur Pfade unter Aufnahmen oder Podcasts (keine Ausbrüche, keine anderen Ordner der App)."""
-    teile = [t for t in pfad.replace("\\", "/").split("/") if t]
-    if not teile or teile[0] not in (orte.AUFNAHMEN, orte.PODCASTS) or any(t in (".", "..") for t in teile):
-        raise HTTPException(403, "Zugriff verweigert")
-    return "/".join(teile)
+    try:
+        return orte.im_bereich(pfad)
+    except ValueError:
+        raise HTTPException(403, "Zugriff verweigert") from None
 
 
 def _datei(e: Eintrag, ordner: str) -> dict:

@@ -1,7 +1,7 @@
 # RadioHub auf dem Pi (tools/ausrollen.sh: docker compose -f compose.pi.yml). Vorne Caddy mit dem Zertifikat der
-# Hausstelle (das Ausrollen stellt es aus) auf Port 9093, dahinter die Oberfläche (nginx) und das Backend. Im Heimnetz
-# nur TLS (HELF-169, Handbuch: Grundlage Pi): die http-Ports gelten nur am Pi selbst (127.0.0.1); die frühere Adresse
-# auf 9092 leitet der Vorbau des Pi auf 9093 um, radio.<Rufname>.lan reicht er an 9093 weiter.
+# Hausstelle (das Ausrollen stellt es aus) auf Port 9093, dahinter die Oberfläche (nginx) und das Backend, beide nur im
+# Netz der Container (expose) und nicht als root. Im Heimnetz nur TLS (HELF-169, Handbuch: Grundlage Pi): die frühere
+# Adresse auf 9092 leitet der Vorbau des Pi auf 9093 um, radio.<Rufname>.lan reicht er an 9093 weiter.
 # Daten in ./data (Datenbank, Cache, storage.json, kellerwolke.schluessel), Zertifikate in ./zertifikate, Einstellungen
 # des Hauses (Kellerwolke, Ortssuche, Vertonung, Zeit-Stimme) in ./.env (Modus 600, nicht im Repo).
 services:
@@ -12,8 +12,9 @@ services:
     image: radiohub-backend:aktuell
     container_name: radiohub-backend
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:9091:8000"
+    security_opt: ["no-new-privileges:true"]
+    expose:
+      - "8000"
     networks:
       default: {}
       # die Ortssuche (Sonnenzeiten) fragt OSMLocal über das gemeinsame Netz der Apps auf dem Pi
@@ -23,7 +24,6 @@ services:
       - ./zertifikate:/zertifikate:ro
     environment:
       - DATA_PATH=/data
-      - ALLOWED_ORIGINS=*
       - TZ=Europe/Berlin
       - RADIOHUB_KELLERWOLKE_ADRESSE=${RADIOHUB_KELLERWOLKE_ADRESSE:-}
       - RADIOHUB_KELLERWOLKE_SCHLUESSEL=${RADIOHUB_KELLERWOLKE_SCHLUESSEL:-/data/kellerwolke.schluessel}
@@ -48,8 +48,9 @@ services:
     image: radiohub-frontend:aktuell
     container_name: radiohub-frontend
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:9092:80"
+    security_opt: ["no-new-privileges:true"]
+    expose:
+      - "8080"
     environment:
       - TZ=Europe/Berlin
     depends_on:

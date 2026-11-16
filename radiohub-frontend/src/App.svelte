@@ -1,10 +1,7 @@
 <script>
   import HiFiPlayer from './components/HiFiPlayer.svelte';
   import HiFiToast from './components/hifi/HiFiToast.svelte';
-  import HiFiTour from './components/hifi/HiFiTour.svelte';
   import HiFiLed from './components/hifi/HiFiLed.svelte';
-  import { tourState, toggleMenu } from './lib/tour/tourEngine.svelte.js';
-  import { updateState, startUpdateChecker } from './lib/updateChecker.svelte.js';
   import StationsTab from './components/StationsTab.svelte';
   import RecordingsTab from './components/RecordingsTab.svelte';
   import PodcastsTab from './components/PodcastsTab.svelte';
@@ -72,11 +69,6 @@
       actions.showToast(t('toast.backendOffline'), 'error');
       backendOnline = false;
     });
-  });
-
-  // Update-Check starten
-  $effect(() => {
-    startUpdateChecker();
   });
 
   // Selbst-Aktualisierung: neue Fassung erkennen und im nächsten ruhigen Moment wechseln
@@ -236,20 +228,6 @@
     </nav>
     
     <div class="hifi-header-right">
-      <!-- Update-Check -->
-      <button class="update-check-btn" class:has-update={updateState.available}
-        onclick={() => { if (updateState.available) window.open(updateState.repoUrl + '/releases', '_blank'); }}
-        onmouseenter={sfx.hoverSoft}
-        title={updateState.available ? 'Update verfügbar: v' + updateState.remoteVersion : 'RadioHub v' + updateState.localVersion}>
-        <i class="fa-solid fa-circle-info"></i>
-      </button>
-
-      <!-- Lernmodus: vorläufig deaktiviert, Tour-Funktion noch nicht ausgereift
-      <button class="tour-toggle-btn" class:active={tourState.active || tourState.menuOpen} onclick={() => { toggleMenu(); sfx.click(); }} onmouseenter={sfx.hoverSoft} title="Lernmodus">
-        <i class="fa-solid fa-life-ring"></i>
-      </button>
-      -->
-
       <!-- Theme Switch -->
       <button class="hifi-nav-btn active" onclick={() => actions.toggleTheme()} onmouseenter={sfx.hoverSoft} title={appState.theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
         <HiFiLed color={appState.theme === 'dark' ? 'off' : 'yellow'} size="small" />
@@ -295,8 +273,6 @@
 <!-- Toast außerhalb hifi-app für korrektes z-index Stacking -->
 <HiFiToast />
 
-<!-- Lernmodus Tour-Overlay -->
-<HiFiTour />
 {/if}
 
 <style>
@@ -320,7 +296,7 @@
         linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(0,0,0,0.03) 100%),
         var(--hifi-brushed-metal),
         var(--hifi-bg-panel);
-    border-bottom: 1px solid var(--hifi-border-dark);
+    border-bottom: 1px solid var(--rand);
     border-radius: 0;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.1),
@@ -437,10 +413,11 @@
         var(--hifi-bg-panel);
     padding: 10px 16px;
     border-radius: var(--hifi-border-radius-pill);
+    /* Lichtkanten oben und unten mit 1px Unschärfe wie die Vorlagen des Appkerns */
     box-shadow:
         var(--hifi-shadow-button),
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.06);
+        inset 0 1px 1px rgba(255,255,255,0.1),
+        inset 0 -1px 1px rgba(0,0,0,0.06);
     position: relative;
     z-index: 2;
     transform: translateY(20px);
@@ -480,63 +457,6 @@
   }
   
   
-  /* Lernmodus-Button (Rettungsring) */
-  .update-check-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    background: var(--hifi-bg-tertiary);
-    border: none;
-    border-radius: 50%;
-    color: var(--hifi-text-secondary);
-    font-size: 14px;
-    cursor: default;
-    opacity: 0.4;
-    transition: all 0.15s ease;
-  }
-  .update-check-btn.has-update {
-    cursor: pointer;
-    opacity: 1;
-    color: var(--hifi-accent);
-    animation: update-pulse 1.5s ease-in-out infinite;
-  }
-  .update-check-btn.has-update:hover {
-    background: var(--hifi-bg-secondary);
-  }
-  @keyframes update-pulse {
-    0%, 100% { opacity: 0.6; box-shadow: 0 0 4px rgba(74, 144, 217, 0.3); }
-    50% { opacity: 1; box-shadow: 0 0 12px rgba(74, 144, 217, 0.5); text-shadow: 0 0 6px rgba(74, 144, 217, 0.6); }
-  }
-
-  .tour-toggle-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    background: var(--hifi-bg-tertiary);
-    border: none;
-    border-radius: 50%;
-    color: var(--hifi-text-secondary);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .tour-toggle-btn:hover {
-    color: var(--hifi-accent);
-    background: var(--hifi-bg-secondary);
-  }
-  .tour-toggle-btn.active {
-    color: var(--hifi-led-amber);
-    background: var(--hifi-bg-panel);
-    box-shadow: var(--hifi-shadow-inset), 0 0 8px rgba(230, 162, 60, 0.3);
-    text-shadow: 0 0 6px rgba(230, 162, 60, 0.6);
-  }
-
   .hifi-status {
     display: flex;
     align-items: center;

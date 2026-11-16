@@ -393,8 +393,10 @@ class RadioHubAPI {
     return `${this.baseUrl}/api/recordings/play?path=${encodeURIComponent(path)}`;
   }
 
-  getStreamProxyUrl(streamUrl) {
-    return `${this.baseUrl}/api/stream/proxy?url=${encodeURIComponent(streamUrl)}`;
+  /** Strom eines Senders über den Durchleiter: nur die Kennung, die Adresse (eigene vor aufgelöster vor eingetragener)
+   *  kennt das Backend. */
+  getStationStreamUrl(stationUuid) {
+    return `${this.baseUrl}/api/stream/sender/${encodeURIComponent(stationUuid)}`;
   }
 
   getSessionAudioUrl(sessionId) {

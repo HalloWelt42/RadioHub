@@ -21,15 +21,15 @@ RUN chmod +x download-fonts.sh && ./download-fonts.sh
 # Build
 RUN npm run build
 
-# Production
-FROM nginx:alpine
+# Auslieferung ohne root: nginx-unprivileged läuft als Nutzer nginx (101) und lauscht auf 8080
+FROM nginxinc/nginx-unprivileged:1.28-alpine
 
-# Config mit CORS
 COPY radiohub-frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Built files
 COPY --from=builder /bau/radiohub-frontend/dist /usr/share/nginx/html
 
-EXPOSE 80
+# Nur im Netz der Container (vor der Oberfläche steht der Vorschaltdienst)
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
