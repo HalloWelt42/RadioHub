@@ -89,13 +89,13 @@ def _sichtbar(v) -> int:
     return v.execute("SELECT COUNT(*) FROM sender_index WHERE sichtbar = 1").fetchone()[0]
 
 
-async def _aendern(arbeit: Callable[[object], str | None], *, treffer: bool, nur_regel: bool) -> RegelAenderung:
-    """`arbeit` ändert Regeln in der Transaktion und liefert die Kennung der betroffenen Regel; danach Sichtbarkeit
-    neu (mit `nur_regel` nur die Treffer dieser Regel) und die Zahlen vorher und nachher."""
+async def _aendern(arbeit: Callable[[object], tuple[str | None, list[int]]]) -> RegelAenderung:
+    """`arbeit` ändert eine Regel in der Transaktion und liefert ihre Kennung (None, wenn sie weg ist) und die Sender,
+    die sie trifft; nur deren Sichtbarkeit (und die ihrer Gruppen) wird neu berechnet."""
     def huelle(v) -> RegelAenderung:
         vorher = _sichtbar(v)
-        regel_id = arbeit(v)
-        sichtbarkeit.neu_berechnen(v, treffer=treffer, regel_ids=[regel_id] if nur_regel and regel_id else None)
+        regel_id, nrs = arbeit(v)
+        sichtbarkeit.neu_berechnen(v, nrs, treffer=False, merkmale=False)
         nachher = _sichtbar(v)
         return RegelAenderung(regel=regeln.holen(v, regel_id) if regel_id else None, bestand=sichtbarkeit.bestand(v),
                               ausgeblendet=max(0, vorher - nachher), wieder_sichtbar=max(0, nachher - vorher))
@@ -103,31 +103,34 @@ async def _aendern(arbeit: Callable[[object], str | None], *, treffer: bool, nur
 
 
 async def anlegen(entwurf: RegelEntwurf, herkunft: str = "nutzer") -> RegelAenderung:
-    def arbeit(v) -> str:
+    def arbeit(v) -> tuple[str, list[int]]:
         if gleich := regeln.gleiche(v, entwurf):
             raise Fehler(f"Diese Regel gibt es schon ({gleich})", 409)
-        return regeln.anlegen(v, entwurf, bestand.jetzt(), herkunft)
-    return await _aendern(arbeit, treffer=True, nur_regel=True)
+        regel_id = regeln.anlegen(v, entwurf, bestand.jetzt(), herkunft)
+        sichtbarkeit.treffer_berechnen(v, None, [regel_id])
+        return regel_id, sichtbarkeit.treffer_von(v, regel_id)
+    return await _aendern(arbeit)
 
 
 async def schalten(regel_id: str, an: bool) -> RegelAenderung:
-    def arbeit(v) -> str:
+    def arbeit(v) -> tuple[str, list[int]]:
         if not regeln.schalten(v, regel_id, an, bestand.jetzt()):
             raise NichtGefunden("Regel nicht gefunden")
-        return regel_id
-    return await _aendern(arbeit, treffer=False, nur_regel=False)
+        return regel_id, sichtbarkeit.treffer_von(v, regel_id)
+    return await _aendern(arbeit)
 
 
 async def entfernen(regel_id: str) -> RegelAenderung:
-    def arbeit(v) -> None:
+    def arbeit(v) -> tuple[None, list[int]]:
+        nrs = sichtbarkeit.treffer_von(v, regel_id)
         try:
             gefunden = regeln.entfernen(v, regel_id)
         except ValueError as f:
             raise Fehler(str(f)) from f
         if not gefunden:
             raise NichtGefunden("Regel nicht gefunden")
-        return None
-    return await _aendern(arbeit, treffer=False, nur_regel=False)
+        return None, nrs
+    return await _aendern(arbeit)
 
 
 # ----- Einzelne Sender -----------------------------------------------------------------------------------------------------

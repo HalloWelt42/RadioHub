@@ -45,18 +45,25 @@ def treffer_berechnen(v: sqlite3.Connection, nrs: list[int] | None = None, regel
                   [z["id"], *sql_werte, *werte])
 
 
-def _sicht(v: sqlite3.Connection, nrs: list[int] | None) -> None:
-    """Getroffen, sichtbar, Vertreter und Zahl der Varianten; geschrieben wird nur, was sich ändert."""
+def _sicht(v: sqlite3.Connection, nrs: list[int] | None, alle_gruppen: bool) -> None:
+    """Getroffen, sichtbar, Vertreter und Zahl der Varianten; geschrieben wird nur, was sich ändert. Vertreter rechnet
+    es für die Gruppen der genannten Sender, ohne Nennung für die Gruppen, deren Sichtbarkeit sich geändert hat (mit
+    `alle_gruppen` für alle, nach neuer Aufbereitung)."""
     bereich, werte = _bereich(nrs)
     getroffen = ("EXISTS (SELECT 1 FROM sender_ausblendung a JOIN regel r ON r.id = a.regel AND r.an = 1 "
                  "WHERE a.nr = sender_index.nr)")
     v.execute(f"UPDATE sender_index SET getroffen = {getroffen} WHERE getroffen <> {getroffen} {bereich}", werte)
     sichtbar = ("(CASE WHEN favorit = 1 THEN 1 WHEN verschwunden = 1 THEN 0 WHEN freigegeben = 1 THEN 1 "
                 "WHEN getroffen = 1 THEN 0 ELSE 1 END)")
+    geaendert = [z[0] for z in v.execute(f"SELECT nr FROM sender_index WHERE sichtbar <> {sichtbar} {bereich}", werte)]
     v.execute(f"UPDATE sender_index SET sichtbar = {sichtbar} WHERE sichtbar <> {sichtbar} {bereich}", werte)
-    # Vertreter je Gruppe (nur die Gruppen der genannten Sender): der beste sichtbare, Favoriten zuerst
-    gruppen, g_werte = ("", []) if nrs is None else (
-        " AND gruppe IN (SELECT gruppe FROM sender_index WHERE nr IN (SELECT value FROM json_each(?)))", [json.dumps(nrs)])
+    # Vertreter je Gruppe: der beste sichtbare, Favoriten zuerst
+    betroffen = nrs if nrs is not None else (None if alle_gruppen else geaendert)
+    if betroffen is not None and not betroffen:
+        return
+    gruppen, g_werte = ("", []) if betroffen is None else (
+        " AND gruppe IN (SELECT gruppe FROM sender_index WHERE nr IN (SELECT value FROM json_each(?)))",
+        [json.dumps(betroffen)])
     v.execute("CREATE TEMP TABLE IF NOT EXISTS rang (nr INTEGER PRIMARY KEY, vertreter INTEGER, varianten INTEGER)")
     v.execute("DELETE FROM temp.rang")
     v.execute(f"""INSERT INTO temp.rang (nr, vertreter, varianten)
@@ -66,19 +73,26 @@ def _sicht(v: sqlite3.Connection, nrs: list[int] | None) -> None:
                                               kbps DESC, erreichbar DESC, stimmen DESC, uuid) AS platz,
                            COUNT(*) OVER (PARTITION BY gruppe, sichtbar) AS n
                     FROM sender_index WHERE 1 = 1 {gruppen})""", g_werte)
-    v.execute("""UPDATE sender_index SET vertreter = r.vertreter, varianten = r.varianten FROM temp.rang r
-                 WHERE r.nr = sender_index.nr AND (sender_index.vertreter <> r.vertreter
-                                                   OR sender_index.varianten <> r.varianten)""")
+    v.executemany("UPDATE sender_index SET vertreter = ?, varianten = ? WHERE nr = ?", v.execute(
+        """SELECT r.vertreter, r.varianten, r.nr FROM temp.rang r JOIN sender_index i ON i.nr = r.nr
+           WHERE i.vertreter <> r.vertreter OR i.varianten <> r.varianten""").fetchall())
 
 
 def neu_berechnen(v: sqlite3.Connection, nrs: list[int] | None = None, *, treffer: bool = True,
-                  regel_ids: list[str] | None = None) -> None:
+                  regel_ids: list[str] | None = None, merkmale: bool = True) -> None:
     """Alles für alle Sender (nach Abgleich und Regeländerung) oder für die genannten und ihre Gruppen. Ohne
-    `treffer` bleiben die Treffer der Regeln, wie sie sind (Regel nur ein- oder ausgeschaltet)."""
-    _merkmale(v, nrs)
+    `treffer` bleiben die Treffer der Regeln, wie sie sind (Regel nur ein- oder ausgeschaltet); ohne `merkmale`
+    bleiben Favorit, Freigabe und Werbestufe, wie sie sind (sie ändern sich nur mit ihren Daten, nie mit Regeln)."""
+    if merkmale:
+        _merkmale(v, nrs)
     if treffer:
         treffer_berechnen(v, nrs, regel_ids)
-    _sicht(v, nrs)
+    _sicht(v, nrs, alle_gruppen=treffer and nrs is None and regel_ids is None)
+
+
+def treffer_von(v: sqlite3.Connection, regel_id: str) -> list[int]:
+    """Sender, die eine Regel trifft (ein- oder ausgeschaltet)."""
+    return [z[0] for z in v.execute("SELECT nr FROM sender_ausblendung WHERE regel = ?", (regel_id,))]
 
 
 def nrs_von(v: sqlite3.Connection, uuids: list[str]) -> list[int]:

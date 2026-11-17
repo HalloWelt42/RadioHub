@@ -50,6 +50,11 @@ def _aufzaehlung(werte: list[str], grenze: int = 4) -> str:
 def titel(art: str, entwurf: RegelEntwurf | None) -> str:
     """Die Regel in Worten, wie die Oberfläche sie zeigt."""
     if isinstance(entwurf, SpracheEntwurf):
+        codes = {sprachtabelle.code_von(e) for e in entwurf.eintraege}
+        if not entwurf.schluessel and len(entwurf.eintraege) > 1 and len(codes) == 1 and None not in codes:
+            code = codes.pop()
+            return (f"Sprache ist {sprachtabelle.name_von(code)}, genau die Einträge "
+                    f"{_aufzaehlung([f'"{e}"' for e in entwurf.eintraege])}")
         namen = [f"{sprachtabelle.name_von(s)} ({s})" if not s.startswith(sprachtabelle.FREI)
                  else s.removeprefix(sprachtabelle.FREI) for s in entwurf.schluessel]
         namen += [f'"{e}"' for e in entwurf.eintraege]
