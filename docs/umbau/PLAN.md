@@ -80,6 +80,15 @@ die Webversion mit statischen Dateien, Browser-Speicher und direktem Abspielen. 
 (exakte Sprachen, Genres, Dubletten, Qualität) ist ein gemeinsamer Baustein für den Abgleich im Backend und das
 Skript der statischen Liste.
 
+### Filterung im Backend (RAD-7, Teil 3a, Nutzer 17.11.2026, alle übernommen)
+
+| Nr | Frage | Entscheidung |
+|---|---|---|
+| 29 | Sprachregeln | Die 563 Einträge werden 190 genaue Regeln (je Sprache die genauen Schreibweisen); keine gröberen Regeln über Codes, die zusätzlich ausblenden würden |
+| 30 | Nicht erreichbare Sender | Schnellfilter "nur erreichbare", standardmäßig an; Favoriten bleiben sichtbar |
+| 31 | Alte Sprachliste bis 3b | Ein Klick blendet nicht mehr sofort aus, erst "Ausblenden" legt die Regel an |
+| 32 | Werbung | Als Werbung markierte, nie gesperrte Sender bleiben sichtbar; nur eigene Werbeentscheidungen blenden aus |
+
 ## Etappen
 
 Jede Etappe endet mit Tests, Ausrollen nach grünem Lauf, Bildschirmfotos am Ticket. Rechner und Telefon wachsen
