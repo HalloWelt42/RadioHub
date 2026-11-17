@@ -1,5 +1,6 @@
-"""Datenbank in Stufen (RAD-6): ein Bestand im alten Schema wird ohne Umbau als Stufe 1 übernommen, ein frischer
-Bestand sieht genauso aus, ein älterer bekommt nur die früheren Nachträge, eine fremde Datei bleibt unberührt."""
+"""Datenbank in Stufen (RAD-6, RAD-7): ein Bestand im alten Schema wird ohne Umbau als Stufe 1 übernommen und bekommt
+mit Stufe 2 nur dazu (Spalten, Tabellen, Indizes), ein frischer Bestand sieht genauso aus, ein älterer bekommt nur die
+früheren Nachträge, eine fremde Datei bleibt unberührt."""
 
 import sqlite3
 from pathlib import Path
@@ -54,6 +55,28 @@ def _aufbau(pfad: Path) -> dict:
         v.close()
 
 
+def _nur_dazu(vorher: dict, nachher: dict) -> None:
+    """Stufe 2 hat nur dazugelegt: jede frühere Tabelle, jeder Index und jede Zeile sind noch da (stations mit
+    zusätzlichen Spalten, deren frühere Werte gleich bleiben)."""
+    alt_sql = {(typ, name): sql for typ, name, sql in vorher["sql"]}
+    neu_sql = {(typ, name): sql for typ, name, sql in nachher["sql"]}
+    for schluessel, sql in alt_sql.items():
+        assert schluessel in neu_sql, schluessel
+        if schluessel != ("table", "stations"):
+            assert neu_sql[schluessel] == sql, schluessel
+    for tabelle, zeilen in vorher["inhalt"].items():
+        if tabelle != "stations":
+            assert nachher["inhalt"][tabelle] == zeilen, tabelle
+
+
+def _spalten(pfad: Path, tabelle: str, spalten: list[str]) -> list[tuple]:
+    v = sqlite3.connect(pfad)
+    try:
+        return sorted(v.execute(f"SELECT {', '.join(spalten)} FROM {tabelle}"))
+    finally:
+        v.close()
+
+
 def _stufe(pfad: Path) -> int | None:
     v = sqlite3.connect(pfad)
     try:
@@ -66,22 +89,26 @@ def _stufe(pfad: Path) -> int | None:
 async def test_bestand_im_alten_schema_wird_ohne_umbau_stufe_1(tmp_path):
     pfad = _alt(tmp_path / "radiohub.db")
     vorher = _schema(pfad)
+    sender_vorher = _spalten(pfad, "stations", ["uuid", "name", "url", "language", "tags", "votes", "lastcheck"])
     einrichtung = await database.einrichten(pfad)
-    assert (einrichtung.bestand, einrichtung.stufe, einrichtung.nachgetragen) == ("übernommen", 1, ())
-    assert _schema(pfad) == vorher                    # kein Umbau, keine Daten geändert, die entfernte Zeile bleibt weg
-    assert _stufe(pfad) == 1
+    assert (einrichtung.bestand, einrichtung.stufe, einrichtung.nachgetragen) == ("übernommen", 2, ())
+    nachher = _schema(pfad)
+    _nur_dazu(vorher, nachher)                        # kein Umbau, keine Daten geändert, die entfernte Zeile bleibt weg
+    assert _spalten(pfad, "stations", ["uuid", "name", "url", "language", "tags", "votes", "lastcheck"]) == sender_vorher
+    assert _stufe(pfad) == 2
     zweite = await database.einrichten(pfad)
-    assert (zweite.bestand, zweite.stufe) == ("vorhanden", 1) and _schema(pfad) == vorher
+    assert (zweite.bestand, zweite.stufe) == ("vorhanden", 2) and _schema(pfad) == nachher
 
 
 async def test_frischer_bestand_gleicht_dem_alten_schema(tmp_path):
     frisch = tmp_path / "frisch.db"
     einrichtung = await database.einrichten(frisch)
-    assert (einrichtung.bestand, einrichtung.stufe) == ("neu", 1)
+    assert (einrichtung.bestand, einrichtung.stufe) == ("neu", 2)
     alt = tmp_path / "alt.db"
     v = sqlite3.connect(alt)
     alt_anlegen(v)
     v.close()
+    await database.einrichten(alt)
     assert _aufbau(frisch) == _aufbau(alt)
     v = sqlite3.connect(frisch)
     assert v.execute("SELECT COUNT(*) FROM icy_title_ignore WHERE source = 'builtin'").fetchone()[0] == 3
@@ -101,7 +128,7 @@ async def test_aelterer_bestand_bekommt_nur_die_frueheren_nachtraege(tmp_path):
     v.commit()
     v.close()
     einrichtung = await database.einrichten(pfad)
-    assert einrichtung.bestand == "nachgetragen" and einrichtung.stufe == 1
+    assert einrichtung.bestand == "nachgetragen" and einrichtung.stufe == 2
     assert {"stations.last_seen", "blocklist.category", "sessions", "wecker"} <= set(einrichtung.nachgetragen)
     v = sqlite3.connect(pfad)
     assert v.execute("SELECT name FROM stations").fetchall() == [("Alt",)]
@@ -111,6 +138,7 @@ async def test_aelterer_bestand_bekommt_nur_die_frueheren_nachtraege(tmp_path):
     v = sqlite3.connect(alt)
     alt_anlegen(v)
     v.close()
+    await database.einrichten(alt)
     # Spalten, die per ALTER dazukamen, stehen hinten wie beim früheren Start; die Menge stimmt überein
     assert {t: sorted(s[1] for s in a["spalten"]) for t, a in _aufbau(pfad).items()} == \
         {t: sorted(s[1] for s in a["spalten"]) for t, a in _aufbau(alt).items()}

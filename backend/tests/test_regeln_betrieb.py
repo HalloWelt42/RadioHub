@@ -35,6 +35,10 @@ BEISPIELE = {
            ["einstellungen.stand().zeitstimme", "ort.daten_ordner()"]),
     "D1": (["c.execute('ALTER TABLE stations ADD COLUMN x TEXT')", "alter table blocklist add column y"],
            ["CREATE TABLE IF NOT EXISTS x (a)", "# die Spalte kommt mit Stufe 2"]),
+    "D2": (["with db_session() as conn:", "c.execute('SELECT 1')", '"SELECT uuid FROM blocklist WHERE x"',
+            "conn.execute(sql)", "DELETE FROM blocklist WHERE uuid = ?"],
+           ["return await dienst.abfragen(q)", '"""Sender, die die Regel trifft (SELECT der Datenschicht)."""',
+            "await senderquelle.sperren(uuid)"]),
     "B5": (['      - "9091:8000"', '      - "127.0.0.1:9092:8080"', "      - 9092:80"],
            ['      - "9093:9093"', '      - "8000"', '      - "127.0.0.1:${PROBE_PORT:?}:9093"']),
 }

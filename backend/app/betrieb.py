@@ -4,10 +4,13 @@ und beim Beenden tut. Das Gerüst ruft `starten` nach Datenbank, Einstellungen, 
 
 Start:
 1. Einstellungen binden (Dienste lesen sie über `einstellungen.stand()`)
-2. Datenbank des RadioHub auf den Stand der Stufen (`database.einrichten`; ein Bestand wird ohne Umbau übernommen)
+2. Datenbank des RadioHub auf den Stand der Stufen (`database.einrichten`; ein Bestand wird ohne Umbau übernommen) und
+   für die Senderquelle öffnen; ist der Senderbestand noch nicht aufbereitet (erster Start mit Stufe 2), geschieht das
+   gleich, sonst bei neuer Fassung des Bausteins als Auftrag
 3. einmal: Werte der Tabelle config, die jetzt Einstellungen sind, übernehmen (`uebergang.config_uebernehmen`)
 4. Ablage über den Zugang des Gerüsts zur Kellerwolke, verwaiste Aufnahmen bereinigen, Werbedomains, Podcast-Abruf
-   alle `podcast_refresh_interval` Sekunden, liegengebliebene Aufnahmen nachträglich ablegen
+   alle `podcast_refresh_interval` Sekunden, liegengebliebene Aufnahmen nachträglich ablegen, Abgleich mit dem
+   Senderverzeichnis jede Nacht zur Uhrzeit `abgleich_uhrzeit` (Auftrag `sender_abgleich`)
 
 Was dabei geschieht, steht im Protokoll der App (Datenbank, Übertrag, Ablage, Abruf der Podcasts) und im Log.
 """
@@ -16,6 +19,8 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timedelta
+
+import httpx
 
 from appkern.app import Begleiter, Geruest
 
@@ -27,6 +32,7 @@ from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, 
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.hls_recorder import hls_recorder
+from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
 
@@ -34,12 +40,23 @@ UEBERTRAG = "radiohub_config_uebertrag"     # Baustein in appkern_schema der Dat
 ERSTER_ABRUF_S = 60
 
 
+def naechster_lauf(uhrzeit: str, ab: datetime) -> datetime | None:
+    """Nächster Zeitpunkt zur Uhrzeit "HH:MM" nach `ab`; None ohne Uhrzeit."""
+    if not uhrzeit:
+        return None
+    stunde, minute = (int(x) for x in uhrzeit.split(":"))
+    lauf = ab.replace(hour=stunde, minute=minute, second=0, microsecond=0)
+    return lauf if lauf > ab else lauf + timedelta(days=1)
+
+
 class Radiobetrieb(Begleiter):
-    def __init__(self, geruest: Geruest) -> None:
+    def __init__(self, geruest: Geruest, transport: httpx.AsyncBaseTransport | None = None) -> None:
+        """`transport` nur für Tests (Senderverzeichnis nachgestellt)."""
         self.geruest = geruest
         self.datenbank: database.Einrichtung | None = None
         self.datenbank_fehler: str | None = None      # /health meldet ihn
         self._aufgaben: list[asyncio.Task] = []
+        geruest.auftraege.anmelden(*abgleich.arten(abgleich.client_fabrik(transport)))
 
     async def _eintragen(self, ereignis: str, text: str, stufe: str = "info") -> None:
         (log.warning if stufe != "info" else log.info)("%s: %s", ereignis, text)
@@ -55,14 +72,17 @@ class Radiobetrieb(Begleiter):
                                   "fehler")
             raise
         await self._eintragen("radio.datenbank", f"{DB_PATH.name}: {self.datenbank.satz()}")
+        await database.oeffnen(DB_PATH)
         await self._config_uebernehmen()
+        await self._senderbestand_pruefen()
         self._ablage_einrichten()
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
         hls_recorder.startup()          # verwaiste HLS-Aufnahmen bereinigen
         seed_domain_blacklist()         # Werbedomains der Erkennung
         aufnahmen.aufraeumen()          # alte Arbeitskopien
         self._aufgaben = [asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
-                          asyncio.create_task(self._liegengebliebene_ablegen(), name="aufnahmen-nachholen")]
+                          asyncio.create_task(self._liegengebliebene_ablegen(), name="aufnahmen-nachholen"),
+                          asyncio.create_task(self._abgleich_planen(), name="abgleich-plan")]
         log.info("RadioHub %s gestartet, Daten in %s", VERSION, DB_PATH.parent)
 
     async def verbunden(self) -> None:
@@ -86,6 +106,7 @@ class Radiobetrieb(Begleiter):
         await hls_buffer.stop()
         await podcast_service.close()
         await ablage_paket.ablage().schliessen()
+        await database.schliessen()
         einstellungen.binden(None)
         log.info("RadioHub %s gestoppt", VERSION)
 
@@ -106,6 +127,38 @@ class Radiobetrieb(Begleiter):
         for grund in uebergangen:
             await self._eintragen("radio.uebertrag", f"Nicht übernommen, es gilt die Vorgabe: {grund}", "warnung")
         await db.einrichten(UEBERTRAG, [""])
+
+    async def _senderbestand_pruefen(self) -> None:
+        """Erster Start mit Stufe 2: Bestand gleich aufbereiten (ohne ihn kennt die Senderquelle keinen Sender). Eine
+        neue Fassung des Bausteins oder ein abweichender Bestand: Auftrag, die bisherige Aufbereitung gilt so lange."""
+        grund = await senderquelle.aufbereitung_noetig()
+        if grund == "leer":
+            anzahl = await senderquelle.aufbereiten()
+            await self._eintragen("radio.senderquelle", f"Senderbestand erstmals aufbereitet: {anzahl} Sender")
+        elif grund:
+            self._aufgaben.append(asyncio.create_task(self._einreihen(abgleich.ART_AUFBEREITEN, "start"),
+                                                      name="aufbereiten"))
+
+    async def _einreihen(self, art: str, anlass: str) -> None:
+        await self.geruest.auftraege.gestartet.wait()
+        eingabe = {"anlass": anlass} if art == abgleich.ART else None
+        await self.geruest.auftraege.einreihen(art, eingabe, von="Zeitplan" if anlass == "zeitplan" else "RadioHub")
+
+    async def _abgleich_planen(self) -> None:
+        """Jede Nacht zur Uhrzeit der Einstellung abgleich_uhrzeit (leer: nie); eine geänderte Uhrzeit gilt ohne
+        Neustart."""
+        gemerkt, naechster = None, None
+        while True:
+            uhrzeit = einstellungen.stand().abgleich_uhrzeit
+            if uhrzeit != gemerkt:
+                gemerkt, naechster = uhrzeit, naechster_lauf(uhrzeit, datetime.now())
+            if naechster and datetime.now() >= naechster:
+                try:
+                    await self._einreihen(abgleich.ART, "zeitplan")
+                except Exception as f:  # noqa: BLE001 - der nächste Tag versucht es wieder
+                    await self._eintragen("radio.abgleich", f"Abgleich nicht eingereiht: {f}", "warnung")
+                naechster = naechster_lauf(uhrzeit, datetime.now() + timedelta(minutes=1))
+            await asyncio.sleep(30)
 
     async def _podcasts_abrufen(self) -> None:
         """Abruf der Feeds aller Abos im eingestellten Abstand (erster Abruf eine Minute nach dem Start)."""

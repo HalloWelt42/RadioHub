@@ -142,3 +142,13 @@ art = "verboten"
 warum = "Nach außen nur der Vorschaltdienst mit TLS; die App (8000, liefert auch die Oberfläche aus) spricht nur im Netz der Container (expose)."
 dateien = ["compose.pi.yml", "docker-compose.yml"]
 muster = '''^\s*-\s*["']?[\d.]*:?\d+:(8000|8080|80)["']?\s*$'''
+
+# ----- Filterung (RAD-7, Etappe 3) -------------------------------------------------------------------------------------
+
+[[regel]]
+kennung = "D2"
+titel = "Router ohne SQL"
+art = "verboten"
+warum = "Die Schnittstelle prüft Eingaben und ruft Dienste; Abfragen stehen allein in der Datenschicht (services/senderquelle), damit es für Sichtbarkeit und Sender nur eine Wahrheit gibt und jede Abfrage an einer Stelle auf Indizes geprüft wird. Gilt für die Router der Senderquelle und die alten Wege, die schon darauf umgestellt sind; die übrigen Router folgen mit ihrem Neubau."
+dateien = ["backend/app/routers/radio.py"]
+muster = '(db_session|get_db\(|\.execute\(|\b(SELECT|INSERT|UPDATE|DELETE)\b[^"\n]*\b(FROM|INTO|SET)\b)'

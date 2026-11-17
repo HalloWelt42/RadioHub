@@ -97,6 +97,11 @@ class AppEinstellungen(Grundeinstellungen):
                                                      title="Senderverzeichnis", json_schema_extra=DIENSTE,
                                                      description="Server des Senderverzeichnisses, in dieser Reihenfolge "
                                                                  "gefragt.")
+    abgleich_uhrzeit: str = Field("04:30", pattern=r"^(([01]\d|2[0-3]):[0-5]\d)?$", title="Abgleich mit dem Senderverzeichnis",
+                                  json_schema_extra={**DIENSTE, "einheit": "Uhrzeit"},
+                                  description="Jede Nacht um diese Uhrzeit (Ortszeit, etwa 04:30) gleicht das Radio seinen "
+                                              "Bestand mit dem Senderverzeichnis ab: neue Sender, geänderte Angaben, "
+                                              "verschwundene markiert. Leer: nur auf Anstoß.")
     service_itunes_search_url: str = Field("https://itunes.apple.com/search", title="Podcast-Suche (Apple)",
                                            json_schema_extra=DIENSTE, description="Suche im Podcast-Verzeichnis von Apple.")
     service_fyyd_search_url: str = Field("https://api.fyyd.de/0.2/search/podcast", title="Podcast-Suche (fyyd)",

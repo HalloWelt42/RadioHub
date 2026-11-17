@@ -74,15 +74,15 @@ def _log_einrichten() -> None:
 
 
 def app_bauen(daten: Path, transport: httpx.AsyncBaseTransport | None = None) -> FastAPI:
-    """`daten`: Datenordner (das Gerüst hält seins im Unterordner appkern). `transport` nur für Tests (Kellerwolke
-    nachgestellt)."""
+    """`daten`: Datenordner (das Gerüst hält seins im Unterordner appkern). `transport` nur für Tests (Kellerwolke und
+    Senderverzeichnis nachgestellt)."""
     _log_einrichten()
     uebergang.alte_umgebung_uebernehmen(daten=daten)
     geruest = Geruest(name="RadioHub", kennung=KENNUNG, rolle="spielt Radio und Podcasts, nimmt auf und weckt",
                       symbol="fa-radio", symbolbild="/favicon.svg", farbe="#222222", fassung=VERSION,
                       daten=ort.geruest_ordner(daten), einstellungen=AppEinstellungen, oberflaeche=OBERFLAECHE,
                       sicherungen=ort.sicherungen_ordner() / ort.GERUEST, seiten=(LESEZUGANG,), transport=transport)
-    betrieb = Radiobetrieb(geruest)
+    betrieb = Radiobetrieb(geruest, transport)
     # die große Datenbank des Radios nach derselben Regel wie die des Gerüsts, im Ordner, in den auch das Ausrollen sichert
     radio_sicherung = RegelmaessigeSicherung(Sicherungsablage(DB_PATH, ort.sicherungen_ordner(), KENNUNG),
                                              lambda: regel_aus(geruest.einstellungen.stand))

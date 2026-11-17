@@ -8,17 +8,21 @@ in `try/except` anlegte. Eine Datenbank aus dieser Zeit wird ohne Umbau übernom
 die Übernahme genau diese nach (`NACHTRAEGE`); nichts wird gelöscht. Jede weitere Änderung am Schema ist eine neue Stufe
 am Ende von `STUFEN`, nie eine Änderung an einer alten.
 
-Gelesen und geschrieben wird bis zur Datenschicht (Etappe 3) über `get_db` und `db_session`: jede Verbindung meldet die
-SQL-Funktion `merkmal_trifft` an (`sender_merkmale`).
+Die Senderquelle (RAD-7) liest und schreibt über die Datenbank des Appkerns (`oeffnen`, `lesen`, `schreiben`): ein
+Vorrat an Leseverbindungen neben einer schreibenden, alles in Fäden, die Ereignisschleife wartet nie auf die Platte.
+Die übrigen Dienste lesen und schreiben bis zu ihrem Umbau über `get_db` und `db_session`: jede dieser Verbindungen
+meldet die SQL-Funktion `merkmal_trifft` an (`sender_merkmale`).
 """
 from __future__ import annotations
 
 import logging
 import sqlite3
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import TypeVar
 
 from appkern.datenbank import Datenbank
 
@@ -358,7 +362,96 @@ CREATE INDEX IF NOT EXISTS idx_podcast_episodes_downloaded ON podcast_episodes(i
 CREATE INDEX IF NOT EXISTS idx_podcast_episodes_played ON podcast_episodes(is_played);
 """
 
-STUFEN: list[str] = [STUFE_1]
+# Stufe 2 (RAD-7, Etappe 3 Filterung): nur dazu, nichts umgebaut oder geleert. Die Felder des Verzeichnisses, die der
+# frühere Abgleich verwarf, kommen als Spalten an stations; was der Senderdaten-Baustein daraus macht, steht in eigenen
+# Tabellen (sender_*), ebenso die lebenden Regeln, ihre Treffer, Einzelsperren und Freigaben. Die Sperrliste blocklist
+# bleibt unverändert stehen: bis zur Überführung (python -m app.werkzeuge.regeln_ueberfuehren) gilt sie über die Regel
+# "altbestand", die es nur gibt, wenn die Sperrliste Einträge hat.
+STUFE_2 = """
+ALTER TABLE stations ADD COLUMN languagecodes TEXT;
+ALTER TABLE stations ADD COLUMN iso_3166_2 TEXT;
+ALTER TABLE stations ADD COLUMN state TEXT;
+ALTER TABLE stations ADD COLUMN geo_lat REAL;
+ALTER TABLE stations ADD COLUMN geo_long REAL;
+ALTER TABLE stations ADD COLUMN hls INTEGER;
+ALTER TABLE stations ADD COLUMN ssl_error INTEGER;
+ALTER TABLE stations ADD COLUMN clicktrend INTEGER;
+ALTER TABLE stations ADD COLUMN lastcheckok INTEGER;
+ALTER TABLE stations ADD COLUMN lastcheckoktime TEXT;
+ALTER TABLE stations ADD COLUMN lastchangetime TEXT;
+ALTER TABLE stations ADD COLUMN has_extended_info INTEGER;
+ALTER TABLE stations ADD COLUMN verschwunden_am TEXT;
+UPDATE stations SET lastcheckok = CASE WHEN lastcheck IN ('1', 'true') THEN 1 ELSE 0 END;
+CREATE INDEX IF NOT EXISTS idx_stations_last_seen ON stations(last_seen);
+CREATE TABLE sender_index (
+    nr INTEGER PRIMARY KEY,
+    uuid TEXT NOT NULL UNIQUE,
+    name_klein TEXT NOT NULL DEFAULT '',
+    land TEXT NOT NULL DEFAULT '',
+    codec TEXT NOT NULL DEFAULT 'unbekannt',
+    kbps INTEGER NOT NULL DEFAULT 0,
+    kbps_gemessen INTEGER,
+    qualitaet TEXT NOT NULL DEFAULT 'unbekannt',
+    qualitaet_rang INTEGER NOT NULL DEFAULT 0,
+    stimmen INTEGER NOT NULL DEFAULT 0,
+    erreichbar INTEGER NOT NULL DEFAULT 0,
+    gruppe TEXT NOT NULL DEFAULT '',
+    sprachen TEXT NOT NULL DEFAULT '[]',
+    genres TEXT NOT NULL DEFAULT '[]',
+    verschwunden INTEGER NOT NULL DEFAULT 0,
+    favorit INTEGER NOT NULL DEFAULT 0,
+    freigegeben INTEGER NOT NULL DEFAULT 0,
+    werbe_stufe INTEGER NOT NULL DEFAULT 0,
+    getroffen INTEGER NOT NULL DEFAULT 0,
+    sichtbar INTEGER NOT NULL DEFAULT 1,
+    vertreter INTEGER NOT NULL DEFAULT 1,
+    varianten INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX sender_index_stimmen ON sender_index (sichtbar, vertreter, erreichbar, stimmen DESC, uuid);
+CREATE INDEX sender_index_name ON sender_index (sichtbar, vertreter, erreichbar, name_klein, uuid);
+CREATE INDEX sender_index_qualitaet ON sender_index (sichtbar, vertreter, erreichbar, qualitaet_rang DESC, kbps DESC, uuid);
+CREATE INDEX sender_index_bitrate ON sender_index (sichtbar, vertreter, erreichbar, kbps DESC, uuid);
+CREATE INDEX sender_index_land ON sender_index (land, sichtbar, vertreter, erreichbar, stimmen DESC, uuid);
+CREATE INDEX sender_index_stufe ON sender_index (sichtbar, vertreter, erreichbar, qualitaet);
+CREATE INDEX sender_index_codec ON sender_index (sichtbar, vertreter, erreichbar, codec);
+CREATE INDEX sender_index_favorit ON sender_index (favorit, sichtbar, stimmen DESC) WHERE favorit = 1;
+CREATE INDEX sender_index_gruppe ON sender_index (gruppe);
+CREATE TABLE sender_genre (genre TEXT NOT NULL, nr INTEGER NOT NULL, PRIMARY KEY (genre, nr)) WITHOUT ROWID;
+CREATE INDEX sender_genre_nr ON sender_genre (nr, genre);
+CREATE TABLE sender_sprache (schluessel TEXT NOT NULL, nr INTEGER NOT NULL, PRIMARY KEY (schluessel, nr)) WITHOUT ROWID;
+CREATE TABLE sender_spracheintrag (eintrag TEXT NOT NULL, nr INTEGER NOT NULL, PRIMARY KEY (eintrag, nr)) WITHOUT ROWID;
+CREATE TABLE sender_tag (tag TEXT NOT NULL, nr INTEGER NOT NULL, PRIMARY KEY (tag, nr)) WITHOUT ROWID;
+CREATE VIRTUAL TABLE sender_suche USING fts5(text, content='', tokenize='trigram remove_diacritics 1');
+CREATE TABLE regel (
+    id TEXT PRIMARY KEY,
+    art TEXT NOT NULL,
+    wert TEXT NOT NULL DEFAULT '{}',
+    an INTEGER NOT NULL DEFAULT 1,
+    herkunft TEXT NOT NULL DEFAULT 'nutzer',
+    angelegt_am TEXT NOT NULL,
+    geaendert_am TEXT NOT NULL
+);
+CREATE TABLE sender_ausblendung (
+    regel TEXT NOT NULL REFERENCES regel(id) ON DELETE CASCADE,
+    nr INTEGER NOT NULL,
+    PRIMARY KEY (regel, nr)
+) WITHOUT ROWID;
+CREATE INDEX sender_ausblendung_nr ON sender_ausblendung (nr, regel);
+CREATE TABLE sender_sperre (
+    uuid TEXT PRIMARY KEY,
+    name TEXT NOT NULL DEFAULT '',
+    herkunft TEXT NOT NULL DEFAULT 'auge',
+    angelegt_am TEXT NOT NULL
+);
+CREATE TABLE sender_freigabe (uuid TEXT PRIMARY KEY, angelegt_am TEXT NOT NULL);
+INSERT INTO regel (id, art, wert, an, herkunft, angelegt_am, geaendert_am)
+    VALUES ('einzelsperren', 'einzeln', '{}', 1, 'bestand', datetime('now'), datetime('now'));
+INSERT INTO regel (id, art, wert, an, herkunft, angelegt_am, geaendert_am)
+    SELECT 'altbestand', 'altsperren', '{}', 1, 'bestand', datetime('now'), datetime('now')
+    WHERE EXISTS (SELECT 1 FROM blocklist);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [
@@ -486,6 +579,44 @@ async def einrichten(pfad: Path | str = DB_PATH) -> Einrichtung:
         bestand, nachgetragen = await db.transaktion(bestand_uebernehmen)
         stufe = await db.einrichten(BAUSTEIN, STUFEN)
     return Einrichtung(stufe, bestand, nachgetragen)
+
+
+# ----- Datenbank des Appkerns für die Senderquelle --------------------------------------------------------------------
+
+T = TypeVar("T")
+_offen: Datenbank | None = None
+
+
+async def oeffnen(pfad: Path | str = DB_PATH) -> Datenbank:
+    """Öffnet die Datenbank des Radios für die Senderquelle (beim Start nach `einrichten`, in Werkzeugen selbst)."""
+    global _offen
+    if _offen is None:
+        _offen = await Datenbank(pfad).oeffnen()
+    return _offen
+
+
+async def schliessen() -> None:
+    global _offen
+    if _offen is not None:
+        await _offen.schliessen()
+        _offen = None
+
+
+def radio_db() -> Datenbank:
+    if _offen is None:
+        raise RuntimeError("Datenbank des Radios ist nicht geöffnet")
+    return _offen
+
+
+async def lesen(arbeit: Callable[[sqlite3.Connection], T]) -> T:
+    """Mehrere Abfragen in einem Lesestand, in einer der Leseverbindungen (nur lesend). Offene Frage an den Appkern:
+    `Datenbank` bietet das bisher nur intern an (`_lesen`); sobald es öffentlich ist, ruft diese eine Stelle es dort."""
+    return await radio_db()._lesen(arbeit)
+
+
+async def schreiben(arbeit: Callable[[sqlite3.Connection], T]) -> T:
+    """`arbeit` in einer Transaktion über die schreibende Verbindung (alles oder nichts)."""
+    return await radio_db().transaktion(arbeit)
 
 
 # ----- Prüfen ----------------------------------------------------------------------------------------------------------
