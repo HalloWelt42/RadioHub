@@ -1,14 +1,12 @@
-"""
-RadioHub v0.1.10 - Blocklist Router
-
-Negativliste für Sender - blockierte Sender werden aus Suchergebnissen gefiltert
-"""
+"""Sperrliste der heutigen Oberfläche (bis Etappe 3b) auf der neuen Sichtbarkeit (RAD-7): Sperren wird zur
+Einzelsperre (oder mit "ad:..." zur Werbeentscheidung), Entsperren gibt den Sender frei, die Liste zeigt alle
+ausgeblendeten Sender mit Grund. Ohne SQL (Regel D2)."""
 from typing import Optional
-from datetime import datetime
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..database import db_session
+from ..services.senderquelle import alte_wege, dienst
 
 router = APIRouter(prefix="/api/blocklist", tags=["blocklist"])
 
@@ -19,50 +17,53 @@ class BlockRequest(BaseModel):
     reason: Optional[str] = "manual"
 
 
-@router.get("")
-async def get_blocklist():
-    """Alle blockierten Sender"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("SELECT * FROM blocklist ORDER BY blocked_at DESC")
-        blocked = [dict(row) for row in c.fetchall()]
-    
-    return {"count": len(blocked), "blocked": blocked}
+class Liste(BaseModel):
+    count: int
+    blocked: list[alte_wege.AlteSperre]
 
 
-@router.post("")
-async def block_station(req: BlockRequest):
-    """Sender blockieren"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute(
-            "INSERT OR REPLACE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, ?, ?)",
-            (req.uuid, req.name, req.reason,
-             'ad' if (req.reason or '').startswith('ad:') else 'manual',
-             datetime.now().isoformat())
-        )
-    
-    return {"success": True, "blocked": req.uuid}
+class Gesperrt(BaseModel):
+    success: bool
+    blocked: str
 
 
-@router.delete("/{uuid}")
-async def unblock_station(uuid: str):
-    """Sender entsperren"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("DELETE FROM blocklist WHERE uuid = ?", (uuid,))
-        if c.rowcount == 0:
-            raise HTTPException(404, "Sender nicht in Blocklist")
-    
-    return {"success": True, "unblocked": uuid}
+class Entsperrt(BaseModel):
+    success: bool
+    unblocked: str
 
 
-@router.get("/check/{uuid}")
-async def is_blocked(uuid: str):
-    """Prüfen ob Sender blockiert ist"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("SELECT 1 FROM blocklist WHERE uuid = ?", (uuid,))
-        blocked = c.fetchone() is not None
-    
-    return {"uuid": uuid, "blocked": blocked}
+class Pruefung(BaseModel):
+    uuid: str
+    blocked: bool
+
+
+@router.get("", response_model=Liste)
+async def get_blocklist() -> Liste:
+    """Alle ausgeblendeten Sender mit Grund."""
+    alle = await alte_wege.ausgeblendete()
+    return Liste(count=len(alle), blocked=alle)
+
+
+@router.post("", response_model=Gesperrt)
+async def block_station(req: BlockRequest) -> Gesperrt:
+    """Sender ausblenden (Einzelsperre; mit Grund "ad:..." als Werbeentscheidung)."""
+    try:
+        await alte_wege.sperren(req.uuid, req.reason)
+    except dienst.NichtGefunden as f:
+        raise HTTPException(404, str(f)) from f
+    return Gesperrt(success=True, blocked=req.uuid)
+
+
+@router.delete("/{uuid}", response_model=Entsperrt)
+async def unblock_station(uuid: str) -> Entsperrt:
+    """Sender wieder sichtbar (Einzelsperre weg, sonst als Ausnahme freigegeben)."""
+    if not await alte_wege.ist_ausgeblendet(uuid):
+        raise HTTPException(404, "Sender ist nicht ausgeblendet")
+    await dienst.freigeben(uuid)
+    return Entsperrt(success=True, unblocked=uuid)
+
+
+@router.get("/check/{uuid}", response_model=Pruefung)
+async def is_blocked(uuid: str) -> Pruefung:
+    """Ist der Sender ausgeblendet?"""
+    return Pruefung(uuid=uuid, blocked=await alte_wege.ist_ausgeblendet(uuid))

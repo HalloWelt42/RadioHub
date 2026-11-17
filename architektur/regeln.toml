@@ -22,7 +22,7 @@ schichten = [
   { name = "werkzeuge", dateien = ["backend/app/umzug/**", "backend/app/werkzeuge/**"] },
   { name = "dienste", dateien = ["backend/app/services/**"] },
   { name = "ablage", dateien = ["backend/app/ablage/**"] },
-  { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/sender_merkmale.py", "backend/app/einstellungen.py", "backend/app/uebergang.py", "backend/app/ort.py"] },
+  { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/einstellungen.py", "backend/app/uebergang.py", "backend/app/ort.py"] },
   { name = "senderdaten", dateien = ["backend/app/senderdaten/**"] },
 ]
 erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen", "senderdaten"], werkzeuge = ["dienste", "ablage", "grundlagen", "senderdaten"], dienste = ["ablage", "grundlagen", "senderdaten"], ablage = ["grundlagen"] }
@@ -150,5 +150,5 @@ kennung = "D2"
 titel = "Router ohne SQL"
 art = "verboten"
 warum = "Die Schnittstelle prüft Eingaben und ruft Dienste; Abfragen stehen allein in der Datenschicht (services/senderquelle), damit es für Sichtbarkeit und Sender nur eine Wahrheit gibt und jede Abfrage an einer Stelle auf Indizes geprüft wird. Gilt für die Router der Senderquelle und die alten Wege, die schon darauf umgestellt sind; die übrigen Router folgen mit ihrem Neubau."
-dateien = ["backend/app/routers/radio.py"]
+dateien = ["backend/app/routers/radio.py", "backend/app/routers/filters.py", "backend/app/routers/blocklist.py"]
 muster = '(db_session|get_db\(|\.execute\(|\b(SELECT|INSERT|UPDATE|DELETE)\b[^"\n]*\b(FROM|INTO|SET)\b)'

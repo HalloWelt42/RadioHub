@@ -10,8 +10,7 @@ am Ende von `STUFEN`, nie eine Änderung an einer alten.
 
 Die Senderquelle (RAD-7) liest und schreibt über die Datenbank des Appkerns (`oeffnen`, `lesen`, `schreiben`): ein
 Vorrat an Leseverbindungen neben einer schreibenden, alles in Fäden, die Ereignisschleife wartet nie auf die Platte.
-Die übrigen Dienste lesen und schreiben bis zu ihrem Umbau über `get_db` und `db_session`: jede dieser Verbindungen
-meldet die SQL-Funktion `merkmal_trifft` an (`sender_merkmale`).
+Die übrigen Dienste lesen und schreiben bis zu ihrem Umbau über `get_db` und `db_session`.
 """
 from __future__ import annotations
 
@@ -27,7 +26,6 @@ from typing import TypeVar
 from appkern.datenbank import Datenbank
 
 from .config import DB_PATH, DATA_DIR
-from . import sender_merkmale
 
 log = logging.getLogger("radiohub.datenbank")
 
@@ -37,7 +35,7 @@ BAUSTEIN = "radiohub"           # Name der Stufen in appkern_schema
 
 
 def get_db() -> sqlite3.Connection:
-    """Verbindung zur Datenbank mit den Einstellungen des RadioHub und der SQL-Funktion `merkmal_trifft`."""
+    """Verbindung zur Datenbank mit den Einstellungen des RadioHub."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(
@@ -53,7 +51,6 @@ def get_db() -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous = NORMAL")
     conn.execute("PRAGMA busy_timeout = 30000")
     conn.execute("PRAGMA cache_size = -64000")  # 64MB Cache
-    sender_merkmale.anmelden(conn)
 
     return conn
 

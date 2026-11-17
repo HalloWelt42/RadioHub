@@ -519,8 +519,8 @@ async def check_station_ads(uuid: str, stream_url: str, name: Optional[str] = No
 def report_ad_manual(uuid: str, stream_url: str, name: str, note: Optional[str] = None) -> dict:
     """
     Manuell Werbung melden: User markiert Sender als Werbesender.
-    Schreibt station_ad_status mit MANUAL_USER_BLOCKED + confidence 1.0.
-    Schreibt in blocklist mit reason "ad:manual".
+    Schreibt station_ad_status mit MANUAL_USER_BLOCKED + confidence 1.0 (eigene Entscheidung "sperren"; die
+    Werbe-Regel der Senderquelle blendet ab Stufe "eigene" aus, RAD-7).
     """
     now = datetime.now().isoformat()
 
@@ -555,12 +555,6 @@ def report_ad_manual(uuid: str, stream_url: str, name: str, note: Optional[str] 
             INSERT INTO ad_detections_log (station_uuid, detected_at, method, reason_code, detail, confidence)
             VALUES (?, ?, 'manual', 'MANUAL_USER_BLOCKED', ?, 1.0)
         """, (uuid, now, note or 'Manuell gemeldet'))
-
-        # Blocklist mit category
-        c.execute(
-            "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, 'ad:manual', 'ad', ?)",
-            (uuid, name, now)
-        )
 
     return {
         'uuid': uuid,
@@ -616,7 +610,8 @@ def report_ad_mark_only(uuid: str, stream_url: str, name: str, note: Optional[st
 
 def mark_false_positive(uuid: str) -> dict:
     """
-    Fehlalarm markieren: Setzt Status auf clean, entfernt ad:-Einträge aus blocklist.
+    Fehlalarm markieren: Setzt Status auf clean und die eigene Entscheidung auf "erlauben" (RAD-7: die Sichtbarkeit
+    folgt daraus, die frühere Sperrliste wird nicht mehr geschrieben).
     """
     now = datetime.now().isoformat()
 
@@ -642,12 +637,7 @@ def mark_false_positive(uuid: str) -> dict:
             (uuid,)
         )
 
-        # Aus blocklist entfernen wo reason mit "ad:" anfängt
-        c.execute(
-            "DELETE FROM blocklist WHERE uuid = ? AND reason LIKE 'ad:%'",
-            (uuid,)
-        )
-        removed = c.rowcount
+        removed = 0
 
     return {
         'uuid': uuid,
@@ -699,8 +689,7 @@ def get_ad_summary() -> dict:
 
 def get_suspects(min_confidence: float = 0.0) -> list:
     """
-    Verdaechtige Sender: confidence > min_confidence, user_action noch nicht gesetzt,
-    und nicht in blocklist.
+    Verdaechtige Sender: confidence > min_confidence, user_action noch nicht gesetzt.
     """
     threshold = max(min_confidence, 0.01)
     with db_session() as conn:
@@ -713,7 +702,6 @@ def get_suspects(min_confidence: float = 0.0) -> list:
             WHERE s.confidence >= ?
               AND (s.user_action IS NULL OR s.user_action = '')
               AND s.manually_set = 0
-              AND s.station_uuid NOT IN (SELECT uuid FROM blocklist)
             ORDER BY s.confidence DESC
             LIMIT 100
         """, (threshold,))
@@ -735,7 +723,7 @@ def get_suspects(min_confidence: float = 0.0) -> list:
 def decide_station_ad(uuid: str, action: str) -> dict:
     """
     User entscheidet: 'block' oder 'allow'.
-    - block: In blocklist mit category='ad', Gründe aus station_ad_status
+    - block: user_action='blocked' (die Werbe-Regel der Senderquelle blendet aus, RAD-7)
     - allow: user_action='allowed', wird nicht mehr gefragt
     """
     now = datetime.now().isoformat()
@@ -755,17 +743,6 @@ def decide_station_ad(uuid: str, action: str) -> dict:
             # Reason aus Detection-Gründen bauen
             reasons = json.loads(reasons_json) if reasons_json else []
             primary_reason = f"ad:{reasons[0]['reason']}" if reasons else 'ad:USER_CONFIRMED'
-
-            # Sendername laden
-            c.execute("SELECT name FROM stations WHERE uuid = ?", (uuid,))
-            name_row = c.fetchone()
-            name = name_row[0] if name_row else ''
-
-            # In blocklist mit category
-            c.execute(
-                "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, 'ad', ?)",
-                (uuid, name, primary_reason, now)
-            )
 
             # user_action setzen
             c.execute(

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from altes_schema import alt_anlegen
-from app import database, sender_merkmale
+from app import database
 
 
 def _alt(pfad: Path) -> Path:
@@ -155,10 +155,3 @@ async def test_fremde_datei_bleibt_unberuehrt(tmp_path):
     v = sqlite3.connect(pfad)
     assert [z[0] for z in v.execute("SELECT name FROM sqlite_master WHERE type='table'")] == ["etwas"]
     v.close()
-
-
-def test_verbindungen_kennen_merkmal_trifft():
-    with database.db_session() as conn:
-        liste = sender_merkmale.liste_als_parameter(["German"])
-        assert conn.execute("SELECT merkmal_trifft('german,english', ?)", (liste,)).fetchone()[0] == 1
-        assert conn.execute("SELECT merkmal_trifft('germanic', ?)", (liste,)).fetchone()[0] == 0

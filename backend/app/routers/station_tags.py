@@ -2,6 +2,7 @@
 Station-Tags: Bewertungen und Markierungen fuer Sender.
 
 tag_key Werte:
+  Sterne:   sterne (tag_value "1" bis "3", eigene Bewertung Geht so, Gut, Sehr gut)
   Inhalt:   werbung, religioes, politisch_extrem, populistisch, nicht_jugendfrei
   Qualitaet: schlechte_qualitaet, schwankende_qualitaet, haeufig_offline, hoher_sprachanteil
   Aktionen: werbung_widerspruch, user_vote
@@ -13,11 +14,12 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from ..database import db_session
+from ..services.senderquelle import dienst as senderquelle
 
 router = APIRouter(prefix="/api/station-tags", tags=["station-tags"])
 
 VALID_TAGS = {
-    "werbung", "religioes", "politisch_extrem", "populistisch", "nicht_jugendfrei",
+    "sterne", "werbung", "religioes", "politisch_extrem", "populistisch", "nicht_jugendfrei",
     "schlechte_qualitaet", "schwankende_qualitaet", "haeufig_offline", "hoher_sprachanteil",
     "werbung_widerspruch", "user_vote_up", "user_vote_down",
 }
@@ -86,6 +88,8 @@ async def set_tag(station_uuid: str, tag_key: str, body: Optional[TagSet] = None
 
     if source not in VALID_SOURCES:
         raise HTTPException(status_code=400, detail=f"Unbekannte Quelle: {source}")
+    if tag_key == "sterne" and tag_value not in ("1", "2", "3"):
+        raise HTTPException(status_code=400, detail="Sterne: 1, 2 oder 3")
 
     with db_session() as conn:
         c = conn.cursor()
@@ -98,6 +102,7 @@ async def set_tag(station_uuid: str, tag_key: str, body: Optional[TagSet] = None
                  created_at = CURRENT_TIMESTAMP""",
             (station_uuid, tag_key, tag_value, source, confidence)
         )
+    await senderquelle.neu_fuer([station_uuid])      # Bewertungen wirken in Regeln und Werbeerkennung
     return {"ok": True}
 
 
@@ -112,4 +117,5 @@ async def remove_tag(station_uuid: str, tag_key: str, source: str = "user"):
         )
         if c.rowcount == 0:
             raise HTTPException(status_code=404, detail="Tag nicht gefunden")
+    await senderquelle.neu_fuer([station_uuid])
     return {"ok": True}

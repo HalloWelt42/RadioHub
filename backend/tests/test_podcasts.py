@@ -76,3 +76,32 @@ async def test_gehoerte_downloads_loeschen(speicher):
         podcast_id = conn.execute("SELECT podcast_id FROM podcast_episodes WHERE id = ?", (episode_id,)).fetchone()[0]
     assert await podcast_service.delete_played_downloads(podcast_id) == 1
     assert pfad in speicher.papierkorb
+
+
+async def test_erneutes_abonnieren_behaelt_folgen(monkeypatch):
+    """RAD-2: erneutes Abonnieren frischt nur die Angaben des Feeds auf und behält Folgen mit Hörstand."""
+    feed_url = "https://example.invalid/rad2-" + uuid.uuid4().hex + ".xml"
+    feed = {"title": "Probe", "author": "A", "description": "", "image_url": "", "categories": [],
+            "episodes": [{"guid": "f1", "title": "Folge 1", "description": "", "audio_url": "https://example.invalid/1.mp3"}]}
+
+    async def lesen(url):
+        return feed
+
+    monkeypatch.setattr(podcast_service, "_parse_feed", lesen)
+    erst = await podcast_service.subscribe(feed_url)
+    with db_session() as conn:
+        conn.execute("UPDATE podcast_episodes SET resume_position = 123 WHERE podcast_id = ?", (erst["id"],))
+
+    feed["title"] = "Probe neu"
+    wieder = await podcast_service.subscribe(feed_url)
+    try:
+        assert wieder["id"] == erst["id"]
+        with db_session() as conn:
+            titel = conn.execute("SELECT title FROM podcast_subscriptions WHERE id = ?", (erst["id"],)).fetchone()[0]
+            stand = conn.execute("SELECT resume_position FROM podcast_episodes WHERE podcast_id = ?",
+                                 (erst["id"],)).fetchone()[0]
+        assert titel == "Probe neu"
+        assert stand == 123
+    finally:
+        with db_session() as conn:
+            conn.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (erst["id"],))

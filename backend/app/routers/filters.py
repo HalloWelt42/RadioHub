@@ -1,17 +1,12 @@
-"""
-RadioHub - Filter Router
+"""Filter-Einstellungen der heutigen Oberfläche (bis Etappe 3b) auf der neuen Sichtbarkeit (RAD-7): Vorschau und
+Ausblenden legen lebende Regeln an, die Liste der ausgeblendeten Sender kommt aus den Treffern der Regeln, Freigeben
+schaltet Regeln aus oder gibt einzelne Sender frei. Ohne SQL (Regel D2)."""
+from typing import List, Optional
 
-Massen-Filter für Sender: Sprachen, Tags, Min-Votes.
-Alle Sperren landen in der einheitlichen blocklist-Tabelle.
-"""
-from typing import Optional, List
-from datetime import datetime
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from ..database import db_session
-from ..services import filtersperren
-from .. import sender_merkmale
+from ..services.senderquelle import alte_wege
 
 router = APIRouter(prefix="/api/filters", tags=["filters"])
 
@@ -21,9 +16,9 @@ class FilterCriteria(BaseModel):
     excluded_tags: List[str] = []
     min_votes: int = 0
 
-    def kriterien(self) -> filtersperren.FilterKriterien:
-        return filtersperren.FilterKriterien(
-            sprachen=self.excluded_languages, tags=self.excluded_tags, mindeststimmen=self.min_votes)
+    def kriterien(self) -> alte_wege.AlteKriterien:
+        return alte_wege.AlteKriterien(sprachen=self.excluded_languages, tags=self.excluded_tags,
+                                       mindeststimmen=max(0, self.min_votes))
 
 
 class ReleaseRequest(BaseModel):
@@ -32,144 +27,81 @@ class ReleaseRequest(BaseModel):
     all: bool = False
 
 
-def _noch_frei(conn, kriterien: filtersperren.FilterKriterien) -> list[filtersperren.Sperre]:
-    """Treffer der Kriterien, die noch nicht gesperrt sind (aus welchem Grund auch immer)."""
-    gesperrt = {z[0] for z in conn.execute("SELECT uuid FROM blocklist")}
-    return [s for s in filtersperren.treffer(conn, kriterien) if s.uuid not in gesperrt]
+class Vorschau(BaseModel):
+    count: int
+    sample: list[alte_wege.SenderProbe]
 
 
-@router.post("/preview")
-async def filter_preview(criteria: FilterCriteria):
-    """Vorschau: Welche Sender würden zusätzlich ausgeblendet?"""
-    with db_session() as conn:
-        sperren = _noch_frei(conn, criteria.kriterien())
-        if not sperren:
-            return {"count": 0, "sample": []}
-        uuids = [s.uuid for s in sperren]
-        platz = ",".join("?" * len(uuids))
-        sample = [dict(z) for z in conn.execute(
-            f"SELECT uuid, name, country, language, tags, votes FROM stations WHERE uuid IN ({platz})"
-            " ORDER BY votes DESC LIMIT 20", uuids)]
-        return {"count": len(sperren), "sample": sample}
+class Ausgeblendet(BaseModel):
+    hidden_count: int
+    total_hidden: int
 
 
-@router.post("/push")
-async def filter_push(criteria: FilterCriteria):
-    """Sender ausblenden, die die Kriterien treffen (kommt zu den bestehenden Sperren hinzu)."""
-    with db_session() as conn:
-        sperren = _noch_frei(conn, criteria.kriterien())
-        jetzt = datetime.now().isoformat()
-        conn.executemany(
-            "INSERT OR IGNORE INTO blocklist (uuid, name, reason, category, blocked_at) VALUES (?, ?, ?, ?, ?)",
-            [(s.uuid, s.name, s.grund, filtersperren.KATEGORIE, jetzt) for s in sperren])
-        total = conn.execute("SELECT COUNT(*) FROM blocklist").fetchone()[0]
-    return {"hidden_count": len(sperren), "total_hidden": total}
+class Kategorie(BaseModel):
+    count: int
+    reasons: dict[str, int]
 
 
-@router.get("/hidden")
-async def get_hidden(reason: Optional[str] = None, category: Optional[str] = None):
-    """Alle blockierten Sender, nach Kategorien gruppiert"""
-    with db_session() as conn:
-        c = conn.cursor()
-
-        if reason:
-            c.execute(
-                "SELECT * FROM blocklist WHERE reason LIKE ? ORDER BY blocked_at DESC",
-                (f"%{reason}%",)
-            )
-        elif category:
-            c.execute(
-                "SELECT * FROM blocklist WHERE category = ? ORDER BY blocked_at DESC",
-                (category,)
-            )
-        else:
-            c.execute("SELECT * FROM blocklist ORDER BY blocked_at DESC")
-
-        stations = [dict(r) for r in c.fetchall()]
-
-        # Nach Kategorien gruppieren
-        categories = {}
-        c.execute("""
-            SELECT COALESCE(category, 'manual') as cat, reason, COUNT(*) as cnt
-            FROM blocklist
-            GROUP BY cat, reason
-            ORDER BY cnt DESC
-        """)
-        for row in c.fetchall():
-            cat = row[0] or 'manual'
-            reason_key = row[1] or 'manual'
-            if cat not in categories:
-                categories[cat] = {'count': 0, 'reasons': {}}
-            categories[cat]['count'] += row[2]
-            categories[cat]['reasons'][reason_key] = row[2]
-
-    return {
-        "count": len(stations),
-        "categories": categories,
-        "stations": stations,
-    }
+class Verborgene(BaseModel):
+    count: int
+    categories: dict[str, Kategorie]
+    stations: list[alte_wege.AlteSperre]
 
 
-@router.post("/release")
-async def release_stations(req: ReleaseRequest):
-    """Sender freigeben (aus blocklist entfernen)"""
-    with db_session() as conn:
-        c = conn.cursor()
-
-        if req.all:
-            c.execute("DELETE FROM blocklist")
-        elif req.reason:
-            if req.reason == "manual":
-                c.execute("DELETE FROM blocklist WHERE reason IS NULL OR reason = 'manual'")
-            else:
-                c.execute("DELETE FROM blocklist WHERE reason LIKE ?", (f"%{req.reason}%",))
-        elif req.uuids:
-            placeholders = ",".join("?" * len(req.uuids))
-            c.execute(f"DELETE FROM blocklist WHERE uuid IN ({placeholders})", req.uuids)
-        else:
-            return {"released_count": 0}
-
-        released = c.rowcount
-
-    return {"released_count": released}
+class Freigegeben(BaseModel):
+    released_count: int
 
 
-@router.get("/languages")
-async def get_languages():
-    """Verfügbare Sprachen mit Anzahl"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("""SELECT language FROM stations WHERE language != '' AND language IS NOT NULL""")
-
-        lang_counts = {}
-        for row in c.fetchall():
-            # dieselbe Zerlegung wie beim Ausschließen, damit Liste und Vergleich übereinstimmen
-            for lang in sender_merkmale.eintraege(row[0]):
-                if len(lang) > 1:
-                    lang_counts[lang] = lang_counts.get(lang, 0) + 1
-
-        sorted_langs = sorted(lang_counts.items(), key=lambda x: x[1], reverse=True)
-        languages = [{"name": name, "count": count} for name, count in sorted_langs]
-
-    return {"languages": languages}
+class Sprachen(BaseModel):
+    languages: list[alte_wege.Eintragszahl]
 
 
-@router.get("/countries")
-async def get_countries():
-    """Verfügbare Länder mit Anzahl"""
-    with db_session() as conn:
-        c = conn.cursor()
-        c.execute("""
-            SELECT countrycode, country, COUNT(*) as cnt
-            FROM stations
-            WHERE countrycode != '' AND countrycode IS NOT NULL
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
-            GROUP BY countrycode
-            ORDER BY cnt DESC
-        """)
-        countries = [
-            {"code": row[0], "name": row[1], "count": row[2]}
-            for row in c.fetchall()
-        ]
+class Laender(BaseModel):
+    countries: list[alte_wege.Landzahl]
 
-    return {"countries": countries}
+
+@router.post("/preview", response_model=Vorschau)
+async def filter_preview(criteria: FilterCriteria) -> Vorschau:
+    """Vorschau: welche heute sichtbaren Sender würden zusätzlich ausgeblendet?"""
+    anzahl, proben = await alte_wege.vorschau(criteria.kriterien())
+    return Vorschau(count=anzahl, sample=proben)
+
+
+@router.post("/push", response_model=Ausgeblendet)
+async def filter_push(criteria: FilterCriteria) -> Ausgeblendet:
+    """Ausblenden: lebende Regeln für die Kriterien, die noch keine Regel abdeckt."""
+    neu, gesamt = await alte_wege.ausblenden(criteria.kriterien())
+    return Ausgeblendet(hidden_count=neu, total_hidden=gesamt)
+
+
+@router.get("/hidden", response_model=Verborgene)
+async def get_hidden(reason: Optional[str] = None, category: Optional[str] = None) -> Verborgene:
+    """Alle ausgeblendeten Sender mit Grund, nach Kategorien gezählt."""
+    alle = await alte_wege.ausgeblendete()
+    kategorien: dict[str, Kategorie] = {}
+    for s in alle:
+        k = kategorien.setdefault(s.category, Kategorie(count=0, reasons={}))
+        k.count += 1
+        k.reasons[s.reason] = k.reasons.get(s.reason, 0) + 1
+    gewaehlt = [s for s in alle if (reason is None or reason in s.reason) and (category is None or s.category == category)]
+    return Verborgene(count=len(gewaehlt), categories=kategorien, stations=gewaehlt)
+
+
+@router.post("/release", response_model=Freigegeben)
+async def release_stations(req: ReleaseRequest) -> Freigegeben:
+    """Freigeben: einzelne Sender, je Grund (Regel aus) oder alle (alle Regeln aus); nichts wird gelöscht."""
+    if not (req.uuids or req.reason or req.all):
+        return Freigegeben(released_count=0)
+    return Freigegeben(released_count=await alte_wege.freigeben(req.uuids, req.reason, req.all))
+
+
+@router.get("/languages", response_model=Sprachen)
+async def get_languages() -> Sprachen:
+    """Sprachen, wie sie im Verzeichnis stehen, mit Anzahl (dieselben genauen Einträge wie beim Ausschließen)."""
+    return Sprachen(languages=await alte_wege.spracheintraege())
+
+
+@router.get("/countries", response_model=Laender)
+async def get_countries() -> Laender:
+    """Länder mit Anzahl der sichtbaren Sender."""
+    return Laender(countries=await alte_wege.laender())

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..database import db_session
+from ..services.senderquelle import dienst as senderquelle
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
 
@@ -54,7 +55,7 @@ async def add_favorite(req: FavoriteAddRequest):
             (req.stationuuid, req.name, req.url, req.url_resolved, req.favicon,
              req.country, req.countrycode, req.tags, req.bitrate,
              datetime.now().isoformat()))
-    
+    await senderquelle.neu_fuer([req.stationuuid])       # Favoriten bleiben sichtbar (als Ausnahme)
     return {"success": True, "uuid": req.stationuuid}
 
 
@@ -65,5 +66,5 @@ async def remove_favorite(uuid: str):
         c = conn.cursor()
         c.execute("DELETE FROM favorites WHERE uuid = ?", (uuid,))
         deleted = c.rowcount > 0
-    
+    await senderquelle.neu_fuer([uuid])
     return {"success": deleted}

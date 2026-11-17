@@ -3,15 +3,21 @@ RadioHub - Ad-Detection Router (Phase 2)
 
 API-Endpoints für Werbeerkennung:
 Check, Report, False-Positive, Suspects, Decide, Summary, Scan-Stream, Batch-Status.
+
+Geprüft wird nur ein bekannter Sender über seine Kennung; die Adresse kommt aus der Datenbank (eigene Adresse vor der
+des Verzeichnisses), nie aus der Anfrage (RAD-7). Jede Entscheidung und Meldung rechnet die Sichtbarkeit des Senders
+neu (Werbe-Regel der Senderquelle).
 """
 import json
 import asyncio
 from typing import Optional, List
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
 from ..database import db_session
+from ..services import durchleiter
+from ..services.senderquelle import dienst as senderquelle
 from ..services.ad_detector import (
     check_station_ads, report_ad_manual, report_ad_mark_only, mark_false_positive,
     get_ad_status, get_ad_summary, get_suspects, decide_station_ad
@@ -22,15 +28,21 @@ router = APIRouter(prefix="/api/ad-detection", tags=["ad-detection"])
 
 class CheckRequest(BaseModel):
     uuid: str
-    stream_url: str
     name: Optional[str] = None
 
 
 class ReportRequest(BaseModel):
     uuid: str
-    stream_url: str
-    name: str
+    name: str = ""
     note: Optional[str] = None
+
+
+def _adresse(uuid: str) -> str:
+    """Strom eines bekannten Senders; 404, wenn es ihn nicht gibt."""
+    try:
+        return durchleiter.sender_adresse(uuid)
+    except durchleiter.Unbekannt as f:
+        raise HTTPException(404, "Sender unbekannt") from f
 
 
 class FalsePositiveRequest(BaseModel):
@@ -56,7 +68,7 @@ async def scan_batch(req: ScanRequest):
         c.execute("""
             SELECT uuid, url_resolved, url, name FROM stations
             WHERE uuid NOT IN (SELECT station_uuid FROM station_ad_status)
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
+            AND uuid IN (SELECT uuid FROM sender_index WHERE sichtbar = 1)
             AND (url_resolved IS NOT NULL OR url IS NOT NULL)
             ORDER BY RANDOM()
             LIMIT ?
@@ -92,7 +104,7 @@ def _count_unchecked() -> int:
         c.execute("""
             SELECT COUNT(*) FROM stations
             WHERE uuid NOT IN (SELECT station_uuid FROM station_ad_status)
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
+            AND uuid IN (SELECT uuid FROM sender_index WHERE sichtbar = 1)
         """)
         return c.fetchone()[0]
 
@@ -106,7 +118,7 @@ async def scan_stream(batch_size: int = Query(default=50, le=200)):
         c.execute("""
             SELECT uuid, url_resolved, url, name FROM stations
             WHERE uuid NOT IN (SELECT station_uuid FROM station_ad_status)
-            AND uuid NOT IN (SELECT uuid FROM blocklist)
+            AND uuid IN (SELECT uuid FROM sender_index WHERE sichtbar = 1)
             AND (url_resolved IS NOT NULL OR url IS NOT NULL)
             ORDER BY RANDOM()
             LIMIT ?
@@ -197,7 +209,9 @@ async def suspects(min_confidence: float = Query(default=0.0)):
 @router.post("/decide")
 async def decide(req: DecideRequest):
     """User entscheidet über verdächtigen Sender: block oder allow"""
-    return decide_station_ad(req.uuid, req.action)
+    ergebnis = decide_station_ad(req.uuid, req.action)
+    await senderquelle.neu_fuer([req.uuid])
+    return ergebnis
 
 
 @router.get("/summary/overview")
@@ -219,22 +233,25 @@ async def get_station_ad_status(uuid: str):
 
 @router.post("/check")
 async def check_ads(req: CheckRequest):
-    """Sender auf Werbung prüfen (URL + Header-Check)"""
-    result = await check_station_ads(req.uuid, req.stream_url, req.name)
+    """Sender auf Werbung prüfen (URL + Header-Check), nur über die Kennung"""
+    result = await check_station_ads(req.uuid, _adresse(req.uuid), req.name)
+    await senderquelle.neu_fuer([req.uuid])
     return result
 
 
 @router.post("/report")
 async def report_ad(req: ReportRequest):
     """Werbung manuell melden: Sender wird als Werbesender markiert und blockiert"""
-    result = report_ad_manual(req.uuid, req.stream_url, req.name, req.note)
+    result = report_ad_manual(req.uuid, _adresse(req.uuid), req.name, req.note)
+    await senderquelle.neu_fuer([req.uuid])
     return result
 
 
 @router.post("/report-mark")
 async def report_ad_mark(req: ReportRequest):
     """Werbung markieren ohne zu blockieren: Nur Ad-Status setzen"""
-    result = report_ad_mark_only(req.uuid, req.stream_url, req.name, req.note)
+    result = report_ad_mark_only(req.uuid, _adresse(req.uuid), req.name, req.note)
+    await senderquelle.neu_fuer([req.uuid])
     return result
 
 
@@ -242,4 +259,5 @@ async def report_ad_mark(req: ReportRequest):
 async def false_positive(req: FalsePositiveRequest):
     """Fehlalarm markieren: Sender wird freigegeben"""
     result = mark_false_positive(req.uuid)
+    await senderquelle.neu_fuer([req.uuid])
     return result
