@@ -3,7 +3,9 @@
    und Bausteinen. */
 
 #app { block-size: 100%; }
-.rh-app { block-size: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; }
+/* Spalte ausdrücklich minmax(0, 1fr): ohne Angabe bemisst das Raster sie nach dem Inhalt, und eine lange Laufschrift in
+   der Spielerleiste schob Zeit und Steuerung aus dem Fenster */
+.rh-app { block-size: 100%; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; }
 
 /* Kopf: Schriftzug links, Navigation mittig und in den Inhalt ragend, Status und Darstellung rechts */
 .rh-kopf { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "marke nav rechts"; align-items: center; gap: 8px 16px;

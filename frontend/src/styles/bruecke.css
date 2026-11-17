@@ -11,7 +11,10 @@
 
 /* ═══ Schriftstufe der alten Bereiche ═══ Grundschrift wie bisher (16 Pixel, am Telefon 17), dann als Ganzes
    vergrößert; ohne die feste Grundschrift wüchse geerbter Text doppelt (Grundschrift der Stufe und zoom) */
-.rh-alt { zoom: var(--rh-alt-zoom); font-size: 16px; line-height: 1.5; }
+.rh-alt { zoom: var(--rh-alt-zoom); font-size: 16px; line-height: 1.5; min-width: 0; }
+/* Die alte Spielerleiste hat feste Teile (Kanzel, Zeit, Transport); mit Faktor 1,25 sind sie unter 1100 Pixeln breiter
+   als das Fenster. Dort bleibt sie in normaler Größe, bis Etappe 4 sie neu baut (gemessen: 1024 px, sehr groß). */
+@media (max-width: 1099px) { .rh-alt .hifi-player { zoom: calc(1 / var(--rh-alt-zoom)); } }
 .rh-telefon .rh-alt { font-size: 17px; line-height: 1.35; }
 
 :root, :root [data-theme] {
