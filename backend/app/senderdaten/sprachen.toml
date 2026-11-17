@@ -1,0 +1,792 @@
+# Sprachen der Sender: Code (ISO 639-1, sonst 639-3) mit deutschem Namen und den Schreibweisen, die im Senderverzeichnis
+# vorkommen (klein geschrieben, nach dem Säubern: ohne Adressen, ohne "#" vorn, ohne Punkt und Schrägstrich am Ende).
+# Ein Eintrag, der hier nicht steht, bleibt eine eigene Sprache aus freiem Text. Gepflegt nach der Auswertung der
+# Sicherung vom 16.11.2026 (RAD-1, Befund Abschnitt 8); wer etwas ergänzt, hebt FASSUNG in senderdaten/__init__.py.
+
+[de]
+name = "Deutsch"
+schreibweisen = ["german", "deutsch", "deu", "ger", "gernan", "deutch", "durch", "allemand", "aleman", "alemán", "alemanha", "tedesco", "duits", "niemiecki", "německy", "немецкий", "德语", "germany", "germán", "hochdeutsch", "standard german"]
+
+[gsw]
+name = "Schweizerdeutsch"
+schreibweisen = ["swiss german", "schweizerdeutsch", "schwiizerdütsch", "swiss", "alemannic"]
+
+[nds]
+name = "Niederdeutsch"
+schreibweisen = ["low german", "norddeutsch", "plattdeutsch", "plattdüütsch", "nedersaksisch", "low saxon"]
+
+[bar]
+name = "Bairisch"
+schreibweisen = ["bavarian", "bairisch", "bayerisch", "boarisch"]
+
+[ksh]
+name = "Kölsch"
+schreibweisen = ["kölsch", "kölscher dialekt", "kolsch"]
+
+[lb]
+name = "Luxemburgisch"
+schreibweisen = ["luxembourgish", "luxemburgisch", "lëtzebuergesch", "letzebuergesch"]
+
+[en]
+name = "Englisch"
+schreibweisen = ["english", "englisch", "eng", "en", "american english", "english uk", "british english", "english us", "en gb", "en-gb", "en-us", "engilsh", "englsih", "engilsh uk", "englisg", "engish", "engligh", "englsh", "egnlish", "engllish", "englisj", "engels", "engleza", "angol", "anglais", "ingles", "inglés", "inglese", "angličtina", "английский", "canadian english", "australian english", "caribbean english", "us english", "uk english", "american"]
+
+[fr]
+name = "Französisch"
+schreibweisen = ["french", "französisch", "francais", "français", "francaise", "française", "franch", "fench", "frances", "francés", "fra", "fr", "francia", "francese", "louisiana french", "québecois", "quebecois", "французский"]
+
+[es]
+name = "Spanisch"
+schreibweisen = ["spanish", "spanisch", "español", "espanol", "espaňol", "espa", "españo", "espsñol", "espanish", "spani", "span", "spanhol", "castellano", "castilian", "castelhano", "castellano. español", "españa", "espana", "spain", "spa", "es", "испанский", "latino", "latinoamerica", "mexicano", "español internacional", "español latino"]
+
+[it]
+name = "Italienisch"
+schreibweisen = ["italian", "italienisch", "italiano", "italia", "ita", "it", "italien", "итальянский"]
+
+[pt]
+name = "Portugiesisch"
+schreibweisen = ["portuguese", "portugiesisch", "português", "portugues", "portugués", "portoguese", "potuguese", "portguese", "porguês", "por", "pt", "pt-br", "pt-pt", "brazilian portuguese", "portuguese brazil", "portuguese brazillian", "portugues brasil", "portugues do brasil", "portugues do braasil", "brasileiro", "brazilian", "brazillian", "brasil", "portu", "port"]
+
+[nl]
+name = "Niederländisch"
+schreibweisen = ["dutch", "niederländisch", "nederlands", "nederland", "nederlandse", "nderlands", "nethe", "holland", "hollands", "nl", "nld"]
+
+[vls]
+name = "Flämisch"
+schreibweisen = ["flemish", "flämisch", "vlaams", "flammish", "belge"]
+
+[fy]
+name = "Friesisch"
+schreibweisen = ["frisian", "friesisch", "frysk", "fries", "west frisian"]
+
+[li]
+name = "Limburgisch"
+schreibweisen = ["limburgish", "limburgs", "limburgisch"]
+
+[da]
+name = "Dänisch"
+schreibweisen = ["danish", "dänisch", "dansk", "dan", "da"]
+
+[sv]
+name = "Schwedisch"
+schreibweisen = ["swedish", "schwedisch", "svenska", "swe", "sv"]
+
+[no]
+name = "Norwegisch"
+schreibweisen = ["norwegian", "norwegisch", "norsk", "norwwegian", "norvegian", "norvegian\\", "bokmål", "nynorsk", "no", "nor"]
+
+[fi]
+name = "Finnisch"
+schreibweisen = ["finnish", "finnisch", "suomi", "finish", "fin", "fi", "keski-suomi"]
+
+[is]
+name = "Isländisch"
+schreibweisen = ["icelandic", "isländisch", "íslenska"]
+
+[fo]
+name = "Färöisch"
+schreibweisen = ["faroese", "färöisch", "føroyskt"]
+
+[se]
+name = "Samisch"
+schreibweisen = ["sami", "sámi", "samisch", "northern sámi", "northern sami", "inari sámi", "skolt sámi"]
+
+[et]
+name = "Estnisch"
+schreibweisen = ["estonian", "estnisch", "eesti", "estonia"]
+
+[lv]
+name = "Lettisch"
+schreibweisen = ["latvian", "lettisch", "latviešu", "latvia"]
+
+[lt]
+name = "Litauisch"
+schreibweisen = ["lithuanian", "litauisch", "lietuvių"]
+
+[pl]
+name = "Polnisch"
+schreibweisen = ["polish", "polnisch", "polski", "pol", "pl"]
+
+[szl]
+name = "Schlesisch"
+schreibweisen = ["silesian", "śląski", "schlesisch"]
+
+[csb]
+name = "Kaschubisch"
+schreibweisen = ["kashubian", "cassubian", "kaschubisch"]
+
+[cs]
+name = "Tschechisch"
+schreibweisen = ["czech", "tschechisch", "čeština", "cestina", "česky", "cesky", "ces", "cz"]
+
+[sk]
+name = "Slowakisch"
+schreibweisen = ["slovak", "slowakisch", "slovenčina", "slovencina", "slovakian"]
+
+[hu]
+name = "Ungarisch"
+schreibweisen = ["hungarian", "ungarisch", "magyar", "hun", "hu"]
+
+[ro]
+name = "Rumänisch"
+schreibweisen = ["romanian", "rumänisch", "română", "romana", "româna", "românä", "romania", "moldovian", "moldovan", "молдавский", "ro", "ron"]
+
+[bg]
+name = "Bulgarisch"
+schreibweisen = ["bulgarian", "bulgarisch", "български", "bulgaria"]
+
+[sl]
+name = "Slowenisch"
+schreibweisen = ["slovenian", "slowenisch", "slovenski", "slovenščina", "slovene"]
+
+[hr]
+name = "Kroatisch"
+schreibweisen = ["croatian", "kroatisch", "hrvatski", "croatia", "coatian"]
+
+[sr]
+name = "Serbisch"
+schreibweisen = ["serbian", "serbisch", "srpski", "српски", "srb"]
+
+[bs]
+name = "Bosnisch"
+schreibweisen = ["bosnian", "bosnisch", "bosanski"]
+
+[cnr]
+name = "Montenegrinisch"
+schreibweisen = ["montenegrin", "montenegro", "crnogorski"]
+
+[sh]
+name = "Serbokroatisch"
+schreibweisen = ["serbo-croatian", "yugoslavian", "serbokroatisch"]
+
+[mk]
+name = "Mazedonisch"
+schreibweisen = ["macedonian", "mazedonisch", "македонски"]
+
+[sq]
+name = "Albanisch"
+schreibweisen = ["albanian", "albanisch", "shqip"]
+
+[el]
+name = "Griechisch"
+schreibweisen = ["greek", "griechisch", "ελληνικά", "ellinika", "greel", "gre", "el"]
+
+[grc]
+name = "Altgriechisch"
+schreibweisen = ["ancient greek", "altgriechisch"]
+
+[la]
+name = "Latein"
+schreibweisen = ["latin", "latein", "latina"]
+
+[ru]
+name = "Russisch"
+schreibweisen = ["russian", "russisch", "русский", "русский язык", "rus", "ru", "ру", "rossia", "russia", "русский английский"]
+
+[uk]
+name = "Ukrainisch"
+schreibweisen = ["ukrainian", "ukrainisch", "українська", "ukranian", "ua", "укр", "украина", "ucrânia"]
+
+[be]
+name = "Belarussisch"
+schreibweisen = ["belarusian", "belarussisch", "беларуская", "weißrussisch"]
+
+[rue]
+name = "Russinisch"
+schreibweisen = ["carpatho-rusyn", "rusyn", "russinisch"]
+
+[cu]
+name = "Kirchenslawisch"
+schreibweisen = ["church slavonic", "церковнославянский", "kirchenslawisch"]
+
+[tr]
+name = "Türkisch"
+schreibweisen = ["turkish", "türkisch", "türkçe", "turkçe", "turkce", "türkish", "turkt", "tr", "tur"]
+
+[az]
+name = "Aserbaidschanisch"
+schreibweisen = ["azerbaijani", "aserbaidschanisch", "azeri", "azer", "azr", "azərbaycan"]
+
+[tk]
+name = "Turkmenisch"
+schreibweisen = ["turkmen", "turkmenisch", "iraqi turkmen"]
+
+[kk]
+name = "Kasachisch"
+schreibweisen = ["kazakh", "kasachisch", "қазақ"]
+
+[ky]
+name = "Kirgisisch"
+schreibweisen = ["kyrgyz", "kirgisisch"]
+
+[uz]
+name = "Usbekisch"
+schreibweisen = ["uzbek", "usbekisch", "oʻzbek"]
+
+[tt]
+name = "Tatarisch"
+schreibweisen = ["tatar", "tatarisch", "татарский"]
+
+[ba]
+name = "Baschkirisch"
+schreibweisen = ["bashkir", "baschkirisch"]
+
+[cv]
+name = "Tschuwaschisch"
+schreibweisen = ["chuvash", "tschuwaschisch"]
+
+[os]
+name = "Ossetisch"
+schreibweisen = ["ossetian", "ossetisch", "осетинский"]
+
+[sah]
+name = "Jakutisch"
+schreibweisen = ["sakha", "yakut", "jakutisch"]
+
+[mn]
+name = "Mongolisch"
+schreibweisen = ["mongolian", "mongolisch", "monoglian", "монгол"]
+
+[ka]
+name = "Georgisch"
+schreibweisen = ["georgian", "georgisch", "ქართული"]
+
+[hy]
+name = "Armenisch"
+schreibweisen = ["armenian", "armenisch", "հայերեն"]
+
+[ar]
+name = "Arabisch"
+schreibweisen = ["arabic", "arabisch", "العربية", "عربي", "arabi", "arab", "ar", "ara", "arapça", "lebanese", "palestinian", "tunisian", "moroccan arabic", "egyptian arabic"]
+
+[he]
+name = "Hebräisch"
+schreibweisen = ["hebrew", "hebräisch", "עברית", "ivrit"]
+
+[yi]
+name = "Jiddisch"
+schreibweisen = ["yiddish", "jiddisch"]
+
+[lad]
+name = "Ladino"
+schreibweisen = ["ladino", "judeo-spanish"]
+
+[fa]
+name = "Persisch"
+schreibweisen = ["persian", "persisch", "farsi", "فارسی", "iranian", "irani", "iran"]
+
+[ku]
+name = "Kurdisch"
+schreibweisen = ["kurdish", "kurdisch", "kurdi", "kurmanji", "kirmanci", "sorani"]
+
+[ps]
+name = "Paschtu"
+schreibweisen = ["pashto", "paschtu", "afghan"]
+
+[ber]
+name = "Berberisch"
+schreibweisen = ["berber", "berbere", "amazigh", "tamazight", "standard moroccan amazigh", "tachelhite", "kabyle"]
+
+[hi]
+name = "Hindi"
+schreibweisen = ["hindi", "हिन्दी", "hindu", "indian"]
+
+[ur]
+name = "Urdu"
+schreibweisen = ["urdu", "اردو"]
+
+[pa]
+name = "Panjabi"
+schreibweisen = ["punjabi", "panjabi", "punjab", "ਪੰਜਾਬੀ"]
+
+[bn]
+name = "Bengalisch"
+schreibweisen = ["bengali", "bangla", "bengalisch", "বাংলা"]
+
+[ta]
+name = "Tamil"
+schreibweisen = ["tamil", "தமிழ்"]
+
+[te]
+name = "Telugu"
+schreibweisen = ["telugu"]
+
+[kn]
+name = "Kannada"
+schreibweisen = ["kannada"]
+
+[ml]
+name = "Malayalam"
+schreibweisen = ["malayalam", "ml"]
+
+[mr]
+name = "Marathi"
+schreibweisen = ["marathi"]
+
+[gu]
+name = "Gujarati"
+schreibweisen = ["gujarati", "gujrati", "gujurati"]
+
+[or]
+name = "Oriya"
+schreibweisen = ["odia", "oriya"]
+
+[as]
+name = "Assamesisch"
+schreibweisen = ["assamese", "assamesisch"]
+
+[ne]
+name = "Nepali"
+schreibweisen = ["nepali", "nepalesisch"]
+
+[si]
+name = "Singhalesisch"
+schreibweisen = ["sinhala", "sinhalese", "singhalesisch"]
+
+[sd]
+name = "Sindhi"
+schreibweisen = ["sindhi"]
+
+[ks]
+name = "Kashmiri"
+schreibweisen = ["kashmiri"]
+
+[kok]
+name = "Konkani"
+schreibweisen = ["konkani"]
+
+[bho]
+name = "Bhojpuri"
+schreibweisen = ["bhojpuri"]
+
+[bh]
+name = "Bihari"
+schreibweisen = ["bihari"]
+
+[bgc]
+name = "Haryanvi"
+schreibweisen = ["haryanvi"]
+
+[sa]
+name = "Sanskrit"
+schreibweisen = ["sanskrit"]
+
+[pi]
+name = "Pali"
+schreibweisen = ["pali"]
+
+[dv]
+name = "Dhivehi"
+schreibweisen = ["dhivehi", "maldivian"]
+
+[bo]
+name = "Tibetisch"
+schreibweisen = ["tibetan", "tibetisch"]
+
+[ug]
+name = "Uigurisch"
+schreibweisen = ["uyghur", "uigurisch", "uighur"]
+
+[zh]
+name = "Chinesisch (Mandarin)"
+schreibweisen = ["chinese", "chinesisch", "mandarin", "中文", "普通话", "国语", "國語", "汉语", "china", "中国", "zh", "chi", "zho"]
+
+[yue]
+name = "Chinesisch (Kantonesisch)"
+schreibweisen = ["cantonese", "kantonesisch", "粤语", "廣東話", "广东话"]
+
+[nan]
+name = "Hokkien"
+schreibweisen = ["hokkien", "minnan", "taiwanese"]
+
+[hak]
+name = "Hakka"
+schreibweisen = ["hakka"]
+
+[ja]
+name = "Japanisch"
+schreibweisen = ["japanese", "japanisch", "日本語", "japones", "japonés", "ja", "jpn", "japan"]
+
+[ko]
+name = "Koreanisch"
+schreibweisen = ["korean", "koreanisch", "한국어", "korea", "ko", "kor"]
+
+[vi]
+name = "Vietnamesisch"
+schreibweisen = ["vietnamese", "vietnamesisch", "tiếng việt"]
+
+[th]
+name = "Thailändisch"
+schreibweisen = ["thai", "thailändisch", "ภาษาไทย"]
+
+[km]
+name = "Khmer"
+schreibweisen = ["khmer"]
+
+[lo]
+name = "Laotisch"
+schreibweisen = ["lao", "laotisch"]
+
+[my]
+name = "Birmanisch"
+schreibweisen = ["burmese", "birmanisch", "myanmar"]
+
+[id]
+name = "Indonesisch"
+schreibweisen = ["indonesian", "indonesisch", "bahasa indonesia", "indonesia", "bahasa"]
+
+[jv]
+name = "Javanisch"
+schreibweisen = ["javanese", "javanisch", "jawa", "java", "bahasa jawa"]
+
+[su]
+name = "Sundanesisch"
+schreibweisen = ["sundanese", "bahasa sunda", "sunda"]
+
+[min]
+name = "Minangkabau"
+schreibweisen = ["minang", "minangkabau"]
+
+[ms]
+name = "Malaiisch"
+schreibweisen = ["malay", "malaiisch", "bahasa melayu", "melayu", "kelantanese malay"]
+
+[tl]
+name = "Tagalog"
+schreibweisen = ["tagalog", "filipino", "pilipino", "opm", "various filipino languages"]
+
+[ceb]
+name = "Cebuano"
+schreibweisen = ["cebuano", "bisaya", "visayan"]
+
+[ilo]
+name = "Ilokano"
+schreibweisen = ["ilocano", "ilokano"]
+
+[hil]
+name = "Hiligaynon"
+schreibweisen = ["ilonggo", "illonggo", "hiligaynon"]
+
+[pam]
+name = "Kapampangan"
+schreibweisen = ["kapampangan"]
+
+[bcl]
+name = "Bikolano"
+schreibweisen = ["bicolano", "bikol"]
+
+[mg]
+name = "Malagasy"
+schreibweisen = ["malagasy", "malgache", "madagassisch"]
+
+[sw]
+name = "Swahili"
+schreibweisen = ["swahili", "kiswahili", "suaheli"]
+
+[am]
+name = "Amharisch"
+schreibweisen = ["amharic", "amharisch"]
+
+[ti]
+name = "Tigrinya"
+schreibweisen = ["tigrigna", "tigrinya"]
+
+[om]
+name = "Oromo"
+schreibweisen = ["oromo"]
+
+[so]
+name = "Somali"
+schreibweisen = ["somali"]
+
+[ha]
+name = "Hausa"
+schreibweisen = ["hausa", "hausa l"]
+
+[yo]
+name = "Yoruba"
+schreibweisen = ["yoruba"]
+
+[ig]
+name = "Igbo"
+schreibweisen = ["igbo", "ibo"]
+
+[ff]
+name = "Fulfulde"
+schreibweisen = ["fulani", "fula", "fulfulde"]
+
+[bm]
+name = "Bambara"
+schreibweisen = ["bambara"]
+
+[ak]
+name = "Akan"
+schreibweisen = ["akan", "twi"]
+
+[lg]
+name = "Luganda"
+schreibweisen = ["luganda", "ganda"]
+
+[xog]
+name = "Lusoga"
+schreibweisen = ["lusoga", "soga"]
+
+[ln]
+name = "Lingala"
+schreibweisen = ["lingala"]
+
+[kg]
+name = "Kikongo"
+schreibweisen = ["kikongo"]
+
+[lu]
+name = "Tshiluba"
+schreibweisen = ["tshiluba", "luba"]
+
+[ki]
+name = "Kikuyu"
+schreibweisen = ["kikuyu"]
+
+[zu]
+name = "Zulu"
+schreibweisen = ["zulu", "isizulu"]
+
+[xh]
+name = "Xhosa"
+schreibweisen = ["xhosa", "isixhosa"]
+
+[nr]
+name = "Süd-Ndebele"
+schreibweisen = ["isindebele", "ndebele"]
+
+[af]
+name = "Afrikaans"
+schreibweisen = ["afrikaans"]
+
+[st]
+name = "Sesotho"
+schreibweisen = ["sesotho", "sotho"]
+
+[nso]
+name = "Nord-Sotho"
+schreibweisen = ["sepedi", "northern sotho"]
+
+[tn]
+name = "Setswana"
+schreibweisen = ["setswana", "tswana"]
+
+[ts]
+name = "Xitsonga"
+schreibweisen = ["xitsonga", "tsonga"]
+
+[ve]
+name = "Tshivenda"
+schreibweisen = ["tshivenda", "tshivenḓa", "venda"]
+
+[ss]
+name = "Siswati"
+schreibweisen = ["siswati", "swati"]
+
+[sn]
+name = "Shona"
+schreibweisen = ["shona"]
+
+[ht]
+name = "Haitianisch"
+schreibweisen = ["haitian creole", "haiti creole", "kreyòl", "creole", "haitian"]
+
+[pap]
+name = "Papiamentu"
+schreibweisen = ["papiamentu", "papiamento"]
+
+[srn]
+name = "Sranan Tongo"
+schreibweisen = ["sranan tongo"]
+
+[jam]
+name = "Jamaikanisch"
+schreibweisen = ["jamaican", "jamaicaans-patois", "patois"]
+
+[gcf]
+name = "Antillen-Kreolisch"
+schreibweisen = ["saint lucian creole"]
+
+[pcm]
+name = "Nigerianisches Pidgin"
+schreibweisen = ["pigin", "pidgin", "nigerian pidgin"]
+
+[bi]
+name = "Bislama"
+schreibweisen = ["bislama"]
+
+[tcs]
+name = "Torres-Strait-Kreolisch"
+schreibweisen = ["torres strait creole"]
+
+[ga]
+name = "Irisch"
+schreibweisen = ["irish", "irisch", "gaeilge"]
+
+[gd]
+name = "Schottisch-Gälisch"
+schreibweisen = ["gaelic", "scottish gaelic", "gàidhlig"]
+
+[gv]
+name = "Manx"
+schreibweisen = ["manx", "northern manx"]
+
+[cy]
+name = "Walisisch"
+schreibweisen = ["welsh", "walisisch", "cymraeg"]
+
+[kw]
+name = "Kornisch"
+schreibweisen = ["cornish", "kornisch"]
+
+[br]
+name = "Bretonisch"
+schreibweisen = ["breton", "bretonisch", "brezhoneg"]
+
+[ca]
+name = "Katalanisch"
+schreibweisen = ["catalan", "katalanisch", "català", "catala", "valencià", "español in catalán"]
+
+[gl]
+name = "Galicisch"
+schreibweisen = ["galician", "galicisch", "galego", "gallego"]
+
+[ast]
+name = "Asturisch"
+schreibweisen = ["asturian", "asturisch", "astur-leonese", "lliones"]
+
+[eu]
+name = "Baskisch"
+schreibweisen = ["basque", "baskisch", "euskera", "euskara"]
+
+[oc]
+name = "Okzitanisch"
+schreibweisen = ["occitan", "okzitanisch", "gascon", "bearnese"]
+
+[co]
+name = "Korsisch"
+schreibweisen = ["corsican", "corsu", "korsisch"]
+
+[sc]
+name = "Sardisch"
+schreibweisen = ["sardinian", "sardisch", "sardu"]
+
+[fur]
+name = "Friaulisch"
+schreibweisen = ["friulian", "furlan", "friaulisch"]
+
+[lld]
+name = "Ladinisch"
+schreibweisen = ["ladin", "ladinisch"]
+
+[rm]
+name = "Rätoromanisch"
+schreibweisen = ["romansh", "rätoromanisch", "rumantsch"]
+
+[mt]
+name = "Maltesisch"
+schreibweisen = ["maltese", "maltesisch", "malti"]
+
+[eo]
+name = "Esperanto"
+schreibweisen = ["esperanto"]
+
+[hsb]
+name = "Obersorbisch"
+schreibweisen = ["upper sorbian", "obersorbisch"]
+
+[dsb]
+name = "Niedersorbisch"
+schreibweisen = ["lower sorbian", "niedersorbisch"]
+
+[wen]
+name = "Sorbisch"
+schreibweisen = ["sorbian", "sorbisch"]
+
+[rom]
+name = "Romani"
+schreibweisen = ["romani", "romany", "roma"]
+
+[gag]
+name = "Gagausisch"
+schreibweisen = ["gagauz", "gagausisch"]
+
+[kv]
+name = "Komi"
+schreibweisen = ["komi"]
+
+[tyv]
+name = "Tuwinisch"
+schreibweisen = ["tyvan", "tuvan"]
+
+[ckt]
+name = "Tschuktschisch"
+schreibweisen = ["чукотский", "chukchi"]
+
+[mi]
+name = "Maori"
+schreibweisen = ["te reo", "te reo maori", "māori", "maori"]
+
+[sm]
+name = "Samoanisch"
+schreibweisen = ["samoan", "gagana samoa"]
+
+[fj]
+name = "Fidschi"
+schreibweisen = ["fijian"]
+
+[hif]
+name = "Fidschi-Hindi"
+schreibweisen = ["fijian hindi"]
+
+[ty]
+name = "Tahitianisch"
+schreibweisen = ["tahitian"]
+
+[haw]
+name = "Hawaiisch"
+schreibweisen = ["hawaiian"]
+
+[qu]
+name = "Quechua"
+schreibweisen = ["quechua", "quichua"]
+
+[ay]
+name = "Aymara"
+schreibweisen = ["aymara"]
+
+[gn]
+name = "Guaraní"
+schreibweisen = ["guarani", "guaraní"]
+
+[nah]
+name = "Nahuatl"
+schreibweisen = ["nahuatl", "náhuatl"]
+
+[yua]
+name = "Yukatekisch"
+schreibweisen = ["yucatec maya", "maya"]
+
+[quc]
+name = "Kʼicheʼ"
+schreibweisen = ["quiché", "k'iche'"]
+
+[cab]
+name = "Garifuna"
+schreibweisen = ["garifuna"]
+
+[nv]
+name = "Navajo"
+schreibweisen = ["navajo", "diné"]
+
+[cr]
+name = "Cree"
+schreibweisen = ["cree"]
+
+[iu]
+name = "Inuktitut"
+schreibweisen = ["inuktitut", "inuktituk"]

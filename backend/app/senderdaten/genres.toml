@@ -1,0 +1,185 @@
+# Genres der Sender: aus dem Tag-Chaos des Senderverzeichnisses (11.429 Schreibweisen in der Sicherung vom 16.11.2026)
+# wird eine gepflegte Liste. Ein Tag wird erst gesäubert (klein, ohne Rand, ohne "#" vorn), dann gilt in dieser
+# Reihenfolge:
+#   1. verwerfen: Rauschen (Wörter ohne Aussage wie "radio" oder "fm") und Frequenzen fallen weg, auch aus den Tags.
+#   2. genres: eine bekannte Schreibweise ergibt ihr Genre.
+#   3. muster: reguläre Ausdrücke für Reihen wie die Jahrzehnte ("80s", "80's", "1980s", "80er").
+# Was sonst bleibt, ist ein Tag ohne Genre (für Suche und Tag-Regeln). Wer hier etwas ändert, hebt FASSUNG in
+# senderdaten/__init__.py, damit der Bestand beim nächsten Start neu aufbereitet wird.
+
+[verwerfen]
+woerter = ["music", "musik", "música", "musica", "radio", "fm", "am", "fm radio", "am radio", "estación", "estacion",
+  "station", "radio station", "online", "online radio", "radio online", "internet", "internet radio", "webradio",
+  "web radio", "stream", "streaming", "live", "24/7", "free", "mp3", "aac", "ogg", "https", "http", "hd", "hq", "misc",
+  "miscellaneous", "various", "variety", "mix", "general", "all", "best", "top", "la mejor", "exclusive", "online only",
+  "en todas partes", "te conecta", "moi merino", "mvs", "mvs radio", "iheart", "iheart radio", "iheartradio",
+  "radiorama", "acir", "grupo acir", "acir online", "exa", "exa fm", "ponte exa", "radcap", "radio caprice",
+  "radiópolis", "arroba fm", "@fm", "@fm te conecta", "arroba fm te conecta", "la estación exacta",
+  "la estación naranja", "cadena rasa", "grupo radio cañón", "grupo radio centro", "multimedios radio",
+  "ntr medios de comunicación", "grupo audiorama comunicaciones", "aquí nomás", "la mejor aquí nomás", "la ke buena",
+  "w radio", "los40", "mediaset", "abc", "npr", "pri", "ard", "combo", "features", "discography", "dj", "kbps",
+  "radio fm", "fm stereo", "stereo", "commercial", "non-commercial", "noncommercial"]
+# Frequenzen und Kanäle: "101.5", "88,4 fm", "99.9mhz", "fm 104", "am 1220", "101 fm"
+muster = ['^\d{2,4}([.,]\d{1,2})?\s*(fm|am|mhz|khz)?$', '^(fm|am)\s*\d{2,4}([.,]\d{1,2})?$']
+
+[genres]
+"Pop" = ["pop", "pop music", "música pop", "musica pop", "pop en español", "pop en inglés", "pop en español e inglés",
+  "pop latino", "latin pop", "pop rock", "pop dance", "dance pop", "greek pop", "italian pop", "pop clásico", "jpop",
+  "j-pop", "k-pop", "kpop", "europop", "synthpop", "synth pop", "indie pop", "поп-музыка", "поп", "popmusik"]
+"Hits" = ["hits", "top 40", "top40", "top hits", "top 40 hits", "top 100", "top charts", "charts", "chart",
+  "contemporary hits", "contemporary hits radio", "chr", "hot adult contemporary", "hot ac", "adult hits",
+  "spanish contemporary hits", "current hits", "música actual", "hitradio", "aktuelle hits"]
+"Adult Contemporary" = ["adult contemporary", "ac", "soft adult contemporary", "adult", "mainstream"]
+"Oldies" = ["oldies", "oldie", "classic hits", "goldies", "retro", "retro hits", "retro music", "música del recuerdo",
+  "clásicos", "clásicos en inglés", "clásicos en español", "evergreens", "evergreen", "decades", "classics",
+  "golden oldies"]
+"Rock" = ["rock", "classic rock", "hard rock", "soft rock", "rock en español", "blues rock", "rock 'n' roll",
+  "rock and roll", "rock & roll", "rock'n'roll", "deutschrock", "southern rock", "rock music", "rock clásico",
+  "glam rock", "arena rock", "aor"]
+"Alternative" = ["alternative", "alternative rock", "alternative / indie", "alternativ", "modern rock", "grunge",
+  "post-rock", "post rock", "britpop", "college rock"]
+"Indie" = ["indie", "indie rock", "independent", "indie folk", "lo-fi", "lofi"]
+"Punk" = ["punk", "punk rock", "hardcore punk", "post-punk", "post punk", "ska punk", "oi"]
+"Metal" = ["metal", "heavy metal", "death metal", "black metal", "thrash metal", "power metal", "metalcore",
+  "nu metal", "doom metal", "symphonic metal", "progressive metal"]
+"Progressive" = ["progressive rock", "prog rock", "prog", "krautrock", "psychedelic", "psychedelic rock", "space rock"]
+"Dark Wave" = ["gothic", "goth", "dark wave", "darkwave", "gothic rock", "new wave", "wave", "ndw",
+  "neue deutsche welle", "ebm", "industrial", "synthwave", "minimal wave", "cold wave", "coldwave"]
+"Elektronik" = ["electronic", "electronica", "electro", "elektronik", "elektronisch", "electronic dance music", "edm",
+  "idm", "electro swing", "synth", "synthesizer", "vaporwave", "chiptune"]
+"Dance" = ["dance", "dance music", "eurodance", "club", "club dance", "party", "dancefloor", "disco", "italo disco",
+  "nu disco", "hi-nrg", "dj remix", "dj mixes", "dj sets", "remix", "remixes"]
+"House" = ["house", "deep house", "tech house", "progressive house", "electro house", "funky house", "soulful house",
+  "afro house", "tropical house", "house music"]
+"Techno" = ["techno", "minimal", "minimal techno", "hard techno", "detroit techno", "acid", "schranz", "hardstyle",
+  "hardcore", "gabber", "rave"]
+"Trance" = ["trance", "psytrance", "psy trance", "goa", "progressive trance", "uplifting trance", "vocal trance"]
+"Drum and Bass" = ["drum and bass", "drum & bass", "drum'n'bass", "drum n bass", "dnb", "d&b", "jungle", "dubstep",
+  "breakbeat", "breaks", "uk garage", "garage"]
+"Chillout" = ["chillout", "chill out", "chill", "chillout+lounge", "chill-out", "lounge", "lounge music", "downtempo",
+  "trip-hop", "trip hop", "triphop", "smooth", "relax", "relaxing", "relaxation", "café", "cafe"]
+"Ambient" = ["ambient", "ambient and relaxation music", "ambient music", "drone", "meditation", "meditative", "sleep",
+  "new age", "spa", "healing", "soundscape"]
+"Jazz" = ["jazz", "smooth jazz", "swing", "big band", "bebop", "jazz fusion", "fusion", "acid jazz", "nu jazz",
+  "free jazz", "latin jazz", "vocal jazz", "dixieland", "bossa nova", "bossanova", "bossa"]
+"Blues" = ["blues", "rhythm and blues", "delta blues", "chicago blues"]
+"Soul" = ["soul", "funk", "motown", "northern soul", "neo soul", "groove", "rare groove"]
+"R&B" = ["rnb", "r&b", "r & b", "rhythm & blues", "urban", "urban contemporary", "contemporary r&b"]
+"Hip-Hop" = ["hiphop", "hip-hop", "hip hop", "rap", "trap", "gangsta rap", "deutschrap", "deutsch rap",
+  "old school hip hop", "boom bap", "grime", "drill", "música urbana", "urbano"]
+"Reggae" = ["reggae", "dub", "dancehall", "ska", "roots reggae", "rocksteady", "roots"]
+"Latin" = ["latino", "latin", "latin music", "música latina", "musica latina", "musica latinoamericana", "tropical",
+  "música tropical", "tropical music", "salsa", "merengue", "bachata", "cumbia", "vallenato", "reggaeton", "reguetón",
+  "regueton", "tango", "son cubano", "bolero", "boleros", "mpb", "samba", "samba e pagode", "pagode", "forró", "axé",
+  "sertanejo", "funk carioca", "baile funk"]
+"Regional Mexicana" = ["regional mexican", "regional mexicana", "música regional mexicana", "musica regional mexicana",
+  "música popular mexicana", "música mexicana", "musica mexicana", "mexican music", "traditional mexican music",
+  "música tradicional mexicana", "musica tradicional mexicana", "grupera", "grupero", "banda", "banda norteña",
+  "banda tradicional", "norteño", "norteña", "ranchera", "rancheras", "mariachi", "sierreño", "duranguense",
+  "corridos", "música regional", "musica regional", "regional music"]
+"Balladen" = ["baladas", "baladas en español", "balada", "balada pop", "balada en español", "balada romántica",
+  "ballads", "ballad", "power ballads"]
+"Romantik" = ["romantic", "romántica", "románticas", "musica romantica", "música romántica", "romantic music",
+  "love songs", "love", "amor", "lovesongs"]
+"Country" = ["country", "country music", "classic country", "americana", "bluegrass", "new country", "alt-country",
+  "alt country", "honky tonk", "western"]
+"Folk" = ["folk", "folk music", "singer-songwriter", "singer songwriter", "liedermacher", "acoustic", "akustik",
+  "celtic", "irish folk", "folk rock", "traditional", "folklore", "folklórica", "greek folk", "polka", "cajun",
+  "zydeco"]
+"Weltmusik" = ["world music", "world", "weltmusik", "multicultural", "multiculti", "international", "ethnic",
+  "african music", "afrobeats", "afrobeat", "afropop", "highlife", "bollywood", "bhangra", "indian music",
+  "arabic music", "oriental", "turkish music", "greek music", "laiko", "rebetiko", "manele", "petrecere",
+  "populară", "muzica populara", "chanson", "chansons", "fado", "flamenco", "klezmer", "balkan", "arabesk"]
+"Schlager" = ["schlager", "deutscher schlager", "schlagermusik", "discofox", "disco fox", "partyschlager",
+  "deutsche schlager"]
+"Volksmusik" = ["volksmusik", "volkstümliche musik", "volkstümlich", "blasmusik", "alpenländische musik",
+  "oberkrainer", "brass band"]
+"Deutschsprachig" = ["deutsch", "deutsche musik", "deutschpop", "deutsch pop", "german music", "deutsche hits",
+  "deutschsprachig", "deutsche lieder"]
+"Klassik" = ["classical", "classical music", "klassik", "klassische musik", "classic", "orchestral", "orchestra",
+  "symphony", "symphonic", "opera", "oper", "baroque", "barock", "chamber music", "kammermusik", "piano",
+  "early music", "alte musik", "contemporary classical", "choral", "choir", "chor", "organ", "orgel", "klassisk",
+  "clásica", "música clásica", "musica classica", "klassieke muziek", "classique", "musique classique"]
+"Filmmusik" = ["soundtracks", "soundtrack", "film music", "filmmusik", "movie soundtracks", "score", "film scores",
+  "anime", "video game music", "game music", "musicals", "musical", "broadway", "show tunes"]
+"Instrumental" = ["instrumental", "instrumentals", "guitar", "gitarre", "saxophone", "beats"]
+"Gospel" = ["gospel", "christian contemporary", "christian music", "contemporary christian", "worship",
+  "praise & worship", "praise and worship", "ccm", "southern gospel"]
+"Religion" = ["christian", "religious", "religion", "catholic", "katholisch", "bible", "christianity", "church",
+  "kirche", "evangelical", "evangelisch", "orthodox christian", "orthodox", "islamic", "islam", "quran", "koran",
+  "nasheed", "spiritual", "spirituality", "jewish", "hindu", "devotional", "bhajan", "buddhist", "cristiana",
+  "cristiano", "católica", "catolica", "evangélica", "religioso", "religiosa", "predigt", "sermons", "preaching",
+  "ministry", "bible teaching", "christian radio", "christian talk"]
+"Nachrichten" = ["news", "nachrichten", "noticias", "noticias locales", "noticias en español",
+  "noticias nacionales e internacionales", "noticias cortas", "noticias y comentarios", "noticias opinion",
+  "noticias y deportes", "noticias y música", "local news", "world news", "news talk", "news talk music", "news/talk",
+  "news & talk", "information", "información", "informativa", "info", "infos", "current affairs", "politics",
+  "politik", "política", "headlines", "breaking news", "notícias", "actualité", "actualites", "nieuws", "новости",
+  "informações", "local information", "música y noticias", "full service"]
+"Wortprogramm" = ["talk", "talk radio", "talk & speech", "talk show", "talkshow", "speech", "radio hablada",
+  "hablada", "entrevistas", "interviews", "spoken word", "wort", "wortprogramm", "discussion", "debate",
+  "local talk", "conversation", "programas en vivo", "magazin", "magazine"]
+"Kultur" = ["culture", "kultur", "cultural", "cultura", "culturel", "arts", "art", "literature", "literatur",
+  "education", "educational", "bildung", "science", "wissenschaft", "history", "geschichte", "documentary",
+  "feature", "drama", "poetry", "lesung"]
+"Hörspiel" = ["hörspiel", "hörspiele", "radio drama", "audio drama", "audiobook", "audiobooks", "hörbuch",
+  "hörbücher", "old time radio", "otr", "radio play", "radio plays"]
+"Öffentlich-rechtlich" = ["public radio", "public", "public broadcasting", "public broadcaster", "radio pública",
+  "pública", "public service", "öffentlich-rechtlich", "öffentlich rechtlich", "service public", "concesión social"]
+"Bürgerfunk" = ["community radio", "community", "radio comunitaria", "bürgerradio", "bürgerfunk", "freies radio",
+  "free radio", "local radio", "local", "local music", "regional radio", "regional", "freeform"]
+"Hochschulradio" = ["university radio", "college radio", "university", "college", "student radio", "campus radio",
+  "radio universitaria", "uniradio", "hochschulradio", "campusradio", "youth", "juvenil"]
+"Sport" = ["sports", "sport", "deportes", "sports news", "sports talk", "live sports", "football", "fußball",
+  "futbol", "fútbol", "soccer", "baseball", "basketball", "hockey", "nfl", "sportradio"]
+"Comedy" = ["comedy", "humor", "humour", "kabarett", "satire", "comedia", "funny"]
+"Kinder" = ["kids", "children", "kinder", "kinderradio", "kindermusik", "kinderlieder", "family", "familie",
+  "infantil", "niños", "детское"]
+"Weihnachten" = ["christmas", "christmas music", "weihnachten", "weihnachtsmusik", "xmas", "navidad", "noël", "holiday"]
+"Verkehr und Wetter" = ["traffic", "traffic radio broadcast", "weather", "wetter", "verkehr", "verkehrsfunk",
+  "aviation", "atc", "air traffic control", "scanner", "police", "emergency"]
+"Easy Listening" = ["easy listening", "beautiful music", "mood music", "background music", "elevator music", "muzak",
+  "light music"]
+"Eklektisch" = ["eclectic", "variety mix", "various music", "música variada", "crossover", "variado", "variety hits"]
+"Experimentell" = ["experimental", "avantgarde", "avant-garde", "noise", "sound art", "field recordings"]
+
+# Reihen als Ausdrücke (Python re, ganzer Tag)
+[[muster]]
+ausdruck = "^(19)?50(s|'s|er)?$|^fifties$"
+genre = "50er"
+
+[[muster]]
+ausdruck = "^(19)?60(s|'s|er)?$|^sixties$"
+genre = "60er"
+
+[[muster]]
+ausdruck = "^(19)?70(s|'s|er)?$|^seventies$"
+genre = "70er"
+
+[[muster]]
+ausdruck = "^(19)?80(s|'s|er)?$|^eighties$|^(the )?best of 80'?s$"
+genre = "80er"
+
+[[muster]]
+ausdruck = "^(19)?90(s|'s|er)?$|^nineties$"
+genre = "90er"
+
+[[muster]]
+ausdruck = "^(20)?00(s|'s|er)$|^2000(s|er)?$"
+genre = "2000er"
+
+[[muster]]
+ausdruck = "^(20)?10(s|'s|er)$|^2010(s|er)?$"
+genre = "2010er"
+
+[[muster]]
+ausdruck = "^(20)?20(s|'s|er)$|^2020(s|er)?$"
+genre = "2020er"
+
+[[muster]]
+ausdruck = "^m[uú]sica (cristiana|cat[oó]lica)$"
+genre = "Religion"
+
+[[muster]]
+ausdruck = "^classic(al)? (music|radio)$"
+genre = "Klassik"

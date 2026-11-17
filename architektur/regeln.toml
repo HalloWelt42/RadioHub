@@ -15,7 +15,7 @@ stichwort = "Ausnahme freigegeben"
 kennung = "S1"
 titel = "Schichten des Backends"
 art = "schichten"
-warum = "Die Schnittstelle nutzt Dienste, nie umgekehrt; die Ablage (Port und Adapter) kennt nur die Grundlagen, damit sie austauschbar bleibt (Kellerwolke, Speicher für Tests)."
+warum = "Die Schnittstelle nutzt Dienste, nie umgekehrt; die Ablage (Port und Adapter) kennt nur die Grundlagen, damit sie austauschbar bleibt (Kellerwolke, Speicher für Tests). Der Senderdaten-Baustein bindet nichts aus der App ein, damit ihn auch das Skript der statischen Webversion nutzt (RAD-7)."
 dateien = ["backend/app/**"]
 schichten = [
   { name = "schnittstelle", dateien = ["backend/app/routers/**", "backend/app/main.py", "backend/app/betrieb.py"] },
@@ -23,8 +23,9 @@ schichten = [
   { name = "dienste", dateien = ["backend/app/services/**"] },
   { name = "ablage", dateien = ["backend/app/ablage/**"] },
   { name = "grundlagen", dateien = ["backend/app/config.py", "backend/app/database.py", "backend/app/storage.py", "backend/app/fassung.py", "backend/app/sender_merkmale.py", "backend/app/einstellungen.py", "backend/app/uebergang.py", "backend/app/ort.py"] },
+  { name = "senderdaten", dateien = ["backend/app/senderdaten/**"] },
 ]
-erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen"], werkzeuge = ["dienste", "ablage", "grundlagen"], dienste = ["ablage", "grundlagen"], ablage = ["grundlagen"] }
+erlaubt = { schnittstelle = ["dienste", "ablage", "grundlagen", "senderdaten"], werkzeuge = ["dienste", "ablage", "grundlagen", "senderdaten"], dienste = ["ablage", "grundlagen", "senderdaten"], ablage = ["grundlagen"] }
 
 [[regel]]
 kennung = "S2"
