@@ -72,9 +72,9 @@ Telefonansichten `--t-*` sind nur aus Marken abgeleitet; die Schriftstufe wirkt 
 `styles/hifi-components.css` (nur noch genutzte Regeln) entfallen Bereich für Bereich. Klassen der Telefonansichten,
 die der Appkern auch führt, tragen die Vorsilbe `tf-`.
 
-Die Oberfläche des Appkerns liegt bis zu seiner Veröffentlichung als Paket in `frontend/vendor` (Commit im
-Dateinamen); das Ausrollen verweigert diesen Stand, bis `frontend/package.json` den Appkern von GitHub am selben Commit
-wie `backend/requirements.txt` nimmt (`tools/ausrollen.py`, `appkern_gebunden`).
+Oberfläche und Backend nehmen den Appkern von GitHub am selben Commit (`frontend/package.json` und
+`backend/requirements.txt`); das Ausrollen verweigert einen Stand, in dem die beiden abweichen oder die Oberfläche ihn
+aus einer lokalen Datei nimmt (`tools/ausrollen.py`, `appkern_gebunden`).
 
 ## Harte Regeln (geprüft)
 

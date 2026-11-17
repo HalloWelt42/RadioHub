@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/data/kellerwolke.schluessel`, Modus 0600: der App-Schlüssel von vor RAD-6; gilt nur noch, solange die .env keinen festen hat"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: 6b871d5
+stand: 9ff31bd
 ---
 
 # RadioHub
@@ -46,8 +46,8 @@ der Plan der Überarbeitung in `docs/umbau/PLAN.md`.
   der Vorbau es prüfen kann).
 - Am Mac für Entwicklung und Ausrollen: Python 3.12, Node.js, Docker, mkcert mit der Hausstelle, das
   Werkzeug `handbuch` und der [[Appkern]] mit seiner Umgebung (Prüfungen vor jedem Commit, Bausteine des Ausrollens).
-  Die Oberfläche des Appkerns (Schale, Vorlagen, Instrumente) liegt, bis der Appkern veröffentlicht ist, als Paket in
-  `frontend/vendor` (Commit im Dateinamen) und kommt danach wie das Backend über GitHub.
+  Die Oberfläche des Appkerns (Schale, Vorlagen, Instrumente) kommt wie das Backend über GitHub, beide am selben
+  Commit.
 
 ## Neu einrichten
 

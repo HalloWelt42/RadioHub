@@ -11,10 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ca-certific
 WORKDIR /bau
 COPY version.json ./
 # Abhängigkeiten genau nach package-lock.json; Schriften und Symbole kommen über npm, nichts aus dem Netz zur Laufzeit.
-# Die Oberfläche des Appkerns liegt bis zu dessen Veröffentlichung als Paket in frontend/vendor (Commit im Dateinamen);
-# danach kommt sie wie das Backend über GitHub, gebunden an denselben Commit, und vendor entfällt.
 COPY frontend/package.json frontend/package-lock.json ./frontend/
-COPY frontend/vendor ./frontend/vendor
 RUN cd frontend && npm ci --no-audit --no-fund
 COPY frontend ./frontend
 RUN cd frontend && npm run build
