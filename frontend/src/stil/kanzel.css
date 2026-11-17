@@ -107,6 +107,8 @@
   .rh-modul > .ak-etikett { display: none; }
   .rh-laut { margin-top: 0; }
   .rh-m-laut { justify-content: center; }
+  /* zweite Zeile bündig unter dem Anfang der Anzeige statt frei in der Mitte (Nachprüfung 1280 Pixel) */
+  .rh-steuerung { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }
