@@ -11,6 +11,7 @@
 :root {
   --rh-rand: clamp(12px, 1.8vw, 28px);        /* Seitenrand; am Telefon ein schmales Maß */
   --rh-ueberstand: 24px;                       /* so weit ragt die Navigation in den Inhalt */
+  --rh-kanzel-ueberstand: 46px;                /* so weit ragt das Lautstärkegehäuse der Kanzel über die Liste */
   --rh-taste: 46px;                            /* Tasten der Abspielleiste und Werkzeugleisten */
   --rh-taste-klein: 42px;                      /* Chips, Hinweise, Tasten in Karten */
   --rh-pille: 999px;                           /* Rundung von Pillen (Navigation, Schienen) */
@@ -29,7 +30,7 @@
   --rh-logo: #1f5fa6;
 }
 
-/* ═══ Schriftstufe der alten Bereiche ═══ Radio, Aufnahmen, Podcasts, Einstellungen, Spieler und die Telefonansichten
+/* ═══ Schriftstufe der alten Bereiche ═══ Radio, Aufnahmen, Podcasts, Einstellungen und die Telefonansichten
    tragen bis zu ihrem Neubau (Etappen 3, 4 und 6) feste Pixel; sie wachsen mit der Stufe als Ganzes (zoom in
    styles/bruecke.css), damit Texte, Knöpfe und Spalten im selben Verhältnis bleiben und nichts abschneidet. */
 :root, [data-schrift="mittel"] { --rh-alt-zoom: 1; }       /* Normal: wie bisher */

@@ -49,10 +49,12 @@ Verbindungen (`merkmal_trifft`); bis dahin lesen und schreiben die Dienste über
 Oberfläche (Svelte 5 mit TypeScript für neue Teile, `frontend/src`; svelte-check im Skript `check`):
 
 ```
-oberflaeche     schale/**, components/**, App.svelte, main.ts
+oberflaeche     schale/**, spieler/**, components/**, App.svelte, main.ts
    │            schale/       Wurzel (Sitzung, Anmeldung, Koppeln, Einrichtung über den Appkern), Kopf mit
    │                          Pillen-Navigation, Darstellung, Konto, Meldung (Entwurf RAD-3)
-   │            components/   die bisherigen Bereiche Radio, Aufnahmen, Podcasts, Einstellungen, Spieler und die
+   │            spieler/      Kanzel am Rechner (RAD-8): Tonausgang mit dem einen Audio-Element, Module Anzeige,
+   │                          Quelle und Zeit, Lautstärke, Steuerung; Zuordnung Zustand zu Anzeige in kanzel.ts
+   │            components/   die bisherigen Bereiche Radio, Aufnahmen, Podcasts, Einstellungen und die
    │                          Telefonansichten, bis zu ihrem Neubau (Etappen 3, 4 und 6)
    │  darf logik
 logik           lib/**        Zustand, Wiedergabe (playerEngine), Backend (api.js mit der Sitzung aus lib/sitzung.ts),
@@ -62,7 +64,9 @@ logik           lib/**        Zustand, Wiedergabe (playerEngine), Backend (api.j
 Gestaltung in Schichten (Entscheidung 24): die Marken, Schale, Instrumente und Vorlagen des Appkerns
 (`appkern-oberflaeche/stil.css`, `instrumente.css`, `vorlagen-alle-breiten.css`: jede Vorlage auch am Telefon), darauf
 die Marken des Radios (`stil/radio-marken.css`, je Vorlage `stil/vorlagen/<name>.css`, `grund.css` für jede Vorlage ohne
-eigene), Bausteine (`stil/bausteine.css`) und Anordnung (`stil/rechner.css`). Ein neues Thema braucht eine Marken-Datei
+eigene), Bausteine (`stil/bausteine.css`, die Kanzel in `stil/kanzel.css`) und Anordnung (`stil/rechner.css`). Die Kanzel
+liegt nicht im `zoom` der alten Bereiche; sie wächst über die Marken der Schriftstufen, ihre Rasteranzeigen mit der
+Breite. Ein neues Thema braucht eine Marken-Datei
 unter `stil/vorlagen/`. Die Darstellung (Vorlage, Thema Hell/Dunkel/System, Schriftstufe Normal/Groß/Sehr groß) gilt je
 Gerät und wird vor dem Einhängen angewendet (`lib/darstellung-vorab.ts`, als Skript in den Kopf der Startseite gesetzt).
 

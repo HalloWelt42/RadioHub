@@ -33,7 +33,7 @@ art = "schichten"
 warum = "Logik, Zustand und Zugriff aufs Backend (src/lib) kennen keine Bausteine der Oberfläche; so bleiben sie testbar und für Rechner, Telefon und Webversion dieselben."
 dateien = ["frontend/src/**"]
 schichten = [
-  { name = "oberflaeche", dateien = ["frontend/src/schale/**", "frontend/src/components/**", "frontend/src/App.svelte", "frontend/src/main.ts"] },
+  { name = "oberflaeche", dateien = ["frontend/src/schale/**", "frontend/src/spieler/**", "frontend/src/components/**", "frontend/src/App.svelte", "frontend/src/main.ts"] },
   { name = "logik", dateien = ["frontend/src/lib/**"] },
 ]
 erlaubt = { oberflaeche = ["logik"] }

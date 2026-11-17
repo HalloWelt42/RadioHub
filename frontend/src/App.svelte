@@ -1,8 +1,9 @@
 <script lang="ts">
-  // RadioHub nach der Anmeldung: am Rechner Kopf, Bereich und Abspielleiste, am Telefon die eigene Ansicht (quer die
-  // Weckeransicht). Die Bereiche Radio, Aufnahmen, Podcasts, Einstellungen und der Spieler sind die bisherigen; sie
-  // stehen in .rh-alt und wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
-  import HiFiPlayer from "./components/HiFiPlayer.svelte";
+  // RadioHub nach der Anmeldung: am Rechner Kopf, Bereich und Abspielleiste (Kanzel), am Telefon die eigene Ansicht
+  // (quer die Weckeransicht). Die Bereiche Radio, Aufnahmen, Podcasts und Einstellungen sind die bisherigen; sie stehen
+  // in .rh-alt und wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css). Die Kanzel ist
+  // neu gebaut (RAD-8) und wächst über die Marken der Schriftstufen.
+  import Kanzel from "./spieler/Kanzel.svelte";
   import StationsTab from "./components/StationsTab.svelte";
   import RecordingsTab from "./components/RecordingsTab.svelte";
   import PodcastsTab from "./components/PodcastsTab.svelte";
@@ -122,7 +123,7 @@
         <SettingsTab />
       {/if}
     </main>
-    <div class="rh-alt"><HiFiPlayer /></div>
+    <Kanzel />
   </div>
   <Meldung />
 {/if}
