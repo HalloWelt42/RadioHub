@@ -72,7 +72,6 @@ export function modusWechseln(): string {
 
 // ─── Bitrate des Zeitversatzes: Vorgabe des Nutzers, dauerhaft im Browser ───
 const BITRATE_SCHLUESSEL = "radiohub_bitrate_override";
-export const BITRATEN = [32, 48, 64, 96, 128, 192, 256, 320] as const;
 
 export function bitrateLesen(): number | null {
   try {

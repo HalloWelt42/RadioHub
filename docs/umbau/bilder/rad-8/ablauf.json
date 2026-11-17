@@ -1,0 +1,236 @@
+[
+ {
+  "id": "F25",
+  "was": "ein Audio-Element (Schnittansicht greift darauf zu)",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F26",
+  "was": "Lautstärke am Element",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F01",
+  "was": "Matrix zeigt den Sender",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F02",
+  "was": "Quelle im Originalstrom DIREKT",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F03",
+  "was": "Pegel laufen beim Spielen (ohne festen Wert)",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F27",
+  "was": "Spielen-Taste leuchtet, Symbol Stopp im Originalstrom",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F11",
+  "was": "Zurück nennt den Nachbarn im Hinweis",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F17",
+  "was": "Weiter nennt den Nachbarn im Hinweis",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F23",
+  "was": "Titelabfrage des Senders (now-playing)",
+  "ok": true,
+  "info": "icy true, Abfragen 1"
+ },
+ {
+  "id": "F21a",
+  "was": "Drehwahl der Bitrate im Originalstrom sichtbar, gesperrt; im Glas keine Bedienung",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F19",
+  "was": "Taste Original oder Zeitversatz wechselt in den Zeitversatz",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F02b",
+  "was": "Quelle im Zeitversatz LIVE, Zeile Zeitversatz da",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F12",
+  "was": "30 s zurück: hinter live",
+  "ok": true,
+  "info": "{\"ok\":true,\"zeit\":\"-00:00:31\"}"
+ },
+ {
+  "id": "F06",
+  "was": "Zeit zeigt den Abstand zu live",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F16",
+  "was": "30 s vor im Zeitversatz",
+  "ok": true,
+  "info": "{\"ok\":true,\"vor\":1,\"nach\":35}"
+ },
+ {
+  "id": "F10",
+  "was": "Spulbahn im Zeitversatz springt",
+  "ok": true,
+  "info": "{\"ok\":true,\"lage\":\"22.8571428571429\"}"
+ },
+ {
+  "id": "F18",
+  "was": "Live springt zur Live-Kante",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F21",
+  "was": "Drehwahl der Bitrate: wählbar im Zeitversatz, gemerkt, Wert darunter und im Glas; zurück auf wie gesendet",
+  "ok": true,
+  "info": "{\"ok\":true,\"gemerkt\":\"128\",\"wert\":\"128\",\"glas\":\"PUFFER 128 kbit/s\",\"zurueck\":null}"
+ },
+ {
+  "id": "F14",
+  "was": "Anhalten und Fortsetzen im Zeitversatz",
+  "ok": true,
+  "info": "{\"ok\":true}"
+ },
+ {
+  "id": "F09",
+  "was": "Klick auf die Matrix springt zum Sender",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F15",
+  "was": "Aufnahme startet, Taste leuchtet rot und blinkt, Wechsel gesperrt",
+  "ok": true,
+  "info": "{\"ok\":true,\"zeit\":\"00:00:02\"}"
+ },
+ {
+  "id": "F07",
+  "was": "Statuszeile während der Aufnahme: Dauer, Bitrate",
+  "ok": true,
+  "info": "{\"ok\":true,\"z\":\" AUFNAHME 00:00:02 64 kbit/s Wechsel gesperrt\"}"
+ },
+ {
+  "id": "F09b",
+  "was": "Matrix-Hinweis während der Aufnahme: zum Sender",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F24",
+  "was": "laufende Aufnahme nach Neuladen wiederhergestellt",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F13",
+  "was": "Stopp beendet Aufnahme und Hören",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F11b",
+  "was": "Zurück wechselt den Sender",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F17b",
+  "was": "Weiter wechselt den Sender",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F14b",
+  "was": "Spielen-Taste im Originalstrom beendet",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F05",
+  "was": "Pfeil hoch hebt die Lautstärke, der Regler folgt",
+  "ok": true,
+  "info": "{\"ok\":true,\"vor\":26,\"nach\":31,\"dreh\":31}"
+ },
+ {
+  "id": "F04",
+  "was": "Drehregler stellt die Lautstärke (Pfeiltaste am Regler)",
+  "ok": true,
+  "info": "{\"ok\":true,\"vor\":31,\"nach\":30}"
+ },
+ {
+  "id": "F28",
+  "was": "Leertaste spielt und hält an, S beendet (Tastatur der App)",
+  "ok": true,
+  "info": "{\"ok\":true,\"pause\":true}"
+ },
+ {
+  "id": "F08",
+  "was": "Positionszeile: Zeit von Dauer",
+  "ok": true,
+  "info": "{\"ok\":true,\"z\":\"5:54 von 15:30\"}"
+ },
+ {
+  "id": "F16b",
+  "was": "10 s vor in der Folge",
+  "ok": true,
+  "info": "{\"ok\":true,\"vor\":354.980666,\"nach\":365.538079}"
+ },
+ {
+  "id": "F12b",
+  "was": "10 s zurück in der Folge",
+  "ok": true,
+  "info": "{\"ok\":true,\"vor\":365.538559,\"nach\":356.100575}"
+ },
+ {
+  "id": "F10b",
+  "was": "Spulbahn springt in der Folge",
+  "ok": true,
+  "info": "{\"ok\":true,\"lage\":70.14837584905469}"
+ },
+ {
+  "id": "F20",
+  "was": "Reihenfolge schaltet weiter, Weiter gespiegelt bei rückwärts",
+  "ok": true,
+  "info": "{\"ok\":true,\"modus\":\"reverse\"}"
+ },
+ {
+  "id": "F09c",
+  "was": "Klick auf die Matrix springt zum Podcast",
+  "ok": true,
+  "info": "true"
+ },
+ {
+  "id": "F29",
+  "was": "Fehler: Spielen-Taste wird Neu verbinden (außerhalb des Glases) und lädt neu",
+  "ok": true,
+  "info": "{\"ok\":true,\"z\":\"laedt\"}"
+ },
+ {
+  "id": "F03b",
+  "was": "Pegel stehen ohne Ton unten",
+  "ok": true,
+  "info": "true"
+ }
+]

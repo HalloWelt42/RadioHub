@@ -315,9 +315,9 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
   color: color-mix(in srgb, var(--farbe) 70%, var(--rh-anzeige-neben)); --ak-tinte-2: currentColor; }
 .rh-display-format { display: inline-flex; gap: 8px; align-items: center; }
 .rh-display-format .rh-guete { padding: 3px 4px; }
-.rh-display-aktion { margin-left: auto; display: inline-flex; align-items: center; }
-.rh-display-aktion .knopf { block-size: 32px; }
-.rh-display-aktion .balken { inline-size: 120px; }
+/* Hinweis rechts in der Statuszeile: nur Anzeige (RAD-8, Nutzer 17.11.2026: keine Bedienelemente im Glas) */
+.rh-display-hinweis { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+.rh-display-hinweis .balken { inline-size: 120px; }
 .rh-display[data-ton="fehler"] { --farbe: var(--led-rot); }
 .rh-display[data-ton="fern"] { --farbe: var(--led-blau); }
 
@@ -342,7 +342,14 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-laut ak-pegel { --pegel-h: 78px; --pegel-b: 16px; }
 .rh-vu { display: grid; justify-items: center; gap: 2px; font-size: var(--marke); color: var(--ak-tinte-2); font-weight: 600; }
 
-.rh-steuerung { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* Steuerung (RAD-8): Gewicht nach Häufigkeit, Transport groß, Seltenes klein daneben (kleine Taster, Drehwahl der Bitrate) */
+.rh-steuerung { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 18px; }
+.rh-transport { display: flex; align-items: center; gap: 8px; }
+.rh-steuerung ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: default; }
+.rh-betrieb { display: flex; align-items: center; gap: 10px; }
+.rh-betrieb-tasten { display: grid; gap: 6px; }
+.rh-steuerung .rh-betrieb-tasten ak-taster[art="glas"] .ak-taster-knopf { inline-size: calc(var(--rh-taste) * .8); block-size: calc(var(--rh-taste) * .62); font-size: var(--marke); }
+.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 6.6); }
 .rh-steuerung ak-taster[art="glas"] .ak-taster-knopf, .rh-kanzel-kompakt ak-taster[art="glas"] .ak-taster-knopf, .t-spieler ak-taster[art="glas"] .ak-taster-knopf {
   inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: 17px; }
 

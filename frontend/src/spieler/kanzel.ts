@@ -226,7 +226,8 @@ export interface Taste {
 export interface Tasten {
   zurueck: Taste;
   stopp: Taste;
-  spielen: Taste & { symbol: string };
+  /** nach einem Fehler: Neu verbinden (lädt die Quelle von vorn) statt Spielen oder Anhalten */
+  spielen: Taste & { symbol: string; neuVerbinden: boolean; farbe: Leuchtfarbe };
   aufnahme: Taste;
   vor: Taste & { gespiegelt: boolean };
   /** Original oder Zeitversatz; immer da, gesperrt außer bei Sendern mit möglichem Wechsel (wie in HiFiPlayer) */
@@ -285,14 +286,19 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): T
   };
 
   const quelleDa = art !== "keine";
-  const spielen = {
-    an: laeuft,
-    licht: (laeuft ? "an" : s.isPaused ? "atmet" : "aus") as Leuchtzustand,
-    gesperrt: rec || !quelleDa,
-    symbol: laeuft ? (s.playerMode === "direct" ? "fa-stop" : "fa-pause") : "fa-play",
-    hilfe: rec ? t("player.recLaeuft")
-      : mitTaste(laeuft ? (s.playerMode === "direct" ? t("player.stop") : t("player.pause")) : t("player.play"), t("kanzel.leertaste")),
-  };
+  const fehler = zustandVon(s) === "fehler";
+  const spielen: Tasten["spielen"] = fehler
+    ? { an: false, licht: "atmet", farbe: "rot", gesperrt: false, symbol: "fa-rotate-right", neuVerbinden: true, hilfe: t("kanzel.neuVerbindenHilfe") }
+    : {
+      an: laeuft,
+      licht: laeuft ? "an" : s.isPaused ? "atmet" : "aus",
+      farbe: "blau",
+      gesperrt: rec || !quelleDa,
+      symbol: laeuft ? (s.playerMode === "direct" ? "fa-stop" : "fa-pause") : "fa-play",
+      neuVerbinden: false,
+      hilfe: rec ? t("player.recLaeuft")
+        : mitTaste(laeuft ? (s.playerMode === "direct" ? t("player.stop") : t("player.pause")) : t("player.play"), t("kanzel.leertaste")),
+    };
 
   const aufnahmeMoeglich = art === "sender" && s.isPlaying && !aufnahme;
   const aufnehmen: Taste = {
@@ -377,4 +383,40 @@ export function positionStand(s: Stand, t: Uebersetzer): Spulstand {
     schritt: 0.1,
     gesperrt: s.isRecording || !(s.dauer > 0),
   };
+}
+
+// ═══ Bitrate des Zeitversatzes ═══ Drehwahl in der Steuerung (Nutzer 17.11.2026: klein und gerätetypisch, keine Reihe
+// gleichförmiger Tasten): erste Stellung "wie gesendet", dann die Stufen. Bedienbar nur, solange der Zeitversatz
+// puffert; bei Aufnahme gesperrt, bei einer Folge im Puffer fest 128, sonst gesperrt (wie die Leuchten der alten Leiste).
+
+export const BITRATEN = [32, 48, 64, 96, 128, 192, 256, 320] as const;
+
+export type BitrateLage = "frei" | "gesperrt" | "fest" | "aus";
+
+export function bitrateLage(s: Stand): BitrateLage {
+  if (s.currentEpisode && s.playerMode === "hls") return "fest";
+  if (hatZeitversatz(s) && s.hlsActive && !s.isRecording) return "frei";
+  if (hatZeitversatz(s) && s.isRecording) return "gesperrt";
+  return "aus";
+}
+
+/** Stellungen der Drehwahl als Raster des Appkerns ("|"-getrennt) */
+export const bitrateRaster = (t: Uebersetzer): string => [t("kanzel.bitrateWieGesendetName"), ...BITRATEN.map(String)].join("|");
+
+/** Stellung der Drehwahl für eine Vorgabe (0: wie gesendet) und zurück */
+export function bitrateStellung(vorgabe: number | null): number {
+  const i = vorgabe === null ? -1 : BITRATEN.indexOf(vorgabe as (typeof BITRATEN)[number]);
+  return i < 0 ? 0 : i + 1;
+}
+export function bitrateAusStellung(stellung: number): number | null {
+  return stellung >= 1 && stellung <= BITRATEN.length ? BITRATEN[stellung - 1] : null;
+}
+
+/** Leuchtschrift im Glas: welche Bitrate der Zeitversatz nimmt (nur Zustand, keine Bedienung) */
+export function bitrateText(s: Stand, vorgabe: number | null, wechselt: boolean, t: Uebersetzer): string | null {
+  const lage = bitrateLage(s);
+  if (lage === "aus" || lage === "gesperrt") return null;
+  if (wechselt) return t("kanzel.pufferWechselt");
+  if (lage === "fest") return t("kanzel.pufferBitrate", { wert: t("kanzel.kbit", { n: 128 }) });
+  return t("kanzel.pufferBitrate", { wert: vorgabe !== null ? t("kanzel.kbit", { n: vorgabe }) : t("kanzel.bitrateWieGesendet") });
 }

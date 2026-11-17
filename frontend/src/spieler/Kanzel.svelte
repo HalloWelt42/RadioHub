@@ -11,7 +11,8 @@
   import Lautstaerke from "./Lautstaerke.svelte";
   import Steuerung from "./Steuerung.svelte";
   import { Wiedergabe } from "./wiedergabe.svelte";
-  import { hatZeitversatz, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
+  import { Bitrate } from "./bitrate.svelte";
+  import { bitrateLage, bitrateText, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
   import { modusWechseln } from "./aktionen";
 
   /** so lange bleibt die Taste Original oder Zeitversatz höchstens gedrückt, falls der Wechsel nie ankommt */
@@ -63,22 +64,18 @@
 
   const anzeige = $derived(kanzelAnzeige(stand, t));
   const tasten = $derived(kanzelTasten(stand, t, modusVon !== null));
-  // Bitrate des Zeitversatzes: bei Sendern immer da (wie die Leuchten in HiFiPlayer), wählbar nur bei laufendem Puffer
-  const bitrate = $derived<"frei" | "gesperrt" | "fest" | null>(
-    app.isRecording ? null
-      : app.currentEpisode && app.playerMode === "hls" ? "fest"
-      : app.currentStation && (app.playerMode === "hls" || app.playerMode === "direct") ? (hatZeitversatz(stand) && app.hlsActive ? "frei" : "gesperrt")
-      : null,
-  );
+  // Bitrate des Zeitversatzes: Drehwahl in der Steuerung, im Glas nur als Leuchtschrift
+  const bitrate = new Bitrate();
+  const bitrateHinweis = $derived(bitrateText(stand, bitrate.vorgabe, bitrate.wechselt, t));
   const hoerbar = $derived(app.isPlaying && !app.isPaused && (anzeige.zustand !== "laedt" && anzeige.zustand !== "fehler"));
 </script>
 
 <footer class="rh-kanzel" data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
   <Tonausgang {wiedergabe} />
   <div class="rh-kanzel-voll">
-    <Anzeige {anzeige} {bitrate} erkannt={app.streamQuality?.inputBitrate || 0} aufnahme={app.isRecording} />
+    <Anzeige {anzeige} hinweis={bitrateHinweis} aufnahme={app.isRecording} />
     <QuelleZeit {anzeige} {stand} {wiedergabe} />
     <Lautstaerke {hoerbar} />
-    <Steuerung {tasten} onmodus={() => (modusVon = modusWechseln())} />
+    <Steuerung {tasten} onmodus={() => (modusVon = modusWechseln())} {bitrate} lage={bitrateLage(stand)} />
   </div>
 </footer>

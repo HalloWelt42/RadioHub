@@ -2,7 +2,8 @@
    Drehregler zwischen zwei Pegeln, Steuerung als Tastenreihe mit Tastenlicht. Übernommen aus dem abgenommenen Entwurf
    (mockups/radio-filter/radio-bausteine.css, Abschnitt Spielerkanzel, RAD-3; Bild bilder/kanzel-1920-dunkel-tasten.png),
    ohne Hausempfang (kommt mit der Übergabe, Etappe 4): die Kanzel schließt wie die Webversion des Entwurfs mit der
-   Steuerung. Eine Zeile ab 75em Breite der Kanzel, darunter zwei Reihen neben dem Gehäuse. Die Kanzel liegt nicht im
+   Steuerung. Eine Zeile ab 100em Breite der Kanzel (Entwurf 75em; die Steuerung trägt hier mehr Tasten und die
+   Bitratenleiste, gemessen), darunter zwei Reihen neben dem Gehäuse. Die Kanzel liegt nicht im
    zoom der alten Bereiche (.rh-alt); sie wächst über die Schriftstufen (--gross, --klein, --marke).
 
    Dazu, was der Entwurf nicht zeigt, die App aber kann (RAD-8): die Punktmatrix führt zur Quelle, die Bahnen unter
@@ -17,7 +18,7 @@
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
 .rh-kanzel-voll { display: grid; gap: 8px 14px; padding: 8px var(--rh-rand) 10px; align-items: stretch;
-  grid-template-columns: minmax(11em, 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
+  grid-template-columns: minmax(18em, 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
 .rh-m-anzeige { grid-area: anzeige; }
@@ -35,8 +36,8 @@
 .rh-display-zeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; min-block-size: 30px; font-family: var(--schrift-zahl); font-size: var(--marke);
   color: color-mix(in srgb, var(--farbe) 78%, transparent); --ak-tinte-2: currentColor; min-width: 0; }
 .rh-display-format { display: inline-flex; gap: 8px; align-items: center; }
-.rh-display-aktion { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
-.rh-display-aktion .knopf, .rh-display-aktion .auswahl-knopf { block-size: 32px; }
+/* Hinweis rechts in der Statuszeile: nur Leuchtschrift, keine Bedienung im Glas (Nutzer 17.11.2026) */
+.rh-display-hinweis { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; }
 .rh-display[data-ton="fehler"] { --farbe: var(--led-rot); }
 /* Punktmatrix als Weg zur Quelle: sieht aus wie die Anzeige, ist aber eine Taste */
 .rh-display-quelle { display: block; inline-size: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--r1); background: none; color: inherit; font: inherit;
@@ -85,14 +86,23 @@
 .rh-laut ak-pegel { --pegel-h: 78px; --pegel-b: 16px; }
 .rh-vu { display: grid; justify-items: center; gap: 2px; font-size: var(--marke); color: var(--ak-tinte-2); font-weight: 600; }
 
-/* ═══ Steuerung ═══ Tastenreihe: alle Tasten gleich hoch, hervorgehoben nur über Licht (Tastenlicht in der Kappe) */
-.rh-steuerung { flex: 1; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; --ak-tastenreihe-h: var(--rh-taste); }
-.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); }
+/* ═══ Steuerung ═══ Gewicht nach Häufigkeit: Transport groß (Tastenreihe, alle gleich hoch, hervorgehoben nur über Licht),
+   Seltenes klein und gerätetypisch daneben: zwei kleine Taster übereinander und die Drehwahl der Bitrate */
+.rh-steuerung { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 18px; }
+.rh-transport { flex-wrap: nowrap; align-items: center; gap: 8px; --ak-tastenreihe-h: var(--rh-taste); }
+.rh-transport > ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); }
+.rh-betrieb { display: flex; align-items: center; gap: 10px; }
+.rh-betrieb-tasten { display: grid; gap: 6px; }
+.rh-betrieb-tasten ak-taster[art="glas"] .ak-taster-knopf { inline-size: calc(var(--rh-taste) * .8); block-size: calc(var(--rh-taste) * .62); font-size: var(--marke);
+  --ak-schlitz-b: 10px; --ak-schlitz-h: 3px; --ak-schlitz-oben: 3px; }
 .rh-steuerung .ak-taster-knopf:disabled { cursor: default; }
 .rh-steuerung ak-taster:not([an]) .ak-taster-knopf:disabled { opacity: .45; }
 .rh-gespiegelt { scale: -1 1; }
+/* Drehwahl der Bitrate: kleine Kappe, breite Zelle für den Wert darunter; Rastnamen zeigt der Appkern erst ab 150 Pixeln */
+.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 6.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
+.rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
 
-@container kanzel (max-width: 75em) {
+@container kanzel (max-width: 100em) {
   .rh-kanzel-voll { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "anzeige zeit laut" "steuerung steuerung laut"; align-items: center; }
   .rh-modul > .ak-etikett { display: none; }
   .rh-laut { margin-top: 0; }

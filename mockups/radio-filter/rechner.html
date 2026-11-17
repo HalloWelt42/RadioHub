@@ -139,7 +139,7 @@
     <div class="rh-kanzel-voll">
       <section class="rh-modul rh-m-anzeige" aria-label="Anzeige"><span class="ak-etikett">Anzeige</span>
         <div class="ak-glas rh-display" id="display">
-          <div class="rh-display-zeile"><ak-led id="d-led" farbe="blau" zustand="an" groesse="klein"></ak-led><span id="d-art">LIVE</span><span id="d-format" class="rh-display-format"></span><span id="q-aktion" class="rh-display-aktion"></span></div>
+          <div class="rh-display-zeile"><ak-led id="d-led" farbe="blau" zustand="an" groesse="klein"></ak-led><span id="d-art">LIVE</span><span id="d-format" class="rh-display-format"></span><span id="q-aktion" class="rh-display-hinweis"></span></div>
           <ak-segmente id="d-sender" art="punkt" stellen="16" lauf="280" farbe="gruen" text="DEUTSCHLANDFUNK KULTUR" hilfe="Sender"></ak-segmente>
           <div class="rh-display-titel" id="d-titel" data-braucht="titel"></div>
         </div>
@@ -170,11 +170,22 @@
       </section>
       <section class="rh-modul rh-m-steuerung" aria-label="Steuerung"><span class="ak-etikett">Steuerung</span>
         <div class="rh-steuerung">
+          <div class="rh-transport">
           <ak-taster id="t-prev" art="glas" symbol="fa-backward-step" farbe="weiss" led="bernstein" modus="tasten" data-hilfe="Vorheriger Sender der sichtbaren Liste" hilfe="Vorheriger Sender der sichtbaren Liste"></ak-taster>
           <ak-taster id="t-stop" art="glas" symbol="fa-stop" farbe="weiss" modus="tasten" hilfe="Stopp: beendet Hören und Aufnahme" led="weiss"></ak-taster>
           <ak-taster id="t-play" art="glas" symbol="fa-pause" farbe="blau" led="blau" hilfe="Hören oder anhalten" an></ak-taster>
           <ak-taster id="t-rec" data-braucht="aufnahme" art="glas" symbol="fa-circle" farbe="rot" led="rot" hilfe="Aufnahme starten"></ak-taster>
           <ak-taster id="t-next" art="glas" symbol="fa-forward-step" farbe="weiss" led="bernstein" modus="tasten" data-hilfe="Nächster Sender der sichtbaren Liste" hilfe="Nächster Sender der sichtbaren Liste"></ak-taster>
+        </div>
+        <!-- RAD-8: Seltenes klein und gerätetypisch neben dem Transport; Bedienung nie im Glas der Anzeige -->
+        <div class="rh-betrieb">
+          <div class="rh-betrieb-tasten">
+            <ak-taster id="t-modus" art="glas" symbol="fa-arrows-rotate" farbe="weiss" led="gruen" data-braucht="zeitversatz" hilfe="Zu Original-Stream wechseln (Direct)"></ak-taster>
+            <ak-taster id="t-reihe" art="glas" symbol="fa-arrow-right" farbe="weiss" led="weiss" gesperrt hilfe="Reihenfolge, nur bei Folgen und Aufnahmen"></ak-taster>
+          </div>
+          <ak-dreh id="bitrate-dreh" class="rh-bitrate-wahl" data-braucht="zeitversatz" name="Bitrate" hilfe="Bitrate des Zeitversatzes: wie gesendet oder eine feste Stufe; wirkt nur im Zeitversatz"
+            raster="Wie gesendet|32|48|64|96|128|192|256|320" wert="0" vorgabe="0"></ak-dreh>
+        </div>
         </div>
       </section>
       <section class="rh-modul rh-m-haus" data-braucht="uebergabe" aria-label="Hausempfang"><span class="ak-etikett">Hausempfang</span>

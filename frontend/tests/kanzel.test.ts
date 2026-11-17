@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { t as uebersetzen } from "../src/lib/i18n.js";
 import {
-  kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive, zeitversatzStand, zustandVon, type Stand,
+  bitrateAusStellung, bitrateLage, bitrateRaster, bitrateStellung, bitrateText, kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive,
+  zeitversatzStand, zustandVon, type Stand,
 } from "../src/spieler/kanzel";
 import { stellenFuer } from "../src/spieler/rasterbreite";
 
@@ -95,6 +96,11 @@ describe("Steuerung", () => {
     expect(kanzelTasten(spielt({ isPaused: true }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "atmet" });
     expect(kanzelTasten(spielt({ isRecording: true }), t).spielen.gesperrt).toBe(true);
   });
+  it("nach einem Fehler wird Spielen zu Neu verbinden (rot), außerhalb des Glases", () => {
+    expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 2 }), t).spielen)
+      .toMatchObject({ neuVerbinden: true, symbol: "fa-rotate-right", farbe: "rot", gesperrt: false, hilfe: "Die Quelle sofort neu laden" });
+    expect(kanzelTasten(spielt(), t).spielen.neuVerbinden).toBe(false);
+  });
   it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, Wechsel gesperrt", () => {
     expect(kanzelTasten(spielt(), t).aufnahme.gesperrt).toBe(false);
     expect(kanzelTasten(stand({ isPlaying: true, playerMode: "podcast", currentEpisode: { title: "F" } }), t).aufnahme.gesperrt).toBe(true);
@@ -149,5 +155,28 @@ describe("Punktmatrix wächst mit der Breite", () => {
     expect(stellenFuer(0, 24)).toBe(10);
     // Probe: bei der gemeldeten Stellenzahl ist jede Zelle mindestens so hoch wie gewünscht
     for (const b of [300, 520, 777, 1200]) expect((b - 38) / stellenFuer(b, 24) / 0.75).toBeGreaterThanOrEqual(24);
+  });
+});
+
+describe("Bitrate des Zeitversatzes", () => {
+  const zv = (teil: Partial<Stand> = {}) => spielt({ playerMode: "hls", hlsActive: true, hlsStatus: HLS, streamQuality: { inputBitrate: 160 }, ...teil });
+  it("Lage: wählbar im Puffer, gesperrt bei Aufnahme, fest bei Folgen, sonst aus", () => {
+    expect(bitrateLage(zv())).toBe("frei");
+    expect(bitrateLage(zv({ isRecording: true }))).toBe("gesperrt");
+    expect(bitrateLage(stand({ isPlaying: true, playerMode: "hls", currentEpisode: { title: "F" } }))).toBe("fest");
+    expect(bitrateLage(spielt())).toBe("aus");
+  });
+  it("Drehwahl: erste Stellung wie gesendet, dann die Stufen", () => {
+    expect(bitrateRaster(t)).toBe("Wie gesendet|32|48|64|96|128|192|256|320");
+    expect(bitrateStellung(null)).toBe(0);
+    expect(bitrateStellung(128)).toBe(5);
+    expect(bitrateStellung(100)).toBe(0);
+    expect([0, 1, 5, 8, 9].map(bitrateAusStellung)).toEqual([null, 32, 128, 320, null]);
+  });
+  it("im Glas nur der Zustand als Leuchtschrift", () => {
+    expect(bitrateText(zv(), null, false, t)).toBe("PUFFER WIE GESENDET");
+    expect(bitrateText(zv(), 64, false, t)).toBe("PUFFER 64 kbit/s");
+    expect(bitrateText(zv(), 64, true, t)).toBe("PUFFER WECHSELT ...");
+    expect(bitrateText(spielt(), 64, false, t)).toBeNull();
   });
 });

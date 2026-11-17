@@ -137,9 +137,16 @@ const HILFEN = `(async () => {
       const [na, ra] = module[i], [nb, rb] = module[j];
       if (ra.left < rb.right - 1 && rb.left < ra.right - 1 && ra.top < rb.bottom - 1 && rb.top < ra.bottom - 1) befunde.push("Module überlappen: " + na + " / " + nb);
     }
-    const tasten = [...k.querySelectorAll(".rh-steuerung .ak-taster-knopf")].map((b) => b.getBoundingClientRect());
+    // Tasten der Steuerung und Tasten der Bitrate: je Reihe eine Grundlinie, alle exakt gleich hoch (die Leiste darf in
+    // schmalen Fenstern in eine zweite Reihe gehen)
+    const tasten = [...k.querySelectorAll(".rh-transport ak-taster .ak-taster-knopf")].map((b) => b.getBoundingClientRect());
+    const leiste = [...k.querySelectorAll(".rh-betrieb-tasten ak-taster .ak-taster-knopf")].map((b) => b.getBoundingClientRect());
+    // Transport: eine Reihe, alle gleich hoch auf einer Linie; die kleinen Taster daneben untereinander gleich groß
     const hoehen = [...new Set(tasten.map((r) => r.height.toFixed(2)))], oben = [...new Set(tasten.map((r) => r.top.toFixed(2)))];
-    if (hoehen.length !== 1 || oben.length !== 1) befunde.push("Tasten ungleich: Höhen " + hoehen.join("/") + ", oben " + oben.join("/"));
+    const klein = [...new Set(leiste.map((r) => r.height.toFixed(2) + "x" + r.width.toFixed(2)))];
+    if (hoehen.length !== 1 || oben.length !== 1) befunde.push("Transporttasten ungleich: Höhen " + hoehen.join("/") + ", oben " + oben.join("/"));
+    if (klein.length !== 1) befunde.push("kleine Taster ungleich: " + klein.join("/"));
+    const reihen = k.querySelector(".rh-betrieb").getBoundingClientRect().top > tasten[0].bottom ? 2 : 1;
     const knoepfe = [...k.querySelectorAll(".rh-puffer-zeile .knopf")].map((b) => b.getBoundingClientRect().height.toFixed(2));
     if (new Set(knoepfe).size > 1) befunde.push("Knöpfe der Zeile ungleich: " + knoepfe.join("/"));
     const laut = k.querySelector(".rh-laut").getBoundingClientRect();
@@ -156,7 +163,9 @@ const HILFEN = `(async () => {
     const glyph = (sel) => { const e = k.querySelector(sel); const svg = e?.querySelector("svg"); return e ? { stellen: e.getAttribute("stellen"), breite: Math.round(e.getBoundingClientRect().width), zeichen: svg ? Math.round(svg.getBoundingClientRect().height * 10) / 10 : 0 } : null; };
     const raster = { matrix: glyph(".rh-display-quelle ak-segmente"), quelle: glyph(".rh-zeit-quelle"), zeit: glyph(".rh-zeit-uhr") };
     for (const [n, g] of Object.entries(raster)) if (g && g.zeichen < 14) befunde.push("Rasteranzeige winzig: " + n + " " + g.zeichen + " px");
-    return { raster, kanzel: { top: Math.round(kr.top), hoehe: Math.round(kr.height) }, ueberstand: Math.round(kr.top - laut.top), tastenHoehe: hoehen[0],
+    const ziel = parseFloat(getComputedStyle(k.querySelector(".rh-display-quelle")).getPropertyValue("--rh-matrix-zeichen"));
+    if (raster.matrix && raster.matrix.zeichen < ziel * 0.85) befunde.push("Punktmatrix kleiner als ihre Zeichenhöhe: " + raster.matrix.zeichen + " statt " + ziel + " px");
+    return { raster, reihen, kanzel: { top: Math.round(kr.top), hoehe: Math.round(kr.height) }, ueberstand: Math.round(kr.top - laut.top), tastenHoehe: hoehen[0],
       flaechen: getComputedStyle(k.querySelector(".rh-kanzel-voll")).gridTemplateAreas, audios: document.querySelectorAll("audio").length, befunde, hinweise };
   }
   window.__rad8 = { zustand, messen, a, engine, api, audio, aufnahmeSpielen, podcastSpielen };
@@ -177,7 +186,9 @@ async function ganzFoto(datei) {
 const ZUSTAENDE = ["leer", "laedt", "direkt", "live", "versatz", "pause", "podcast", "wiedergabe", "aufnahme", "fehler"];
 const FOTOS = {
   "1920|mittel|dunkel|hifi": ZUSTAENDE,
-  "1280|mittel|hell|hifi": ["live", "aufnahme", "podcast", "fehler"],
+  "1280|mittel|hell|hifi": ["live", "versatz", "aufnahme", "podcast", "fehler"],
+  "1280|mittel|dunkel|hifi": ["versatz"],
+  "1920|mittel|hell|hifi": ["versatz"],
   "1024|sehr-gross|dunkel|hifi": ["live", "versatz", "podcast", "aufnahme"],
   "1532|gross|hell|klassisch": ["live", "podcast"],
   "900|sehr-gross|hell|hifi": ["versatz"],
@@ -245,7 +256,8 @@ try {
       return ${taste(4)}.title.startsWith(a.stations[(i + 1) % n].name); })()`);
     { const icy = await werte(`!!${R}.a.currentStation.icy`); const n = anfragen.filter((u) => u.includes("/now-playing")).length;
       erg.push({ id: "F23", was: "Titelabfrage des Senders (now-playing)", ok: !icy || n > 0, info: `icy ${icy}, Abfragen ${n}` }); console.log(!icy || n > 0 ? "OK  " : "FEHL", "F23", icy, n); }
-    await pruefe("F21a", "Bitrate im Originalstrom sichtbar, gesperrt", `!!${K(".rh-display-aktion .auswahl-knopf:disabled")}`);
+    await pruefe("F21a", "Drehwahl der Bitrate im Originalstrom sichtbar, gesperrt; im Glas keine Bedienung",
+      `${K(".rh-bitrate-wahl")}.getAttribute("aria-disabled") === "true" && !document.querySelector(".rh-display button:not(.rh-display-quelle), .rh-display .knopf, .rh-display .auswahl")`);
     // Zeitversatz: auf HLS warten, Modus-Taste
     await werte(`(async () => { const e = Date.now() + 25000; while (Date.now() < e && ${R}.a.canPlayHLS !== true) await new Promise((r) => setTimeout(r, 300)); })()`);
     await pruefe("F19", "Taste Original oder Zeitversatz wechselt in den Zeitversatz", `(async () => { ${druecke(5)}; const e = Date.now() + 25000;
@@ -261,12 +273,15 @@ try {
       r.value = "20"; r.dispatchEvent(new Event("input", { bubbles: true })); r.dispatchEvent(new Event("change", { bubbles: true }));
       await new Promise((x) => setTimeout(x, 1500)); return { ok: ${R}.a.isLive === false, lage: r.value }; })()`);
     await pruefe("F18", "Live springt zur Live-Kante", `(async () => { document.querySelectorAll(".rh-puffer-rechts .knopf")[1].click(); await new Promise((r) => setTimeout(r, 1200)); return ${R}.a.isLive === true; })()`);
-    await pruefe("F21", "Bitrate des Zeitversatzes wählbar und gemerkt", `(async () => { ${K(".rh-display-aktion .auswahl-knopf")}.click(); await new Promise((r) => setTimeout(r, 200));
-      const b = [...document.querySelectorAll(".rh-display-aktion .auswahl-liste button")].find((x) => x.textContent.includes("128")); b.click();
-      await new Promise((r) => setTimeout(r, 300)); const gemerkt = localStorage.getItem("radiohub_bitrate_override");
-      const e = Date.now() + 25000; while (Date.now() < e && !(${R}.a.hlsActive && ${K(".rh-display-aktion .auswahl-knopf:not(:disabled)")})) await new Promise((r) => setTimeout(r, 300));
-      return { ok: gemerkt === "128" && ${R}.a.hlsActive, gemerkt }; })()`);
-    await werte(`localStorage.removeItem("radiohub_bitrate_override")`);
+    await pruefe("F21", "Drehwahl der Bitrate: wählbar im Zeitversatz, gemerkt, Wert darunter und im Glas; zurück auf wie gesendet", `(async () => {
+      const d = ${K(".rh-bitrate-wahl")};
+      const frei = async () => { const e = Date.now() + 25000; while (Date.now() < e && !(${R}.a.hlsActive && d.getAttribute("aria-disabled") === "false")) await new Promise((r) => setTimeout(r, 300)); };
+      await frei(); const taste = (k) => d.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
+      for (let i = 0; i < 5; i++) taste("ArrowUp");
+      await new Promise((r) => setTimeout(r, 1500)); const gemerkt = localStorage.getItem("radiohub_bitrate_override");
+      await frei(); const wert = d.querySelector(".ak-dreh-wert").textContent, glas = ${K(".rh-display-hinweis")}?.textContent;
+      taste("Home"); await new Promise((r) => setTimeout(r, 1500)); const zurueck = localStorage.getItem("radiohub_bitrate_override"); await frei();
+      return { ok: gemerkt === "128" && wert === "128" && /128/.test(glas) && zurueck === null && ${R}.a.hlsActive, gemerkt, wert, glas, zurueck }; })()`);
     await pruefe("F14", "Anhalten und Fortsetzen im Zeitversatz", `(async () => { ${druecke(2)}; await new Promise((r) => setTimeout(r, 500)); const pause = ${R}.a.isPaused;
       ${druecke(2)}; await new Promise((r) => setTimeout(r, 800)); return { ok: pause && !${R}.a.isPaused && ${R}.a.isPlaying }; })()`);
     await pruefe("F09", "Klick auf die Matrix springt zum Sender", `(async () => { history.pushState(null, "", "/podcasts"); ${K(".rh-display-quelle")}.click(); await new Promise((r) => setTimeout(r, 300));
@@ -288,7 +303,8 @@ try {
       while (Date.now() < e && (${R}.a.isRecording || ${R}.a.isPlaying)) await new Promise((r) => setTimeout(r, 300)); return !${R}.a.isRecording && !${R}.a.isPlaying; })()`);
     // Senderwechsel
     await werte(`(async () => { await ${R}.engine.playStation(${R}.a.stations[${sender?.i ?? 0}]); await new Promise((r) => setTimeout(r, 1500)); })()`);
-    await pruefe("F11b", "Zurück wechselt den Sender", `(async () => { const vor = ${R}.a.currentStation.uuid; ${taste(0)}.querySelector("button").dispatchEvent(new PointerEvent("pointerdown"));
+    await pruefe("F11b", "Zurück wechselt den Sender", `(async () => { const e = Date.now() + 10000; while (Date.now() < e && ${taste(0)}.querySelector("button").disabled) await new Promise((r) => setTimeout(r, 200));
+      const vor = ${R}.a.currentStation.uuid; ${taste(0)}.querySelector("button").dispatchEvent(new PointerEvent("pointerdown"));
       ${druecke(0)}; await new Promise((r) => setTimeout(r, 1500)); return ${R}.a.currentStation.uuid !== vor; })()`);
     await pruefe("F17b", "Weiter wechselt den Sender", `(async () => { const vor = ${R}.a.currentStation.uuid; ${druecke(4)}; await new Promise((r) => setTimeout(r, 1500)); return ${R}.a.currentStation.uuid !== vor; })()`);
     await pruefe("F14b", "Spielen-Taste im Originalstrom beendet", `(async () => { await new Promise((r) => setTimeout(r, 1500)); ${druecke(2)}; await new Promise((r) => setTimeout(r, 800)); return !${R}.a.isPlaying; })()`);
@@ -319,9 +335,10 @@ try {
     await pruefe("F09c", "Klick auf die Matrix springt zum Podcast", `(async () => { ${R}.a.podcastPlaylistPodcast = { id: 21 }; ${K(".rh-display-quelle")}.click(); await new Promise((r) => setTimeout(r, 300)); return location.pathname === "/podcasts/21"; })()`);
     // Fehler
     await werte(`${R}.zustand("fehler")`);
-    await pruefe("F29", "Fehlerzustand mit Neu verbinden, das neu lädt", `(async () => { const ok1 = document.querySelector(".rh-kanzel").dataset.zustand === "fehler";
-      ${K(".rh-display-aktion .knopf")}.click(); await new Promise((r) => setTimeout(r, 150)); const z = document.querySelector(".rh-kanzel").dataset.zustand;
-      return { ok: ok1 && (z === "laedt" || z === "fehler"), z }; })()`);
+    await pruefe("F29", "Fehler: Spielen-Taste wird Neu verbinden (außerhalb des Glases) und lädt neu", `(async () => { const ok1 = document.querySelector(".rh-kanzel").dataset.zustand === "fehler";
+      const symbol = !!${taste(2)}.querySelector("i.fa-rotate-right"); ${druecke(2)}; await new Promise((r) => setTimeout(r, 150));
+      const z = document.querySelector(".rh-kanzel").dataset.zustand;
+      return { ok: ok1 && symbol && (z === "laedt" || z === "fehler") && ${R}.a.isPlaying, z }; })()`);
     await werte(`${R}.engine.stop()`);
     await pruefe("F03b", "Pegel stehen ohne Ton unten", `[...document.querySelectorAll(".rh-kanzel ak-pegel")].every((p) => p.getAttribute("wert") === "-60")`);
     fs.writeFileSync(path.join(AUS, "ablauf.json"), JSON.stringify(erg, null, 1));
