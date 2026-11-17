@@ -190,6 +190,11 @@ async def abgleich_zuletzt() -> str | None:
 
 # ----- Aufbereitung ----------------------------------------------------------------------------------------------------------
 
+async def ohne_sender() -> bool:
+    """Noch kein einziger Sender im Bestand (frisch eingerichtet): dann lädt der erste Abgleich gleich."""
+    return await database.lesen(lambda v: v.execute("SELECT 1 FROM stations LIMIT 1").fetchone() is None)
+
+
 async def aufbereitung_noetig() -> str | None:
     return await database.lesen(bestand.aufbereitung_noetig)
 

@@ -6,7 +6,8 @@ Start:
 1. Einstellungen binden (Dienste lesen sie über `einstellungen.stand()`)
 2. Datenbank des RadioHub auf den Stand der Stufen (`database.einrichten`; ein Bestand wird ohne Umbau übernommen) und
    für die Senderquelle öffnen; ist der Senderbestand noch nicht aufbereitet (erster Start mit Stufe 2), geschieht das
-   gleich, sonst bei neuer Fassung des Bausteins als Auftrag
+   gleich, sonst bei neuer Fassung des Bausteins als Auftrag; ohne einen einzigen Sender (frisch) startet gleich der
+   Abgleich mit dem Senderverzeichnis
 3. einmal: Werte der Tabelle config, die jetzt Einstellungen sind, übernehmen (`uebergang.config_uebernehmen`)
 4. Ablage über den Zugang des Gerüsts zur Kellerwolke, verwaiste Aufnahmen bereinigen, Werbedomains, Podcast-Abruf
    alle `podcast_refresh_interval` Sekunden, liegengebliebene Aufnahmen nachträglich ablegen, Abgleich mit dem
@@ -131,6 +132,9 @@ class Radiobetrieb(Begleiter):
     async def _senderbestand_pruefen(self) -> None:
         """Erster Start mit Stufe 2: Bestand gleich aufbereiten (ohne ihn kennt die Senderquelle keinen Sender). Eine
         neue Fassung des Bausteins oder ein abweichender Bestand: Auftrag, die bisherige Aufbereitung gilt so lange."""
+        if await senderquelle.ohne_sender():
+            self._aufgaben.append(asyncio.create_task(self._einreihen(abgleich.ART, "start"), name="erster-abgleich"))
+            return
         grund = await senderquelle.aufbereitung_noetig()
         if grund == "leer":
             anzahl = await senderquelle.aufbereiten()

@@ -152,3 +152,11 @@ art = "verboten"
 warum = "Die Schnittstelle prüft Eingaben und ruft Dienste; Abfragen stehen allein in der Datenschicht (services/senderquelle), damit es für Sichtbarkeit und Sender nur eine Wahrheit gibt und jede Abfrage an einer Stelle auf Indizes geprüft wird. Gilt für die Router der Senderquelle und die alten Wege, die schon darauf umgestellt sind; die übrigen Router folgen mit ihrem Neubau."
 dateien = ["backend/app/routers/radio.py", "backend/app/routers/filters.py", "backend/app/routers/blocklist.py"]
 muster = '(db_session|get_db\(|\.execute\(|\b(SELECT|INSERT|UPDATE|DELETE)\b[^"\n]*\b(FROM|INTO|SET)\b)'
+
+[[regel]]
+kennung = "B6"
+titel = "Werbeprüfung nur per Kennung"
+art = "verboten"
+warum = "Die Werbeprüfung öffnet den Strom eines Senders; nimmt sie eine Adresse aus der Anfrage an, prüft sie beliebige Adressen im Heimnetz (wie der frühere Durchleiter). Die Oberfläche nennt nur die Kennung, die Adresse kommt aus der Datenbank (eigene Adresse vor der des Verzeichnisses)."
+dateien = ["backend/app/routers/ad_detection.py"]
+muster = '(stream_url\s*:\s*(str|Optional)|req\.stream_url)'

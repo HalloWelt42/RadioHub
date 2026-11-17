@@ -1,6 +1,7 @@
 # RadioHub: Architektur
 
-Stand 16.11.2026 (RAD-5, Etappe 1, und RAD-6, Teile 2b und 2c: Backend und Schale der Oberfläche auf dem Appkern).
+Stand 17.11.2026 (RAD-5, Etappe 1; RAD-6, Teile 2b und 2c: Backend und Schale der Oberfläche auf dem Appkern; RAD-7,
+Teil 3a: Backend der Filterung mit Senderdaten-Baustein und Senderquelle).
 Dieses Dokument beschreibt Aufbau, Schichten und harte Regeln von RadioHub. Die Regeln stehen maschinenlesbar in
 `architektur/regeln.toml`; der Git-Haken und das Ausrollen setzen sie durch. Entscheidungen und Etappen der
 Überarbeitung stehen in `docs/umbau/PLAN.md`, der Befund davor in `docs/umbau/BEFUND.md`.
@@ -29,22 +30,56 @@ schnittstelle   routers/**, main.py, betrieb.py   Endpunkte, Eingaben prüfen; G
    │  darf dienste, ablage, grundlagen
 werkzeuge       umzug/**, werkzeuge/**         Befehle für Umzug und Pflege (python -m app.umzug ...)
    │  darf dienste, ablage, grundlagen
-dienste         services/**                    Aufnahme, Puffer, Podcasts, Sender, Werbung, Zeitansage, Durchleiter
-   │  darf ablage, grundlagen
+dienste         services/**                    Aufnahme, Puffer, Podcasts, Sender, Werbung, Zeitansage, Durchleiter;
+   │                                           Senderquelle (services/senderquelle, siehe unten)
+   │  darf ablage, grundlagen, senderdaten
 ablage          ablage/**                      Port und Adapter für Aufnahmen und Folgen (Kellerwolke über den Zugang
    │                                           des Gerüsts, Speicher)
    │  darf grundlagen
-grundlagen      config.py, database.py, storage.py, fassung.py, sender_merkmale.py, einstellungen.py, uebergang.py,
-                ort.py
+grundlagen      config.py, database.py, storage.py, fassung.py, einstellungen.py, uebergang.py, ort.py
+
+senderdaten     senderdaten/**                 Baustein ohne FastAPI und Datenbank: aus einem Datensatz des
+                                               Senderverzeichnisses ein aufbereiteter Sender; bindet nichts aus der App
+                                               ein (auch für das Skript der statischen Webversion, Etappe 3b)
 ```
+
+Senderquelle (RAD-7, Entscheidungen 4 bis 6, 18, 19): eine Wahrheit für die Sichtbarkeit der Sender, die neue
+Schnittstelle unter /api/radio und die alten Wege (/api/stations/search, /api/filters/*, /api/blocklist) lesen sie.
+
+```
+senderdaten/            sprachen (Code und deutscher Name, freier Text als eigener Eintrag; Tabelle sprachen.toml),
+                        genres (gepflegte Abbildung genres.toml: Schreibweisen, Rauschen, Frequenzen, Jahrzehnte),
+                        qualitaet (Codec, Bitrate in kbit/s, Stufe), dubletten (Gruppen, beste Variante); FASSUNG
+services/senderquelle/  Datenschicht (Funktionen auf einer Verbindung, SQL nur hier):
+                          bestand      stations und die Aufbereitung sender_index, sender_genre, sender_sprache,
+                                       sender_spracheintrag, sender_tag, Volltextsuche sender_suche
+                          regeln       lebende Regeln, je Art eine Abfrage der getroffenen Sender
+                          sichtbarkeit Treffer, Sichtbarkeit, Vertreter je Gruppe, Gründe, Vorschau, Folgen
+                          abfrage      Schnellfilter, Seitenzeiger (Sortierwert und uuid), Facetten
+                          ausgeblendet ausgeblendete Sender, Einzelsperren, Freigaben, Kandidaten neuer Regeln
+                          werbung      Werbeverdacht gewichtet (der Cache-Kopf allein zählt nicht)
+                          alte_wege    die Wege der heutigen Oberfläche bis Etappe 3b
+                          ueberfuehrung  heutige Sperren in Regeln (Werkzeug regeln_ueberfuehren)
+                        dienst (asynchron: Lesen im Vorrat der Datenbank des Appkerns, jede Änderung in einer
+                        Transaktion samt Sichtbarkeit), abgleich (Aufträge sender_abgleich und sender_aufbereiten)
+routers/radio.py        Schnittstelle ohne SQL (Regel D2)
+```
+
+Sichtbar ist ein Sender, wenn er Favorit ist (dann als Ausnahme, auch wenn eine Regel trifft) oder nicht verschwunden
+und von keiner eingeschalteten Regel getroffen ist; eine Freigabe hebt Regeln auf. Treffer stehen je Regel in
+sender_ausblendung, auch für ausgeschaltete Regeln (ihre Zahlen bleiben sichtbar); Ein- und Ausschalten rechnet nur die
+Sender der Regel und ihre Gruppen neu. Varianten eines Senders (gleiche Stream-Adresse oder gleicher bereinigter Name im
+selben Land) bilden eine Gruppe, deren bester sichtbarer Sender der Vertreter in der gebündelten Liste ist.
 
 Was das Gerüst des Appkerns übernimmt: Einstellungen (`einstellungen.AppEinstellungen`, eine Quelle: gespeichert, dann
 Umgebung `RADIOHUB_*`, dann Vorgabe; fest `RADIOHUB_FEST_*` vom Ausrollen), Protokoll, Aufträge, Anmeldung mit dem Konto
 der Kellerwolke, Sicherung, Auslieferung der Oberfläche. Seine Datenbank liegt in `data/appkern/radiohub.sqlite`, die des
 Radios bleibt `data/radiohub.db` und kommt über die Datenbank des Appkerns in Stufen (`database.STUFEN`, Stufe 1 ist der
-Bestand bis 0.15.6). Frühere Namen und Formen der Einstellungen gelten über `uebergang.py`. Offene Frage an den Appkern:
-eine Datei für beide (Name der Datenbank im Gerüst wählbar) und ein Haken für eigene SQL-Funktionen in seinen
-Verbindungen (`merkmal_trifft`); bis dahin lesen und schreiben die Dienste über `database.get_db`.
+Bestand bis 0.15.6, Stufe 2 die Senderquelle). Frühere Namen und Formen der Einstellungen gelten über `uebergang.py`.
+Die Senderquelle liest und schreibt über die Datenbank des Appkerns (`database.lesen`, `database.schreiben`), die
+übrigen Dienste bis zu ihrem Neubau über `database.get_db`. Offene Fragen an den Appkern: eine Datei für beide (Name der
+Datenbank im Gerüst wählbar) und mehrere Abfragen in einem Lesestand öffentlich (`Datenbank._lesen`, bis dahin an einer
+Stelle in `database.lesen` genutzt).
 
 Oberfläche (Svelte 5 mit TypeScript für neue Teile, `frontend/src`; svelte-check im Skript `check`):
 
@@ -91,9 +126,12 @@ aus einer lokalen Datei nimmt (`tools/ausrollen.py`, `appkern_gebunden`).
 | B3 | Kein Abruf fremder Dienste aus der Oberfläche (die Fassungserkennung fragt nur die eigene Startseite) |
 | B4 | Keine CORS-Freigabe für alle Ursprünge (Backend, Vorschaltdienst, Vite, Compose) |
 | B5 | Die App nicht veröffentlicht; nach außen nur der Vorschaltdienst |
+| B6 | Werbeprüfung nur über die Senderkennung, die Adresse kommt aus der Datenbank |
 | P1 | Protokoll statt `print` im Backend (Log `radiohub.*`, Wichtiges ins Protokoll der App); ausgenommen Befehle der Kommandozeile |
 | K1 | Einstellungen aus einer Quelle: `os.environ` nur in `ort.py` (Orte) und `uebergang.py` (frühere Namen) |
 | D1 | Schema nur in Stufen: kein `ALTER TABLE` außerhalb von `database.py` |
+| D2 | Router ohne SQL: `routers/radio.py`, `filters.py`, `blocklist.py` rufen nur Dienste (die übrigen folgen mit ihrem Neubau) |
+| S1 | dazu: der Senderdaten-Baustein bindet nichts aus der App ein |
 
 Dazu prüft der Haken jede vorgemerkte Datei auf gerade Zeichen und auf den Stil (kein `!important`, keine einseitigen
 Streifen); die Marken der Gestaltung werden nur gemeldet, bis die Oberfläche in Etappe 2 auf die Bausteine des
@@ -115,7 +153,6 @@ Diese Regeln erfüllt der Code heute noch nicht; sie kommen mit der Etappe, die 
 | 2 Appkern-Grundlage | Backend-Schichten api, fach, anschluesse, modell; Antworten als Pydantic-Modelle statt Dicts (Ordner `frontend/` und `backend/` sind umgestellt, Teile 2b und 2c) |
 | 3, 4 und 6 | Oberfläche ganz in TypeScript (svelte-check läuft schon, die alten Bereiche bleiben bis zum Neubau JavaScript); Marken der Gestaltung scharf (`gestaltung.toml`): keine festen Farben, Schriftgrößen und Schriften, sobald die Brücke entfällt (Schale und Darstellung mit Schriftstufen und Hell, Dunkel, System sind seit Teil 2c da) |
 | 2 Appkern-Grundlage | Kein rohes `fetch` außerhalb der Datenschicht (heute an fünf Stellen an `api.js` vorbei); keine Adressen wie `localhost:9091` in der Oberfläche |
-| 3 Filterung | Router ohne SQL: jede Abfrage über die Datenschicht; Sender nur über die Schnittstelle Senderquelle (Backend oder statisch für die Webversion) |
-| 3 Filterung | Werbeprüfung nur mit der Senderkennung (heute nimmt `/api/ad-detection/check` noch eine `stream_url` aus der Oberfläche an) |
+| 3b Webversion | Router ohne SQL für alle Router; Sender in der Oberfläche nur über die Schnittstelle Senderquelle (Backend oder statisch); die alten Wege und die Tabelle blocklist entfallen |
 | 4 Player | Ein Tonausgang: nur die Wiedergabe greift auf das `<audio>`-Element zu; Zeitversatz und Aufnahme starten nur mit der Senderkennung (heute senden `startHLS` und die Aufnahme noch `stream_url`, das Backend öffnet sie mit FFmpeg) |
 | 6 Übrige Bereiche | Kleine Dateien (höchstens 400 Zeilen je Baustein und Modul); Löschen nur mit Folgenvorschau und abschließender Bestätigung |

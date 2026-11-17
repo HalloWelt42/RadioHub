@@ -1,9 +1,9 @@
 ---
-zweck: "Internetradio, Podcasts, Aufnahmen und Wecker im HiFi-Look: Senderverzeichnis mit Filtern und Favoriten, Zeitversatz, Aufnahmen mit Schnitt, Podcast-Abos, Weckeransicht mit Zeitansage am Telefon; Aufnahmen und Folgen liegen in der Kellerwolke."
+zweck: "Internetradio, Podcasts, Aufnahmen und Wecker im HiFi-Look: Senderverzeichnis mit Schnellfiltern, lebenden Ausschlussregeln und Favoriten, Zeitversatz, Aufnahmen mit Schnitt, Podcast-Abos, Weckeransicht mit Zeitansage am Telefon; Aufnahmen und Folgen liegen in der Kellerwolke."
 geraet: [pi]
 abhaengigkeiten: [kellerwolke]
 daten:
-  - "Pi: `{{wurzel}}/data/radiohub.db` (Sender, Favoriten, Filter und Sperren, Index der Aufnahmen, Abos und Folgen, Wecker, Stand der Oberfläche), `{{wurzel}}/data/appkern/radiohub.sqlite` (Einstellungen, Protokoll, Aufträge des Appkerns), `{{wurzel}}/data/cache` (Senderlogos, Zwischenstände, Arbeitsordner laufender Aufnahmen und Downloads), `{{wurzel}}/data/storage.json` (Speicherzonen)"
+  - "Pi: `{{wurzel}}/data/radiohub.db` (Sender mit Aufbereitung, Favoriten, Ausschlussregeln, Einzelsperren und Freigaben, Index der Aufnahmen, Abos und Folgen, Wecker, Stand der Oberfläche), `{{wurzel}}/data/appkern/radiohub.sqlite` (Einstellungen, Protokoll, Aufträge des Appkerns), `{{wurzel}}/data/cache` (Senderlogos, Zwischenstände, Arbeitsordner laufender Aufnahmen und Downloads), `{{wurzel}}/data/storage.json` (Speicherzonen)"
   - "Kellerwolke, Ordner `Apps/RadioHub`: Aufnahmen mit Titelliste und Wellenform, heruntergeladene Podcast-Folgen, Bausteine der Zeitansage"
 sicherung:
   - "nach der Regel des Appkerns eine Kopie von `radiohub.db` nach `{{wurzel}}/sicherungen` und eine der Datenbank des Gerüsts nach `{{wurzel}}/sicherungen/appkern`: regelmäßig von der App (Vorgabe alle 7 Tage) und vor jedem Ausrollen (nur wenn die jüngste älter als 24 Stunden ist und sich etwas geändert hat, höchstens drei je Datenbank)"
@@ -20,8 +20,9 @@ stand: 9ff31bd
 
 ## Zweck
 
-RadioHub ist das Radio des Hauses, Fassung {{fassung}}: tausende Sender aus dem Senderverzeichnis mit Suche, Filtern,
-Ausschlüssen und Favoriten, Zeitversatz (zurückspulen im laufenden Sender), Aufnahmen von Hand oder nach Zeitplan mit
+RadioHub ist das Radio des Hauses, Fassung {{fassung}}: tausende Sender aus dem Senderverzeichnis (jede Nacht
+abgeglichen, Sprachen, Genres, Qualität und Varianten aufbereitet) mit Suche, Schnellfiltern, lebenden
+Ausschlussregeln (mit Grund je ausgeblendetem Sender) und Favoriten, Zeitversatz (zurückspulen im laufenden Sender), Aufnahmen von Hand oder nach Zeitplan mit
 Schnitt in der Wellenform, Podcast-Abos zum Hören und Herunterladen. Am Telefon gibt es eine eigene Ansicht und quer
 gelegt die Weckeransicht für den Nachttisch mit Wecker, Sonnenband und Zeitansage. Aufnahmen und heruntergeladene
 Folgen liegen in der [[Kellerwolke]]; RadioHub hält lokal nur die Datenbank und Zwischenstände.
@@ -51,8 +52,8 @@ der Plan der Überarbeitung in `docs/umbau/PLAN.md`.
 
 ## Neu einrichten
 
-Wahl: aus der Sicherung (Datenbank mit Favoriten, Filtern, Abos und Weckern zurück, Schlüssel der Kellerwolke wie
-vorher) oder frisch (leere Datenbank, das Senderverzeichnis lädt beim ersten Start, neuer App-Schlüssel).
+Wahl: aus der Sicherung (Datenbank mit Favoriten, Regeln, Abos und Weckern zurück, Schlüssel der Kellerwolke wie
+vorher) oder frisch (leere Datenbank, der erste Start lädt das Senderverzeichnis als Auftrag, neuer App-Schlüssel).
 
 ### 1. Entwicklung am Mac
 
@@ -83,10 +84,12 @@ Datenbanken, besorgt die Zugänge (Abschnitt `[zugaenge]`: Adresse und App-Schl�
 Einstellungen in die `.env`, solange sie dort fehlen), startet neu und prüft über HTTPS Fassung, Datenbank, HTTP/2 und
 Symbole. Vorher läuft die Freigabe des Handbuchs (Seite, Einrichtungsskript, Probelauf). Beim ersten Ausrollen nach
 RAD-6 gehen die Container von davor (Backend, Oberfläche mit nginx) als verwaiste mit; die Datenbank wird ohne Umbau als
-Stufe 1 übernommen.
+Stufe 1 übernommen. Stufe 2 (RAD-7) legt nur dazu (Felder des Verzeichnisses, Aufbereitung, Regeln) und bereitet den
+Senderbestand beim ersten Start einmal auf (am Pi rund eine Minute); bis zur Überführung (Schritt 6) gilt die frühere
+Sperrliste unverändert als Regel "Sperren von früher".
 
 Probe: die Ausgabe endet mit "Ausgerollt" und nennt den Besitzer; `/health` meldet Fassung {{fassung}} und die
-Datenbank gesund; das Protokoll der App nennt "Bestand ohne Änderung als Stufe 1 übernommen".
+Datenbank gesund; das Protokoll der App nennt "Stand Stufe 2" und "Senderbestand erstmals aufbereitet".
 
 ### 4. Einstellungen des Hauses
 
@@ -96,7 +99,10 @@ im Ordner `{{wurzel}}` (Modus 0600, Namen `RADIOHUB_<FELD>`), sonst die Vorgabe;
 die Zertifikatsstelle (`RADIOHUB_CA_DATEI`) und die Ortssuche (OSMLocal im Netz `haus`) setzt `compose.pi.yml`. Die
 Namen von vor RAD-6 gelten weiter (`RADIOHUB_KELLERWOLKE_CA`, `RADIOHUB_KELLERWOLKE_SCHLUESSEL` als Pfad einer Datei,
 ohne Angabe `data/kellerwolke.schluessel`); Werte, die früher in der Tabelle `config` standen (Abruf der Podcasts,
-Bitraten, Adressen der Verzeichnisse), übernimmt der erste Start einmal. Aus der Sicherung: die alte `.env` zurücklegen.
+Bitraten, Adressen der Verzeichnisse), übernimmt der erste Start einmal. Der Abgleich mit dem Senderverzeichnis läuft
+jede Nacht zur Uhrzeit "Abgleich mit dem Senderverzeichnis" (`abgleich_uhrzeit`, Vorgabe 04:30, leer: nur auf Anstoß)
+als Auftrag mit Fortschritt; die Server stehen unter "Senderverzeichnis" (`service_radio_browser_servers`), der nächste
+springt ein, wenn einer ausfällt. Aus der Sicherung: die alte `.env` zurücklegen.
 Frisch: Werte aus den Seiten von [[Kellerwolke]] und [[Vertonung]], danach `tools/ausrollen.sh` erneut.
 
 Probe: das Protokoll der App nennt "Verbunden als App RadioHub im Konto admin"; `GET /api/storage/ablage` meldet
@@ -113,6 +119,19 @@ offen bleibt. Fällt die Kellerwolke aus, gelten bestätigte Anmeldungen 24 Stun
 Ausfall").
 
 Probe: nach dem Koppeln zeigt die Weckeransicht ihre Wecker; ein Neustart von RadioHub verlangt keine neue Anmeldung.
+
+### 6. Einmalig: heutige Sperren in Regeln überführen (RAD-7)
+
+Nur nach Freigabe durch den Nutzer und erst, wenn Stufe 2 läuft. Vorschau (ändert nichts, rechnet alles in einer
+Transaktion durch und nimmt sie zurück): `docker exec radiohub python -m app.werkzeuge.regeln_ueberfuehren`. Sie nennt
+sichtbare Sender heute und danach, jede Änderung mit Grund und Beispielen, Favoriten und alle Regeln mit Zahlen. Aus
+den Sprachen der Filter-Einstellungen werden Regeln auf genau diese Einträge (je Sprache eine), aus Tags und
+Mindeststimmen (Einstellung und Gründe der Filtersperren) je eine Regel, aus Sperren von Hand Einzelsperren, aus
+Werbesperren Werbeentscheidungen mit einer Werbe-Regel ab "eigene Entscheidung". Die Tabelle `blocklist` bleibt
+unverändert stehen. Dann `... regeln_ueberfuehren --anwenden`; ein zweiter Lauf lehnt ab.
+
+Probe: die Ausgabe nennt "Neu ausgeblendet: 0"; wieder sichtbar sind nur Favoriten, die heute gesperrt sind (sie
+bleiben als Ausnahme sichtbar); `GET /api/radio/regeln` zeigt die Regeln und keine Regel "Sperren von früher" mehr.
 
 ## Sicherung und Rückspielen
 
@@ -142,6 +161,13 @@ Stufe 1. Prüfen: Favoriten und Abos sind da, `/health` meldet die Datenbank ges
   der Datenbank), prüft TLS und folgt Weiterleitungen nur auf http und https; ein Sender mit abgelaufenem Zertifikat
   bleibt stumm (502 im Log, `docker compose -f compose.pi.yml logs radiohub`). In den Senderdetails eine eigene Adresse eintragen, sie gilt vor der
   aus dem Senderverzeichnis.
+- **Ein Sender fehlt in der Liste:** `GET /api/radio/sender/<Kennung>/sichtbarkeit` nennt die Regeln, die ihn
+  ausblenden (oder dass er verschwunden ist); in den Einstellungen des Radios unter "Ausgeblendete Sender" freigeben oder
+  die Regel ausschalten. Sender, die das Verzeichnis zuletzt nicht erreichte, zeigt die Liste nur ohne den Schnellfilter
+  "nur erreichbare".
+- **Der Abgleich endet mit Fehler:** Die Liste der Aufträge nennt den Grund. "Kein Server erreichbar": Netz oder
+  Einstellung "Senderverzeichnis" prüfen. "lieferte nur n von m Sendern": das Verzeichnis antwortete unvollständig; es
+  wurde nichts als verschwunden markiert, der nächste Abgleich holt es nach (oder `POST /api/radio/abgleich`).
 - **Die Datenbank soll ganz geprüft werden:** `/health` fragt nur, ob sie antwortet; die volle Prüfung über die ganze
   Datei ist `GET /api/datenbank/pruefung` (dauert bei der großen Datenbank eine Weile).
 - **Ortssuche findet nichts:** OSMLocal läuft nicht oder hängt nicht im Netz `haus`; der Standort des Telefons geht

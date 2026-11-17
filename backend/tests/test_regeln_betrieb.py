@@ -39,6 +39,8 @@ BEISPIELE = {
             "conn.execute(sql)", "DELETE FROM blocklist WHERE uuid = ?"],
            ["return await dienst.abfragen(q)", '"""Sender, die die Regel trifft (SELECT der Datenschicht)."""',
             "await senderquelle.sperren(uuid)"]),
+    "B6": (["    stream_url: str", "    stream_url: Optional[str] = None", "check_station_ads(req.uuid, req.stream_url)"],
+           ["check_station_ads(req.uuid, _adresse(req.uuid), req.name)", "stream_url = row[1] or row[2]"]),
     "B5": (['      - "9091:8000"', '      - "127.0.0.1:9092:8080"', "      - 9092:80"],
            ['      - "9093:9093"', '      - "8000"', '      - "127.0.0.1:${PROBE_PORT:?}:9093"']),
 }
