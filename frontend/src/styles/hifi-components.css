@@ -125,27 +125,27 @@
 
 .hifi-led.on-green { 
     background: var(--hifi-led-green); 
-    box-shadow: 0 0 8px var(--hifi-led-green-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+    box-shadow: 0 0 8px var(--hifi-led-green-glow); 
 }
 .hifi-led.on-yellow { 
     background: var(--hifi-led-yellow); 
-    box-shadow: 0 0 8px var(--hifi-led-yellow-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+    box-shadow: 0 0 8px var(--hifi-led-yellow-glow); 
 }
 .hifi-led.on-red { 
     background: var(--hifi-led-red); 
-    box-shadow: 0 0 8px var(--hifi-led-red-glow), inset 0 0 4px rgba(255,255,255,0.3); 
+    box-shadow: 0 0 8px var(--hifi-led-red-glow); 
 }
 .hifi-led.on-blue {
     background: var(--hifi-led-blue);
-    box-shadow: 0 0 8px var(--hifi-led-blue-glow), inset 0 0 4px rgba(255,255,255,0.3);
+    box-shadow: 0 0 8px var(--hifi-led-blue-glow);
 }
 .hifi-led.on-amber {
     background: var(--hifi-led-amber);
-    box-shadow: 0 0 8px var(--hifi-led-amber-glow), inset 0 0 4px rgba(255,255,255,0.3);
+    box-shadow: 0 0 8px var(--hifi-led-amber-glow);
 }
 .hifi-led.on-white {
-    background: #e8e8e8;
-    box-shadow: 0 0 8px rgba(255,255,255,0.6), inset 0 0 4px rgba(255,255,255,0.4);
+    background: var(--led-weiss);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--led-weiss) 60%, transparent);
 }
 
 .hifi-led.blink { animation: hifi-blink 1s infinite; }
