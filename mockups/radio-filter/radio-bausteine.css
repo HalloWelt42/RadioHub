@@ -85,9 +85,11 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 
 /* ═══ Schnellfilter ═══ Seitenleiste, Gruppen, Facetten, Chips, Schnellwahl-Gerät */
 .rh-filter { background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
-.rh-filter-kopf { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 14px 10px; box-shadow: 0 1px 0 var(--rand); }
-.rh-filter-kopf h2 { margin: 0; font-size: var(--titel); flex: 1 0 auto; }
-.rh-filter-kopf .pille { font-family: var(--schrift-zahl); }
+/* Kopf im Gerät der Schnellwahl: Titel, Zahl der aktiven Filter, Zurücksetzen, am Telefon Schließen */
+.rh-schnellwahl-kopf { gap: 8px; margin-bottom: 0; }
+/* einzeilig: in der schmalen Seitenleiste ohne Silbentrennung, in Standardgröße statt Titelgröße */
+.rh-schnellwahl-kopf b { flex: 1 1 auto; min-width: 0; font-size: var(--gross); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; hyphens: none; -webkit-hyphens: none; }
+.rh-schnellwahl-kopf .pille { font-family: var(--schrift-zahl); }
 .rh-gruppe { padding: 16px 0 6px; }
 .rh-gruppe + .rh-gruppe { box-shadow: 0 -1px 0 var(--rand); }
 .rh-gruppe-kopf { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
@@ -97,11 +99,11 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-mehr { margin: 6px 0 0 8px; }
 
 /* Schnellwahl: kleines Gerät; Favoriten als Flachtaster (Leuchtstreifen in der Taste), Stimmen als Drehwahl, Bitrate als Leuchtbalken */
-.rh-schnellwahl { display: grid; gap: 10px; padding: 18px 16px 28px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
+.rh-schnellwahl { display: grid; gap: 6px; padding: 10px 14px 18px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
 .rh-schnellwahl-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; justify-items: center; }
 .rh-schnellwahl ak-taster { inline-size: 100%; }
-.rh-schnellwahl ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 100%; block-size: auto; min-block-size: 56px; padding: 8px 10px; }
-.rh-schnellwahl ak-dreh { --ak-zelle: min(100%, 140px); }   /* unter 150 Pixel ohne Rastnamen, der Wert steht darunter */
+.rh-schnellwahl ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 100%; block-size: auto; min-block-size: 46px; padding: 6px 10px; }
+.rh-schnellwahl ak-dreh { --ak-zelle: min(100%, 116px); }   /* unter 150 Pixel ohne Rastnamen, der Wert steht darunter */
 .rh-schnellwahl ak-schieber { --ak-zelle: 100%; }
 
 /* Facette: Kästchen, Kennung, Name, Zahl; Nebenelemente oben an der ersten Zeile */

@@ -70,20 +70,23 @@
   <div class="rh-mitte">
     <!-- Seitenleiste: Schnellfilter als Facetten mit Zahlen; flüchtig, stehen in der Adresse -->
     <aside class="rh-filter" id="filter" aria-label="Schnellfilter">
-      <div class="rh-filter-kopf">
-        <h2>Schnellfilter</h2><span class="pille" id="filter-zahl">2 aktiv</span>
-        <button class="knopf still" type="button" id="filter-zurueck">Zurücksetzen</button>
-        <button class="rund rh-filter-zu" type="button" id="filter-zu" aria-label="Filter schließen" title="Schließen"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="rh-filter-rollt">
+      <!-- Oben fest (rollt nicht mit): das Gerät der Schnellwahl mit integriertem Kopf; darunter rollen nur die Facetten -->
+      <div class="rh-filter-oben">
         <div class="ak-geraet rh-schnellwahl" data-bauform="inspektor">
           <span class="ak-schraube lo" style="--dreh:22deg"></span><span class="ak-schraube ro" style="--dreh:64deg"></span><span class="ak-schraube lu" style="--dreh:-18deg"></span><span class="ak-schraube ru" style="--dreh:41deg"></span>
+          <div class="ak-geraet-kopf rh-schnellwahl-kopf">
+            <b>Schnellfilter</b><span class="pille" id="filter-zahl">2 aktiv</span>
+            <button class="rund" type="button" id="filter-zurueck" aria-label="Alle Schnellfilter zurücksetzen" title="Alle Schnellfilter zurücksetzen"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="rund rh-filter-zu" type="button" id="filter-zu" aria-label="Filter schließen" title="Schließen"><i class="fa-solid fa-xmark"></i></button>
+          </div>
           <div class="rh-schnellwahl-oben">
             <ak-taster id="nur-favoriten" art="flach" beschriftung="Nur Favoriten" farbe="gelb" hilfe="Nur Favoriten zeigen, zusammen mit den anderen Filtern"></ak-taster>
             <ak-dreh id="stimmen-wahl" name="Stimmen" hilfe="Mindestzahl der Stimmen im Senderverzeichnis" raster="alle|ab 10|ab 100|ab 1.000|ab 10.000" wert="1" vorgabe="0"></ak-dreh>
           </div>
           <ak-schieber id="bitrate-wahl" art="balken" leuchte="gruen" segmente="5" name="Mindestbitrate" hilfe="Mindestbitrate aus der eigenen Messung (vor der Verzeichnisangabe)" raster="alle|64|128|192|256|320" wert="0"></ak-schieber>
         </div>
+      </div>
+      <div class="rh-filter-rollt">
         <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>Länder</h3><a href="regeln.html?reiter=laender" title="Welche Länder hier stehen, legst du in den Einstellungen fest">Länder wählen</a></div><div class="rh-facetten" id="f-land"></div></section>
         <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>Genres</h3></div><div class="rh-facetten" id="f-genre"></div><button class="knopf still rh-mehr" type="button" id="genre-mehr">Alle zeigen</button></section>
         <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>Qualität</h3><span class="rh-still" title="aus gemessener Bitrate und Codec">gemessen</span></div><div class="rh-facetten" id="f-guete"></div></section>
