@@ -72,7 +72,7 @@ def bedingungen(q: StationQuery, ohne: str | None = None) -> Bedingungen:
     if buendeln(q):
         b.dazu("i.vertreter = 1")
     if q.nur_erreichbar:
-        b.dazu("i.erreichbar = 1")
+        b.dazu("(i.erreichbar = 1 OR i.favorit = 1)")       # Favoriten bleiben sichtbar
     suche = " ".join(q.suche.split())
     if len(suche) >= 3:
         b.dazu("i.nr IN (SELECT rowid FROM sender_suche WHERE sender_suche MATCH ?)", _fts(suche))

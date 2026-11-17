@@ -23,10 +23,11 @@ def _bereich(nrs: list[int] | None, spalte: str = "nr") -> tuple[str, list[objec
 def _merkmale(v: sqlite3.Connection, nrs: list[int] | None) -> None:
     """Favorit, Freigabe und Werbestufe aus ihren Tabellen."""
     bereich, werte = _bereich(nrs)
-    v.execute(f"""UPDATE sender_index SET
-                    favorit = EXISTS (SELECT 1 FROM favorites f WHERE f.uuid = sender_index.uuid),
-                    freigegeben = EXISTS (SELECT 1 FROM sender_freigabe g WHERE g.uuid = sender_index.uuid)
-                  WHERE 1 = 1 {bereich}""", werte)
+    favorit = "EXISTS (SELECT 1 FROM favorites f WHERE f.uuid = sender_index.uuid)"
+    frei = "EXISTS (SELECT 1 FROM sender_freigabe g WHERE g.uuid = sender_index.uuid)"
+    # nur geänderte Zeilen schreiben: favorit steht in den Indizes der Abfrage
+    v.execute(f"""UPDATE sender_index SET favorit = {favorit}, freigegeben = {frei}
+                  WHERE (favorit <> {favorit} OR freigegeben <> {frei}) {bereich}""", werte)
     uuids = None if nrs is None else [z[0] for z in v.execute(f"SELECT uuid FROM sender_index WHERE 1 = 1 {bereich}", werte)]
     stufen = werbung.stufen_lesen(v, uuids)
     v.execute(f"UPDATE sender_index SET werbe_stufe = 0 WHERE werbe_stufe <> 0 {bereich}", werte)

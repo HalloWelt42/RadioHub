@@ -404,13 +404,14 @@ CREATE TABLE sender_index (
     vertreter INTEGER NOT NULL DEFAULT 1,
     varianten INTEGER NOT NULL DEFAULT 1
 );
-CREATE INDEX sender_index_stimmen ON sender_index (sichtbar, vertreter, erreichbar, stimmen DESC, uuid);
-CREATE INDEX sender_index_name ON sender_index (sichtbar, vertreter, erreichbar, name_klein, uuid);
-CREATE INDEX sender_index_qualitaet ON sender_index (sichtbar, vertreter, erreichbar, qualitaet_rang DESC, kbps DESC, uuid);
-CREATE INDEX sender_index_bitrate ON sender_index (sichtbar, vertreter, erreichbar, kbps DESC, uuid);
-CREATE INDEX sender_index_land ON sender_index (land, sichtbar, vertreter, erreichbar, stimmen DESC, uuid);
-CREATE INDEX sender_index_stufe ON sender_index (sichtbar, vertreter, erreichbar, qualitaet);
-CREATE INDEX sender_index_codec ON sender_index (sichtbar, vertreter, erreichbar, codec);
+CREATE INDEX sender_index_stimmen ON sender_index (sichtbar, vertreter, stimmen DESC, uuid, erreichbar, favorit);
+CREATE INDEX sender_index_name ON sender_index (sichtbar, vertreter, name_klein, uuid, erreichbar, favorit);
+CREATE INDEX sender_index_qualitaet ON sender_index (sichtbar, vertreter, qualitaet_rang DESC, kbps DESC, uuid, erreichbar,
+                                                     favorit);
+CREATE INDEX sender_index_bitrate ON sender_index (sichtbar, vertreter, kbps DESC, uuid, erreichbar, favorit);
+CREATE INDEX sender_index_land ON sender_index (land, sichtbar, vertreter, stimmen DESC, uuid, erreichbar, favorit);
+CREATE INDEX sender_index_stufe ON sender_index (sichtbar, vertreter, qualitaet, erreichbar, favorit);
+CREATE INDEX sender_index_codec ON sender_index (sichtbar, vertreter, codec, erreichbar, favorit);
 CREATE INDEX sender_index_favorit ON sender_index (favorit, sichtbar, stimmen DESC) WHERE favorit = 1;
 CREATE INDEX sender_index_gruppe ON sender_index (gruppe);
 CREATE TABLE sender_genre (genre TEXT NOT NULL, nr INTEGER NOT NULL, PRIMARY KEY (genre, nr)) WITHOUT ROWID;

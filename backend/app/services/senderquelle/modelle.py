@@ -207,6 +207,7 @@ class StationQuery(BaseModel):
     kategorien: list[int] = Field(default_factory=list, max_length=60)
     nur_favoriten: bool = False
     nur_erreichbar: bool = True            # ohne Sender, die die letzte Prüfung des Verzeichnisses nicht bestanden
+    #                                        (Favoriten bleiben)
     sortierung: Sortierung = "stimmen"
     varianten_buendeln: bool = True
     nach: str | None = Field(None, max_length=600)

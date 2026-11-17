@@ -13,7 +13,8 @@ from ..database import db_session
 
 logger = logging.getLogger("radiohub.cache")
 
-SICHTBAR = "uuid IN (SELECT uuid FROM sender_index WHERE sichtbar = 1)"
+# sichtbar und, wie früher (das Verzeichnis lieferte nur erreichbare), erreichbar; Favoriten immer
+SICHTBAR = "uuid IN (SELECT uuid FROM sender_index WHERE sichtbar = 1 AND (erreichbar = 1 OR favorit = 1))"
 
 
 class CacheService:
