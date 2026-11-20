@@ -118,4 +118,13 @@
   .rh-steuerung { justify-content: flex-end; }
 }
 
+/* schmale Kanzel (900 Pixel, große Schriftstufen): neben Quelle und Zeit bliebe der Tastenreihe zu wenig Platz; sie
+   bekommt eine eigene Zeile über die ganze Breite, der Transport links, das Seltene und die Drehwahl rechts */
+@container kanzel (max-width: 62em) {
+  .rh-kanzel-voll { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "anzeige laut" "zeit laut" "steuerung steuerung"; }
+  .rh-m-zeit { justify-self: start; }
+  .rh-steuerung { justify-content: flex-start; }
+  .rh-betrieb { margin-left: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }

@@ -860,7 +860,7 @@ export default {
     pufferBitrate: 'BUFFER {wert}',
     pufferWechselt: 'BUFFER SWITCHING ...',
     bitrateName: 'Bitrate',
-    bitrateWieGesendetName: 'As broadcast',
+    bitrateWieGesendetName: 'Original',
     bitrateHilfe: 'Bitrate of the timeshift: as broadcast or a fixed step; only in timeshift',
     bitrateWieGesendet: 'AS BROADCAST',
     vor30Hilfe: '30 seconds forward',

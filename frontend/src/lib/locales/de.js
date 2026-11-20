@@ -860,7 +860,7 @@ export default {
     pufferBitrate: 'PUFFER {wert}',
     pufferWechselt: 'PUFFER WECHSELT ...',
     bitrateName: 'Bitrate',
-    bitrateWieGesendetName: 'Wie gesendet',
+    bitrateWieGesendetName: 'Original',
     bitrateHilfe: 'Bitrate des Zeitversatzes: wie gesendet oder eine feste Stufe; wirkt nur im Zeitversatz',
     bitrateWieGesendet: 'WIE GESENDET',
     vor30Hilfe: '30 Sekunden vor',

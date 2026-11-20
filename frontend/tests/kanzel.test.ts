@@ -182,7 +182,7 @@ describe("Bitrate des Zeitversatzes", () => {
     expect(bitrateLage(spielt())).toBe("aus");
   });
   it("Drehwahl: erste Stellung wie gesendet, dann die Stufen", () => {
-    expect(bitrateRaster(t)).toBe("Wie gesendet|32|48|64|96|128|192|256|320");
+    expect(bitrateRaster(t)).toBe("Original|32|48|64|96|128|192|256|320");
     expect(bitrateStellung(null)).toBe(0);
     expect(bitrateStellung(128)).toBe(5);
     expect(bitrateStellung(100)).toBe(0);

@@ -143,6 +143,10 @@ const HILFEN = `(async () => {
     const tasten = knopfe.map((b) => b.getBoundingClientRect());
     const masse = [...new Set(tasten.map((r) => r.height.toFixed(2) + "x" + r.width.toFixed(2)))], oben = [...new Set(tasten.map((r) => r.top.toFixed(2)))];
     if (masse.length !== 1 || oben.length !== 1) befunde.push("Tasten der Steuerung nicht in einer Reihe oder ungleich: Maße " + masse.join("/") + ", oben " + oben.join("/"));
+    for (let i = 1; i < tasten.length; i++) if (tasten[i].left < tasten[i - 1].right - 0.5) befunde.push("Tasten der Steuerung überlappen");
+    const modZeit = k.querySelector(".rh-m-zeit").getBoundingClientRect(), modSteuer = k.querySelector(".rh-steuerung").getBoundingClientRect();
+    if (tasten[0].left < modSteuer.left - 0.5 || (tasten[0].top < modZeit.bottom && tasten[0].left < modZeit.right && tasten[0].bottom > modZeit.top))
+      befunde.push("Tasten ragen aus der Steuerung");
     const dreh = k.querySelector(".rh-bitrate-wahl").getBoundingClientRect();
     if (dreh.top > tasten[0].bottom || dreh.bottom < tasten[0].top) befunde.push("Drehwahl nicht neben den Tasten");
     // bedienbare Kappen alle gleich (keine leuchtet); gesperrte liegen versenkt und dürfen anders aussehen
