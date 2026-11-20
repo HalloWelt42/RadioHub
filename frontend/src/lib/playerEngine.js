@@ -920,6 +920,7 @@ function _resetRecordingState() {
  */
 export async function checkAndRecoverRecordingState() {
   if (!_appState) return;
+  if (!_weg.aufnahme) return;        // ohne Aufnahme im Weg (Webversion) gibt es nichts wiederherzustellen
   if (_appState.isRecording) return; // Bereits aktiv, nichts tun
 
   try {

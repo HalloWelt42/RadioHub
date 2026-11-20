@@ -232,6 +232,12 @@ describe('PlayerEngine', () => {
       expect(api.updateConfig).not.toHaveBeenCalled();
       expect(engine.faehigkeiten()).toEqual({ zeitversatz: false, aufnahme: false, folgen: false });
     });
+    it('fragt ohne Aufnahme im Weg keinen Aufnahmestand beim Backend ab', async () => {
+      engine.wegSetzen(direkt);
+      api.getRecordingStatus.mockClear?.();
+      await engine.checkAndRecoverRecordingState();
+      expect(api.getRecordingStatus).not.toHaveBeenCalled();
+    });
     it('volle App: über den Durchleiter des Backends mit Zeitversatz', () => {
       expect(engine.faehigkeiten()).toEqual({ zeitversatz: true, aufnahme: true, folgen: true });
     });
