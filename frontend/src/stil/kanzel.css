@@ -2,8 +2,8 @@
    Drehregler zwischen zwei Pegeln, Steuerung als Tastenreihe mit Tastenlicht. Übernommen aus dem abgenommenen Entwurf
    (mockups/radio-filter/radio-bausteine.css, Abschnitt Spielerkanzel, RAD-3; Bild bilder/kanzel-1920-dunkel-tasten.png),
    ohne Hausempfang (kommt mit der Übergabe, Etappe 4): die Kanzel schließt wie die Webversion des Entwurfs mit der
-   Steuerung. Eine Zeile wie im Entwurf ab 80em Breite der Kanzel, auf großen Bildschirmen alles nebeneinander (Nutzer
-   20.11.2026); Quelle und Zeit nur so breit wie ihre Segmente, damit die Anzeige Platz behält. Schmaler zwei Zeilen
+   Steuerung. Eine Zeile wie im Entwurf, solange alles nebeneinander passt (kanzelreihen.ts misst den Bedarf, PRO braucht
+   mehr als Basic; Nutzer 20.11.2026); Quelle und Zeit nur so breit wie ihre Segmente, damit die Anzeige Platz behält. Schmaler zwei Zeilen
    neben dem Gehäuse: oben die Anzeige über die ganze Breite, darunter Quelle
    und Zeit links, die Tastenreihe rechts (Nutzer 20.11.2026: "diese anordnung ist nicht akzeptabel" zur alten
    Anordnung mit der Steuerung allein in der zweiten Zeile). Die Kanzel liegt nicht im
@@ -20,8 +20,9 @@
 
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
-.rh-kanzel-voll { display: grid; gap: 8px 14px; padding: 8px var(--rh-rand) 10px; align-items: stretch;
-  grid-template-columns: minmax(18em, 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
+/* --rh-anzeige-min: so schmal darf die Anzeige in der einen Reihe werden; kanzelreihen.ts rechnet mit demselben Wert */
+.rh-kanzel-voll { --rh-anzeige-min: 18em; display: grid; gap: 8px 14px; padding: 8px var(--rh-rand) 10px; align-items: stretch;
+  grid-template-columns: minmax(var(--rh-anzeige-min), 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
 .rh-m-anzeige { grid-area: anzeige; }
@@ -109,22 +110,24 @@
 .rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 7.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
 .rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
 
-@container kanzel (max-width: 80em) {
-  .rh-kanzel-voll { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; align-items: center; }
-  .rh-modul > .ak-etikett { display: none; }
-  .rh-laut { margin-top: 0; }
-  .rh-m-laut { justify-content: center; }
-  /* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
-  .rh-steuerung { justify-content: flex-end; }
-}
+/* Messen (kanzelreihen.ts, nur innerhalb eines Bildaufbaus): die eine Reihe mit Modulen in natürlicher Breite */
+.rh-kanzel-voll[data-messen] { grid-template-columns: minmax(var(--rh-anzeige-min), 1fr) max-content max-content max-content; }
 
-/* schmale Kanzel (900 Pixel, große Schriftstufen): neben Quelle und Zeit bliebe der Tastenreihe zu wenig Platz; sie
+/* Zwei Reihen (data-reihen, kanzelreihen.ts) */
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; align-items: center; }
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-modul > .ak-etikett { display: none; }
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-laut { margin-top: 0; }
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-m-laut { justify-content: center; }
+/* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
+.rh-kanzel-voll[data-reihen="2"] .rh-steuerung { justify-content: flex-end; }
+
+/* Drei Reihen (schmale Kanzel, große Schriftstufen): neben Quelle und Zeit bliebe der Tastenreihe zu wenig Platz; sie
    bekommt eine eigene Zeile über die ganze Breite, der Transport links, das Seltene und die Drehwahl rechts */
-@container kanzel (max-width: 62em) {
-  .rh-kanzel-voll { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "anzeige laut" "zeit laut" "steuerung steuerung"; }
-  .rh-m-zeit { justify-self: start; }
-  .rh-steuerung { justify-content: flex-start; }
-  .rh-betrieb { margin-left: auto; }
-}
+.rh-kanzel-voll[data-reihen="3"] { grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "anzeige laut" "zeit laut" "steuerung steuerung"; }
+.rh-kanzel-voll[data-reihen="3"] .rh-m-zeit { justify-self: start; }
+.rh-kanzel-voll[data-reihen="3"] .rh-steuerung { justify-content: flex-start; }
+.rh-kanzel-voll[data-reihen="3"] .rh-betrieb { margin-left: auto; }
 
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }

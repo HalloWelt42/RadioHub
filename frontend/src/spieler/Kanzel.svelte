@@ -15,6 +15,7 @@
   import { bitrateLage, bitrateText, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
   import { modusWechseln } from "./aktionen";
   import { faehigkeiten } from "../lib/playerEngine.js";
+  import { kanzelReihen } from "./kanzelreihen";
 
   /** was der Weg der Wiedergabe kann (fest für die Sitzung: volle App oder Webversion) */
   const weg = faehigkeiten();
@@ -77,7 +78,7 @@
 
 <footer class="rh-kanzel" data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
   <Tonausgang {wiedergabe} />
-  <div class="rh-kanzel-voll">
+  <div class="rh-kanzel-voll" use:kanzelReihen>
     <Anzeige {anzeige} hinweis={bitrateHinweis} aufnahme={app.isRecording} />
     <QuelleZeit {anzeige} {stand} {wiedergabe} />
     <Lautstaerke {hoerbar} />
