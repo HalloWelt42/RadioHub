@@ -378,9 +378,15 @@ export function pause() {
 
 /**
  * Setzt die Wiedergabe fort.
+ * Ein direkter Strom hat keinen Puffer: weiter heißt dort neu verbinden, ab live (Nutzer 20.11.2026: Pause ist erneut
+ * Spielen drücken, beendet wird nur über Stopp). Eine Wahrheit für Kanzel, Tastatur, Telefon und Sperrbildschirm.
  */
 export function resume() {
   if (!_audioEl || !_appState?.isPaused) return;
+  if (_appState.playerMode === 'direct' && _appState.currentStation) {
+    playStation(_appState.currentStation);
+    return;
+  }
 
   // HLS: Nach Pause sind wir hinter der Live-Kante,
   // weil während der Pause neue Segmente dazukamen.

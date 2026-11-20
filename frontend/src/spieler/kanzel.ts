@@ -96,19 +96,6 @@ export function zustandVon(s: Stand): Zustand {
   return "live";
 }
 
-const LED: Record<Zustand, { farbe: Leuchtfarbe; zustand: Leuchtzustand }> = {
-  leer: { farbe: "gruen", zustand: "aus" },
-  laedt: { farbe: "gelb", zustand: "blinkt" },
-  puffert: { farbe: "gelb", zustand: "atmet" },
-  live: { farbe: "blau", zustand: "an" },
-  versatz: { farbe: "bernstein", zustand: "an" },
-  pause: { farbe: "gelb", zustand: "an" },
-  podcast: { farbe: "blau", zustand: "an" },
-  wiedergabe: { farbe: "blau", zustand: "an" },
-  aufnahme: { farbe: "rot", zustand: "blinkt" },
-  fehler: { farbe: "rot", zustand: "an" },
-};
-
 const QUELLFARBE: Record<Zustand, Leuchtfarbe> = {
   leer: "blau", laedt: "gelb", puffert: "gelb", live: "blau", versatz: "bernstein", pause: "gelb", podcast: "gruen",
   wiedergabe: "gruen", aufnahme: "rot", fehler: "rot",
@@ -116,7 +103,6 @@ const QUELLFARBE: Record<Zustand, Leuchtfarbe> = {
 
 export interface Anzeige {
   zustand: Zustand;
-  led: { farbe: Leuchtfarbe; zustand: Leuchtzustand };
   /** Statuszeile: was gerade geschieht */
   art: string;
   /** Statuszeile: Codec und Bitrate, bei Aufnahme Bitrate und erkannte Titel */
@@ -201,7 +187,6 @@ export function kanzelAnzeige(s: Stand, t: Uebersetzer): Anzeige {
   const { sender, titel } = aktiv ? senderUndTitel(s) : { sender: "", titel: null };
   return {
     zustand,
-    led: LED[zustand],
     art: artText(zustand, s, t),
     format: formatText(zustand, s, t),
     sender,
@@ -288,16 +273,18 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): T
   const quelleDa = art !== "keine";
   const fehler = zustandVon(s) === "fehler";
   const spielen: Tasten["spielen"] = fehler
-    ? { an: false, licht: "atmet", farbe: "rot", gesperrt: false, symbol: "fa-rotate-right", neuVerbinden: true, hilfe: t("kanzel.neuVerbindenHilfe") }
+    ? { an: false, licht: "atmet", farbe: "rot", gesperrt: false, symbol: "fa-play", neuVerbinden: true, hilfe: t("kanzel.neuVerbindenHilfe") }
     : {
+      // bleibt Spielen (Symbol und Weg, aktionen.spielenOderPause): das Licht zeigt, ob es spielt (an), lädt (blinkt)
+      // oder pausiert (atmet); beendet wird nur über Stopp (Nutzer 20.11.2026)
       an: laeuft,
-      licht: laeuft ? "an" : s.isPaused ? "atmet" : "aus",
+      licht: rec || (laeuft && zustandVon(s) !== "laedt") ? "an" : laeuft ? "blinkt" : s.isPaused ? "atmet" : "aus",
       farbe: "blau",
       gesperrt: rec || !quelleDa,
-      symbol: laeuft ? (s.playerMode === "direct" ? "fa-stop" : "fa-pause") : "fa-play",
+      symbol: "fa-play",
       neuVerbinden: false,
       hilfe: rec ? t("player.recLaeuft")
-        : mitTaste(laeuft ? (s.playerMode === "direct" ? t("player.stop") : t("player.pause")) : t("player.play"), t("kanzel.leertaste")),
+        : mitTaste(laeuft ? t("player.pause") : s.isPaused ? t(s.playerMode === "direct" ? "kanzel.weiterLive" : "kanzel.weiter") : t("player.play"), t("kanzel.leertaste")),
     };
 
   const aufnahmeMoeglich = art === "sender" && s.isPlaying && !aufnahme;
@@ -355,6 +342,10 @@ export interface Spulstand {
   schritt: number;
   gesperrt: boolean;
 }
+
+/** Ohne Zeitversatz und ohne Position (nichts gewählt, direkter Strom): die Zeile steht trotzdem, ganz gesperrt
+ *  (Nutzer 20.11.2026: "das immer einblenden, auch bei inaktivität", "aber als inaktiv") */
+export const SPUL_RUHE: Spulstand & { live: boolean; max: string } = { fuellung: 0, bahn: 100, text: "--:--", schritt: 1, gesperrt: true, live: false, max: "--" };
 
 /** Zeitversatz: wie viel gepuffert ist (von höchstens), Spulen nur über die Segmente */
 export function zeitversatzStand(s: Stand, t: Uebersetzer): Spulstand & { live: boolean; max: string } {

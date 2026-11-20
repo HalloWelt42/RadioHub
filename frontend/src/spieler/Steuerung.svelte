@@ -1,15 +1,15 @@
 <script lang="ts">
-  // Modul Steuerung, Bedienteile mit Gewicht nach Häufigkeit (Nutzer 17.11.2026): der Transport als Reihe großer
-  // Glastaster, alle gleich hoch, Tastenlicht in der Kappe (Zurück, Stopp, Spielen oder Anhalten, Aufnahme, Weiter);
-  // daneben klein und gerätetypisch, was selten gestellt wird: Original oder Zeitversatz und die Reihenfolge als kleine
-  // Taster übereinander, die Bitrate des Zeitversatzes als Drehwahl. Zurück, Stopp und Weiter leuchten, solange sie
+  // Modul Steuerung: alle Tasten in einer Reihe, in jeder Breite (Nutzer 20.11.2026), gleich groß und auf einer
+  // Grundlinie; erst der Transport (Zurück, Stopp, Spielen oder Anhalten, Aufnahme, Weiter), mit Abstand das Seltene
+  // (Original oder Zeitversatz, Reihenfolge), am Ende die Bitrate des Zeitversatzes als Drehwahl (Nutzer 17.11.2026).
+  // Die Kappen leuchten nie, nur ihr Tastenlicht (Nutzer 20.11.2026). Zurück, Stopp und Weiter leuchten, solange sie
   // gedrückt sind; Spielen und Aufnahme folgen dem Zustand (Aufnahme blinkt rot); nach einem Fehler wird Spielen zu Neu
   // verbinden. Während der Aufnahme sind Senderwechsel und Anhalten gesperrt. Was in einem Zustand nicht gilt, bleibt
   // sichtbar und ist gesperrt, wie in HiFiPlayer.
   import type { Drehregler } from "appkern-oberflaeche/instrumente";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
-  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderAnhalten, stoppen, vor, zurueck } from "./aktionen";
+  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurueck } from "./aktionen";
   import { bitrateAusStellung, bitrateRaster, bitrateStellung, type BitrateLage, type Tasten } from "./kanzel";
   import type { Bitrate } from "./bitrate.svelte";
   import { taste } from "./taste";
@@ -43,7 +43,7 @@
         use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: mitKlang(stoppen), beiZeigen: zeigen }}></ak-taster>
       <ak-taster art="glas" symbol="fa-play" farbe="blau" licht="blau"
         use:taste={{ an: tasten.spielen.an, licht: tasten.spielen.licht, lichtFarbe: tasten.spielen.farbe, gesperrt: tasten.spielen.gesperrt, hilfe: tasten.spielen.hilfe,
-                     symbol: tasten.spielen.symbol, beiDruck: mitKlang(tasten.spielen.neuVerbinden ? quelleStarten : spielenOderAnhalten), beiZeigen: zeigen }}></ak-taster>
+                     symbol: tasten.spielen.symbol, beiDruck: mitKlang(tasten.spielen.neuVerbinden ? quelleStarten : spielenOderPause), beiZeigen: zeigen }}></ak-taster>
       <ak-taster art="glas" symbol="fa-circle" farbe="rot" licht="rot"
         use:taste={{ an: tasten.aufnahme.an, licht: tasten.aufnahme.licht, gesperrt: tasten.aufnahme.gesperrt, hilfe: tasten.aufnahme.hilfe,
                      beiDruck: mitKlang(aufnehmen), beiZeigen: zeigen }}></ak-taster>
@@ -51,18 +51,16 @@
         use:taste={{ licht: tasten.vor.licht, gesperrt: tasten.vor.gesperrt, hilfe: tasten.vor.hilfe, symbol: "fa-forward-step", gespiegelt: tasten.vor.gespiegelt,
                      beiDruck: vor, beiZeigen: zeigen }}></ak-taster>
     </div>
-    <div class="rh-betrieb">
-      <div class="rh-betrieb-tasten">
-        <ak-taster art="glas" symbol={tasten.modus.symbol} farbe="weiss" licht={tasten.modus.farbe}
+    <div class="rh-betrieb ak-tastenreihe">
+      <ak-taster art="glas" symbol={tasten.modus.symbol} farbe="weiss" licht={tasten.modus.farbe}
           use:taste={{ an: false, licht: tasten.modus.licht, lichtFarbe: tasten.modus.farbe, gesperrt: tasten.modus.gesperrt, hilfe: tasten.modus.hilfe,
                        symbol: tasten.modus.symbol, beiDruck: mitKlang(onmodus), beiZeigen: zeigen }}></ak-taster>
-        <ak-taster art="glas" symbol={tasten.reihenfolge.symbol} farbe="weiss" licht={tasten.reihenfolge.farbe}
+      <ak-taster art="glas" symbol={tasten.reihenfolge.symbol} farbe="weiss" licht={tasten.reihenfolge.farbe}
           use:taste={{ an: false, licht: tasten.reihenfolge.licht, lichtFarbe: tasten.reihenfolge.farbe, gesperrt: tasten.reihenfolge.gesperrt, hilfe: tasten.reihenfolge.hilfe,
                        symbol: tasten.reihenfolge.symbol, beiDruck: mitKlang(reihenfolgeWeiter), beiZeigen: zeigen }}></ak-taster>
-      </div>
-      <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.bitrateName")} hilfe={t("kanzel.bitrateHilfe")} raster={bitrateRaster(t)} vorgabe="0"
+    </div>
+    <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.bitrateName")} hilfe={t("kanzel.bitrateHilfe")} raster={bitrateRaster(t)} vorgabe="0"
         role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== null ? 'gelb' : 'gruen'})"
         oninput={gedreht} onchange={() => bitrate.anwenden()}></ak-dreh>
-    </div>
   </div>
 </section>

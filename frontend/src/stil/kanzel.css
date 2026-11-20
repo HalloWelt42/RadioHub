@@ -2,8 +2,11 @@
    Drehregler zwischen zwei Pegeln, Steuerung als Tastenreihe mit Tastenlicht. Übernommen aus dem abgenommenen Entwurf
    (mockups/radio-filter/radio-bausteine.css, Abschnitt Spielerkanzel, RAD-3; Bild bilder/kanzel-1920-dunkel-tasten.png),
    ohne Hausempfang (kommt mit der Übergabe, Etappe 4): die Kanzel schließt wie die Webversion des Entwurfs mit der
-   Steuerung. Eine Zeile ab 100em Breite der Kanzel (Entwurf 75em; die Steuerung trägt hier mehr Tasten und die
-   Bitratenleiste, gemessen), darunter zwei Reihen neben dem Gehäuse. Die Kanzel liegt nicht im
+   Steuerung. Eine Zeile wie im Entwurf ab 80em Breite der Kanzel, auf großen Bildschirmen alles nebeneinander (Nutzer
+   20.11.2026); Quelle und Zeit nur so breit wie ihre Segmente, damit die Anzeige Platz behält. Schmaler zwei Zeilen
+   neben dem Gehäuse: oben die Anzeige über die ganze Breite, darunter Quelle
+   und Zeit links, die Tastenreihe rechts (Nutzer 20.11.2026: "diese anordnung ist nicht akzeptabel" zur alten
+   Anordnung mit der Steuerung allein in der zweiten Zeile). Die Kanzel liegt nicht im
    zoom der alten Bereiche (.rh-alt); sie wächst über die Schriftstufen (--gross, --klein, --marke).
 
    Dazu, was der Entwurf nicht zeigt, die App aber kann (RAD-8): die Punktmatrix führt zur Quelle, die Bahnen unter
@@ -22,22 +25,25 @@
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
 .rh-m-anzeige { grid-area: anzeige; }
+/* so breit wie die Segmente, nie wie die Spulzeile darunter (deren Bahn passt sich an): sonst bliebe der Anzeige in der
+   einen Zeile zu wenig Platz */
 .rh-m-zeit { grid-area: zeit; }
 .rh-m-laut { grid-area: laut; justify-content: flex-end; }
 .rh-m-steuerung { grid-area: steuerung; }
 
 /* ═══ Anzeige ═══ Statuszeile, Punktmatrix (läuft über ihr Merkmal lauf), Titelzeile */
 .rh-display { flex: 1; display: grid; gap: 3px; align-content: center; padding: 6px 12px 8px; --farbe: var(--rh-anzeige); min-width: 0; }
-.rh-display ak-segmente { --farbe: var(--rh-anzeige); --ak-zeichen-max: var(--rh-matrix-zeichen, 24px); }
+/* Beide Punktmatrizen füllen ihr Glas: Zeichenhöhe aus der ganzen Breite (ohne den Rand des Appkerns), höchstens etwas
+   über der gewünschten Höhe; die Stellen rundet rasterbreite.ts ab (MEHR_HOECHSTENS 1,25) */
+.rh-display ak-segmente { --farbe: var(--rh-anzeige); --ak-zeichen-max: calc(var(--rh-matrix-zeichen, 24px) * 1.25); }
+.rh-display .ak-segmente-glas { --zeichen-h: min(calc(100cqi / var(--stellen) / var(--seitenverhaeltnis)), var(--ak-zeichen-max)); }
 .rh-display .ak-segmente-glas, .rh-zeit-glas .ak-segmente-glas { background: transparent; box-shadow: none; padding: 2px 0; justify-content: flex-start; }
 .rh-display .ak-segmente-glas::after, .rh-zeit-glas .ak-segmente-glas::after { display: none; }
-.rh-display-titel { font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--farbe); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--farbe) 55%, transparent); }
-.rh-display-zeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; min-block-size: 30px; font-family: var(--schrift-zahl); font-size: var(--marke);
-  color: color-mix(in srgb, var(--farbe) 78%, transparent); --ak-tinte-2: currentColor; min-width: 0; }
-.rh-display-format { display: inline-flex; gap: 8px; align-items: center; }
-/* Hinweis rechts in der Statuszeile: nur Leuchtschrift, keine Bedienung im Glas (Nutzer 17.11.2026) */
-.rh-display-hinweis { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; }
+/* Status- und Titelzeile: kleine Punktmatrizen in der Grundschrift der Kanzel gemessen (STATUS_JE_SCHRIFT); der Status
+   etwas gedämpft, der Titel in voller Farbe */
+.rh-display-zeile { min-width: 0; }
+.rh-display-zeile ak-segmente { --farbe: color-mix(in srgb, var(--rh-anzeige) 82%, transparent); }
+.rh-display-titel ak-segmente { --farbe: var(--rh-anzeige); }
 .rh-display[data-ton="fehler"] { --farbe: var(--led-rot); }
 /* Punktmatrix als Weg zur Quelle: sieht aus wie die Anzeige, ist aber eine Taste */
 .rh-display-quelle { display: block; inline-size: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--r1); background: none; color: inherit; font: inherit;
@@ -53,8 +59,8 @@
    Grenzen in Grundschriften: nie kleiner als im Entwurf, nie größer, als die Zeile trägt */
 .rh-zeit-quelle { --ak-zelle: clamp(calc(var(--gross) * 6.6), 6.6cqi, calc(var(--gross) * 8.6)); --ak-zeichen-max: 40px; }
 .rh-zeit-uhr { --ak-zelle: clamp(calc(var(--gross) * 8.4), 8.4cqi, calc(var(--gross) * 11)); --ak-zeichen-max: 48px; }
-.rh-puffer-zeile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
-.rh-puffer-zeile .knopf { block-size: 34px; padding: 0 8px; font-size: var(--marke); }
+.rh-puffer-zeile { contain: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.rh-puffer-zeile .knopf { block-size: 34px; padding: 0 7px; gap: 5px; font-size: var(--marke); }
 .rh-puffer-rechts { display: flex; gap: 6px; }
 .rh-puffer { display: grid; gap: 2px; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); text-align: center; min-width: 0; }
 .rh-puffer > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -86,29 +92,30 @@
 .rh-laut ak-pegel { --pegel-h: 78px; --pegel-b: 16px; }
 .rh-vu { display: grid; justify-items: center; gap: 2px; font-size: var(--marke); color: var(--ak-tinte-2); font-weight: 600; }
 
-/* ═══ Steuerung ═══ Gewicht nach Häufigkeit: Transport groß (Tastenreihe, alle gleich hoch, hervorgehoben nur über Licht),
-   Seltenes klein und gerätetypisch daneben: zwei kleine Taster übereinander und die Drehwahl der Bitrate */
-.rh-steuerung { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 18px; }
-.rh-transport { flex-wrap: nowrap; align-items: center; gap: 8px; --ak-tastenreihe-h: var(--rh-taste); }
-.rh-transport > ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); }
-.rh-betrieb { display: flex; align-items: center; gap: 10px; }
-.rh-betrieb-tasten { display: grid; gap: 6px; }
-.rh-betrieb-tasten ak-taster[art="glas"] .ak-taster-knopf { inline-size: calc(var(--rh-taste) * .8); block-size: calc(var(--rh-taste) * .62); font-size: var(--marke);
-  --ak-schlitz-b: 10px; --ak-schlitz-h: 3px; --ak-schlitz-oben: 3px; }
+/* ═══ Steuerung ═══ alle Tasten in einer Reihe, in jeder Breite (Nutzer 20.11.2026: "die bedienung muss immer bei den
+   tasten eine reihe ergeben"), alle gleich groß auf einer Grundlinie: der Transport, mit Abstand das Seltene, am Ende
+   die Drehwahl der Bitrate. Die Kappen leuchten nie, auch nicht an oder gedrückt; den Zustand zeigt nur das Tastenlicht
+   in der Kappe (Nutzer 20.11.2026: "die tasten selber sollen nicht leuchten, nur deren gedachte LEDs"). */
+.rh-steuerung { flex: 1; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 18px; min-width: 0; }
+.rh-transport, .rh-betrieb { flex-wrap: nowrap; align-items: center; gap: 8px; --ak-tastenreihe-h: var(--rh-taste); }
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); }
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf:not(:disabled) { background-color: var(--rh-kappe); }
+/* gesperrt: versenkt und matt aus dem Appkern; nur die Kappe an oder aus gleicht sich hier an */
+.rh-steuerung ak-taster[art="glas"][an] .ak-taster-knopf:not(:disabled) { background-color: var(--rh-kappe); color: color-mix(in srgb, var(--farbe, var(--led-rot)) 60%, var(--ak-licht-kern));
+  box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark); }
 .rh-steuerung .ak-taster-knopf:disabled { cursor: default; }
-.rh-steuerung ak-taster:not([an]) .ak-taster-knopf:disabled { opacity: .45; }
 .rh-gespiegelt { scale: -1 1; }
 /* Drehwahl der Bitrate: kleine Kappe, breite Zelle für den Wert darunter; Rastnamen zeigt der Appkern erst ab 150 Pixeln */
 .rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 6.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
 .rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
 
-@container kanzel (max-width: 100em) {
-  .rh-kanzel-voll { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "anzeige zeit laut" "steuerung steuerung laut"; align-items: center; }
+@container kanzel (max-width: 80em) {
+  .rh-kanzel-voll { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; align-items: center; }
   .rh-modul > .ak-etikett { display: none; }
   .rh-laut { margin-top: 0; }
   .rh-m-laut { justify-content: center; }
-  /* zweite Zeile bündig unter dem Anfang der Anzeige statt frei in der Mitte (Nachprüfung 1280 Pixel) */
-  .rh-steuerung { justify-content: flex-start; }
+  /* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
+  .rh-steuerung { justify-content: flex-end; }
 }
 
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }

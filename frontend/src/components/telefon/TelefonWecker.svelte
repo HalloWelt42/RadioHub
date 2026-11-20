@@ -446,7 +446,7 @@
   .symbol { width: 56px; height: 56px; flex: none; border: 1px solid var(--w-linie); border-radius: 50%; background: var(--w-grund);
     color: var(--w-text); font-size: 22px; display: flex; align-items: center; justify-content: center; touch-action: none; }
   .symbol.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); }
-  .symbol:disabled { opacity: 0.4; }
+  .symbol:disabled { color: var(--text-3); }
   .symbol.gesperrt { border-color: var(--w-akzent); color: var(--w-akzent); }
 
   .punkte { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }

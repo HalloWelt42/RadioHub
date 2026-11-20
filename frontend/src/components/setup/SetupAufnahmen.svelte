@@ -452,7 +452,7 @@
     text-transform: uppercase;
   }
 
-  .action-btn:disabled { opacity: 0.4; cursor: default; }
+  .action-btn:disabled { color: var(--text-3); cursor: default; }
 
   .create-btn {
     background: var(--hifi-accent);

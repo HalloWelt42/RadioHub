@@ -78,9 +78,8 @@
 
   function pause() {
     wunsch.spielen = false;
-    // Ein direkter Strom ohne Puffer lässt sich nicht anhalten, nur beenden
-    if (appState.playerMode === 'direct') actions.stop();
-    else actions.pause();
+    // auch ein direkter Strom hält nur an; weiter verbindet ihn neu ab live (playerEngine.resume)
+    actions.pause();
   }
 
   const steuerung = {

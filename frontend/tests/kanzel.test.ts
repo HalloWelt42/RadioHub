@@ -5,7 +5,7 @@ import {
   bitrateAusStellung, bitrateLage, bitrateRaster, bitrateStellung, bitrateText, kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive,
   zeitversatzStand, zustandVon, type Stand,
 } from "../src/spieler/kanzel";
-import { stellenFuer } from "../src/spieler/rasterbreite";
+import { MEHR_HOECHSTENS, statuszeile, stellenFuer } from "../src/spieler/rasterbreite";
 
 const t = (k: string, w?: Record<string, string | number>) => uebersetzen(k, w) as string;
 const SENDER = { uuid: "a", name: "Deutschlandfunk Kultur", codec: "mp3", bitrate: 128 };
@@ -46,7 +46,7 @@ describe("Zustand", () => {
 describe("Anzeige", () => {
   it("leer: keine Matrix, Zeit gestrichelt, keine Zeile", () => {
     const a = kanzelAnzeige(stand(), t);
-    expect(a).toMatchObject({ sender: "", titel: null, zeit: "--:--:--", zeile: null, art: "BEREIT", led: { zustand: "aus" } });
+    expect(a).toMatchObject({ sender: "", titel: null, zeit: "--:--:--", zeile: null, art: "BEREIT" });
   });
   it("Originalstrom: DIREKT, Hördauer, Format aus dem Sender, Titelzeile nur mit Titel", () => {
     const a = kanzelAnzeige(spielt({ hoerdauer: 2537 }), t);
@@ -57,11 +57,11 @@ describe("Anzeige", () => {
     const a = kanzelAnzeige(spielt({ playerMode: "hls", isLive: false, hlsStatus: HLS, currentSegment: 1648,
       streamQuality: { inputCodec: "aac", inputBitrate: 192 } }), t);
     expect(a).toMatchObject({ zustand: "versatz", zeit: "-00:04:12", art: "4:12 HINTER LIVE", quelle: { text: "VERSATZ", farbe: "bernstein" },
-      zeile: "zeitversatz", format: "AAC 192 kbit/s", led: { farbe: "bernstein", zustand: "an" } });
+      zeile: "zeitversatz", format: "AAC 192 kbit/s" });
   });
   it("Aufnahme: rot blinkend, Dauer, Bitrate mit erkannten Titeln", () => {
     const a = kanzelAnzeige(spielt({ isRecording: true, recordingElapsed: 768, recordingIcyCount: 3, streamQuality: { outputBitrate: 192 } }), t);
-    expect(a).toMatchObject({ zustand: "aufnahme", led: { farbe: "rot", zustand: "blinkt" }, zeit: "00:12:48", art: "AUFNAHME 00:12:48",
+    expect(a).toMatchObject({ zustand: "aufnahme", zeit: "00:12:48", art: "AUFNAHME 00:12:48",
       quelle: { text: "REC", farbe: "rot" }, format: "192 kbit/s · 3 Titel" });
   });
   it("Podcast: Matrix Podcast, Titel Folge, Position", () => {
@@ -89,16 +89,21 @@ describe("Anzeige", () => {
 
 describe("Steuerung", () => {
   const liste = [{ uuid: "x", name: "Erster" }, SENDER, { uuid: "z", name: "Letzter" }];
-  it("Spielen: Symbol je Modus, gesperrt ohne Quelle und während der Aufnahme", () => {
-    expect(kanzelTasten(stand(), t).spielen).toMatchObject({ gesperrt: true, symbol: "fa-play", an: false });
-    expect(kanzelTasten(spielt(), t).spielen).toMatchObject({ symbol: "fa-stop", an: true });
-    expect(kanzelTasten(spielt({ playerMode: "hls" }), t).spielen.symbol).toBe("fa-pause");
+  it("Spielen bleibt Spielen in jedem Zustand, nur das Licht zeigt ihn; gesperrt ohne Quelle und während der Aufnahme", () => {
+    expect(kanzelTasten(stand(), t).spielen).toMatchObject({ gesperrt: true, symbol: "fa-play", licht: "aus" });
+    expect(kanzelTasten(spielt(), t).spielen).toMatchObject({ symbol: "fa-play", licht: "an", gesperrt: false });
+    expect(kanzelTasten(spielt({ playerMode: "hls" }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "an" });
+    expect(kanzelTasten(spielt({ medium: "laedt" }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "blinkt" });
     expect(kanzelTasten(spielt({ isPaused: true }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "atmet" });
-    expect(kanzelTasten(spielt({ isRecording: true }), t).spielen.gesperrt).toBe(true);
+    expect(kanzelTasten(spielt({ isRecording: true }), t).spielen).toMatchObject({ symbol: "fa-play", gesperrt: true, licht: "an" });
+    // nur Stopp beendet: Stopp ist bedienbar, solange etwas spielt, pausiert oder aufnimmt
+    expect(kanzelTasten(spielt(), t).stopp.gesperrt).toBe(false);
+    expect(kanzelTasten(spielt({ isPaused: true }), t).stopp.gesperrt).toBe(false);
+    expect(kanzelTasten(stand(), t).stopp.gesperrt).toBe(true);
   });
   it("nach einem Fehler wird Spielen zu Neu verbinden (rot), außerhalb des Glases", () => {
     expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 2 }), t).spielen)
-      .toMatchObject({ neuVerbinden: true, symbol: "fa-rotate-right", farbe: "rot", gesperrt: false, hilfe: "Die Quelle sofort neu laden" });
+      .toMatchObject({ neuVerbinden: true, symbol: "fa-play", farbe: "rot", gesperrt: false, hilfe: "Die Quelle sofort neu laden" });
     expect(kanzelTasten(spielt(), t).spielen.neuVerbinden).toBe(false);
   });
   it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, Wechsel gesperrt", () => {
@@ -149,12 +154,22 @@ describe("Spulzeilen", () => {
 
 describe("Punktmatrix wächst mit der Breite", () => {
   it("mehr Stellen bei mehr Platz, nie unter 10, Zeichenhöhe bleibt", () => {
-    expect(stellenFuer(274, 28)).toBe(11);
-    expect(stellenFuer(933, 23.8)).toBe(50);
+    expect(stellenFuer(274, 28)).toBe(13);
+    expect(stellenFuer(933, 23.8)).toBe(52);
     expect(stellenFuer(120, 24)).toBe(10);
     expect(stellenFuer(0, 24)).toBe(10);
-    // Probe: bei der gemeldeten Stellenzahl ist jede Zelle mindestens so hoch wie gewünscht
-    for (const b of [300, 520, 777, 1200]) expect((b - 38) / stellenFuer(b, 24) / 0.75).toBeGreaterThanOrEqual(24);
+    // Probe: bei der gemeldeten Stellenzahl ist jede Zelle mindestens so hoch wie gewünscht und höchstens um die Grenze
+    // größer, bis zu der die Zeichen wachsen dürfen, damit die Zeile das Glas ohne Lücke füllt
+    for (const b of [300, 520, 777, 1200]) {
+      const h = b / stellenFuer(b, 24) / 0.75;
+      expect(h).toBeGreaterThanOrEqual(24);
+      expect(h).toBeLessThanOrEqual(24 * MEHR_HOECHSTENS);
+    }
+  });
+  it("Statuszeile: Hinweis bündig am Ende, sonst mit Abstand dahinter", () => {
+    expect(statuszeile("LIVE", "128 KBIT/S", 20)).toBe("LIVE      128 KBIT/S");
+    expect(statuszeile("LIVE, ORIGINALSTROM", "128 KBIT/S", 20)).toBe("LIVE, ORIGINALSTROM  128 KBIT/S");
+    expect(statuszeile("BEREIT", null, 20)).toBe("BEREIT");
   });
 });
 

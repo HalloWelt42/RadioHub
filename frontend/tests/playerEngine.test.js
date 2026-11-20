@@ -266,24 +266,30 @@ describe('PlayerEngine', () => {
       expect(audioEl.pause).toHaveBeenCalled();
     });
 
-    it('TC-A6: Resume nach Pause', async () => {
+    it('TC-A6: Weiter nach Pause verbindet den direkten Strom neu ab live', async () => {
       await engine.playStation(STATION_A);
       engine.pause();
+      expect(state.isPaused).toBe(true);
+      expect(state.isPlaying).toBe(true);
 
       audioEl.play.mockClear();
       engine.resume();
+      await vi.waitFor(() => expect(audioEl.play).toHaveBeenCalled());
       expect(state.isPaused).toBe(false);
-      expect(audioEl.play).toHaveBeenCalled();
+      expect(state.isPlaying).toBe(true);
+      expect(state.currentStation.uuid).toBe(STATION_A.uuid);
     });
 
-    it('TC-A7: togglePause wechselt hin und her', async () => {
+    it('TC-A7: togglePause wechselt hin und her, ohne zu beenden', async () => {
       await engine.playStation(STATION_A);
 
       engine.togglePause();
       expect(state.isPaused).toBe(true);
+      expect(state.isPlaying).toBe(true);
 
       engine.togglePause();
-      expect(state.isPaused).toBe(false);
+      await vi.waitFor(() => expect(state.isPaused).toBe(false));
+      expect(state.isPlaying).toBe(true);
     });
 
     it('TC-A8: Seeking ist bei Direct Stream deaktiviert', async () => {

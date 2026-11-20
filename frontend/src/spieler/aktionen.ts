@@ -6,19 +6,15 @@ import { app } from "./app";
 import * as engine from "../lib/playerEngine.js";
 import { naechsteReihenfolge } from "./kanzel";
 
-/** Spielen, anhalten oder fortsetzen; ein direkter Strom lässt sich nicht anhalten, nur beenden */
-export function spielenOderAnhalten(): void {
+/** Die Taste Spielen (und die Leertaste), streng nach einer Regel (Nutzer 20.11.2026): sie bleibt Spielen und beendet
+ *  nie; beendet wird nur über Stopp. Gestoppt startet sie die Quelle, beim Spielen hält sie an, in der Pause geht es
+ *  weiter (Zeitversatz, Folge und Aufnahme an derselben Stelle, ein direkter Strom neu ab live, playerEngine.resume).
+ *  Während einer Aufnahme tut sie nichts. */
+export function spielenOderPause(): void {
   if (app.isRecording) return;
-  if (app.isPlaying && !app.isPaused) {
-    if (app.playerMode === "direct") engine.stop();
-    else engine.togglePause();
-    return;
-  }
-  if (app.isPaused) {
-    engine.resume();
-    return;
-  }
-  quelleStarten();
+  if (app.isPaused) engine.resume();
+  else if (app.isPlaying) engine.pause();
+  else quelleStarten();
 }
 
 /** Die gewählte Quelle von vorn laden (auch: neu verbinden nach einem Fehler) */

@@ -997,7 +997,7 @@
                 -2px -2px 4px var(--hifi-shadow-light);
   }
   .cutter-btn:active { box-shadow: var(--hifi-shadow-inset); }
-  .cutter-btn:disabled { opacity: 0.4; cursor: default; }
+  .cutter-btn:disabled { color: var(--text-3); cursor: default; }
 
   .cutter-btn-primary {
     background: var(--hifi-accent);
@@ -1061,7 +1061,6 @@
     font-weight: 600;
     color: var(--hifi-text-secondary);
     background: var(--hifi-bg-panel);
-    border-bottom: 1px solid var(--hifi-border-dark);
     flex-wrap: wrap;
   }
 
@@ -1086,7 +1085,6 @@
     height: 32vh;
     min-height: 80px;
     background: var(--hifi-display-bg);
-    border-bottom: 2px solid var(--hifi-accent);
   }
 
   .cutter-canvas {

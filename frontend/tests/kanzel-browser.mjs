@@ -48,7 +48,7 @@ async function laden(breite, hoehe, d) {
   await werte(`localStorage.setItem("radiohub_sitzung","sitzung-probebetrieb"); localStorage.setItem("radiohub_volume","1");
     localStorage.setItem("radiohub_thema","${d.thema}"); localStorage.setItem("radiohub_schrift","${d.schrift}"); localStorage.setItem("appkern_vorlage","${d.vorlage}"); 1`);
   await seite.rufe("Page.navigate", { url: `${BASIS}/radio` });
-  if (!(await bis(`!!document.querySelector(".rh-kanzel ak-taster .ak-taster-knopf") && (document.querySelectorAll(".station-wrapper").length > 0)`, 30000))) throw new Error("App lädt nicht");
+  if (!(await bis(`!!document.querySelector(".rh-kanzel ak-taster .ak-taster-knopf") && (document.querySelectorAll(".rh-sender").length > 0)`, 30000))) throw new Error("App lädt nicht");
   await werte(HILFEN);
   await warte(400);
 }
@@ -137,25 +137,27 @@ const HILFEN = `(async () => {
       const [na, ra] = module[i], [nb, rb] = module[j];
       if (ra.left < rb.right - 1 && rb.left < ra.right - 1 && ra.top < rb.bottom - 1 && rb.top < ra.bottom - 1) befunde.push("Module überlappen: " + na + " / " + nb);
     }
-    // Tasten der Steuerung und Tasten der Bitrate: je Reihe eine Grundlinie, alle exakt gleich hoch (die Leiste darf in
-    // schmalen Fenstern in eine zweite Reihe gehen)
-    const tasten = [...k.querySelectorAll(".rh-transport ak-taster .ak-taster-knopf")].map((b) => b.getBoundingClientRect());
-    const leiste = [...k.querySelectorAll(".rh-betrieb-tasten ak-taster .ak-taster-knopf")].map((b) => b.getBoundingClientRect());
-    // Transport: eine Reihe, alle gleich hoch auf einer Linie; die kleinen Taster daneben untereinander gleich groß
-    const hoehen = [...new Set(tasten.map((r) => r.height.toFixed(2)))], oben = [...new Set(tasten.map((r) => r.top.toFixed(2)))];
-    const klein = [...new Set(leiste.map((r) => r.height.toFixed(2) + "x" + r.width.toFixed(2)))];
-    if (hoehen.length !== 1 || oben.length !== 1) befunde.push("Transporttasten ungleich: Höhen " + hoehen.join("/") + ", oben " + oben.join("/"));
-    if (klein.length !== 1) befunde.push("kleine Taster ungleich: " + klein.join("/"));
-    const reihen = k.querySelector(".rh-betrieb").getBoundingClientRect().top > tasten[0].bottom ? 2 : 1;
+    // Steuerung: alle Tasten in einer Reihe, in jeder Breite (Nutzer 20.11.2026), exakt gleich groß auf einer Linie, die
+    // Drehwahl daneben; keine Kappe leuchtet (Hintergrund an wie aus, kein Schein)
+    const knopfe = [...k.querySelectorAll(".rh-steuerung ak-taster .ak-taster-knopf")];
+    const tasten = knopfe.map((b) => b.getBoundingClientRect());
+    const masse = [...new Set(tasten.map((r) => r.height.toFixed(2) + "x" + r.width.toFixed(2)))], oben = [...new Set(tasten.map((r) => r.top.toFixed(2)))];
+    if (masse.length !== 1 || oben.length !== 1) befunde.push("Tasten der Steuerung nicht in einer Reihe oder ungleich: Maße " + masse.join("/") + ", oben " + oben.join("/"));
+    const dreh = k.querySelector(".rh-bitrate-wahl").getBoundingClientRect();
+    if (dreh.top > tasten[0].bottom || dreh.bottom < tasten[0].top) befunde.push("Drehwahl nicht neben den Tasten");
+    const kappen = new Set(knopfe.map((b) => getComputedStyle(b).backgroundColor));
+    if (kappen.size !== 1) befunde.push("Kappen ungleich (leuchtet eine?): " + [...kappen].join(" / "));
+    for (const b of knopfe) if (/rgba?\([^)]*\) 0px 0px (1[0-9]|[2-9][0-9])px/.test(getComputedStyle(b).boxShadow)) befunde.push("Kappe mit Schein: " + beschreibe(b));
+    const reihen = 1;
     const knoepfe = [...k.querySelectorAll(".rh-puffer-zeile .knopf")].map((b) => b.getBoundingClientRect().height.toFixed(2));
     if (new Set(knoepfe).size > 1) befunde.push("Knöpfe der Zeile ungleich: " + knoepfe.join("/"));
     const laut = k.querySelector(".rh-laut").getBoundingClientRect();
     // Liste: ganz nach unten gerollt darf ihre letzte Zeile nicht unter dem Gehäuse liegen
-    const rollfeld = [...document.querySelectorAll(".rh-mitte *")].find((e) => { const s = getComputedStyle(e); return /(auto|scroll)/.test(s.overflowY) && e.scrollHeight > e.clientHeight + 4 && e.querySelector(".station-wrapper"); });
+    const rollfeld = [...document.querySelectorAll(".rh-mitte *")].find((e) => { const s = getComputedStyle(e); return /(auto|scroll)/.test(s.overflowY) && e.scrollHeight > e.clientHeight + 4 && e.querySelector(".rh-sender"); });
     let verdeckt = null;
     if (rollfeld) {
       rollfeld.scrollTop = rollfeld.scrollHeight;
-      const zeilen = rollfeld.querySelectorAll(".station-wrapper"), letzte = zeilen[zeilen.length - 1]?.getBoundingClientRect();
+      const zeilen = rollfeld.querySelectorAll(".rh-sender"), letzte = zeilen[zeilen.length - 1]?.getBoundingClientRect();
       if (letzte && letzte.bottom > laut.top + 1 && letzte.right > laut.left && letzte.left < laut.right) verdeckt = Math.round(letzte.bottom - laut.top);
       rollfeld.scrollTop = 0;
     }
@@ -165,7 +167,7 @@ const HILFEN = `(async () => {
     for (const [n, g] of Object.entries(raster)) if (g && g.zeichen < 14) befunde.push("Rasteranzeige winzig: " + n + " " + g.zeichen + " px");
     const ziel = parseFloat(getComputedStyle(k.querySelector(".rh-display-quelle")).getPropertyValue("--rh-matrix-zeichen"));
     if (raster.matrix && raster.matrix.zeichen < ziel * 0.85) befunde.push("Punktmatrix kleiner als ihre Zeichenhöhe: " + raster.matrix.zeichen + " statt " + ziel + " px");
-    return { raster, reihen, kanzel: { top: Math.round(kr.top), hoehe: Math.round(kr.height) }, ueberstand: Math.round(kr.top - laut.top), tastenHoehe: hoehen[0],
+    return { raster, reihen, kanzel: { top: Math.round(kr.top), hoehe: Math.round(kr.height) }, ueberstand: Math.round(kr.top - laut.top), tastenHoehe: masse[0],
       flaechen: getComputedStyle(k.querySelector(".rh-kanzel-voll")).gridTemplateAreas, audios: document.querySelectorAll("audio").length, befunde, hinweise };
   }
   window.__rad8 = { zustand, messen, a, engine, api, audio, aufnahmeSpielen, podcastSpielen };

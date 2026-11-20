@@ -4,6 +4,7 @@
   // Schriftstufen); Aufnahmen, Podcasts und Einstellungen sind die bisherigen, sie stehen in .rh-alt und wachsen mit der
   // Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
   import Kanzel from "./spieler/Kanzel.svelte";
+  import { spielenOderPause } from "./spieler/aktionen";
   import RadioAnsicht from "./components/radio/RadioAnsicht.svelte";
   import RecordingsTab from "./components/RecordingsTab.svelte";
   import PodcastsTab from "./components/PodcastsTab.svelte";
@@ -61,7 +62,7 @@
     actions.navigateTo(a.getAttribute("href"));
   }
 
-  // Tastatur am Rechner: Leertaste spielt oder hält an, S beendet, Pfeile für Lautstärke und Sender, M stumm, 1 bis 4
+  // Tastatur am Rechner: Leertaste wie die Taste Spielen (spielen, Pause, weiter), S beendet, Pfeile für Lautstärke und Sender, M stumm, 1 bis 4
   // wählen den Bereich. Bei laufender Aufnahme sind Anhalten, Beenden und Senderwechsel gesperrt.
   function taste(e: KeyboardEvent) {
     if (geraet.telefon) return;
@@ -71,9 +72,7 @@
     switch (e.key) {
       case " ":
         e.preventDefault();
-        if (aufnahme) break;
-        if (appState.playerMode === "direct") actions.stop();          // ein direkter Strom lässt sich nur beenden
-        else if (appState.playerMode !== "none") actions.togglePause();
+        if (!aufnahme) spielenOderPause();
         break;
       case "s":
         if (!aufnahme && !e.ctrlKey && !e.metaKey) actions.stop();
