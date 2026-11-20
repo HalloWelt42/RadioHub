@@ -78,6 +78,7 @@ da sein oder ausdrücklich entfallen (Spalte Stand).
   Trimmen, Zoom, Gain, Auftrag).
 - Querschnitt: ein Baustein für die verstellbare Seitenleiste, Dateien als eigene Quelle, Texte in eigene Bereiche.
 
-Reihenfolge: erst die Schichten unter den Ansichten (Quelle und Zustand mit Tests), die alten Ansichten darauf
-umgestellt; dann die Entwürfe im Stil der Radioseite; dann die neuen Ansichten nach Entwurf auf denselben Schichten.
-So bleibt die Arbeit an der Datenschicht beim neuen Aussehen erhalten.
+Reihenfolge: erst die Schichten unter den Ansichten (Quelle und Zustand mit Tests); dann die Entwürfe im Stil der
+Radioseite; dann die neuen Ansichten nach Entwurf auf denselben Schichten. Die alten Ansichten werden nicht erst auf
+die Schicht umgestellt, weil die neuen sie ersetzen (sonst doppelte Arbeit, Nutzer 20.11.2026: "wir müssen mal
+langsam zum ui kommen"). Stand: Schicht der Podcasts fertig (lib/podcasts, 7 Tests).
