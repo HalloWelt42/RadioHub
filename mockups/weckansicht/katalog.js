@@ -70,7 +70,7 @@ function hifi(tel, z) {
       <div class="glas"><canvas data-t="${D.kurz}  LIVE"></canvas></div><div class="glas"><canvas data-t="*${D.auf} )${D.unter}"></canvas></div>
       <div class="tasten">${z.lage === "schlummert" ? `<button class="taste licht" style="--l:#ff3b30">${i("fa-power-off")}<span>WECKER AUS</span></button>`
         : `<button class="taste licht">${i("fa-pause")}</button><button class="taste${nacht ? "" : " licht"}">${i("fa-comment-dots")}</button>
-        <button class="taste licht" style="--l:${nacht ? "#d4231c" : "#3d8bff"}">${i("fa-moon")}</button>`}</div></div>`;
+        <button class="taste licht" style="--l:${nacht ? "#ff3a28" : "#3d8bff"}">${i("fa-moon")}</button>`}</div></div>`;
   }
   tel.innerHTML = `<div class="innen"><div class="geraet"><div class="glas gross"><canvas class="matrix haupt"></canvas><canvas class="matrix zeile"></canvas></div>${rechts}</div></div>`;
   const an = farbe(tel, "--an"), aus = farbe(tel, "--aus"), ak = farbe(tel, "--akzent");
@@ -206,7 +206,7 @@ function aurora(tel, z) {
 let roehrenNr = 0;
 function roehren(tel, z) {
   const [a, b] = z.zeit.split(":");
-  const f = z.modus === "nacht" ? { glut: "#e0301a", kern: "#ffb09a", kalt: "#3a1a14" } : { glut: "#ff7a1a", kern: "#ffe2b0", kalt: "#5a4a3c" };
+  const f = z.modus === "nacht" ? { glut: "#ff3a28", kern: "#ffb09a", kalt: "#3a1a14" } : { glut: "#ff7a1a", kern: "#ffe2b0", kalt: "#5a4a3c" };
   const r = (c) => `<div class="roehre-svg">${roehre(c, f, `k${roehrenNr++}`)}</div>`;
   const sockel = z.lage === "klingelt"
     ? `<div class="sockel"><span class="w">${i("fa-bell", " fa-shake")} ${D.weck}</span><span style="display:flex;gap:10px">${quelleWahl(z)}
@@ -232,7 +232,7 @@ function pixel(tel, z) {
   const S = 44, Z = 23, aus = hell ? "#d9dce6" : "#0d0d14";
   const bunt = (x, y) => (nacht ? hsl(2 + y * 1.2, 85, 40) : hsl(x * 8 + y * 6, 95, hell ? 47 : 58));
   const farben = { y: nacht ? "#7a1008" : "#ffd21f", m: nacht ? "#a3140c" : "#cfd8ff", w: nacht ? "#300404" : hell ? "#9aa6bd" : "#6b7690",
-    g: nacht ? "#c3241d" : "#ffb21f", n: nacht ? "#c3241d" : "#2ef0c8", b: nacht ? "#c3241d" : "#a78bfa" };
+    g: nacht ? "#ff3a28" : "#ffb21f", n: nacht ? "#ff3a28" : "#2ef0c8", b: nacht ? "#ff3a28" : "#a78bfa" };
   const e = [], r = [], bilder = [];
   const klein = (text, x, y, farbe) => e.push({ text, x, y, farbe, schrift: "klein" });
   if (kl) {
