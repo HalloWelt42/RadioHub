@@ -267,6 +267,9 @@ class SenderEintrag(BaseModel):
     bewertungen: list[str]
     werbung: Werbestatus
     eigene_adresse: str | None = None
+    # Stream-Adressen aus dem Verzeichnis: die Zeile spielt ohne weitere Abfrage, auch Vor und Zurück über die Liste
+    adresse: str = ""
+    adresse_aufgeloest: str = ""
 
 
 class Facette(BaseModel):

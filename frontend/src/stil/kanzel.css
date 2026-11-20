@@ -106,7 +106,7 @@
 .rh-steuerung .ak-taster-knopf:disabled { cursor: default; }
 .rh-gespiegelt { scale: -1 1; }
 /* Drehwahl der Bitrate: kleine Kappe, breite Zelle für den Wert darunter; Rastnamen zeigt der Appkern erst ab 150 Pixeln */
-.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 6.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
+.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 7.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
 .rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
 
 @container kanzel (max-width: 80em) {

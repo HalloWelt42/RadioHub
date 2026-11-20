@@ -198,6 +198,9 @@ export interface SenderEintrag {
   bewertungen: string[];
   werbung: Werbestatus;
   eigene_adresse: string | null;
+  /** Stream-Adressen aus dem Verzeichnis: die Zeile spielt ohne weitere Abfrage, auch Vor und Zurück über die Liste */
+  adresse: string;
+  adresse_aufgeloest: string;
 }
 
 export interface Facette {

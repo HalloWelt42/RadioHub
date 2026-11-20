@@ -176,7 +176,7 @@ def _eintraege(v: sqlite3.Connection, zeilen: list[sqlite3.Row]) -> list[SenderE
             kategorien=kategorien.get(z["uuid"], []), bewertungen=bewertungen.get(z["uuid"], []),
             werbung=Werbestatus(stufe=_WERBE_NAMEN[z["werbe_stufe"]],
                                 entscheidung={"blocked": "gesperrt", "allowed": "erlaubt"}.get(e or "")),
-            eigene_adresse=adressen.get(z["uuid"])))
+            eigene_adresse=adressen.get(z["uuid"]), adresse=z["url"] or "", adresse_aufgeloest=z["url_resolved"] or ""))
     return ergebnis
 
 
@@ -187,7 +187,8 @@ def _logo(favicon: str | None) -> str:
 
 _SPALTEN = ("i.nr, i.uuid, i.name_klein, i.land, i.codec, i.kbps, i.kbps_gemessen, i.qualitaet, i.qualitaet_rang, "
             "i.stimmen, i.erreichbar, i.gruppe, i.sprachen, i.genres, i.verschwunden, i.favorit, i.werbe_stufe, "
-            "i.getroffen, i.sichtbar, i.varianten, s.name, s.favicon, s.homepage, s.country, s.iso_3166_2, s.state, s.hls")
+            "i.getroffen, i.sichtbar, i.varianten, s.name, s.favicon, s.homepage, s.country, s.iso_3166_2, s.state, s.hls, "
+            "s.url, s.url_resolved")
 
 
 def seite(v: sqlite3.Connection, q: StationQuery) -> tuple[list[SenderEintrag], str | None, int | None]:

@@ -15,7 +15,7 @@ function eintrag(uuid: string, teil: Partial<SenderEintrag> = {}): SenderEintrag
     uuid, name: `Sender ${uuid}`, logo: "", homepage: "", land: "DE", land_name: "Germany", region: "", bundesland: "",
     sprachen: [], genres: [], codec: "MP3", kbps: 128, kbps_gemessen: false, qualitaet: "mittel", stimmen: 1, erreichbar: true,
     hls: false, gruppe: uuid, varianten: 1, favorit: false, ausnahme: [], verschwunden: false, kategorien: [], bewertungen: [],
-    werbung: { stufe: "keine", entscheidung: null }, eigene_adresse: null, ...teil,
+    werbung: { stufe: "keine", entscheidung: null }, eigene_adresse: null, adresse: "", adresse_aufgeloest: "", ...teil,
   };
 }
 
@@ -81,6 +81,15 @@ describe("BackendQuelle", () => {
     expect(w).toMatchObject({ uuid: "a", url: "http://a/u", url_resolved: "https://eigen/strom", bitrate: 128 });
     await quelle.wiedergabe(e);
     expect(aufrufe).toHaveLength(1);
+  });
+
+  it("ein Eintrag mit Adresse spielt ohne weitere Abfrage, die eigene Adresse vorn (Vor und Zurück über die Liste)", async () => {
+    const { aufrufe, quelle } = backend({});
+    const w = await quelle.wiedergabe(eintrag("b", { adresse: "http://b/u", adresse_aufgeloest: "http://b/r" }));
+    expect(w).toMatchObject({ uuid: "b", url: "http://b/u", url_resolved: "http://b/r" });
+    const eigen = await quelle.wiedergabe(eintrag("c", { adresse: "http://c/u", adresse_aufgeloest: "http://c/r", eigene_adresse: "https://eigen/c" }));
+    expect(eigen.url_resolved).toBe("https://eigen/c");
+    expect(aufrufe).toHaveLength(0);
   });
 
   it("Favorit an schickt die Felder der Wiedergabe, aus löscht; danach meldet sie sich", async () => {

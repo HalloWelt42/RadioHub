@@ -4,7 +4,7 @@
 // Senderquelle und die Aktionen der Wiedergabe, keine Bausteine der Oberfläche.
 import { t } from "../i18n.js";
 import { actions, appState } from "../store.svelte.js";
-import type { Senderquelle, Wiedergabesender } from "./quelle";
+import { ausEintrag, type Senderquelle, type Wiedergabesender } from "./quelle";
 import { Senderliste } from "./senderliste.svelte";
 import type { Bestand, SenderEintrag, StationQuery } from "./typen";
 
@@ -20,10 +20,6 @@ export interface BandInhalt {
 }
 
 /** Felder der Wiedergabe aus dem Eintrag, solange die des Verzeichnisses noch nicht geholt sind */
-function vorlaeufig(e: SenderEintrag): Wiedergabesender {
-  return { uuid: e.uuid, name: e.name, url: "", url_resolved: e.eigene_adresse ?? "", favicon: "", country: e.land_name,
-           countrycode: e.land, tags: e.genres.join(","), codec: e.codec, bitrate: e.kbps ?? 0, homepage: e.homepage };
-}
 
 export class Radiobedienung {
   readonly liste: Senderliste;
@@ -51,7 +47,7 @@ export class Radiobedienung {
 
   /** die Liste, wie die Wiedergabe sie für Vor und Zurück braucht */
   fuerWiedergabe(): Wiedergabesender[] {
-    return this.liste.eintraege.map((e) => this.wiedergabe[e.uuid] ?? vorlaeufig(e));
+    return this.liste.eintraege.map((e) => this.wiedergabe[e.uuid] ?? ausEintrag(e));
   }
 
   private async holen(e: SenderEintrag): Promise<Wiedergabesender> {

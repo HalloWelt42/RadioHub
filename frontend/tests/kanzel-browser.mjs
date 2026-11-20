@@ -145,7 +145,8 @@ const HILFEN = `(async () => {
     if (masse.length !== 1 || oben.length !== 1) befunde.push("Tasten der Steuerung nicht in einer Reihe oder ungleich: Maße " + masse.join("/") + ", oben " + oben.join("/"));
     const dreh = k.querySelector(".rh-bitrate-wahl").getBoundingClientRect();
     if (dreh.top > tasten[0].bottom || dreh.bottom < tasten[0].top) befunde.push("Drehwahl nicht neben den Tasten");
-    const kappen = new Set(knopfe.map((b) => getComputedStyle(b).backgroundColor));
+    // bedienbare Kappen alle gleich (keine leuchtet); gesperrte liegen versenkt und dürfen anders aussehen
+    const kappen = new Set(knopfe.filter((b) => !b.disabled).map((b) => getComputedStyle(b).backgroundColor));
     if (kappen.size !== 1) befunde.push("Kappen ungleich (leuchtet eine?): " + [...kappen].join(" / "));
     for (const b of knopfe) if (/rgba?\([^)]*\) 0px 0px (1[0-9]|[2-9][0-9])px/.test(getComputedStyle(b).boxShadow)) befunde.push("Kappe mit Schein: " + beschreibe(b));
     const reihen = 1;
@@ -251,7 +252,7 @@ try {
     await pruefe("F01", "Matrix zeigt den Sender", `${K(".rh-display-quelle ak-segmente")}.getAttribute("text") === ${R}.a.currentStation.name`);
     await pruefe("F02", "Quelle im Originalstrom DIREKT", `${K(".rh-zeit-quelle")}.getAttribute("text") === "DIREKT"`);
     await pruefe("F03", "Pegel laufen beim Spielen (ohne festen Wert)", `[...document.querySelectorAll(".rh-kanzel ak-pegel")].every((p) => !p.hasAttribute("wert")) && ${R}.a.volume > 0`);
-    await pruefe("F27", "Spielen-Taste leuchtet, Symbol Stopp im Originalstrom", `${taste(2)}.hasAttribute("an") && !!${taste(2)}.querySelector("i.fa-stop")`);
+    await pruefe("F27", "Spielen bleibt Spielen im Originalstrom: Symbol Spielen, Tastenlicht an", `!!${taste(2)}.querySelector("i.fa-play") && ${taste(2)}.querySelector("ak-led")?.getAttribute("zustand") === "an"`);
     await pruefe("F11", "Zurück nennt den Nachbarn im Hinweis", `(() => { const a = ${R}.a, i = a.stations.findIndex((s) => s.uuid === a.currentStation.uuid), n = a.stations.length;
       return ${taste(0)}.title.startsWith(a.stations[(i - 1 + n) % n].name); })()`);
     await pruefe("F17", "Weiter nennt den Nachbarn im Hinweis", `(() => { const a = ${R}.a, i = a.stations.findIndex((s) => s.uuid === a.currentStation.uuid), n = a.stations.length;
@@ -281,7 +282,7 @@ try {
       await frei(); const taste = (k) => d.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
       for (let i = 0; i < 5; i++) taste("ArrowUp");
       await new Promise((r) => setTimeout(r, 1500)); const gemerkt = localStorage.getItem("radiohub_bitrate_override");
-      await frei(); const wert = d.querySelector(".ak-dreh-wert").textContent, glas = ${K(".rh-display-hinweis")}?.textContent;
+      await frei(); const wert = d.querySelector(".ak-dreh-wert").textContent, glas = ${K(".rh-display-zeile ak-segmente")}?.getAttribute("text");
       taste("Home"); await new Promise((r) => setTimeout(r, 1500)); const zurueck = localStorage.getItem("radiohub_bitrate_override"); await frei();
       return { ok: gemerkt === "128" && wert === "128" && /128/.test(glas) && zurueck === null && ${R}.a.hlsActive, gemerkt, wert, glas, zurueck }; })()`);
     await pruefe("F14", "Anhalten und Fortsetzen im Zeitversatz", `(async () => { ${druecke(2)}; await new Promise((r) => setTimeout(r, 500)); const pause = ${R}.a.isPaused;
@@ -294,7 +295,7 @@ try {
       const t = ${taste(3)}; return { ok: ${R}.a.isRecording && t.hasAttribute("an") && t.querySelector("ak-led[art=schlitz]").getAttribute("zustand") === "blinkt"
         && ${taste(0)}.querySelector("button").disabled && ${taste(4)}.querySelector("button").disabled && ${taste(2)}.querySelector("button").disabled
         && document.querySelector(".rh-kanzel").dataset.zustand === "aufnahme", zeit: ${K(".rh-zeit-uhr")}.getAttribute("text") }; })()`);
-    await pruefe("F07", "Statuszeile während der Aufnahme: Dauer, Bitrate", `(() => { const z = ${K(".rh-display-zeile")}.textContent; return { ok: /AUFNAHME [0-9]{2}:[0-9]{2}:[0-9]{2}/.test(z), z }; })()`);
+    await pruefe("F07", "Statuszeile (kleine Punktmatrix) während der Aufnahme: Dauer, Bitrate", `(() => { const z = ${K(".rh-display-zeile ak-segmente")}.getAttribute("text"); return { ok: /AUFNAHME [0-9]{2}:[0-9]{2}:[0-9]{2}/.test(z), z }; })()`);
     await pruefe("F09b", "Matrix-Hinweis während der Aufnahme: zum Sender", `${K(".rh-display-quelle")}.title === "Zum aufnehmenden Sender springen"`);
     // Wiederherstellen nach Neuladen
     await seite.rufe("Page.reload");
@@ -309,7 +310,11 @@ try {
       const vor = ${R}.a.currentStation.uuid; ${taste(0)}.querySelector("button").dispatchEvent(new PointerEvent("pointerdown"));
       ${druecke(0)}; await new Promise((r) => setTimeout(r, 1500)); return ${R}.a.currentStation.uuid !== vor; })()`);
     await pruefe("F17b", "Weiter wechselt den Sender", `(async () => { const vor = ${R}.a.currentStation.uuid; ${druecke(4)}; await new Promise((r) => setTimeout(r, 1500)); return ${R}.a.currentStation.uuid !== vor; })()`);
-    await pruefe("F14b", "Spielen-Taste im Originalstrom beendet", `(async () => { await new Promise((r) => setTimeout(r, 1500)); ${druecke(2)}; await new Promise((r) => setTimeout(r, 800)); return !${R}.a.isPlaying; })()`);
+    await pruefe("F14b", "Spielen im Originalstrom hält an statt zu beenden, erneut Spielen geht ab live weiter, nur Stopp beendet", `(async () => {
+      await new Promise((r) => setTimeout(r, 1500)); ${druecke(2)}; await new Promise((r) => setTimeout(r, 800));
+      const pause = ${R}.a.isPaused && ${R}.a.isPlaying; ${druecke(2)}; await new Promise((r) => setTimeout(r, 2500));
+      const weiter = !${R}.a.isPaused && ${R}.a.isPlaying; ${druecke(1)}; await new Promise((r) => setTimeout(r, 800));
+      return { ok: pause && weiter && !${R}.a.isPlaying, pause, weiter }; })()`);
     // Tastatur (App.svelte) und Lautstärke
     await pruefe("F05", "Pfeil hoch hebt die Lautstärke, der Regler folgt", `(async () => { const vor = ${R}.a.volume; document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
       await new Promise((r) => setTimeout(r, 200)); const d = document.querySelector(".rh-kanzel ak-dreh"); return { ok: ${R}.a.volume === Math.min(100, vor + 5) && d.wert === ${R}.a.volume, vor, nach: ${R}.a.volume, dreh: d.wert }; })()`);
@@ -337,8 +342,9 @@ try {
     await pruefe("F09c", "Klick auf die Matrix springt zum Podcast", `(async () => { ${R}.a.podcastPlaylistPodcast = { id: 21 }; ${K(".rh-display-quelle")}.click(); await new Promise((r) => setTimeout(r, 300)); return location.pathname === "/podcasts/21"; })()`);
     // Fehler
     await werte(`${R}.zustand("fehler")`);
-    await pruefe("F29", "Fehler: Spielen-Taste wird Neu verbinden (außerhalb des Glases) und lädt neu", `(async () => { const ok1 = document.querySelector(".rh-kanzel").dataset.zustand === "fehler";
-      const symbol = !!${taste(2)}.querySelector("i.fa-rotate-right"); ${druecke(2)}; await new Promise((r) => setTimeout(r, 150));
+    await pruefe("F29", "Fehler: Spielen bleibt Spielen, rotes Tastenlicht, verbindet neu (außerhalb des Glases)", `(async () => { const ok1 = document.querySelector(".rh-kanzel").dataset.zustand === "fehler";
+      const led = ${taste(2)}.querySelector("ak-led");
+      const symbol = !!${taste(2)}.querySelector("i.fa-play") && led?.getAttribute("farbe") === "rot" && led?.getAttribute("zustand") === "atmet"; ${druecke(2)}; await new Promise((r) => setTimeout(r, 150));
       const z = document.querySelector(".rh-kanzel").dataset.zustand;
       return { ok: ok1 && symbol && (z === "laedt" || z === "fehler") && ${R}.a.isPlaying, z }; })()`);
     await werte(`${R}.engine.stop()`);

@@ -36,6 +36,13 @@ export interface Wiedergabesender {
   homepage: string;
 }
 
+/** Felder der Wiedergabe aus dem Eintrag der Liste; die eigene Adresse gilt vor der des Verzeichnisses, auch für
+ *  Zeitversatz und Aufnahme */
+export function ausEintrag(e: SenderEintrag): Wiedergabesender {
+  return { uuid: e.uuid, name: e.name, url: e.adresse, url_resolved: e.eigene_adresse || e.adresse_aufgeloest || e.adresse, favicon: e.logo,
+           country: e.land_name, countrycode: e.land, tags: e.genres.join(","), codec: e.codec, bitrate: e.kbps ?? 0, homepage: e.homepage };
+}
+
 /** Titelangaben im Strom (ICY): gemessen, und wie genau sie Aufnahmen schneiden (eigene Bewertung). */
 export type TitelGuete = "genau" | "ungenau" | null;
 

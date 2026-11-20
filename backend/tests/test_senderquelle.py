@@ -76,6 +76,8 @@ def test_abfrage_mit_filtern_seiten_und_facetten(radio):
     assert (erster["qualitaet"], erster["codec"], erster["favorit"], erster["genres"]) == ("verlustfrei", "FLAC", True,
                                                                                             ["Klassik"])
     assert erster["sprachen"] == [{"schluessel": "de", "name": "Deutsch"}]
+    # der Eintrag trägt seine Stream-Adresse: die Oberfläche spielt ihn ohne weitere Abfrage
+    assert (erster["adresse"], erster["adresse_aufgeloest"]) == (f"https://example.invalid/{klassik}", "")
     assert _namen(_abfrage(radio, laender=["DE"], genres=["Hip-Hop"])) == ["Pop"]
     assert _namen(_abfrage(radio, nur_favoriten=True, laender=["DE"])) == ["Klassik"]   # Favoriten wirken mit
     assert _namen(_abfrage(radio, qualitaet=["niedrig"])) == ["Leise"]

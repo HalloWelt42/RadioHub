@@ -3,8 +3,9 @@
 // bisherigen Wege des Backends, bis sie in die Senderquelle wandern. Ohne Bausteine der Oberfläche: was die App danach
 // tun muss (Favoriten im Zustand nachziehen), bekommt sie über `beiFavoriten` mit.
 import { netz, Netzfehler, type Anfrage } from "./netz";
-import type {
-  Faehigkeiten, Kategorie, LandZahl, Messwert, Senderquelle, Steckbrief, TitelGuete, Wiedergabesender,
+import {
+  ausEintrag, type Faehigkeiten, type Kategorie, type LandZahl, type Messwert, type Senderquelle, type Steckbrief, type TitelGuete,
+  type Wiedergabesender,
 } from "./quelle";
 import {
   WEGE, type Abfrageergebnis, type Abgleichstand, type AusgeblendetAnfrage, type AusgeblendetSeite, type Bewertung,
@@ -118,6 +119,8 @@ export class BackendQuelle implements Senderquelle {
   async wiedergabe(eintrag: SenderEintrag): Promise<Wiedergabesender> {
     const gemerkt = this.fuerWiedergabe.get(eintrag.uuid);
     if (gemerkt) return gemerkt;
+    // der Eintrag trägt seine Stream-Adressen: spielen ohne weitere Abfrage
+    if (eintrag.adresse) return ausEintrag(eintrag);
     let roh: RohSender = {};
     try {
       roh = await this.a<RohSender>(`/api/stations/${kodiert(eintrag.uuid)}`);
