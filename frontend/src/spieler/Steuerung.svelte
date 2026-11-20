@@ -11,7 +11,8 @@
   import type { Drehregler } from "appkern-oberflaeche/instrumente";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
-  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurQuelle, zurueck, andereVariante } from "./aktionen";
+  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurueck, andereVariante } from "./aktionen";
+  import { fokusSchalten } from "./fokus.svelte";
   import { bitrateAusStellung, bitrateRaster, bitrateStellung, type BitrateLage, type Tasten } from "./kanzel";
   import type { Bitrate } from "./bitrate.svelte";
   import { taste } from "./taste";
@@ -59,11 +60,11 @@
                      beiDruck: vor, beiZeigen: zeigen }}></ak-taster>
     </div>
     <div class="rh-betrieb ak-tastenreihe">
-      <!-- zum laufenden Sender in der Liste (auch in Basic); dieselbe Größe wie alle Tasten der Reihe -->
+      <!-- Fokus auf den laufenden Sender ein oder aus (auch in Basic, RAD-19); dieselbe Größe wie alle Tasten der Reihe -->
       <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" licht="blau"
           use:taste={{ an: false, licht: tasten.quelle.licht, lichtFarbe: tasten.quelle.varianten ? "rot" : "blau", gesperrt: tasten.quelle.gesperrt,
                        hilfe: tasten.quelle.hilfe, symbol: tasten.quelle.varianten ? "fa-layer-group" : "fa-location-crosshairs",
-                       beiDruck: mitKlang(tasten.quelle.varianten ? andereVariante : () => zurQuelle()), beiZeigen: zeigen }}></ak-taster>
+                       beiDruck: mitKlang(tasten.quelle.varianten ? andereVariante : fokusSchalten), beiZeigen: zeigen }}></ak-taster>
       {#if kann.zeitversatz}
       <ak-taster art="glas" symbol={tasten.modus.symbol} farbe="weiss" licht={tasten.modus.farbe}
           use:taste={{ an: false, licht: tasten.modus.licht, lichtFarbe: tasten.modus.farbe, gesperrt: tasten.modus.gesperrt, hilfe: tasten.modus.hilfe,

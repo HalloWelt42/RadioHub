@@ -222,7 +222,7 @@ export interface Tasten {
   modus: Taste & { symbol: string; farbe: Leuchtfarbe };
   /** linear, rückwärts, Schleife, Zufall; immer da, gesperrt außer bei Folgen und Aufnahmen (wie in HiFiPlayer) */
   reihenfolge: Taste & { symbol: string; farbe: Leuchtfarbe };
-  /** zum laufenden Sender, zur Folge oder Aufnahme in ihrem Bereich springen (in der Liste wiederfinden) */
+  /** Fokus auf den laufenden Sender ein oder aus (RAD-19, Licht = ein); nach einem Fehler beim Sender: andere Variante */
   quelle: Taste & { varianten: boolean };
 }
 
@@ -260,7 +260,7 @@ export const kannBlaettern = (s: Stand): boolean =>
 export const kannModusWechseln = (s: Stand): boolean =>
   !s.isRecording && !s.currentEpisode && ((s.playerMode === "hls" && s.canPlayDirect) || (s.playerMode === "direct" && s.canPlayHLS === true));
 
-export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): Tasten {
+export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fokusAn = false): Tasten {
   const art = artVon(s), rec = s.isRecording, laeuft = s.isPlaying && !s.isPaused;
   const folge = art === "podcast", aufnahme = s.playerMode === "recording";
   const blaettern = kannBlaettern(s);
@@ -319,12 +319,12 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): T
     hilfe: mitListe ? t(r.text) : t("player.wiedergabeModus"),
   };
 
-  // Zum laufenden Sender: leuchtet blau, solange es etwas anzuspringen gibt (Nutzer 20.11.2026)
-  // nach einem Fehler beim Sender (Codec, Verbindung) wählt dieselbe Taste eine andere Variante (Nutzer 20.11.2026)
+  // Fokus auf den laufenden Sender: ein Schalter, das blaue Licht heißt ein (RAD-19, Nutzer 20.11.2026); immer schaltbar,
+  // auch bevor etwas spielt. Nach einem Fehler beim Sender (Codec, Verbindung) wählt dieselbe Taste eine andere Variante.
   const varianten = fehler && art === "sender";
   const quelle: Tasten["quelle"] = {
-    an: false, licht: varianten ? "atmet" : quelleDa && (s.isPlaying || s.isPaused) ? "an" : "aus", gesperrt: !quelleDa, varianten,
-    hilfe: rec ? t("player.zumSender") : varianten ? t("kanzel.andereVariante") : quelleDa ? t("kanzel.zurQuelleTaste") : t("kanzel.keineQuelle"),
+    an: false, licht: varianten ? "atmet" : fokusAn ? "an" : "aus", gesperrt: false, varianten,
+    hilfe: varianten ? t("kanzel.andereVariante") : fokusAn ? t("kanzel.fokusAn") : t("kanzel.fokusAus"),
   };
 
   return {

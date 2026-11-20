@@ -898,9 +898,9 @@ export default {
     positionHilfe: 'Position; ziehen oder mit den Pfeiltasten springen',
     stoppHilfe: 'Stopp: beendet Hören und Aufnahme (S)',
     stoppHilfeOhneAufnahme: 'Stopp: beendet das Hören (S)',
-    zurQuelleTaste: 'Zum laufenden Sender in der Liste springen',
+    fokusAn: 'Fokus ein: die Liste folgt dem laufenden Sender bei jedem Wechsel; dazwischen frei rollen. Tippen schaltet aus',
+    fokusAus: 'Fokus aus: frei rollen. Tippen springt zum laufenden Sender und folgt ihm',
     andereVariante: 'Andere Variante wählen: der Strom spielt nicht, die Varianten des Senders aufklappen',
-    keineQuelle: 'Noch nichts gewählt',
     taste: '{text} ({taste})',
     leertaste: 'Leertaste'
   },

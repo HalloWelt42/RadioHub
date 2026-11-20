@@ -154,9 +154,13 @@ describe("Spulzeilen", () => {
 
 describe("Taste zum laufenden Sender", () => {
   it("springt zum Sender; nach einem Fehler wählt sie eine andere Variante", () => {
-    expect(kanzelTasten(stand(), t).quelle).toMatchObject({ gesperrt: true, varianten: false });
-    expect(kanzelTasten(spielt(), t).quelle).toMatchObject({ gesperrt: false, licht: "an", varianten: false, hilfe: "Zum laufenden Sender in der Liste springen" });
-    expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 4 }), t).quelle).toMatchObject({ varianten: true, licht: "atmet" });
+    // Fokus ein oder aus (RAD-19): immer schaltbar, das Licht zeigt ein, unabhängig davon, ob etwas spielt
+    expect(kanzelTasten(stand(), t).quelle).toMatchObject({ gesperrt: false, licht: "aus", varianten: false });
+    expect(kanzelTasten(stand(), t, false, true).quelle).toMatchObject({ gesperrt: false, licht: "an" });
+    expect(kanzelTasten(spielt(), t).quelle.hilfe).toMatch(/^Fokus aus/);
+    expect(kanzelTasten(spielt(), t, false, true).quelle).toMatchObject({ licht: "an", varianten: false });
+    expect(kanzelTasten(spielt(), t, false, true).quelle.hilfe).toMatch(/^Fokus ein/);
+    expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 4 }), t, false, true).quelle).toMatchObject({ varianten: true, licht: "atmet" });
   });
 });
 

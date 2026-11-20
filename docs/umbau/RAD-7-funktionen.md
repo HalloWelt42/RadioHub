@@ -42,7 +42,7 @@ und Adresse `schnellfilter.ts`, Liste `senderliste.svelte.ts`, Regel-Ablauf `reg
 | A21 | Favorit umschalten | Stern in der Zeile | [x] | Test senderquelle (Favorit an und aus); Probebetrieb an und wieder aus |
 | A22 | Auge blendet aus und startet den Nachbarsender | Auge mit Rückgängig-Band, startet keinen Sender (Vorgabe 5) | [x] | Probebetrieb: ausgeblendet, Zähler 3.847 -> 3.846, Hinweis 9.269 -> 9.270, nichts startet; Rückgängig setzt ihn an Stelle 2 zurück |
 | A23 | Tastatur: Pfeil hoch und runter, Eingabe und Leertaste spielen, Escape schließt | gleich | [x] | Probebetrieb: zweimal Pfeil runter, Eingabe spielt den zweiten |
-| A24 | Nach 90 s ohne Bedienung zum spielenden Sender rollen | gleich | [x] | Probebetrieb: Liste ans Ende gerollt, nach 90 s wieder beim spielenden Sender |
+| A24 | Nach 90 s ohne Bedienung zum spielenden Sender rollen | entfällt (RAD-19) | [x] | Ersetzt durch den Fokus-Schalter der Kanzel: ein folgt dem laufenden Sender bei jedem Wechsel, aus rollt frei (Nutzer 20.11.2026) |
 | A25 | Sprung von der Spielerleiste zur Quelle (appState.sourceJumpRequest) | gleich | [x] | Probebetrieb: /radio/<uuid> über Zurück und Vor; Sprung setzt dieselbe Adresse |
 | A26 | Auswahl folgt dem Senderwechsel über Vor und Zurück | gleich | [x] | Markierung folgt appState.currentStation |
 | A27 | Vor und Zurück über die geladene Liste (appState.stations) | über die sichtbare Liste (Vorgabe 7) | [x] | appState.stations aus der sichtbaren Liste, Nachbarn mit allen Feldern vorab |

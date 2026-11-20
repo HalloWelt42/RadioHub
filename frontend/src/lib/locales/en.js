@@ -898,9 +898,9 @@ export default {
     positionHilfe: 'Position; drag or jump with the arrow keys',
     stoppHilfe: 'Stop: ends listening and recording (S)',
     stoppHilfeOhneAufnahme: 'Stop: ends listening (S)',
-    zurQuelleTaste: 'Jump to the playing station in the list',
+    fokusAn: 'Focus on: the list follows the playing station on every change; scroll freely in between. Tap to turn off',
+    fokusAus: 'Focus off: scroll freely. Tap to jump to the playing station and follow it',
     andereVariante: 'Choose another variant: the stream does not play, open the variants of the station',
-    keineQuelle: 'Nothing selected yet',
     taste: '{text} ({taste})',
     leertaste: 'Space'
   },

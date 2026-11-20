@@ -18,8 +18,8 @@
   import Seitenleiste from "./Seitenleiste.svelte";
   import SenderZeile from "./SenderZeile.svelte";
   import Werkzeugleiste from "./Werkzeugleiste.svelte";
+  import { fokus as folgen } from "../../spieler/fokus.svelte";
 
-  const RUHE_MS = 90_000;
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   const bedienung = new Radiobedienung(senderquelle);
@@ -126,18 +126,33 @@
     zeile.scrollIntoView({ block: hoch ? "start" : "center", behavior: sanft ? "smooth" : "auto" });
   }
 
-  // Nach 90 Sekunden ohne Bedienung zum spielenden Sender
-  let ruheUhr: ReturnType<typeof setTimeout> | undefined;
-  function bedient() {
-    clearTimeout(ruheUhr);
-    ruheUhr = setTimeout(() => {
-      if (appState.activeTab === "radio" && spielend && liste.eintraege.some((e) => e.uuid === spielend)) void rollenZu(spielend);
-    }, RUHE_MS);
-  }
-  onMount(() => {
-    bedient();
-    return () => clearTimeout(ruheUhr);
+  // Fokus auf den laufenden Sender (RAD-19, Schalter der Kanzel): ist er an, klappt die Liste den laufenden Sender auf und
+  // rollt hin, beim Öffnen der Ansicht und bei jedem Senderwechsel; dazwischen rollt man frei. Aus: nichts springt von
+  // selbst (die frühere Rückkehr nach 90 Sekunden ohne Bedienung entfällt, Nutzer 20.11.2026).
+  let gefolgt: string | null = null;
+  $effect(() => {
+    const uuid = spielend;
+    const an = folgen.an;
+    untrack(() => {
+      if (!an) { gefolgt = null; return; }
+      if (!uuid || uuid === gefolgt) return;
+      gefolgt = uuid;
+      vonHier = null;
+      if (filterzustand.offen === uuid && gerollt === uuid) void rollenZu(uuid);
+      else filterzustand.oeffnen(uuid);
+    });
   });
+
+  /** Ausblenden (Auge): war der Sender aufgeklappt, rückt der nächste der Reihe nach (der letzte: der davor) */
+  async function ausblenden(e: SenderEintrag) {
+    const offen = filterzustand.offen === e.uuid;
+    const stelle = liste.eintraege.findIndex((x) => x.uuid === e.uuid);
+    await bedienung.ausblenden(e);
+    if (!offen || liste.eintraege.some((x) => x.uuid === e.uuid)) return;     // blieb sichtbar (etwa als Favorit)
+    const naechster = liste.eintraege[Math.min(stelle, liste.eintraege.length - 1)];
+    vonHier = null;
+    filterzustand.oeffnen(naechster?.uuid ?? null);
+  }
 
   function spielen(e: SenderEintrag) {
     sfx.click();
@@ -172,8 +187,7 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="rh-radio" onpointerdown={bedient} onkeydown={bedient} onwheel={bedient}>
+<div class="rh-radio">
   <Seitenleiste {filter} facetten={liste.facetten} offen={filterOffen} onaendern={aendern} onzu={() => (filterOffen = false)} />
   <button class="rh-schleier" class:offen={filterOffen} type="button" aria-label={t("radio.filterSchliessen")} tabindex="-1"
           onclick={() => (filterOffen = false)}></button>
@@ -200,7 +214,7 @@
           <SenderZeile eintrag={e} spielt={spielend === e.uuid} aufnahme={appState.isRecording} titel={appState.streamTitle}
                        offen={filterzustand.offen === e.uuid} fokus={fokus === i} variantenOffen={variantenOffen.includes(e.uuid)} {spielend} {kategorien}
                        onspielen={spielen} ondetails={() => details(e)} onvarianten={() => varianten(e)} onfavorit={() => bedienung.favorit(e)}
-                       onausblenden={() => bedienung.ausblenden(e)} onaendern={(teil) => liste.aendern(e.uuid, teil)} />
+                       onausblenden={() => ausblenden(e)} onaendern={(teil) => liste.aendern(e.uuid, teil)} />
         {/each}
         <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()}
                    einheit={t("radio.geladen")} />

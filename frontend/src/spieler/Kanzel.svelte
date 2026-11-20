@@ -13,6 +13,7 @@
   import { Wiedergabe } from "./wiedergabe.svelte";
   import { Bitrate } from "./bitrate.svelte";
   import { bitrateLage, bitrateText, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
+  import { fokus } from "./fokus.svelte";
   import { modusWechseln } from "./aktionen";
   import { faehigkeiten } from "../lib/playerEngine.js";
   import { kanzelReihen } from "./kanzelreihen";
@@ -69,7 +70,7 @@
   });
 
   const anzeige = $derived(kanzelAnzeige(stand, t));
-  const tasten = $derived(kanzelTasten(stand, t, modusVon !== null));
+  const tasten = $derived(kanzelTasten(stand, t, modusVon !== null, fokus.an));
   // Bitrate des Zeitversatzes: Drehwahl in der Steuerung, im Glas nur als Leuchtschrift
   const bitrate = new Bitrate();
   const bitrateHinweis = $derived(bitrateText(stand, bitrate.vorgabe, bitrate.wechselt, t));
