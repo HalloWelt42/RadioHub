@@ -45,6 +45,7 @@ export default {
     min: 'min',
     wachHalten: 'Bildschirm wach halten',
     wachHaltenHinweis: 'Braucht HTTPS; die Weckeransicht hält immer wach.',
+    wachHaltenHinweisOhneWecker: 'Hält den Bildschirm an, solange die Seite offen ist.',
     wachNichtMoeglich: 'Auf diesem Gerät nicht möglich',
     thema: 'Darstellung',
     hell: 'Hell',
@@ -878,6 +879,9 @@ export default {
 
   // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
   schale: {
+    proTitel: 'RadioHub PRO: die volle Version mit Aufnahmen, Podcasts, Zeitversatz und Backend',
+    proVerweis: 'RadioHub PRO: Quellcode der vollen Version mit Frontend und Backend',
+    basic: 'Basic',
     laedt: 'Lädt ...',
     bereiche: 'Bereiche',
     radio: 'Radio',

@@ -23,6 +23,15 @@
 :root {
   --rh-logo: #4a90d9;                          /* Schriftzug, dunkel */
   --rh-herz: #e0294f;                          /* Herz neben dem Schriftzug */
+  /* Zeichen PRO neben dem Herz (Nutzer 20.11.2026): poliertes Gold in 3D, Schrift wie RadioHub. Fläche mit
+     Lichtkante oben und Horizont in der Mitte, die Kanten der Prägung nach unten rechts dunkler, darunter ein
+     weicher Schatten. Glanz gehört hier zum Material, nicht zu einem Licht. */
+  --rh-gold-flaeche: linear-gradient(180deg, #fffbe6 0%, #ffe9a0 16%, #f2c64a 38%, #b47a16 50%, #d9a23a 58%, #ffe08a 82%, #fff4c4 100%);
+  --rh-gold-glanz: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / .75) 46%, transparent 58%);
+  --rh-gold-kante-1: #c18a1e;
+  --rh-gold-kante-2: #94620d;
+  --rh-gold-kante-3: #6a4306;
+  --rh-gold-schatten: rgb(40 24 0 / .55);
   --rh-regenbogen: linear-gradient(90deg, #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0); /* Unterzeile im Dunkeln */
   --rh-anzeige: var(--led-gruen);              /* Leuchtschrift der Anzeigen (wie heute grün) */
   --rh-licht-aus: #07090b;                     /* Grund eines dunklen Lichts (aus geschaltete Leuchten) */

@@ -1,23 +1,26 @@
 <script lang="ts">
   // Kopf am Rechner wie im Entwurf (mockups/radio-filter/rechner.html): Schriftzug RadioHub mit Herz (führt zum
   // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, Status (Dienst und Ablage) und die Tafel
-  // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Die
-  // Webversion (RAD-4) zeigt nur Radio und Einstellungen, ohne Status, Konto und Unterstützen (ohne Backend).
+  // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Neben dem
+  // Herz das Zeichen PRO in Gold (Nutzer 20.11.2026). Die Basic-Webversion (RAD-4) zeigt nur Radio und Einstellungen,
+  // ohne Status und Konto; dort führt PRO zum Quellcode der vollen Version und das Herz zum Unterstützen.
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
   import Darstellung from "./Darstellung.svelte";
   import Konto from "./Konto.svelte";
+  import { PRO_QUELLCODE, UNTERSTUETZEN, type Ausgabe } from "../lib/ausgabe";
 
   type Bereich = "radio" | "recordings" | "podcasts" | "settings";
-  let { online, ablage, bereiche = ["radio", "recordings", "podcasts", "settings"], backend = true }: {
+  let { online, ablage, bereiche = ["radio", "recordings", "podcasts", "settings"], ausgabe = "pro" }: {
     online?: boolean | null;
     ablage?: { verbunden: boolean; meldung?: string } | null;
     /** angebotene Bereiche in der Navigation */
     bereiche?: Bereich[];
-    /** mit Backend: Status von Dienst und Ablage, Konto, Unterstützen */
-    backend?: boolean;
+    /** PRO mit Backend (Status von Dienst und Ablage, Konto), Basic als Webversion ohne */
+    ausgabe?: Ausgabe;
   } = $props();
+  const backend = $derived(ausgabe === "pro");
 
   const ALLE = [
     { id: "radio", text: "schale.radio", symbol: "fa-radio" },
@@ -68,8 +71,11 @@
   <div class="rh-marke">
     <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}>RadioHub</a>
       {#if backend}<button class="rh-herz" type="button" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}
-              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button>{/if}</span>
-    <span class="rh-unterzeile">{t("app.digitalAudioSystem")}</span>
+              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button>
+        <span class="rh-pro" title={t("schale.proTitel")}>PRO</span>
+      {:else}<a class="rh-herz" href={UNTERSTUETZEN} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
+        <a class="rh-pro" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.proVerweis")} aria-label={t("schale.proVerweis")}>PRO</a>{/if}</span>
+    <span class="rh-unterzeile">{t("app.digitalAudioSystem")}{#if !backend}{` ${t("schale.basic")}`}{/if}</span>
   </div>
   <nav class="rh-nav" aria-label={t("schale.bereiche")}><div class="rh-nav-schiene">
     {#each BEREICHE as b, i (b.id)}

@@ -1,16 +1,20 @@
 # RadioHub - Digital Audio System
 
-Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage. Gedacht für einen Raspberry Pi im Heimnetz,
-läuft aber auf jedem Rechner mit Python und Node.js. Eine Webversion nur mit Radio läuft ohne Backend direkt im
-Browser.
+Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage, in zwei Ausgaben:
 
-**Webversion ausprobieren:** [hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/)
+- **RadioHub PRO** ist die volle Version mit Frontend und Backend, gedacht für einen Raspberry Pi im Heimnetz,
+  läuft aber auf jedem Rechner mit Python und Node.js. Dieses Repo ist ihr Quellcode.
+- **RadioHub Basic** ist die Webversion nur mit Radio; sie läuft ohne Backend direkt im Browser.
 
-![RadioHub am Rechner, dunkel, beim Spielen](media/radio-dunkel.png)
+**RadioHub Basic ausprobieren:** [hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/)
+
+![RadioHub PRO am Rechner, dunkel, beim Spielen](media/radio-dunkel.png)
 
 ---
 
 ## Funktionen
+
+Was hier steht, kann RadioHub PRO; was davon auch in Basic geht, steht unter [RadioHub Basic](#radiohub-basic).
 
 ### Radio
 
@@ -58,7 +62,7 @@ Die Kanzel unten ist gebaut wie ein Gerät: Anzeige, Quelle und Zeit, Lautstärk
 Eine eigene Oberfläche mit denselben Filtern: Liste mit Treffern, Filterblatt von unten, Spieler als Vollbild,
 quer die Weckeransicht für den Nachttisch (siehe unten).
 
-![Telefon: Liste und Filterblatt der vollen App, rechts die Webversion hell](media/telefon.png)
+![Telefon: Liste und Filterblatt von RadioHub PRO, rechts RadioHub Basic hell](media/telefon.png)
 
 ### Aufnahmen
 
@@ -90,12 +94,13 @@ Feeds abonnieren, Folgen streamen oder herunterladen.
 
 ---
 
-## Webversion
+## RadioHub Basic
 
 Die Webversion zeigt nur das Radio und braucht kein Backend: Sie läuft als statische Seite auf GitHub Pages unter
-[hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/).
+[hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/). Das goldene PRO neben dem Herz führt dort
+zu diesem Quellcode.
 
-![Webversion am Rechner](media/webversion.png)
+![RadioHub Basic am Rechner](media/webversion.png)
 
 - **Sender:** eine feste Liste der Sender, die direkt im Browser spielen (Strom über https, zuletzt erreichbar),
   aufbereitet wie in der vollen App; etwa 35.000 Sender

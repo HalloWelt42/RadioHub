@@ -45,6 +45,7 @@ export default {
     min: 'min',
     wachHalten: 'Keep screen awake',
     wachHaltenHinweis: 'Needs HTTPS; the alarm view always keeps awake.',
+    wachHaltenHinweisOhneWecker: 'Keeps the screen on while the page is open.',
     wachNichtMoeglich: 'Not possible on this device',
     thema: 'Appearance',
     hell: 'Light',
@@ -878,6 +879,9 @@ export default {
 
   // === Shell: header, navigation, display, account (RAD-6) ===
   schale: {
+    proTitel: 'RadioHub PRO: the full version with recordings, podcasts, time shift and backend',
+    proVerweis: 'RadioHub PRO: source code of the full version with frontend and backend',
+    basic: 'Basic',
     laedt: 'Loading ...',
     bereiche: 'Sections',
     radio: 'Radio',

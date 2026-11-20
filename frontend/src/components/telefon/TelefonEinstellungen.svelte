@@ -14,6 +14,7 @@
   import Konto from '../../schale/Konto.svelte';
   import DateiReiter from '../radio/einstellungen/DateiReiter.svelte';
   import { senderquelle } from '../../lib/radio';
+  import { PRO_QUELLCODE } from '../../lib/ausgabe';
 
   const ZEITEN = zeitraumZeiten();
 
@@ -97,7 +98,7 @@
       <input name="wach-halten" type="checkbox" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
         onchange={(e) => wachHaltenSetzen(e.currentTarget.checked)} />
     </label>
-    <p class="tf-klein">{wach.unterstuetzt ? t('telefon.wachHaltenHinweis') : t('telefon.wachNichtMoeglich')}</p>
+    <p class="tf-klein">{wach.unterstuetzt ? t(angebot.wecker ? 'telefon.wachHaltenHinweis' : 'telefon.wachHaltenHinweisOhneWecker') : t('telefon.wachNichtMoeglich')}</p>
   </section>
 
   {#if angebot.wecker}
@@ -153,6 +154,13 @@
   <!-- Darstellung und Konto aus der Schale, wie am Rechner in der Tafel des Kopfs -->
   <section class="darstellung"><Darstellung />{#if angebot.backend}<Konto />{/if}</section>
   {#if senderquelle.faehig.datei}<DateiReiter />{/if}
+  {#if !angebot.backend}
+    <!-- Basic: Verweis auf die volle Version (Nutzer 20.11.2026) -->
+    <section class="tf-pro">
+      <a class="rh-pro" href={PRO_QUELLCODE} target="_blank" rel="noopener" aria-label={t('schale.proVerweis')}>PRO</a>
+      <p class="tf-klein">{t('schale.proVerweis')}</p>
+    </section>
+  {/if}
 
   {#if angebot.wecker}
   <section>
@@ -206,6 +214,7 @@
   h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
   .zu { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
   section { padding: 14px 0; border-bottom: 1px solid var(--rand); }
+  .tf-pro { display: grid; justify-items: start; gap: 6px; }
   .darstellung { display: grid; gap: 14px; }
   .tf-schalter { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 17px; }
   .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }

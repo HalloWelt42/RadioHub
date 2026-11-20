@@ -15,12 +15,25 @@ html, body { height: 100%; overflow: hidden; }
 .rh-marke-zeile { display: flex; align-items: center; gap: 10px; }
 .rh-logo { font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 7px); letter-spacing: .07em; line-height: 1.05; color: var(--rh-logo);
   text-shadow: var(--rh-logo-schein); white-space: nowrap; text-decoration: none; }
-.rh-herz { display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer;
+.rh-herz { text-decoration: none; display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer;
   color: var(--rh-herz); font-size: 19px; text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-herz) 75%, transparent), var(--rh-praegung); }
 .rh-herz i { animation: rh-pochen 2.2s ease-in-out infinite; }
 .rh-herz:hover i { animation: none; transform: scale(1.18); }
 .rh-herz:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 @keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
+/* Zeichen PRO neben dem Herz: Schrift wie RadioHub, Fläche Gold (Marken --rh-gold-*), Tiefe aus gestaffelten
+   Schatten in dunklerem Gold (3D-Prägung), ein Glanz zieht beim Zeigen darüber. In der Basic-Webversion ein Verweis
+   auf den Quellcode der vollen Version. */
+.rh-pro { position: relative; display: inline-block; font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 1px);
+  letter-spacing: .06em; line-height: 1; text-decoration: none; white-space: nowrap; padding: 2px 1px 4px;
+  background-image: var(--rh-gold-glanz), var(--rh-gold-flaeche); background-size: 250% 100%, 100% 100%; background-position: 120% 0, 0 0;
+  background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(1px 1px 0 var(--rh-gold-kante-1)) drop-shadow(1px 1px 0 var(--rh-gold-kante-2)) drop-shadow(1px 1px 0 var(--rh-gold-kante-3))
+          drop-shadow(1px 3px 3px var(--rh-gold-schatten));
+  transition: background-position .9s ease; }
+a.rh-pro:hover, a.rh-pro:focus-visible { background-position: -30% 0, 0 0; }
+a.rh-pro:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .rh-pro { transition: none; } }
 .rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
 :root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
 

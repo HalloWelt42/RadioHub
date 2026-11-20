@@ -33,12 +33,14 @@ const WEB_BASIS = "/RadioHub/";
 const WEB_SYMBOLE = ["favicon.ico", "favicon-32.png", "favicon.svg", "icon-192.png", "icon-512.png", "icon-maskable-192.png",
   "icon-maskable-512.png", "apple-touch-icon.png"];
 const WEB_DATEN = ORDNER("../web/daten");
+// Name der Webversion: RadioHub Basic (die volle Version ist RadioHub PRO, Nutzer 20.11.2026)
+const WEB_NAME = "RadioHub Basic";
 
 /** Manifest der Webversion: Pfade unter der Basis */
 function webManifest(): string {
   const m = JSON.parse(readFileSync(ORDNER("public/site.webmanifest"), "utf-8"));
   const unter = (p: string) => WEB_BASIS + p.replace(/^\//, "");
-  return JSON.stringify({ ...m, id: WEB_BASIS, start_url: unter("radio"), scope: WEB_BASIS,
+  return JSON.stringify({ ...m, name: WEB_NAME, short_name: WEB_NAME, id: WEB_BASIS, start_url: unter("radio"), scope: WEB_BASIS,
     icons: m.icons.map((i: { src: string }) => ({ ...i, src: unter(i.src) })) }, null, 2);
 }
 
@@ -50,7 +52,8 @@ function webDateien(): Plugin {
     name: "web-dateien",
     configResolved: (c) => { aus = c.build.outDir; },
     // Verweise der Startseite auf Symbole und Manifest unter die Basis (ohne öffentlichen Ordner setzt Vite sie nicht)
-    transformIndexHtml: (html) => html.replace(/href="\/([^"/]+\.(?:ico|png|svg|webmanifest))"/g, `href="${WEB_BASIS}$1"`),
+    transformIndexHtml: (html) => html.replace(/href="\/([^"/]+\.(?:ico|png|svg|webmanifest))"/g, `href="${WEB_BASIS}$1"`)
+      .replace("<title>RadioHub</title>", `<title>${WEB_NAME}</title>`).replace('content="RadioHub"', `content="${WEB_NAME}"`),
     configureServer(server) {
       server.middlewares.use((req, res, weiter) => {
         const pfad = (req.url ?? "").split("?")[0].replace(WEB_BASIS, "/");

@@ -43,7 +43,7 @@
   <Telefon angebot={TELEFON} />
 {:else}
   <div class="rh-app">
-    <Kopf bereiche={[...BEREICHE]} backend={false} />
+    <Kopf bereiche={[...BEREICHE]} ausgabe="basic" />
     <main class="rh-mitte">
       {#if appState.activeTab === "settings"}
         <div class="rh-web-einst"><SetupRadio /></div>
