@@ -171,7 +171,7 @@ export default {
   einst: {
     einstellungen: 'Settings',
     radio: 'Radio',
-    reiter: { regeln: 'Exclusion rules', ausgeblendet: 'Hidden stations', laender: 'Sidebar countries', werbung: 'Ad detection', abgleich: 'Station directory', kategorien: 'Categories' },
+    reiter: { regeln: 'Exclusion rules', ausgeblendet: 'Hidden stations', laender: 'Sidebar countries', werbung: 'Ad detection', abgleich: 'Station directory', kategorien: 'Categories', datei: 'Own data' },
     gesamt: 'Total',
     sichtbar: 'Visible',
     durchRegelnAus: 'Hidden by rules',
@@ -290,5 +290,18 @@ export default {
     nochNie: 'never',
     jetztAbgleichen: 'Sync now',
     zustand: { wartet: 'waiting', laeuft: 'running', fertig: 'done', fehler: 'error', abgebrochen: 'cancelled', unterbrochen: 'interrupted' },
+  },
+  // Own data as a file (web version, RAD-4)
+  datei: {
+    titel: 'Own data',
+    erklaerung: 'Favorites, ratings, rules, blocks, exceptions and the sidebar countries are stored only in this browser. Save them as a file to restore them on another device or after clearing the browser.',
+    sichern: 'Save as file',
+    einspielen: 'Load file',
+    gesichert: 'Own data saved as a file',
+    frage: 'Take over own data from the file?',
+    ersetzt: 'The file {datei} replaces all own data in this browser: {favoriten} favorites, {bewertungen} ratings, {regeln} rules, {sperren} blocks and {freigaben} exceptions. The current data will be lost; save it first if you want to keep it.',
+    ersetzen: 'Replace',
+    eingespielt: 'Loaded: {n} favorites, {r} rules',
+    ungueltig: 'The file cannot be loaded: {meldung}',
   },
 };

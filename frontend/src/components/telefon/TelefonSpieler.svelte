@@ -1,7 +1,8 @@
 <script>
   /**
    * Spielerleiste über der Fußleiste (Bild, Titel, Wiedergabe/Pause); antippen öffnet den Spieler als Vollbild:
-   * bei Folgen Position, Spulen, 15 s zurück und 30 s vor; beim Radio voriger und nächster Favorit.
+   * bei Folgen Position, Spulen, 15 s zurück und 30 s vor; beim Radio voriger und nächster Sender und Stopp. Der große
+   * Knopf hält nur an und setzt fort, beendet wird nur über Stopp (Nutzer 20.11.2026, wie an der Kanzel).
    */
   import { appState } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
@@ -39,7 +40,7 @@
       </span>
     </button>
     <button class="tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
-      <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
+      <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
     </button>
   </div>
 {/if}
@@ -81,8 +82,11 @@
         <button class="tf-rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
           <i class="fa-solid fa-backward-step"></i>
         </button>
-        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.stopp') : t('telefon.abspielen')}>
-          <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
+        <button class="tf-rund mittel" onclick={steuerung.stoppen} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
+          <i class="fa-solid fa-stop"></i>
+        </button>
+        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+          <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
         <button class="tf-rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
           <i class="fa-solid fa-forward-step"></i>

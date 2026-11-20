@@ -7,6 +7,7 @@
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { appState } from "../../lib/store.svelte.js";
+  import { appPfad } from "../../lib/router.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
   import { bewertungName, format, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
@@ -35,7 +36,7 @@
   onMount(() => {
     filterzustand.ansicht();
     void bedienung.bestandLaden();
-    const zurueck = () => { if (window.location.pathname.startsWith("/radio")) filterzustand.ausAdresse(); };
+    const zurueck = () => { if (appPfad().startsWith("/radio")) filterzustand.ausAdresse(); };
     window.addEventListener("popstate", zurueck);
     return () => window.removeEventListener("popstate", zurueck);
   });

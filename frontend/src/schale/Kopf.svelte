@@ -1,21 +1,31 @@
 <script lang="ts">
   // Kopf am Rechner wie im Entwurf (mockups/radio-filter/rechner.html): Schriftzug RadioHub mit Herz (führt zum
   // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, Status (Dienst und Ablage) und die Tafel
-  // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot).
+  // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Die
+  // Webversion (RAD-4) zeigt nur Radio und Einstellungen, ohne Status, Konto und Unterstützen (ohne Backend).
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
   import Darstellung from "./Darstellung.svelte";
   import Konto from "./Konto.svelte";
 
-  let { online, ablage }: { online: boolean | null; ablage: { verbunden: boolean; meldung?: string } | null } = $props();
+  type Bereich = "radio" | "recordings" | "podcasts" | "settings";
+  let { online, ablage, bereiche = ["radio", "recordings", "podcasts", "settings"], backend = true }: {
+    online?: boolean | null;
+    ablage?: { verbunden: boolean; meldung?: string } | null;
+    /** angebotene Bereiche in der Navigation */
+    bereiche?: Bereich[];
+    /** mit Backend: Status von Dienst und Ablage, Konto, Unterstützen */
+    backend?: boolean;
+  } = $props();
 
-  const BEREICHE = [
+  const ALLE = [
     { id: "radio", text: "schale.radio", symbol: "fa-radio" },
     { id: "recordings", text: "schale.aufnahmen", symbol: "fa-circle-dot" },
     { id: "podcasts", text: "schale.podcasts", symbol: "fa-podcast" },
     { id: "settings", text: "schale.einstellungen", symbol: "fa-sliders" },
   ] as const;
+  const BEREICHE = $derived(ALLE.filter((b) => bereiche.includes(b.id)));
 
   // welcher Bereich die laufende Wiedergabe trägt
   const spielt = $derived(
@@ -57,8 +67,8 @@
 <header class="rh-kopf">
   <div class="rh-marke">
     <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}>RadioHub</a>
-      <button class="rh-herz" type="button" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}
-              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button></span>
+      {#if backend}<button class="rh-herz" type="button" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}
+              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button>{/if}</span>
     <span class="rh-unterzeile">{t("app.digitalAudioSystem")}</span>
   </div>
   <nav class="rh-nav" aria-label={t("schale.bereiche")}><div class="rh-nav-schiene">
@@ -71,6 +81,7 @@
     {/each}
   </div></nav>
   <div class="rh-kopf-rechts">
+    {#if backend}
     <div class="rh-status">
       <!-- die Leuchte schreibt ihren Text einmal; ändert er sich, entsteht sie neu -->
       {#key online}<ak-led farbe={online === false ? "rot" : "gruen"} zustand={online === null ? "aus" : "an"} text={online === false ? t("nav.offline") : t("nav.online")}
@@ -80,12 +91,13 @@
                 hilfe={ablage.verbunden ? t("schale.ablageDa") : (ablage.meldung || t("schale.ablageWeg"))}></ak-led>
       {/if}
     </div>
+    {/if}
     <div class="rh-darstellung">
       <button class="knopf" type="button" bind:this={darstellungsKnopf} aria-controls="tafel-darstellung" aria-expanded={offen}
               title={t("schale.darstellungTitel")} onclick={() => (offen = !offen)}><i class="fa-solid fa-circle-half-stroke"></i><span>{t("schale.darstellung")}</span></button>
       <div class="rh-tafel" id="tafel-darstellung" role="dialog" aria-label={t("schale.darstellung")} hidden={!offen} bind:this={tafel}>
         <Darstellung />
-        <Konto />
+        {#if backend}<Konto />{/if}
       </div>
     </div>
   </div>

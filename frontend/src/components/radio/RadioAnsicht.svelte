@@ -7,6 +7,7 @@
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { appState } from "../../lib/store.svelte.js";
+  import { appPfad } from "../../lib/router.js";
   import * as sfx from "../../lib/uiSounds.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
@@ -89,7 +90,7 @@
 
   // Zurück und Vor im Browser: Filter aus der Adresse
   onMount(() => {
-    const zurueck = () => { if (window.location.pathname.startsWith("/radio")) filterzustand.ausAdresse(); };
+    const zurueck = () => { if (appPfad().startsWith("/radio")) filterzustand.ausAdresse(); };
     window.addEventListener("popstate", zurueck);
     void bedienung.bestandLaden();
     return () => window.removeEventListener("popstate", zurueck);

@@ -1,0 +1,49 @@
+# Webversion nur mit Radio auf GitHub Pages (RAD-4): bei jedem Push auf main die Tests der Oberfläche, dann der Bau
+# der Webversion (vite --mode web) mit der statischen Senderliste aus web/daten, dann die Auslieferung. Die volle App
+# rollt weiter über tools/ausrollen.sh auf den eigenen Rechner aus; dieser Ablauf berührt sie nicht.
+name: Webversion
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", "web/**", "version.json", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist-web
+
+  ausliefern:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4

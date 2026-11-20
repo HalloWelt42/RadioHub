@@ -7,12 +7,17 @@
   import Spulzeile from "./Spulzeile.svelte";
   import { live, spulen } from "./aktionen";
   import { positionStand, SPUL_RUHE, zeitversatzStand, type Anzeige, type Stand } from "./kanzel";
+  import { faehigkeiten } from "../lib/playerEngine.js";
+
+  // ohne Zeitversatz und ohne Folgen (Webversion) gibt es nichts zu spulen: die Zeile entfällt dort
+  const kann = faehigkeiten();
+  const spulbar = kann.zeitversatz || kann.folgen;
   import type { Wiedergabe } from "./wiedergabe.svelte";
 
   let { anzeige, stand, wiedergabe }: { anzeige: Anzeige; stand: Stand; wiedergabe: Wiedergabe } = $props();
 
   const ruht = $derived(anzeige.zeile === null);
-  const versatz = $derived(anzeige.zeile === "zeitversatz" ? zeitversatzStand(stand, t) : ruht ? SPUL_RUHE : null);
+  const versatz = $derived(anzeige.zeile === "zeitversatz" ? zeitversatzStand(stand, t) : ruht && spulbar ? SPUL_RUHE : null);
   const position = $derived(anzeige.zeile === "position" ? positionStand(stand, t) : null);
   const spulenGesperrt = $derived(stand.isRecording || anzeige.zustand === "laedt" || anzeige.zustand === "fehler");
 </script>

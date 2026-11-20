@@ -149,6 +149,9 @@ export interface Senderquelle {
   // ----- Eigene Angaben als Datei (nur mit faehig.datei) -------------------------------------------------------------
   /** alle eigenen Angaben als Text einer Datei (JSON) */
   sichern?(): Promise<string>;
+  /** Text einer gesicherten Datei prüfen, ohne etwas zu übernehmen: was das Einspielen übernähme (für die Rückfrage);
+   *  wirft bei einer ungültigen Datei einen Fehler mit lesbarer Meldung */
+  pruefen?(inhalt: string): Promise<Einspielbericht>;
   /** Text einer gesicherten Datei einspielen; ersetzt die eigenen Angaben, meldet was übernommen wurde */
   einspielen?(inhalt: string): Promise<Einspielbericht>;
 }

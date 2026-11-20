@@ -4,7 +4,7 @@
   // Schriftstufen); Aufnahmen, Podcasts und Einstellungen sind die bisherigen, sie stehen in .rh-alt und wachsen mit der
   // Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
   import Kanzel from "./spieler/Kanzel.svelte";
-  import { spielenOderPause } from "./spieler/aktionen";
+  import { tasteDerApp } from "./schale/tastatur";
   import RadioAnsicht from "./components/radio/RadioAnsicht.svelte";
   import RecordingsTab from "./components/RecordingsTab.svelte";
   import PodcastsTab from "./components/PodcastsTab.svelte";
@@ -62,45 +62,10 @@
     actions.navigateTo(a.getAttribute("href"));
   }
 
-  // Tastatur am Rechner: Leertaste wie die Taste Spielen (spielen, Pause, weiter), S beendet, Pfeile für Lautstärke und Sender, M stumm, 1 bis 4
-  // wählen den Bereich. Bei laufender Aufnahme sind Anhalten, Beenden und Senderwechsel gesperrt.
+  // Tastatur am Rechner (lib/tastatur.ts): die Ziffern wählen die Bereiche in der Reihenfolge der Navigation
+  const BEREICHE = ["radio", "recordings", "podcasts", "settings"] as const;
   function taste(e: KeyboardEvent) {
-    if (geraet.telefon) return;
-    const ziel = e.target as HTMLElement;
-    if (ziel.tagName === "INPUT" || ziel.tagName === "TEXTAREA" || ziel.tagName === "SELECT" || ziel.isContentEditable) return;
-    const aufnahme = appState.isRecording;
-    switch (e.key) {
-      case " ":
-        e.preventDefault();
-        if (!aufnahme) spielenOderPause();
-        break;
-      case "s":
-        if (!aufnahme && !e.ctrlKey && !e.metaKey) actions.stop();
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        actions.setVolume(Math.min(100, appState.volume + 5));
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        actions.setVolume(Math.max(0, appState.volume - 5));
-        break;
-      case "ArrowLeft":
-        e.preventDefault();
-        if (!aufnahme) actions.navigatePrev();
-        break;
-      case "ArrowRight":
-        e.preventDefault();
-        if (!aufnahme) actions.navigateNext();
-        break;
-      case "m":
-        if (!e.ctrlKey && !e.metaKey) actions.setVolume(appState.volume > 0 ? 0 : 70);
-        break;
-      case "1": actions.setTab("radio"); break;
-      case "2": actions.setTab("recordings"); break;
-      case "3": actions.setTab("podcasts"); break;
-      case "4": actions.setTab("settings"); break;
-    }
+    if (!geraet.telefon) tasteDerApp(e, BEREICHE);
   }
 </script>
 
@@ -110,7 +75,7 @@
   <Telefon />
 {:else}
   <div class="rh-app">
-    <Kopf {online} {ablage} />
+    <Kopf {online} {ablage} bereiche={[...BEREICHE]} />
     <!-- die neue Radio-Ansicht liest die Marken direkt; nur die alten Bereiche wachsen als Ganzes (rh-alt) -->
     <main class="rh-mitte" class:rh-alt={appState.activeTab !== "radio" && appState.activeTab !== "wecker"}>
       {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}

@@ -2,7 +2,8 @@
   // Einstellungen > Radio (Entwurf mockups/radio-filter/regeln.html, RAD-7): Pfad und Reiter über dem Rollfeld.
   // Ausschlussregeln, ausgeblendete Sender, Länder der Seitenleiste, Werbeerkennung und Abgleich sind neu gebaut; die
   // Kategorien bleiben die bisherigen. Der Reiter steht in der Adresse (/einstellungen/radio/<reiter>); frühere Adressen
-  // (filter, sender) führen zum passenden neuen Reiter.
+  // (filter, sender) führen zum passenden neuen Reiter. Welche Reiter es gibt, sagt die Senderquelle (Webversion: ohne
+  // Werbeerkennung, Abgleich und Kategorien, dafür Eigene Daten als Datei).
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { senderquelle } from "../../lib/radio";
@@ -11,15 +12,17 @@
   import LaenderReiter from "../radio/einstellungen/LaenderReiter.svelte";
   import WerbungReiter from "../radio/einstellungen/WerbungReiter.svelte";
   import AbgleichReiter from "../radio/einstellungen/AbgleichReiter.svelte";
+  import DateiReiter from "../radio/einstellungen/DateiReiter.svelte";
   import SetupKategorien from "./SetupKategorien.svelte";
 
   const REITER = [
     { id: "regeln", symbol: "fa-filter-circle-xmark" },
     { id: "ausgeblendet", symbol: "fa-eye-slash" },
     { id: "laender", symbol: "fa-earth-europe" },
-    { id: "werbung", symbol: "fa-rectangle-ad" },
+    ...(senderquelle.faehig.werbung ? [{ id: "werbung", symbol: "fa-rectangle-ad" }] : []),
     ...(senderquelle.faehig.abgleich ? [{ id: "abgleich", symbol: "fa-arrows-rotate" }] : []),
     ...(senderquelle.faehig.kategorien ? [{ id: "kategorien", symbol: "fa-folder" }] : []),
+    ...(senderquelle.faehig.datei ? [{ id: "datei", symbol: "fa-box-archive" }] : []),
   ] as const;
   const FRUEHER: Record<string, string> = { filter: "regeln", sender: "werbung" };
 
@@ -50,6 +53,7 @@
     {:else if reiter === "laender"}<LaenderReiter />
     {:else if reiter === "werbung"}<WerbungReiter />
     {:else if reiter === "abgleich"}<AbgleichReiter />
+    {:else if reiter === "datei"}<DateiReiter />
     {:else if reiter === "kategorien"}<section class="rh-reiter"><div class="rh-alt"><SetupKategorien /></div></section>
     {/if}
   </div>

@@ -1,5 +1,9 @@
 <script>
-  /** Sparsame Einstellungen am Telefon: wach halten, Darstellung, Ort für Sonnenzeiten, Stand der Ablage. */
+  /**
+   * Sparsame Einstellungen am Telefon: wach halten, Darstellung, Ort für Sonnenzeiten, Stand der Ablage. Das Angebot
+   * sagt, was es gibt (Webversion, RAD-4: ohne Wecker und Backend, also ohne Zeitansage, Ort, Konto und Ablage, dafür
+   * Eigene Daten als Datei).
+   */
   import { t } from '../../lib/i18n.svelte.js';
   import { api } from '../../lib/api.js';
   import { wach, wachHaltenSetzen } from '../../lib/telefon/wachHalten.svelte.js';
@@ -8,10 +12,12 @@
   import { ABSTAENDE_MIN, SCHLUMMER_ABSTAND_MIN, zeitraumZeiten } from '../../lib/telefon/zeitplan.js';
   import Darstellung from '../../schale/Darstellung.svelte';
   import Konto from '../../schale/Konto.svelte';
+  import DateiReiter from '../radio/einstellungen/DateiReiter.svelte';
+  import { senderquelle } from '../../lib/radio';
 
   const ZEITEN = zeitraumZeiten();
 
-  let { onschliessen } = $props();
+  let { onschliessen, angebot = { wecker: true, backend: true } } = $props();
   let ort = $state({ name: '', breite: '', laenge: '' });
   let ortMeldung = $state('');
   let ablage = $state(null);
@@ -20,7 +26,7 @@
   function bausteineAbfragen() {
     zeitStand().then((s) => (bausteine = s)).catch(() => (bausteine = null));
   }
-  $effect(() => { bausteineAbfragen(); });
+  $effect(() => { if (angebot.wecker) bausteineAbfragen(); });
 
   async function bausteineErzeugen() {
     await api.fetch('/api/zeitansage/erzeugen', { method: 'POST' });
@@ -28,11 +34,11 @@
   }
 
   $effect(() => {
-    weckerLaden().then(() => {
+    if (angebot.wecker) weckerLaden().then(() => {
       const o = weckerdaten.ort;
       ort = { name: o.name || '', breite: o.breite ?? '', laenge: o.laenge ?? '' };
     });
-    api.getAblage().then((a) => (ablage = a)).catch(() => (ablage = { verbunden: false, meldung: t('telefon.fehler') }));
+    if (angebot.backend) api.getAblage().then((a) => (ablage = a)).catch(() => (ablage = { verbunden: false, meldung: t('telefon.fehler') }));
   });
 
   const zahl = (w) => (String(w).trim() === '' ? null : Number(String(w).replace(',', '.')));
@@ -94,6 +100,7 @@
     <p class="tf-klein">{wach.unterstuetzt ? t('telefon.wachHaltenHinweis') : t('telefon.wachNichtMoeglich')}</p>
   </section>
 
+  {#if angebot.wecker}
   <section>
     <label class="tf-schalter">
       <span>{t('telefon.zeitansage')}</span>
@@ -141,9 +148,13 @@
     {/if}
   </section>
 
-  <!-- Darstellung und Konto aus der Schale, wie am Rechner in der Tafel des Kopfs -->
-  <section class="darstellung"><Darstellung /><Konto /></section>
+  {/if}
 
+  <!-- Darstellung und Konto aus der Schale, wie am Rechner in der Tafel des Kopfs -->
+  <section class="darstellung"><Darstellung />{#if angebot.backend}<Konto />{/if}</section>
+  {#if senderquelle.faehig.datei}<DateiReiter />{/if}
+
+  {#if angebot.wecker}
   <section>
     <h3>{t('telefon.ort')}</h3>
     {#if weckerdaten.ort.breite == null}<p class="tf-klein">{t('telefon.ortFehlt')}</p>{/if}
@@ -168,6 +179,7 @@
     <button class="tf-knopf" onclick={ortSichern}>{t('telefon.speichern')}</button>
     {#if ortMeldung}<p class="tf-klein">{ortMeldung}</p>{/if}
   </section>
+  {/if}
 
   {#if ablage}
     <section>

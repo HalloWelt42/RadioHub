@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "allowJs": true,
     "checkJs": false,
-    "types": ["svelte"]
+    "types": ["svelte"],
+    "paths": { "$ziel/*": ["./src/ziel/voll/*"] }
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }

@@ -93,6 +93,7 @@ globalThis.localStorage = {
 
 import * as engine from '../src/lib/playerEngine.js';
 import { api } from '../src/lib/api.js';
+import { direkt } from '../src/lib/wiedergabeweg.js';
 
 // === Test Fixtures ===
 
@@ -212,6 +213,27 @@ describe('PlayerEngine', () => {
     it('meldet nicht initialisiert ohne Audio', () => {
       engine._resetForTest();
       expect(engine.isInitialized()).toBe(false);
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Weg der Wiedergabe (RAD-4): direkt in der Webversion
+  // ----------------------------------------------------------
+  describe('Weg direkt (Webversion)', () => {
+    it('spielt die https-Adresse des Senders, ohne Zeitversatz und ohne Backend', async () => {
+      engine.wegSetzen(direkt);
+      api.startHLS.mockClear();
+      api.updateConfig.mockClear();
+      await engine.playStation({ ...STATION_A, url_resolved: 'https://strom-a.example/live' });
+      expect(audioEl.src).toBe('https://strom-a.example/live');
+      expect(state.playerMode).toBe('direct');
+      await vi.advanceTimersByTimeAsync?.(3000);
+      expect(api.startHLS).not.toHaveBeenCalled();
+      expect(api.updateConfig).not.toHaveBeenCalled();
+      expect(engine.faehigkeiten()).toEqual({ zeitversatz: false, aufnahme: false, folgen: false });
+    });
+    it('volle App: über den Durchleiter des Backends mit Zeitversatz', () => {
+      expect(engine.faehigkeiten()).toEqual({ zeitversatz: true, aufnahme: true, folgen: true });
     });
   });
 

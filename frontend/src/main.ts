@@ -1,5 +1,6 @@
 import { mount } from "svelte";
-import Wurzel from "./schale/Wurzel.svelte";
+// Wurzel je Bauziel ($ziel/wurzel): volle App mit Anmeldung oder Webversion nur mit Radio (RAD-4)
+import { Wurzel } from "$ziel/wurzel";
 
 // Gestaltung in Schichten (Entscheidung 24): Schriften, Symbole, Marken und Schale des Appkerns, seine Instrumente und
 // Vorlagen in allen Breiten (auch am Telefon), dann die Marken des Radios mit seiner Vorlage, Bausteine und Anordnung.

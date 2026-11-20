@@ -19,6 +19,7 @@
  */
 import Hls from 'hls.js';
 import { api } from './api.js';
+import { ueberBackend } from './wiedergabeweg.js';
 
 // === Interne State-Variablen (nicht reaktiv) ===
 let _audioEl = null;
@@ -37,6 +38,8 @@ let _podcastPositionInterval = null;
 let _errorTimer = null;
 let _reconnectAttempts = 0;
 const _MAX_RECONNECT = 3;
+/** Weg der Wiedergabe (wiedergabeweg.js): Backend in der vollen App, direkt in der Webversion */
+let _weg = ueberBackend;
 
 /**
  * Zeigt die Fehlermeldung als Meldung der Schale (schale/Meldung.svelte).
@@ -63,6 +66,18 @@ export function init(audioElement, appState) {
   if (_audioEl && _appState) {
     _audioEl.volume = _appState.volume / 100;
   }
+}
+
+/**
+ * Setzt den Weg der Wiedergabe (vor dem ersten Abspielen): woher der Strom kommt, ob es Zeitversatz und Aufnahme gibt.
+ */
+export function wegSetzen(weg) {
+  _weg = weg;
+}
+
+/** Was der Weg kann (für die Kanzel: sie zeigt nur, was geht). */
+export function faehigkeiten() {
+  return { zeitversatz: _weg.zeitversatz, aufnahme: _weg.aufnahme, folgen: _weg.folgen };
 }
 
 /**
@@ -156,7 +171,7 @@ export async function playStation(station) {
   }
 
 
-  _audioEl.src = api.getStationStreamUrl(station.uuid);
+  _audioEl.src = _weg.stromAdresse(station);
   _audioEl.load();
 
   try {
@@ -167,14 +182,11 @@ export async function playStation(station) {
   }
   if (_generation !== gen) return;
 
-  // --- Phase 6: HLS-Buffer im Hintergrund starten ---
-  _startHLSBackground(station, gen);
+  // --- Phase 6: HLS-Buffer im Hintergrund starten (nur mit Zeitversatz im Weg) ---
+  if (_weg.zeitversatz) _startHLSBackground(station, gen);
 
   // --- Phase 7: Last Station speichern ---
-  api.updateConfig({
-    last_station_uuid: station.uuid,
-    last_station_name: station.name
-  }).catch(() => {});
+  _weg.merken(station);
 }
 
 // ============================================================
@@ -686,7 +698,7 @@ function _switchToDirect() {
   _destroyHLS();
 
   // auch hier über den Durchleiter: unter HTTPS lädt der Browser keinen http-Strom, und die Adresse kennt das Backend
-  _audioEl.src = api.getStationStreamUrl(_appState.currentStation.uuid);
+  _audioEl.src = _weg.stromAdresse(_appState.currentStation);
   _audioEl.load();
   _audioEl.play().catch(e => console.error('Direct play error:', e));
 
@@ -1478,7 +1490,7 @@ function _switchToHLSPodcast(gen, episode) {
 
 function _playDirectFallback(gen) {
   if (_generation !== gen || !_audioEl || !_appState?.currentStation) return;
-  _audioEl.src = api.getStationStreamUrl(_appState.currentStation.uuid);
+  _audioEl.src = _weg.stromAdresse(_appState.currentStation);
   _audioEl.load();
   _audioEl.play().catch(e => console.error('Fallback play error:', e));
 }
@@ -1543,6 +1555,7 @@ export function _resetForTest() {
   _audioEl = null;
   _appState = null;
   _generation = 0;
+  _weg = ueberBackend;
   _recordingStartTime = null;
   _hlsSessionId = null;
   _lastSeekPosition = 0;

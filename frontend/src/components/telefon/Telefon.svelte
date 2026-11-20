@@ -21,6 +21,9 @@
   import TelefonEinstellungen from './TelefonEinstellungen.svelte';
   import Meldung from '../../schale/Meldung.svelte';
 
+  /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
+  let { angebot = { podcasts: true, wecker: true, backend: true } } = $props();
+
   let audioEl = $state();
   let zeit = $state(0);
   let dauer = $state(0);
@@ -37,9 +40,10 @@
   // Favoriten und Abos beim Start und wieder, wenn die App nach vorn kommt (die Ansicht bleibt am Telefon und am
   // Nachttisch tagelang offen; ein einmal gescheitertes Laden bliebe sonst bis zum Neuladen leer)
   $effect(() => {
+    if (!angebot.backend) return;
     const laden = () => {
       actions.loadFavorites();
-      actions.loadPodcasts();
+      if (angebot.podcasts) actions.loadPodcasts();
     };
     laden();
     const sichtbar = () => { if (document.visibilityState === 'visible') laden(); };
@@ -86,6 +90,7 @@
     abspielen,
     pause,
     umschalten: () => (appState.isPlaying && !appState.isPaused ? pause() : abspielen()),
+    stoppen: () => { wunsch.spielen = false; actions.stop(); },
     zurueck: (s) => engine.skip(-s),
     vor: (s) => engine.skip(s),
     springen: (sek) => { if (dauer > 0) engine.seek((sek / dauer) * 100); },
@@ -103,16 +108,18 @@
   );
 </script>
 
-<div class="rh-telefon" class:mobil={!geraet.quer} data-rahmen={geraet.quer ? undefined : 'app'}>
-  {#if geraet.quer}
+<div class="rh-telefon" class:mobil={!geraet.quer || !angebot.wecker} data-rahmen={geraet.quer && angebot.wecker ? undefined : 'app'}>
+  {#if geraet.quer && angebot.wecker}
     <TelefonWecker {steuerung} audio={audioEl} />
   {:else}
     <div class="t-kopf mit-aktionen" data-rahmen="kopf">
       <h1>{titel}</h1>
       <span class="t-aktionen">
+        {#if angebot.wecker}
         <button class="rund" class:aktiv={appState.activeTab === 'wecker'}
           onclick={() => actions.navigateTo(appState.activeTab === 'wecker' ? '/radio' : '/wecker')}
           aria-label={t('telefon.wecker')} title={t('telefon.wecker')}><i class="fa-solid fa-clock"></i></button>
+        {/if}
         <button class="rund" onclick={() => (einstellungenOffen = true)}
           aria-label={t('telefon.einstellungen')} title={t('telefon.einstellungen')}><i class="fa-solid fa-sliders"></i></button>
       </span>
@@ -121,9 +128,9 @@
     <!-- Radio ist neu gebaut (RAD-7): eigene Rollfelder, Marken direkt; die übrigen Bereiche wachsen als Ganzes (rh-alt) -->
     <main class="t-inhalt" class:rh-alt={appState.activeTab === "podcasts" || appState.activeTab === "wecker"}
           class:tf-radio-inhalt={appState.activeTab !== "podcasts" && appState.activeTab !== "wecker"} data-rahmen="inhalt">
-      {#if appState.activeTab === 'podcasts'}
+      {#if appState.activeTab === 'podcasts' && angebot.podcasts}
         <TelefonPodcasts />
-      {:else if appState.activeTab === 'wecker'}
+      {:else if appState.activeTab === 'wecker' && angebot.wecker}
         <TelefonWeckerListe />
       {:else}
         <TelefonRadio />
@@ -132,6 +139,7 @@
 
     <div class="rh-alt"><TelefonSpieler bind:offen={spielerOffen} {zeit} {dauer} {steuerung} /></div>
 
+    {#if angebot.podcasts}
     <nav class="t-reiter" data-rahmen="fuss">
       <button class:aktiv={appState.activeTab === 'radio'} onclick={() => actions.navigateTo('/radio')}>
         <i class="fa-solid fa-radio"></i><span class="t-reiter-name">{t('telefon.radio')}</span>
@@ -140,11 +148,12 @@
         <i class="fa-solid fa-podcast"></i><span class="t-reiter-name">{t('telefon.podcasts')}</span>
       </button>
     </nav>
+    {/if}
     <Meldung />
   {/if}
 
   {#if einstellungenOffen}
-    <TelefonEinstellungen onschliessen={() => (einstellungenOffen = false)} />
+    <TelefonEinstellungen onschliessen={() => (einstellungenOffen = false)} angebot={{ wecker: angebot.wecker, backend: angebot.backend }} />
   {/if}
 
   <!-- svelte-ignore a11y_media_has_caption -->

@@ -171,7 +171,7 @@ export default {
   einst: {
     einstellungen: 'Einstellungen',
     radio: 'Radio',
-    reiter: { regeln: 'Ausschlussregeln', ausgeblendet: 'Ausgeblendete Sender', laender: 'Länder der Seitenleiste', werbung: 'Werbeerkennung', abgleich: 'Senderverzeichnis', kategorien: 'Kategorien' },
+    reiter: { regeln: 'Ausschlussregeln', ausgeblendet: 'Ausgeblendete Sender', laender: 'Länder der Seitenleiste', werbung: 'Werbeerkennung', abgleich: 'Senderverzeichnis', kategorien: 'Kategorien', datei: 'Eigene Daten' },
     gesamt: 'Gesamt',
     sichtbar: 'Sichtbar',
     durchRegelnAus: 'Durch Regeln aus',
@@ -290,5 +290,18 @@ export default {
     nochNie: 'noch nie',
     jetztAbgleichen: 'Jetzt abgleichen',
     zustand: { wartet: 'wartet', laeuft: 'läuft', fertig: 'fertig', fehler: 'Fehler', abgebrochen: 'abgebrochen', unterbrochen: 'unterbrochen' },
+  },
+  // Eigene Daten als Datei (Webversion, RAD-4)
+  datei: {
+    titel: 'Eigene Daten',
+    erklaerung: 'Favoriten, Bewertungen, Regeln, Sperren, Freigaben und die Länder der Seitenleiste liegen nur in diesem Browser. Sichere sie als Datei, um sie auf einem anderen Gerät oder nach dem Leeren des Browsers wieder einzuspielen.',
+    sichern: 'Als Datei sichern',
+    einspielen: 'Datei einspielen',
+    gesichert: 'Eigene Daten als Datei gesichert',
+    frage: 'Eigene Daten aus der Datei übernehmen?',
+    ersetzt: 'Die Datei {datei} ersetzt alle eigenen Daten in diesem Browser: {favoriten} Favoriten, {bewertungen} Bewertungen, {regeln} Regeln, {sperren} Sperren und {freigaben} Freigaben. Die bisherigen gehen dabei verloren; sichere sie vorher, wenn du sie behalten willst.',
+    ersetzen: 'Ersetzen',
+    eingespielt: 'Eingespielt: {n} Favoriten, {r} Regeln',
+    ungueltig: 'Die Datei lässt sich nicht einspielen: {meldung}',
   },
 };

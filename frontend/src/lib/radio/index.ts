@@ -1,15 +1,16 @@
-// Verdrahtung der Senderquelle in der vollen App: die Umsetzung gegen das Backend, der Zustand der Schnellfilter an der
-// Adresse des Browsers. Die Webversion (RAD-4) setzt hier ihre eigene Umsetzung ein; die Ansichten bleiben dieselben.
+// Verdrahtung der Senderquelle: welche Umsetzung gilt, sagt das Bauziel ($ziel/quelle: Backend in der vollen App,
+// statische Liste in der Webversion, RAD-4); der Zustand der Schnellfilter steht an der Adresse des Browsers. Die
+// Ansichten kennen nur diese Stelle.
 import { actions } from "../store.svelte.js";
-import { BackendQuelle } from "./backend";
+import { appPfad } from "../router.js";
 import { Filterzustand } from "./filterzustand.svelte";
-import type { Senderquelle } from "./quelle";
+import { senderquelle } from "$ziel/quelle";
 import { Werbeerkennung } from "./werbeerkennung";
 
-export const senderquelle: Senderquelle = new BackendQuelle({ beiFavoriten: () => void actions.loadFavorites() });
+export { senderquelle };
 
 export const filterzustand = new Filterzustand({
-  pfad: () => window.location.pathname,
+  pfad: () => appPfad(),
   abfrage: () => window.location.search.replace(/^\?/, ""),
   ersetzen: (pfad) => actions.navigateTo(pfad, { replace: true }),
   neu: (pfad) => actions.navigateTo(pfad),

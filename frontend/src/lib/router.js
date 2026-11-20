@@ -12,6 +12,22 @@
  * Der Server liefert für unbekannte Pfade index.html (Dateien mit Endung nicht).
  */
 
+// Basis der Adressen aus dem Bau (Vite base): leer in der vollen App, etwa "/RadioHub" in der Webversion auf GitHub
+// Pages (RAD-4). Die App rechnet nur mit Pfaden ohne Basis (/radio ...); nur hier wird sie an- und abgesetzt.
+const BASIS = ((import.meta.env && import.meta.env.BASE_URL) || '/').replace(/\/+$/, '');
+
+/** Pfad der App ohne Basis (/radio/...), aus der Adresse des Browsers */
+export function appPfad() {
+  const pfad = window.location.pathname;
+  if (BASIS && (pfad === BASIS || pfad.startsWith(BASIS + '/'))) return pfad.slice(BASIS.length) || '/';
+  return pfad;
+}
+
+/** Adresse des Browsers zu einem Pfad der App */
+export function adresse(pfad) {
+  return BASIS + pfad;
+}
+
 // Mapping: Store Tab-ID -> Route-Prefix
 const TAB_TO_ROUTE = {
   radio: 'radio',
@@ -122,15 +138,15 @@ export function getSubDefault(subTab) {
 export function navigate(path, { replace = false } = {}) {
   // Vergleich mit der echten Adresse samt Abfrage: der zuletzt gemerkte Pfad kennt die Abfrage nicht (Zurück, Start), und
   // ein Pfad mit Schnellfiltern (/radio?land=DE) blieb sonst stehen, wenn der gemerkte schon /radio hieß (RAD-7)
-  if (window.location.pathname + window.location.search === path) {
+  if (appPfad() + window.location.search === path) {
     _currentPath = path;
     return;
   }
   _currentPath = path;
   if (replace) {
-    history.replaceState(null, '', path);
+    history.replaceState(null, '', adresse(path));
   } else {
-    history.pushState(null, '', path);
+    history.pushState(null, '', adresse(path));
   }
 }
 
@@ -138,7 +154,7 @@ export function navigate(path, { replace = false } = {}) {
  * Handler für popstate (Browser Zurück/Vor).
  */
 function handlePopState() {
-  const info = parsePath(window.location.pathname);
+  const info = parsePath(appPfad());
   _currentPath = info.path;
   if (_onNavigate) {
     _onNavigate(info);
@@ -159,9 +175,9 @@ export function init(onNavigate) {
   _initialized = true;
 
   const alt = pfadAusAlterAdresse(window.location.hash);
-  const info = parsePath(alt || window.location.pathname);
-  if (alt || window.location.pathname !== info.path) {
-    history.replaceState(null, '', info.path);
+  const info = parsePath(alt || appPfad());
+  if (alt || appPfad() !== info.path) {
+    history.replaceState(null, '', adresse(info.path) + (alt ? '' : window.location.search));
   }
   _currentPath = info.path;
   return info;
@@ -181,7 +197,7 @@ export function destroy() {
  * Gibt den aktuellen geparsten Zustand zurück.
  */
 export function current() {
-  return parsePath(window.location.pathname);
+  return parsePath(appPfad());
 }
 
 export { TAB_TO_ROUTE, ROUTE_TO_TAB };
