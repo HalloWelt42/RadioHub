@@ -1,7 +1,7 @@
 // Schnittstelle Podcastquelle (RAD-17): alles, was die Podcast-Ansichten am Rechner und am Telefon über Abos und
 // Folgen wissen und ändern. Die volle App setzt sie gegen das Backend um (backend.ts). Was eine Umsetzung nicht kann,
 // meldet sie in `faehig`; die Ansichten zeigen den Teil dann nicht (keine toten Knöpfe), wie bei der Senderquelle.
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Podcastsortierung } from "./typen";
+import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Ordner, Podcastsortierung } from "./typen";
 
 export interface Podcastfaehigkeiten {
   /** im Verzeichnis suchen und abonnieren */
@@ -39,6 +39,16 @@ export interface Podcastquelle {
   anheften(id: number, an: boolean): Promise<void>;
   /** Sortierung der Folgen dieses Abos merken; leer nimmt die der Ansicht */
   sortierungSetzen(id: number, sortierung: Podcastsortierung | ""): Promise<void>;
+  // ----- Ordner (Gruppierung der Abos) ------------------------------------------------------------------------------
+  ordner(): Promise<Ordner[]>;
+  ordnerAnlegen(name: string): Promise<Ordner>;
+  ordnerAendern(id: string, teil: Partial<Pick<Ordner, "name" | "offen">>): Promise<Ordner>;
+  /** nur die Gruppierung: die Abos stehen danach lose; liefert ihre Zahl */
+  ordnerLoeschen(id: string): Promise<number>;
+  ordnerOrdnen(ids: string[]): Promise<void>;
+  /** Abo in einen Ordner legen oder (null) wieder lose */
+  zuordnen(aboId: number, ordnerId: string | null): Promise<void>;
+
   /** im Verzeichnis suchen (zum Abonnieren) */
   suchen(text: string, signal?: AbortSignal): Promise<Fundstueck[]>;
 

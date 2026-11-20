@@ -210,3 +210,32 @@ describe("Anheften und Sortierung je Abo", () => {
     expect(liste.abo(1)?.sortierung).toBe("titel");
   });
 });
+
+describe("Ordner der Abos (RAD-23)", () => {
+  it("lädt Ordner mit den Abos, legt an, ordnet zu, und Löschen nimmt nur die Gruppierung", async () => {
+    const { quelle, aufrufe } = backend({
+      "/api/podcasts/subscriptions": { subscriptions: [{ ...ABO, id: 1, ordner_id: "o1" }, { ...ABO, id: 2, ordner_id: null }, { ...ABO, id: 3, ordner_id: "o1", angeheftet: 1 }] },
+      "/api/podcast-ordner/abo/": {},
+      "/api/podcast-ordner/o1": (p: string) => (p === "/api/podcast-ordner/o1" ? { id: "o1", name: "Wissen", offen: false, geloest: 2 } : {}),
+      "/api/podcast-ordner": (p: string) => (p === "/api/podcast-ordner" ? { ordner: [{ id: "o1", name: "Nachrichten", offen: true }], id: "o2", name: "Neu", offen: true } : {}),
+    });
+    const liste = new Aboliste(quelle);
+    await liste.laden();
+    expect(liste.ordner).toEqual([{ id: "o1", name: "Nachrichten", offen: true }]);
+    expect(liste.imOrdner("o1").map((a) => a.id)).toEqual([1]);                      // angeheftete stehen oben, nicht im Ordner
+    expect(liste.imOrdner(null).map((a) => a.id)).toEqual([2]);
+    await liste.ordnerAnlegen("Neu");
+    expect(liste.ordner.map((o) => o.id)).toEqual(["o1", "o2"]);
+    await liste.ordnerAendern("o1", { name: "Wissen", offen: false });
+    expect(liste.ordner[0]).toEqual({ id: "o1", name: "Wissen", offen: false });
+    await liste.zuordnen(2, "o1");
+    expect(liste.imOrdner("o1").map((a) => a.id)).toEqual([1, 2]);
+    await liste.ordnerLoeschen("o1");
+    expect(liste.ordner.map((o) => o.id)).toEqual(["o2"]);
+    expect(liste.abos.map((a) => a.id)).toEqual([1, 2, 3]);                           // die Abos bleiben, nur lose
+    expect(liste.imOrdner(null).map((a) => a.id)).toEqual([1, 2]);
+    const wege = aufrufe.map((a) => `${a.optionen?.method ?? "GET"} ${a.pfad}`);
+    expect(wege).toContain("PUT /api/podcast-ordner/abo/2");
+    expect(wege).toContain("DELETE /api/podcast-ordner/o1");
+  });
+});

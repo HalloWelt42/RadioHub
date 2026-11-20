@@ -4,6 +4,7 @@ from .favorites import router as favorites_router
 from .recording import router as recording_router
 from .recordings import router as recordings_router
 from .podcasts import router as podcasts_router
+from .podcast_ordner import router as podcast_ordner_router
 from .stream import router as stream_router
 from .config import router as config_router
 from .blocklist import router as blocklist_router
@@ -27,7 +28,7 @@ from .radio import router as radio_router
 
 # In dieser Reihenfolge eingebunden (main.app_bauen), alle hinter der Anmeldung
 ALLE = [
-    stations_router, favorites_router, recording_router, recordings_router, podcasts_router, stream_router,
+    stations_router, favorites_router, recording_router, recordings_router, podcasts_router, podcast_ordner_router, stream_router,
     config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router,
     file_explorer_router, recording_folders_router, storage_router, services_router, favicons_router, peaks_router,
     audio_processing_router, station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router,
@@ -42,6 +43,7 @@ __all__ = [
     "recording_router",
     "recordings_router",
     "podcasts_router",
+    "podcast_ordner_router",
     "stream_router",
     "config_router",
     "blocklist_router",

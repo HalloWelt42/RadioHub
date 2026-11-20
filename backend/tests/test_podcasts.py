@@ -143,3 +143,26 @@ async def test_folge_als_datei_aufs_geraet(client, speicher, monkeypatch):
     assert antwort.status_code == 200 and gesehen["adresse"] == "https://audio.test/folge.mp3?token=1"
     assert gesehen["zusatz"]["Content-Disposition"] == "attachment; filename*=UTF-8''2026-10-01%20Nur%20im%20Netz.mp3"
     assert client.get("/api/podcasts/episodes/999999/datei").status_code == 404
+
+
+def test_ordner_gruppieren_und_loesen(client):
+    with db_session() as conn:
+        abos = [conn.execute("INSERT INTO podcast_subscriptions (feed_url, title) VALUES (?, ?)",
+                             (f"https://feed.test/{uuid.uuid4().hex}", t)).lastrowid for t in ("Eins", "Zwei")]
+    a = client.post("/api/podcast-ordner", json={"name": " Nachrichten "}).json()
+    b = client.post("/api/podcast-ordner", json={"name": "Wissen"}).json()
+    assert a["name"] == "Nachrichten" and len(a["id"]) == 32 and b["reihenfolge"] == a["reihenfolge"] + 1
+    assert client.post("/api/podcast-ordner", json={"name": ""}).status_code == 422
+    assert client.put(f"/api/podcast-ordner/abo/{abos[0]}", json={"ordner_id": a["id"]}).status_code == 200
+    assert client.put(f"/api/podcast-ordner/abo/{abos[1]}", json={"ordner_id": "gibtsnicht"}).status_code == 404
+    assert client.put(f"/api/podcast-ordner/{a['id']}", json={"name": "Nachrichten am Morgen", "offen": False}).json()["offen"] is False
+    client.put("/api/podcast-ordner/reihenfolge", json={"ids": [b["id"], a["id"]]})
+    namen = [o["name"] for o in client.get("/api/podcast-ordner").json()["ordner"] if o["id"] in (a["id"], b["id"])]
+    assert namen == ["Wissen", "Nachrichten am Morgen"]
+    subs = {x["id"]: x for x in client.get("/api/podcasts/subscriptions").json()["subscriptions"]}
+    assert subs[abos[0]]["ordner_id"] == a["id"] and subs[abos[1]]["ordner_id"] is None
+    assert client.delete(f"/api/podcast-ordner/{a['id']}").json() == {"success": True, "geloest": 1}
+    subs = {x["id"]: x for x in client.get("/api/podcasts/subscriptions").json()["subscriptions"]}
+    assert subs[abos[0]]["ordner_id"] is None and subs[abos[0]]["title"] == "Eins"           # das Abo bleibt
+    assert client.delete(f"/api/podcast-ordner/{a['id']}").status_code == 404
+    client.delete(f"/api/podcast-ordner/{b['id']}")

@@ -460,7 +460,20 @@ ALTER TABLE podcast_subscriptions ADD COLUMN angeheftet INTEGER NOT NULL DEFAULT
 ALTER TABLE podcast_subscriptions ADD COLUMN sortierung TEXT NOT NULL DEFAULT '';
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4]
+# Stufe 5 (RAD-23): eigene Ordner der Abos (Gruppierung); ein Ordner zu löschen nimmt nur die Gruppierung (die Abos stehen
+# danach lose), die Abos bleiben
+STUFE_5 = """
+CREATE TABLE podcast_ordner (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    reihenfolge INTEGER NOT NULL DEFAULT 0,
+    offen INTEGER NOT NULL DEFAULT 1,
+    angelegt_am TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE podcast_subscriptions ADD COLUMN ordner_id TEXT REFERENCES podcast_ordner(id) ON DELETE SET NULL;
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

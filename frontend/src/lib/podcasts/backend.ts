@@ -3,7 +3,7 @@
 // Bilder kommen über die eigene App, nie direkt von fremden Servern.
 import type { Folgenwiedergabe, Podcastfaehigkeiten, Podcastquelle } from "./quelle";
 import { PODCASTSORTIERUNG, type Abo, type Aktualisierungsstand, type Folge, type Folgenabfrage, type Folgenfilter, type Folgenseite,
-  type Folgensortierung, type Fundstueck, type Podcastsortierung } from "./typen";
+  type Folgensortierung, type Fundstueck, type Ordner, type Podcastsortierung } from "./typen";
 
 /** der Teil von lib/api.js, den die Quelle braucht */
 export interface Anfrager {
@@ -43,7 +43,7 @@ export class BackendPodcastquelle implements Podcastquelle {
     return {
       id: r.id, titel: text(r.title), autor: text(r.author), beschreibung: text(r.description), bild: this.aboBild(r.id),
       feed: text(r.feed_url), autoLaden: !!r.auto_download, angeheftet: !!r.angeheftet,
-      sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", aktualisiert: text(r.last_updated),
+      sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", ordnerId: r.ordner_id || null, aktualisiert: text(r.last_updated),
       folgen: zahl(r.episode_count), gespeichert: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
       wocheUngehoert: zahl(r.week_unplayed), dauerGesamt: zahl(r.total_duration),
     };
@@ -110,6 +110,35 @@ export class BackendPodcastquelle implements Podcastquelle {
 
   async sortierungSetzen(id: number, sortierung: Podcastsortierung | ""): Promise<void> {
     await this.api.fetch(`/api/podcasts/${id}/sortierung`, { method: "PUT", body: JSON.stringify({ sortierung }) });
+  }
+
+  // ----- Ordner ----------------------------------------------------------------------------------------------------
+  private static ordner(r: Roh): Ordner {
+    return { id: String(r.id), name: text(r.name), offen: r.offen !== false };
+  }
+
+  async ordner(): Promise<Ordner[]> {
+    return ((await this.api.fetch("/api/podcast-ordner")).ordner ?? []).map((r: Roh) => BackendPodcastquelle.ordner(r));
+  }
+
+  async ordnerAnlegen(name: string): Promise<Ordner> {
+    return BackendPodcastquelle.ordner(await this.api.fetch("/api/podcast-ordner", { method: "POST", body: JSON.stringify({ name }) }));
+  }
+
+  async ordnerAendern(id: string, teil: Partial<Pick<Ordner, "name" | "offen">>): Promise<Ordner> {
+    return BackendPodcastquelle.ordner(await this.api.fetch(`/api/podcast-ordner/${id}`, { method: "PUT", body: JSON.stringify(teil) }));
+  }
+
+  async ordnerLoeschen(id: string): Promise<number> {
+    return zahl((await this.api.fetch(`/api/podcast-ordner/${id}`, { method: "DELETE" })).geloest);
+  }
+
+  async ordnerOrdnen(ids: string[]): Promise<void> {
+    await this.api.fetch("/api/podcast-ordner/reihenfolge", { method: "PUT", body: JSON.stringify({ ids }) });
+  }
+
+  async zuordnen(aboId: number, ordnerId: string | null): Promise<void> {
+    await this.api.fetch(`/api/podcast-ordner/abo/${aboId}`, { method: "PUT", body: JSON.stringify({ ordner_id: ordnerId }) });
   }
 
   async autoLaden(id: number, an: boolean): Promise<void> {

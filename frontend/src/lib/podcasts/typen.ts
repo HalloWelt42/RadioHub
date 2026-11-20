@@ -15,6 +15,8 @@ export interface Abo {
   angeheftet: boolean;
   /** gemerkte Sortierung der Folgen dieses Abos, leer: die der Ansicht */
   sortierung: Podcastsortierung | "";
+  /** eigener Ordner (Gruppierung in der Seitenleiste), null: lose */
+  ordnerId: string | null;
   /** zuletzt aktualisiert (ISO) oder leer */
   aktualisiert: string;
   folgen: number;
@@ -25,6 +27,14 @@ export interface Abo {
   wocheUngehoert: number;
   /** Länge aller Folgen in Sekunden */
   dauerGesamt: number;
+}
+
+/** eigener Ordner der Abos (RAD-23); löschen nimmt nur die Gruppierung */
+export interface Ordner {
+  id: string;
+  name: string;
+  /** aufgeklappt */
+  offen: boolean;
 }
 
 export interface Folge {
