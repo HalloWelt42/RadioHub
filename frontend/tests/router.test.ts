@@ -1,6 +1,6 @@
 // RAD-7: Der Router vergleicht mit der echten Adresse samt Abfrage. Früher merkte er sich den Pfad ohne Abfrage; eine
 // neue Adresse mit Schnellfiltern blieb dann stehen, und der Abgleich der Radio-Ansicht mit der Adresse lief im Kreis.
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 let adresse = "/";
 const verlauf: string[] = [];
@@ -27,6 +27,29 @@ describe("Router und Abfrage", () => {
     expect(adresse).toBe("/radio");
     router.navigate("/radio", { replace: true }); // schon da: nichts
     expect(verlauf).toEqual(["R /radio?suche=wdr", "R /radio"]);
+    router.destroy();
+  });
+});
+
+// RAD-4: In der Webversion liegt die App unter einer Basis (GitHub Pages: /RadioHub/). Die App rechnet nur mit Pfaden
+// ohne Basis; der Router setzt sie beim Schreiben an und nimmt sie beim Lesen ab, auch mit Abfrage und tiefer Adresse.
+describe("Router mit Basis der Webversion", () => {
+  afterEach(() => { vi.unstubAllEnvs(); vi.resetModules(); });
+
+  it("liest und schreibt Pfade unter der Basis", async () => {
+    vi.stubEnv("BASE_URL", "/RadioHub/");
+    vi.resetModules();
+    const router = await import("../src/lib/router.js");
+    adresse = "/RadioHub/radio/abc?land=DE";
+    expect(router.appPfad()).toBe("/radio/abc");
+    expect(router.init(() => {}).tab).toBe("radio");
+    expect(verlauf).toEqual([]);                          // tiefe Adresse bleibt, wie sie ist
+    router.navigate("/einstellungen/radio/regeln");
+    expect(adresse).toBe("/RadioHub/einstellungen/radio/regeln");
+    expect(router.current().tab).toBe("settings");
+    adresse = "/RadioHub/";
+    router.init(() => {});
+    expect(adresse).toBe("/RadioHub/radio");              // Wurzel der Seite führt zum Radio, unter der Basis
     router.destroy();
   });
 });
