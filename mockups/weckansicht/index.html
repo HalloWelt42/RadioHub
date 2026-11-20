@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weckansicht quer: Entwürfe</title>
+<link rel="stylesheet" href="../../frontend/node_modules/appkern-oberflaeche/node_modules/@fortawesome/fontawesome-free/css/all.css">
+<style>
+  @font-face { font-family: "Chakra Petch"; font-weight: 700; src: url("../../frontend/node_modules/@fontsource/chakra-petch/files/chakra-petch-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Chakra Petch"; font-weight: 500; src: url("../../frontend/node_modules/@fontsource/chakra-petch/files/chakra-petch-latin-500-normal.woff2") format("woff2"); }
+  :root { --seite: #0b0f14; --seite-text: #c9d4e0; --seite-2: #7f8c9b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px; background: var(--seite); color: var(--seite-text); font-family: "Chakra Petch", system-ui, sans-serif; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 40px 0 6px; }
+  p { margin: 0 0 14px; font-size: 15px; max-width: 980px; color: var(--seite-2); line-height: 1.45; }
+  .reihe { display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { margin-top: 12px; font-size: 14px; color: var(--seite-2); }
+
+  /* Telefon quer 844 x 390, Insel links (sicherer Rand 47), rechts 20 */
+  .tel { width: 844px; height: 390px; border-radius: 40px; overflow: hidden; position: relative; background: #000;
+    box-shadow: 0 0 0 10px #1c232c, 0 0 0 11px #2b3440; }
+  .tel::before { content: ""; position: absolute; left: 12px; top: 50%; width: 30px; height: 110px; margin-top: -55px; border-radius: 16px;
+    background: #000; z-index: 5; box-shadow: 0 0 0 1px #111; }
+  .innen { position: absolute; inset: 0; padding: 14px 20px 12px 47px; display: flex; }
+  canvas.matrix { width: 100%; height: 100%; display: block; }
+
+  /* Farben je Zustand */
+  .tel { --an: #5dff8b; --aus: #0e1b13; --text: #e9eef4; --text-2: #8b98a8; --grund: #0b1016; --linie: #222c37; --akzent: #ffb21f; }
+  .tel.nacht { --an: #d4231c; --aus: #170304; --text: #c21c1a; --text-2: #7a0f10; --grund: #000; --linie: #2a0507; --akzent: #d4231c; }
+
+  /* ===== B: HiFi-Gerät ===== */
+  .geraet { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 16px; padding: 4px 0;
+    background: linear-gradient(180deg, #23272c, #15181b); border-radius: 14px; padding: 12px; box-shadow: inset 0 0 0 1px #3a4048; }
+  .tel.nacht .geraet { background: #050101; box-shadow: none; }
+  .glas { border-radius: 10px; background: #020403; box-shadow: inset 0 2px 8px #000, 0 0 0 1px #000; padding: 8px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .tel.nacht .glas { background: #000; box-shadow: 0 0 0 1px #200304; }
+  .glas.gross { flex: 1; }
+  .glas .matrix.haupt { flex: 1; min-height: 0; }
+  .glas .matrix.zeile { height: 22px; flex: none; }
+  .spalte { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .spalte .glas { padding: 6px 8px; }
+  .spalte .glas canvas { height: 22px; }
+  .tasten { display: flex; gap: 8px; margin-top: auto; }
+  .taste { flex: 1; height: 62px; border: 0; border-radius: 8px; position: relative; color: #dfe5ea; font-size: 20px;
+    background: linear-gradient(180deg, #4a5058, #2a2f35 55%, #23272c); box-shadow: 0 0 0 1px #0b0d0f, inset 0 0 0 1px #6b727b; display: grid; place-items: center; }
+  .taste::before { content: ""; position: absolute; top: 7px; left: 50%; width: 22px; height: 4px; margin-left: -11px; border-radius: 2px; background: #1a1d20; }
+  .taste.licht::before { background: var(--l, #3d8bff); box-shadow: 0 0 8px var(--l, #3d8bff); }
+  .taste span { font-size: 13px; display: block; margin-top: 2px; font-weight: 700; letter-spacing: .04em; }
+  .taste.gross { height: auto; flex: 1; font-size: 26px; }
+  .tel.nacht .taste { background: #120203; color: var(--text); box-shadow: 0 0 0 1px #3a0607; }
+
+  /* ===== C: Segment-Uhr ===== */
+  .segment { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; background: var(--grund); }
+  .segment .uhrfeld { flex: 1; min-height: 0; display: grid; place-items: center; }
+  .segment svg { height: 100%; max-height: 250px; width: auto; }
+  .segment .seg { fill: var(--an); filter: drop-shadow(0 0 6px var(--an)); }
+  .segment .geist { fill: var(--aus); }
+  .segment .unten { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; height: 60px; flex: none; }
+  .segment .unten canvas { height: 30px; }
+  .rund { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--linie); background: transparent; color: var(--text); font-size: 21px; display: grid; place-items: center; }
+  .rund.an { background: var(--akzent); border-color: var(--akzent); color: #000; }
+  .knopfreihe { display: flex; gap: 10px; }
+  .breit { flex: 1; height: 74px; border-radius: 16px; border: 0; font: inherit; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .breit.schlummern { background: var(--akzent); color: #000; }
+  .breit.aus { background: transparent; color: var(--text); border: 2px solid var(--text); }
+
+  /* ===== D: Ruhig ===== */
+  .ruhig { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 26px; align-items: center; background: var(--grund); color: var(--text); }
+  .ziffern { font-weight: 700; font-size: 168px; line-height: 1; letter-spacing: -2px; font-variant-numeric: tabular-nums; text-align: center; }
+  .ruhig .info { display: flex; flex-direction: column; gap: 16px; font-size: 18px; }
+  .ruhig .info div { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .ruhig .info i { width: 22px; color: var(--text-2); }
+  .ruhig .wecker { color: var(--akzent); font-weight: 700; font-size: 24px; }
+  .ruhig .wecker i { color: var(--akzent); }
+  .ruhig .klein { color: var(--text-2); font-size: 16px; }
+  .ruhig .links { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .band { height: 10px; border-radius: 5px; background: linear-gradient(90deg, #1b2533 0 30%, #f0b44a 30% 72%, #1b2533 72%); position: relative; }
+  .band::after { content: ""; position: absolute; left: 58%; top: -5px; width: 3px; height: 20px; background: var(--text); border-radius: 2px; }
+  .tel.nacht .band { background: linear-gradient(90deg, #160203 0 30%, #4a0607 30% 72%, #160203 72%); }
+  .ruhig .knopfspalte { display: flex; flex-direction: column; gap: 14px; }
+
+  .hinweis { font-size: 13px; color: var(--seite-2); }
+  .marke { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #1f2a36; color: #c9d4e0; font-size: 12px; margin-left: 6px; }
+</style>
+<link rel="stylesheet" href="kreativ.css">
+</head>
+<body>
+<h1>Weckansicht am Telefon quer: Entwürfe A bis H</h1>
+<p>Je Entwurf drei Zustände: Tag mit nächstem Wecker, Nacht (Rot auf Schwarz) und klingelnder Wecker. Beim Klingeln
+ordnet sich jede Ansicht neu an: Uhr, Sender und die beiden großen Tasten Schlummern und Aus haben eigene Flächen,
+nichts liegt über etwas anderem (in der aktuellen Ansicht schiebt sich beim Klingeln ein Feld über 42 Prozent des
+Bildes und verdeckt Uhr oder Sender). Gleiche Beispieldaten in allen Entwürfen.</p>
+
+<h2>A: Komplette Matrixanzeige <span class="marke">Vorschlag</span></h2>
+<p>Der ganze Bildschirm ist ein einziges Punktfeld wie die Anzeige der Abspielleiste. Oben Datum und nächster Wecker,
+in der Mitte die Uhr aus großen Punkten, unten Sender und Sonnenzeiten. Grobe Punkte wie ein großes Leuchtfeld; lange Sendernamen laufen durch. Die Tasten erscheinen nach Antippen als
+umrandete Felder in der unteren Zeile. Beim Klingeln wird die Uhr kleiner, unten stehen zwei große Felder.</p>
+<div class="reihe">
+  <figure><div class="tel" id="a-tag"><div class="innen"><canvas class="matrix"></canvas></div></div><figcaption>Tag, Wecker Mo 06:30</figcaption></figure>
+  <figure><div class="tel nacht" id="a-nacht"><div class="innen"><canvas class="matrix"></canvas></div></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="a-klingelt"><div class="innen"><canvas class="matrix"></canvas></div></div><figcaption>Klingelt: Uhr kleiner, zwei Felder, nichts verdeckt</figcaption></figure>
+  <figure><div class="tel" id="a-tasten"><div class="innen"><canvas class="matrix"></canvas></div></div><figcaption>Nach Antippen: Tasten als Matrixfelder</figcaption></figure>
+</div>
+
+<h2>B: HiFi-Gerät <span class="marke">Vorschlag</span></h2>
+<p>Ein Gehäuse wie die Abspielleiste: links das Glas mit der Matrixuhr, rechts drei kleine Anzeigen (Wecker,
+Sender, Sonne) und Tasten mit Licht. Beim Klingeln wandern Wecker und Sender in die Zeile unter der Uhr, rechts
+stehen nur die zwei großen Tasten.</p>
+<div class="reihe">
+  <figure><div class="tel" id="b-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="b-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="b-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>C: Segment-Uhr</h2>
+<p>Große Ziffern aus sieben Segmenten mit gedämpften Segmenten dahinter, darunter ein Lauftext in Punktmatrix
+(Sender, Wecker, Sonne) und runde Tasten. Beim Klingeln wird die Uhr niedriger, unten über die ganze Breite zwei Tasten.</p>
+<div class="reihe">
+  <figure><div class="tel" id="c-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="c-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="c-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>D: Ruhig (wie heute, aufgeräumt)</h2>
+<p>Die heutige Ansicht mit großer Uhr und Sonnenband, rechts die Spalte. Beim Klingeln wird die rechte Spalte zu den
+zwei Tasten, Wecker und Sender stehen unter der Uhr statt verdeckt zu werden.</p>
+<div class="reihe">
+  <figure><div class="tel" id="d-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="d-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="d-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>E: Sternenzeit <span class="marke">mystisch</span></h2>
+<p>Nachthimmel mit Sternen und der Mondphase des Tages, die Uhr leuchtet leise. Beim Klingeln geht von unten die Sonne auf, rechts stehen zwei leuchtende Kugeln: die Sonne zum Schlummern, die stille Kugel für Aus.</p>
+<div class="reihe">
+  <figure><div class="tel" id="e-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="e-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="e-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>F: Astrolabium <span class="marke">mystisch</span></h2>
+<p>Ein Messinstrument der Sterndeuter: der äußere Ring ist der ganze Tag, der goldene Bogen die Zeit zwischen Sonnenauf- und -untergang, der helle Punkt der Wecker, innen die Minuten. Beim Klingeln pulsiert der Ring, rechts zwei Siegel.</p>
+<div class="reihe">
+  <figure><div class="tel" id="f-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="f-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="f-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>G: Polarlicht <span class="marke">ausgeflippt</span></h2>
+<p>Wabernde Farbschleier hinter einer riesigen, halb durchscheinenden Uhr; unten schwebende Glaspillen mit Sender, Wecker und Sonne. Beim Klingeln wogen die Farben schneller, unten zwei große Pillen.</p>
+<div class="reihe">
+  <figure><div class="tel" id="g-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="g-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="g-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+
+<h2>H: Röhren <span class="marke">retro</span></h2>
+<p>Glimmende Ziffernröhren auf einem Messingsockel, warmes Orange; nachts tiefrot. Beim Klingeln trägt der Sockel den Wecker und zwei Hebel, die Röhren bleiben frei.</p>
+<div class="reihe">
+  <figure><div class="tel" id="h-tag"></div><figcaption>Tag</figcaption></figure>
+  <figure><div class="tel nacht" id="h-nacht"></div><figcaption>Nacht</figcaption></figure>
+  <figure><div class="tel" id="h-klingelt"></div><figcaption>Klingelt</figcaption></figure>
+</div>
+<script type="module" src="kreativ.js"></script>
+<script type="module">
+import { zeichnen, breite } from "./matrix.js";
+
+const farbe = (el, name) => getComputedStyle(el).getPropertyValue(name).trim();
+const SENDER = "DEUTSCHLANDFUNK";
+
+// ===== A: komplette Matrix =====
+function matrixA(id, { zeit, oben, unten, klingelt = false, tasten = false }) {
+  // grobe Punkte (Nutzer 20.11.2026: "größere Pixel"): 120 x 48 Punkte, lange Sendernamen laufen
+  const tel = document.getElementById(id);
+  const an = farbe(tel, "--an"), aus = farbe(tel, "--aus"), akzent = farbe(tel, "--akzent");
+  const S = 120, Z = 48, ebenen = [], rahmen = [];
+  if (klingelt) {
+    ebenen.push({ text: "@ 06:30   DLF", y: 0, mitte: true, farbe: akzent });
+    ebenen.push({ text: zeit, y: 9, mass: 3, mitte: true, farbe: an });
+    rahmen.push({ x: 0, y: 33, b: 59, h: 15, farbe: akzent }, { x: 61, y: 33, b: 59, h: 15, farbe: an });
+    ebenen.push({ text: "~ 9 MIN", x: Math.round((59 - breite("~ 9 MIN")) / 2), y: 37, farbe: akzent });
+    ebenen.push({ text: "AUS", x: 61 + Math.round((59 - breite("AUS")) / 2), y: 37, farbe: an });
+  } else {
+    ebenen.push({ text: oben[0], x: 0, y: 0, farbe: an });
+    ebenen.push({ text: oben[1], x: S - breite(oben[1]), y: 0, farbe: akzent });
+    ebenen.push({ text: zeit, y: 10, mass: 4, mitte: true, farbe: an });
+    if (tasten) {
+      let x = S - 3 * 30 - 4;
+      for (const f of ["|", "ZEIT", ")"]) {
+        rahmen.push({ x, y: 39, b: 30, h: 9, farbe: an });
+        ebenen.push({ text: f, x: x + Math.round((30 - breite(f)) / 2), y: 40, farbe: an });
+        x += 32;
+      }
+      ebenen.push({ text: "DLF", x: 0, y: 40, farbe: an });
+    } else {
+      ebenen.push({ text: unten[0], x: 0, y: 41, farbe: an });
+      ebenen.push({ text: unten[1], x: S - breite(unten[1]), y: 41, farbe: an });
+    }
+  }
+  zeichnen(tel.querySelector("canvas"), { spalten: S, zeilen: Z, aus, ebenen, rahmen });
+}
+
+// ===== B: HiFi-Gerät =====
+function geraetB(id, { zeit, klingelt = false }) {
+  const tel = document.getElementById(id);
+  const nacht = tel.classList.contains("nacht");
+  const rechts = klingelt
+    ? `<div class="spalte"><button class="taste gross licht" style="--l:#ffb21f"><i class="fa-solid fa-bed"></i><span>SCHLUMMERN 9</span></button>
+       <button class="taste gross licht" style="--l:#ff3b30"><i class="fa-solid fa-power-off"></i><span>AUS</span></button></div>`
+    : `<div class="spalte"><div class="glas"><canvas class="matrix" data-t="@ MO 06:30" data-f="--akzent"></canvas></div>
+       <div class="glas"><canvas class="matrix" data-t="DLF  LIVE"></canvas></div>
+       <div class="glas"><canvas class="matrix" data-t="*07:58 )16:21"></canvas></div>
+       <div class="tasten"><button class="taste licht"><i class="fa-solid fa-pause"></i></button>
+       <button class="taste${nacht ? "" : " licht"}"><i class="fa-solid fa-comment-dots"></i></button>
+       <button class="taste licht" style="--l:${nacht ? "#d4231c" : "#3d8bff"}"><i class="fa-solid fa-moon"></i></button></div></div>`;
+  tel.innerHTML = `<div class="innen"><div class="geraet"><div class="glas gross"><canvas class="matrix haupt"></canvas>
+    <canvas class="matrix zeile"></canvas></div>${rechts}</div></div>`;
+  const an = farbe(tel, "--an"), aus = farbe(tel, "--aus"), akzent = farbe(tel, "--akzent");
+  zeichnen(tel.querySelector(".haupt"), { spalten: 80, zeilen: 26, aus, ebenen: [{ text: zeit, y: 2, mass: 3, mitte: true, farbe: an }] });
+  const zeile = klingelt ? "@ WECKER 06:30   DLF" : "FR 20.11.   " + SENDER;
+  zeichnen(tel.querySelector(".zeile"), { spalten: breite(zeile) + 8, zeilen: 9, aus,
+    ebenen: [{ text: zeile, y: 1, mitte: true, farbe: klingelt ? akzent : an }] });
+  // die kleinen Anzeigen rechts: gleiche Punktgröße, so viele Stellen wie die längste braucht
+  const kleine = [...tel.querySelectorAll(".spalte canvas")];
+  const stellen = Math.max(...kleine.map((c) => breite(c.dataset.t))) + 6;
+  kleine.forEach((c) => zeichnen(c, { spalten: stellen, zeilen: 9, aus,
+    ebenen: [{ text: c.dataset.t, y: 1, mitte: true, farbe: c.dataset.f ? farbe(tel, c.dataset.f) : an }] }));
+}
+
+// ===== C: Segment-Uhr =====
+const SEG = { a: "8,0 52,0 44,8 16,8", b: "54,2 60,8 60,46 54,50 50,46 50,10", c: "54,52 60,56 60,94 54,100 50,92 50,56",
+  d: "16,94 44,94 52,102 8,102", e: "6,52 10,56 10,92 6,100 0,94 0,56", f: "6,2 10,10 10,46 6,50 0,46 0,8", g: "10,47 50,47 54,51 50,55 10,55 6,51" };
+const ZIFFER = { 0: "abcdef", 1: "bc", 2: "abged", 3: "abgcd", 4: "fgbc", 5: "afgcd", 6: "afgedc", 7: "abc", 8: "abcdefg", 9: "abcdfg" };
+function segmente(text) {
+  let x = 0, teile = "";
+  for (const z of text) {
+    if (z === ":") { teile += `<circle class="seg" cx="${x + 8}" cy="34" r="5"/><circle class="seg" cx="${x + 8}" cy="70" r="5"/>`; x += 20; continue; }
+    for (const [s, p] of Object.entries(SEG)) {
+      const pts = p.split(" ").map((xy) => { const [a, b] = xy.split(","); return `${+a + x},${b}`; }).join(" ");
+      teile += `<polygon class="${ZIFFER[z].includes(s) ? "seg" : "geist"}" points="${pts}" transform="skewX(-6)"/>`;
+    }
+    x += 76;
+  }
+  return `<svg viewBox="-8 -4 ${x + 4} 110">${teile}</svg>`;
+}
+function segmentC(id, { zeit, klingelt = false }) {
+  const tel = document.getElementById(id);
+  const unten = klingelt
+    ? `<div class="knopfreihe"><button class="breit schlummern"><i class="fa-solid fa-bed"></i>Schlummern 9 min</button>
+       <button class="breit aus"><i class="fa-solid fa-power-off"></i>Aus</button></div>`
+    : `<div class="unten"><canvas class="matrix"></canvas><div class="knopfreihe"><button class="rund an"><i class="fa-solid fa-pause"></i></button>
+       <button class="rund"><i class="fa-solid fa-comment-dots"></i></button><button class="rund"><i class="fa-solid fa-moon"></i></button></div></div>`;
+  tel.innerHTML = `<div class="innen"><div class="segment"><div class="uhrfeld" style="${klingelt ? "flex: 0 0 62%" : ""}">${segmente(zeit)}</div>
+    ${klingelt ? `<div class="unten" style="height:30px"><canvas class="matrix"></canvas></div>` : ""}${unten}</div></div>`;
+  const an = farbe(tel, "--an"), aus = farbe(tel, "--aus"), akzent = farbe(tel, "--akzent");
+  const lauf = klingelt ? "@ WECKER 06:30   " + SENDER : "DLF   @ MO 06:30   *07:58 )16:21";
+  zeichnen(tel.querySelector("canvas"), { spalten: breite(lauf) + 4, zeilen: 9, aus, ebenen: [{ text: lauf, x: 2, y: 1, farbe: klingelt ? akzent : an }] });
+}
+
+// ===== D: Ruhig =====
+function ruhigD(id, { zeit, klingelt = false }) {
+  const tel = document.getElementById(id);
+  const rechts = klingelt
+    ? `<div class="knopfspalte"><button class="breit schlummern"><i class="fa-solid fa-bed"></i>Schlummern</button>
+       <button class="breit aus"><i class="fa-solid fa-power-off"></i>Aus</button></div>`
+    : `<div class="info"><div><i class="fa-solid fa-radio"></i><b>${"Deutschlandfunk"}</b></div>
+       <div class="wecker"><i class="fa-solid fa-bell"></i>Mo 06:30</div>
+       <div class="klein"><i class="fa-solid fa-sun"></i>07:58 <i class="fa-solid fa-moon"></i>16:21</div>
+       <div class="knopfreihe"><button class="rund an"><i class="fa-solid fa-pause"></i></button><button class="rund"><i class="fa-solid fa-comment-dots"></i></button><button class="rund"><i class="fa-solid fa-moon"></i></button></div></div>`;
+  const unterUhr = klingelt
+    ? `<div class="info" style="flex-direction:row;justify-content:center;gap:26px;font-size:20px"><div class="wecker"><i class="fa-solid fa-bell fa-shake"></i>06:30</div><div><i class="fa-solid fa-radio"></i><b>Deutschlandfunk</b></div></div>`
+    : `<div class="band"></div>`;
+  tel.innerHTML = `<div class="innen"><div class="ruhig"><div class="links"><div class="ziffern" style="${klingelt ? "font-size:140px" : ""}">${zeit}</div>${unterUhr}</div>${rechts}</div></div>`;
+}
+
+function alles() {
+  matrixA("a-tag", { zeit: "06:42", oben: ["FR 20.11.", "@ MO 06:30"], unten: ["DLF", "*07:58 )16:21"] });
+  matrixA("a-nacht", { zeit: "02:17", oben: ["SA 21.11.", "@ MO 06:30"], unten: ["DLF", "*07:58 )16:21"] });
+  matrixA("a-klingelt", { zeit: "06:30", klingelt: true });
+  matrixA("a-tasten", { zeit: "06:42", oben: ["FR 20.11.", "@ MO 06:30"], tasten: true });
+  geraetB("b-tag", { zeit: "06:42" }); geraetB("b-nacht", { zeit: "02:17" }); geraetB("b-klingelt", { zeit: "06:30", klingelt: true });
+  segmentC("c-tag", { zeit: "06:42" }); segmentC("c-nacht", { zeit: "02:17" }); segmentC("c-klingelt", { zeit: "06:30", klingelt: true });
+  ruhigD("d-tag", { zeit: "06:42" }); ruhigD("d-nacht", { zeit: "02:17" }); ruhigD("d-klingelt", { zeit: "06:30", klingelt: true });
+}
+document.fonts.ready.then(alles);
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+/* Kreative Entwürfe E bis H der Weckansicht (RAD-15). Jede Ansicht ordnet sich beim Klingeln neu an, nichts überdeckt etwas. */
+
+/* ===== E: Sternenzeit ===== */
+.sterne { flex: 1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: 20px;
+  color: #e8ecff; background: radial-gradient(120% 140% at 70% 10%, #1c1640 0%, #0a0a22 45%, #03030c 100%); margin: -14px -20px -12px -47px; padding: 14px 20px 12px 47px; }
+.nacht .sterne { color: #c3241d; background: radial-gradient(120% 140% at 70% 10%, #1a0305 0%, #070102 50%, #000 100%); }
+.sterne canvas.himmel { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sterne > * { position: relative; }
+.sterne .zeit { font-weight: 500; font-size: 150px; letter-spacing: 6px; line-height: 1; text-align: center;
+  text-shadow: 0 0 24px rgba(150, 170, 255, .55), 0 0 60px rgba(120, 90, 255, .35); font-variant-numeric: tabular-nums; }
+.nacht .sterne .zeit { text-shadow: 0 0 18px rgba(200, 30, 20, .5); }
+.sterne .unter { display: flex; justify-content: center; gap: 26px; font-size: 17px; color: #a9b2e8; margin-top: 6px; }
+.nacht .sterne .unter { color: #7e1210; }
+.sterne .unter .w { color: #ffd98a; font-weight: 700; }
+.nacht .sterne .unter .w { color: #c3241d; }
+.sterne .mond { display: grid; justify-items: center; gap: 10px; font-size: 14px; color: #a9b2e8; }
+.nacht .sterne .mond { color: #7e1210; }
+.sterne .kugeln { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.kugel { width: 128px; height: 128px; border-radius: 50%; border: 0; font: inherit; font-weight: 700; font-size: 17px; display: grid; place-items: center; align-content: center; gap: 6px; }
+.kugel i { font-size: 26px; }
+.kugel.sonne { background: radial-gradient(circle at 35% 30%, #fff2c4, #ffb13b 55%, #c25a0d); color: #2a1300; box-shadow: 0 0 40px #ff9d2e; }
+.kugel.still { background: radial-gradient(circle at 35% 30%, #3a3f7a, #15173a 70%); color: #dfe3ff; box-shadow: 0 0 0 2px #5b62b5, 0 0 30px #2b2f7a; }
+.sterne.klingelt { background: linear-gradient(0deg, #ff8a2b 0%, #b8407a 22%, #3b2370 48%, #0a0a22 80%); grid-template-columns: minmax(0, 1fr) 150px; }
+.sterne.klingelt .zeit { font-size: 132px; }
+
+/* ===== F: Astrolabium ===== */
+.astro { flex: 1; display: grid; grid-template-columns: 362px minmax(0, 1fr); gap: 22px; align-items: center; color: #e6cf93;
+  background: radial-gradient(90% 120% at 25% 50%, #1d1846 0%, #0c0a22 60%, #06050f 100%); margin: -14px -20px -12px -47px; padding: 14px 20px 12px 47px; }
+.nacht .astro { color: #b81f19; background: #000; }
+.astro svg { width: 362px; height: 362px; }
+.astro .ring { fill: none; stroke: currentColor; }
+.astro .zahl { font-weight: 700; font-size: 70px; fill: currentColor; text-anchor: middle; font-variant-numeric: tabular-nums; }
+.astro .klein { font-size: 13px; fill: currentColor; text-anchor: middle; opacity: .75; }
+.astro .seite { display: flex; flex-direction: column; gap: 14px; font-size: 18px; }
+.astro .seite .w { font-size: 28px; font-weight: 700; color: #ffdf8c; }
+.nacht .astro .seite .w { color: #d4231c; }
+.astro .seite .leise { color: #a89668; font-size: 15px; }
+.nacht .astro .seite .leise { color: #6d0f0c; }
+.siegel { height: 84px; border-radius: 42px; border: 2px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 12px; }
+.siegel.voll { background: #e6cf93; color: #160f2c; border-color: #e6cf93; box-shadow: 0 0 30px rgba(230, 207, 147, .5); }
+.astro.klingelt svg .puls { animation: puls 1.2s ease-in-out infinite; transform-origin: 181px 181px; }
+@keyframes puls { 50% { transform: scale(1.04); opacity: .55; } }
+
+/* ===== G: Polarlicht ===== */
+.aurora { flex: 1; position: relative; overflow: hidden; display: grid; grid-template-rows: minmax(0, 1fr) auto; color: #fff; background: #050712;
+  margin: -14px -20px -12px -47px; padding: 14px 20px 12px 47px; }
+.aurora .licht { position: absolute; inset: -30%; filter: blur(46px); opacity: .9;
+  background: radial-gradient(35% 30% at 25% 40%, #19f5a1, transparent 70%), radial-gradient(30% 35% at 60% 30%, #7a3bff, transparent 70%),
+              radial-gradient(35% 30% at 80% 65%, #ff3dac, transparent 70%), radial-gradient(40% 30% at 40% 80%, #00b7ff, transparent 70%);
+  animation: wogen 14s ease-in-out infinite alternate; }
+@keyframes wogen { to { transform: translate(6%, -4%) rotate(8deg) scale(1.1); } }
+.nacht .aurora .licht { background: radial-gradient(40% 30% at 30% 50%, #5a0606, transparent 70%), radial-gradient(35% 30% at 75% 40%, #3a0303, transparent 70%); opacity: .8; }
+.aurora > :not(.licht) { position: relative; }
+.aurora .zeit { align-self: center; text-align: center; font-weight: 700; font-size: 200px; line-height: .9; letter-spacing: -4px;
+  color: rgba(255, 255, 255, .85); mix-blend-mode: overlay; font-variant-numeric: tabular-nums; }
+.nacht .aurora .zeit { color: #c3241d; mix-blend-mode: normal; opacity: .9; }
+.pillen { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.pille { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 30px; font-size: 17px;
+  background: rgba(255, 255, 255, .12); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.nacht .pille { background: rgba(80, 0, 0, .25); color: #c3241d; box-shadow: inset 0 0 0 1px #3a0505; }
+.pille.w { font-weight: 700; }
+.aurora.klingelt .licht { animation-duration: 3s; opacity: 1; }
+.aurora.klingelt .zeit { font-size: 150px; }
+.pille.gross { padding: 0 30px; height: 76px; font-size: 22px; font-weight: 700; border: 0; color: #fff; }
+.pille.gross.voll { background: rgba(255, 255, 255, .9); color: #2a0b3f; }
+
+/* ===== H: Röhren ===== */
+.roehren { flex: 1; display: grid; grid-template-rows: minmax(0, 1fr) 74px; gap: 12px; margin: -14px -20px -12px -47px; padding: 18px 28px 14px 56px;
+  background: linear-gradient(180deg, #17110c, #0b0806); }
+.nacht .roehren { background: #000; }
+.roehren .reihe2 { display: flex; justify-content: center; align-items: stretch; gap: 14px; }
+.roehre { width: 126px; border-radius: 60px 60px 14px 14px; position: relative; display: grid; place-items: center;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02) 30%, rgba(255, 255, 255, .08) 70%, rgba(255, 255, 255, .03));
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 180, .18), inset 0 -20px 30px rgba(0, 0, 0, .6); }
+.roehre::after { content: ""; position: absolute; inset: 16px 22px; border-radius: 40px 40px 8px 8px;
+  background: repeating-linear-gradient(0deg, rgba(120, 90, 60, .18) 0 1px, transparent 1px 7px), repeating-linear-gradient(90deg, rgba(120, 90, 60, .18) 0 1px, transparent 1px 7px); }
+.roehre b { position: relative; z-index: 1; font-weight: 500; font-size: 150px; line-height: 1; color: #ffb25a;
+  text-shadow: 0 0 6px #ff8a1c, 0 0 18px #ff6a00, 0 0 40px #ff4d00; }
+.nacht .roehre b { color: #ff4a2a; text-shadow: 0 0 6px #c41b0b, 0 0 16px #8a0d03; }
+.roehren .punkt { align-self: center; display: grid; gap: 30px; }
+.roehren .punkt span { width: 14px; height: 14px; border-radius: 50%; background: #ff8a1c; box-shadow: 0 0 12px #ff6a00; }
+.nacht .roehren .punkt span { background: #c41b0b; box-shadow: 0 0 10px #8a0d03; }
+.sockel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; padding: 0 18px; border-radius: 10px;
+  background: linear-gradient(180deg, #b48a4c, #7a5a2a); color: #2a1a08; box-shadow: inset 0 0 0 1px #e8c58a, 0 0 0 1px #000; font-size: 17px; }
+.nacht .sockel { background: #140202; color: #8a1410; box-shadow: none; }
+.sockel .w { font-weight: 700; }
+.hebel { height: 62px; min-width: 190px; border-radius: 10px; border: 0; font: inherit; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: linear-gradient(180deg, #3a2a18, #1c140b); color: #ffb25a; box-shadow: inset 0 0 0 1px #6b4e2c; }
+.hebel.aus { background: linear-gradient(180deg, #ffb25a, #d27a1c); color: #2a1300; }
