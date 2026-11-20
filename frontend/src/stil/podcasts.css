@@ -49,7 +49,7 @@
 .rh-abo-kopf .rh-logo-bild.gross { --s: calc(var(--gross) * 13); font-size: calc(var(--gross) * 2); }   /* 2,5-fache Kantenlänge (Nutzer 20.11.2026) */
 .rh-abo-text h2 { margin: 0; font-size: var(--titel, calc(var(--gross) * 1.3)); }
 .rh-abo-text p { margin: 4px 0 0; color: var(--text-2); }
-.rh-abo-beschreibung { max-inline-size: 80ch; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.rh-abo-beschreibung { max-inline-size: 80ch; }
 .rh-abo-text .rh-still { margin-top: 2px; color: var(--text-3); }
 .rh-abo-zahlen { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: var(--klein); color: var(--text-3); }
 .rh-abo-zahlen b { color: var(--text); font-family: var(--schrift-zahl); margin-right: 4px; }
@@ -85,7 +85,7 @@
 .rh-stand.fertig i { color: var(--led-gruen); }
 .rh-gespeichert { color: var(--led-gruen); display: inline-flex; gap: 6px; align-items: center; }
 .rh-folge-detail { grid-template-columns: minmax(0, 1fr); }
-.rh-folge-detail p { margin: 0; color: var(--text-2); max-inline-size: 72ch; }
+.rh-folge-detail .rh-langtext p { color: var(--text-2); max-inline-size: 72ch; }
 .rh-detail-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
 
 @container liste (max-width: 52em) {

@@ -26,6 +26,8 @@ export default {
   laenderWaehlen: 'Länder wählen',
   laenderWaehlenHilfe: 'Welche Länder hier stehen, legst du in den Einstellungen fest',
   genres: 'Genres',
+  langtextMehr: 'Mehr zeigen',
+  langtextWeniger: 'Weniger zeigen',
   alleZeigen: 'Alle {n} zeigen',
   wenigerZeigen: 'Weniger zeigen',
   qualitaetTitel: 'Qualität',

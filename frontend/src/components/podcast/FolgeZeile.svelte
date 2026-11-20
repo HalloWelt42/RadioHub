@@ -7,6 +7,7 @@
   import { datumKurz, megabyte, minuten, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
+  import Langtext from "../radio/Langtext.svelte";
 
   let { folge, abo, spielt, offen, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo }: {
     folge: Folge;
@@ -91,7 +92,7 @@
   {/if}
   {#if offen}
     <div class="rh-detail rh-folge-detail">
-      {#if beschreibung}<p>{beschreibung}</p>{/if}
+      {#if beschreibung}<Langtext text={beschreibung} />{/if}
       <div class="rh-detail-knoepfe">
         <button class="knopf primaer" type="button" onclick={onspielen}><i class="fa-solid fa-play"></i>
           {stand.art === "laeuft" ? t("podcastAnsicht.weiterAb", { zeit: stelleText(folge.stelle) }) : t("podcastAnsicht.hoeren")}</button>

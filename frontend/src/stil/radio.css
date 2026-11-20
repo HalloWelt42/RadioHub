@@ -29,6 +29,11 @@
 .rh-gruppe-kopf a, .rh-gruppe-kopf button { font-size: var(--klein); color: var(--akzent); text-decoration: none; border: 0; background: none; cursor: pointer; padding: 0; }
 .rh-gruppe-kopf a:hover, .rh-gruppe-kopf button:hover { text-decoration: underline; }
 .rh-mehr { margin: 6px 0 0 8px; }
+/* langer Text, gekürzt auf --rh-zeilen Zeilen (RAD-27) */
+.rh-langtext { display: grid; justify-items: start; gap: 2px; min-inline-size: 0; }
+.rh-langtext p { margin: 0; overflow-wrap: anywhere; }
+.rh-langtext p.gekuerzt { display: -webkit-box; -webkit-line-clamp: var(--rh-zeilen, 3); line-clamp: var(--rh-zeilen, 3); -webkit-box-orient: vertical; overflow: hidden; }
+.rh-langtext .rh-mehr { margin: 0 0 0 -10px; }
 
 /* Schnellwahl: kleines Gerät; Favoriten als Flachtaster (Leuchtstreifen in der Taste), Stimmen als Drehwahl, Bitrate als Leuchtbalken */
 /* Schrauben (14 Pixel, 10 vom Rand) liegen frei: unten Platz unter der Skala, oben steht der Kopf zwischen ihnen

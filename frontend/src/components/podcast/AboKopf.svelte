@@ -6,6 +6,7 @@
   import { dauerText, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Speicherauftrag } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
+  import Langtext from "../radio/Langtext.svelte";
 
   let { abo, auftrag, arbeitet, kannSpeichern, onauto, onaktualisieren, onallespeichern, onanheften, onabbestellen }: {
     abo: Abo;
@@ -28,7 +29,7 @@
   <div class="rh-abo-text">
     <h2>{abo.titel}</h2>
     {#if abo.autor}<p class="rh-still">{abo.autor}</p>{/if}
-    {#if beschreibung}<p class="rh-abo-beschreibung">{beschreibung}</p>{/if}
+    {#if beschreibung}<Langtext text={beschreibung} klasse="rh-abo-beschreibung" />{/if}
     <div class="rh-abo-zahlen">
       <span>{t("podcastAnsicht.folgenZahl", { n: abo.folgen })}</span><span>{t("podcastAnsicht.ungehoertKopf", { n: abo.ungehoert })}</span>
       {#if kannSpeichern}<span>{t("podcastAnsicht.gespeichertKopf", { n: abo.gespeichert })}</span>{/if}<span>{t("podcastAnsicht.zusammen", { zeit: dauerText(abo.dauerGesamt) })}</span>
