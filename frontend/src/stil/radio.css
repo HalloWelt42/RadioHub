@@ -1,0 +1,247 @@
+/* Bausteine der Radio-Ansicht (RAD-7, Teil 3b): Schnellfilter mit Facetten und Schnellwahl-Gerät, Qualitätsleiste,
+   Werkzeugleiste mit Zähler, Suche und Chips, Senderliste mit Varianten und Details. Übernommen aus dem abgenommenen
+   Entwurf (mockups/radio-filter/radio-bausteine.css, Stand a3c59c5) ohne Änderung der Formen; dazu nur, was der Entwurf
+   nicht zeigt, die App aber kann (Logo als Bild, Suchverlauf, Bearbeiten der eigenen Adresse, Tastaturfokus). Nur
+   Marken: --rh-* (radio-marken.css und die Vorlage), die Marken des Appkerns und der Instrumente. */
+
+.rh-zahl { font-family: var(--schrift-zahl); font-variant-numeric: tabular-nums; }
+.auswahl-liste button .rh-zahl { color: var(--text-3); margin-left: 6px; }
+
+/* ═══ Schnellfilter ═══ Seitenleiste, Gruppen, Facetten, Chips, Schnellwahl-Gerät */
+.rh-filter { background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+/* Kopf im Gerät der Schnellwahl: Titel, Zahl der aktiven Filter, Zurücksetzen, am Telefon Schließen */
+.rh-schnellwahl-kopf { gap: 8px; margin-bottom: 0; }
+/* einzeilig: in der schmalen Seitenleiste ohne Silbentrennung, in Standardgröße statt Titelgröße */
+.rh-schnellwahl-kopf b { flex: 1 1 auto; min-width: 0; font-size: var(--gross); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; hyphens: none; -webkit-hyphens: none; }
+.rh-schnellwahl-kopf .pille { font-family: var(--schrift-zahl); }
+.rh-gruppe { padding: 16px 0 6px; }
+.rh-gruppe + .rh-gruppe { box-shadow: 0 -1px 0 var(--rand); }
+.rh-gruppe-kopf { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
+.rh-gruppe-kopf h3 { margin: 0; flex: 1; min-width: 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
+.rh-gruppe-kopf a, .rh-gruppe-kopf button { font-size: var(--klein); color: var(--akzent); text-decoration: none; border: 0; background: none; cursor: pointer; padding: 0; }
+.rh-gruppe-kopf a:hover, .rh-gruppe-kopf button:hover { text-decoration: underline; }
+.rh-mehr { margin: 6px 0 0 8px; }
+
+/* Schnellwahl: kleines Gerät; Favoriten als Flachtaster (Leuchtstreifen in der Taste), Stimmen als Drehwahl, Bitrate als Leuchtbalken */
+.rh-schnellwahl { display: grid; gap: 6px; padding: 10px 14px 18px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
+.rh-schnellwahl-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; justify-items: center; }
+.rh-schnellwahl ak-taster { inline-size: 100%; }
+.rh-schnellwahl ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 100%; block-size: auto; min-block-size: 46px; padding: 6px 10px; }
+.rh-schnellwahl ak-dreh { --ak-zelle: min(100%, 116px); }   /* unter 150 Pixel ohne Rastnamen, der Wert steht darunter */
+.rh-schnellwahl ak-schieber { --ak-zelle: 100%; }
+
+/* Facette: Kästchen, Kennung, Name, Zahl; Nebenelemente oben an der ersten Zeile */
+.rh-facetten { display: grid; gap: 2px; }
+.rh-facette { display: grid; grid-template-columns: 22px auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px; border-radius: var(--r2); cursor: pointer; }
+.rh-facette:hover { background-color: var(--flaeche-2); }
+.rh-facette input { margin-top: 2px; }
+/* Ankreuzfeld als eingelassene Leuchte: Aufbau hier, Aussehen nur aus den Marken der Vorlage */
+.rh-facette input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; margin: 2px 0 0; inline-size: 22px; block-size: 22px; display: inline-grid;
+  place-items: center; cursor: pointer; border-radius: var(--r1); background-color: var(--mulde); box-shadow: var(--rh-mulde);
+}
+.rh-facette input[type="checkbox"]::after {
+  content: ""; inline-size: 10px; block-size: 10px; border-radius: inherit; opacity: 0; background: var(--akzent-flaeche);
+  box-shadow: 0 0 calc(10px * var(--ak-leuchten, 0)) var(--akzent-flaeche); transition: opacity var(--schnell, 0.15s);
+}
+.rh-facette input[type="checkbox"]:checked::after { opacity: 1; }
+.rh-facette input[type="checkbox"]:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-facette > span:nth-child(3) { overflow-wrap: anywhere; line-height: 1.4; }
+.rh-facette .rh-zahl { font-size: var(--klein); color: var(--text-3); padding-top: 2px; }
+.rh-facette:has(input:checked) > span:nth-child(3) { color: var(--text); font-weight: 600; }
+.rh-facette:has(input:checked) .rh-zahl { color: var(--akzent); }
+.rh-facette.ohne-kennung { grid-template-columns: 22px minmax(0, 1fr) auto; }
+.rh-kennung { font-family: var(--schrift-zahl); font-size: var(--marke); line-height: 1.5; padding: 0 6px; border-radius: var(--r1); background-color: var(--mulde); box-shadow: var(--rh-mulde);
+  color: var(--text-2); min-inline-size: 3ch; text-align: center; }
+.rh-sterne { color: var(--led-bernstein); letter-spacing: 1px; white-space: nowrap; font-size: var(--klein); line-height: 1.6;
+  text-shadow: 0 0 calc(8px * var(--ak-leuchten)) color-mix(in srgb, var(--led-bernstein) 50%, transparent); }
+.rh-sterne .aus { color: var(--text-3); opacity: .45; text-shadow: none; }
+.rh-chips-wahl { display: flex; flex-wrap: wrap; gap: 8px; }
+.rh-chips-wahl .chip.wahl { min-block-size: 40px; padding: 4px 12px; gap: 8px; white-space: nowrap; }
+.rh-chips-wahl .chip.wahl .rh-zahl { font-size: var(--marke); opacity: .8; }
+
+/* Qualität als Lichterleiste hinter Glas: vier Lichter, Farbe je Stufe */
+.rh-guete { display: inline-flex; gap: 3px; padding: 4px 5px; border-radius: var(--r1); background-color: var(--ak-glas); box-shadow: var(--ak-glas-tiefe); flex: none; vertical-align: middle; }
+.rh-guete i { inline-size: 7px; block-size: 14px; border-radius: 1px; background-color: color-mix(in srgb, var(--farbe) 14%, var(--rh-licht-aus)); }
+.rh-guete i.an { background-color: var(--farbe); box-shadow: 0 0 calc(6px * var(--ak-leuchten)) var(--farbe);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--licht) 45%, transparent), transparent 60%); }
+.rh-guete[data-guete="unbekannt"] i { background-color: var(--rh-licht-unbekannt); background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--rh-schraffur) 3px 5px); }
+
+/* ═══ Werkzeugleiste über der Liste ═══ Zähler, Suche, Sortierung, aktive Filter als Chips, Hinweis auf Regeln */
+.rh-zaehler { max-inline-size: 100%; display: grid; grid-template-columns: auto auto; align-items: center; gap: 2px 12px; padding: 6px 12px 6px 6px; border-radius: var(--r3);
+  background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-geraet-schatten-klein); color: var(--rh-geraet-tinte); }
+.rh-zaehler ak-segmente { grid-row: 1 / span 2; --ak-zelle: min(calc(var(--gross) * 9.5), 44vw); --ak-zeichen-max: 40px; }
+.rh-zaehler .ak-etikett { align-self: end; font-weight: 600; }
+.rh-zaehler span:last-child { font-size: var(--klein); color: var(--rh-geraet-tinte-2); align-self: start; line-height: 1.25; }
+.rh-werkzeug .suche { block-size: var(--rh-taste); font-size: var(--gross); }
+.rh-werkzeug .suche input { font-size: max(17px, var(--gross)); }
+.rh-werkzeug .suche .rund { inline-size: 32px; block-size: 32px; margin-right: -6px; }
+.rh-werkzeug .auswahl-knopf, .rh-werkzeug .knopf { block-size: var(--rh-taste); font-size: var(--klein); }
+.rh-filter-auf .pille, .t-suche .knopf .pille { block-size: 24px; padding: 0 8px; font-family: var(--schrift-zahl); background-color: var(--akzent-flaeche); color: var(--auf-akzent); }
+.rh-sortierung .auswahl-liste { left: auto; right: 0; }
+.rh-aktiv-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.rh-aktiv-chips .chip, .t-chips .chip { min-block-size: var(--rh-taste-klein); padding: 0 4px 0 12px; gap: 6px; font-size: var(--klein); white-space: nowrap; max-inline-size: 100%; }
+.rh-aktiv-chips .chip b { font-weight: 600; }
+.rh-aktiv-chips .chip button, .t-chips .chip button { inline-size: 32px; block-size: 32px; border-radius: var(--r1); display: grid; place-items: center; color: var(--text-3); }
+.rh-aktiv-chips .chip button:hover { color: var(--gefahr); background-color: var(--gefahr-weich); }
+.rh-leer-chips { color: var(--text-3); font-size: var(--klein); }
+.rh-werkzeug .rh-alle-zurueck { block-size: var(--rh-taste-klein); }
+.rh-hinweis { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-block-size: var(--rh-taste-klein); padding: 4px 12px; border-radius: var(--r2);
+  font-size: var(--klein); color: var(--text-2); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+.rh-hinweis b { color: var(--text); font-family: var(--schrift-zahl); }
+.rh-hinweis a { margin-left: auto; color: var(--akzent); font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.rh-hinweis a:hover { text-decoration: underline; }
+
+/* ═══ Senderliste ═══ Spaltenkopf und Zeilen teilen ein Raster; Spalten je Breite der Liste (Behälterabfrage in em) */
+.rh-liste { container: liste / inline-size; font-size: var(--gross); }
+.rh-spalten, .rh-sender-kern { --rh-aktionen: calc(var(--klein) * 9.4 + 144px); display: grid; gap: 0 14px; align-items: start;
+  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+  grid-template-areas: "led logo name genres guete stimmen aktionen"; }
+.rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
+  font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); box-shadow: 0 1px 0 var(--rand); }
+.rh-spalten .rechts { text-align: right; }
+.rh-spalten > span:first-child { grid-column: led / name; }
+.rh-spalten > span:nth-child(2) { grid-area: genres; }
+.rh-spalten > span:nth-child(3) { grid-area: guete; }
+.rh-spalten > span:nth-child(4) { grid-area: stimmen; }
+.rh-spalten > span:nth-child(5) { grid-area: aktionen; }
+
+.rh-sender { margin-bottom: 8px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--rh-schatten-klein);
+  transition: box-shadow var(--schnell), opacity var(--ruhig); }
+.rh-sender-kern { position: relative; padding: 10px 10px 10px 14px; cursor: pointer; }
+.rh-sender:hover { box-shadow: var(--rh-kante), var(--rh-schatten-hover); }
+.rh-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 40%, transparent); }
+.rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
+.rh-sender.offen { background-color: var(--karte); }
+.rh-sender .led { grid-area: led; padding-top: 16px; }
+.rh-sender .rh-logo-bild { grid-area: logo; }
+.rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
+.rh-sender .name b { display: block; font-weight: 600; font-size: var(--gross); line-height: 1.3; overflow-wrap: anywhere; }
+.rh-sender .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
+.rh-titel { color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
+.rh-titel i { color: var(--led-blau); margin-right: 6px; }
+.rh-sender .genres { grid-area: genres; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; min-width: 0; }
+.rh-genre { font-size: var(--marke); padding: 1px 8px; border-radius: var(--r1); color: var(--text-2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); white-space: nowrap; }
+.rh-sender .guete-zelle { grid-area: guete; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "licht stufe" "licht format"; gap: 0 8px; align-items: center; padding-top: 2px; font-size: var(--klein); }
+.rh-sender .guete-zelle .rh-guete { grid-area: licht; }
+.rh-sender .guete-zelle b { grid-area: stufe; font-weight: 600; line-height: 1.3; }
+.rh-sender .guete-zelle span { grid-area: format; color: var(--text-3); font-family: var(--schrift-zahl); white-space: nowrap; line-height: 1.3; }
+.rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 6px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
+.rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
+.rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: calc(var(--klein) * 9.4) 44px 44px 44px; gap: 4px; align-items: start; }
+.rh-aktionen .rund { inline-size: 44px; block-size: 44px; font-size: 17px; }
+.rund.favorit { color: var(--rh-favorit); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-favorit) 60%, transparent); }
+.rh-aktionen .rund i { transition: transform var(--schnell); }
+.rh-aktionen .rund[aria-expanded="true"] i { transform: rotate(180deg); }
+.rh-varianten-knopf { block-size: 44px; justify-content: center; font-size: var(--klein); padding: 0 8px; white-space: nowrap; }
+.rh-varianten-knopf .rh-zahl { color: var(--akzent); font-weight: 600; }
+.rh-varianten-knopf-schmal, .rh-auge-schmal { display: none; }
+.rh-varianten-knopf-schmal { min-block-size: 36px; }
+.rh-platz { display: block; }
+
+@container liste (max-width: 62em) {
+  .rh-spalten, .rh-sender-kern { grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+    grid-template-areas: "led logo name guete stimmen aktionen" "led logo genres guete stimmen aktionen"; }
+  .rh-spalten > span:nth-child(2) { display: none; }
+  .rh-sender .genres { padding-top: 6px; }
+}
+@container liste (max-width: 44em) {
+  .rh-spalten { display: none; }
+  .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
+  .rh-sender .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
+  .rh-sender .guete-zelle { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "licht stufe format"; padding-top: 0; }
+  .rh-sender .stimmen { align-self: end; padding-top: 0; }
+  .rh-aktionen { grid-template-columns: 44px 44px 44px; }
+  .rh-aktionen .rh-varianten-zelle { display: none; }
+  .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
+  .rh-varianten { padding-left: 10px; }
+  .rh-variante { grid-template-columns: 14px minmax(0, 1fr) auto; }
+  .rh-variante .rh-guete-text, .rh-variante .stimmen-v { display: none; }
+}
+@container liste (max-width: 26em) {
+  .rh-aktionen { grid-template-columns: 44px 44px; }
+  .rh-aktionen .auge-zelle { display: none; }
+  .rh-sender .stimmen .rh-auge-schmal { display: inline-grid; }
+}
+
+/* Logo: neutrale Lackfläche mit Kürzel (keine fremden Logos im Entwurf) */
+.rh-logo-bild { --s: calc(var(--gross) * 3); inline-size: var(--s); block-size: var(--s); flex: none; border-radius: var(--r2); display: grid; place-items: center; position: relative;
+  font-family: var(--schrift-zahl); font-weight: 600; font-size: calc(var(--s) * .34); letter-spacing: .02em; color: var(--auf-farbe); background-color: var(--lack);
+  background-image: var(--rh-lack-bild); box-shadow: var(--rh-geraet-schatten-klein); text-shadow: var(--rh-praegung); }
+.rh-logo-bild.klein { --s: calc(var(--gross) * 2.2); }
+
+/* Varianten (Dubletten als Gruppe, beste vorn) */
+.rh-varianten { display: grid; gap: 6px; padding: 0 12px 12px 50px; }
+.rh-variante { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto auto auto; gap: 6px 14px; align-items: center; padding: 8px 10px; border-radius: var(--r2);
+  background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
+.rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
+.rh-variante .stand-pille { font-size: var(--marke); }
+.rh-variante .knopf { block-size: 40px; }
+
+/* Details eines aufgeklappten Senders: Steckbrief, Titelverlauf hinter Glas, ähnliche Sender, eigene Bewertung */
+.rh-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 17)), 1fr)); gap: 14px; padding: 4px 14px 14px; }
+.rh-tafel-detail { min-width: 0; display: grid; gap: 8px; align-content: start; }
+.rh-tafel-detail h4 { margin: 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.rh-werte { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: var(--klein); }
+.rh-werte dt { color: var(--text-3); }
+.rh-werte dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.rh-werte dd a { color: var(--akzent); }
+.rh-werte code { font-family: var(--schrift-code); font-size: var(--klein); }
+.rh-strom { display: flex; gap: 8px; align-items: start; }
+.rh-strom code { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rh-strom .rund { inline-size: 36px; block-size: 36px; flex: none; }
+.rh-verlauf { padding: 10px 12px; display: grid; gap: 4px; --farbe: var(--rh-anzeige); }
+.rh-verlauf div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; font-family: var(--schrift-zahl); font-size: var(--klein); line-height: 1.4;
+  color: color-mix(in srgb, var(--farbe) 72%, var(--licht)); }
+.rh-verlauf div:first-child { color: var(--farbe); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--farbe) 60%, transparent); }
+.rh-verlauf time { opacity: .75; }
+.rh-aehnlich { display: grid; gap: 6px; }
+.rh-aehnlich-zeile { display: grid; grid-template-columns: auto minmax(0, 1fr) 40px; gap: 10px; align-items: center; padding: 6px; border-radius: var(--r2); background-color: var(--flaeche); box-shadow: var(--rh-kante); }
+.rh-aehnlich-zeile b { display: block; font-size: var(--klein); font-weight: 600; }
+.rh-aehnlich-zeile span { display: block; font-size: var(--marke); color: var(--text-3); }
+.rh-aehnlich-zeile .rund { inline-size: 40px; block-size: 40px; }
+.rh-bewerten { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rh-stern { inline-size: 40px; block-size: 40px; border: 0; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; color: var(--text-3); }
+.rh-stern.an { color: var(--led-bernstein); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) var(--led-bernstein); }
+.rh-bewerten .chip.wahl { min-block-size: 40px; }
+.rh-ohne-treffer { padding: 40px 16px; display: grid; justify-items: center; gap: 10px; text-align: center; color: var(--text-2); }
+.rh-ohne-treffer i { font-size: 32px; color: var(--text-3); }
+.rh-listen-fuss { padding: 14px 4px; text-align: center; font-size: var(--klein); color: var(--text-3); }
+
+/* ═══ Was die App über den Entwurf hinaus kann ═══ */
+/* Logo als Bild aus dem Zwischenspeicher des Backends: neutrale Fläche statt Lack, das Bild eingepasst */
+.rh-logo-bild.mit-bild { background-color: var(--karte); background-image: none; overflow: hidden; }
+.rh-logo-bild img { inline-size: 100%; block-size: 100%; object-fit: contain; padding: 3px; box-sizing: border-box; }
+/* Tastaturfokus in der Liste (Pfeiltasten) */
+.rh-sender.fokus { box-shadow: 0 0 0 2px var(--akzent-flaeche), var(--rh-schatten-klein); }
+.rh-liste:focus-visible { outline: none; }
+.rh-sender.spielt.aufnahme { box-shadow: 0 0 0 2px var(--led-rot), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-rot) 40%, transparent); }
+/* Suchfeld mit Verlauf: die Liste der letzten Suchen klappt unter dem Feld auf (Aufklappliste des Appkerns) */
+.rh-suchfeld { flex: 1 1 260px; min-inline-size: 0; display: flex; }
+.rh-suchfeld .suche { flex: 1; min-inline-size: 0; }
+.rh-suchfeld .auswahl-liste { inline-size: 100%; }
+.rh-suchfeld .auswahl-liste button { display: flex; gap: 10px; align-items: center; white-space: normal; overflow-wrap: anywhere; }
+.rh-suchfeld .auswahl-liste button i { color: var(--text-3); }
+.rh-suchfeld .auswahl-liste .rh-verlauf-weg { color: var(--text-3); font-size: var(--marke); justify-content: center; }
+/* eigene Stream-Adresse bearbeiten */
+.rh-strom-eingabe { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; }
+.rh-strom-eingabe .eingabe { block-size: 40px; font-family: var(--schrift-code); font-size: var(--klein); }
+.rh-strom-eingabe input { font-size: max(16px, var(--klein)); }
+.rh-strom-eingabe .rund, .rh-strom .rund + .rund { inline-size: 36px; block-size: 36px; flex: none; }
+.rh-eigen { font-size: var(--marke); color: var(--akzent); font-weight: 600; margin-left: 6px; }
+/* Läuft gerade (Titel aus dem Strom) und Gründe der Sichtbarkeit im Steckbrief */
+.rh-laeuft { display: flex; gap: 8px; align-items: start; }
+.rh-laeuft span { min-width: 0; overflow-wrap: anywhere; }
+.rh-laeuft .rund { inline-size: 32px; block-size: 32px; flex: none; }
+.rh-ausnahme { color: var(--text-2); }
+.rh-ausnahme i { color: var(--led-gelb); margin-right: 6px; }
+.rh-titelguete { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.rh-titelguete .chip.wahl { min-block-size: 32px; padding: 2px 10px; }
+.rh-leer-facette { margin: 0 0 4px 8px; font-size: var(--klein); color: var(--text-3); }
+/* Rückgängig-Band: Knöpfe wie im Entwurf */
+.rh-band .knopf { block-size: 40px; }
+.rh-band a.knopf { text-decoration: none; }
+/* Schnellwahl: zwei Flachtaster übereinander (Nur Favoriten, Nur erreichbare, Entscheidung 30) neben der Drehwahl */
+.rh-schnellwahl-taster { display: grid; gap: 6px; inline-size: 100%; min-width: 0; }
+/* Trefferzähler wächst mit der Breite des Fensters (Raster- und Segmentanzeigen wachsen mit, RAD-8) */
+.rh-werkzeug .rh-zaehler ak-segmente { --ak-zelle: clamp(calc(var(--gross) * 7.5), 9vw, calc(var(--gross) * 11)); }

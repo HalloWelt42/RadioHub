@@ -17,11 +17,14 @@ export class Filterzustand {
   filter = $state<Schnellfilter>(leer());
   /** aufgeklappter Sender (/radio/<uuid>) */
   offen = $state<string | null>(null);
+  /** die Adresse wurde schon einmal gelesen (danach gilt der Zustand, bis Zurück oder Vor sie ändert) */
+  gelesen = false;
 
   constructor(private readonly ort: Ort) {}
 
   /** Adresse lesen (Start, Zurück und Vor); eine frühere Form /radio/search/<suche> wird umgeschrieben */
   ausAdresse(): void {
+    this.gelesen = true;
     const { filter, offen } = ausOrt(this.ort.pfad(), this.ort.abfrage());
     this.filter = filter;
     this.offen = offen;
@@ -44,6 +47,12 @@ export class Filterzustand {
     if (uuid === this.offen) return;
     this.offen = uuid;
     this.ort.neu(radioPfad(this.filter, uuid));
+  }
+
+  /** Beim Öffnen der Ansicht: beim ersten Mal gilt die Adresse, danach der Zustand (Rückkehr über die Navigation) */
+  ansicht(): void {
+    if (this.gelesen) this.schreiben();
+    else this.ausAdresse();
   }
 
   /** Adresse aus dem Zustand schreiben (etwa nach dem Wechsel zurück in den Bereich Radio) */

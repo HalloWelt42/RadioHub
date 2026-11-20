@@ -1,9 +1,9 @@
 <script lang="ts">
   // RadioHub nach der Anmeldung: am Rechner Kopf, Bereich und Abspielleiste, am Telefon die eigene Ansicht (quer die
-  // Weckeransicht). Die Bereiche Radio, Aufnahmen, Podcasts, Einstellungen und der Spieler sind die bisherigen; sie
-  // stehen in .rh-alt und wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
+  // Weckeransicht). Radio ist neu gebaut (RAD-7); Aufnahmen, Podcasts, Einstellungen und der Spieler sind die bisherigen,
+  // sie stehen in .rh-alt und wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
   import HiFiPlayer from "./components/HiFiPlayer.svelte";
-  import StationsTab from "./components/StationsTab.svelte";
+  import RadioAnsicht from "./components/radio/RadioAnsicht.svelte";
   import RecordingsTab from "./components/RecordingsTab.svelte";
   import PodcastsTab from "./components/PodcastsTab.svelte";
   import SettingsTab from "./components/SettingsTab.svelte";
@@ -111,9 +111,10 @@
 {:else}
   <div class="rh-app">
     <Kopf {online} {ablage} />
-    <main class="rh-mitte rh-alt">
+    <!-- die neue Radio-Ansicht liest die Marken direkt; nur die alten Bereiche wachsen als Ganzes (rh-alt) -->
+    <main class="rh-mitte" class:rh-alt={appState.activeTab !== "radio" && appState.activeTab !== "wecker"}>
       {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}
-        <StationsTab />
+        <RadioAnsicht />
       {:else if appState.activeTab === "recordings"}
         <RecordingsTab />
       {:else if appState.activeTab === "podcasts"}

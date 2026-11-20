@@ -1,7 +1,12 @@
 /**
  * RadioHub - English Translations
  */
+import radio from './radio/en.js';
+
 export default {
+  // === Radio mit Senderfilterung (RAD-7) ===
+  radio,
+
   // === Phone view ===
   telefon: {
     radio: 'Radio',

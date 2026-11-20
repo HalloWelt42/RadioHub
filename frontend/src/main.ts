@@ -12,6 +12,7 @@ import "./stil/radio-marken.css";
 import "./stil/vorlagen/grund.css";
 import "./stil/vorlagen/hifi.css";
 import "./stil/bausteine.css";
+import "./stil/radio.css";
 import "./stil/rechner.css";
 // Alte Bereiche bis zu ihrem Neubau (Etappen 3, 4 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
 import "./styles/bruecke.css";

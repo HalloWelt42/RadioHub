@@ -14,6 +14,7 @@
   --rh-taste: 46px;                            /* Tasten der Abspielleiste und Werkzeugleisten */
   --rh-taste-klein: 42px;                      /* Chips, Hinweise, Tasten in Karten */
   --rh-pille: 999px;                           /* Rundung von Pillen (Navigation, Schienen) */
+  --rh-filter-breite: calc(var(--gross) * 18); /* Seitenleiste der Schnellfilter wächst mit der Schrift */
   --rh-schrift-logo: "Orbitron", var(--schrift-zahl); /* Schriftzug RadioHub, wie in der heutigen App */
 }
 
@@ -24,9 +25,15 @@
   --rh-regenbogen: linear-gradient(90deg, #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0); /* Unterzeile im Dunkeln */
   --rh-anzeige: var(--led-gruen);              /* Leuchtschrift der Anzeigen (wie heute grün) */
   --rh-licht-aus: #07090b;                     /* Grund eines dunklen Lichts (aus geschaltete Leuchten) */
+  --rh-licht-unbekannt: #1a1e24;               /* Qualität unbekannt: Lichter schraffiert */
+  --rh-schraffur: rgb(255 255 255 / .08);      /* Schraffur auf dunklem Licht */
+  --rh-favorit: var(--led-gelb);               /* Stern eines Favoriten */
+  --rh-lack-1: #2759a6; --rh-lack-2: #23804a; --rh-lack-3: #b3302c; --rh-lack-4: #7442b8; --rh-lack-5: #8d5229; /* Lackflächen der Senderlogos ohne Bild */
+  --rh-lack-6: #11807a; --rh-lack-7: #5f6b78; --rh-lack-8: #a0457a; --rh-lack-9: #3f6f8f; --rh-lack-10: #6b7a1f;
 }
 :root[data-theme="hell"] {
   --rh-logo: #1f5fa6;
+  --rh-favorit: #9a6a00;
 }
 
 /* ═══ Schriftstufe der alten Bereiche ═══ Radio, Aufnahmen, Podcasts, Einstellungen, Spieler und die Telefonansichten

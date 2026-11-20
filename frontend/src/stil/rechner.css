@@ -31,3 +31,50 @@
   .rh-nav-knopf i { display: inline; }
   .rh-nav-knopf:not([aria-current="page"]) span { display: none; }
 }
+
+/* ═══ Seite Radio ═══ (aus dem Entwurf mockups/radio-filter/rechner.css, RAD-7): Seitenleiste neben der Liste (unter
+   1100 Pixel als einschiebbare Tafel unter der hineinragenden Navigation), Werkzeugleiste über dem Rollfeld der Liste.
+   Die Seitenleiste reicht unter die Navigation; oben fest das Gerät der Schnellwahl, darunter rollen nur die Facetten. */
+.rh-radio { min-height: 0; min-width: 0; display: grid; grid-template-columns: var(--rh-filter-breite) minmax(0, 1fr); position: relative; }
+.rh-filter { min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+  margin-top: calc(-1 * var(--rh-ueberstand)); padding-top: var(--rh-ueberstand); z-index: 3; }
+.rh-filter-zu { display: none; }
+.rh-filter-rollt { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 14px 24px; }
+.rh-filter-oben { padding: 10px 12px 8px; min-width: 0; box-shadow: 0 1px 0 var(--rand); }
+.rh-filter-rollt > .rh-gruppe:first-child { margin-top: 4px; }
+
+.rh-haupt { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); position: relative; }
+.rh-werkzeug { display: grid; gap: 10px; padding: 12px var(--rh-rand); }
+.rh-werkzeug-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; min-width: 0; }
+.rh-werkzeug .suche { flex: 1 1 260px; min-inline-size: 0; }
+.rh-aktiv-chips { flex: 1; }
+.rh-werkzeug-zeile .rh-hinweis { flex: 0 1 auto; }
+.rh-filter-auf { display: none; }
+.rh-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand) 64px; }
+
+/* Seitenleiste als einschiebbare Tafel; der Knopf Filter steht in der Werkzeugleiste, Schließen im festen Kopf der Tafel */
+.rh-schleier { display: none; }
+@media (max-width: 1099px) {
+  .rh-radio { grid-template-columns: minmax(0, 1fr); }
+  .rh-filter { position: absolute; left: 0; top: 0; bottom: 0; inline-size: min(calc(var(--gross) * 21), calc(100vw - 32px));
+    margin-top: 0; padding-top: 0; z-index: 12; transform: translateX(-105%); transition: transform var(--ruhig) ease-out; visibility: hidden; }
+  .rh-filter.offen { transform: none; visibility: visible; }
+  .rh-filter-zu { display: grid; }
+  .rh-filter-auf { display: inline-flex; }
+  .rh-schleier { position: absolute; inset: 0; z-index: 11; background: var(--rh-schleier); border: 0; padding: 0; }
+  .rh-schleier.offen { display: block; }
+}
+@media (max-width: 1599px) { .rh-hinweis .rh-breit { display: none; } }
+
+/* schmale Fenster (das Telefon hat eine eigene Oberfläche): Werkzeugleiste dichter */
+@media (max-width: 700px) {
+  .rh-werkzeug { gap: 8px; padding-block: 8px; }
+  .rh-werkzeug .rh-breit { display: none; }
+  .rh-zaehler { grid-template-columns: auto; justify-items: center; gap: 0; padding: 4px; }
+  .rh-zaehler ak-segmente { grid-row: auto; --ak-zelle: calc(var(--gross) * 6.4); --ak-zeichen-max: 26px; }
+  .rh-zaehler .ak-etikett { align-self: auto; }
+  .rh-werkzeug-zeile:first-child { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; }
+  .rh-werkzeug-zeile:first-child .rh-suchfeld { grid-column: 1 / -1; grid-row: 2; }
+  .rh-werkzeug .auswahl-knopf .auswahl-text { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rh-filter { transition: none; } }
