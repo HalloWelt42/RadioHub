@@ -52,7 +52,7 @@
   <div class="rh-sender-kern" onclick={() => onspielen(e)}>
     <span class="led"><ak-led farbe={led.farbe} zustand={led.zustand} groesse="klein" hilfe={spielt ? t("radio.spielt") : offen ? t("radio.gewaehlt") : t("radio.bereit")}></ak-led></span>
     <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
-    <div class="name"><b>{e.name}</b>
+    <div class="name"><b title={e.name}>{e.name}</b>
       <div class="meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<span>{ort(e)}</span>
         {#if spielt && titel}<span class="rh-titel"><i class="fa-solid fa-volume-high"></i>{titel}</span>{/if}
         {#if mehrere}{@render variantenKnopf(true)}{/if}

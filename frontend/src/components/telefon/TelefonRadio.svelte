@@ -117,7 +117,7 @@
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
         <div class="tf-sender" class:spielt onclick={() => void bedienung.spielen(e)}>
           <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
-          <div><b>{e.name}</b>
+          <div><b title={e.name}>{e.name}</b>
             <div class="tf-meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<Guete stufe={e.qualitaet} /><span>{format(e)}</span>
               {#if e.varianten > 1}<span class="t-var"><i class="fa-solid fa-layer-group"></i>{t("radio.variantenZahl", { n: e.varianten })}</span>{/if}</div>
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}

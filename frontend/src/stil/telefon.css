@@ -28,7 +28,8 @@
   border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; }
 .tf-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 35%, transparent); }
 .tf-sender .rh-logo-bild { --s: calc(var(--gross) * 2.4); }
-.tf-sender b { display: block; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+/* höchstens zwei Zeilen wie am Rechner, der volle Name im Steckbrief */
+.tf-sender b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 .tf-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
 .tf-meta .rh-guete { padding: 3px 4px; }
 .tf-meta .rh-guete i { inline-size: 6px; block-size: 11px; }

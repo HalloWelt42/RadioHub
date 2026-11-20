@@ -59,7 +59,7 @@
   .rh-filter { position: absolute; left: 0; top: 0; bottom: 0; inline-size: min(calc(var(--gross) * 21), calc(100vw - 32px));
     margin-top: 0; padding-top: 0; z-index: 12; transform: translateX(-105%); transition: transform var(--ruhig) ease-out; visibility: hidden; }
   .rh-filter.offen { transform: none; visibility: visible; }
-  .rh-filter-zu { display: grid; }
+  .rh-filter-zu { display: inline-flex; }
   .rh-filter-auf { display: inline-flex; }
   .rh-schleier { position: absolute; inset: 0; z-index: 11; background: var(--rh-schleier); border: 0; padding: 0; }
   .rh-schleier.offen { display: block; }

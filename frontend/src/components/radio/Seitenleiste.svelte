@@ -64,11 +64,13 @@
   <div class="rh-filter-oben">
     <Schnellwahl {filter} {onaendern}>
       {#snippet kopf()}
-        <div class="ak-geraet-kopf rh-schnellwahl-kopf">
-          <b>{t("radio.schnellfilter")}</b><span class="pille">{t("radio.aktiv", { n: anzahl })}</span>
-          <button class="rund" type="button" disabled={!anzahl} aria-label={t("radio.alleZuruecksetzen")} title={t("radio.alleZuruecksetzen")}
-                  onclick={() => onaendern(zurueckgesetzt)}><i class="fa-solid fa-rotate-left"></i></button>
-          <button class="rund rh-filter-zu" type="button" aria-label={t("radio.filterSchliessen")} title={t("radio.schliessen")} onclick={onzu}>
+        <div class="rh-schnellwahl-kopf">
+          <span class="ak-etikett">{t("radio.schnellfilter")}</span>
+          <!-- Zurücksetzen trägt die Zahl der aktiven Filter als Leuchtziffer -->
+          <button class="rh-kopf-taste" type="button" disabled={!anzahl} aria-label="{t('radio.alleZuruecksetzen')} ({t('radio.aktiv', { n: anzahl })})"
+                  title="{t('radio.alleZuruecksetzen')} ({t('radio.aktiv', { n: anzahl })})" onclick={() => onaendern(zurueckgesetzt)}>
+            <i class="fa-solid fa-rotate-left"></i><span class="rh-leuchtzahl" class:an={anzahl > 0}>{anzahl}</span></button>
+          <button class="rh-kopf-taste rh-filter-zu" type="button" aria-label={t("radio.filterSchliessen")} title={t("radio.schliessen")} onclick={onzu}>
             <i class="fa-solid fa-xmark"></i></button>
         </div>
       {/snippet}

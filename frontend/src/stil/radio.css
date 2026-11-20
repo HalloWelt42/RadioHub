@@ -9,11 +9,19 @@
 
 /* ═══ Schnellfilter ═══ Seitenleiste, Gruppen, Facetten, Chips, Schnellwahl-Gerät */
 .rh-filter { background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
-/* Kopf im Gerät der Schnellwahl: Titel, Zahl der aktiven Filter, Zurücksetzen, am Telefon Schließen */
-.rh-schnellwahl-kopf { gap: 8px; margin-bottom: 0; }
-/* einzeilig: in der schmalen Seitenleiste ohne Silbentrennung, in Standardgröße statt Titelgröße */
-.rh-schnellwahl-kopf b { flex: 1 1 auto; min-width: 0; font-size: var(--gross); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; hyphens: none; -webkit-hyphens: none; }
-.rh-schnellwahl-kopf .pille { font-family: var(--schrift-zahl); }
+/* Kopf im Gerät der Schnellwahl, eine flache Zeile zwischen den oberen Schrauben (Nutzer 20.11.2026: "für den teil
+   müssen wir uns was kompakteres ausdenken"): der Titel klein wie die Etiketten im Gerät, Zurücksetzen mit der Zahl der
+   aktiven Filter als Leuchtziffer, in der Tafel dazu Schließen */
+.rh-schnellwahl-kopf { display: flex; align-items: center; gap: 6px; min-width: 0; padding-inline: 20px; }
+.rh-schnellwahl-kopf .ak-etikett { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; letter-spacing: .1em; }
+.rh-kopf-taste { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px; block-size: 30px; min-inline-size: 30px; padding: 0 8px;
+  border: 0; border-radius: var(--r2); background-color: var(--rh-kappe); color: var(--rh-geraet-tinte); box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark);
+  font-size: var(--marke); cursor: pointer; }
+.rh-kopf-taste:disabled { cursor: default; color: var(--ak-gesperrt-tinte); background-color: var(--ak-kappe-gesperrt); box-shadow: var(--ak-mulde-tiefe); }
+.rh-kopf-taste:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+/* Leuchtziffer: satt und ohne Weiß, wenn Filter wirken; sonst die unbeleuchtete Ziffer */
+.rh-leuchtzahl { font-family: var(--schrift-zahl); font-weight: 700; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--led-bernstein) 18%, var(--ak-glas)); }
+.rh-leuchtzahl.an { color: var(--led-bernstein); text-shadow: 0 0 calc(8px * var(--ak-leuchten)) var(--led-bernstein); }
 .rh-gruppe { padding: 16px 0 6px; }
 .rh-gruppe + .rh-gruppe { box-shadow: 0 -1px 0 var(--rand); }
 .rh-gruppe-kopf { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
@@ -23,7 +31,11 @@
 .rh-mehr { margin: 6px 0 0 8px; }
 
 /* Schnellwahl: kleines Gerät; Favoriten als Flachtaster (Leuchtstreifen in der Taste), Stimmen als Drehwahl, Bitrate als Leuchtbalken */
-.rh-schnellwahl { display: grid; gap: 6px; padding: 10px 14px 18px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
+/* Schrauben (14 Pixel, 10 vom Rand) liegen frei: unten Platz unter der Skala, oben steht der Kopf zwischen ihnen
+   (Nutzer 20.11.2026: "schrauben verdecken die schrift") */
+.rh-schnellwahl { display: grid; gap: 6px; padding: 7px 14px 28px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
+/* ohne Kopf (Filterblatt am Telefon) beginnt der Inhalt unter den oberen Schrauben */
+.rh-schnellwahl:not(:has(> .rh-schnellwahl-kopf)) { padding-top: 26px; }
 .rh-schnellwahl-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; justify-items: center; }
 .rh-schnellwahl ak-taster { inline-size: 100%; }
 .rh-schnellwahl ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 100%; block-size: auto; min-block-size: 46px; padding: 6px 10px; }
@@ -116,7 +128,10 @@
 .rh-sender .led { grid-area: led; padding-top: 16px; }
 .rh-sender .rh-logo-bild { grid-area: logo; }
 .rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
-.rh-sender .name b { display: block; font-weight: 600; font-size: var(--gross); line-height: 1.3; overflow-wrap: anywhere; }
+/* höchstens zwei Zeilen; der volle Name steht im Hinweis und im Steckbrief (Nutzer 20.11.2026 zu einem Namen über 15
+   Zeilen: "sowas darf nicht passieren") */
+.rh-sender .name b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; font-weight: 600; font-size: var(--gross);
+  line-height: 1.3; overflow-wrap: anywhere; }
 .rh-sender .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
 .rh-titel { color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
 .rh-titel i { color: var(--led-blau); margin-right: 6px; }
@@ -155,7 +170,7 @@
   .rh-aktionen .rh-varianten-zelle { display: none; }
   .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
   .rh-varianten { padding-left: 10px; }
-  .rh-variante { grid-template-columns: 14px minmax(0, 1fr) auto; }
+  .rh-varianten { grid-template-columns: 14px minmax(0, 1fr) auto; }
   .rh-variante .rh-guete-text, .rh-variante .stimmen-v { display: none; }
 }
 @container liste (max-width: 26em) {
@@ -171,12 +186,15 @@
 .rh-logo-bild.klein { --s: calc(var(--gross) * 2.2); }
 
 /* Varianten (Dubletten als Gruppe, beste vorn) */
-.rh-varianten { display: grid; gap: 6px; padding: 0 12px 12px 50px; }
-.rh-variante { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto auto auto; gap: 6px 14px; align-items: center; padding: 8px 10px; border-radius: var(--r2);
+/* Varianten teilen ein Raster (subgrid): Güte, Stimmen und Hören stehen in allen Zeilen bündig untereinander, die
+   Stimmen rechtsbündig (Nutzer 20.11.2026: "anordnung unsauber") */
+.rh-varianten { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 0 12px 12px 50px; }
+.rh-variante { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; padding: 8px 10px; border-radius: var(--r2);
   background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
 .rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
 .rh-variante .stand-pille { font-size: var(--marke); }
 .rh-variante .knopf { block-size: 40px; }
+.rh-variante .stimmen-v { justify-self: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Details eines aufgeklappten Senders: Steckbrief, Titelverlauf hinter Glas, ähnliche Sender, eigene Bewertung */
 .rh-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 17)), 1fr)); gap: 14px; padding: 4px 14px 14px; }
@@ -200,10 +218,12 @@
 .rh-aehnlich-zeile b { display: block; font-size: var(--klein); font-weight: 600; }
 .rh-aehnlich-zeile span { display: block; font-size: var(--marke); color: var(--text-3); }
 .rh-aehnlich-zeile .rund { inline-size: 40px; block-size: 40px; }
-.rh-bewerten { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.rh-stern { inline-size: 40px; block-size: 40px; border: 0; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; color: var(--text-3); }
+/* Eigene Bewertung und Kategorien im Steckbrief: kompakte Chips (Nutzer 20.11.2026: "buttons überdimensioniert"),
+   die Sterne gleich hoch */
+.rh-bewerten { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rh-stern { inline-size: 30px; block-size: 30px; font-size: var(--klein); border: 0; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; color: var(--text-3); }
 .rh-stern.an { color: var(--led-bernstein); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) var(--led-bernstein); }
-.rh-bewerten .chip.wahl { min-block-size: 40px; }
+.rh-bewerten .chip.wahl { min-block-size: 30px; block-size: 30px; padding: 0 10px; gap: 6px; font-size: var(--marke); }
 .rh-ohne-treffer { padding: 40px 16px; display: grid; justify-items: center; gap: 10px; text-align: center; color: var(--text-2); }
 .rh-ohne-treffer i { font-size: 32px; color: var(--text-3); }
 .rh-listen-fuss { padding: 14px 4px; text-align: center; font-size: var(--klein); color: var(--text-3); }
