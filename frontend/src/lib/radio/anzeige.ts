@@ -33,8 +33,6 @@ export function lack(name: string): string {
   return `var(--rh-lack-${(h % 10) + 1})`;
 }
 
-/** Bild eines Senders über den eigenen Zwischenspeicher des Backends (nie direkt von fremden Seiten) */
-export const logoAdresse = (uuid: string, logo: string): string | null => (logo ? `/api/favicon/${encodeURIComponent(uuid)}` : null);
 
 export const QUALITAET: Record<Qualitaet, { lichter: number; farbe: string }> = {
   verlustfrei: { lichter: 4, farbe: "cyan" },

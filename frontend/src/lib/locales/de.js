@@ -36,8 +36,8 @@ export default {
     weiter: 'Weiter',
     zurueck15: '15 s zurück',
     vor30: '30 s vor',
-    voriger: 'Voriger Favorit',
-    naechster: 'Nächster Favorit',
+    voriger: 'Voriger Sender',
+    naechster: 'Nächster Sender',
     spielerOeffnen: 'Spieler öffnen',
     spielerSchliessen: 'Spieler schließen',
     live: 'Live',
@@ -871,6 +871,7 @@ export default {
     pufferHilfe: 'Zeitversatz: läuft mit, höchstens {max}; ziehen springt in den Puffer',
     positionHilfe: 'Position; ziehen oder mit den Pfeiltasten springen',
     stoppHilfe: 'Stopp: beendet Hören und Aufnahme (S)',
+    stoppHilfeOhneAufnahme: 'Stopp: beendet das Hören (S)',
     taste: '{text} ({taste})',
     leertaste: 'Leertaste'
   },

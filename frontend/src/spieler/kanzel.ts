@@ -58,6 +58,8 @@ export interface Stand {
   /** Lage auf der Spulbahn, 0 bis 100 (Engine) */
   lage: number;
   hoerdauer: number;
+  /** was der Weg der Wiedergabe kann (wiedergabeweg.js); ohne Angabe alles wie in der vollen App */
+  weg?: { zeitversatz: boolean; aufnahme: boolean };
 }
 
 /** Woher der Ton kommt, unabhängig davon, ob er gerade läuft */
@@ -134,7 +136,8 @@ function quelltext(z: Zustand, s: Stand, t: Uebersetzer): string {
 
 function artText(z: Zustand, s: Stand, t: Uebersetzer): string {
   switch (z) {
-    case "live": return t(s.playerMode === "direct" ? "kanzel.art_direkt" : "kanzel.art_live");
+    // "Originalstrom" nur, wo es auch einen Zeitversatz gibt (nicht in der Webversion)
+    case "live": return t(s.playerMode === "direct" && s.weg?.zeitversatz !== false ? "kanzel.art_direkt" : "kanzel.art_live");
     case "versatz": return t("kanzel.art_versatz", { zeit: formatTimeShort(sekundenHinterLive(s.hlsStatus, s.currentSegment)) });
     case "aufnahme": return t("kanzel.art_aufnahme", { zeit: formatTime(s.recordingElapsed) });
     case "fehler": return t(s.fehlerCode === 2 ? "kanzel.art_fehler_netz" : s.fehlerCode === 3 ? "kanzel.art_fehler_format" : "kanzel.art_fehler");
@@ -294,7 +297,8 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): T
       : !s.isPlaying ? t("player.keinPlay") : t("player.recStart"),
   };
 
-  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused && !rec, hilfe: t("kanzel.stoppHilfe") };
+  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused && !rec,
+    hilfe: t(s.weg?.aufnahme === false ? "kanzel.stoppHilfeOhneAufnahme" : "kanzel.stoppHilfe") };
 
   const kann = kannModusWechseln(s);
   const stromModus = s.playerMode === "hls" || s.playerMode === "direct";

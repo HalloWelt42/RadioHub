@@ -68,18 +68,19 @@ def _lesen(datei: Path) -> tuple[dict, list[dict]]:
     return kopf, zeilen
 
 
-def test_nur_abspielbare_sender_mit_sicheren_logos(probe_db, tmp_path):
+def test_nur_abspielbare_sender_ohne_logos(probe_db, tmp_path):
     bericht = sl.erzeugen(tmp_path / "web", probe_db)
     kopf, zeilen = _lesen(Path(bericht.datei))
     nach_uuid = {z["uuid"]: z for z in zeilen}
     assert sorted(nach_uuid) == ["a1", "a2", "b2", "d1"]
     assert (bericht.gelesen, bericht.geschrieben) == (7, 4)            # verschwundene liest es gar nicht erst
-    assert nach_uuid["a2"]["logo"] == "" and nach_uuid["a1"]["logo"] == "https://logo.test/a.png"
+    # ohne Logos: die Webversion lädt nichts von fremden Servern, solange nichts spielt (Nutzer 20.11.2026)
+    assert all("logo" not in z for z in zeilen)
     # aufgelöste Adresse nur, wenn sie von der Adresse abweicht
     assert (nach_uuid["b2"]["adresse"], nach_uuid["b2"]["adresse_aufgeloest"]) == ("http://strom.test/b2",
                                                                                     "https://strom.test/b2-sicher")
     assert nach_uuid["a1"]["adresse_aufgeloest"] == ""
-    assert (kopf["format"], kopf["aufbereitung"], kopf["quelle"], kopf["anzahl"]) == (1, senderdaten.FASSUNG,
+    assert (kopf["format"], kopf["aufbereitung"], kopf["quelle"], kopf["anzahl"]) == (sl.FORMAT, senderdaten.FASSUNG,
                                                                                       "datenbank", 4)
     assert kopf["spalten"] == list(sl.SPALTEN)
 

@@ -23,7 +23,6 @@ interface Probesender {
   stimmen?: number;
   /** uuid des Gruppenschlüssels (ohne Angabe: eigene Gruppe) */
   gruppe?: string;
-  logo?: string;
 }
 
 const SPRACHNAMEN = { de: "Deutsch", ru: "Russisch", zh: "Chinesisch (Mandarin)", yue: "Chinesisch (Kantonesisch)" };
@@ -41,7 +40,7 @@ function probe(sender: Probesender[]): unknown {
   const zeile = liste.findIndex.bind(liste);
   const zeilen = liste.map((s) => {
     const land = s.land ?? "DE";
-    return [s.uuid, s.name, `https://strom.test/${s.uuid}`, "", s.logo ?? "", "", nr("land", land), nr("land_name", LANDNAMEN[land] ?? ""),
+    return [s.uuid, s.name, `https://strom.test/${s.uuid}`, "", "", nr("land", land), nr("land_name", LANDNAMEN[land] ?? ""),
             0, 0, (s.sprachen ?? ["de"]).map((x) => nr("sprache", x)), (s.eintraege ?? ["german"]).map((x) => nr("spracheintrag", x)),
             (s.genres ?? []).map((x) => nr("genre", x)), (s.tags ?? []).map((x) => nr("tag", x)), nr("codec", s.codec ?? "MP3"),
             s.kbps ?? 128, nr("qualitaet", s.qualitaet ?? "mittel"), s.stimmen ?? 10, 0, zeile((x) => x.uuid === (s.gruppe ?? s.uuid))];

@@ -54,7 +54,7 @@
 <div class="rh-werkzeug">
   <div class="rh-werkzeug-zeile">
     <button class="knopf rh-filter-auf" type="button" aria-expanded={filterOffen} aria-controls="rh-filter" onclick={onfilter}>
-      <i class="fa-solid fa-sliders"></i>{t("radio.filter")}<span class="pille">{chips.length}</span></button>
+      <i class="fa-solid fa-sliders"></i>{t("radio.filter")}{#if chips.length}<span class="pille">{chips.length}</span>{/if}</button>
     <div class="rh-zaehler" title={t("radio.trefferHilfe")}>
       <ak-segmente art="7" stellen="5" farbe="gruen" text={gesamt === null ? "-----" : zahl(gesamt)}></ak-segmente>
       <span class="ak-etikett">{t("radio.treffer")}</span>

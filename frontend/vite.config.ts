@@ -49,6 +49,8 @@ function webDateien(): Plugin {
   return {
     name: "web-dateien",
     configResolved: (c) => { aus = c.build.outDir; },
+    // Verweise der Startseite auf Symbole und Manifest unter die Basis (ohne öffentlichen Ordner setzt Vite sie nicht)
+    transformIndexHtml: (html) => html.replace(/href="\/([^"/]+\.(?:ico|png|svg|webmanifest))"/g, `href="${WEB_BASIS}$1"`),
     configureServer(server) {
       server.middlewares.use((req, res, weiter) => {
         const pfad = (req.url ?? "").split("?")[0].replace(WEB_BASIS, "/");

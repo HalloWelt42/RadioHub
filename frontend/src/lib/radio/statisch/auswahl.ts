@@ -32,7 +32,7 @@ export function ausgeblendetSeite(b: Senderbestand, s: Sicht, a: AusgeblendetAnf
   return {
     gesamt: treffer.length, seite: nummer, seiten,
     eintraege: treffer.slice(nummer * anzahl, (nummer + 1) * anzahl).map((i) => ({
-      uuid: b.uuid[i], name: b.name[i], land: b.land[i], stimmen: b.stimmen[i], logo: b.logo[i], gruende: s.gruende(i) })),
+      uuid: b.uuid[i], name: b.name[i], land: b.land[i], stimmen: b.stimmen[i], logo: "", gruende: s.gruende(i) })),
     gruende: [...zahlen.values()].sort((x, y) => y.anzahl - x.anzahl || vergleichen(x.regel, y.regel)),
   };
 }

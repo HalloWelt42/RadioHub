@@ -1,12 +1,13 @@
 <script lang="ts">
   // Senderlogo: das Bild aus dem Zwischenspeicher des Backends, ohne Bild (oder wenn es nicht lädt) das Kürzel auf einer
   // Lackfläche wie im Entwurf.
-  import { kuerzel, lack, logoAdresse } from "../../lib/radio/anzeige";
+  import { kuerzel, lack } from "../../lib/radio/anzeige";
+  import { senderquelle } from "../../lib/radio";
 
   let { uuid, name, logo, klein = false }: { uuid: string; name: string; logo: string; klein?: boolean } = $props();
 
   let kaputt = $state<string | null>(null);
-  const bild = $derived(kaputt === uuid ? null : logoAdresse(uuid, logo));
+  const bild = $derived(kaputt === uuid ? null : senderquelle.logoAdresse(uuid, logo));
 
   function geladen(e: Event) {
     if ((e.currentTarget as HTMLImageElement).naturalWidth < 4) kaputt = uuid;   // leere Bildchen der Verzeichnisse

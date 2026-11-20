@@ -36,8 +36,8 @@ export default {
     weiter: 'Resume',
     zurueck15: 'Back 15 s',
     vor30: 'Forward 30 s',
-    voriger: 'Previous favourite',
-    naechster: 'Next favourite',
+    voriger: 'Previous station',
+    naechster: 'Next station',
     spielerOeffnen: 'Open player',
     spielerSchliessen: 'Close player',
     live: 'Live',
@@ -871,6 +871,7 @@ export default {
     pufferHilfe: 'Timeshift: always running, at most {max}; drag to jump into the buffer',
     positionHilfe: 'Position; drag or jump with the arrow keys',
     stoppHilfe: 'Stop: ends listening and recording (S)',
+    stoppHilfeOhneAufnahme: 'Stop: ends listening (S)',
     taste: '{text} ({taste})',
     leertaste: 'Space'
   },

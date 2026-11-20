@@ -24,7 +24,7 @@ export const ueberBackend = {
   },
 };
 
-const LETZTER_SENDER = 'radiohub_letzter_sender';
+const LETZTER_SENDER = 'radiohub.web.letzter_sender';   // wie die eigenen Angaben der Webversion (radiohub.web.*)
 
 /** @type {Wiedergabeweg} */
 export const direkt = {

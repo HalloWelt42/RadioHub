@@ -14,6 +14,10 @@
   import { Bitrate } from "./bitrate.svelte";
   import { bitrateLage, bitrateText, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
   import { modusWechseln } from "./aktionen";
+  import { faehigkeiten } from "../lib/playerEngine.js";
+
+  /** was der Weg der Wiedergabe kann (fest für die Sitzung: volle App oder Webversion) */
+  const weg = faehigkeiten();
 
   /** so lange bleibt die Taste Original oder Zeitversatz höchstens gedrückt, falls der Wechsel nie ankommt */
   const MODUS_FRIST_MS = 20000;
@@ -49,6 +53,7 @@
     dauer: wiedergabe.dauer,
     lage: wiedergabe.lage,
     hoerdauer: wiedergabe.hoerdauer,
+    weg,
   });
 
   // Original oder Zeitversatz: Taste bleibt gedrückt, bis der neue Modus gilt

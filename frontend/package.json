@@ -6,7 +6,7 @@
     "dev": "vite",
     "dev:web": "vite --mode web",
     "build": "vite build && node node_modules/appkern-oberflaeche/oberflaeche/werkzeuge/symbol-einbetten.mjs dist",
-    "build:web": "vite build --mode web && node node_modules/appkern-oberflaeche/oberflaeche/werkzeuge/symbol-einbetten.mjs dist-web",
+    "build:web": "vite build --mode web",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"

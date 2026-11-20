@@ -152,6 +152,15 @@ describe("Spulzeilen", () => {
   });
 });
 
+describe("Webversion ohne Zeitversatz und Aufnahme", () => {
+  it("die Statuszeile sagt LIVE statt Originalstrom, Stopp verspricht keine Aufnahme", () => {
+    const weg = { zeitversatz: false, aufnahme: false };
+    expect(kanzelAnzeige(spielt({ weg }), t).art).toBe("LIVE");
+    expect(kanzelAnzeige(spielt(), t).art).toBe("LIVE, ORIGINALSTROM");
+    expect(kanzelTasten(spielt({ weg }), t).stopp.hilfe).toBe("Stopp: beendet das Hören (S)");
+  });
+});
+
 describe("Punktmatrix wächst mit der Breite", () => {
   it("mehr Stellen bei mehr Platz, nie unter 10, Zeichenhöhe bleibt", () => {
     expect(stellenFuer(274, 28)).toBe(13);

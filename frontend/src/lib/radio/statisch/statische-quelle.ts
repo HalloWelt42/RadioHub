@@ -31,6 +31,11 @@ const BEISPIELE = 5;
 export class StatischeQuelle implements Senderquelle {
   readonly faehig: Faehigkeiten = { abgleich: false, eigeneAdresse: false, messen: false, kategorien: false, titelBewerten: false,
                                     werbung: false, datei: true };
+
+  /** ohne Logos: keine Anfragen an fremde Server beim Blättern (Nutzer 20.11.2026); die Zeile zeigt das Kürzel */
+  logoAdresse(): string | null {
+    return null;
+  }
   private readonly laden: () => Promise<unknown>;
   private readonly speicher: Speicher;
   private liste: Promise<Senderbestand> | null = null;

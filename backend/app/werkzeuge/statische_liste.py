@@ -34,7 +34,7 @@ from ..senderdaten import Sender, Verzeichnisdatensatz, dubletten
 from ..senderdaten import sprachen as sprachtabelle
 from ..services.senderquelle import abgleich, bestand
 
-FORMAT = 1
+FORMAT = 2   # 2: ohne Spalte logo (Webversion ohne Logos, Nutzer 20.11.2026)
 DATEI = "sender.json"
 SICHER = "https://"
 # Gedankenstriche und typografische Anführungszeichen in Namen des Verzeichnisses schreibt die Datei als
@@ -43,7 +43,7 @@ _ALS_ESCAPE = {ord(z): f"\\u{ord(z):04x}" for z in "\u2013\u2014\u2018\u2019\u20
 
 # Spalten einer Zeile in dieser Reihenfolge; die mit Wörterbuch stehen in WOERTERBUCH_SPALTEN
 SPALTEN: tuple[str, ...] = (
-    "uuid", "name", "adresse", "adresse_aufgeloest", "logo", "homepage", "land", "land_name", "region", "bundesland",
+    "uuid", "name", "adresse", "adresse_aufgeloest", "homepage", "land", "land_name", "region", "bundesland",
     "sprachen", "spracheintraege", "genres", "tags", "codec", "kbps", "qualitaet", "stimmen", "hls", "gruppe",
 )
 # Spalte -> Wörterbuch (einzelner Wert oder Liste von Werten)
@@ -54,7 +54,7 @@ WOERTERBUCH_SPALTEN: dict[str, str] = {
 
 # Eine Zeile: Texte, Nummern in die Wörterbücher, Zahlen; kbps 0 heißt ohne Angabe, adresse_aufgeloest "" heißt
 # wie adresse, hls 0 oder 1
-Zeile = tuple[str, str, str, str, str, str, int, int, int, int, list[int], list[int], list[int], list[int], int, int,
+Zeile = tuple[str, str, str, str, str, int, int, int, int, list[int], list[int], list[int], list[int], int, int,
               int, int, int, int]
 
 
@@ -88,10 +88,6 @@ def abspielbar(d: Verzeichnisdatensatz) -> bool:
     """Spielt direkt im Browser über https: Adresse sicher, zuletzt erreichbar, Zertifikat in Ordnung."""
     adresse = (d.url_resolved or d.url).strip()
     return adresse.lower().startswith(SICHER) and bool(d.lastcheckok) and not d.ssl_error
-
-
-def sicheres_logo(logo: str) -> str:
-    return logo if logo.lower().startswith(SICHER) else ""
 
 
 # ----- Quellen ------------------------------------------------------------------------------------------------------------
@@ -170,7 +166,7 @@ def _werte(s: Sender) -> dict[str, list[str]]:
 
 def _zeile(s: Sender, w: _Woerterbuecher, gruppe: int) -> Zeile:
     return (s.uuid, s.name, s.adresse, "" if s.adresse_aufgeloest == s.adresse else s.adresse_aufgeloest,
-            sicheres_logo(s.logo), s.homepage, w.nummer("land", s.land), w.nummer("land_name", s.land_name),
+            s.homepage, w.nummer("land", s.land), w.nummer("land_name", s.land_name),
             w.nummer("region", s.region), w.nummer("bundesland", s.bundesland),
             w.liste("sprache", [x.schluessel for x in s.sprachen]), w.liste("spracheintrag", s.spracheintraege),
             w.liste("genre", s.genres), w.liste("tag", s.tags), w.nummer("codec", s.codec), s.kbps or 0,

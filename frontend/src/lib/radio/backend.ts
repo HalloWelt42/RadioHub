@@ -67,6 +67,11 @@ export class BackendQuelle implements Senderquelle {
   readonly faehig: Faehigkeiten = { abgleich: true, eigeneAdresse: true, messen: true, kategorien: true, titelBewerten: true, werbung: true, datei: false };
   private readonly a: Anfrage;
   private readonly beiFavoriten: () => void;
+
+  /** Bild über den eigenen Zwischenspeicher des Backends (nie direkt von fremden Seiten) */
+  logoAdresse(uuid: string, logo: string): string | null {
+    return logo ? `/api/favicon/${encodeURIComponent(uuid)}` : null;
+  }
   private readonly messenNachMs: number;
   /** Felder für die Wiedergabe je Sender (ändern sich nur mit der eigenen Adresse oder dem nächtlichen Abgleich) */
   private readonly fuerWiedergabe = new Map<string, Wiedergabesender>();

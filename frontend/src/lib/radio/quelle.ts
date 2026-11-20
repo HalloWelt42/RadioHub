@@ -91,6 +91,9 @@ export interface LandZahl {
 
 export interface Senderquelle {
   readonly faehig: Faehigkeiten;
+  /** Adresse des Senderlogos für die Zeile, oder null (dann das Kürzel): die volle App über ihren eigenen
+   *  Zwischenspeicher (nie direkt von fremden Seiten), die Webversion ohne Logos */
+  logoAdresse(uuid: string, logo: string): string | null;
 
   // ----- Liste -----------------------------------------------------------------------------------------------------
   /** Erste Seite mit Gesamtzahl und Facetten, weitere über `nach`. */
