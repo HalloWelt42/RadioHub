@@ -56,6 +56,9 @@
 .rh-zeit { flex: 1; display: grid; gap: 6px; align-content: center; }
 .rh-zeit-glas { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
 .rh-zeit-glas .ak-segmente-glas { padding: 6px 8px; }
+/* PRO mit Spulzeile (Zeitversatz, Folgen): etwa zwei Zeichen mehr Platz zwischen Quelle und Uhr, damit Stand und Länge
+   unter der Bahn ("0:26 von 2:00:00") ganz zu lesen sind (Nutzer 20.11.2026, RAD-13); Basic bleibt schmal */
+.rh-zeit-spulbar .rh-zeit-glas { gap: calc(4px + var(--marke) * 1.2); }
 /* Quelle und Zeit wachsen mit der Breite der Kanzel (cqi: Hundertstel ihrer Breite, nie vom eigenen Inhalt), mit
    Grenzen in Grundschriften: nie kleiner als im Entwurf, nie größer, als die Zeile trägt */
 .rh-zeit-quelle { --ak-zelle: clamp(calc(var(--gross) * 6.6), 6.6cqi, calc(var(--gross) * 8.6)); --ak-zeichen-max: 40px; }

@@ -23,7 +23,7 @@
 </script>
 
 <section class="rh-modul rh-m-zeit" aria-label={t("kanzel.quelleUndZeit")}><span class="ak-etikett">{t("kanzel.quelleUndZeit")}</span>
-  <div class="rh-zeit">
+  <div class="rh-zeit" class:rh-zeit-spulbar={spulbar}>
     <div class="ak-glas rh-zeit-glas">
       <ak-segmente class="rh-zeit-quelle" art="14" stellen="7" text={anzeige.quelle.text} hilfe={t("kanzel.quelleHilfe")}
         style:--farbe="var(--led-{anzeige.quelle.farbe})"></ak-segmente>
