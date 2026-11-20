@@ -12,7 +12,7 @@
 
   const verlauf = new Suchverlauf("radiohub_podcast_suche");
 
-  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onleiste, onaktualisieren, oneinstellungen }: {
+  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onsortierung, onleiste, onaktualisieren, oneinstellungen }: {
     ansicht: Podcastansicht;
     abos: Abo[];
     gesamt: number | null;
@@ -21,6 +21,8 @@
     laedt: boolean;
     leisteOffen: boolean;
     onaendern: (arbeit: (a: Podcastansicht) => Podcastansicht) => void;
+    /** Sortierung gewählt (gilt bei einem Abo für dieses Abo) */
+    onsortierung: (s: Podcastsortierung) => void;
     onleiste: () => void;
     onaktualisieren: () => void;
     oneinstellungen: () => void;
@@ -68,7 +70,7 @@
               onsuche={(s) => onaendern((a) => ({ ...a, suche: s, offen: null }))} />
     <span class="rh-sortierung">
       <Auswahl wert={ansicht.sortierung} optionen={sorten} symbol="fa-arrow-down-wide-short" titel={t("podcastAnsicht.sortierungTitel")}
-               onwahl={(s: Podcastsortierung) => onaendern((a) => ({ ...a, sortierung: s }))} />
+               onwahl={(s: Podcastsortierung) => onsortierung(s)} />
     </span>
     <button class="knopf" type="button" title={t("podcastAnsicht.aktualisierenHilfe")} aria-label={t("podcastAnsicht.aktualisieren")} disabled={laedt}
             onclick={() => { onaktualisieren(); sfx.click(); }}>

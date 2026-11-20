@@ -2,14 +2,15 @@
   // Podcasts am Rechner nach dem abgenommenen Entwurf (mockups/radio-filter/podcasts.html, RAD-17): Seitenleiste mit Wahl
   // und Abos, Werkzeugleiste, Kopf eines gewählten Abos, Folgen seitenweise, Abonnieren über das Verzeichnis, Band mit
   // Rückgängig. Zustand und Adresse in lib/podcasts (Quelle, Aboliste, Folgenliste, Podcastzustand), hier nur die Ansicht.
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import * as sfx from "../../lib/uiSounds.js";
-  import { aboliste, Folgenliste, Merkauftrag, podcastquelle, podcastzustand, zuAbfrage, type Aktualisierungsstand, type Folge,
-    type Podcastansicht } from "../../lib/podcasts";
+  import { aboliste, Folgenliste, Ladeauftrag, podcastquelle, podcastzustand, zuAbfrage, type Aktualisierungsstand, type Folge,
+    type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
+  import { fokus as folgen } from "../../spieler/fokus.svelte";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
   import Band from "../radio/Band.svelte";
   import AboKopf from "./AboKopf.svelte";
@@ -19,7 +20,7 @@
   import Verzeichnis from "./Verzeichnis.svelte";
 
   const liste = new Folgenliste(podcastquelle);
-  const auftrag = new Merkauftrag(podcastquelle, (id) => liste.aendern(id, { gemerkt: true }));
+  const auftrag = new Ladeauftrag(podcastquelle, (id) => liste.aendern(id, { heruntergeladen: true }));
   let band = $state<BandInhalt | null>(null);
   let stand = $state<Aktualisierungsstand | null>(null);
   let leisteOffen = $state(false);
@@ -51,6 +52,39 @@
     podcastzustand.aendern(arbeit);
   }
 
+  // Sortierung je Abo (Nutzer 20.11.2026): ist genau ein Abo gewählt, gilt seine gemerkte Sortierung, und ein Wechsel
+  // merkt sie für dieses Abo; sonst gilt die der Ansicht
+  function sortieren(s: Podcastsortierung) {
+    aendern((a) => ({ ...a, sortierung: s }));
+    if (einAbo) void sicher(() => aboliste.sortierungSetzen(einAbo.id, s));
+  }
+  const aboSortierung = $derived(einAbo?.sortierung ?? "");
+  $effect(() => {
+    const s = aboSortierung;
+    untrack(() => { if (s && s !== ansicht.sortierung) aendern((a) => ({ ...a, sortierung: s })); });
+  });
+
+  // Fokus der Kanzel (RAD-19) auch für Folgen: ist er an, klappt die Liste die laufende Folge auf und rollt hin, beim
+  // Öffnen und bei jedem Wechsel; dazwischen rollt man frei
+  let listeEl = $state<HTMLElement>();
+  let gefolgt: number | null = null;
+  $effect(() => {
+    const id = spielend;
+    const an = folgen.an;
+    untrack(() => {
+      if (!an) { gefolgt = null; return; }
+      if (id === null || id === gefolgt) return;
+      gefolgt = id;
+      const aboId = (appState.currentEpisode as { podcast_id?: number } | null)?.podcast_id ?? null;
+      podcastzustand.folge(id, aboId);
+      void hinrollen(id);
+    });
+  });
+  async function hinrollen(id: number) {
+    await tick();
+    listeEl?.querySelector<HTMLElement>(`[data-folge="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
   function meldung(symbol: string, name: string, text: string, rueckgaengig?: () => Promise<void>) {
     band = { symbol, name, text, rueckgaengig };
   }
@@ -72,12 +106,13 @@
     });
   }
 
-  function merken(f: Folge) {
+  function laden(f: Folge) {
     void sicher(async () => {
-      await podcastquelle.merken(f.id, !f.gemerkt);
-      liste.aendern(f.id, { gemerkt: !f.gemerkt });
-      aboliste.aendern(f.aboId, { geladen: Math.max(0, (aboliste.abo(f.aboId)?.geladen ?? 0) + (f.gemerkt ? -1 : 1)) });
-      meldung(f.gemerkt ? "fa-trash-can" : "fa-circle-down", f.titel, f.gemerkt ? t("podcastAnsicht.bandFreigegeben") : t("podcastAnsicht.bandGemerkt"));
+      await podcastquelle.herunterladen(f.id, !f.heruntergeladen);
+      liste.aendern(f.id, { heruntergeladen: !f.heruntergeladen });
+      aboliste.aendern(f.aboId, { heruntergeladen: Math.max(0, (aboliste.abo(f.aboId)?.heruntergeladen ?? 0) + (f.heruntergeladen ? -1 : 1)) });
+      meldung(f.heruntergeladen ? "fa-trash-can" : "fa-circle-down", f.titel,
+        f.heruntergeladen ? t("podcastAnsicht.bandDownloadGeloescht") : t("podcastAnsicht.bandHeruntergeladen"));
     });
   }
 
@@ -109,8 +144,8 @@
     aktualisiert = false;
   }
 
-  async function alleMerken(aboId: number) {
-    const offen = liste.folgen.filter((f) => f.aboId === aboId && !f.gemerkt).map((f) => f.id);
+  async function alleLaden(aboId: number) {
+    const offen = liste.folgen.filter((f) => f.aboId === aboId && !f.heruntergeladen).map((f) => f.id);
     await auftrag.starten(aboId, offen);
     void aboliste.laden();
   }
@@ -140,6 +175,7 @@
                  onwahl={(w) => aendern((a) => ({ ...a, wahl: w, offen: null }))}
                  onabos={(ids) => aendern((a) => ({ ...a, abos: ids, offen: null, verzeichnis: false }))}
                  onordnen={(ids) => void sicher(() => aboliste.ordnen(ids))}
+                 onanheften={(id, an) => void sicher(() => aboliste.anheften(id, an))}
                  onabonnieren={() => { leisteOffen = false; aendern((a) => ({ ...a, verzeichnis: true })); }}
                  onzu={() => (leisteOffen = false)} />
   <button class="rh-schleier" class:offen={leisteOffen} type="button" aria-label={t("radio.schliessen")} tabindex="-1"
@@ -147,16 +183,17 @@
 
   <main class="rh-haupt">
     <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} {stand} laedt={aktualisiert} {leisteOffen}
-                     onaendern={aendern} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
+                     onaendern={aendern} onsortierung={sortieren} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
                      oneinstellungen={() => actions.navigateTo("/einstellungen/podcast")} />
-    <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")}>
+    <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl}>
       {#if ansicht.verzeichnis}
         <Verzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onabonnieren={abonnieren}
                      onzu={() => aendern((a) => ({ ...a, verzeichnis: false }))} />
       {:else}
         {#if einAbo}
           <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
-                   onaktualisieren={() => void aktualisieren(einAbo.id)} onallemerken={() => void alleMerken(einAbo.id)}
+                   onaktualisieren={() => void aktualisieren(einAbo.id)} onalleladen={() => void alleLaden(einAbo.id)}
+                   onanheften={() => void sicher(() => aboliste.anheften(einAbo.id, !einAbo.angeheftet))}
                    onabbestellen={() => abbestellen(einAbo.id)} />
         {/if}
         <div class="rh-spalten rh-folgen-spalten" aria-hidden="true"><span>{t("podcastAnsicht.folge")}</span><span>{t("podcastAnsicht.stand")}</span>
@@ -172,7 +209,7 @@
         {:else}
           {#each liste.folgen as f (f.id)}
             <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id}
-                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} onmerken={() => merken(f)}
+                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} onladen={() => laden(f)}
                         ongehoert={() => gehoert(f)} ondetails={() => details(f)}
                         onabo={() => aendern((a) => ({ ...a, abos: [f.aboId], offen: null }))} />
           {/each}

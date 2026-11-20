@@ -57,6 +57,19 @@ export class Aboliste {
     }
   }
 
+  /** oben anheften oder lösen; danach die Reihenfolge des Backends (ein gelöstes kehrt an seine Stelle zurück) */
+  async anheften(id: number, an: boolean): Promise<void> {
+    await this.quelle.anheften(id, an);
+    this.aendern(id, { angeheftet: an });
+    await this.laden();
+  }
+
+  async sortierungSetzen(id: number, sortierung: Abo["sortierung"]): Promise<void> {
+    if (this.abo(id)?.sortierung === sortierung) return;
+    await this.quelle.sortierungSetzen(id, sortierung);
+    this.aendern(id, { sortierung });
+  }
+
   async autoLaden(id: number, an: boolean): Promise<void> {
     await this.quelle.autoLaden(id, an);
     this.aendern(id, { autoLaden: an });

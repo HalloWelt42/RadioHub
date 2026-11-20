@@ -28,31 +28,35 @@ describe("Podcastquelle gegen das Backend", () => {
     const { quelle } = backend({ "/api/podcasts/subscriptions": { subscriptions: [ABO] },
       "/api/podcasts/3/episodes": { episodes: [folge(1), folge(2, { image_url: "https://fremd.test/b.jpg" })], total: 2 } });
     const [abo] = await quelle.abos();
-    expect(abo).toMatchObject({ id: 3, titel: "Probefunk", autoLaden: true, ungehoert: 5, heuteUngehoert: 1, bild: "/api/podcasts/3/image" });
+    expect(abo).toMatchObject({ id: 3, titel: "Probefunk", autoLaden: true, ungehoert: 5, heuteUngehoert: 1, bild: "/api/podcasts/3/image",
+      angeheftet: false, sortierung: "", heruntergeladen: 2 });
     const s = await quelle.folgen({ abos: [3] });
-    expect(s.folgen[0]).toMatchObject({ id: 1, aboId: 3, gemerkt: true, gehoert: false, stelle: 30, bild: "/api/podcasts/3/image" });
+    expect(s.folgen[0]).toMatchObject({ id: 1, aboId: 3, heruntergeladen: true, gehoert: false, stelle: 30, bild: "/api/podcasts/3/image" });
     expect(s.folgen[1].bild).toBe("/api/podcasts/episodes/2/image");                 // nie direkt der fremde Server
     expect(s.weiter).toBeNull();
   });
 
   it("übersetzt Filter, Sortierung und Seiten in die Parameter des Backends", async () => {
     const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/all": { episodes: [folge(1), folge(2)], total: 5 } });
-    const s = await quelle.folgen({ abos: [3, 4], filter: "gemerkt", sortierung: "dauer", absteigend: false, anzahl: 2, nach: "2" });
+    const s = await quelle.folgen({ abos: [3, 4], filter: "heruntergeladen", sortierung: "dauer", absteigend: false, anzahl: 2, nach: "2" });
     const q = new URLSearchParams(aufrufe[0].pfad.split("?")[1]);
     expect(Object.fromEntries(q)).toEqual({ limit: "2", offset: "2", filter_status: "downloaded", sort_by: "duration", sort_order: "asc", podcast_ids: "3,4" });
     expect(s.weiter).toBe("4");
   });
 
-  it("schreibt Gehört, Stelle und Merken an die richtigen Stellen", async () => {
+  it("schreibt Gehört, Stelle, Herunterladen, Anheften und Sortierung an die richtigen Stellen", async () => {
     const { quelle, aufrufe } = backend();
     await quelle.gehoert(7, true);
     await quelle.gehoert(7, false);
     await quelle.stelleMerken(7, 61.6);
-    await quelle.merken(7, true);
-    await quelle.merken(7, false);
+    await quelle.herunterladen(7, true);
+    await quelle.herunterladen(7, false);
+    await quelle.anheften(3, true);
+    await quelle.sortierungSetzen(3, "alt");
     expect(aufrufe.map((a) => `${a.optionen?.method} ${a.pfad}`)).toEqual([
       "PUT /api/podcasts/episodes/7/played", "PUT /api/podcasts/episodes/7/unplayed", "PUT /api/podcasts/episodes/7/position",
-      "POST /api/podcasts/episodes/7/download", "DELETE /api/podcasts/episodes/7/download"]);
+      "POST /api/podcasts/episodes/7/download", "DELETE /api/podcasts/episodes/7/download", "PUT /api/podcasts/3/anheften",
+      "PUT /api/podcasts/3/sortierung"]);
     expect(JSON.parse(aufrufe[2].optionen!.body as string)).toEqual({ position_seconds: 62 });
   });
 
@@ -122,8 +126,8 @@ describe("Adresse der Podcast-Ansicht", async () => {
   it("liest und schreibt Abo, Folge, Wahl, Suche, Sortierung und Verzeichnis, auch die Adressen des Telefons", () => {
     expect(ausAdresse("/podcasts", "")).toEqual(leer());
     expect(ausAdresse("/podcasts/3/17", "")).toMatchObject({ abos: [3], offen: 17 });
-    expect(ausAdresse("/podcasts", "abo=3,4,3&wahl=gemerkt&suche=Wetter&sort=laenge&verzeichnis=1"))
-      .toMatchObject({ abos: [3, 4], wahl: "gemerkt", suche: "Wetter", sortierung: "laenge", verzeichnis: true });
+    expect(ausAdresse("/podcasts", "abo=3,4,3&wahl=heruntergeladen&suche=Wetter&sort=laenge&verzeichnis=1"))
+      .toMatchObject({ abos: [3, 4], wahl: "heruntergeladen", suche: "Wetter", sortierung: "laenge", verzeichnis: true });
     expect(ausAdresse("/podcasts", "wahl=boese&sort=boese")).toMatchObject({ wahl: "alle", sortierung: "neu" });
     expect(ausAdresse("/podcasts/search/Wetter%20heute", "")).toMatchObject({ suche: "Wetter heute", abos: [] });
     for (const a of [leer(), { ...leer(), abos: [3] }, { ...leer(), abos: [3], offen: 17 }, { ...leer(), abos: [3, 4], wahl: "ungehoert" as const, suche: "x" }]) {
@@ -141,20 +145,20 @@ describe("Adresse der Podcast-Ansicht", async () => {
   });
 });
 
-describe("Alle merken", async () => {
-  const { Merkauftrag } = await import("../src/lib/podcasts/merkauftrag.svelte");
+describe("Alle herunterladen", async () => {
+  const { Ladeauftrag } = await import("../src/lib/podcasts/ladeauftrag.svelte");
 
-  it("merkt der Reihe nach mit Fortschritt, hält an, setzt fort und bricht ab", async () => {
-    const gemerkt: number[] = [];
+  it("lädt der Reihe nach mit Fortschritt, hält an, setzt fort und bricht ab", async () => {
+    const geladen: number[] = [];
     const offen: { id: number; gut: () => void; schlecht: () => void }[] = [];
-    const quelle = { merken: (id: number) => new Promise<void>((gut, schlecht) => offen.push({ id, gut, schlecht: () => schlecht(new Error("x")) })) };
+    const quelle = { herunterladen: (id: number) => new Promise<void>((gut, schlecht) => offen.push({ id, gut, schlecht: () => schlecht(new Error("x")) })) };
     const ruhe = () => new Promise((r) => setTimeout(r, 0));
-    const auftrag = new Merkauftrag(quelle as never, (id) => gemerkt.push(id));
+    const auftrag = new Ladeauftrag(quelle as never, (id) => geladen.push(id));
     const lauf = auftrag.starten(7, [1, 2, 3, 4]);
     expect([auftrag.laeuft, auftrag.gesamt]).toEqual([true, 4]);
-    offen.shift()!.gut(); await ruhe();               // 1 gemerkt
+    offen.shift()!.gut(); await ruhe();               // 1 geladen
     offen.shift()!.schlecht(); await ruhe();          // 2 scheitert, zählt als fertig mit Fehler
-    expect([auftrag.fertig, auftrag.fehler, gemerkt]).toEqual([2, 1, [1]]);
+    expect([auftrag.fertig, auftrag.fehler, geladen]).toEqual([2, 1, [1]]);
     auftrag.anhalten();
     offen.shift()!.gut(); await ruhe();               // 3 lief schon, danach steht er
     expect([auftrag.fertig, auftrag.angehalten, offen.length]).toEqual([3, true, 0]);
@@ -163,7 +167,7 @@ describe("Alle merken", async () => {
     auftrag.abbrechen();
     offen.shift()!.gut();
     await lauf;
-    expect([auftrag.laeuft, gemerkt]).toEqual([false, [1, 3, 4]]);
+    expect([auftrag.laeuft, geladen]).toEqual([false, [1, 3, 4]]);
   });
 });
 
@@ -179,5 +183,26 @@ describe("Anzeige der Podcasts", async () => {
     expect(standVon(f).art).toBe("neu");
     expect(standVon({ ...(f as object), stelle: 300 } as never)).toMatchObject({ art: "laeuft", anteil: 0.5, rest: 300 });
     expect(standVon({ ...(f as object), stelle: 598 } as never).art).toBe("gehoert");
+  });
+});
+
+
+describe("Anheften und Sortierung je Abo", () => {
+  it("angeheftete stehen vor den übrigen, ein gelöstes kehrt an seine Stelle zurück; Sortierung je Abo", async () => {
+    const abos = [{ ...ABO, id: 1, sortierung: "alt", angeheftet: 0 }, { ...ABO, id: 2, sortierung: "boese", angeheftet: 0 }, { ...ABO, id: 3, angeheftet: 1 }];
+    const { quelle } = backend({
+      "/api/podcasts/subscriptions": () => ({ subscriptions: [...abos].sort((a, b) => b.angeheftet - a.angeheftet || a.id - b.id) }),
+      "/api/podcasts/1/anheften": () => ({}), "/api/podcasts/2/anheften": () => { abos[1].angeheftet = 1; return {}; },
+      "/api/podcasts/3/anheften": () => { abos[2].angeheftet = 0; return {}; },
+    });
+    const liste = new Aboliste(quelle);
+    await liste.laden();
+    expect(liste.abos.map((a) => [a.id, a.sortierung, a.angeheftet])).toEqual([[3, "", true], [1, "alt", false], [2, "", false]]);
+    await liste.anheften(2, true);
+    expect(liste.abos.map((a) => a.id)).toEqual([2, 3, 1]);
+    await liste.anheften(3, false);
+    expect(liste.abos.map((a) => a.id)).toEqual([2, 1, 3]);
+    await liste.sortierungSetzen(1, "titel");
+    expect(liste.abo(1)?.sortierung).toBe("titel");
   });
 });

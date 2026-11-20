@@ -2,7 +2,8 @@
 // Seiten zählt das Backend ab einer Stelle (offset); der Zeiger der nächsten Seite ist diese Stelle als Text.
 // Bilder kommen über die eigene App, nie direkt von fremden Servern.
 import type { Folgenwiedergabe, Podcastfaehigkeiten, Podcastquelle } from "./quelle";
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenfilter, Folgenseite, Folgensortierung, Fundstueck } from "./typen";
+import { PODCASTSORTIERUNG, type Abo, type Aktualisierungsstand, type Folge, type Folgenabfrage, type Folgenfilter, type Folgenseite,
+  type Folgensortierung, type Fundstueck, type Podcastsortierung } from "./typen";
 
 /** der Teil von lib/api.js, den die Quelle braucht */
 export interface Anfrager {
@@ -13,7 +14,7 @@ export interface Anfrager {
 type Roh = Record<string, any>;
 
 const FILTER: Record<Folgenfilter, string> = {
-  alle: "all", heute: "today", woche: "week", ungehoert: "unplayed", gemerkt: "downloaded", gehoert: "played",
+  alle: "all", heute: "today", woche: "week", ungehoert: "unplayed", heruntergeladen: "downloaded", gehoert: "played",
 };
 const SORTIERUNG: Record<Folgensortierung, string> = { datum: "published_at", titel: "title", dauer: "duration" };
 export const SEITE = 50;
@@ -22,7 +23,7 @@ const text = (w: unknown) => (typeof w === "string" ? w : "");
 const zahl = (w: unknown) => (typeof w === "number" && Number.isFinite(w) ? w : 0);
 
 export class BackendPodcastquelle implements Podcastquelle {
-  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, merken: true, automatisch: true };
+  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, herunterladen: true, automatisch: true };
   /** zuletzt gesehene Rohdaten je Kennung: der Spieler braucht sie in seinem Format */
   private rohFolgen = new Map<number, Roh>();
   private rohAbos = new Map<number, Roh>();
@@ -41,8 +42,9 @@ export class BackendPodcastquelle implements Podcastquelle {
     this.rohAbos.set(r.id, r);
     return {
       id: r.id, titel: text(r.title), autor: text(r.author), beschreibung: text(r.description), bild: this.aboBild(r.id),
-      feed: text(r.feed_url), autoLaden: !!r.auto_download, aktualisiert: text(r.last_updated), folgen: zahl(r.episode_count),
-      geladen: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
+      feed: text(r.feed_url), autoLaden: !!r.auto_download, angeheftet: !!r.angeheftet,
+      sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", aktualisiert: text(r.last_updated),
+      folgen: zahl(r.episode_count), heruntergeladen: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
       wocheUngehoert: zahl(r.week_unplayed), dauerGesamt: zahl(r.total_duration),
     };
   }
@@ -51,7 +53,7 @@ export class BackendPodcastquelle implements Podcastquelle {
     this.rohFolgen.set(r.id, r);
     return {
       id: r.id, aboId: r.podcast_id, titel: text(r.title), beschreibung: text(r.description), dauer: zahl(r.duration),
-      datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, gemerkt: !!r.is_downloaded,
+      datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, heruntergeladen: !!r.is_downloaded,
       groesse: zahl(r.file_size), bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.aboBild(r.podcast_id),
       ...(r.podcast_title ? { aboTitel: text(r.podcast_title) } : {}),
     };
@@ -101,6 +103,14 @@ export class BackendPodcastquelle implements Podcastquelle {
     return { naechste: r.next_refresh_at ?? null, abstandStunden: zahl(r.interval_hours), automatisch: !!r.auto_refresh };
   }
 
+  async anheften(id: number, an: boolean): Promise<void> {
+    await this.api.fetch(`/api/podcasts/${id}/anheften`, { method: "PUT", body: JSON.stringify({ an }) });
+  }
+
+  async sortierungSetzen(id: number, sortierung: Podcastsortierung | ""): Promise<void> {
+    await this.api.fetch(`/api/podcasts/${id}/sortierung`, { method: "PUT", body: JSON.stringify({ sortierung }) });
+  }
+
   async autoLaden(id: number, an: boolean): Promise<void> {
     await this.api.fetch(`/api/podcasts/${id}/auto-download`, { method: "PUT", body: JSON.stringify({ enabled: an }) });
   }
@@ -137,7 +147,7 @@ export class BackendPodcastquelle implements Podcastquelle {
       body: JSON.stringify({ position_seconds: Math.max(0, Math.round(sekunden)) }) });
   }
 
-  async merken(id: number, an: boolean): Promise<void> {
+  async herunterladen(id: number, an: boolean): Promise<void> {
     await this.api.fetch(`/api/podcasts/episodes/${id}/download`, { method: an ? "POST" : "DELETE" });
   }
 

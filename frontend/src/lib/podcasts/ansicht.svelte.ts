@@ -2,16 +2,14 @@
 //   /podcasts                     alle Abos
 //   /podcasts/<abo>               ein Abo (mit Kopf); mehrere: /podcasts?abo=3,4
 //   /podcasts/<abo>/<folge>       eine Folge aufgeklappt (auch vom Telefon)
-//   ?wahl=ungehoert|gemerkt  ?suche=...  ?sort=alt|titel|laenge  ?verzeichnis=1 (Abonnieren); frühere /podcasts/search/<suche> gilt weiter
+//   ?wahl=ungehoert|heruntergeladen  ?suche=...  ?sort=alt|titel|laenge  ?verzeichnis=1 (Abonnieren); frühere /podcasts/search/<suche> gilt weiter
 // Beim Start und bei Zurück und Vor gilt die Adresse, danach schreibt jede Änderung sie neu (ohne neuen Eintrag; nur
 // Aufklappen einer Folge legt einen an).
 import type { Ort } from "../radio/filterzustand.svelte";
-import type { Folgenabfrage } from "./typen";
+import { PODCASTSORTIERUNG, type Folgenabfrage, type Podcastsortierung } from "./typen";
 
-export type Folgenwahl = "alle" | "ungehoert" | "gemerkt";
-export type Podcastsortierung = "neu" | "alt" | "titel" | "laenge";
-export const FOLGENWAHL: readonly Folgenwahl[] = ["alle", "ungehoert", "gemerkt"];
-export const PODCASTSORTIERUNG: readonly Podcastsortierung[] = ["neu", "alt", "titel", "laenge"];
+export type Folgenwahl = "alle" | "ungehoert" | "heruntergeladen";
+export const FOLGENWAHL: readonly Folgenwahl[] = ["alle", "ungehoert", "heruntergeladen"];
 
 export interface Podcastansicht {
   abos: number[];

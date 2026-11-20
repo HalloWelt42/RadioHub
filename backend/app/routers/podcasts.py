@@ -6,7 +6,7 @@ Podcast-Suche, Abonnements, Episoden, Downloads, Cover-Art, Statistiken.
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from ..ablage.wiedergabe import ausliefern
 from ..services import durchleiter
@@ -34,6 +34,12 @@ class AutoDownloadUpdate(BaseModel):
 
 class ReorderRequest(BaseModel):
     ordered_ids: List[int]
+
+class AnheftenUpdate(BaseModel):
+    an: bool
+
+class SortierungUpdate(BaseModel):
+    sortierung: Literal["", "neu", "alt", "titel", "laenge"]
 
 
 # === Suche ===
@@ -159,6 +165,22 @@ async def update_categories(podcast_id: int, req: CategoriesUpdate):
 @router.put("/order")
 async def reorder_subscriptions(req: ReorderRequest):
     await podcast_service.reorder_subscriptions(req.ordered_ids)
+    return {"success": True}
+
+
+@router.put("/{podcast_id}/anheften")
+async def anheften(podcast_id: int, req: AnheftenUpdate):
+    """Abo oben anheften oder lösen (RAD-17)."""
+    if not await podcast_service.anheften(podcast_id, req.an):
+        raise HTTPException(404, "Podcast nicht gefunden")
+    return {"success": True}
+
+
+@router.put("/{podcast_id}/sortierung")
+async def sortierung_setzen(podcast_id: int, req: SortierungUpdate):
+    """Sortierung der Folgen dieses Abos merken (RAD-17); leer nimmt die der Ansicht."""
+    if not await podcast_service.sortierung_setzen(podcast_id, req.sortierung):
+        raise HTTPException(404, "Podcast nicht gefunden")
     return {"success": True}
 
 

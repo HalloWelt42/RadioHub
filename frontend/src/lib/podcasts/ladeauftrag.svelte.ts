@@ -1,8 +1,8 @@
-// "Alle merken" (RAD-17): die Folgen eines Abos nacheinander im Gerät merken, mit Fortschritt, Anhalten, Weiter und
+// "Alle herunterladen" (RAD-17): die Folgen eines Abos nacheinander herunterladen, mit Fortschritt, Anhalten, Weiter und
 // Abbrechen. Eine Folge nach der anderen, damit die Ablage nicht überlastet und jede fertige sofort in der Liste steht.
 import type { Podcastquelle } from "./quelle";
 
-export class Merkauftrag {
+export class Ladeauftrag {
   gesamt = $state(0);
   fertig = $state(0);
   fehler = $state(0);
@@ -14,7 +14,7 @@ export class Merkauftrag {
   private abbruch = false;
   private weiter: (() => void) | null = null;
 
-  constructor(private readonly quelle: Podcastquelle, private readonly gemerkt: (id: number) => void) {}
+  constructor(private readonly quelle: Podcastquelle, private readonly geladen: (id: number) => void) {}
 
   async starten(aboId: number, ids: number[]): Promise<void> {
     if (this.laeuft || !ids.length) return;
@@ -30,8 +30,8 @@ export class Merkauftrag {
         if (this.abbruch) break;
         const id = this.offen.shift()!;
         try {
-          await this.quelle.merken(id, true);
-          this.gemerkt(id);
+          await this.quelle.herunterladen(id, true);
+          this.geladen(id);
         } catch {
           this.fehler += 1;
         }

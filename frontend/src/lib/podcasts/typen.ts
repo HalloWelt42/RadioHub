@@ -11,10 +11,14 @@ export interface Abo {
   feed: string;
   /** neue Folgen von selbst herunterladen */
   autoLaden: boolean;
+  /** oben angeheftet (steht vor den übrigen) */
+  angeheftet: boolean;
+  /** gemerkte Sortierung der Folgen dieses Abos, leer: die der Ansicht */
+  sortierung: Podcastsortierung | "";
   /** zuletzt aktualisiert (ISO) oder leer */
   aktualisiert: string;
   folgen: number;
-  geladen: number;
+  heruntergeladen: number;
   ungehoert: number;
   heuteUngehoert: number;
   wocheUngehoert: number;
@@ -34,9 +38,9 @@ export interface Folge {
   /** zuletzt gehörte Stelle in Sekunden */
   stelle: number;
   gehoert: boolean;
-  /** im Gerät gemerkt, also heruntergeladen (in der Ablage) */
-  gemerkt: boolean;
-  /** Größe der gemerkten Datei in Bytes */
+  /** heruntergeladen (in der Ablage), auch ohne Netz zu hören */
+  heruntergeladen: boolean;
+  /** Größe der heruntergeladenen Datei in Bytes */
   groesse: number;
   bild: string;
   /** nur in Listen über mehrere Abos */
@@ -44,8 +48,12 @@ export interface Folge {
 }
 
 /** Welche Folgen: ein Filter für Rechner und Telefon (früher dort heute/Woche/alle, hier alle/ungehört/geladen) */
-export type Folgenfilter = "alle" | "heute" | "woche" | "ungehoert" | "gemerkt" | "gehoert";
-export const FOLGENFILTER: readonly Folgenfilter[] = ["alle", "heute", "woche", "ungehoert", "gemerkt", "gehoert"];
+export type Folgenfilter = "alle" | "heute" | "woche" | "ungehoert" | "heruntergeladen" | "gehoert";
+export const FOLGENFILTER: readonly Folgenfilter[] = ["alle", "heute", "woche", "ungehoert", "heruntergeladen", "gehoert"];
+
+/** Sortierung der Folgen in der Ansicht (und je Abo gemerkt) */
+export type Podcastsortierung = "neu" | "alt" | "titel" | "laenge";
+export const PODCASTSORTIERUNG: readonly Podcastsortierung[] = ["neu", "alt", "titel", "laenge"];
 
 export type Folgensortierung = "datum" | "titel" | "dauer";
 

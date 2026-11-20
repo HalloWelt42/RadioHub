@@ -1,13 +1,13 @@
 // Schnittstelle Podcastquelle (RAD-17): alles, was die Podcast-Ansichten am Rechner und am Telefon über Abos und
 // Folgen wissen und ändern. Die volle App setzt sie gegen das Backend um (backend.ts). Was eine Umsetzung nicht kann,
 // meldet sie in `faehig`; die Ansichten zeigen den Teil dann nicht (keine toten Knöpfe), wie bei der Senderquelle.
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck } from "./typen";
+import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Podcastsortierung } from "./typen";
 
 export interface Podcastfaehigkeiten {
   /** im Verzeichnis suchen und abonnieren */
   abonnieren: boolean;
-  /** Folgen im Gerät merken (herunterladen) */
-  merken: boolean;
+  /** Folgen herunterladen (in die Ablage, auch ohne Netz zu hören) */
+  herunterladen: boolean;
   /** automatische Aktualisierung mit Abstand */
   automatisch: boolean;
 }
@@ -33,6 +33,10 @@ export interface Podcastquelle {
   aktualisieren(id?: number): Promise<void>;
   aktualisierungsstand(): Promise<Aktualisierungsstand>;
   autoLaden(id: number, an: boolean): Promise<void>;
+  /** oben anheften oder lösen */
+  anheften(id: number, an: boolean): Promise<void>;
+  /** Sortierung der Folgen dieses Abos merken; leer nimmt die der Ansicht */
+  sortierungSetzen(id: number, sortierung: Podcastsortierung | ""): Promise<void>;
   /** im Verzeichnis suchen (zum Abonnieren) */
   suchen(text: string, signal?: AbortSignal): Promise<Fundstueck[]>;
 
@@ -43,8 +47,8 @@ export interface Podcastquelle {
   gehoert(id: number, an: boolean): Promise<void>;
   /** gehörte Stelle merken (Sekunden) */
   stelleMerken(id: number, sekunden: number): Promise<void>;
-  /** im Gerät merken (herunterladen) oder wieder freigeben */
-  merken(id: number, an: boolean): Promise<void>;
+  /** herunterladen oder den Download löschen */
+  herunterladen(id: number, an: boolean): Promise<void>;
   /** was der Spieler für eine Folge braucht; `liste` wird die Wiedergabeliste (Vor und Zurück) */
   wiedergabe(folge: Folge, liste?: Folge[]): Promise<Folgenwiedergabe>;
 }

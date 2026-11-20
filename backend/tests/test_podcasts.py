@@ -105,3 +105,16 @@ async def test_erneutes_abonnieren_behaelt_folgen(monkeypatch):
     finally:
         with db_session() as conn:
             conn.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (erst["id"],))
+
+
+def test_abo_anheften_und_sortierung_merken(client):
+    with db_session() as conn:
+        ids = [conn.execute("INSERT INTO podcast_subscriptions (feed_url, title, sort_order) VALUES (?, ?, ?)",
+                            (f"https://feed.test/{uuid.uuid4().hex}", titel, n)).lastrowid for n, titel in enumerate(["Erst", "Zweit", "Dritt"])]
+    assert client.put(f"/api/podcasts/{ids[2]}/anheften", json={"an": True}).status_code == 200
+    assert client.put(f"/api/podcasts/{ids[1]}/sortierung", json={"sortierung": "alt"}).status_code == 200
+    assert client.put(f"/api/podcasts/{ids[1]}/sortierung", json={"sortierung": "boese"}).status_code == 422
+    assert client.put("/api/podcasts/999999/anheften", json={"an": True}).status_code == 404
+    abos = [a for a in client.get("/api/podcasts/subscriptions").json()["subscriptions"] if a["id"] in ids]
+    assert [a["title"] for a in abos] == ["Dritt", "Erst", "Zweit"]                       # angeheftet zuerst
+    assert {a["title"]: (a["angeheftet"], a["sortierung"]) for a in abos} == {"Dritt": (1, ""), "Erst": (0, ""), "Zweit": (0, "alt")}

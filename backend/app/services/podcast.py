@@ -232,7 +232,7 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-1 day')) as today_unplayed,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-7 days')) as week_unplayed,
                 (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
-                FROM podcast_subscriptions ps ORDER BY ps.sort_order, ps.title''')
+                FROM podcast_subscriptions ps ORDER BY ps.angeheftet DESC, ps.sort_order, ps.title''')
             return [dict(row) for row in c.fetchall()]
 
     async def get_subscription(self, podcast_id: int) -> Optional[dict]:
@@ -336,6 +336,18 @@ class PodcastService:
             c = conn.cursor()
             c.execute("UPDATE podcast_subscriptions SET categories = ? WHERE id = ?",
                       (categories, podcast_id))
+            return c.rowcount > 0
+
+    async def anheften(self, podcast_id: int, an: bool) -> bool:
+        """Abo oben anheften (angeheftete stehen vor den übrigen, untereinander in ihrer Reihenfolge)."""
+        with db_session() as conn:
+            c = conn.execute("UPDATE podcast_subscriptions SET angeheftet = ? WHERE id = ?", (1 if an else 0, podcast_id))
+            return c.rowcount > 0
+
+    async def sortierung_setzen(self, podcast_id: int, sortierung: str) -> bool:
+        """Sortierung der Folgen dieses Abos merken (neu, alt, titel, laenge; leer: die der Ansicht)."""
+        with db_session() as conn:
+            c = conn.execute("UPDATE podcast_subscriptions SET sortierung = ? WHERE id = ?", (sortierung, podcast_id))
             return c.rowcount > 0
 
     async def set_auto_download(self, podcast_id: int, enabled: bool) -> bool:

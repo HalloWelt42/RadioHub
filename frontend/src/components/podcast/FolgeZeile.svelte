@@ -1,19 +1,19 @@
 <script lang="ts">
   // Zeile einer Folge (Entwurf podcasts.html), dasselbe Raster wie die Senderzeile: Licht, Bild, Titel mit Abo und Datum,
-  // Stand, Länge, Merken, Gehört, Details; aufgeklappt Beschreibung und Knöpfe.
+  // Stand, Länge, Herunterladen, Gehört, Details; aufgeklappt Beschreibung und Knöpfe.
   import { t } from "../../lib/i18n.svelte.js";
   import { datumKurz, megabyte, minuten, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
 
-  let { folge, abo, spielt, offen, onspielen, onvorn, onmerken, ongehoert, ondetails, onabo }: {
+  let { folge, abo, spielt, offen, onspielen, onvorn, onladen, ongehoert, ondetails, onabo }: {
     folge: Folge;
     abo: Abo | undefined;
     spielt: boolean;
     offen: boolean;
     onspielen: () => void;
     onvorn: () => void;
-    onmerken: () => void;
+    onladen: () => void;
     ongehoert: () => void;
     ondetails: () => void;
     onabo: () => void;
@@ -35,7 +35,7 @@
     <AboBild abo={{ titel: aboTitel, bild: folge.bild }} />
     <div class="name"><b>{folge.titel}</b>
       <div class="meta"><span>{aboTitel}</span><span>{datum}</span>
-        {#if folge.gemerkt}<span class="rh-gemerkt" title={t("podcastAnsicht.gemerktHilfe")}><i class="fa-solid fa-circle-down"></i>{t("podcastAnsicht.gemerkt")}</span>{/if}</div></div>
+        {#if folge.heruntergeladen}<span class="rh-heruntergeladen" title={t("podcastAnsicht.heruntergeladenHilfe")}><i class="fa-solid fa-circle-down"></i>{t("podcastAnsicht.heruntergeladen")}</span>{/if}</div></div>
     <div class="stand-zelle">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>
@@ -44,9 +44,9 @@
     <div class="laenge">{folge.dauer ? t("podcastAnsicht.minuten", { n: minuten(folge.dauer) }) : ""}</div>
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="rh-aktionen rh-folgen-aktionen" onclick={(e) => e.stopPropagation()}>
-      <button class="rund" class:an={folge.gemerkt} type="button" aria-pressed={folge.gemerkt} aria-label={t("podcastAnsicht.merken")}
-              title={folge.gemerkt ? t("podcastAnsicht.gemerktFreigeben", { mb: megabyte(folge.groesse) }) : t("podcastAnsicht.merken")} onclick={onmerken}>
-        <i class="fa-solid {folge.gemerkt ? 'fa-circle-down' : 'fa-download'}"></i></button>
+      <button class="rund" class:an={folge.heruntergeladen} type="button" aria-pressed={folge.heruntergeladen} aria-label={t("podcastAnsicht.herunterladen")}
+              title={folge.heruntergeladen ? t("podcastAnsicht.heruntergeladenLoeschen", { mb: megabyte(folge.groesse) }) : t("podcastAnsicht.herunterladen")} onclick={onladen}>
+        <i class="fa-solid {folge.heruntergeladen ? 'fa-circle-down' : 'fa-download'}"></i></button>
       <button class="rund" class:an={gehoert} type="button" aria-pressed={gehoert} aria-label={t("podcastAnsicht.alsGehoert")}
               title={gehoert ? t("podcastAnsicht.gehoertZuruecksetzen") : t("podcastAnsicht.alsGehoert")} onclick={ongehoert}>
         <i class="fa-solid fa-check"></i></button>
@@ -63,8 +63,8 @@
         {#if folge.stelle && !gehoert}<button class="knopf" type="button" onclick={onvorn}><i class="fa-solid fa-backward-fast"></i>{t("podcastAnsicht.vonVorn")}</button>{/if}
         <button class="knopf" type="button" onclick={ongehoert}><i class="fa-solid {gehoert ? 'fa-rotate-left' : 'fa-check'}"></i>
           {gehoert ? t("podcastAnsicht.alsUngehoert") : t("podcastAnsicht.alsGehoert")}</button>
-        <button class="knopf" type="button" onclick={onmerken}><i class="fa-solid {folge.gemerkt ? 'fa-trash-can' : 'fa-download'}"></i>
-          {folge.gemerkt ? t("podcastAnsicht.freigeben", { mb: megabyte(folge.groesse) }) : t("podcastAnsicht.merken")}</button>
+        <button class="knopf" type="button" onclick={onladen}><i class="fa-solid {folge.heruntergeladen ? 'fa-trash-can' : 'fa-download'}"></i>
+          {folge.heruntergeladen ? t("podcastAnsicht.downloadLoeschen", { mb: megabyte(folge.groesse) }) : t("podcastAnsicht.herunterladen")}</button>
         {#if aboTitel}<a class="knopf still" href="/podcasts/{folge.aboId}" onclick={(e) => { e.preventDefault(); onabo(); }}><i class="fa-solid fa-podcast"></i>{aboTitel}</a>{/if}
       </div>
     </div>

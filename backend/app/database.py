@@ -454,7 +454,13 @@ STUFE_3 = """
 ALTER TABLE wecker ADD COLUMN weckton TEXT NOT NULL DEFAULT 'doppelpiep';
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3]
+# Stufe 4 (RAD-17): ein Abo lässt sich oben anheften und merkt sich die Sortierung seiner Folgen (leer: die der Ansicht)
+STUFE_4 = """
+ALTER TABLE podcast_subscriptions ADD COLUMN angeheftet INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE podcast_subscriptions ADD COLUMN sortierung TEXT NOT NULL DEFAULT '';
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [
