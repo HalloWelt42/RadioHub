@@ -24,8 +24,10 @@
   background-image: var(--rh-geraet-bild); box-shadow: var(--rh-geraet-kante); color: var(--rh-geraet-tinte); font-size: var(--marke); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
 .t-treffer ak-segmente { --ak-zelle: calc(var(--gross) * 5.6); --ak-zeichen-max: 22px; }
 .t-treffer .ak-segmente-glas { padding: 4px 8px; }
-.tf-sender { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) 44px; gap: 4px 10px; align-items: start; padding: 8px 6px 8px 8px; margin-bottom: 6px;
+.tf-sender { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) auto; gap: 4px 10px; align-items: start; padding: 8px 6px 8px 8px; margin-bottom: 6px;
   border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; }
+/* Minus (ausblenden) und Favorit nebeneinander, gleich groß */
+.tf-aktionen { display: flex; gap: 6px; }
 .tf-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 35%, transparent); }
 .tf-sender .rh-logo-bild { --s: calc(var(--gross) * 2.4); }
 /* höchstens zwei Zeilen wie am Rechner, der volle Name im Steckbrief */

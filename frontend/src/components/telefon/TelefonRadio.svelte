@@ -123,9 +123,14 @@
               {#if e.varianten > 1}<span class="t-var"><i class="fa-solid fa-layer-group"></i>{t("radio.variantenZahl", { n: e.varianten })}</span>{/if}</div>
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}
           </div>
-          <button class="rund" class:favorit={e.favorit} type="button" aria-pressed={e.favorit} aria-label={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")}
-                  title={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")} onclick={(ev) => { ev.stopPropagation(); void bedienung.favorit(e); }}>
-            <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
+          <span class="tf-aktionen">
+            <!-- Minus blendet den Sender sofort dauerhaft aus (Einzelsperre, Rückgängig im Band), wie am Rechner -->
+            <button class="rund" type="button" aria-label={t("radio.ausblendenVon", { name: e.name })} title={t("radio.ausblendenHilfe")}
+                    onclick={(ev) => { ev.stopPropagation(); void bedienung.ausblenden(e); }}><i class="fa-solid fa-minus"></i></button>
+            <button class="rund" class:favorit={e.favorit} type="button" aria-pressed={e.favorit} aria-label={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")}
+                    title={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")} onclick={(ev) => { ev.stopPropagation(); void bedienung.favorit(e); }}>
+              <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
+          </span>
         </div>
       {/each}
       <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()} einheit={t("radio.geladen")} />

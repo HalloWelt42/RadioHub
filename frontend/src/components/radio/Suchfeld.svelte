@@ -81,7 +81,7 @@
   <label class="suche" role="search">
     <i class="fa-solid fa-magnifying-glass"></i>
     <input bind:this={feld} bind:value={text} type="search" name="sender-suche" placeholder={platzhalter || t("radio.suchePlatzhalter")}
-           aria-label={t("radio.sucheLabel")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
+           aria-label={t("radio.sucheLabel")} title={t("radio.sucheMinusHilfe")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
            onfocus={() => (offen = !text && verlauf.length > 0)} />
     {#if text}
       <button class="rund" type="button" aria-label={t("radio.sucheLeeren")} title={t("radio.sucheLeeren")} onclick={leeren}>

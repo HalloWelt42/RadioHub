@@ -62,7 +62,7 @@
     <div class="guete-zelle"><Guete stufe={e.qualitaet} /><b>{qualitaetName(e.qualitaet)}</b><span>{format(e)}</span></div>
     <div class="stimmen">
       <button class="rund rh-auge-schmal" type="button" title={t("radio.ausblendenHilfe")} aria-label={t("radio.ausblendenVon", { name: e.name })}
-              onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-eye-slash"></i></button>
+              onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-minus"></i></button>
       <span title={t("radio.stimmenHilfeZeile")}><i class="fa-solid fa-thumbs-up"></i>{zahl(e.stimmen)}</span>
     </div>
     <div class="rh-aktionen">
@@ -71,7 +71,7 @@
               title={e.favorit ? t("radio.ausFavoriten") : t("radio.zuFavoriten")} onclick={(ev) => halt(ev, onfavorit)}>
         <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
       <span class="auge-zelle"><button class="rund" type="button" title={t("radio.ausblendenHilfe")} aria-label={t("radio.ausblendenVon", { name: e.name })}
-              onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-eye-slash"></i></button></span>
+              onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-minus"></i></button></span>
       <button class="rund" type="button" aria-expanded={offen} title={t("radio.details")} aria-label={t("radio.detailsZu", { name: e.name })}
               onclick={(ev) => halt(ev, ondetails)}><i class="fa-solid fa-chevron-down"></i></button>
     </div>

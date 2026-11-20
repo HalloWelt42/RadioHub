@@ -85,6 +85,10 @@ describe("Abfrage", () => {
     expect(namen(await q.abfragen({ sortierung: "bitrate" }))).toEqual(["Pop", "Russisch", "Leise", "Klassik"]);
     expect(namen(await q.abfragen({ suche: "nachrichten" }))).toEqual(["Russisch"]);      // Suchtext mit Genres
     expect(namen(await q.abfragen({ suche: "ei" }))).toEqual(["Leise"]);                // kurz: nur im Namen
+    // Minus schließt aus, wie im Backend (Nutzer 20.11.2026): im Suchtext mit Genres, kurz nur im Namen; Minus allein zählt nicht
+    expect(namen(await q.abfragen({ suche: "-nachrichten" }))).toEqual(["Klassik", "Pop", "Leise"]);
+    expect(namen(await q.abfragen({ suche: "-ei -klassik" }))).toEqual(["Pop", "Russisch"]);
+    expect(namen(await q.abfragen({ suche: "pop -" }))).toEqual(["Pop", "Leise"]);
     expect(namen(await q.abfragen({ nur_erreichbar: false }))).toHaveLength(4);
 
     // Seiten über den Zeiger: lückenlos, ohne Doppel, Gesamtzahl und Facetten nur auf der ersten Seite

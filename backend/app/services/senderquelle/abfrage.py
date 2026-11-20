@@ -65,6 +65,19 @@ def _fts(text: str) -> str:
     return '"' + text.replace('"', '""') + '"'
 
 
+def _wie(text: str) -> str:
+    """Teilstück für LIKE, mit maskierten Platzhaltern."""
+    return "%" + text.casefold().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+
+
+def suche_zerlegen(suche: str) -> tuple[str, list[str]]:
+    """Suchtext und Ausschlüsse: ein Wort mit vorangestelltem Minus schließt jeden Sender aus, der es in Name, Genre,
+    Tag, Ort oder Sprache hat (Nutzer 20.11.2026: "mit minus den sender wegfiltern"); ein Minus allein zählt nicht."""
+    woerter = [w for w in suche.split() if w != "-"]
+    aus = [w for w in woerter if w.startswith("-")]
+    return " ".join(w for w in woerter if w not in aus), [w[1:] for w in aus]
+
+
 def bedingungen(q: StationQuery, ohne: str | None = None) -> Bedingungen:
     """WHERE-Teile der Abfrage; `ohne` lässt den Filter einer Facettengruppe weg (für deren Zahlen)."""
     b = Bedingungen()
@@ -73,12 +86,16 @@ def bedingungen(q: StationQuery, ohne: str | None = None) -> Bedingungen:
         b.dazu("i.vertreter = 1")
     if q.nur_erreichbar:
         b.dazu("(i.erreichbar = 1 OR i.favorit = 1)")       # Favoriten bleiben sichtbar
-    suche = " ".join(q.suche.split())
+    suche, ausschluesse = suche_zerlegen(q.suche)
     if len(suche) >= 3:
         b.dazu("i.nr IN (SELECT rowid FROM sender_suche WHERE sender_suche MATCH ?)", _fts(suche))
     elif suche:
-        b.dazu("i.name_klein LIKE ? ESCAPE '\\'", "%" + suche.casefold().replace("\\", "\\\\").replace("%", "\\%")
-               .replace("_", "\\_") + "%")
+        b.dazu("i.name_klein LIKE ? ESCAPE '\\'", _wie(suche))
+    for wort in ausschluesse:
+        if len(wort) >= 3:
+            b.dazu("i.nr NOT IN (SELECT rowid FROM sender_suche WHERE sender_suche MATCH ?)", _fts(wort))
+        else:
+            b.dazu("i.name_klein NOT LIKE ? ESCAPE '\\'", _wie(wort))
     if q.laender and ohne != "laender":
         b.dazu(_in("i.land", q.laender), *q.laender)
     if q.genres and ohne != "genres":

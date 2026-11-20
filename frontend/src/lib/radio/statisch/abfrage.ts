@@ -12,6 +12,7 @@ import { QUALITAET_RANG, sprachname, type Senderbestand } from "./format";
 import { BEWERTUNGEN, istBewertung } from "./regeln";
 import type { Sicht } from "./sicht";
 import { base64urlKodieren, base64urlLesen, faltung, suchform, vergleichen, zeichen, zusammengezogen } from "./text";
+import { sucheZerlegen } from "../suche";
 
 const SORTIERUNGEN: readonly Sortierung[] = ["stimmen", "name", "qualitaet", "bitrate"];
 const QUALITAETEN = (Object.keys(QUALITAET_RANG) as Qualitaet[]).sort((x, y) => QUALITAET_RANG[y] - QUALITAET_RANG[x]);
@@ -40,16 +41,24 @@ export const buendeln = (q: Abfrage): boolean => q.varianten_buendeln && !(q.cod
 
 // ----- Suche ------------------------------------------------------------------------------------------------------
 
-/** Prüfung der Suche: ab drei Zeichen ein Teilstück des Suchtexts (ohne Diakritika), sonst des Namens */
-export function suchpruefung(b: Senderbestand, suche: string): ((i: number) => boolean) | null {
-  const text = zusammengezogen(suche);
-  if (!text) return null;
-  if (zeichen(text) >= 3) {
-    const nadel = suchform(text);
+/** Ein Wort: ab drei Zeichen ein Teilstück des Suchtexts (ohne Diakritika), sonst des Namens */
+function enthaelt(b: Senderbestand, wort: string): (i: number) => boolean {
+  if (zeichen(wort) >= 3) {
+    const nadel = suchform(wort);
     return (i) => b.suchtext[i].includes(nadel);
   }
-  const nadel = faltung(text);
+  const nadel = faltung(wort);
   return (i) => b.nameKlein[i].includes(nadel);
+}
+
+/** Prüfung der Suche: der Text wie ein Wort (siehe enthaelt), dazu keines der Wörter mit Minus (lib/radio/suche.ts) */
+export function suchpruefung(b: Senderbestand, suche: string): ((i: number) => boolean) | null {
+  const wunsch = sucheZerlegen(suche);
+  const text = zusammengezogen(wunsch.text);
+  const mit = text ? enthaelt(b, text) : null;
+  const ohne = wunsch.ohne.map((w) => enthaelt(b, w));
+  if (!mit && !ohne.length) return null;
+  return (i) => (!mit || mit(i)) && !ohne.some((p) => p(i));
 }
 
 // ----- Seitenzeiger -----------------------------------------------------------------------------------------------

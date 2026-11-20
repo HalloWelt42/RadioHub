@@ -62,6 +62,20 @@ def _namen(ergebnis: dict) -> list[str]:
     return [e["name"].removeprefix(NAME + " ") for e in ergebnis["eintraege"]]
 
 
+def test_minus_in_der_suche_schliesst_aus(radio):
+    """Ein Wort mit Minus lässt jeden Sender weg, der es in Name, Genre oder Tag hat (Nutzer 20.11.2026)."""
+    _sender("Jazz Werbefrei", tags="jazz")
+    _sender("Jazz Shop", tags="jazz,shopping")
+    _sender("Pop Werbung", tags="pop")
+    _sender("Hit", tags="pop")
+    _aufbereiten(radio)
+    assert sorted(_namen(_abfrage(radio))) == ["Hit", "Jazz Shop", "Jazz Werbefrei", "Pop Werbung"]
+    assert sorted(_namen(_abfrage(radio, suche=f"{NAME} -shopping"))) == ["Hit", "Jazz Werbefrei", "Pop Werbung"]   # Tag
+    assert sorted(_namen(_abfrage(radio, suche=f"{NAME} -werbung -shop"))) == ["Hit", "Jazz Werbefrei"]           # Name
+    assert sorted(_namen(_abfrage(radio, suche=f"{NAME} -hi"))) == ["Jazz Shop", "Jazz Werbefrei", "Pop Werbung"]  # kurz: Name
+    assert sorted(_namen(_abfrage(radio, suche=f"{NAME} -"))) == ["Hit", "Jazz Shop", "Jazz Werbefrei", "Pop Werbung"]
+
+
 def test_abfrage_mit_filtern_seiten_und_facetten(radio):
     klassik = _sender("Klassik", tags="classical", codec="FLAC", bitrate=0, stimmen=500)
     _sender("Pop", tags="pop,hip hop", stimmen=300)
