@@ -4,7 +4,8 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import { DARSTELLUNG, darstellungVorab } from "./src/lib/darstellung-vorab";
-import { rahmenVorab } from "./src/lib/rahmen-vorab";
+// Statusleiste: die Regel des Rahmens aus dem Appkern (lib/rahmen-vorab.ts)
+import { rahmenVorab } from "./node_modules/appkern-oberflaeche/oberflaeche/lib/rahmen-vorab";
 
 // Fassung aus version.json im Wurzelordner des Repos (einzige Quelle, gezählt vom Git-Haken): eingebaut ins Skript
 // (__APP_FASSUNG__) und als Meta in die Startseite, an der Schale und Ausrollen die ausgelieferte Fassung prüfen.
@@ -20,7 +21,7 @@ const darstellungEinsetzen = {
   name: "darstellung-einsetzen",
   transformIndexHtml: (html: string) =>
     html.replace("<head>", `<head>\n    <script>(${darstellungVorab.toString()})(${JSON.stringify(DARSTELLUNG)});</script>`)
-      // Statusleiste: direkt hinter dem Viewport-Tag, das es anpasst (lib/rahmen-vorab.ts)
+      // Statusleiste: direkt hinter dem Viewport-Tag, das es anpasst (Appkern, lib/rahmen-vorab.ts)
       .replace(/(<meta name="viewport"[^>]*>)/, `$1\n  <script>(${rahmenVorab.toString()})();</script>`),
 };
 
