@@ -8,6 +8,8 @@ Datensatz mit dem Senderdaten-Baustein auf und schreibt nur abspielbare Sender: 
     python -m app.werkzeuge.statische_liste --aus ../web/daten
     python -m app.werkzeuge.statische_liste --aus ../web/daten --aus-datenbank data/radiohub.db
 
+Die Anpassung der Senderliste (RAD-12, senderdaten.anpassung) gilt immer, wie im Backend.
+
 Format von sender.json (Spaltenformat, Fassung FORMAT): {"kopf": {...}, "zeilen": [[...], ...]}. Der Kopf nennt die
 Fassung des Formats und der Aufbereitung, den Zeitpunkt, die Herkunft, die Anzahl, die Spalten und die Wörterbücher;
 Spalten mit wiederkehrenden Werten (Land, Sprache, Genre, Tag, Codec, ...) tragen Nummern in ihr Wörterbuch, die
@@ -31,6 +33,8 @@ from pydantic import BaseModel, ValidationError
 
 from .. import senderdaten
 from ..senderdaten import Sender, Verzeichnisdatensatz, dubletten
+from ..senderdaten import anpassung as anpassung_baustein
+from ..senderdaten.anpassung import Anpassung
 from ..senderdaten import sprachen as sprachtabelle
 from ..services.senderquelle import abgleich, bestand
 
@@ -185,12 +189,15 @@ def _eintragscodes(sender: list[Sender]) -> dict[str, str]:
 
 
 def liste_bauen(saetze: Iterable[Verzeichnisdatensatz], quelle: Literal["verzeichnis", "datenbank"],
-                zeit: datetime | None = None) -> tuple[StatischeListe, int]:
-    """Die statische Liste aus den Datensätzen (je uuid der erste) und die Zahl der gelesenen Datensätze."""
+                zeit: datetime | None = None, anpassung: Anpassung | None = None) -> tuple[StatischeListe, int]:
+    """Die statische Liste aus den Datensätzen (je uuid der erste, ohne was die Anpassung trifft) und die Zahl der
+    gelesenen Datensätze."""
     gelesen = 0
     nach_uuid: dict[str, Sender] = {}
     for d in saetze:
         gelesen += 1
+        if anpassung is not None and anpassung.trifft(d.stationuuid):
+            continue
         if d.stationuuid and d.stationuuid not in nach_uuid and abspielbar(d):
             nach_uuid[d.stationuuid] = senderdaten.aufbereiten(d)
     sender = [nach_uuid[u] for u in sorted(nach_uuid)]
@@ -226,14 +233,15 @@ async def _alle(quelle: AsyncIterator[Verzeichnisdatensatz]) -> list[Verzeichnis
 
 
 def erzeugen(ordner: Path, datenbank: Path | None = None) -> Bericht:
+    anpassung = anpassung_baustein.laden()
     if datenbank is not None:
-        liste, gelesen = liste_bauen(aus_datenbank(datenbank), "datenbank")
+        liste, gelesen = liste_bauen(aus_datenbank(datenbank), "datenbank", anpassung=anpassung)
     else:
         try:
             saetze = asyncio.run(_alle(aus_verzeichnis()))
         except abgleich.AuftragFehler as f:
             raise SystemExit(str(f)) from f
-        liste, gelesen = liste_bauen(saetze, "verzeichnis")
+        liste, gelesen = liste_bauen(saetze, "verzeichnis", anpassung=anpassung)
     ziel = schreiben(liste, ordner)
     return Bericht(gelesen=gelesen, geschrieben=liste.kopf.anzahl, datei=str(ziel), bytes=ziel.stat().st_size)
 

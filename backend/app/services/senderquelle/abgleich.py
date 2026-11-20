@@ -78,6 +78,7 @@ async def abgleichen(kontext: Kontext, client_bauen: ClientBauen) -> AbgleichErg
     if not server:
         raise AuftragFehler("Kein Server des Senderverzeichnisses eingestellt (service_radio_browser_servers)")
     beginn = bestand.jetzt()
+    angepasst = dienst.anpassung()
     geladen, nummer, versatz = 0, 0, 0
     await kontext.fortschritt(None, "Senderverzeichnis laden", phase="laden")
     async with client_bauen() as client:
@@ -90,7 +91,7 @@ async def abgleichen(kontext: Kontext, client_bauen: ClientBauen) -> AbgleichErg
                     saetze.append(Verzeichnisdatensatz.model_validate(eintrag))
                 except ValueError:
                     continue
-            geladen += await database.schreiben(lambda v, s=saetze: bestand.stationen_speichern(v, s, beginn))
+            geladen += await database.schreiben(lambda v, s=saetze: bestand.stationen_speichern(v, s, beginn, angepasst))
             await kontext.fortschritt(None, f"{geladen} Sender geladen von {server[nummer]}")
             if len(roh) < SEITE:
                 break

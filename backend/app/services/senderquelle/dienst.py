@@ -6,6 +6,8 @@ import logging
 from collections.abc import Callable
 
 from ... import database
+from ...senderdaten import anpassung as anpassung_baustein
+from ...senderdaten.anpassung import Anpassung
 from ..config_service import config_service
 from . import abfrage, ausgeblendet, bestand, regeln, sichtbarkeit
 from .modelle import (Abfrageergebnis, AusgeblendetAnfrage, AusgeblendetSeite, Kandidat, RegelAenderung, RegelEntwurf,
@@ -195,12 +197,26 @@ async def ohne_sender() -> bool:
     return await database.lesen(lambda v: v.execute("SELECT 1 FROM stations LIMIT 1").fetchone() is None)
 
 
+def anpassung() -> Anpassung:
+    """Die Anpassung der Senderliste (Kennungen der App)."""
+    return anpassung_baustein.laden()
+
+
 async def aufbereitung_noetig() -> str | None:
-    return await database.lesen(bestand.aufbereitung_noetig)
+    """Wie `bestand.aufbereitung_noetig`, dazu "anpassung", wenn die Anpassung Sender im Bestand trifft (neue Kennungen)."""
+    a = anpassung()
+
+    def pruefen(v) -> str | None:
+        return bestand.aufbereitung_noetig(v) or ("anpassung" if bestand.angepasst(v, a) else None)
+    return await database.lesen(pruefen)
 
 
 async def aufbereiten() -> int:
     """Den ganzen Bestand neu aufbereiten (rechnen im Lesen, schreiben in einem Zug) und die Sichtbarkeit neu."""
+    a = anpassung()
+    weg = await database.schreiben(lambda v: bestand.anpassen(v, a))
+    if weg:
+        log.info("Anpassung der Senderliste: %s Sender aus dem Bestand", weg)
     sender, verschwunden = await database.lesen(bestand.alle_aufbereiten)
 
     def schreiben(v) -> int:

@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from ... import senderdaten
 from ...senderdaten import Messung, Sender, Verzeichnisdatensatz, dubletten
+from ...senderdaten.anpassung import Anpassung
 
 log = logging.getLogger("radiohub.senderquelle")
 
@@ -110,6 +111,20 @@ def aufbereitung_noetig(v: sqlite3.Connection) -> str | None:
     return None
 
 
+def angepasst(v: sqlite3.Connection, anpassung: Anpassung) -> list[str]:
+    """uuids im Bestand, die nach der Anpassung nicht zum Katalog gehören."""
+    return [z[0] for z in v.execute("SELECT uuid FROM stations") if anpassung.trifft(z[0])]
+
+
+def anpassen(v: sqlite3.Connection, anpassung: Anpassung) -> int:
+    """Nimmt Sender, die nach der Anpassung nicht zum Katalog gehören, aus stations (in der Transaktion des Aufrufers);
+    `index_schreiben` lässt sie danach auch in der Aufbereitung weg. Eigene Daten (Favoriten, Sperren) bleiben."""
+    weg = angepasst(v, anpassung)
+    if weg:
+        v.execute("DELETE FROM stations WHERE uuid IN (SELECT value FROM json_each(?))", (json.dumps(weg),))
+    return len(weg)
+
+
 # ----- Abgleich mit dem Verzeichnis -------------------------------------------------------------------------------------
 
 _SPALTEN = ("uuid", "name", "url", "url_resolved", "favicon", "country", "countrycode", "language", "tags", "codec",
@@ -118,9 +133,12 @@ _SPALTEN = ("uuid", "name", "url", "url_resolved", "favicon", "country", "countr
             "lastcheckoktime", "lastchangetime", "has_extended_info", "verschwunden_am")
 
 
-def stationen_speichern(v: sqlite3.Connection, datensaetze: Iterable[Verzeichnisdatensatz], zeit: str) -> int:
+def stationen_speichern(v: sqlite3.Connection, datensaetze: Iterable[Verzeichnisdatensatz], zeit: str,
+                        anpassung: Anpassung | None = None) -> int:
     """Übernimmt Datensätze des Verzeichnisses in stations (neu oder aktualisiert, nie ersetzt); wer geliefert wird,
-    ist nicht verschwunden."""
+    ist nicht verschwunden. Was die Anpassung trifft, kommt nicht hinein."""
+    if anpassung is not None:
+        datensaetze = [d for d in datensaetze if not anpassung.trifft(d.stationuuid)]
     zeilen = [(d.stationuuid, d.name, d.url, d.url_resolved, d.favicon, d.country, d.countrycode, d.language, d.tags,
                d.codec, d.bitrate, d.votes, d.clickcount, d.homepage, str(d.lastcheckok), zeit, zeit, d.languagecodes,
                d.iso_3166_2, d.state, d.geo_lat, d.geo_long, d.hls, d.ssl_error, d.clicktrend, d.lastcheckok,
