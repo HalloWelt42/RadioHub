@@ -5,6 +5,9 @@
 /* Seitenleiste: deutlich breiter als die Schnellfilter des Radios (Nutzer: "deutlich mehr platz links"), oben eine
    schlichte Wahl, darunter die Abos: Licht (gewählt), Bild, Name, Zahl und Nadel; Griff zum Ziehen links */
 .rh-podcasts { --rh-filter-breite: calc(var(--gross) * 26); }
+/* Luft über dem ersten Inhalt der Liste (Verzeichnis, Kopf des Abos): ohne sie schnitt das Rollfeld Rand und Schatten
+   oben ab (Nutzer 20.11.2026: "die box verschwindet immer noch wenige pixel oben im rand") */
+.rh-podcasts .rh-liste { padding-top: 6px; }
 .rh-folgen-wahl { display: flex; align-items: center; gap: 8px; }
 .rh-folgen-wahl .segment { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rh-folgen-wahl .segment button { min-block-size: var(--rh-taste-klein); font-size: var(--klein); white-space: normal; line-height: 1.2; }
@@ -63,7 +66,7 @@
 .rh-folgen-spalten, .rh-folge .rh-sender-kern { --rh-aktionen: calc(44px * 4 + 12px);
   grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 10) calc(var(--klein) * 5) var(--rh-aktionen);
   grid-template-areas: "led logo name stand laenge aktionen"; }
-.rh-folgen-spalten > span:nth-child(2) { grid-area: stand; }
+.rh-folgen-spalten > span:nth-child(2) { grid-area: stand; display: block; }   /* die Radioseite blendet ihre zweite Spalte (Genres) schmal aus; hier ist es der Stand */
 .rh-folgen-spalten > span:nth-child(3) { grid-area: laenge; }
 .rh-folgen-spalten > span:nth-child(4) { grid-area: aktionen; }
 .rh-folge .stand-zelle { grid-area: stand; padding-top: 6px; font-size: var(--klein); }
