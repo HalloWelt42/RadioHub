@@ -288,8 +288,8 @@ die regelmäßige Ansage (gespeichert im Gerät). Bei Nachtrot ist die Ansage le
 Ton gibt der Browser erst nach einem Tippen frei. Die Weckeransicht hält ihn danach offen (eine stille Schleife), damit
 die Ansage auch von selbst zu hören ist. Ist er gesperrt, etwa direkt nach dem Öffnen, steht am Ansage-Knopf ein
 durchgestrichener Lautsprecher in Akzentfarbe: einmal irgendwo tippen gibt den Ton frei (ein Tipp auf den Knopf
-selbst schaltet dann die Ansage nicht aus). Solange der Ton frei ist, wartet eine neue Fassung, bis man die
-Weckeransicht verlässt, denn nach dem Neuladen wäre er wieder gesperrt.
+selbst schaltet dann die Ansage nicht aus). Eine neue Fassung lädt nie von selbst; in der Weckeransicht steht auch
+kein Hinweis darauf (er käme erst beim Verlassen), denn nach dem Neuladen wäre der Ton wieder gesperrt.
 
 Gesprochen wird aus 84 Bausteinen ("Es ist", "null Uhr" bis "dreiundzwanzig Uhr", "eins" bis "neunundfünfzig") in
 der Kellerwolke unter `Apps/RadioHub/Zeitansage/<Stimme>/`, je Stimme ein eigener Satz. Erzeugt werden fehlende
@@ -308,9 +308,10 @@ einmal über die hauseigene Vertonung mit der Zeit-Stimme (Einstellungen am Tele
 
 ## Neue Fassung
 
-Die geöffnete App erkennt eine neue Fassung von selbst (alle 5 Minuten und beim Zurückkehren auf die Seite) und
-wechselt im nächsten ruhigen Moment: nicht während Wiedergabe, Aufnahme, Ansage, Schlummern, offener Bearbeitung,
-Eingabe oder solange die Weckeransicht den Ton freigegeben hat. Pfad, Weckeransicht, Wachhalten und der gewählte Sender bleiben.
+Die geöffnete App erkennt eine neue Fassung von selbst (alle 5 Minuten und beim Zurückkehren auf die Seite), in PRO
+und in Basic. Sie lädt nie von selbst neu (RAD-20): unten erscheint ein Hinweis mit "Neu laden" und "Später". Neu
+geladen wird nur auf Wunsch; der gewählte Sender bzw. die Folge wird übergeben, Pfad, Weckeransicht und Wachhalten
+bleiben. "Später" blendet den Hinweis aus, bis eine noch neuere Fassung kommt.
 
 ## Lokale Entwicklung (ohne Docker)
 

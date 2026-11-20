@@ -1,67 +1,55 @@
 /**
- * Selbst-Aktualisierung: die geöffnete App erkennt eine neue Fassung (das Skript in der index.html hat einen anderen
- * Namen, er trägt den Hash des Baus) alle paar Minuten und beim Zurückkehren auf die Seite. Gewechselt wird von
- * selbst, aber nie mitten in der Arbeit: nicht während Wiedergabe, Aufnahme, Ansage, Schlummern, offener Bearbeitung
- * oder Eingabe, sondern im nächsten ruhigen Moment (Wiedergabe beendet oder pausiert, Wechsel der Ansicht).
- * Pfad, Weckeransicht und Wachhalten bleiben von selbst; der gewählte Sender bzw. die Folge wird übergeben.
+ * Neue Fassung erkennen (RAD-20): die geöffnete App prüft alle paar Minuten und beim Zurückkehren auf die Seite, ob es
+ * eine neue Fassung gibt (das Skript in der index.html hat einen anderen Namen, er trägt den Hash des Baus). Sie lädt
+ * nie von selbst neu: wer Radio hört, wird nicht übergangen. Ein Hinweis mit "Neu laden" erscheint (Meldung.svelte);
+ * neu geladen wird nur, wenn jemand ihn auslöst. Der gewählte Sender bzw. die Folge wird dabei übergeben.
+ * Nutzer 20.11.2026: "nutzer des radio wird nicht übergangen, sondern bekommt reloadinfo die er selber auslösen kann,
+ * nicht muss".
  */
 
 const PRUEF_ABSTAND_MS = 5 * 60 * 1000;
 const UEBERGABE = 'radiohub_nach_aktualisierung';
 const SKRIPT = /\/assets\/index-[^"'\s]+\.js/;
 
-export const aktualisierung = $state({ neu: false });
+/** `neu`: eine neue Fassung liegt bereit; `spaeter`: der Hinweis ist für genau diese Fassung weggeklickt */
+export const aktualisierung = $state({ neu: false, spaeter: false });
 
-const _sperren = new Set();
 let _appState = null;
 let _eigenes = null;
-let _zeitansage = () => false;
+let _bekannt = null;   // Skript der zuletzt erkannten neuen Fassung
 
-/** Arbeit, die eine Aktualisierung aufhalten soll (etwa 'schlummern', 'wecker-bearbeiten'). */
-export function sperren(grund) { _sperren.add(grund); }
-export function freigeben(grund) { _sperren.delete(grund); versuchen(); }
-
-function eingabeOffen() {
-  const e = document.activeElement;
-  return !!e && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tagName);
-}
-
-export function ruhig(appState = _appState, zeitansageLaeuft = false) {
-  if (!appState) return false;
-  const spielt = appState.isPlaying && !appState.isPaused;
-  return !spielt && !appState.isRecording && !zeitansageLaeuft && _sperren.size === 0 && !eingabeOffen();
-}
-
-/** Im ruhigen Moment auf die neue Fassung wechseln (Zustand übergeben, neu laden). */
-export function versuchen() {
-  if (!aktualisierung.neu || !ruhig(_appState, _zeitansage())) return false;
+/** Auf Wunsch: Zustand übergeben und neu laden */
+export function neuLaden() {
   try {
     const s = _appState;
-    sessionStorage.setItem(UEBERGABE, JSON.stringify({ station: s.currentStation, episode: s.currentEpisode }));
+    if (s) sessionStorage.setItem(UEBERGABE, JSON.stringify({ station: s.currentStation, episode: s.currentEpisode }));
   } catch { /* privates Fenster: dann ohne Übergabe */ }
   location.reload();
-  return true;
+}
+
+/** Hinweis wegklicken; eine noch neuere Fassung meldet sich wieder */
+export function spaeter() {
+  aktualisierung.spaeter = true;
 }
 
 export async function pruefen() {
   if (!_eigenes) return;
   try {
-    const antwort = await fetch('/', { cache: 'no-store' });
+    const antwort = await fetch(import.meta.env.BASE_URL, { cache: 'no-store' });
     const treffer = (await antwort.text()).match(SKRIPT);
-    if (treffer && treffer[0] !== _eigenes) {
-      aktualisierung.neu = true;
-      versuchen();
-    }
+    if (!treffer || treffer[0] === _eigenes || treffer[0] === _bekannt) return;
+    _bekannt = treffer[0];
+    aktualisierung.neu = true;
+    aktualisierung.spaeter = false;
   } catch { /* Server kurz weg: beim nächsten Mal */ }
 }
 
 /** Beim Start: eigene Fassung merken, Übergabe der vorigen Fassung übernehmen, Prüfungen anstoßen. */
-export function starten(appState, zeitansageLaeuft = () => false) {
+export function starten(appState) {
   _appState = appState;
-  _zeitansage = zeitansageLaeuft;
   const skript = [...document.querySelectorAll('script[src]')].map((s) => new URL(s.src, location.href).pathname)
     .find((p) => SKRIPT.test(p));
-  _eigenes = skript || null;   // im Entwicklungsserver gibt es kein gebautes Skript: dann keine Prüfung
+  _eigenes = skript?.match(SKRIPT)?.[0] || null;   // im Entwicklungsserver gibt es kein gebautes Skript: keine Prüfung
   try {
     const uebergabe = JSON.parse(sessionStorage.getItem(UEBERGABE) || 'null');
     sessionStorage.removeItem(UEBERGABE);
@@ -71,5 +59,4 @@ export function starten(appState, zeitansageLaeuft = () => false) {
   if (!_eigenes) return;
   setInterval(pruefen, PRUEF_ABSTAND_MS);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pruefen(); });
-  window.addEventListener('popstate', () => versuchen());
 }

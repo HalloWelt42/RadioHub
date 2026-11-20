@@ -4,7 +4,6 @@
   import { appState } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
   import { weckerdaten, weckerLaden, weckerSpeichern, weckerLoeschen } from '../../lib/telefon/weckerdaten.svelte.js';
-  import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
   import { WECKTOENE, VORGABE } from '../../lib/telefon/wecktoene.js';
   import { wecktonAn, wecktonAus } from '../../lib/telefon/weckton.js';
   import { weckerablage } from '$ziel/telefon';
@@ -24,12 +23,6 @@
     weckerablage.sender().then((s) => (favoriten = s)).catch(() => (favoriten = []));
   });
 
-  // Offene Bearbeitung hält eine Aktualisierung auf
-  $effect(() => {
-    const offen = !!entwurf;
-    untrack(() => (offen ? sperren('wecker-bearbeiten') : freigeben('wecker-bearbeiten')));
-    return () => untrack(() => freigeben('wecker-bearbeiten'));
-  });
 
   function neu() {
     const sender = favoriten[0] || null;

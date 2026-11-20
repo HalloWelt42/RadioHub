@@ -13,6 +13,7 @@
   import * as router from "../lib/router.js";
   import { geraet } from "../lib/geraet.svelte.js";
   import { tasteDerApp } from "./tastatur";
+  import { starten as aktualisierungStarten } from "../lib/aktualisierung.svelte.js";
 
   const BEREICHE = ["radio", "settings"] as const;
   const TELEFON = { podcasts: false, wecker: true, backend: false };
@@ -32,6 +33,9 @@
     if (tab !== "radio" && tab !== "settings" && !wecker) actions.navigateTo("/radio", { replace: true });
     else if (tab === "settings" && (appState.routeSegments as string[])[0] !== "radio") actions.navigateTo("/einstellungen/radio/regeln", { replace: true });
   });
+
+  // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
+  $effect(() => { aktualisierungStarten(appState); });
 
   function taste(e: KeyboardEvent) {
     if (!geraet.telefon) tasteDerApp(e, BEREICHE);

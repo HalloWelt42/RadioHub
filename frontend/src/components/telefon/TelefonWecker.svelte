@@ -23,7 +23,6 @@
   import { zeit, ansagen, abbrechen, entsperren, bausteineLaden, zeitansageSchalten } from '../../lib/telefon/zeitansage.svelte.js';
   import { ansageFaellig } from '../../lib/telefon/zeitplan.js';
   import { ton, loslassen } from '../../lib/telefon/tonkontext.svelte.js';
-  import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
   import '@fontsource/chakra-petch/500.css';
   import '@fontsource/chakra-petch/700.css';
   import '../../stil/weckansicht.css';
@@ -97,7 +96,6 @@
       const w = schlummerWecker;
       schlummerBis = null;
       schlummerWecker = null;
-      freigeben('schlummern');
       if (w) ausloesen(w);
       return;
     }
@@ -184,7 +182,6 @@
     stille();
     schlummerBis = null;
     schlummerWecker = null;
-    freigeben('schlummern');
   }
 
   function schlummern() {
@@ -192,7 +189,6 @@
     stille();
     schlummerWecker = w;
     schlummerBis = new Date(Date.now() + (w?.schlummern_min || 9) * 60000);
-    sperren('schlummern');   // keine Aktualisierung, solange geschlummert wird
   }
 
   // --- Verbindung: neu verbinden, wenn nichts zu hören ist, obwohl etwas laufen soll ---------------------------------
@@ -314,11 +310,6 @@
   }
   document.addEventListener('visibilitychange', sichtbarkeit);
 
-  $effect(() => {
-    if (ton.laeuft) sperren('tonausgabe');
-    else freigeben('tonausgabe');
-  });
-
   onDestroy(() => {
     clearInterval(takt);
     clearInterval(anstieg);
@@ -326,8 +317,6 @@
     abbrechen();
     loslassen();
     waechter.lassen();
-    freigeben('schlummern');
-    freigeben('tonausgabe');
     weckeransichtOffen(false);
     themaBeobachter.disconnect();
   });

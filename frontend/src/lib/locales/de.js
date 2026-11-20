@@ -907,6 +907,9 @@ export default {
 
   // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
   schale: {
+    neueFassung: 'Eine neue Fassung ist bereit. Neu laden, wenn es passt; der Sender läuft danach weiter.',
+    neuLaden: 'Neu laden',
+    spaeter: 'Später',
     proTitel: 'RadioHub PRO: die volle Version mit Aufnahmen, Podcasts, Zeitversatz und Backend',
     basicVerweis: 'RadioHub Basic: Webversion nur mit Radio. Zur PRO mit Frontend und Backend (Quellcode auf GitHub)',
     laedt: 'Lädt ...',

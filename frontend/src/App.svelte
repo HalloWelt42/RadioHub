@@ -17,8 +17,7 @@
   import { api } from "./lib/api.js";
   import * as router from "./lib/router.js";
   import { geraet } from "./lib/geraet.svelte.js";
-  import { starten as aktualisierungStarten, versuchen as aktualisierungVersuchen } from "./lib/aktualisierung.svelte.js";
-  import { zeit } from "./lib/telefon/zeitansage.svelte.js";
+  import { starten as aktualisierungStarten } from "./lib/aktualisierung.svelte.js";
 
   let online = $state<boolean | null>(null);
   let ablage = $state<{ verbunden: boolean; meldung?: string } | null>(null);   // Stand der Ablage (Kellerwolke)
@@ -45,13 +44,9 @@
     });
   });
 
-  // Neue Fassung erkennen und im nächsten ruhigen Moment wechseln (nie während Wiedergabe, Aufnahme oder Ansage)
+  // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
   $effect(() => {
-    aktualisierungStarten(appState, () => zeit.laeuft);
-  });
-  $effect(() => {
-    void appState.isPlaying; void appState.isPaused; void appState.activeTab; void appState.routeSegments; void zeit.laeuft;
-    aktualisierungVersuchen();
+    aktualisierungStarten(appState);
   });
 
   // Interne Links in Texten (Rechtstexte) ohne Neuladen öffnen
