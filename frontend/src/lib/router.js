@@ -6,7 +6,7 @@
  * Beispiele:
  *   /radio, /radio/<sender-uuid>, /radio/search/<suche>
  *   /podcasts, /podcasts/<abo>, /podcasts/<abo>/<folge>
- *   /aufnahmen, /einstellungen/radio/filter, /wecker
+ *   /aufnahmen, /einstellungen/radio/regeln, /wecker
  *
  * Alte Adressen (#/tuner, #/podcast/3 ...) aus Lesezeichen werden beim Start auf den neuen Pfad umgeleitet.
  * Der Server liefert für unbekannte Pfade index.html (Dateien mit Endung nicht).
@@ -34,7 +34,7 @@ const ROUTE_DEFAULTS = {
   einstellungen: {
     _default: ['allgemein', 'einstellungen'],
     allgemein: ['einstellungen'],
-    radio: ['filter']
+    radio: ['regeln']
   }
 };
 

@@ -1,116 +1,56 @@
-<script>
-  import HiFiLed from '../hifi/HiFiLed.svelte';
-  import SetupFilter from './SetupFilter.svelte';
-  import SetupSender from './SetupSender.svelte';
-  import SetupKategorien from './SetupKategorien.svelte';
-  import { appState, actions } from '../../lib/store.svelte.js';
-  import * as router from '../../lib/router.js';
-  import { t } from '../../lib/i18n.svelte.js';
+<script lang="ts">
+  // Einstellungen > Radio (Entwurf mockups/radio-filter/regeln.html, RAD-7): Pfad und Reiter über dem Rollfeld.
+  // Ausschlussregeln, ausgeblendete Sender, Länder der Seitenleiste, Werbeerkennung und Abgleich sind neu gebaut; die
+  // Kategorien bleiben die bisherigen. Der Reiter steht in der Adresse (/einstellungen/radio/<reiter>); frühere Adressen
+  // (filter, sender) führen zum passenden neuen Reiter.
+  import { t } from "../../lib/i18n.svelte.js";
+  import { actions, appState } from "../../lib/store.svelte.js";
+  import { senderquelle } from "../../lib/radio";
+  import RegelnReiter from "../radio/einstellungen/RegelnReiter.svelte";
+  import AusgeblendetReiter from "../radio/einstellungen/AusgeblendetReiter.svelte";
+  import LaenderReiter from "../radio/einstellungen/LaenderReiter.svelte";
+  import WerbungReiter from "../radio/einstellungen/WerbungReiter.svelte";
+  import AbgleichReiter from "../radio/einstellungen/AbgleichReiter.svelte";
+  import SetupKategorien from "./SetupKategorien.svelte";
 
-  const subTabs = [
-    { id: 'filter', label: 'FILTER' },
-    { id: 'sender', label: 'SENDER' },
-    { id: 'kategorien', label: 'KATEGORIEN' }
-  ];
+  const REITER = [
+    { id: "regeln", symbol: "fa-filter-circle-xmark" },
+    { id: "ausgeblendet", symbol: "fa-eye-slash" },
+    { id: "laender", symbol: "fa-earth-europe" },
+    { id: "werbung", symbol: "fa-rectangle-ad" },
+    ...(senderquelle.faehig.abgleich ? [{ id: "abgleich", symbol: "fa-arrows-rotate" }] : []),
+    ...(senderquelle.faehig.kategorien ? [{ id: "kategorien", symbol: "fa-folder" }] : []),
+  ] as const;
+  const FRUEHER: Record<string, string> = { filter: "regeln", sender: "werbung" };
 
-  // Sub-Tab aus Route-Segmenten ableiten
-  let subTab = $derived.by(() => {
-    if (appState.activeTab !== 'settings') return 'filter';
-    const seg = appState.routeSegments;
-    if (seg?.[0] !== 'radio') return 'filter';
-    const subId = seg[1] || 'filter';
-    return subTabs.some(t => t.id === subId) ? subId : 'filter';
-  });
+  const gewuenscht = $derived((appState.routeSegments as string[])[1] ?? "");
+  const reiter = $derived(REITER.some((r) => r.id === gewuenscht) ? gewuenscht : FRUEHER[gewuenscht] ?? "regeln");
 
-  // Redirect wenn nur /setup/radio ohne Sub-Tab
+  // frühere und fehlende Reiter in der Adresse richtigstellen
   $effect(() => {
-    if (appState.activeTab === 'settings'
-        && appState.routeSegments?.[0] === 'radio'
-        && !appState.routeSegments[1]) {
-      router.navigate('/einstellungen/radio/filter', { replace: true });
-      appState.routeSegments = ['radio', 'filter'];
+    if (appState.activeTab === "settings" && (appState.routeSegments as string[])[0] === "radio" && gewuenscht !== reiter) {
+      actions.navigateTo(`/einstellungen/radio/${reiter}`, { replace: true });
     }
   });
 </script>
 
-<div class="radio-setup">
-  <div class="sub-tab-bar">
-    {#each subTabs as tab}
-      <button
-        class="sub-tab-btn"
-        class:active={subTab === tab.id}
-        onclick={() => actions.navigateTo('/einstellungen/radio/' + tab.id)}
-      >
-        <HiFiLed color={subTab === tab.id ? 'green' : 'off'} size="small" />
-        {t('setup.' + tab.id)}
-      </button>
-    {/each}
+<div class="rh-ohne-zoom rh-einst-haupt">
+  <div class="rh-einst-kopf">
+    <div class="rh-pfad"><span>{t("radio.einst.einstellungen")}</span><i class="fa-solid fa-chevron-right"></i><span>{t("radio.einst.radio")}</span></div>
+    <div class="reiterleiste" role="tablist" aria-label={t("radio.einst.radio")}>
+      {#each REITER as r (r.id)}
+        <button type="button" role="tab" class:aktiv={reiter === r.id} aria-selected={reiter === r.id}
+                onclick={() => actions.navigateTo(`/einstellungen/radio/${r.id}`)}><i class="fa-solid {r.symbol}"></i>{t(`radio.einst.reiter.${r.id}`)}</button>
+      {/each}
+    </div>
   </div>
-
-  <div class="radio-content">
-    {#if subTab === 'filter'}
-      <SetupFilter />
-    {:else if subTab === 'sender'}
-      <SetupSender />
-    {:else if subTab === 'kategorien'}
-      <div class="scroll-wrapper"><SetupKategorien /></div>
+  <div class="rh-einst-rollt">
+    {#if reiter === "regeln"}<RegelnReiter />
+    {:else if reiter === "ausgeblendet"}<AusgeblendetReiter />
+    {:else if reiter === "laender"}<LaenderReiter />
+    {:else if reiter === "werbung"}<WerbungReiter />
+    {:else if reiter === "abgleich"}<AbgleichReiter />
+    {:else if reiter === "kategorien"}<section class="rh-reiter"><div class="rh-alt"><SetupKategorien /></div></section>
     {/if}
   </div>
 </div>
-
-<style>
-  .radio-setup {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sub-tab-bar {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-bottom: 12px;
-    flex-shrink: 0;
-  }
-
-  .sub-tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: var(--hifi-bg-tertiary);
-    border: none;
-    border-radius: var(--hifi-border-radius-pill);
-    color: var(--hifi-text-secondary);
-    font-family: var(--hifi-font-values);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .sub-tab-btn:hover {
-    background: var(--hifi-bg-secondary);
-    color: var(--hifi-text-primary);
-  }
-
-  .sub-tab-btn.active {
-    background: var(--hifi-bg-panel);
-    color: var(--hifi-accent);
-    box-shadow: var(--hifi-shadow-inset);
-  }
-
-  .radio-content {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .scroll-wrapper {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-  }
-</style>

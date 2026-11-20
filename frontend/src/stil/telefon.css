@@ -1,0 +1,58 @@
+/* Radio am Telefon (RAD-7, Teil 3b): Suche mit Filter, Trefferzähler und Chips, Senderzeilen, Filterblatt von unten.
+   Formen aus dem abgenommenen Entwurf (mockups/radio-filter/radio-bausteine.css und telefon.css); Kopf, Fußleiste,
+   Höhe und sichere Ränder kommen allein aus dem Rahmen des Appkerns. Klassen, die der Appkern am Telefon selbst führt
+   (.t-liste, .t-zeile, .t-meta), heißen hier .tf-liste, .tf-sender, .tf-meta. Nur Marken. */
+
+/* Anordnung im Rahmen: der Inhalt rollt nicht als Ganzes; Suche und Chips stehen, die Liste rollt */
+.mobil .t-inhalt.tf-radio-inhalt { overflow: hidden; padding: 0; display: grid; grid-template-rows: minmax(0, 1fr); }
+.tf-radio { min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); --rh-rand: var(--rahmen-rand, 12px); }
+.t-suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 8px var(--rh-rand) 8px; }
+.t-suche .rh-suchfeld { min-width: 0; }
+.t-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 var(--rh-rand) 8px; }
+.tf-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand) 12px; }
+.tf-hinweis { margin: 16px 0; color: var(--text-2); font-size: var(--klein); }
+.t-schleier { position: fixed; inset: 0; z-index: 70; }
+.t-blatt { position: fixed; left: 0; right: 0; bottom: 0; z-index: 71; max-block-size: 82dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-bottom: env(safe-area-inset-bottom); }
+.t-blatt-rollt { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand, 12px) 12px; }
+.t-blatt-rollt > .rh-schnellwahl { margin-top: 4px; }
+
+.t-suche .suche { block-size: 48px; min-width: 0; }
+.t-suche .suche input { font-size: max(17px, var(--gross)); }
+.t-suche .knopf { block-size: 48px; }
+.t-treffer { block-size: var(--rh-taste-klein); display: inline-flex; align-items: center; gap: 8px; padding: 2px 8px 2px 2px; border-radius: var(--r2); background-color: var(--rh-geraet);
+  background-image: var(--rh-geraet-bild); box-shadow: var(--rh-geraet-kante); color: var(--rh-geraet-tinte); font-size: var(--marke); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.t-treffer ak-segmente { --ak-zelle: calc(var(--gross) * 5.6); --ak-zeichen-max: 22px; }
+.t-treffer .ak-segmente-glas { padding: 4px 8px; }
+.tf-sender { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) 44px; gap: 4px 10px; align-items: start; padding: 8px 6px 8px 8px; margin-bottom: 6px;
+  border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; }
+.tf-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 35%, transparent); }
+.tf-sender .rh-logo-bild { --s: calc(var(--gross) * 2.4); }
+.tf-sender b { display: block; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.tf-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
+.tf-meta .rh-guete { padding: 3px 4px; }
+.tf-meta .rh-guete i { inline-size: 6px; block-size: 11px; }
+.tf-meta .t-var { display: inline-flex; gap: 4px; align-items: center; color: var(--akzent); font-weight: 600; }
+.t-titel { margin-top: 2px; font-size: var(--klein); color: var(--text-2); overflow-wrap: anywhere; }
+.t-titel i { color: var(--led-blau); margin-right: 6px; }
+.tf-sender .rund { inline-size: 44px; block-size: 44px; }
+.t-hinweis { margin: 4px 0 10px; }
+.t-schleier { background: var(--rh-schleier); border: 0; padding: 0; }
+.t-schleier[hidden], .t-blatt[hidden], .t-gross[hidden] { display: none; }
+.t-blatt { border-radius: 18px 18px 0 0; background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-blatt-schatten), var(--rh-kante); }
+.t-blatt-kopf { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 6px var(--rh-rand) 8px; }
+.t-blatt-kopf::before { content: ""; grid-column: 1 / -1; justify-self: center; inline-size: 44px; block-size: 5px; border-radius: 3px; background: var(--rand-stark); margin-bottom: 4px; }
+.t-blatt-kopf h2 { margin: 0; font-size: var(--titel); }
+.t-blatt-kopf .knopf, .t-blatt-kopf .rund { block-size: 44px; }
+.t-blatt-kopf .rund { inline-size: 44px; }
+.t-blatt-fuss { padding: 10px var(--rh-rand); box-shadow: 0 -1px 0 var(--rand); }
+.t-blatt-fuss .knopf { inline-size: 100%; block-size: 50px; justify-content: center; font-size: var(--gross); }
+.t-chipwahl { display: flex; flex-wrap: wrap; gap: 6px; }
+.t-chipwahl .chip.wahl { min-block-size: 42px; padding: 4px 12px; gap: 8px; white-space: nowrap; }
+.t-chipwahl .chip.wahl .rh-zahl { font-size: var(--marke); opacity: .8; }
+
+.t-chips .chip { min-block-size: var(--rh-taste-klein); padding: 0 4px 0 12px; gap: 6px; font-size: var(--klein); white-space: nowrap; max-inline-size: 100%; }
+.t-chips .chip button { inline-size: 32px; block-size: 32px; border-radius: var(--r1); display: grid; place-items: center; color: var(--text-3); }
+.t-suche .knopf .pille { block-size: 24px; padding: 0 8px; font-family: var(--schrift-zahl); background-color: var(--akzent-flaeche); color: var(--auf-akzent); }
+.tf-sender .rund.favorit { color: var(--rh-favorit); }
+.t-var { white-space: nowrap; }

@@ -55,7 +55,9 @@
     if (appState.currentEpisode) medien.position(dauer, zeit, appState.podcastSpeed || 1);
   }
 
+  // Vor und Zurück folgen der sichtbaren Liste des Radios (Vorgabe 7); ohne Liste (Radio noch nicht geöffnet) die Favoriten
   function favorit(schritt) {
+    if (appState.stations.length) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();
     const liste = appState.favorites;
     if (!liste.length) return;
     const i = liste.findIndex((f) => f.uuid === appState.currentStation?.uuid);
@@ -117,7 +119,9 @@
       </span>
     </div>
 
-    <main class="t-inhalt rh-alt" data-rahmen="inhalt">
+    <!-- Radio ist neu gebaut (RAD-7): eigene Rollfelder, Marken direkt; die übrigen Bereiche wachsen als Ganzes (rh-alt) -->
+    <main class="t-inhalt" class:rh-alt={appState.activeTab === "podcasts" || appState.activeTab === "wecker"}
+          class:tf-radio-inhalt={appState.activeTab !== "podcasts" && appState.activeTab !== "wecker"} data-rahmen="inhalt">
       {#if appState.activeTab === 'podcasts'}
         <TelefonPodcasts />
       {:else if appState.activeTab === 'wecker'}

@@ -1,0 +1,137 @@
+/* Einstellungen > Radio (RAD-7, Teil 3b): Kopf mit Pfad und Reitern über dem Rollfeld mit Karten, Bestand, Regelzeile,
+   Vorschau, Zeilen der ausgeblendeten Sender, Länder. Übernommen aus dem abgenommenen Entwurf (mockups/radio-filter,
+   regeln.css und radio-bausteine.css) ohne Änderung der Formen; die Bereiche links bleiben bis zum Neubau der
+   Einstellungen (Etappe 6) die bisherigen. Nur Marken. */
+
+/* Rahmen: die alten Einstellungen wachsen als Ganzes mit der Schriftstufe (rh-alt); der neue Teil liest die Marken
+   selbst und hebt das auf */
+.rh-alt .rh-ohne-zoom { zoom: calc(1 / var(--rh-alt-zoom)); font-size: var(--gross); line-height: 1.45; }
+.rh-ohne-zoom .rh-alt { zoom: var(--rh-alt-zoom); font-size: 16px; }
+.rh-einst-haupt { flex: 1; min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); position: relative; }
+.rh-einst-kopf { padding: 0 0 0; display: grid; gap: 8px; }
+.rh-einst-rollt { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 0 48px; }
+.rh-reiter { display: grid; gap: 18px; padding-top: 18px; max-inline-size: 1280px; }
+.rh-bestand { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 18px; padding: 22px 26px 16px; }
+.rh-regeln, .rh-a-liste { display: grid; gap: 8px; }
+.rh-neu { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.rh-neu-eingabe { display: grid; gap: 14px; min-width: 0; }
+.rh-vorschau { position: sticky; top: 12px; }
+.rh-a-werkzeug, .rh-l-werkzeug { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-bottom: 12px; }
+.rh-a-werkzeug .suche, .rh-l-werkzeug .suche { flex: 1 1 260px; }
+.rh-seiten { justify-content: flex-end; padding-top: 14px; }
+.rh-laender { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--gross) * 15)), 1fr)); gap: 4px 12px; }
+@media (max-width: 1099px) {
+  .rh-neu { grid-template-columns: minmax(0, 1fr); }
+  .rh-vorschau { position: static; }
+}
+@media (max-width: 760px) {
+  .rh-bestand { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 20px 14px 14px; }
+  .rh-karte { padding: 4px 12px 14px; }
+  .rh-vorschau-zahl { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ═══ Einstellungen: Bestand, Regelzeile, Vorschau, ausgeblendete Sender ═══ */
+.rh-pfad { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: var(--klein); color: var(--text-3); }
+.rh-pfad i { font-size: .75em; }
+.rh-einst-kopf .reiterleiste { padding: 0 0 8px; border-bottom: 0; box-shadow: none; }
+.rh-einst-kopf .reiterleiste button { min-block-size: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: var(--r2); cursor: pointer; }
+.rh-bestand-feld { display: grid; justify-items: center; gap: 6px; min-width: 0; }
+.rh-bestand-feld ak-segmente { --ak-zeichen-max: 44px; }
+.rh-bestand-feld .ak-etikett { font-weight: 600; text-align: center; }
+.rh-karte { max-width: none; margin: 0; padding: 4px 18px 18px; min-width: 0; }
+.rh-karte-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 12px 0; }
+.rh-karte-kopf h2 { margin: 0; font-size: var(--titel); display: flex; align-items: center; gap: 10px; }
+.rh-karte-kopf h2 i { color: var(--akzent); }
+.rh-karte .hinweis-band { margin: 0 0 14px; }
+
+.rh-regel { display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) auto auto auto; grid-template-areas: "led art text zahl schalter weg"; gap: 4px 14px; align-items: center;
+  padding: 10px 12px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+.rh-regel.aus { opacity: .72; }
+.rh-regel.neu { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
+.rh-regel > ak-led { grid-area: led; }
+.rh-regel-art { grid-area: art; inline-size: 44px; block-size: 44px; border-radius: var(--r2); display: grid; place-items: center; color: var(--akzent); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
+.rh-regel-text { grid-area: text; min-width: 0; }
+.rh-regel-text b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.rh-regel-text span { display: block; font-size: var(--klein); color: var(--text-3); }
+.rh-regel-zahl { grid-area: zahl; text-align: right; font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
+.rh-regel-zahl b { display: block; font-family: var(--schrift-zahl); font-size: var(--gross); color: var(--text); }
+.rh-regel .schalter { grid-area: schalter; inline-size: 52px; block-size: 28px; }
+.rh-regel .schalter::after { inline-size: 22px; block-size: 22px; }
+.rh-regel .schalter.an::after { left: 27px; }
+.rh-regel > .knopf { grid-area: weg; block-size: 44px; }
+.rh-regel .rueckfrage { grid-column: 1 / -1; margin: 6px 0 0; }
+.rh-regel .rueckfrage .aktionen .knopf { block-size: 40px; }
+@media (max-width: 760px) {
+  .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" "zahl zahl schalter weg"; }
+  .rh-regel-zahl { text-align: left; }
+  .rh-regel-zahl b { display: inline; margin-right: 6px; }
+}
+
+.rh-arten { display: flex; flex-wrap: wrap; gap: 3px; }
+.rh-arten button { min-block-size: var(--rh-taste-klein); display: inline-flex; align-items: center; gap: 8px; }
+.rh-neu .suche { inline-size: 100%; block-size: 48px; font-size: var(--gross); }
+.rh-neu .suche input { font-size: max(17px, var(--gross)); }
+.rh-treffer { display: grid; gap: 4px; margin-top: 8px; }
+.rh-treffer button { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 12px; align-items: center; text-align: left; min-block-size: 46px; padding: 6px 12px;
+  border: 0; border-radius: var(--r2); cursor: pointer; color: var(--text); background-color: var(--flaeche); box-shadow: var(--rh-kante); }
+.rh-treffer button:hover { background-color: var(--flaeche-2); }
+.rh-treffer button.aktiv { box-shadow: 0 0 0 2px var(--akzent-flaeche); }
+.rh-treffer b { font-weight: 600; }
+.rh-treffer .rh-zahl { font-size: var(--klein); color: var(--text-2); }
+.rh-treffer .fav { font-size: var(--marke); color: var(--warn); white-space: nowrap; }
+.rh-treffer .fav.null { color: var(--text-3); }
+.rh-neu-feld-hilfe { margin: 6px 0 0; font-size: var(--klein); color: var(--text-3); }
+.rh-neu ak-schieber, .rh-neu ak-wahl { --ak-zelle: 100%; }
+.rh-neu .rh-chips-wahl .chip.wahl { min-block-size: var(--rh-taste-klein); }
+
+.rh-vorschau { display: grid; gap: 12px; padding: 18px 20px; border-radius: var(--rh-ecke-geraet); }
+.rh-vorschau .ak-geraet-kopf { margin: 0; padding: 0 16px; }
+.rh-vorschau-zahl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.rh-vorschau-zahl ak-segmente { --ak-zelle: calc(var(--gross) * 10); --ak-zeichen-max: 46px; }
+.rh-vorschau-zahl span { font-size: var(--gross); color: var(--ak-tinte); line-height: 1.35; }
+.rh-vorschau-fav { display: flex; gap: 10px; align-items: start; font-size: var(--klein); color: var(--ak-tinte); min-block-size: 24px; }
+.rh-vorschau-fav ak-led { margin-top: 4px; }
+.rh-vorschau-beispiele { font-size: var(--klein); color: var(--ak-tinte-2); display: grid; gap: 2px; }
+.rh-vorschau-beispiele b { color: var(--ak-tinte); font-weight: 600; }
+.rh-vorschau-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.rh-vorschau-knoepfe .knopf { block-size: var(--rh-taste); }
+
+.rh-a-werkzeug .suche, .rh-l-werkzeug .suche { block-size: var(--rh-taste); font-size: var(--gross); }
+.rh-a-werkzeug .suche input, .rh-l-werkzeug .suche input { font-size: max(17px, var(--gross)); }
+.rh-a-werkzeug .auswahl-knopf { block-size: var(--rh-taste); }
+.rh-a-zeile { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 15em) calc(var(--klein) * 5) calc(var(--klein) * 8.5); grid-template-areas: "logo name grund stimmen frei"; gap: 6px 14px;
+  align-items: center; padding: 8px 10px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
+.rh-a-zeile .rh-logo-bild { grid-area: logo; }
+.rh-a-zeile .name { grid-area: name; min-width: 0; }
+.rh-a-zeile .name b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.rh-a-zeile .grund { grid-area: grund; display: flex; gap: 8px; align-items: center; font-size: var(--klein); color: var(--text-2); min-width: 0; }
+.rh-a-zeile .grund i { color: var(--led-bernstein); }
+.rh-a-zeile .stimmen { grid-area: stimmen; text-align: right; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-3); }
+.rh-a-zeile .knopf { grid-area: frei; block-size: var(--rh-taste-klein); justify-content: center; }
+.rh-a-zeile.frei { opacity: .7; }
+@media (max-width: 760px) { .rh-a-zeile { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name stimmen" "grund grund frei"; } }
+.rh-seiten .knopf { block-size: 44px; }
+
+/* ═══ Was die App über den Entwurf hinaus braucht ═══ */
+.rh-einst-kopf .reiterleiste button.aktiv { color: var(--akzent); }
+.rh-gewaehlt { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rh-gewaehlt .chip { min-block-size: 36px; padding: 0 4px 0 12px; }
+.rh-gewaehlt .chip button { inline-size: 30px; block-size: 30px; display: grid; place-items: center; }
+.rh-regel .rueckfrage { flex-wrap: wrap; }
+.rh-schalter-zeile { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; align-items: center; padding: 10px 0; box-shadow: 0 -1px 0 var(--rand); }
+.rh-schalter-zeile:first-of-type { box-shadow: none; }
+.rh-schalter-zeile b { display: block; font-weight: 600; }
+.rh-schalter-zeile span { display: block; font-size: var(--klein); color: var(--text-3); }
+.rh-schalter-zeile .schalter { inline-size: 52px; block-size: 28px; }
+.rh-schalter-zeile .schalter::after { inline-size: 22px; block-size: 22px; }
+.rh-schalter-zeile .schalter.an::after { left: 27px; }
+.rh-schalter-zeile ak-schieber { --ak-zelle: 100%; grid-column: 1 / -1; }
+.rh-auftrag { display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--r2); background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
+.rh-auftrag .balken { block-size: 8px; }
+.rh-auftrag-zeile { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: space-between; }
+.rh-karte .rh-werte { margin-bottom: 14px; }
+.rh-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rh-knoepfe .knopf { block-size: var(--rh-taste-klein); }
+.rh-a-zeile .rh-a-knoepfe { grid-area: frei; display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.rh-a-zeile .rh-a-knoepfe .knopf { grid-area: auto; }
+.rh-a-zeile .grund span { min-width: 0; overflow-wrap: anywhere; }
