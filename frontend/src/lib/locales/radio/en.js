@@ -12,6 +12,7 @@ export default {
   nurFavoriten: 'Favourites only',
   nurFavoritenHilfe: 'Show favourites only, together with the other filters',
   nurErreichbare: 'Reachable only',
+  erreichbare: 'Reachable',
   nurErreichbareHilfe: 'Without stations that failed the last check of the station directory; favourites stay',
   auchNichtErreichbare: 'Also unreachable',
   stimmen: 'Votes',

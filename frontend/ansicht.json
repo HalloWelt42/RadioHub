@@ -15,6 +15,9 @@
       "wechsel": [
         {
           "klick": ".rh-darstellung > .knopf"
+        },
+        {
+          "klick": ".rh-sender .rh-aktionen > button:last-child"
         }
       ],
       "speicher": {
@@ -110,8 +113,8 @@
       }
     },
     {
-      "name": "einstellungen-radio-filter",
-      "pfad": "/einstellungen/radio/filter",
+      "name": "einstellungen-radio-regeln",
+      "pfad": "/einstellungen/radio/regeln",
       "nur": [
         1280,
         1920
@@ -121,8 +124,41 @@
       }
     },
     {
-      "name": "einstellungen-radio-sender",
-      "pfad": "/einstellungen/radio/sender",
+      "name": "einstellungen-radio-ausgeblendet",
+      "pfad": "/einstellungen/radio/ausgeblendet",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
+    },
+    {
+      "name": "einstellungen-radio-laender",
+      "pfad": "/einstellungen/radio/laender",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
+    },
+    {
+      "name": "einstellungen-radio-werbung",
+      "pfad": "/einstellungen/radio/werbung",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "mittel"
+      }
+    },
+    {
+      "name": "einstellungen-radio-abgleich",
+      "pfad": "/einstellungen/radio/abgleich",
       "nur": [
         1280,
         1920
@@ -188,7 +224,7 @@
     },
     {
       "name": "telefon-radio",
-      "pfad": "/radio",
+      "pfad": "/radio?land=DE",
       "nur": [
         375,
         768
@@ -196,6 +232,9 @@
       "wechsel": [
         {
           "klick": "[aria-label='Einstellungen']"
+        },
+        {
+          "klick": ".t-suche .knopf"
         }
       ],
       "speicher": {
@@ -314,6 +353,9 @@
       "wechsel": [
         {
           "klick": ".rh-darstellung > .knopf"
+        },
+        {
+          "klick": ".rh-sender .rh-aktionen > button:last-child"
         }
       ],
       "speicher": {
@@ -409,8 +451,8 @@
       }
     },
     {
-      "name": "einstellungen-radio-filter-sehr-gross",
-      "pfad": "/einstellungen/radio/filter",
+      "name": "einstellungen-radio-regeln-sehr-gross",
+      "pfad": "/einstellungen/radio/regeln",
       "nur": [
         1280,
         1920
@@ -420,8 +462,41 @@
       }
     },
     {
-      "name": "einstellungen-radio-sender-sehr-gross",
-      "pfad": "/einstellungen/radio/sender",
+      "name": "einstellungen-radio-ausgeblendet-sehr-gross",
+      "pfad": "/einstellungen/radio/ausgeblendet",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-laender-sehr-gross",
+      "pfad": "/einstellungen/radio/laender",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-werbung-sehr-gross",
+      "pfad": "/einstellungen/radio/werbung",
+      "nur": [
+        1280,
+        1920
+      ],
+      "speicher": {
+        "radiohub_schrift": "sehr-gross"
+      }
+    },
+    {
+      "name": "einstellungen-radio-abgleich-sehr-gross",
+      "pfad": "/einstellungen/radio/abgleich",
       "nur": [
         1280,
         1920
@@ -487,7 +562,7 @@
     },
     {
       "name": "telefon-radio-sehr-gross",
-      "pfad": "/radio",
+      "pfad": "/radio?land=DE",
       "nur": [
         375,
         768
@@ -495,6 +570,9 @@
       "wechsel": [
         {
           "klick": "[aria-label='Einstellungen']"
+        },
+        {
+          "klick": ".t-suche .knopf"
         }
       ],
       "speicher": {

@@ -1,7 +1,8 @@
 # RadioHub: Architektur
 
 Stand 17.11.2026 (RAD-5, Etappe 1; RAD-6, Teile 2b und 2c: Backend und Schale der Oberfläche auf dem Appkern; RAD-7,
-Teil 3a: Backend der Filterung mit Senderdaten-Baustein und Senderquelle).
+Teil 3a: Backend der Filterung mit Senderdaten-Baustein und Senderquelle; Teil 3b: Oberfläche der Filterung auf der
+Schnittstelle Senderquelle).
 Dieses Dokument beschreibt Aufbau, Schichten und harte Regeln von RadioHub. Die Regeln stehen maschinenlesbar in
 `architektur/regeln.toml`; der Git-Haken und das Ausrollen setzen sie durch. Entscheidungen und Etappen der
 Überarbeitung stehen in `docs/umbau/PLAN.md`, der Befund davor in `docs/umbau/BEFUND.md`.
@@ -94,10 +95,28 @@ logik           lib/**        Zustand, Wiedergabe (playerEngine), Backend (api.j
                               Router, Übersetzungen, Zeitpläne, Darstellung, Erkennung neuer Fassungen
 ```
 
+Senderquelle in der Oberfläche (RAD-7, Teil 3b, Entscheidung 28): die Radio-Ansichten am Rechner
+(`components/radio/`), am Telefon (`components/telefon/TelefonRadio.svelte`) und in den Einstellungen
+(`components/setup/SetupRadio.svelte` mit `components/radio/einstellungen/`) kennen nur die Schnittstelle.
+
+```
+lib/radio/   quelle.ts          Schnittstelle Senderquelle (Liste, Facetten, Varianten, Favoriten, Bewertungen,
+                                Kategorien, Regeln, Ausgeblendete, Sperren, Freigaben, Länder, Abgleich) und Fähigkeiten
+             backend.ts         Umsetzung gegen /api/radio und die bisherigen Wege (Favoriten, Bewertungen, eigene Adresse)
+             index.ts           Verdrahtung der vollen App; die Webversion (RAD-4) setzt hier eine statische Umsetzung ein
+             schnellfilter.ts   Schnellfilter als eine Wahrheit, Form in der Adresse, Abfrage, Chips (reine Funktionen)
+             filterzustand      Zustand der Schnellfilter, abgeglichen mit der Adresse (Ort austauschbar)
+             senderliste        Liste seitenweise über den Seitenzeiger; bedienung: Abspielen, Favorit, Auge mit Rückgängig,
+                                Liste für Vor und Zurück; regelablauf: Vorschau, Anlegen, Rückgängig
+             werbeerkennung.ts  nur volle App: Stand, Prüfung als Strom über fetch, Entscheidungen
+             anzeige.ts, suchverlauf.ts, netz.ts, typen.ts
+```
+
 Gestaltung in Schichten (Entscheidung 24): die Marken, Schale, Instrumente und Vorlagen des Appkerns
 (`appkern-oberflaeche/stil.css`, `instrumente.css`, `vorlagen-alle-breiten.css`: jede Vorlage auch am Telefon), darauf
 die Marken des Radios (`stil/radio-marken.css`, je Vorlage `stil/vorlagen/<name>.css`, `grund.css` für jede Vorlage ohne
-eigene), Bausteine (`stil/bausteine.css`) und Anordnung (`stil/rechner.css`). Ein neues Thema braucht eine Marken-Datei
+eigene), Bausteine (`stil/bausteine.css`, `stil/radio.css`, `stil/einstellungen.css`, `stil/telefon.css`, aus dem abgenommenen
+Entwurf `mockups/radio-filter`) und Anordnung (`stil/rechner.css`). Ein neues Thema braucht eine Marken-Datei
 unter `stil/vorlagen/`. Die Darstellung (Vorlage, Thema Hell/Dunkel/System, Schriftstufe Normal/Groß/Sehr groß) gilt je
 Gerät und wird vor dem Einhängen angewendet (`lib/darstellung-vorab.ts`, als Skript in den Kopf der Startseite gesetzt).
 

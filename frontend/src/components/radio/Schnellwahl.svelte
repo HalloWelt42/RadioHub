@@ -37,7 +37,7 @@
     <div class="rh-schnellwahl-taster">
       <ak-taster bind:this={favoriten} art="flach" beschriftung={t("radio.nurFavoriten")} farbe="gelb" hilfe={t("radio.nurFavoritenHilfe")}
                  an={filter.nurFavoriten} oninput={() => onaendern((f) => ({ ...f, nurFavoriten: !!favoriten?.an }))}></ak-taster>
-      <ak-taster bind:this={erreichbar} art="flach" beschriftung={t("radio.nurErreichbare")} farbe="gruen" hilfe={t("radio.nurErreichbareHilfe")}
+      <ak-taster bind:this={erreichbar} art="flach" beschriftung={t("radio.erreichbare")} farbe="gruen" hilfe={t("radio.nurErreichbareHilfe")}
                  an={filter.nurErreichbar} oninput={() => onaendern((f) => ({ ...f, nurErreichbar: !!erreichbar?.an }))}></ak-taster>
     </div>
     {#key stimmenRaster}

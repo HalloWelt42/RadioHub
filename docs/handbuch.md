@@ -34,6 +34,16 @@ der Container erreichbar. Angemeldet wird mit dem Konto der [[Kellerwolke]], dem
 koppelt man einmal mit einem Code aus der Kellerwolke. Architektur und harte Regeln stehen in `docs/ARCHITEKTUR.md`,
 der Plan der Überarbeitung in `docs/umbau/PLAN.md`.
 
+Radio bedienen: am Rechner stehen links die Schnellfilter (oben fest das Gerät mit Nur Favoriten, Erreichbare, Mindeststimmen und
+Mindestbitrate, darunter Länder, Genres, Qualität, Codec, eigene Bewertung und Kategorien mit Zahlen); unter 1100 Pixeln
+fährt die Leiste über den Knopf Filter ein. Alle Schnellfilter, Suche und Sortierung stehen in der Adresse
+(`/radio?land=DE&genre=Rock&sort=name`, ein aufgeklappter Sender als `/radio/<Kennung>?...`), Neuladen und Lesezeichen
+behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Das Auge blendet einen Sender als Einzelsperre aus
+und bietet Rückgängig, nichts anderes startet. Am Telefon dieselben Filter als Blatt von unten. Dauerhafte Ausschlüsse
+nur unter Einstellungen > Radio: Ausschlussregeln (erst Vorschau, dann anlegen, danach Rückgängig; Entfernen nennt
+vorher die Folgen), Ausgeblendete Sender (Grund je Sender, Freigeben), Länder der Seitenleiste (blendet nichts aus),
+Werbeerkennung, Senderverzeichnis (letzter Abgleich, Uhrzeit, Jetzt abgleichen) und Kategorien.
+
 ## Was sie braucht
 
 - Den Pi ({{rechner}}) nach [[Grundlage Pi]] mit Docker und dem gemeinsamen Netz `haus`; RadioHub läuft dort mit
@@ -163,11 +173,12 @@ Stufe 1. Prüfen: Favoriten und Abos sind da, `/health` meldet die Datenbank ges
   aus dem Senderverzeichnis.
 - **Ein Sender fehlt in der Liste:** `GET /api/radio/sender/<Kennung>/sichtbarkeit` nennt die Regeln, die ihn
   ausblenden (oder dass er verschwunden ist); in den Einstellungen des Radios unter "Ausgeblendete Sender" freigeben oder
-  die Regel ausschalten. Sender, die das Verzeichnis zuletzt nicht erreichte, zeigt die Liste nur ohne den Schnellfilter
-  "nur erreichbare".
+  die Regel ausschalten. Sender, die das Verzeichnis zuletzt nicht erreichte, zeigt die Liste nur, wenn der Taster
+  "Erreichbare" in den Schnellfiltern aus ist (Chip "Auch nicht erreichbare").
 - **Der Abgleich endet mit Fehler:** Die Liste der Aufträge nennt den Grund. "Kein Server erreichbar": Netz oder
   Einstellung "Senderverzeichnis" prüfen. "lieferte nur n von m Sendern": das Verzeichnis antwortete unvollständig; es
-  wurde nichts als verschwunden markiert, der nächste Abgleich holt es nach (oder `POST /api/radio/abgleich`).
+  wurde nichts als verschwunden markiert, der nächste Abgleich holt es nach (oder Einstellungen > Radio >
+  Senderverzeichnis, "Jetzt abgleichen").
 - **Die Datenbank soll ganz geprüft werden:** `/health` fragt nur, ob sie antwortet; die volle Prüfung über die ganze
   Datei ist `GET /api/datenbank/pruefung` (dauert bei der großen Datenbank eine Weile).
 - **Ortssuche findet nichts:** OSMLocal läuft nicht oder hängt nicht im Netz `haus`; der Standort des Telefons geht

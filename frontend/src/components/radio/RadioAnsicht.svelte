@@ -41,6 +41,7 @@
     const abfrage = zuAbfrage(filterzustand.filter);
     untrack(() => {
       fokus = -1;
+      gesucht = null;
       void liste.laden(abfrage);
     });
   });
@@ -61,7 +62,28 @@
       const uuid = seg[0] && UUID.test(seg[0]) ? seg[0] : null;
       if (uuid !== filterzustand.offen) filterzustand.offen = uuid;
       filterzustand.schreiben();
-      if (uuid) void bedienung.sicherstellen(uuid).then((da) => { if (da) void rollenZu(uuid); });
+    });
+  });
+
+  // Aufgeklappter Sender aus der Adresse (Direktlink, Zurück, Sprung von der Spielerleiste): nach jedem Laden in der
+  // Liste (sonst vorn eingefügt) und einmal hingerollt; ein Klick auf Details in der Liste rollt nicht
+  let gesucht: string | null = null;
+  let gerollt: string | null = null;
+  let vonHier: string | null = null;
+  $effect(() => {
+    const offen = filterzustand.offen;
+    const bereit = liste.geladen && !liste.laedt;
+    const da = liste.eintraege.some((e) => e.uuid === offen);
+    untrack(() => {
+      if (!offen) { gesucht = gerollt = null; return; }
+      if (!bereit) return;
+      if (!da) {
+        if (gesucht !== offen) { gesucht = offen; void bedienung.sicherstellen(offen); }
+        return;
+      }
+      if (gerollt === offen) return;
+      gerollt = offen;
+      if (vonHier !== offen) void rollenZu(offen);
     });
   });
 
@@ -83,13 +105,13 @@
     untrack(() => bedienung.nachbarnVorbereiten(uuid));
   });
 
-  // Sprung von der Spielerleiste zur Quelle: die Adresse /radio/<uuid> klappt auf, hier nur hinrollen
+  // Sprung von der Spielerleiste zur Quelle: die Adresse /radio/<uuid> klappt auf (oben); war er schon offen, hinrollen
   let letzterSprung = 0;
   $effect(() => {
     const anfrage = appState.sourceJumpRequest as { type: string; id: string; ts: number } | null;
     if (!anfrage || anfrage.type !== "radio" || anfrage.ts <= letzterSprung) return;
     letzterSprung = anfrage.ts;
-    untrack(() => { if (anfrage.id) void bedienung.sicherstellen(anfrage.id).then((da) => { if (da) void rollenZu(anfrage.id); }); });
+    untrack(() => { if (anfrage.id && anfrage.id === filterzustand.offen && gerollt === anfrage.id) void rollenZu(anfrage.id); });
   });
 
   async function rollenZu(uuid: string, sanft = true) {
@@ -117,7 +139,8 @@
 
   function details(e: SenderEintrag) {
     sfx.click();
-    filterzustand.oeffnen(filterzustand.offen === e.uuid ? null : e.uuid);
+    vonHier = filterzustand.offen === e.uuid ? null : e.uuid;
+    filterzustand.oeffnen(vonHier);
   }
 
   function varianten(e: SenderEintrag) {

@@ -12,6 +12,7 @@ export default {
   nurFavoriten: 'Nur Favoriten',
   nurFavoritenHilfe: 'Nur Favoriten zeigen, zusammen mit den anderen Filtern',
   nurErreichbare: 'Nur erreichbare',
+  erreichbare: 'Erreichbare',
   nurErreichbareHilfe: 'Ohne Sender, die die letzte Prüfung des Senderverzeichnisses nicht bestanden haben; Favoriten bleiben',
   auchNichtErreichbare: 'Auch nicht erreichbare',
   stimmen: 'Stimmen',
