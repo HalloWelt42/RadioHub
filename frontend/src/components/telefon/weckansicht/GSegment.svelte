@@ -37,12 +37,12 @@
     </svg>
   </div>
   {#if b.lage === "klingelt"}
-    <div class="wa-unten"><Punktfeld spalten={breite(lauf) + 4} zeilen={9} modus={b.modus} glanz={b.modus !== "hell"} ebenen={[{ text: lauf, x: 2, y: 1, farbe: "--akzent" }]} /></div>
+    <div class="wa-unten"><Punktfeld spalten={breite(lauf) + 4} zeilen={9} modus={b.modus} glanz={b.modus !== "hell"} ebenen={[{ text: lauf, x: 2, y: 1, farbe: "--wa-akzent" }]} /></div>
     <div class="wa-reihe"><Quellwahl {...p} />
       <button type="button" class="wa-gross-taste schlummern" style:flex="1" onclick={p.tun.schlummern}><i class="fa-solid fa-bed"></i>{p.t("schlummern")}</button>
       <button type="button" class="wa-gross-taste aus" style:flex="1" onclick={p.tun.aus}><i class="fa-solid fa-power-off"></i>{p.t("aus")}</button></div>
   {:else}
-    <div class="wa-unten"><Punktfeld spalten={breite(lauf) + 4} zeilen={9} modus={b.modus} glanz={b.modus !== "hell"} ebenen={[{ text: lauf, x: 2, y: 1, farbe: b.lage === "schlummert" ? "--akzent" : "--an" }]} />
+    <div class="wa-unten"><Punktfeld spalten={breite(lauf) + 4} zeilen={9} modus={b.modus} glanz={b.modus !== "hell"} ebenen={[{ text: lauf, x: 2, y: 1, farbe: b.lage === "schlummert" ? "--wa-akzent" : "--wa-an" }]} />
       {#if b.lage === "schlummert"}<button type="button" class="wa-gross-taste aus" style:min-height="52px" onclick={p.tun.aus}><i class="fa-solid fa-power-off"></i>{p.t("weckerAus")}</button>
       {:else}<Ruhetasten {...p} />{/if}</div>
   {/if}

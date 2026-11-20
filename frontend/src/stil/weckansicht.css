@@ -1,7 +1,7 @@
 /* Weckansicht am Telefon quer (RAD-15): Farben und Bausteine aller Gestaltungen aus dem abgenommenen Katalog
    (mockups/weckansicht/katalog.css), jede Regel unter der Wurzel .wa. An der Wurzel stehen die Gestaltung (g-...) und der
    Modus (hell, dunkel, nacht); die Bühne darin hat 390 Bezugspixel Höhe und wird auf den Bildschirm skaliert. */
-.wa { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; display: flex; background: var(--grund); color: var(--text);
+.wa { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; display: flex; background: var(--wa-grund); color: var(--wa-text);
   font-family: "Chakra Petch", var(--hifi-font-body), system-ui, sans-serif; touch-action: none; -webkit-user-select: none; user-select: none;
   padding: max(env(safe-area-inset-top, 0px), 12px) max(env(safe-area-inset-right, 0px), 20px) max(env(safe-area-inset-bottom, 0px), 10px) max(env(safe-area-inset-left, 0px), 20px); }
 /* Bühne: 364 Bezugspixel hoch (Inhalt des Entwurfs ohne Rand), so breit wie der Platz in Bezugspixeln, auf die Höhe skaliert */
@@ -9,41 +9,41 @@
 .wa .wa-buehne { position: absolute; top: 0; left: 0; height: 364px; display: flex; transform-origin: 0 0; }
 /* Punkte zum Blättern: wo man in der Folge der Gestaltungen steht */
 .wa .wa-punkte { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 2; pointer-events: none; }
-.wa .wa-punkte span { width: 6px; height: 6px; border-radius: 50%; background: var(--linie); }
-.wa .wa-punkte span.an { background: var(--text-2); }
+.wa .wa-punkte span { width: 6px; height: 6px; border-radius: 50%; background: var(--wa-linie); }
+.wa .wa-punkte span.an { background: var(--wa-text-2); }
 .wa .uhr-box.zucken { animation: wa-zucken .3s ease-in-out; }
 @keyframes wa-zucken { 0%, 100% { translate: 0; } 30% { translate: -6px 0; } 70% { translate: 6px 0; } }
 .wa canvas.matrix { width: 100%; height: 100%; display: block; }
 .wa button { font-family: inherit; cursor: pointer; }
-.wa .wa-quelle { display: inline-flex; align-self: stretch; min-height: 70px; border-radius: 16px; overflow: hidden; outline: 2px solid var(--linie); outline-offset: -2px; }
-.wa .wa-quelle button { flex: 1; justify-content: center; border: 0; border-radius: 0; background: transparent; color: var(--text); font-size: 17px; font-weight: 700; padding: 0 18px; display: flex; align-items: center; gap: 8px; }
-.wa .wa-quelle button + button { border-left: 0; background-image: linear-gradient(var(--linie), var(--linie)); background-size: 2px 100%; background-repeat: no-repeat; }
+.wa .wa-quelle { display: inline-flex; align-self: stretch; min-height: 70px; border-radius: 16px; overflow: hidden; outline: 2px solid var(--wa-linie); outline-offset: -2px; }
+.wa .wa-quelle button { flex: 1; justify-content: center; border: 0; border-radius: 0; background: transparent; color: var(--wa-text); font-size: 17px; font-weight: 700; padding: 0 18px; display: flex; align-items: center; gap: 8px; }
+.wa .wa-quelle button + button { border-left: 0; background-image: linear-gradient(var(--wa-linie), var(--wa-linie)); background-size: 2px 100%; background-repeat: no-repeat; }
 .wa .wa-quelle button.an + button,
 .wa .wa-quelle button + button.an { background-image: none; }
-.wa .wa-quelle button.an { background: var(--text); color: var(--grund-fest, var(--grund)); }
+.wa .wa-quelle button.an { background: var(--wa-text); color: var(--wa-grund-fest, var(--wa-grund)); }
 .wa .wa-knopfspalte .wa-quelle { width: 100%; }
 .wa .wa-astro .wa-quelle { min-height: 64px; }
-:where(.wa).g-uhr { --grund: #f2f4f7; --text: #16202b; --text-2: #4d5a68; --linie: #c9d1da; --akzent: #a8520a; }
-.wa.g-uhr.dunkel { --grund: #0e141b; --text: #e9eef4; --text-2: #8b98a8; --linie: #222c37; --akzent: #f08a24; }
-.wa.nacht { --grund: #000; --text: #ff3a28; --text-2: #ee3424; --linie: #3a0607; --akzent: #ff3a28; }
+:where(.wa).g-uhr { --wa-grund: #f2f4f7; --wa-text: #16202b; --wa-text-2: #4d5a68; --wa-linie: #c9d1da; --wa-akzent: #a8520a; }
+.wa.g-uhr.dunkel { --wa-grund: #0e141b; --wa-text: #e9eef4; --wa-text-2: #8b98a8; --wa-linie: #222c37; --wa-akzent: #f08a24; }
+.wa.nacht { --wa-grund: #000; --wa-text: #ff3a28; --wa-text-2: #ee3424; --wa-linie: #3a0607; --wa-akzent: #ff3a28; }
 .wa .wa-u-flaeche { flex: 1; display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
 .wa .wa-u-uhr { font-weight: 700; font-size: 200px; line-height: 1; text-align: center; align-self: center; transform: scaleY(1.35); letter-spacing: -3px; font-variant-numeric: tabular-nums; }
-.wa .wa-u-leiste { display: flex; justify-content: space-between; align-items: center; gap: 14px; font-size: 18px; color: var(--text-2); }
-.wa .wa-u-leiste .wa-w { color: var(--akzent); font-weight: 700; font-size: 22px; }
+.wa .wa-u-leiste { display: flex; justify-content: space-between; align-items: center; gap: 14px; font-size: 18px; color: var(--wa-text-2); }
+.wa .wa-u-leiste .wa-w { color: var(--wa-akzent); font-weight: 700; font-size: 22px; }
 .wa .wa-u-klingeln { display: grid; grid-template-columns: auto 1fr 1fr; gap: 12px; align-items: stretch; }
-.wa .wa-rund { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--linie); background: transparent; color: var(--text); font-size: 21px; display: grid; place-items: center; }
-.wa .wa-rund.an { background: var(--akzent); border-color: var(--akzent); color: var(--grund-fest, var(--grund)); }
+.wa .wa-rund { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--wa-linie); background: transparent; color: var(--wa-text); font-size: 21px; display: grid; place-items: center; }
+.wa .wa-rund.an { background: var(--wa-akzent); border-color: var(--wa-akzent); color: var(--wa-grund-fest, var(--wa-grund)); }
 .wa .wa-reihe { display: flex; gap: 10px; align-items: center; }
 .wa .wa-gross-taste { white-space: nowrap; min-height: 70px; border-radius: 16px; border: 0; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 18px; }
-.wa .wa-gross-taste.schlummern { background: var(--akzent); color: var(--grund-fest, var(--grund)); }
-.wa .wa-gross-taste.aus { background: transparent; color: var(--text); box-shadow: inset 0 0 0 2px var(--text); }
-:where(.wa).g-matrix { --grund: #cdd6c7; --an: #0a2a12; --aus: #bfc8b9; --akzent: #8a3c00; --text: #123f1e; --text-2: #3d5a44; --linie: #8a9886; }
-.wa.g-matrix.dunkel { --grund: #000; --an: #5dff8b; --aus: #0e1b13; --akzent: #ffb21f; --text: #5dff8b; --text-2: #2f8a4a; --linie: #1d3a26; }
-.wa.g-matrix.nacht { --an: #ff3a28; --aus: #170304; --akzent: #ff3a28; }
-:where(.wa).g-hifi { --grund: #cfd4da; --an: #5dff8b; --aus: #0e1b13; --akzent: #ffb21f; --text: #1c2228; --text-2: #4c5660; --linie: #8a939c; --gehaeuse: linear-gradient(180deg, #e9ecef, #c3c9cf); --gehaeuse-kante: #f7f9fa; --taste: linear-gradient(180deg, #fbfcfd, #d3d8dd 60%, #c2c8ce); --taste-text: #2a3138; }
-.wa.g-hifi.dunkel { --grund: #0b0d10; --text: #dfe5ea; --text-2: #8b98a8; --linie: #2b3138; --gehaeuse: linear-gradient(180deg, #23272c, #15181b); --gehaeuse-kante: #3a4048; --taste: linear-gradient(180deg, #4a5058, #2a2f35 55%, #23272c); --taste-text: #dfe5ea; }
-.wa.g-hifi.nacht { --an: #ff3a28; --aus: #170304; --akzent: #ff3a28; --gehaeuse: #050101; --gehaeuse-kante: #200304; --taste: #120203; --taste-text: #ff3a28; }
-.wa .wa-geraet { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 14px; background: var(--gehaeuse); border-radius: 14px; padding: 12px; box-shadow: inset 0 0 0 1px var(--gehaeuse-kante); }
+.wa .wa-gross-taste.schlummern { background: var(--wa-akzent); color: var(--wa-grund-fest, var(--wa-grund)); }
+.wa .wa-gross-taste.aus { background: transparent; color: var(--wa-text); box-shadow: inset 0 0 0 2px var(--wa-text); }
+:where(.wa).g-matrix { --wa-grund: #cdd6c7; --wa-an: #0a2a12; --wa-aus: #bfc8b9; --wa-akzent: #8a3c00; --wa-text: #123f1e; --wa-text-2: #3d5a44; --wa-linie: #8a9886; }
+.wa.g-matrix.dunkel { --wa-grund: #000; --wa-an: #5dff8b; --wa-aus: #0e1b13; --wa-akzent: #ffb21f; --wa-text: #5dff8b; --wa-text-2: #2f8a4a; --wa-linie: #1d3a26; }
+.wa.g-matrix.nacht { --wa-an: #ff3a28; --wa-aus: #170304; --wa-akzent: #ff3a28; }
+:where(.wa).g-hifi { --wa-grund: #cfd4da; --wa-an: #5dff8b; --wa-aus: #0e1b13; --wa-akzent: #ffb21f; --wa-text: #1c2228; --wa-text-2: #4c5660; --wa-linie: #8a939c; --wa-gehaeuse: linear-gradient(180deg, #e9ecef, #c3c9cf); --wa-gehaeuse-kante: #f7f9fa; --wa-taste: linear-gradient(180deg, #fbfcfd, #d3d8dd 60%, #c2c8ce); --wa-taste-text: #2a3138; }
+.wa.g-hifi.dunkel { --wa-grund: #0b0d10; --wa-text: #dfe5ea; --wa-text-2: #8b98a8; --wa-linie: #2b3138; --wa-gehaeuse: linear-gradient(180deg, #23272c, #15181b); --wa-gehaeuse-kante: #3a4048; --wa-taste: linear-gradient(180deg, #4a5058, #2a2f35 55%, #23272c); --wa-taste-text: #dfe5ea; }
+.wa.g-hifi.nacht { --wa-an: #ff3a28; --wa-aus: #170304; --wa-akzent: #ff3a28; --wa-gehaeuse: #050101; --wa-gehaeuse-kante: #200304; --wa-taste: #120203; --wa-taste-text: #ff3a28; }
+.wa .wa-geraet { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 14px; background: var(--wa-gehaeuse); border-radius: 14px; padding: 12px; box-shadow: inset 0 0 0 1px var(--wa-gehaeuse-kante); }
 .wa .wa-glas { border-radius: 10px; background: #020403; box-shadow: inset 0 0 8px #000, 0 0 0 1px #000; padding: 8px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .wa.nacht .wa-glas { background: #000; box-shadow: 0 0 0 1px #200304; }
 .wa .wa-glas.gross { flex: 1; }
@@ -53,52 +53,52 @@
 .wa .wa-spalte .wa-glas { padding: 6px 8px; }
 .wa .wa-spalte .wa-glas canvas { height: 22px; }
 .wa .wa-tasten { display: flex; gap: 8px; margin-top: auto; }
-.wa .wa-taste { flex: 1; height: 62px; border: 0; border-radius: 8px; position: relative; color: var(--taste-text); font-size: 20px; background: var(--taste); box-shadow: 0 0 0 1px rgba(0, 0, 0, .45); display: grid; place-items: center; align-content: center; }
+.wa .wa-taste { flex: 1; height: 62px; border: 0; border-radius: 8px; position: relative; color: var(--wa-taste-text); font-size: 20px; background: var(--wa-taste); box-shadow: 0 0 0 1px rgba(0, 0, 0, .45); display: grid; place-items: center; align-content: center; }
 .wa .wa-taste::before { content: ""; position: absolute; top: 7px; left: 50%; width: 22px; height: 4px; margin-left: -11px; border-radius: 2px; background: rgba(0, 0, 0, .35); }
-.wa .wa-taste.wa-licht::before { background: var(--l, #3d8bff); box-shadow: 0 0 8px var(--l, #3d8bff); }
+.wa .wa-taste.wa-licht::before { background: var(--wa-l, #3d8bff); box-shadow: 0 0 8px var(--wa-l, #3d8bff); }
 .wa .wa-taste span { font-size: 13px; display: block; margin-top: 4px; font-weight: 700; letter-spacing: .04em; }
 .wa .wa-taste.gross { height: auto; flex: 1; font-size: 26px; }
 .wa .wa-taste.wa-klein { height: 52px; font-size: 16px; }
-:where(.wa).g-segment { --grund: #eef1f4; --an: #0f2b45; --aus: #dbe1e7; --akzent: #a8520a; --text: #0f2b45; --text-2: #4d5a68; --linie: #c2ccd6; }
-.wa.g-segment.dunkel { --grund: #000; --an: #5dff8b; --aus: #0e1b13; --akzent: #ffb21f; --text: #e9eef4; --text-2: #8b98a8; --linie: #222c37; }
-.wa.g-segment.nacht { --an: #ff3a28; --aus: #170304; }
+:where(.wa).g-segment { --wa-grund: #eef1f4; --wa-an: #0f2b45; --wa-aus: #dbe1e7; --wa-akzent: #a8520a; --wa-text: #0f2b45; --wa-text-2: #4d5a68; --wa-linie: #c2ccd6; }
+.wa.g-segment.dunkel { --wa-grund: #000; --wa-an: #5dff8b; --wa-aus: #0e1b13; --wa-akzent: #ffb21f; --wa-text: #e9eef4; --wa-text-2: #8b98a8; --wa-linie: #222c37; }
+.wa.g-segment.nacht { --wa-an: #ff3a28; --wa-aus: #170304; }
 .wa .wa-segment { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .wa .wa-segment .wa-uhrfeld { flex: 1; min-height: 0; display: grid; place-items: center; }
 .wa .wa-segment svg { height: 100%; max-height: 250px; width: auto; }
-.wa .wa-seg { fill: var(--an); }
+.wa .wa-seg { fill: var(--wa-an); }
 .wa.dunkel .wa-seg,
-.wa.nacht .wa-seg { filter: drop-shadow(0 0 6px var(--an)); }
-.wa .wa-geist { fill: var(--aus); }
+.wa.nacht .wa-seg { filter: drop-shadow(0 0 6px var(--wa-an)); }
+.wa .wa-geist { fill: var(--wa-aus); }
 .wa .wa-segment .wa-unten { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; flex: none; }
 .wa .wa-segment .wa-unten canvas { height: 30px; }
-:where(.wa).g-ruhig { --grund: #f6f3ee; --text: #1d2228; --text-2: #565b62; --linie: #d6d0c6; --akzent: #a8520a; --band-tag: #f0b44a; --band-nacht: #e3ddd2; }
-.wa.g-ruhig.dunkel { --grund: #0e141b; --text: #e9eef4; --text-2: #8b98a8; --linie: #222c37; --akzent: #f08a24; --band-tag: #f0b44a; --band-nacht: #1b2533; }
-.wa.g-ruhig.nacht { --band-tag: #4a0607; --band-nacht: #160203; }
+:where(.wa).g-ruhig { --wa-grund: #f6f3ee; --wa-text: #1d2228; --wa-text-2: #565b62; --wa-linie: #d6d0c6; --wa-akzent: #a8520a; --wa-band-tag: #f0b44a; --wa-band-nacht: #e3ddd2; }
+.wa.g-ruhig.dunkel { --wa-grund: #0e141b; --wa-text: #e9eef4; --wa-text-2: #8b98a8; --wa-linie: #222c37; --wa-akzent: #f08a24; --wa-band-tag: #f0b44a; --wa-band-nacht: #1b2533; }
+.wa.g-ruhig.nacht { --wa-band-tag: #4a0607; --wa-band-nacht: #160203; }
 .wa .wa-ruhig { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 26px; align-items: center; }
 .wa .wa-ziffern { font-weight: 700; font-size: 168px; line-height: 1; letter-spacing: -2px; font-variant-numeric: tabular-nums; text-align: center; }
 .wa .wa-info { display: flex; flex-direction: column; gap: 14px; font-size: 18px; min-width: 0; }
 .wa .wa-info div { display: flex; gap: 10px; align-items: center; min-width: 0; }
-.wa .wa-info > div > i { width: 22px; color: var(--text-2); }
+.wa .wa-info > div > i { width: 22px; color: var(--wa-text-2); }
 .wa .wa-info .wa-w,
-.wa .wa-w { color: var(--akzent); font-weight: 700; }
-.wa .wa-info > .wa-w > i { color: var(--akzent); }
-.wa .wa-info .wa-leise { color: var(--text-2); font-size: 16px; }
+.wa .wa-w { color: var(--wa-akzent); font-weight: 700; }
+.wa .wa-info > .wa-w > i { color: var(--wa-akzent); }
+.wa .wa-info .wa-leise { color: var(--wa-text-2); font-size: 16px; }
 .wa .wa-links { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.wa .wa-band { height: 10px; border-radius: 5px; position: relative; background: linear-gradient(90deg, var(--band-nacht) 0 var(--von), var(--band-tag) var(--von) var(--bis), var(--band-nacht) var(--bis)); }
-.wa .wa-band::after { content: ""; position: absolute; left: var(--jetzt); top: -5px; width: 3px; height: 20px; margin-left: -1.5px; background: var(--text); border-radius: 2px; }
+.wa .wa-band { height: 10px; border-radius: 5px; position: relative; background: linear-gradient(90deg, var(--wa-band-nacht) 0 var(--von), var(--wa-band-tag) var(--von) var(--bis), var(--wa-band-nacht) var(--bis)); }
+.wa .wa-band::after { content: ""; position: absolute; left: var(--jetzt); top: -5px; width: 3px; height: 20px; margin-left: -1.5px; background: var(--wa-text); border-radius: 2px; }
 .wa .wa-knopfspalte { display: flex; flex-direction: column; gap: 10px; }
-:where(.wa).g-sterne { --grund-fest: #fbe9d6; --grund: linear-gradient(180deg, #8fb6ec 0%, #cfe0f6 55%, #fbe9d6 100%); --text: #16224a; --text-2: #2c3966; --akzent: #7a3300; --linie: #6f86b8; }
-.wa.g-sterne.dunkel { --grund-fest: #0a0a22; --grund: radial-gradient(120% 140% at 70% 10%, #1c1640 0%, #0a0a22 45%, #03030c 100%); --text: #e8ecff; --text-2: #a9b2e8; --akzent: #ffd98a; --linie: #5b62b5; }
-.wa.g-sterne.nacht { --grund-fest: #000; --grund: radial-gradient(120% 140% at 70% 10%, #1a0305 0%, #070102 50%, #000 100%); --text: #ff3a28; --text-2: #ee3424; --akzent: #ff3a28; --linie: #3a0607; }
-:where(.wa).g-sterne { background: var(--grund); }
+:where(.wa).g-sterne { --wa-grund-fest: #fbe9d6; --wa-grund: linear-gradient(180deg, #8fb6ec 0%, #cfe0f6 55%, #fbe9d6 100%); --wa-text: #16224a; --wa-text-2: #2c3966; --wa-akzent: #7a3300; --wa-linie: #6f86b8; }
+.wa.g-sterne.dunkel { --wa-grund-fest: #0a0a22; --wa-grund: radial-gradient(120% 140% at 70% 10%, #1c1640 0%, #0a0a22 45%, #03030c 100%); --wa-text: #e8ecff; --wa-text-2: #a9b2e8; --wa-akzent: #ffd98a; --wa-linie: #5b62b5; }
+.wa.g-sterne.nacht { --wa-grund-fest: #000; --wa-grund: radial-gradient(120% 140% at 70% 10%, #1a0305 0%, #070102 50%, #000 100%); --wa-text: #ff3a28; --wa-text-2: #ee3424; --wa-akzent: #ff3a28; --wa-linie: #3a0607; }
+:where(.wa).g-sterne { background: var(--wa-grund); }
 .wa .wa-sterne { flex: 1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 190px; align-items: center; gap: 18px; }
 .wa .wa-sterne canvas.himmel { position: absolute; inset: -14px -20px -12px -47px; width: calc(100% + 67px); height: calc(100% + 26px); }
 .wa .wa-sterne > * { position: relative; }
 .wa .wa-sterne .wa-zeit { font-weight: 500; font-size: 148px; letter-spacing: 6px; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; }
 .wa.g-sterne.dunkel .wa-zeit { text-shadow: 0 0 24px rgba(150, 170, 255, .55), 0 0 60px rgba(120, 90, 255, .35); }
 .wa.g-sterne.nacht .wa-zeit { text-shadow: 0 0 18px rgba(200, 30, 20, .5); }
-.wa .wa-unter { display: flex; justify-content: center; gap: 22px; font-size: 17px; color: var(--text-2); margin-top: 6px; flex-wrap: wrap; }
-.wa .wa-mond { display: grid; justify-items: center; gap: 8px; font-size: 14px; color: var(--text-2); text-align: center; }
+.wa .wa-unter { display: flex; justify-content: center; gap: 22px; font-size: 17px; color: var(--wa-text-2); margin-top: 6px; flex-wrap: wrap; }
+.wa .wa-mond { display: grid; justify-items: center; gap: 8px; font-size: 14px; color: var(--wa-text-2); text-align: center; }
 .wa .wa-kugeln { display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .wa .wa-kugel { width: 104px; height: 104px; border-radius: 50%; border: 0; font-weight: 700; font-size: 16px; display: grid; place-items: center; align-content: center; gap: 4px; }
 .wa .wa-kugel i { font-size: 24px; }
@@ -108,63 +108,63 @@
 .wa.nacht .wa-kugel.still { background: #0a0101; color: #ff3a28; box-shadow: 0 0 0 2px #3a0607; }
 .wa .wa-sterne.klingelt::before { content: ""; position: absolute; inset: -14px -20px -12px -47px; background: linear-gradient(0deg, #ff8a2b 0%, #b8407a 24%, transparent 62%); opacity: .9; }
 .wa.g-sterne.nacht .wa-sterne.klingelt::before { background: linear-gradient(0deg, #6a0a04 0%, transparent 60%); }
-:where(.wa).g-astro { --grund-fest: #fbf3df; --grund: radial-gradient(90% 120% at 25% 50%, #fbf3df 0%, #efe2c2 70%, #e2d0a6 100%); --text: #4a3008; --text-2: #6a4c1c; --akzent: #8a4204; --linie: #b8995a; --tagbogen: #e3a33c; --punkt: #b8540a; }
-.wa.g-astro.dunkel { --grund-fest: #0c0a22; --grund: radial-gradient(90% 120% at 25% 50%, #1d1846 0%, #0c0a22 60%, #06050f 100%); --text: #e6cf93; --text-2: #a89668; --akzent: #ffdf8c; --linie: #e6cf93; --tagbogen: #f2b84a; --punkt: #ffdf8c; }
-.wa.g-astro.nacht { --grund-fest: #000; --grund: #000; --text: #ff3a28; --text-2: #ee3424; --akzent: #ff3a28; --linie: #ff3a28; --tagbogen: #3a0505; --punkt: #ff3a28; }
-:where(.wa).g-astro { background: var(--grund); }
+:where(.wa).g-astro { --wa-grund-fest: #fbf3df; --wa-grund: radial-gradient(90% 120% at 25% 50%, #fbf3df 0%, #efe2c2 70%, #e2d0a6 100%); --wa-text: #4a3008; --wa-text-2: #6a4c1c; --wa-akzent: #8a4204; --wa-linie: #b8995a; --wa-tagbogen: #e3a33c; --wa-punkt: #b8540a; }
+.wa.g-astro.dunkel { --wa-grund-fest: #0c0a22; --wa-grund: radial-gradient(90% 120% at 25% 50%, #1d1846 0%, #0c0a22 60%, #06050f 100%); --wa-text: #e6cf93; --wa-text-2: #a89668; --wa-akzent: #ffdf8c; --wa-linie: #e6cf93; --wa-tagbogen: #f2b84a; --wa-punkt: #ffdf8c; }
+.wa.g-astro.nacht { --wa-grund-fest: #000; --wa-grund: #000; --wa-text: #ff3a28; --wa-text-2: #ee3424; --wa-akzent: #ff3a28; --wa-linie: #ff3a28; --wa-tagbogen: #3a0505; --wa-punkt: #ff3a28; }
+:where(.wa).g-astro { background: var(--wa-grund); }
 .wa .wa-astro { flex: 1; display: grid; grid-template-columns: 362px minmax(0, 1fr); gap: 20px; align-items: center; }
-.wa .wa-astro svg { width: 362px; height: 362px; color: var(--text); }
+.wa .wa-astro svg { width: 362px; height: 362px; color: var(--wa-text); }
 .wa .wa-astro .wa-zahl { font-weight: 700; font-size: 70px; fill: currentColor; text-anchor: middle; font-variant-numeric: tabular-nums; }
 .wa .wa-astro .wa-klein { font-size: 13px; fill: currentColor; text-anchor: middle; opacity: .75; }
 .wa .wa-astro .wa-seite { display: flex; flex-direction: column; gap: 12px; font-size: 18px; min-width: 0; }
 .wa .wa-astro .wa-seite .wa-w { font-size: 26px; }
-.wa .wa-astro .wa-seite .wa-leise { color: var(--text-2); font-size: 15px; }
-.wa .wa-siegel { height: 64px; border-radius: 32px; border: 0; box-shadow: inset 0 0 0 2px var(--text); background: transparent; color: var(--text); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
-.wa .wa-siegel.voll { background: var(--text); color: var(--grund-fest); box-shadow: 0 0 26px color-mix(in srgb, var(--text) 50%, transparent); }
+.wa .wa-astro .wa-seite .wa-leise { color: var(--wa-text-2); font-size: 15px; }
+.wa .wa-siegel { height: 64px; border-radius: 32px; border: 0; box-shadow: inset 0 0 0 2px var(--wa-text); background: transparent; color: var(--wa-text); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.wa .wa-siegel.voll { background: var(--wa-text); color: var(--wa-grund-fest); box-shadow: 0 0 26px color-mix(in srgb, var(--wa-text) 50%, transparent); }
 .wa .wa-astro.klingelt .wa-puls { animation: wa-puls 1.2s ease-in-out infinite; transform-origin: 181px 181px; }
 @keyframes wa-puls { 50% { transform: scale(1.04); opacity: .55; } }
-:where(.wa).g-aurora { --grund: #f4f6fb; --text: #1b1f3a; --text-2: #4a5078; --akzent: #7a1fd1; --linie: rgba(27, 31, 58, .25); --pille: rgba(255, 255, 255, .55); --mischung: multiply; --uhrfarbe: rgba(27, 31, 58, .8); }
-.wa.g-aurora.dunkel { --grund: #050712; --text: #fff; --text-2: #e3e6ff; --akzent: #fff; --linie: rgba(255, 255, 255, .25); --pille: rgba(255, 255, 255, .12); --mischung: overlay; --uhrfarbe: rgba(255, 255, 255, .85); }
-.wa.g-aurora.nacht { --grund: #000; --text: #ff3a28; --text-2: #ee3424; --akzent: #ff3a28; --pille: rgba(80, 0, 0, .25); --mischung: normal; --uhrfarbe: #ff3a28; }
+:where(.wa).g-aurora { --wa-grund: #f4f6fb; --wa-text: #1b1f3a; --wa-text-2: #4a5078; --wa-akzent: #7a1fd1; --wa-linie: rgba(27, 31, 58, .25); --wa-pille: rgba(255, 255, 255, .55); --wa-mischung: multiply; --wa-uhrfarbe: rgba(27, 31, 58, .8); }
+.wa.g-aurora.dunkel { --wa-grund: #050712; --wa-text: #fff; --wa-text-2: #e3e6ff; --wa-akzent: #fff; --wa-linie: rgba(255, 255, 255, .25); --wa-pille: rgba(255, 255, 255, .12); --wa-mischung: overlay; --wa-uhrfarbe: rgba(255, 255, 255, .85); }
+.wa.g-aurora.nacht { --wa-grund: #000; --wa-text: #ff3a28; --wa-text-2: #ee3424; --wa-akzent: #ff3a28; --wa-pille: rgba(80, 0, 0, .25); --wa-mischung: normal; --wa-uhrfarbe: #ff3a28; }
 .wa .wa-aurora { flex: 1; position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .wa .wa-aurora .wa-licht { position: absolute; inset: -40% -20%; filter: blur(46px); opacity: .9; background: radial-gradient(35% 30% at 25% 40%, #19f5a1, transparent 70%), radial-gradient(30% 35% at 60% 30%, #7a3bff, transparent 70%), radial-gradient(35% 30% at 80% 65%, #ff3dac, transparent 70%), radial-gradient(40% 30% at 40% 80%, #00b7ff, transparent 70%); animation: wa-wogen 14s ease-in-out infinite alternate; }
 .wa.g-aurora:not(.dunkel):not(.nacht) .wa-licht { opacity: .55; }
 .wa.g-aurora.nacht .wa-licht { background: radial-gradient(40% 30% at 30% 50%, #5a0606, transparent 70%), radial-gradient(35% 30% at 75% 40%, #3a0303, transparent 70%); opacity: .8; }
 @keyframes wa-wogen { to { transform: translate(6%, -4%) rotate(8deg) scale(1.1); } }
 .wa .wa-aurora > :not(.wa-licht) { position: relative; }
-.wa .wa-aurora .wa-zeit { align-self: center; text-align: center; font-weight: 700; font-size: 196px; line-height: .9; letter-spacing: -4px; color: var(--uhrfarbe); mix-blend-mode: var(--mischung); font-variant-numeric: tabular-nums; }
+.wa .wa-aurora .wa-zeit { align-self: center; text-align: center; font-weight: 700; font-size: 196px; line-height: .9; letter-spacing: -4px; color: var(--wa-uhrfarbe); mix-blend-mode: var(--wa-mischung); font-variant-numeric: tabular-nums; }
 .wa .wa-aurora.klingelt .wa-licht { animation-duration: 3s; opacity: 1; }
 .wa .wa-aurora.klingelt .wa-zeit { font-size: 130px; }
 .wa .wa-pillen { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.wa .wa-pille { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 30px; font-size: 16px; color: var(--text); background: var(--pille); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px var(--linie); border: 0; }
+.wa .wa-pille { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 30px; font-size: 16px; color: var(--wa-text); background: var(--wa-pille); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px var(--wa-linie); border: 0; }
 .wa .wa-pille.gross { height: 64px; padding: 0 26px; font-size: 21px; font-weight: 700; }
-.wa .wa-pille.voll { background: var(--text); color: var(--grund); }
-:where(.wa).g-roehren { --grund: linear-gradient(180deg, #efe3cd, #d9c6a4); --text: #3a2410; --text-2: #6e5230; --akzent: #b8540a; --linie: #a88a5c; --sockel: linear-gradient(180deg, #8a6a3c, #5a4122); --sockel-text: #fbe9c8; --sockel-kante: #c9a46a; --sockel-gegen: #3a2410; }
-.wa.g-roehren.dunkel { --grund: linear-gradient(180deg, #17110c, #0b0806); --text: #ffb25a; --text-2: #b98a52; --akzent: #ffb25a; --linie: #4a3a2a; --sockel: linear-gradient(180deg, #d2a862, #a8803e); --sockel-text: #160c02; --sockel-kante: #e8c58a; --sockel-gegen: #ffd89a; }
-.wa.g-roehren.nacht { --grund: #000; --text: #ff3a28; --text-2: #ee3424; --akzent: #ff3a28; --sockel: #140202; --sockel-text: #ff3a28; --sockel-kante: #2a0404; --sockel-gegen: #000; }
-:where(.wa).g-roehren { background: var(--grund); }
+.wa .wa-pille.voll { background: var(--wa-text); color: var(--wa-grund); }
+:where(.wa).g-roehren { --wa-grund: linear-gradient(180deg, #efe3cd, #d9c6a4); --wa-text: #3a2410; --wa-text-2: #6e5230; --wa-akzent: #b8540a; --wa-linie: #a88a5c; --wa-sockel: linear-gradient(180deg, #8a6a3c, #5a4122); --wa-sockel-text: #fbe9c8; --wa-sockel-kante: #c9a46a; --wa-sockel-gegen: #3a2410; }
+.wa.g-roehren.dunkel { --wa-grund: linear-gradient(180deg, #17110c, #0b0806); --wa-text: #ffb25a; --wa-text-2: #b98a52; --wa-akzent: #ffb25a; --wa-linie: #4a3a2a; --wa-sockel: linear-gradient(180deg, #d2a862, #a8803e); --wa-sockel-text: #160c02; --wa-sockel-kante: #e8c58a; --wa-sockel-gegen: #ffd89a; }
+.wa.g-roehren.nacht { --wa-grund: #000; --wa-text: #ff3a28; --wa-text-2: #ee3424; --wa-akzent: #ff3a28; --wa-sockel: #140202; --wa-sockel-text: #ff3a28; --wa-sockel-kante: #2a0404; --wa-sockel-gegen: #000; }
+:where(.wa).g-roehren { background: var(--wa-grund); }
 .wa .wa-roehren { flex: 1; display: grid; grid-template-rows: minmax(0, 1fr) 70px; gap: 10px; min-width: 0; }
 .wa .wa-roehren .wa-reihe2 { display: flex; justify-content: center; align-items: stretch; gap: 6px; min-height: 0; }
 .wa .wa-roehre-svg { height: 100%; aspect-ratio: 128 / 204; display: grid; place-items: center; }
 .wa .wa-roehre-svg svg { height: 100%; width: auto; overflow: visible; }
 .wa .wa-glimm-feld { height: 100%; width: 26px; display: grid; place-items: center; }
 .wa .wa-glimm-feld svg { height: 74%; width: auto; overflow: visible; }
-.wa .wa-sockel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 0 14px; border-radius: 10px; background: var(--sockel); color: var(--sockel-text); box-shadow: inset 0 0 0 1px var(--sockel-kante); font-size: 17px; }
+.wa .wa-sockel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 0 14px; border-radius: 10px; background: var(--wa-sockel); color: var(--wa-sockel-text); box-shadow: inset 0 0 0 1px var(--wa-sockel-kante); font-size: 17px; }
 .wa .wa-hebel { height: 54px; min-width: 150px; border-radius: 10px; border: 0; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(180deg, #3a2a18, #1c140b); color: #ffb25a; box-shadow: inset 0 0 0 1px #6b4e2c; }
 .wa .wa-hebel.voll { background: linear-gradient(180deg, #ffb25a, #d27a1c); color: #2a1300; }
 .wa.nacht .wa-hebel { background: #0a0101; color: #ff3a28; box-shadow: inset 0 0 0 1px #3a0505; }
 .wa.nacht .wa-hebel.voll { background: #ff3a28; color: #000; }
-.wa .wa-sockel .wa-quelle { outline-color: var(--sockel-kante); min-height: 54px; }
-.wa .wa-sockel .wa-quelle button { color: var(--sockel-text); }
+.wa .wa-sockel .wa-quelle { outline-color: var(--wa-sockel-kante); min-height: 54px; }
+.wa .wa-sockel .wa-quelle button { color: var(--wa-sockel-text); }
 .wa .wa-sockel .wa-w,
-.wa .wa-sockel b { color: var(--sockel-text); }
-.wa .wa-sockel .wa-quelle button.an { background: var(--sockel-text); color: var(--sockel-gegen); }
+.wa .wa-sockel b { color: var(--wa-sockel-text); }
+.wa .wa-sockel .wa-quelle button.an { background: var(--wa-sockel-text); color: var(--wa-sockel-gegen); }
 
 /* Teile der App, die der Katalog nur als Bild zeigte */
 .wa .wa-matrixfeld { position: relative; flex: 1; min-width: 0; display: flex; }
 .wa .wa-matrixfeld canvas.matrix { flex: 1; }
 .wa .wa-feld { position: absolute; border: 0; padding: 0; background: transparent; border-radius: 8px; }
-.wa .wa-feld:focus-visible { outline: 2px solid var(--akzent); outline-offset: -2px; }
+.wa .wa-feld:focus-visible { outline: 2px solid var(--wa-akzent); outline-offset: -2px; }
 .wa .wa-mittig { display: flex; justify-content: center; margin-top: 14px; }
 .wa .wa-mond-dunkel { fill: #1a1838; }
 .wa .wa-mond-hell { fill: #f3ecd2; filter: drop-shadow(0 0 8px #f3ecd2); }
@@ -172,11 +172,11 @@
 .wa.g-sterne:not(.dunkel):not(.nacht) .wa-mond-hell { fill: #fffdf4; filter: drop-shadow(0 0 8px #fffdf4); }
 .wa.nacht .wa-mond-dunkel { fill: #140203; }
 .wa.nacht .wa-mond-hell { fill: #ee3424; filter: drop-shadow(0 0 6px #ee3424); }
-.wa .wa-astro .wa-tagbogen { fill: none; stroke: var(--tagbogen); stroke-width: 8; stroke-linecap: round; opacity: .85; }
-.wa .wa-astro .wa-weckpunkt { fill: var(--punkt); filter: drop-shadow(0 0 8px var(--punkt)); }
+.wa .wa-astro .wa-tagbogen { fill: none; stroke: var(--wa-tagbogen); stroke-width: 8; stroke-linecap: round; opacity: .85; }
+.wa .wa-astro .wa-weckpunkt { fill: var(--wa-punkt); filter: drop-shadow(0 0 8px var(--wa-punkt)); }
 .wa .wa-sockel-tasten { display: flex; gap: 10px; align-items: center; }
 .wa .wa-stapel { display: grid; gap: 10px; }
-.wa .wa-pille.an { background: var(--text); color: var(--grund); }
+.wa .wa-pille.an { background: var(--wa-text); color: var(--wa-grund); }
 .wa .wa-rund-pille { width: 52px; height: 42px; justify-content: center; padding: 0; }
 .wa .wa-hebel.an { background: linear-gradient(180deg, #ffb25a, #d27a1c); color: #2a1300; }
 .wa.nacht .wa-hebel.an { background: #ff3a28; color: #000; }
@@ -184,4 +184,6 @@
 .wa .wa-taste:disabled, .wa .wa-rund:disabled, .wa .wa-hebel:disabled, .wa .wa-pille:disabled { opacity: .45; }
 .wa .wa-unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 /* I RGB-Pixel: das Leuchtfeld ist immer schwarz, auch im Hellmodus */
-:where(.wa).g-pixel { --grund: #000; --text: #ffffff; --text-2: #8b98a8; --linie: #262a33; --akzent: #ffb21f; }
+:where(.wa).g-pixel { --wa-grund: #000; --wa-text: #ffffff; --wa-text-2: #8b98a8; --wa-linie: #262a33; --wa-akzent: #ffb21f; }
+/* nachts leuchtet jedes Tastenlicht in der Nachtfarbe, auch die farbigen (Schlummern gelb, Aus rot, Ansage blau) */
+.wa.nacht .wa-taste.wa-licht::before { background: var(--wa-an); box-shadow: 0 0 8px var(--wa-an); }

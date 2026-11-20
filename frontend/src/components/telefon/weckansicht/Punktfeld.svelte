@@ -10,7 +10,7 @@
     fenster?: number }
   export interface Bild { x: number; y: number; pixel: string[]; farben: Record<string, string> }
 
-  let { spalten, zeilen, ebenen = [], bilder = [], aus = "--aus", form = "rund", glanz = true, klasse = "matrix", modus = "" }: {
+  let { spalten, zeilen, ebenen = [], bilder = [], aus = "--wa-aus", form = "rund", glanz = true, klasse = "matrix", modus = "" }: {
     spalten: number; zeilen: number; ebenen?: Ebene[]; bilder?: Bild[]; aus?: string; form?: "rund" | "quadrat"; glanz?: boolean; klasse?: string;
     /** Modus der Gestaltung: ein Wechsel liest die Farbmarken neu */
     modus?: string;
@@ -20,7 +20,7 @@
   let groesse = $state(0);
   let lauf = $state(0);
 
-  /** Marke oder fester Wert: "--akzent" wird zur Farbe der Gestaltung */
+  /** Marke oder fester Wert: "--wa-akzent" wird zur Farbe der Gestaltung */
   function aufloesen(el: HTMLElement, f: Farbe): Farbe {
     return typeof f === "string" && f.startsWith("--") ? getComputedStyle(el).getPropertyValue(f).trim() : f;
   }
