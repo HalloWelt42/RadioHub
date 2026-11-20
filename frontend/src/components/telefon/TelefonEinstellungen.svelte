@@ -155,10 +155,10 @@
   <section class="darstellung"><Darstellung />{#if angebot.backend}<Konto />{/if}</section>
   {#if senderquelle.faehig.datei}<DateiReiter />{/if}
   {#if !angebot.backend}
-    <!-- Basic: Verweis auf die volle Version (Nutzer 20.11.2026) -->
+    <!-- Basic: das silberne BASIC verweist selbst auf die volle Version (Nutzer 20.11.2026) -->
     <section class="tf-pro">
-      <a class="rh-pro" href={PRO_QUELLCODE} target="_blank" rel="noopener" aria-label={t('schale.proVerweis')}>PRO</a>
-      <p class="tf-klein">{t('schale.proVerweis')}</p>
+      <a class="rh-basic" href={PRO_QUELLCODE} target="_blank" rel="noopener" aria-label={t('schale.basicVerweis')}>BASIC</a>
+      <p class="tf-klein">{t('schale.basicVerweis')}</p>
     </section>
   {/if}
 

@@ -88,7 +88,7 @@ export async function bitrateSetzen(wert: number | null): Promise<void> {
 }
 
 // ─── Sprung zur Quelle: Sender, Podcast oder Aufnahme in ihrem Bereich ───
-export function zurQuelle(): void {
+export function zurQuelle(varianten = false): void {
   const modus = app.playerMode;
   const ts = Date.now();
   if (app.currentEpisode && (modus === "podcast" || modus === "hls")) {
@@ -97,7 +97,7 @@ export function zurQuelle(): void {
     actions.navigateTo(podcast?.id ? `/podcasts/${podcast.id}` : "/podcasts");
   } else if (modus === "hls" || modus === "direct") {
     const uuid = app.currentStation?.uuid;
-    app.sourceJumpRequest = { type: "radio", id: uuid, ts };
+    app.sourceJumpRequest = { type: "radio", id: uuid, ts, varianten };
     actions.navigateTo(uuid ? `/radio/${uuid}` : "/radio");
   } else if (modus === "recording") {
     const aufnahme = app.currentRecording;
@@ -107,4 +107,9 @@ export function zurQuelle(): void {
       document.querySelector(".session-item.playing, .segment-entry.playing")?.scrollIntoView({ block: "center", behavior: "smooth" });
     }, 150);
   }
+}
+
+/** Andere Variante des Senders wählen (nach einem Fehler: Codec, Verbindung): zum Sender, seine Varianten aufgeklappt */
+export function andereVariante(): void {
+  zurQuelle(true);
 }

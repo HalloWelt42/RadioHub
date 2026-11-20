@@ -32,6 +32,12 @@
   --rh-gold-kante-2: #94620d;
   --rh-gold-kante-3: #6a4306;
   --rh-gold-schatten: rgb(40 24 0 / .55);
+  /* Zeichen BASIC der Webversion (Nutzer 20.11.2026: "in silber BASIC"): poliertes Silber, gleiche Prägung wie PRO */
+  --rh-silber-flaeche: linear-gradient(180deg, #ffffff 0%, #eef1f4 16%, #c3c9d0 38%, #7d858f 50%, #a4abb4 58%, #e6eaee 82%, #f8fafb 100%);
+  --rh-silber-kante-1: #8a929b;
+  --rh-silber-kante-2: #5f666e;
+  --rh-silber-kante-3: #3d434a;
+  --rh-silber-schatten: rgb(10 14 20 / .55);
   --rh-regenbogen: linear-gradient(90deg, #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0); /* Unterzeile im Dunkeln */
   --rh-anzeige: var(--led-gruen);              /* Leuchtschrift der Anzeigen (wie heute grün) */
   --rh-licht-aus: #07090b;                     /* Grund eines dunklen Lichts (aus geschaltete Leuchten) */

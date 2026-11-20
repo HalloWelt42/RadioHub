@@ -2,8 +2,9 @@
   // Kopf am Rechner wie im Entwurf (mockups/radio-filter/rechner.html): Schriftzug RadioHub mit Herz (führt zum
   // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, Status (Dienst und Ablage) und die Tafel
   // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Neben dem
-  // Herz das Zeichen PRO in Gold (Nutzer 20.11.2026). Die Basic-Webversion (RAD-4) zeigt nur Radio und Einstellungen,
-  // ohne Status und Konto; dort führt PRO zum Quellcode der vollen Version und das Herz zum Unterstützen.
+  // Herz das Zeichen der Ausgabe (Nutzer 20.11.2026): PRO in Gold; die Basic-Webversion (RAD-4) zeigt BASIC in Silber,
+  // das selbst zum Quellcode der PRO führt, dazu nur Radio und Einstellungen, ohne Status und Konto; das Herz führt dort
+  // zum Unterstützen.
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
@@ -74,8 +75,8 @@
               onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button>
         <span class="rh-pro" title={t("schale.proTitel")}>PRO</span>
       {:else}<a class="rh-herz" href={UNTERSTUETZEN} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
-        <a class="rh-pro" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.proVerweis")} aria-label={t("schale.proVerweis")}>PRO</a>{/if}</span>
-    <span class="rh-unterzeile">{t("app.digitalAudioSystem")}{#if !backend}{` ${t("schale.basic")}`}{/if}</span>
+        <a class="rh-basic" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.basicVerweis")} aria-label={t("schale.basicVerweis")}>BASIC</a>{/if}</span>
+    <span class="rh-unterzeile">{t("app.digitalAudioSystem")}</span>
   </div>
   <nav class="rh-nav" aria-label={t("schale.bereiche")}><div class="rh-nav-schiene">
     {#each BEREICHE as b, i (b.id)}

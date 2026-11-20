@@ -8,6 +8,8 @@
    */
   import * as engine from '../../lib/playerEngine.js';
   import { appState, actions } from '../../lib/store.svelte.js';
+  import { filterzustand } from '../../lib/radio';
+  import { tick } from 'svelte';
   import { t } from '../../lib/i18n.svelte.js';
   import { geraet } from '../../lib/geraet.svelte.js';
   import * as medien from '../../lib/telefon/medien.js';
@@ -95,8 +97,25 @@
     vor: (s) => engine.skip(s),
     springen: (sek) => { if (dauer > 0) engine.seek((sek / dauer) * 100); },
     voriger: () => favorit(-1),
-    naechster: () => favorit(1)
+    naechster: () => favorit(1),
+    zurListe
   };
+
+  /** Laufenden Sender in der Liste zeigen: Spieler zu, zur Zeile rollen; steht er wegen eines Filters nicht in der
+   *  Liste, sucht ihn die Liste gezielt (als Suche sichtbar, mit einem Tipp entfernbar) */
+  async function zurListe() {
+    const sender = appState.currentStation;
+    if (!sender) return;
+    spielerOffen = false;
+    if (appState.activeTab !== 'radio') actions.navigateTo('/radio');
+    await tick();
+    const zeile = () => document.querySelector('.tf-sender.spielt');
+    if (!zeile()) {
+      filterzustand.aendern((f) => ({ ...f, suche: sender.name.trim().slice(0, 100) }));
+      for (let i = 0; i < 20 && !zeile(); i++) await new Promise((r) => setTimeout(r, 150));
+    }
+    zeile()?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
 
   $effect(() => {
     medien.aktualisieren(appState, steuerung);

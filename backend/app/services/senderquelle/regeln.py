@@ -24,7 +24,7 @@ ERKLAERUNG: dict[str, str] = {
     "tag": "genauer Tag des Senderverzeichnisses",
     "stimmen": "gilt auch für neue Sender",
     "werbung": "aus Messung und eigener Bewertung, der Cache-Kopf allein zählt nicht",
-    "bewertung": "eigene Bewertungen",
+    "bewertung": "meine Einschätzungen",
     "einzeln": "per Auge ausgeblendet",
     "altsperren": "Sperrliste vor der Überführung in Regeln",
 }
@@ -68,7 +68,7 @@ def titel(art: str, entwurf: RegelEntwurf | None) -> str:
     if isinstance(entwurf, WerbungEntwurf):
         return f"Werbeverdacht {_WERBUNG_TITEL[entwurf.stufe]}"
     if isinstance(entwurf, BewertungEntwurf):
-        return f"eigene Bewertung {_aufzaehlung([BEWERTUNGEN[b] for b in entwurf.bewertungen])}"
+        return f"meine Einschätzung {_aufzaehlung([BEWERTUNGEN[b] for b in entwurf.bewertungen])}"
     return {"einzeln": "Einzelsperren", "altsperren": "Sperren von früher (vor der Überführung)"}.get(art, art)
 
 

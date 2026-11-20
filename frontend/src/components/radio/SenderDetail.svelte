@@ -191,7 +191,7 @@
       {/if}
     </dl>
   </section>
-  <section class="rh-tafel-detail"><h4><i class="fa-solid fa-star"></i>{t("radio.eigeneBewertung")}</h4>
+  <section class="rh-tafel-detail"><h4><i class="fa-solid fa-star"></i>{t("radio.eigeneBewertung")}<span class="rh-still rh-h4-hinweis">{t("radio.einschaetzungHinweis")}</span></h4>
     <div class="rh-bewerten">
       {#each [1, 2, 3] as i (i)}
         <button type="button" class="rh-stern" class:an={i <= sterne} aria-label={t("radio.sterneSetzen", { n: i })} aria-pressed={i <= sterne}

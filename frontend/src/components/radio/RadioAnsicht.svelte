@@ -109,9 +109,11 @@
   // Sprung von der Spielerleiste zur Quelle: die Adresse /radio/<uuid> klappt auf (oben); war er schon offen, hinrollen
   let letzterSprung = 0;
   $effect(() => {
-    const anfrage = appState.sourceJumpRequest as { type: string; id: string; ts: number } | null;
+    const anfrage = appState.sourceJumpRequest as { type: string; id: string; ts: number; varianten?: boolean } | null;
     if (!anfrage || anfrage.type !== "radio" || anfrage.ts <= letzterSprung) return;
     letzterSprung = anfrage.ts;
+    // andere Variante wählen: die Varianten des Senders gleich aufklappen
+    if (anfrage.varianten && anfrage.id && !variantenOffen.includes(anfrage.id)) variantenOffen = [...variantenOffen, anfrage.id];
     untrack(() => { if (anfrage.id && anfrage.id === filterzustand.offen && gerollt === anfrage.id) void rollenZu(anfrage.id); });
   });
 

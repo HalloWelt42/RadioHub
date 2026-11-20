@@ -38,6 +38,7 @@ export default {
     vor30: 'Forward 30 s',
     voriger: 'Previous station',
     naechster: 'Next station',
+    inListeZeigen: 'Show in the list',
     spielerOeffnen: 'Open player',
     spielerSchliessen: 'Close player',
     live: 'Live',
@@ -873,6 +874,9 @@ export default {
     positionHilfe: 'Position; drag or jump with the arrow keys',
     stoppHilfe: 'Stop: ends listening and recording (S)',
     stoppHilfeOhneAufnahme: 'Stop: ends listening (S)',
+    zurQuelleTaste: 'Jump to the playing station in the list',
+    andereVariante: 'Choose another variant: the stream does not play, open the variants of the station',
+    keineQuelle: 'Nothing selected yet',
     taste: '{text} ({taste})',
     leertaste: 'Space'
   },
@@ -880,8 +884,7 @@ export default {
   // === Shell: header, navigation, display, account (RAD-6) ===
   schale: {
     proTitel: 'RadioHub PRO: the full version with recordings, podcasts, time shift and backend',
-    proVerweis: 'RadioHub PRO: source code of the full version with frontend and backend',
-    basic: 'Basic',
+    basicVerweis: 'RadioHub Basic: web version with radio only. To PRO with frontend and backend (source code on GitHub)',
     laedt: 'Loading ...',
     bereiche: 'Sections',
     radio: 'Radio',

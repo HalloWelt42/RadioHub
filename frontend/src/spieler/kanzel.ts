@@ -222,6 +222,8 @@ export interface Tasten {
   modus: Taste & { symbol: string; farbe: Leuchtfarbe };
   /** linear, rückwärts, Schleife, Zufall; immer da, gesperrt außer bei Folgen und Aufnahmen (wie in HiFiPlayer) */
   reihenfolge: Taste & { symbol: string; farbe: Leuchtfarbe };
+  /** zum laufenden Sender, zur Folge oder Aufnahme in ihrem Bereich springen (in der Liste wiederfinden) */
+  quelle: Taste & { varianten: boolean };
 }
 
 const REIHENFOLGE: Record<string, { symbol: string; farbe: Leuchtfarbe; text: string }> = {
@@ -317,7 +319,16 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false): T
     hilfe: mitListe ? t(r.text) : t("player.wiedergabeModus"),
   };
 
+  // Zum laufenden Sender: leuchtet blau, solange es etwas anzuspringen gibt (Nutzer 20.11.2026)
+  // nach einem Fehler beim Sender (Codec, Verbindung) wählt dieselbe Taste eine andere Variante (Nutzer 20.11.2026)
+  const varianten = fehler && art === "sender";
+  const quelle: Tasten["quelle"] = {
+    an: false, licht: varianten ? "atmet" : quelleDa && (s.isPlaying || s.isPaused) ? "an" : "aus", gesperrt: !quelleDa, varianten,
+    hilfe: rec ? t("player.zumSender") : varianten ? t("kanzel.andereVariante") : quelleDa ? t("kanzel.zurQuelleTaste") : t("kanzel.keineQuelle"),
+  };
+
   return {
+    quelle,
     zurueck: blatt(-1),
     stopp,
     spielen,

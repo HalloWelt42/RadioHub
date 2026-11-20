@@ -4,6 +4,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import { DARSTELLUNG, darstellungVorab } from "./src/lib/darstellung-vorab";
+import { rahmenVorab } from "./src/lib/rahmen-vorab";
 
 // Fassung aus version.json im Wurzelordner des Repos (einzige Quelle, gezählt vom Git-Haken): eingebaut ins Skript
 // (__APP_FASSUNG__) und als Meta in die Startseite, an der Schale und Ausrollen die ausgelieferte Fassung prüfen.
@@ -18,7 +19,9 @@ const fassungEinsetzen = {
 const darstellungEinsetzen = {
   name: "darstellung-einsetzen",
   transformIndexHtml: (html: string) =>
-    html.replace("<head>", `<head>\n    <script>(${darstellungVorab.toString()})(${JSON.stringify(DARSTELLUNG)});</script>`),
+    html.replace("<head>", `<head>\n    <script>(${darstellungVorab.toString()})(${JSON.stringify(DARSTELLUNG)});</script>`)
+      // Statusleiste: direkt hinter dem Viewport-Tag, das es anpasst (lib/rahmen-vorab.ts)
+      .replace(/(<meta name="viewport"[^>]*>)/, `$1\n  <script>(${rahmenVorab.toString()})();</script>`),
 };
 
 // Zwei Bauziele aus einer Oberfläche (RAD-4, Entscheidung 28): die volle App (Vorgabe) und die Webversion nur mit Radio
@@ -33,6 +36,9 @@ const WEB_BASIS = "/RadioHub/";
 const WEB_SYMBOLE = ["favicon.ico", "favicon-32.png", "favicon.svg", "icon-192.png", "icon-512.png", "icon-maskable-192.png",
   "icon-maskable-512.png", "apple-touch-icon.png"];
 const WEB_DATEN = ORDNER("../web/daten");
+// Adressen der Basic ohne Kennung (Bereiche und Reiter der Einstellungen), siehe webDateien
+const WEB_ADRESSEN = ["radio", "einstellungen", "einstellungen/radio", "einstellungen/radio/regeln", "einstellungen/radio/ausgeblendet",
+  "einstellungen/radio/laender", "einstellungen/radio/datei"];
 // Name der Webversion: RadioHub Basic (die volle Version ist RadioHub PRO, Nutzer 20.11.2026)
 const WEB_NAME = "RadioHub Basic";
 
@@ -71,6 +77,12 @@ function webDateien(): Plugin {
       mkdirSync(`${aus}/daten`, { recursive: true });
       if (existsSync(WEB_DATEN)) cpSync(WEB_DATEN, `${aus}/daten`, { recursive: true });
       copyFileSync(`${aus}/index.html`, `${aus}/404.html`);
+      // feste Adressen der Basic als eigene Startseiten: Pages antwortet dort mit 200 statt mit 404.html (RAD-10);
+      // nur Direktlinks auf einen Sender gehen weiter über 404.html
+      for (const pfad of WEB_ADRESSEN) {
+        mkdirSync(`${aus}/${pfad}`, { recursive: true });
+        copyFileSync(`${aus}/index.html`, `${aus}/${pfad}/index.html`);
+      }
     },
   };
 }

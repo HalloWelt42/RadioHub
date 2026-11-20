@@ -231,7 +231,7 @@ describe("Regeln", () => {
     const stimmen = await q.vorschau({ art: "stimmen", mindeststimmen: 5 });
     expect([stimmen.titel, stimmen.betroffen]).toEqual(["weniger als 5 Stimmen", 1]);
     expect((await q.vorschau({ art: "bewertung", bewertungen: ["sterne:1", "religioes"] })).titel)
-      .toBe("eigene Bewertung Geht so, Religiös");
+      .toBe("meine Einschätzung Geht so, Religiös");
     await expect(q.vorschau({ art: "werbung", stufe: "hoch" })).rejects.toThrow("Werbung");
     await expect(q.vorschau({ art: "stimmen", mindeststimmen: 0 })).rejects.toMatchObject({ status: 422 });
   });

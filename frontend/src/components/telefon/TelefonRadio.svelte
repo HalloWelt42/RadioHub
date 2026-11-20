@@ -19,10 +19,13 @@
   import Schnellwahl from "../radio/Schnellwahl.svelte";
   import Sterne from "../radio/Sterne.svelte";
   import Suchfeld from "../radio/Suchfeld.svelte";
+  import Varianten from "../radio/Varianten.svelte";
 
   const bedienung = new Radiobedienung(senderquelle);
   const liste = bedienung.liste;
   let blatt = $state(false);
+  /** Sender, dessen Varianten unter der Zeile aufgeklappt sind (Nutzer 20.11.2026: Varianten erreichbar, auch nach Fehlern) */
+  let offeneVarianten = $state<string | null>(null);
 
   const filter = $derived(filterzustand.filter);
   const chips = $derived(aktive(filter));
@@ -120,7 +123,8 @@
           <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
           <div><b title={e.name}>{e.name}</b>
             <div class="tf-meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<Guete stufe={e.qualitaet} /><span>{format(e)}</span>
-              {#if e.varianten > 1}<span class="t-var"><i class="fa-solid fa-layer-group"></i>{t("radio.variantenZahl", { n: e.varianten })}</span>{/if}</div>
+              {#if e.varianten > 1}<button class="t-var" type="button" aria-expanded={offeneVarianten === e.uuid}
+                onclick={(ev) => { ev.stopPropagation(); offeneVarianten = offeneVarianten === e.uuid ? null : e.uuid; }}><i class="fa-solid fa-layer-group"></i>{t("radio.variantenZahl", { n: e.varianten })}<i class="fa-solid fa-chevron-{offeneVarianten === e.uuid ? 'up' : 'down'}"></i></button>{/if}</div>
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}
           </div>
           <span class="tf-aktionen">
@@ -132,6 +136,9 @@
               <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
           </span>
         </div>
+        {#if offeneVarianten === e.uuid}
+          <div class="tf-varianten"><Varianten eintrag={e} spielt={spielend} onspielen={(v) => void bedienung.spielen(v)} /></div>
+        {/if}
       {/each}
       <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()} einheit={t("radio.geladen")} />
     {/if}

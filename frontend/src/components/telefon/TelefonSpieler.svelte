@@ -92,11 +92,15 @@
           <i class="fa-solid fa-forward-step"></i>
         </button>
       </div>
+      <!-- den laufenden Sender in der Liste wiederfinden (Nutzer 20.11.2026) -->
+      <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
     {/if}
   </div>
 {/if}
 
 <style>
+  .tf-zur-liste { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; margin-top: 6px;
+    border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; }
   .tf-leiste {
     flex: none;
     display: flex;

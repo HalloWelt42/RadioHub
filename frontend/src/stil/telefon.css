@@ -9,7 +9,8 @@
 .t-suche { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 8px var(--rh-rand) 8px; }
 .t-suche .rh-suchfeld { min-width: 0; }
 .t-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 var(--rh-rand) 8px; }
-.tf-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand) 12px; }
+/* oben Luft für den Rand der spielenden Zeile (2 px und Schein), sonst schneidet die Kante des Rollfelds ihn ab (RAD-10) */
+.tf-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 6px var(--rh-rand) 12px; }
 .tf-hinweis { margin: 16px 0; color: var(--text-2); font-size: var(--klein); }
 .t-schleier { position: fixed; inset: 0; z-index: 70; }
 .t-blatt { position: fixed; left: 0; right: 0; bottom: 0; z-index: 71; max-block-size: 82dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
@@ -35,7 +36,12 @@
 .tf-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
 .tf-meta .rh-guete { padding: 3px 4px; }
 .tf-meta .rh-guete i { inline-size: 6px; block-size: 11px; }
-.tf-meta .t-var { display: inline-flex; gap: 4px; align-items: center; color: var(--akzent); font-weight: 600; }
+/* Varianten als Knopf: klappt sie unter der Zeile auf (Nutzer 20.11.2026: Varianten erreichbar) */
+.tf-meta .t-var { display: inline-flex; gap: 6px; align-items: center; color: var(--akzent); font-weight: 600; font: inherit; font-weight: 600;
+  min-block-size: 32px; padding: 0 2px; border: 0; background: none; cursor: pointer; }
+.tf-varianten { margin: -2px 0 8px; }
+.tf-varianten .rh-varianten { grid-template-columns: 14px minmax(0, 1fr) auto; padding: 0; }
+.tf-varianten .rh-variante .rh-guete-text, .tf-varianten .rh-variante .stimmen-v { display: none; }
 .t-titel { margin-top: 2px; font-size: var(--klein); color: var(--text-2); overflow-wrap: anywhere; }
 .t-titel i { color: var(--led-blau); margin-right: 6px; }
 .tf-sender .rund { inline-size: 44px; block-size: 44px; }

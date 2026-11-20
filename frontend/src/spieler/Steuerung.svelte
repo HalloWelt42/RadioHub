@@ -11,7 +11,7 @@
   import type { Drehregler } from "appkern-oberflaeche/instrumente";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
-  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurueck } from "./aktionen";
+  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurQuelle, zurueck, andereVariante } from "./aktionen";
   import { bitrateAusStellung, bitrateRaster, bitrateStellung, type BitrateLage, type Tasten } from "./kanzel";
   import type { Bitrate } from "./bitrate.svelte";
   import { taste } from "./taste";
@@ -58,8 +58,12 @@
         use:taste={{ licht: tasten.vor.licht, gesperrt: tasten.vor.gesperrt, hilfe: tasten.vor.hilfe, symbol: "fa-forward-step", gespiegelt: tasten.vor.gespiegelt,
                      beiDruck: vor, beiZeigen: zeigen }}></ak-taster>
     </div>
-    {#if kann.zeitversatz || kann.folgen}
     <div class="rh-betrieb ak-tastenreihe">
+      <!-- zum laufenden Sender in der Liste (auch in Basic); dieselbe Größe wie alle Tasten der Reihe -->
+      <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" licht="blau"
+          use:taste={{ an: false, licht: tasten.quelle.licht, lichtFarbe: tasten.quelle.varianten ? "rot" : "blau", gesperrt: tasten.quelle.gesperrt,
+                       hilfe: tasten.quelle.hilfe, symbol: tasten.quelle.varianten ? "fa-layer-group" : "fa-location-crosshairs",
+                       beiDruck: mitKlang(tasten.quelle.varianten ? andereVariante : () => zurQuelle()), beiZeigen: zeigen }}></ak-taster>
       {#if kann.zeitversatz}
       <ak-taster art="glas" symbol={tasten.modus.symbol} farbe="weiss" licht={tasten.modus.farbe}
           use:taste={{ an: false, licht: tasten.modus.licht, lichtFarbe: tasten.modus.farbe, gesperrt: tasten.modus.gesperrt, hilfe: tasten.modus.hilfe,
@@ -71,7 +75,6 @@
                        symbol: tasten.reihenfolge.symbol, beiDruck: mitKlang(reihenfolgeWeiter), beiZeigen: zeigen }}></ak-taster>
       {/if}
     </div>
-    {/if}
     {#if kann.zeitversatz}
     <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.bitrateName")} hilfe={t("kanzel.bitrateHilfe")} raster={bitrateRaster(t)} vorgabe="0"
         role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== null ? 'gelb' : 'gruen'})"

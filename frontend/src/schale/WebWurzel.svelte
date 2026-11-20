@@ -57,5 +57,8 @@
 {/if}
 
 <style>
-  .rh-web-einst { min-height: 0; min-width: 0; display: flex; padding: 14px var(--rh-rand) 0; }
+  /* ohne Leiste der Bereiche (nur Radio): Pfad, Reiter und Karten als eine Spalte mittig, so breit wie die Karten
+     (Nutzer 20.11.2026: "einstellungenleiste ist völlig dezentral") */
+  .rh-web-einst { min-height: 0; min-width: 0; display: flex; justify-content: center; padding: 14px var(--rh-rand) 0; }
+  .rh-web-einst :global(.rh-einst-haupt) { flex: 0 1 1280px; }
 </style>

@@ -38,6 +38,7 @@ export default {
     vor30: '30 s vor',
     voriger: 'Voriger Sender',
     naechster: 'Nächster Sender',
+    inListeZeigen: 'In der Liste zeigen',
     spielerOeffnen: 'Spieler öffnen',
     spielerSchliessen: 'Spieler schließen',
     live: 'Live',
@@ -873,6 +874,9 @@ export default {
     positionHilfe: 'Position; ziehen oder mit den Pfeiltasten springen',
     stoppHilfe: 'Stopp: beendet Hören und Aufnahme (S)',
     stoppHilfeOhneAufnahme: 'Stopp: beendet das Hören (S)',
+    zurQuelleTaste: 'Zum laufenden Sender in der Liste springen',
+    andereVariante: 'Andere Variante wählen: der Strom spielt nicht, die Varianten des Senders aufklappen',
+    keineQuelle: 'Noch nichts gewählt',
     taste: '{text} ({taste})',
     leertaste: 'Leertaste'
   },
@@ -880,8 +884,7 @@ export default {
   // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
   schale: {
     proTitel: 'RadioHub PRO: die volle Version mit Aufnahmen, Podcasts, Zeitversatz und Backend',
-    proVerweis: 'RadioHub PRO: Quellcode der vollen Version mit Frontend und Backend',
-    basic: 'Basic',
+    basicVerweis: 'RadioHub Basic: Webversion nur mit Radio. Zur PRO mit Frontend und Backend (Quellcode auf GitHub)',
     laedt: 'Lädt ...',
     bereiche: 'Bereiche',
     radio: 'Radio',

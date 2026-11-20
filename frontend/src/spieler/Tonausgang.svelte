@@ -61,9 +61,10 @@
   });
 </script>
 
+<!-- ohne crossorigin: Ströme kommen in Basic direkt vom Sender, und die meisten Sender schicken keine CORS-Kopfzeilen;
+     mit dem Merkmal verweigerte der Browser sie ganz (RAD-10). Keine Auswertung braucht den Ton im Skript. -->
 <audio
   bind:this={audio}
-  crossorigin="anonymous"
   ontimeupdate={() => wiedergabe.zeitAktualisieren()}
   onloadedmetadata={() => wiedergabe.zeitAktualisieren()}
   ondurationchange={() => wiedergabe.zeitAktualisieren()}

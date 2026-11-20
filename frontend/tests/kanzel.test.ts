@@ -152,6 +152,14 @@ describe("Spulzeilen", () => {
   });
 });
 
+describe("Taste zum laufenden Sender", () => {
+  it("springt zum Sender; nach einem Fehler wählt sie eine andere Variante", () => {
+    expect(kanzelTasten(stand(), t).quelle).toMatchObject({ gesperrt: true, varianten: false });
+    expect(kanzelTasten(spielt(), t).quelle).toMatchObject({ gesperrt: false, licht: "an", varianten: false, hilfe: "Zum laufenden Sender in der Liste springen" });
+    expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 4 }), t).quelle).toMatchObject({ varianten: true, licht: "atmet" });
+  });
+});
+
 describe("Webversion ohne Zeitversatz und Aufnahme", () => {
   it("die Statuszeile sagt LIVE statt Originalstrom, Stopp verspricht keine Aufnahme", () => {
     const weg = { zeitversatz: false, aufnahme: false };

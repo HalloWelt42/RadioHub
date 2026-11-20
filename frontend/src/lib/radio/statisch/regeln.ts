@@ -32,7 +32,7 @@ export const ERKLAERUNG: Readonly<Record<StatischeArt, string>> = {
   genre: "normalisiertes Genre, alle Schreibweisen",
   tag: "genauer Tag des Senderverzeichnisses",
   stimmen: "gilt auch für neue Sender",
-  bewertung: "eigene Bewertungen",
+  bewertung: "meine Einschätzungen",
   einzeln: "per Auge ausgeblendet",
 };
 
@@ -119,7 +119,7 @@ export function titel(b: Senderbestand, art: RegelArt, entwurf: RegelEntwurf | n
     case "genre": return `Genre ist ${aufzaehlung(entwurf.genres)}`;
     case "tag": return `Tag ist ${aufzaehlung(entwurf.tags)}`;
     case "stimmen": return `weniger als ${entwurf.mindeststimmen} Stimmen`;
-    case "bewertung": return `eigene Bewertung ${aufzaehlung(entwurf.bewertungen.map((x) => BEWERTUNGEN[x]))}`;
+    case "bewertung": return `meine Einschätzung ${aufzaehlung(entwurf.bewertungen.map((x) => BEWERTUNGEN[x]))}`;
     default: return art === "einzeln" ? "Einzelsperren" : art;
   }
 }

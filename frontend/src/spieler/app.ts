@@ -34,7 +34,8 @@ export interface AppZustand {
   podcastPlaylistPodcast: Podcast | null;
   currentEpisodeIndex: number;
   recordingPlaylist: Aufnahme[];
-  sourceJumpRequest: { type: "radio" | "podcast" | "recording"; id: string | number | undefined; ts: number } | null;
+  /** Sprung zur Quelle; varianten: beim Sender gleich seine Varianten aufklappen (andere Variante wählen) */
+  sourceJumpRequest: { type: "radio" | "podcast" | "recording"; id: string | number | undefined; ts: number; varianten?: boolean } | null;
 }
 
 export const app = appState as unknown as AppZustand;

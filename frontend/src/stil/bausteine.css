@@ -21,19 +21,22 @@ html, body { height: 100%; overflow: hidden; }
 .rh-herz:hover i { animation: none; transform: scale(1.18); }
 .rh-herz:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 @keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
-/* Zeichen PRO neben dem Herz: Schrift wie RadioHub, Fläche Gold (Marken --rh-gold-*), Tiefe aus gestaffelten
-   Schatten in dunklerem Gold (3D-Prägung), ein Glanz zieht beim Zeigen darüber. In der Basic-Webversion ein Verweis
-   auf den Quellcode der vollen Version. */
-.rh-pro { position: relative; display: inline-block; font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 1px);
+/* Zeichen der Ausgabe neben dem Herz: Schrift wie RadioHub, 3D-Prägung aus gestaffelten Schatten; PRO in Gold
+   (Marken --rh-gold-*), BASIC in Silber (--rh-silber-*), das in der Webversion auf den Quellcode der PRO verweist. Ein
+   Glanz zieht beim Zeigen darüber. */
+.rh-pro, .rh-basic { position: relative; display: inline-block; font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 1px);
   letter-spacing: .06em; line-height: 1; text-decoration: none; white-space: nowrap; padding: 2px 1px 4px;
   background-image: var(--rh-gold-glanz), var(--rh-gold-flaeche); background-size: 250% 100%, 100% 100%; background-position: 120% 0, 0 0;
   background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
   filter: drop-shadow(1px 1px 0 var(--rh-gold-kante-1)) drop-shadow(1px 1px 0 var(--rh-gold-kante-2)) drop-shadow(1px 1px 0 var(--rh-gold-kante-3))
           drop-shadow(1px 3px 3px var(--rh-gold-schatten));
   transition: background-position .9s ease; }
-a.rh-pro:hover, a.rh-pro:focus-visible { background-position: -30% 0, 0 0; }
-a.rh-pro:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { .rh-pro { transition: none; } }
+.rh-basic { background-image: var(--rh-gold-glanz), var(--rh-silber-flaeche);
+  filter: drop-shadow(1px 1px 0 var(--rh-silber-kante-1)) drop-shadow(1px 1px 0 var(--rh-silber-kante-2)) drop-shadow(1px 1px 0 var(--rh-silber-kante-3))
+          drop-shadow(1px 3px 3px var(--rh-silber-schatten)); }
+a:is(.rh-pro, .rh-basic):hover, a:is(.rh-pro, .rh-basic):focus-visible { background-position: -30% 0, 0 0; }
+a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .rh-pro, .rh-basic { transition: none; } }
 .rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
 :root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
 
