@@ -1,9 +1,10 @@
 <script>
   /**
-   * Weckeransicht (Telefon quer, Nachttisch) in zwei Layouts nach mockups/querformat.html, umschaltbar per Wischen:
-   * "sonne" (D: große Uhr, darunter das Sonnenband, rechts Sender, Wecker, Knöpfe) und "uhr" (B: Uhr vollflächig,
-   * unten eine schmale Leiste, die Knöpfe erst nach Antippen). Ein scharfer Wecker ist in beiden unübersehbar.
-   * Nachts (nach Sonnenzeiten oder von Hand) dunkelrot auf schwarz. Hält den Bildschirm wach, löst die Wecker aus,
+   * Weckeransicht (Telefon quer, Nachttisch) in den Gestaltungen des Katalogs (mockups/weckansicht/katalog.html, RAD-15),
+   * geblättert per Seitenwischen (weckansicht/gestaltungen.ts). Diese Datei rechnet den Zustand (Weckbild) und hält die
+   * Aktionen; die Gestaltungen zeichnen nur, je in Hell, Dunkel und Nacht (nachts nach Sonnenzeiten oder von Hand Rot auf
+   * Schwarz). Beim Klingeln ordnet sich jede Gestaltung neu an, nichts verdeckt etwas, und Radio oder Weckton lassen
+   * sich jederzeit wechseln. Hält den Bildschirm wach, löst die Wecker aus,
    * sagt die Zeit an (nach dem Zeitplan der Einstellungen) und verbindet neu, wenn der Sender ausfällt; nur solange
    * sie offen ist. Solange die Tonausgabe entsperrt ist, wartet eine neue Fassung, denn nach dem Neuladen wäre sie
    * bis zum nächsten Tippen wieder gesperrt.
@@ -23,32 +24,38 @@
   import { ansageFaellig } from '../../lib/telefon/zeitplan.js';
   import { ton, loslassen } from '../../lib/telefon/tonkontext.svelte.js';
   import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
-  import WeckerUhr from './WeckerUhr.svelte';
-  import WeckerSonnenband from './WeckerSonnenband.svelte';
+  import '@fontsource/chakra-petch/500.css';
+  import '@fontsource/chakra-petch/700.css';
+  import '../../stil/weckansicht.css';
+  import Buehne from './weckansicht/Buehne.svelte';
+  import { GESTALTUNGEN, gestaltungVon, naechste } from './weckansicht/gestaltungen';
 
   let { steuerung, audio = null } = $props();
 
   // --- Einstellungen im Gerät ---------------------------------------------------------------------------------------
   const NACHT_SCHLUESSEL = 'radiohub_nachtschaltung';
   const LAYOUT_SCHLUESSEL = 'radiohub_weckerlayout';
-  const LAYOUTS = ['sonne', 'uhr'];
   const lesen = (s, v) => { try { return localStorage.getItem(s) || v; } catch { return v; } };
   const schreiben = (s, w) => { try { localStorage.setItem(s, w); } catch { /* privates Fenster */ } };
 
   let nachtWahl = $state(lesen(NACHT_SCHLUESSEL, 'auto'));
-  let layout = $state(LAYOUTS.includes(lesen(LAYOUT_SCHLUESSEL, '')) ? lesen(LAYOUT_SCHLUESSEL, '') : 'sonne');
+  // gemerkt wird die Kennung; das Objekt kommt immer aus der Liste (ein $state-Proxy wäre nicht dasselbe Objekt)
+  let gestaltungId = $state(gestaltungVon(lesen(LAYOUT_SCHLUESSEL, '')).id);
+  const gestaltung = $derived(gestaltungVon(gestaltungId));
 
   // ein Knopf, drei Stufen: automatisch nach Sonnenzeiten, immer Rot, immer normal
   const NACHT_FOLGE = { auto: 'an', an: 'aus', aus: 'auto' };
-  const NACHT_SYMBOL = { auto: 'fa-circle-half-stroke', an: 'fa-moon', aus: 'fa-sun' };
-  const NACHT_TEXT = { auto: 'nachtAuto', an: 'nachtAn', aus: 'nachtAus' };
   function nachtSetzen(wert) { nachtWahl = wert; schreiben(NACHT_SCHLUESSEL, wert); }
 
   function layoutWechseln(schritt) {
-    const i = LAYOUTS.indexOf(layout);
-    layout = LAYOUTS[(i + schritt + LAYOUTS.length) % LAYOUTS.length];
-    schreiben(LAYOUT_SCHLUESSEL, layout);
+    gestaltungId = naechste(gestaltung, schritt).id;
+    schreiben(LAYOUT_SCHLUESSEL, gestaltungId);
   }
+
+  // Hell oder Dunkel wie die App (der Appkern setzt data-theme an der Wurzel); nachts gilt die Nachtschaltung
+  let appDunkel = $state(document.documentElement.dataset.theme === 'dunkel');
+  const themaBeobachter = new MutationObserver(() => { appDunkel = document.documentElement.dataset.theme === 'dunkel'; });
+  themaBeobachter.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   // --- Zeit und abgeleitete Werte -----------------------------------------------------------------------------------
   let jetzt = $state(new Date());
@@ -104,9 +111,13 @@
     }
   }
 
+  // beim Klingeln: womit geweckt wird; "weckton" ist die Wahl der Person, der Wächter springt mit dem Weckton auch selbst ein
+  let quelleWahl = $state('radio');
+
   async function ausloesen(w) {
     abbrechen();
     klingelt = w;
+    quelleWahl = 'radio';
     wunsch.spielen = true;
     const ziel = w.lautstaerke || 60;
     const schritte = Math.max(1, w.anstieg_s || 0);
@@ -140,9 +151,32 @@
   function stille() {
     clearInterval(anstieg);
     klingelt = null;
+    quelleWahl = 'radio';
     wunsch.spielen = false;
     waechter.lassen();
+    wecktonAus();
     actions.stop();
+  }
+
+  /** Beim Klingeln zwischen Radio (oder Podcast) und Weckton wechseln, jederzeit und in beide Richtungen */
+  function weckquelle(q) {
+    if (!klingelt || q === bildQuelle) return;
+    if (q === 'weckton') {
+      quelleWahl = 'weckton';
+      waechter.lassen();
+      actions.stop();
+      wecktonAn();
+    } else {
+      quelleWahl = 'radio';
+      wecktonAus();
+      const w = klingelt;
+      if (w.quelle === 'sender' && w.sender) {
+        waechter.bewachen(w.sender, { wecker: true });
+        actions.playStation(w.sender);
+      } else {
+        ausloesen(w);
+      }
+    }
   }
 
   function aus() {
@@ -226,7 +260,7 @@
   let start = null;
   let klickSperre = false;
   let knoepfeBis = $state(0);
-  const knoepfeSichtbar = $derived(layout === 'sonne' || jetzt.getTime() < knoepfeBis);
+  const knoepfeSichtbar = $derived(!gestaltung.tastenNachTippen || jetzt.getTime() < knoepfeBis);
   const KNOEPFE_MS = 6000;
 
   function zeigeKnoepfe() { knoepfeBis = Date.now() + KNOEPFE_MS; jetzt = new Date(); }
@@ -235,7 +269,7 @@
     tonWarGesperrt = !ton.laeuft;
     entsperren();   // mit der Maus zählt schon das Drücken als Geste
     start = { x: e.clientX, y: e.clientY, t: Date.now() };
-    if (layout === 'uhr' && knoepfeSichtbar) zeigeKnoepfe();   // jede Berührung hält die Knöpfe offen
+    if (gestaltung.tastenNachTippen && knoepfeSichtbar) zeigeKnoepfe();   // jede Berührung hält die Knöpfe offen
   }
   function up(e) {
     entsperren();   // mit dem Finger erst das Loslassen
@@ -246,10 +280,10 @@
       klickSperre = true;   // ein Wischen über einem Knopf löst ihn nicht aus
       setTimeout(() => { klickSperre = false; }, 0);
       layoutWechseln(art === 'links' ? 1 : -1);
-    } else if (art === 'tippen' && e.target.closest('.uhr-box')) {
+    } else if (art === 'tippen' && !e.target.closest('button') && gestaltung.tastenNachTippen && !knoepfeSichtbar) {
+      zeigeKnoepfe();   // erst die Tasten zeigen, das nächste Tippen auf die Uhr sagt an
+    } else if (art === 'tippen' && !e.target.closest('button') && e.target.closest('.uhr-box')) {
       zifferTipp();
-    } else if (art === 'tippen' && layout === 'uhr' && !e.target.closest('button')) {
-      zeigeKnoepfe();
     }
   }
   function klickFangen(e) {
@@ -290,172 +324,59 @@
     freigeben('schlummern');
     freigeben('tonausgabe');
     weckeransichtOffen(false);
+    themaBeobachter.disconnect();
   });
 
-  const VERBINDUNG_SYMBOL = { ok: 'fa-signal', verbindet: 'fa-rotate fa-spin', gestoert: 'fa-triangle-exclamation' };
+  // --- Weckbild: was jede Gestaltung zeigt (weckansicht/typen.ts) ---------------------------------------------------
+  const bildQuelle = $derived(quelleWahl === 'weckton' || waechter.ersatzton ? 'weckton' : 'radio');
+  /** kurzer Name für grobe Anzeigen: ein kurzer Teil des Namens ("DLF" aus "Deutschlandfunk | DLF | AAC 192k"), sonst das erste Wort */
+  function kurzName(name) {
+    const teile = (name || '').split(/\s*[|/·-]\s*/).map((s) => s.trim()).filter(Boolean);
+    const kurz = teile.find((s) => s.length <= 6 && !/\d/.test(s)) ?? (teile[0] || '').split(/\s+/)[0] ?? '';
+    return kurz.slice(0, 12).toUpperCase();
+  }
+  const datumKurz = (d) => `${tagKurz(d).replace('.', '').toUpperCase()} ${zwei(d.getDate())}.${zwei(d.getMonth() + 1)}.`;
+  const bild = $derived({
+    zeit: hhmm(jetzt),
+    jetzt,
+    datum: datumKurz(jetzt),
+    modus: nacht ? 'nacht' : gestaltung.immerDunkel || appDunkel ? 'dunkel' : 'hell',
+    lage: klingelt ? 'klingelt' : schlummerBis ? 'schlummert' : 'ruhe',
+    quelle: bildQuelle,
+    quelleName: !klingelt || klingelt.quelle === 'sender' ? t('telefon.radio') : t('telefon.podcast'),
+    sender: senderName,
+    senderKurz: kurzName(senderName),
+    naechster: naechster ? `${tagKurz(naechster.zeitpunkt)} ${hhmm(naechster.zeitpunkt)}` : null,
+    klingelZeit: klingelt?.zeit ?? null,
+    schlummerMinuten: klingelt?.schlummern_min || 9,
+    schlummerBis: schlummerBis ? hhmm(schlummerBis) : null,
+    sonne: sonne && !sonne.polar ? { auf: hhmm(sonne.aufgang), unter: hhmm(sonne.untergang) } : null,
+    spielt,
+    stoppStattPause: appState.playerMode === 'direct',
+    verbindung: waechter.zustand,
+    ansage: { an: zeit.an, gesperrt: zeit.an && !ton.laeuft, laeuft: zeit.laeuft },
+    nachtWahl,
+    tastenSichtbar: knoepfeSichtbar,
+    zucken,
+  });
+  const tun = {
+    umschalten,
+    ansage: ansageKnopf,
+    nacht: () => nachtSetzen(NACHT_FOLGE[nachtWahl]),
+    schlummern,
+    aus,
+    quelle: weckquelle,
+  };
+  const tt = (schluessel, werte) => t(`telefon.${schluessel}`, werte);
+  const Gestaltung = $derived(gestaltung.komponente);
 </script>
 
-{#snippet weckerAnzeige(gross)}
-  {#if schlummerBis}
-    <span class="wecker-an" class:gross title={t('telefon.schlummertBis')}><i class="fa-solid fa-bed"></i>{hhmm(schlummerBis)}</span>
-  {:else if naechster}
-    <span class="wecker-an" class:gross title={t('telefon.naechsterWecker')}><i class="fa-solid fa-bell"></i>{tagKurz(naechster.zeitpunkt)} {hhmm(naechster.zeitpunkt)}</span>
-  {:else}
-    <span class="wecker-aus" class:gross title={t('telefon.keinWeckerAktiv')} aria-label={t('telefon.keinWeckerAktiv')}><i class="fa-solid fa-bell-slash"></i></span>
-  {/if}
-{/snippet}
-
-{#snippet senderAnzeige()}
-  <span class="sender">
-    <i class="fa-solid fa-radio" aria-hidden="true"></i>
-    <span class="name">{senderName || '-'}</span>
-    {#if waechter.zustand !== 'aus'}
-      <i class="fa-solid {VERBINDUNG_SYMBOL[waechter.zustand]} verbindung" class:warn={waechter.zustand === 'gestoert'}
-        aria-label={waechter.zustand}></i>
-    {/if}
-  </span>
-{/snippet}
-
-{#snippet knoepfe()}
-  <div class="knoepfe">
-    <button class="symbol" disabled={!senderName} onclick={umschalten}
-      aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
-      <i class="fa-solid {spielt ? (appState.playerMode === 'direct' ? 'fa-stop' : 'fa-pause') : 'fa-play'}"></i>
-    </button>
-    <!-- Ansage nach Zeitplan an oder aus; ohne Ton (gesperrt) gibt der Tipp erst den Ton frei; sofort: Ziffern -->
-    <button class="symbol" class:an={zeit.an && ton.laeuft} class:gesperrt={zeit.an && !ton.laeuft} aria-pressed={zeit.an}
-      onclick={ansageKnopf} aria-label={t('telefon.zeitansage')}
-      title={zeit.an ? (ton.laeuft ? t('telefon.ansageAn') : t('telefon.tonGesperrt')) : t('telefon.ansageAus')}>
-      <i class="fa-solid {zeit.laeuft ? 'fa-volume-high' : !zeit.an ? 'fa-comment-slash' : ton.laeuft ? 'fa-comment-dots' : 'fa-volume-xmark'}"></i>
-    </button>
-    <button class="symbol" class:an={nachtWahl !== 'aus'} onclick={() => nachtSetzen(NACHT_FOLGE[nachtWahl])}
-      aria-label={t('telefon.nacht') + ': ' + t('telefon.' + NACHT_TEXT[nachtWahl])} title={t('telefon.' + NACHT_TEXT[nachtWahl])}>
-      <i class="fa-solid {NACHT_SYMBOL[nachtWahl]}"></i>
-    </button>
-  </div>
-{/snippet}
-
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="wecker" class:nacht onpointerdown={down} onpointerup={up} onpointercancel={() => (start = null)}
-  onclickcapture={klickFangen}>
-  {#if layout === 'sonne'}
-    <div class="layout-sonne">
-      <div class="links">
-        <div class="uhr-box" class:zucken><WeckerUhr text={hhmm(jetzt)} /></div>
-        <WeckerSonnenband {jetzt} {sonne} />
-      </div>
-      <div class="rechts">
-        <div class="block">{@render senderAnzeige()}
-          {#if senderName}<i class="fa-solid {spielt ? 'fa-play' : 'fa-pause'} tf-zustand" aria-label={spielt ? t('telefon.laeuft') : t('telefon.pausiert')}></i>{/if}
-        </div>
-        <div class="block">{@render weckerAnzeige(true)}</div>
-        {@render knoepfe()}
-      </div>
-    </div>
-  {:else}
-    <div class="layout-uhr">
-      <div class="uhr-box" class:zucken><WeckerUhr text={hhmm(jetzt)} /></div>
-      <div class="tf-leiste">
-        {@render senderAnzeige()}
-        {@render weckerAnzeige(true)}
-        <span class="sonnenzeiten">
-          {#if sonne && !sonne.polar}
-            <i class="fa-solid fa-sun"></i>{hhmm(sonne.aufgang)} <i class="fa-solid fa-moon"></i>{hhmm(sonne.untergang)}
-          {/if}
-        </span>
-      </div>
-      {#if knoepfeSichtbar}<div class="schwebend">{@render knoepfe()}</div>{/if}
-    </div>
-  {/if}
-
-  <div class="punkte" aria-hidden="true">
-    {#each LAYOUTS as l (l)}<span class:an={layout === l}></span>{/each}
+<div class="wa {gestaltung.klasse} {bild.modus}" data-gestaltung={gestaltung.id} onpointerdown={down} onpointerup={up}
+  onpointercancel={() => (start = null)} onclickcapture={klickFangen}>
+  <Buehne><Gestaltung {bild} {tun} t={tt} /></Buehne>
+  <div class="wa-punkte" aria-hidden="true">
+    {#each GESTALTUNGEN as g (g.id)}<span class:an={g === gestaltung}></span>{/each}
   </div>
-
-  {#if klingelt}
-    <div class="klingeln" role="alertdialog" aria-label={t('telefon.klingelt')}>
-      <span class="wecker-an gross"><i class="fa-solid fa-bell fa-shake"></i>{klingelt.zeit}</span>
-      <button class="riesig" onclick={schlummern} aria-label={t('telefon.schlummern')} title={t('telefon.schlummern')}><i class="fa-solid fa-bed"></i></button>
-      <button class="riesig aus" onclick={aus} aria-label={t('telefon.aus')} title={t('telefon.aus')}><i class="fa-solid fa-power-off"></i></button>
-    </div>
-  {/if}
+  {#if klingelt}<span class="wa-unsichtbar" role="alert">{t('telefon.klingelt')} {klingelt.zeit}</span>{/if}
 </div>
-
-<style>
-  .wecker {
-    --w-grund: var(--t-grund);
-    --w-text: var(--t-text);
-    --w-text-2: var(--t-text-2);
-    --w-linie: var(--t-linie);
-    --w-akzent: var(--t-akzent);
-    --w-akzent-text: var(--t-akzent-text);
-    --w-fein: var(--t-flaeche-2);
-    position: relative;
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    padding: 12px max(env(safe-area-inset-right, 0px), 20px) 10px max(env(safe-area-inset-left, 0px), 20px);
-    background: var(--w-grund);
-    color: var(--w-text);
-    overflow: hidden;
-    touch-action: none;   /* Wischen gehört der Ansicht, nicht dem Browser */
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  .wecker.nacht {
-    --w-grund: #000000;
-    --w-text: #c62020;
-    --w-text-2: #c01c1c;
-    --w-linie: #4a0b0b;
-    --w-akzent: #c62020;
-    --w-akzent-text: #000000;
-    --w-fein: #1c0405;
-  }
-
-  /* D: große Uhr mit Sonnenband, rechts eine schmale Spalte */
-  .layout-sonne { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 0 24px; }
-  .layout-sonne .links { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  .uhr-box { flex: 1; min-height: 0; min-width: 0; }
-  .uhr-box.zucken { animation: zucken 0.3s ease-in-out; }
-  @keyframes zucken { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-6px); } 70% { transform: translateX(6px); } }
-  .layout-sonne .rechts { display: flex; flex-direction: column; justify-content: center; gap: 16px; padding-left: 20px; min-width: 0; }
-  .block { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .tf-zustand { color: var(--w-text-2); font-size: 15px; flex: none; }
-
-  /* B: Uhr vollflächig, unten eine schmale Leiste, Knöpfe nach Antippen */
-  .layout-uhr { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .tf-leiste { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 8px; font-size: 17px; color: var(--w-text-2); min-width: 0; }
-  .sonnenzeiten { display: flex; align-items: center; gap: 6px; flex: none; font-variant-numeric: tabular-nums; }
-  .sonnenzeiten i { margin-left: 6px; }
-  .schwebend { position: absolute; top: 12px; right: max(env(safe-area-inset-right, 0px), 20px); }
-
-  .sender { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 17px; }
-  .sender .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--w-text); }
-  .sender > i:first-child { color: var(--w-text-2); flex: none; }
-  .verbindung { flex: none; font-size: 15px; color: var(--w-text-2); }
-  .verbindung.warn { color: var(--w-akzent); }
-
-  /* Wecker: scharf in Akzentfarbe und fett, sonst durchgestrichene Glocke gedämpft */
-  .wecker-an, .wecker-aus { display: inline-flex; align-items: center; gap: 8px; flex: none; font-variant-numeric: tabular-nums; }
-  .wecker-an { color: var(--w-akzent); font-weight: 700; }
-  .wecker-aus { color: var(--w-text-2); }
-  .wecker-an.gross { font-size: 24px; }
-  .wecker-aus.gross { font-size: 22px; }
-
-  .knoepfe { display: flex; gap: 12px; }
-  .symbol { width: 56px; height: 56px; flex: none; border: 1px solid var(--w-linie); border-radius: 50%; background: var(--w-grund);
-    color: var(--w-text); font-size: 22px; display: flex; align-items: center; justify-content: center; touch-action: none; }
-  .symbol.an { background: var(--w-akzent); border-color: var(--w-akzent); color: var(--w-akzent-text); }
-  .symbol:disabled { color: var(--text-3); }
-  .symbol.gesperrt { border-color: var(--w-akzent); color: var(--w-akzent); }
-
-  .punkte { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
-  .punkte span { width: 6px; height: 6px; border-radius: 50%; background: var(--w-linie); }
-  .punkte span.an { background: var(--w-text-2); }
-
-  .klingeln { position: absolute; top: 0; right: 0; bottom: 0; width: 42%; display: flex; flex-direction: column; justify-content: center;
-    gap: 14px; padding: 16px max(env(safe-area-inset-right, 0px), 20px) 16px 20px; background: var(--w-grund); }
-  .riesig { min-height: 76px; border: none; border-radius: 18px; background: var(--w-akzent); color: var(--w-akzent-text); font: inherit;
-    font-size: 30px; display: flex; align-items: center; justify-content: center; }
-  .riesig.aus { background: transparent; color: var(--w-text); border: 2px solid var(--w-text); }
-</style>
