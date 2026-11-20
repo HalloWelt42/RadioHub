@@ -3,14 +3,20 @@ RadioHub v0.2.4 - Podcasts Router
 
 Podcast-Suche, Abonnements, Episoden, Downloads, Cover-Art, Statistiken.
 """
+from pathlib import PurePosixPath
+from urllib.parse import quote, urlparse
+
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Literal, Optional
 
+from ..ablage import orte
 from ..ablage.wiedergabe import ausliefern
 from ..services import durchleiter
 from ..services.podcast import podcast_service
+
+AUDIO_ENDUNGEN = {".mp3", ".m4a", ".aac", ".ogg", ".opus", ".mp4", ".wav", ".flac"}
 
 router = APIRouter(prefix="/api/podcasts", tags=["podcasts"])
 
@@ -338,6 +344,27 @@ async def stream_episode(episode_id: int, request: Request):
     if not audio_url:
         raise HTTPException(404, "Keine Audio-URL vorhanden")
     return await durchleiter.durchleiten(audio_url, request.headers.get("range"))
+
+
+@router.get("/episodes/{episode_id}/datei")
+async def folge_als_datei(episode_id: int, request: Request):
+    """Folge als Datei auf das Gerät, das fragt (RAD-17, "Herunterladen"): gespeichert aus der Ablage, sonst vom Feed
+    durchgeleitet; der Name ist der, den sie in der Ablage trüge ("2026-10-01 Folge 1.mp3")."""
+    episode = await podcast_service.get_episode(episode_id)
+    if not episode:
+        raise HTTPException(404, "Episode nicht gefunden")
+    pfad = podcast_service.get_episode_audio_path(episode_id)
+    if pfad:
+        return await ausliefern(pfad, request, herunterladen=True)
+    adresse = episode.get("audio_url")
+    if not adresse:
+        raise HTTPException(404, "Keine Audio-URL vorhanden")
+    endung = PurePosixPath(urlparse(adresse).path).suffix.lower()
+    endung = endung if endung in AUDIO_ENDUNGEN else ".mp3"
+    name = orte.folge(episode.get("podcast_title") or "", episode.get("title") or "", episode.get("published_at"), endung)
+    name = name.rsplit("/", 1)[-1]
+    return await durchleiter.durchleiten(adresse, request.headers.get("range"),
+                                         {"Content-Disposition": f"attachment; filename*=UTF-8''{quote(name)}"})
 
 
 # === Episode-Position und Status ===

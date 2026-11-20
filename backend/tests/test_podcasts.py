@@ -118,3 +118,28 @@ def test_abo_anheften_und_sortierung_merken(client):
     abos = [a for a in client.get("/api/podcasts/subscriptions").json()["subscriptions"] if a["id"] in ids]
     assert [a["title"] for a in abos] == ["Dritt", "Erst", "Zweit"]                       # angeheftet zuerst
     assert {a["title"]: (a["angeheftet"], a["sortierung"]) for a in abos} == {"Dritt": (1, ""), "Erst": (0, ""), "Zweit": (0, "alt")}
+
+
+async def test_folge_als_datei_aufs_geraet(client, speicher, monkeypatch):
+    inhalt = b"c" * 300
+    _quelle(inhalt)
+    gespeichert = _folge("Datei", "Gespeichert?")
+    await podcast_service.download_episode(gespeichert)
+    antwort = client.get(f"/api/podcasts/episodes/{gespeichert}/datei")
+    assert antwort.status_code == 200 and antwort.content == inhalt
+    assert antwort.headers["content-disposition"] == "attachment; filename*=UTF-8''2026-10-01%20Gespeichert.mp3"
+
+    from app.routers import podcasts as router_podcasts
+    gesehen = {}
+
+    async def durchleiten(adresse, bereich=None, zusatz=None):
+        gesehen.update(adresse=adresse, zusatz=zusatz)
+        from fastapi.responses import Response
+        return Response(b"x", headers=zusatz)
+
+    monkeypatch.setattr(router_podcasts.durchleiter, "durchleiten", durchleiten)
+    nur_im_netz = _folge("Datei", "Nur im Netz")
+    antwort = client.get(f"/api/podcasts/episodes/{nur_im_netz}/datei")
+    assert antwort.status_code == 200 and gesehen["adresse"] == "https://audio.test/folge.mp3?token=1"
+    assert gesehen["zusatz"]["Content-Disposition"] == "attachment; filename*=UTF-8''2026-10-01%20Nur%20im%20Netz.mp3"
+    assert client.get("/api/podcasts/episodes/999999/datei").status_code == 404
