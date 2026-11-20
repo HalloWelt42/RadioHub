@@ -120,7 +120,12 @@ export function getSubDefault(subTab) {
  * @param {{ replace?: boolean }} options
  */
 export function navigate(path, { replace = false } = {}) {
-  if (_currentPath === path) return;
+  // Vergleich mit der echten Adresse samt Abfrage: der zuletzt gemerkte Pfad kennt die Abfrage nicht (Zurück, Start), und
+  // ein Pfad mit Schnellfiltern (/radio?land=DE) blieb sonst stehen, wenn der gemerkte schon /radio hieß (RAD-7)
+  if (window.location.pathname + window.location.search === path) {
+    _currentPath = path;
+    return;
+  }
   _currentPath = path;
   if (replace) {
     history.replaceState(null, '', path);

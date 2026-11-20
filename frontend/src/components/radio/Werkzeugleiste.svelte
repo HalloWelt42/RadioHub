@@ -73,7 +73,7 @@
     <div class="rh-aktiv-chips" aria-label={t("radio.aktiveFilter")}>
       {#each chips as c (`${c.art}:${c.wert}`)}
         {@const b = beschriftung(c)}
-        <span class="chip">{#if b.art}{b.art}: {/if}<b>{b.wert}</b><button type="button" aria-label={t("radio.filterEntfernen")}
+        <span class="chip">{#if b.art}{`${b.art}: `}{/if}<b>{b.wert}</b><button type="button" aria-label={t("radio.filterEntfernen")}
               title={t("radio.entfernen")} onclick={() => onaendern((f) => ohne(f, c))}><i class="fa-solid fa-xmark"></i></button></span>
       {:else}
         <span class="rh-leer-chips">{t("radio.keineFilter")}</span>

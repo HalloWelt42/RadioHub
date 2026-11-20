@@ -146,8 +146,8 @@
         <div class="rh-treffer">
           {#each treffer as k (k.schluessel)}
             <button type="button" class:aktiv={wirksam.some((w) => w.schluessel === k.schluessel)} onclick={() => umschalten(k)}>
-              <b>{k.name}{#if k.code} <span class="rh-kennung">{k.code}</span>{/if}</b><span class="rh-zahl">{t("radio.einst.nSender", { n: zahl(k.anzahl) })}</span>
-              <span class="fav" class:null={!k.favoriten}>{#if k.favoriten}<i class="fa-solid fa-star"></i> {/if}{t("radio.einst.nFavoriten", { n: k.favoriten })}</span></button>
+              <b>{k.name}{#if k.code}{" "}<span class="rh-kennung">{k.code}</span>{/if}</b><span class="rh-zahl">{t("radio.einst.nSender", { n: zahl(k.anzahl) })}</span>
+              <span class="fav" class:null={!k.favoriten}>{#if k.favoriten}<i class="fa-solid fa-star"></i>{" "}{/if}{t("radio.einst.nFavoriten", { n: k.favoriten })}</span></button>
           {:else}
             {#if suche.trim() || art === "bewertung"}<p class="rh-neu-feld-hilfe">{t("radio.einst.keinEintrag")}</p>{/if}
           {/each}
@@ -177,7 +177,7 @@
     {:else if bereit}
       <div class="rh-vorschau-fav">
         {#if favoriten}
-          <ak-led farbe="bernstein" zustand="atmet" groesse="klein"></ak-led><span><b>{t("radio.einst.nFavoriten", { n: favoriten })}</b> {t("radio.einst.favoritenBetroffen")}{#if v?.favoriten_namen.length} ({v.favoriten_namen.slice(0, 4).map((n) => n.trim()).join(", ")}){/if}</span>
+          <ak-led farbe="bernstein" zustand="atmet" groesse="klein"></ak-led><span><b>{t("radio.einst.nFavoriten", { n: favoriten })}</b> {t("radio.einst.favoritenBetroffen")}{#if v?.favoriten_namen.length}{` (${v.favoriten_namen.slice(0, 4).map((n) => n.trim()).join(", ")})`}{/if}</span>
         {:else}
           <ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led><span>{t("radio.einst.davon")} <b>{t("radio.einst.nFavoriten", { n: 0 })}</b></span>
         {/if}

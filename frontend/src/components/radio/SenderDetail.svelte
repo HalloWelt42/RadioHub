@@ -160,7 +160,7 @@
         </dd>
       {/if}
       <dt>{t("radio.codec")}</dt>
-      <dd>{eintrag.codec === "unbekannt" ? t("radio.unbekannt") : eintrag.codec}{#if eintrag.kbps} {zahl(eintrag.kbps)} kbit/s{/if},
+      <dd>{eintrag.codec === "unbekannt" ? t("radio.unbekannt") : eintrag.codec}{#if eintrag.kbps}{` ${zahl(eintrag.kbps)} kbit/s`}{/if},
         {eintrag.kbps_gemessen ? t("radio.gemessenKlein") : t("radio.lautVerzeichnis")} · {t("radio.qualitaetTitel")} {qualitaetName(eintrag.qualitaet)}</dd>
       <dt>{t("radio.sprachen")}</dt>
       <dd>{eintrag.sprachen.length ? eintrag.sprachen.map((s) => s.name).join(", ") : t("radio.keineAngabe")}</dd>

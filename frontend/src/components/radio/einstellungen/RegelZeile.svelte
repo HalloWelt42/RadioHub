@@ -53,7 +53,7 @@
 <div class="rh-regel" class:aus={!regel.an} class:neu>
   <ak-led farbe={regel.an ? "gruen" : "gelb"} zustand={regel.an ? "an" : "aus"} groesse="klein" hilfe={regel.an ? t("radio.einst.regelAn") : t("radio.einst.regelAus")}></ak-led>
   <span class="rh-regel-art" title={t(`radio.einst.art.${regel.art}`)}><i class="fa-solid {REGEL_SYMBOL[regel.art]}"></i></span>
-  <span class="rh-regel-text"><b>{regel.titel}</b><span>{t(`radio.einst.art.${regel.art}`)}: {regel.erklaerung}{#if neu} · {t("radio.einst.geradeAngelegt")}{/if}</span></span>
+  <span class="rh-regel-text"><b>{regel.titel}</b><span>{t(`radio.einst.art.${regel.art}`)}: {regel.erklaerung}{#if neu}{` · ${t("radio.einst.geradeAngelegt")}`}{/if}</span></span>
   <span class="rh-regel-zahl"><b>{zahl(regel.betroffen)}</b>{t("radio.einst.senderFavoriten", { n: zahl(regel.favoriten) })}</span>
   <button class="schalter" class:an={regel.an} type="button" aria-pressed={regel.an}
           aria-label={regel.an ? t("radio.einst.ausschalten") : t("radio.einst.einschalten")}

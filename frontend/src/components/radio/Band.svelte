@@ -33,7 +33,7 @@
 {#if inhalt}
   <div class="rh-band" class:gut={inhalt.art === "gut"} class:fehler={inhalt.art === "fehler"} role="status" aria-live="polite">
     <i class="fa-solid {inhalt.symbol}"></i>
-    <span>{#if inhalt.name}<b>{inhalt.name}</b> {/if}{inhalt.text}</span>
+    <span>{#if inhalt.name}<b>{inhalt.name}</b>{" "}{/if}{inhalt.text}</span>
     {#if inhalt.rueckgaengig}
       <button class="knopf primaer" type="button" disabled={arbeitet} onclick={zurueck}><i class="fa-solid fa-rotate-left"></i>{t("radio.rueckgaengig")}</button>
     {/if}
