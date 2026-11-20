@@ -88,3 +88,10 @@
 .hebel { height: 62px; min-width: 190px; border-radius: 10px; border: 0; font: inherit; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
   background: linear-gradient(180deg, #3a2a18, #1c140b); color: #ffb25a; box-shadow: inset 0 0 0 1px #6b4e2c; }
 .hebel.aus { background: linear-gradient(180deg, #ffb25a, #d27a1c); color: #2a1300; }
+
+/* Glimmdraht-Röhren (H, Nutzer 20.11.2026: Qualität erproben) */
+.roehre-svg { height: 100%; aspect-ratio: 128 / 190; display: grid; place-items: center; }
+.roehre-svg svg { height: 100%; width: auto; overflow: visible; }
+.glimm-feld { height: 100%; width: 26px; display: grid; place-items: center; }
+.glimm-feld svg { height: 78%; width: auto; overflow: visible; }
+.roehren .reihe2 { gap: 6px; min-height: 0; }

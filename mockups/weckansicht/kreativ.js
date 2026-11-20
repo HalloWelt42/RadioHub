@@ -1,4 +1,5 @@
 // Kreative Entwürfe E bis H der Weckansicht (RAD-15), gleiche Beispieldaten wie A bis D.
+import { roehre as nixie, glimmpunkte } from "./nixie.js";
 
 const innen = (tel, html) => { tel.innerHTML = `<div class="innen">${html}</div>`; };
 const KNOPF = (i, text, klasse) => `<button class="${klasse}"><i class="fa-solid ${i}"></i>${text}</button>`;
@@ -98,12 +99,15 @@ function auroraG(id, { zeit, klingelt = false }) {
 function roehrenH(id, { zeit, klingelt = false }) {
   const tel = document.getElementById(id);
   const [a, b] = zeit.split(":");
-  const roehre = (z) => `<div class="roehre"><b>${z}</b></div>`;
+  const nacht = tel.classList.contains("nacht");
+  const farbe = nacht ? { glut: "#e0301a", kern: "#ffb09a", kalt: "#3a1a14" } : { glut: "#ff7a1a", kern: "#ffe2b0", kalt: "#5a4a3c" };
+  let n = 0;
+  const roehre = (z) => `<div class="roehre-svg">${nixie(z, farbe, `${id}-${n++}`)}</div>`;
   const sockel = klingelt
     ? `<div class="sockel"><span class="w"><i class="fa-solid fa-bell fa-shake"></i> Wecker 06:30 · Deutschlandfunk</span>
        <span style="display:flex;gap:12px">${KNOPF("fa-bed", "Schlummern", "hebel")}${KNOPF("fa-power-off", "Aus", "hebel aus")}</span></div>`
     : `<div class="sockel"><span><i class="fa-solid fa-radio"></i> Deutschlandfunk</span><span class="w"><i class="fa-solid fa-bell"></i> Mo 06:30</span></div>`;
-  innen(tel, `<div class="roehren"><div class="reihe2">${roehre(a[0])}${roehre(a[1])}<div class="punkt"><span></span><span></span></div>${roehre(b[0])}${roehre(b[1])}</div>${sockel}</div>`);
+  innen(tel, `<div class="roehren"><div class="reihe2">${roehre(a[0])}${roehre(a[1])}<div class="glimm-feld">${glimmpunkte(farbe)}</div>${roehre(b[0])}${roehre(b[1])}</div>${sockel}</div>`);
 }
 
 function alles() {
