@@ -20,8 +20,10 @@
 
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
-/* --rh-anzeige-min: so schmal darf die Anzeige in der einen Reihe werden; kanzelreihen.ts rechnet mit demselben Wert */
-.rh-kanzel-voll { --rh-anzeige-min: 18em; display: grid; gap: 8px 14px; padding: 8px var(--rh-rand) 10px; align-items: stretch;
+/* --rh-anzeige-min: so schmal darf die Anzeige in der einen Reihe werden; kanzelreihen.ts rechnet mit demselben Wert.
+   12em statt 18em: die Anzeige darf zugunsten der übrigen Module kürzer werden, die Leiste bricht später um (Nutzer
+   20.11.2026, RAD-13); die Punktmatrix behält mindestens 10 Stellen (rasterbreite.ts) und läuft bei längeren Namen */
+.rh-kanzel-voll { --rh-anzeige-min: 12em; display: grid; gap: 8px 14px; padding: 8px var(--rh-rand) 10px; align-items: stretch;
   grid-template-columns: minmax(var(--rh-anzeige-min), 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
@@ -56,9 +58,6 @@
 .rh-zeit { flex: 1; display: grid; gap: 6px; align-content: center; }
 .rh-zeit-glas { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
 .rh-zeit-glas .ak-segmente-glas { padding: 6px 8px; }
-/* PRO mit Spulzeile (Zeitversatz, Folgen): etwa zwei Zeichen mehr Platz zwischen Quelle und Uhr, damit Stand und Länge
-   unter der Bahn ("0:26 von 2:00:00") ganz zu lesen sind (Nutzer 20.11.2026, RAD-13); Basic bleibt schmal */
-.rh-zeit-spulbar .rh-zeit-glas { gap: calc(4px + var(--marke) * 1.2); }
 /* Quelle und Zeit wachsen mit der Breite der Kanzel (cqi: Hundertstel ihrer Breite, nie vom eigenen Inhalt), mit
    Grenzen in Grundschriften: nie kleiner als im Entwurf, nie größer, als die Zeile trägt */
 .rh-zeit-quelle { --ak-zelle: clamp(calc(var(--gross) * 6.6), 6.6cqi, calc(var(--gross) * 8.6)); --ak-zeichen-max: 40px; }
@@ -68,6 +67,11 @@
 .rh-puffer-rechts { display: flex; gap: 6px; }
 .rh-puffer { display: grid; gap: 2px; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); text-align: center; min-width: 0; }
 .rh-puffer > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* PRO mit Spulzeile (Zeitversatz, Folgen): Stand und Länge unter der Bahn immer ganz lesbar (Nutzer 20.11.2026, RAD-13).
+   Fest reserviert für die längste Form "1:59:59 von 2:00:00" (15ch: Doppelpunkte und Leerzeichen sind schmaler als die Ziffer 0); so bestimmt die Zeile die
+   Breite von Quelle und Zeit mit, ohne beim Hochzählen zu springen. Basic hat keine Spulzeile und bleibt schmal. */
+.rh-zeit-spulbar .rh-puffer-zeile { contain: none; grid-template-columns: auto minmax(min-content, 1fr) auto; }
+.rh-zeit-spulbar .rh-puffer > span { min-inline-size: 15ch; }
 .rh-kanzel .balken { block-size: 8px; border-radius: var(--rh-pille); overflow: hidden; }
 .rh-kanzel .balken span { display: block; block-size: 100%; }
 /* Spulbahn: der Regler liegt über dem Balken, im Zeitversatz nur so breit wie der Puffer */
