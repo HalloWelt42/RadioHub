@@ -1,12 +1,13 @@
 /**
- * Zeitansage aus Bausteinen ("Es ist" + "fünf Uhr" + "vierunddreißig"), die das Backend aus der Ablage liefert.
+ * Zeitansage aus Bausteinen ("Es ist" + "fünf Uhr" + "vierunddreißig"), die das Bauziel liefert (volle App: das Backend
+ * aus der Ablage in der eingestellten Stimme, Basic: fertig aus dem Repo).
  * Die Bausteine werden einmal geladen und als dekodierte Puffer gehalten; abgespielt wird über Web Audio, so
  * schließen sie ohne Lücke aneinander an. Läuft etwas, wird es sanft leise gezogen (wo der Browser die Lautstärke
  * nicht stellen lässt, etwa iOS, stumm geschaltet), nach der Ansage 2 Sekunden Pause, dann wieder die alte Lautstärke.
  * Nur die Weckeransicht ruft die Ansage auf; verlässt man sie, bricht `abbrechen` sauber ab. Die Einstellungen
  * (an/aus, Abstand, Zeitraum, Bedingung, nachts) liegen hier und im Gerät; wann angesagt wird, rechnet zeitplan.js.
  */
-import { api } from '../api.js';
+import { zeitbausteine } from '$ziel/telefon';
 import { kontext, entsperren } from './tonkontext.svelte.js';
 import { planPruefen } from './zeitplan.js';
 
@@ -46,6 +47,7 @@ let _laden = null;
 let _lauf = null;
 let _quellen = [];
 const _puffer = new Map();
+let _stimme = null;   // Stimme der Puffer
 
 export function zeitansageSchalten(an) {
   zeit.an = an;
@@ -70,8 +72,8 @@ export function radioSetzen(element) {
   _radio = element;
 }
 
-export async function stand() {
-  return api.fetch('/api/zeitansage');
+export function stand() {
+  return zeitbausteine.stand();
 }
 
 /** Alle Bausteine einmal laden und dekodieren; ohne vollständigen Satz bleibt die Ansage aus. */
@@ -83,9 +85,10 @@ export function bausteineLaden() {
     zeit.fehlend = s.fehlend.length;
     if (s.fehlend.length) return;
     const c = kontext();
+    if (s.stimme !== _stimme) { _puffer.clear(); _stimme = s.stimme; }   // eine andere Stimme: alle neu
     await Promise.all(s.bausteine.map(async (name) => {
       if (_puffer.has(name)) return;
-      const antwort = await fetch(`/api/zeitansage/ton/${name}`);
+      const antwort = await fetch(zeitbausteine.adresse(s.stimme, name));
       if (!antwort.ok) throw new Error(`Baustein ${name}: ${antwort.status}`);
       _puffer.set(name, await c.decodeAudioData(await antwort.arrayBuffer()));
     }));

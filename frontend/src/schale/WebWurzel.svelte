@@ -1,7 +1,7 @@
 <script lang="ts">
   // Wurzel der Webversion (RAD-4, Entscheidung 27): nur Radio, ohne Backend und ohne Anmeldung. Am Rechner Kopf mit
   // Radio und Einstellungen, die Radio-Ansicht oder Einstellungen > Radio und die Kanzel; am Telefon die Telefonansicht
-  // nur mit Radio. Dieselben Bausteine wie die volle App; was fehlt, blenden sie über die Fähigkeiten der Senderquelle
+  // mit Radio und Wecker (Weckansicht quer, Wecker im Speicher des Browsers, RAD-15). Dieselben Bausteine wie die volle App; was fehlt, blenden sie über die Fähigkeiten der Senderquelle
   // und des Wiedergabewegs selbst aus.
   import Kanzel from "../spieler/Kanzel.svelte";
   import RadioAnsicht from "../components/radio/RadioAnsicht.svelte";
@@ -15,9 +15,9 @@
   import { tasteDerApp } from "./tastatur";
 
   const BEREICHE = ["radio", "settings"] as const;
-  const TELEFON = { podcasts: false, wecker: false, backend: false };
+  const TELEFON = { podcasts: false, wecker: true, backend: false };
 
-  // Adresse und Bereich (Zurück und Vor im Browser); nur Radio und Einstellungen > Radio gibt es
+  // Adresse und Bereich (Zurück und Vor im Browser); es gibt Radio, Einstellungen > Radio und am Telefon den Wecker
   $effect(() => {
     const anfang = router.init((info: { tab: string; segments: string[] }) => {
       appState.activeTab = info.tab;
@@ -28,7 +28,8 @@
   });
   $effect(() => {
     const tab = appState.activeTab as string;
-    if (tab !== "radio" && tab !== "settings") actions.navigateTo("/radio", { replace: true });
+    const wecker = tab === "wecker" && geraet.telefon && TELEFON.wecker;
+    if (tab !== "radio" && tab !== "settings" && !wecker) actions.navigateTo("/radio", { replace: true });
     else if (tab === "settings" && (appState.routeSegments as string[])[0] !== "radio") actions.navigateTo("/einstellungen/radio/regeln", { replace: true });
   });
 

@@ -1,8 +1,8 @@
 <script>
   /**
-   * Sparsame Einstellungen am Telefon: wach halten, Darstellung, Ort für Sonnenzeiten, Stand der Ablage. Das Angebot
-   * sagt, was es gibt (Webversion, RAD-4: ohne Wecker und Backend, also ohne Zeitansage, Ort, Konto und Ablage, dafür
-   * Eigene Daten als Datei).
+   * Sparsame Einstellungen am Telefon: wach halten, Zeitansage, Darstellung, Ort für Sonnenzeiten, Stand der Ablage.
+   * Das Angebot sagt, was es gibt (Basic: ohne Backend, also ohne Konto und Ablage, dafür Eigene Daten als Datei);
+   * Ortssuche und das Erzeugen der Bausteine zeigen sich nur, wo das Bauziel sie kann ($ziel/telefon).
    */
   import { t } from '../../lib/i18n.svelte.js';
   import { api } from '../../lib/api.js';
@@ -14,6 +14,7 @@
   import Konto from '../../schale/Konto.svelte';
   import DateiReiter from '../radio/einstellungen/DateiReiter.svelte';
   import { senderquelle } from '../../lib/radio';
+  import { weckerablage, zeitbausteine } from '$ziel/telefon';
   import { PRO_QUELLCODE } from '../../lib/ausgabe';
 
   const ZEITEN = zeitraumZeiten();
@@ -30,7 +31,7 @@
   $effect(() => { if (angebot.wecker) bausteineAbfragen(); });
 
   async function bausteineErzeugen() {
-    await api.fetch('/api/zeitansage/erzeugen', { method: 'POST' });
+    await zeitbausteine.erzeugen();
     setTimeout(bausteineAbfragen, 1500);
   }
 
@@ -52,7 +53,7 @@
     if (suche.trim().length < 2) return;
     sucht = true;
     try {
-      fundorte = (await api.searchOrte(suche.trim())).orte;
+      fundorte = await weckerablage.orteSuchen(suche.trim());
     } catch (e) {
       fundorte = [];
       ortMeldung = e.message || t('telefon.fehler');
@@ -142,7 +143,7 @@
         {/each}
       </div>
     {/if}
-    {#if bausteine && bausteine.fehlend.length}
+    {#if bausteine && bausteine.fehlend.length && zeitbausteine.faehig.erzeugen}
       <p class="tf-klein">{t('telefon.bausteineFehlen', { n: bausteine.fehlend.length })}
         {#if bausteine.erzeugung?.meldung}<br />{bausteine.erzeugung.meldung}{/if}</p>
       <button class="tf-knopf" disabled={bausteine.erzeugung?.laeuft} onclick={bausteineErzeugen}>{t('telefon.bausteineErzeugen')}</button>
@@ -166,6 +167,7 @@
   <section>
     <h3>{t('telefon.ort')}</h3>
     {#if weckerdaten.ort.breite == null}<p class="tf-klein">{t('telefon.ortFehlt')}</p>{/if}
+    {#if weckerablage.faehig.ortssuche}
     <form class="tf-suche" onsubmit={(e) => { e.preventDefault(); orteSuchen(); }}>
       <label class="tf-feld"><span>{t('telefon.ortSuchen')}</span><input name="ort-suche" bind:value={suche} autocomplete="off" enterkeyhint="search" /></label>
       <button class="tf-knopf" type="submit" disabled={sucht}>{t('telefon.suchen')}</button>
@@ -177,6 +179,7 @@
           <li><button type="button" onclick={() => ortWaehlen(f)}>{f.name} <span class="tf-klein">{f.breite.toFixed(2)}, {f.laenge.toFixed(2)}</span></button></li>
         {/each}
       </ul>
+    {/if}
     {/if}
     <button class="tf-knopf" type="button" onclick={standortUebernehmen}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.standort')}</button>
     <label class="tf-feld"><span>{t('telefon.ortName')}</span><input name="ort-name" bind:value={ort.name} autocomplete="off" /></label>

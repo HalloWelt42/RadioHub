@@ -7,6 +7,7 @@
   import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
   import { WECKTOENE, VORGABE } from '../../lib/telefon/wecktoene.js';
   import { wecktonAn, wecktonAus } from '../../lib/telefon/weckton.js';
+  import { weckerablage } from '$ziel/telefon';
 
   let entwurf = $state(null);
   let meldung = $state('');
@@ -16,7 +17,12 @@
   const STUNDEN = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const MINUTEN = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
-  $effect(() => { weckerLaden(); });
+  // Sender zur Wahl: die Favoriten, abspielbar (woher, sagt das Bauziel)
+  let favoriten = $state([]);
+  $effect(() => {
+    weckerLaden();
+    weckerablage.sender().then((s) => (favoriten = s)).catch(() => (favoriten = []));
+  });
 
   // Offene Bearbeitung hält eine Aktualisierung auf
   $effect(() => {
@@ -26,8 +32,9 @@
   });
 
   function neu() {
-    const sender = appState.favorites[0] || null;
-    entwurf = { aktiv: true, stunde: '07', minute: '00', tage: [1, 2, 3, 4, 5], quelle: sender ? 'sender' : 'podcast',
+    const sender = favoriten[0] || null;
+    entwurf = { aktiv: true, stunde: '07', minute: '00', tage: [1, 2, 3, 4, 5],
+                quelle: sender || !weckerablage.faehig.podcast ? 'sender' : 'podcast',
                 sender_uuid: sender?.uuid || '', podcast_id: appState.podcasts[0]?.id || null, lautstaerke: 60, anstieg_s: 60,
                 schlummern_min: 9, weckton: VORGABE };
     meldung = '';
@@ -44,7 +51,7 @@
   }
 
   function senderZu(uuid, alt) {
-    const s = appState.favorites.find((f) => f.uuid === uuid) || (alt?.uuid === uuid ? alt : null);
+    const s = favoriten.find((f) => f.uuid === uuid) || (alt?.uuid === uuid ? alt : null);
     return s ? { uuid: s.uuid, name: s.name, url: s.url, url_resolved: s.url_resolved, favicon: s.favicon } : null;
   }
 
@@ -111,17 +118,20 @@
       </div>
 
       <span class="beschriftung">{t('telefon.quelle')}</span>
+      {#if weckerablage.faehig.podcast}
       <div class="tf-wahl">
         <button class:tf-an={entwurf.quelle === 'sender'} onclick={() => (entwurf.quelle = 'sender')}>{t('telefon.sender')}</button>
         <button class:tf-an={entwurf.quelle === 'podcast'} onclick={() => (entwurf.quelle = 'podcast')}>{t('telefon.folge')}</button>
       </div>
+      {/if}
       {#if entwurf.quelle === 'sender'}
         <select name="wecker-sender" bind:value={entwurf.sender_uuid} aria-label={t('telefon.senderWaehlen')}>
-          {#if entwurf.sender && !appState.favorites.some((f) => f.uuid === entwurf.sender.uuid)}
+          {#if entwurf.sender && !favoriten.some((f) => f.uuid === entwurf.sender.uuid)}
             <option value={entwurf.sender.uuid}>{entwurf.sender.name}</option>
           {/if}
-          {#each appState.favorites as f (f.uuid)}<option value={f.uuid}>{f.name}</option>{/each}
+          {#each favoriten as f (f.uuid)}<option value={f.uuid}>{f.name}</option>{/each}
         </select>
+        {#if !favoriten.length && !entwurf.sender}<p class="tf-hinweis">{t('telefon.keineFavoriten')}</p>{/if}
       {:else}
         <select name="wecker-abo" bind:value={entwurf.podcast_id} aria-label={t('telefon.aboWaehlen')}>
           {#each appState.podcasts as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
