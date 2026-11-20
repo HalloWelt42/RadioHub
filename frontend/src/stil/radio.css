@@ -85,9 +85,11 @@
 .rh-zaehler ak-segmente { grid-row: 1 / span 2; --ak-zelle: min(calc(var(--gross) * 9.5), 44vw); --ak-zeichen-max: 40px; }
 .rh-zaehler .ak-etikett { align-self: end; font-weight: 600; }
 .rh-zaehler span:last-child { font-size: var(--klein); color: var(--rh-geraet-tinte-2); align-self: start; line-height: 1.25; }
-.rh-werkzeug .suche { block-size: var(--rh-taste); font-size: var(--gross); }
-.rh-werkzeug .suche input { font-size: max(17px, var(--gross)); }
-.rh-werkzeug .suche .rund { inline-size: 32px; block-size: 32px; margin-right: -6px; }
+/* das Suchfeld trägt sein Aussehen selbst, wo immer es steht (Werkzeugleiste, Verzeichnis der Podcasts); vorher galt es
+   nur in der Werkzeugleiste, im Verzeichnis war der Löschknopf so hoch wie das Feld und verdeckte den Rand (RAD-17) */
+.rh-suchfeld .suche { block-size: var(--rh-taste); font-size: var(--gross); }
+.rh-suchfeld .suche input { font-size: max(17px, var(--gross)); }
+.rh-suchfeld .suche .rund { inline-size: 32px; block-size: 32px; margin-right: -6px; }
 .rh-werkzeug .auswahl-knopf, .rh-werkzeug .knopf { block-size: var(--rh-taste); font-size: var(--klein); }
 .rh-filter-auf .pille, .t-suche .knopf .pille { block-size: 24px; padding: 0 8px; font-family: var(--schrift-zahl); background-color: var(--akzent-flaeche); color: var(--auf-akzent); }
 .rh-sortierung .auswahl-liste { left: auto; right: 0; }

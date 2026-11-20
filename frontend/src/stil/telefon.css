@@ -19,6 +19,7 @@
 .t-blatt-rollt > .rh-schnellwahl { margin-top: 4px; }
 
 .t-suche .suche { block-size: 48px; min-width: 0; }
+.t-suche .suche .rund { inline-size: var(--knopf-hoehe); block-size: var(--knopf-hoehe); margin-right: 0; }   /* am Telefon größer zum Tippen */
 .t-suche .suche input { font-size: max(17px, var(--gross)); }
 .t-suche .knopf { block-size: 48px; }
 .t-treffer { block-size: var(--rh-taste-klein); display: inline-flex; align-items: center; gap: 8px; padding: 2px 8px 2px 2px; border-radius: var(--r2); background-color: var(--rh-geraet);

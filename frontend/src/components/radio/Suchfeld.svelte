@@ -6,12 +6,15 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { senderSuchverlauf, type Suchverlauf } from "../../lib/radio/suchverlauf";
 
-  let { wert, onsuche, platzhalter = "", beschriftung = "", hilfe = "", name = "sender-suche", gedaechtnis = senderSuchverlauf }: {
+  let { wert, onsuche, platzhalter = "", beschriftung = "", hilfe = "", name = "sender-suche", gedaechtnis = senderSuchverlauf, sofortFokus = false }: {
     wert: string; onsuche: (suche: string) => void; platzhalter?: string; beschriftung?: string; hilfe?: string; name?: string;
+    /** beim Erscheinen gleich ins Feld (etwa nach "Abonnieren") */
+    sofortFokus?: boolean;
     /** wo der Verlauf liegt (je Bereich einer) */
     gedaechtnis?: Suchverlauf;
   } = $props();
   const merken = (s: string) => gedaechtnis.merken(s);
+  $effect(() => { if (sofortFokus) untrack(() => feld?.focus()); });
   const vergessen = () => gedaechtnis.vergessen();
 
   const PAUSE_MS = 300;
@@ -87,7 +90,7 @@
   <label class="suche" role="search">
     <i class="fa-solid fa-magnifying-glass"></i>
     <input bind:this={feld} bind:value={text} type="search" {name} placeholder={platzhalter || t("radio.suchePlatzhalter")}
-           aria-label={beschriftung || t("radio.sucheLabel")} title={hilfe || t("radio.sucheMinusHilfe")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
+           aria-label={beschriftung || t("radio.sucheLabel")} title={hilfe || t("radio.sucheMinusHilfe")} autocomplete="off" spellcheck="false" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
            onfocus={() => (offen = !text && verlauf.length > 0)} />
     {#if text}
       <button class="rund" type="button" aria-label={t("radio.sucheLeeren")} title={t("radio.sucheLeeren")} onclick={leeren}>

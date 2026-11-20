@@ -97,6 +97,11 @@
 .rh-fund-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen"; align-items: center; cursor: default; }
 .rh-fund .rh-stand, .rh-fund .knopf { grid-area: aktionen; }
 .rh-verzeichnis > .rh-still { font-size: var(--klein); margin: 4px 0 0; }
+.rh-verzeichnis-kopf .rh-suchfeld { min-inline-size: 0; }
+
+/* Werkzeugleiste: unter 1500 Pixeln zeigen Aktualisieren und Abonnieren nur ihr Symbol (Hilfe im Titel), damit die Zeile
+   nicht umbricht */
+@media (max-width: 1499px) { .rh-podcasts .rh-werkzeug-zeile > .knopf .rh-breit { display: none; } }
 
 @media (max-width: 900px) {
   .rh-abo-kopf { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "bild text" "schalter schalter" "knoepfe knoepfe"; }

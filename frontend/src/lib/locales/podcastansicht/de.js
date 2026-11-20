@@ -104,6 +104,7 @@ export default {
   fortsetzen: 'Fortsetzen',
   abbrechen: 'Abbrechen',
   // Verzeichnis
+  zurueckZuDenFolgen: 'Zurück zu den Folgen',
   verzeichnisSuchen: 'Podcast im Verzeichnis suchen',
   verzeichnisHinweis: 'Gesucht wird in zwei Verzeichnissen; die Adresse eines Feeds geht auch.',
   abonniert: 'abonniert',

@@ -99,6 +99,7 @@ export default {
   anhalten: 'Pause',
   fortsetzen: 'Continue',
   abbrechen: 'Cancel',
+  zurueckZuDenFolgen: 'Back to the episodes',
   verzeichnisSuchen: 'Search a podcast in the directory',
   verzeichnisHinweis: 'Searched in two directories; a feed address works too.',
   abonniert: 'subscribed',

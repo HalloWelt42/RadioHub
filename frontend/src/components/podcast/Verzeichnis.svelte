@@ -4,7 +4,11 @@
   // Namen der Verzeichnisse sind fremde Marken.
   import { t } from "../../lib/i18n.svelte.js";
   import type { Fundstueck, Podcastquelle } from "../../lib/podcasts";
+  import { Suchverlauf } from "../../lib/radio/suchverlauf";
+  import Suchfeld from "../radio/Suchfeld.svelte";
   import AboBild from "./AboBild.svelte";
+
+  const verlauf = new Suchverlauf("radiohub_podcast_verzeichnis");
 
   let { quelle, abonniert, onabonnieren, onzu }: {
     quelle: Podcastquelle;
@@ -13,21 +17,19 @@
     onzu: () => void;
   } = $props();
 
-  const PAUSE_MS = 400;
   let text = $state("");
   let treffer = $state<Fundstueck[] | null>(null);
   let sucht = $state(false);
   let fehler = $state("");
   let arbeitet = $state<string | null>(null);
-  let uhr: ReturnType<typeof setTimeout> | undefined;
   let abbruch: AbortController | null = null;
   const istFeed = $derived(/^https?:\/\/\S+$/i.test(text.trim()));
 
-  function eingabe() {
-    clearTimeout(uhr);
-    const s = text.trim();
-    if (s.length < 2 || istFeed) { treffer = null; return; }
-    uhr = setTimeout(() => void suchen(s), PAUSE_MS);
+  /** das Suchfeld meldet nach kurzer Pause (wie beim Radio); eine Adresse eines Feeds sucht nicht, sie abonniert direkt */
+  function gesucht(s: string) {
+    text = s;
+    if (s.length < 2 || istFeed) { abbruch?.abort(); treffer = null; sucht = false; return; }
+    void suchen(s);
   }
 
   async function suchen(s: string) {
@@ -58,11 +60,9 @@
 <section class="rh-verzeichnis">
   <div class="rh-verzeichnis-kopf">
     <h2><i class="fa-solid fa-plus"></i>{t("podcastAnsicht.abonnieren")}</h2>
-    <label class="suche" role="search"><i class="fa-solid fa-magnifying-glass"></i>
-      <!-- svelte-ignore a11y_autofocus -->
-      <input type="search" name="verzeichnis-suche" bind:value={text} oninput={eingabe} placeholder={t("podcastAnsicht.verzeichnisSuchen")}
-             aria-label={t("podcastAnsicht.verzeichnisSuchen")} autocomplete="off" enterkeyhint="search" autofocus /></label>
-    <button class="rund" type="button" aria-label={t("radio.schliessen")} title={t("radio.schliessen")} onclick={onzu}><i class="fa-solid fa-xmark"></i></button>
+    <Suchfeld wert={text} gedaechtnis={verlauf} name="verzeichnis-suche" platzhalter={t("podcastAnsicht.verzeichnisSuchen")}
+              beschriftung={t("podcastAnsicht.verzeichnisSuchen")} hilfe={t("podcastAnsicht.verzeichnisHinweis")} onsuche={gesucht} sofortFokus />
+    <button class="knopf" type="button" onclick={onzu}><i class="fa-solid fa-arrow-left"></i>{t("podcastAnsicht.zurueckZuDenFolgen")}</button>
   </div>
   {#if istFeed}
     <article class="rh-sender rh-fund"><div class="rh-sender-kern rh-fund-kern">
