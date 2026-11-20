@@ -1,81 +1,123 @@
 # RadioHub - Digital Audio System
 
-Webbasiertes Internetradio, Podcast-Player und Audiorecorder mit HiFi-Optik.
-Konzipiert für Raspberry Pi, läuft aber auf jedem System mit Python und Node.js.
+Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage. Gedacht für einen Raspberry Pi im Heimnetz,
+läuft aber auf jedem Rechner mit Python und Node.js. Eine Webversion nur mit Radio läuft ohne Backend direkt im
+Browser.
 
-![RadioHub Dark & Light Mode](media/hero-dark-light.png)
+**Webversion ausprobieren:** [hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/)
+
+![RadioHub am Rechner, dunkel, beim Spielen](media/radio-dunkel.png)
 
 ---
 
-## Features
+## Funktionen
 
-### Tuner - Internetradio
+### Radio
 
-Zugriff auf tausende Sender weltweit über die Radio-Browser-API.
-Filterbar nach Land, Bitrate, Codec und Votes. Favoritenverwaltung inklusive.
+Über 50.000 Sender aus dem öffentlichen Senderverzeichnis, jede Nacht abgeglichen. Sprachen, Genres, Qualität und
+Dubletten sind aufbereitet, damit die Liste übersichtlich bleibt.
 
-![Tuner - Senderübersicht](media/feature-tuner.png)
+- Schnellfilter in der Seitenleiste: nur Favoriten, nur erreichbare, Mindeststimmen als Drehwahl, Mindestbitrate,
+  Länder, Genres, Qualität, Codec; sie stehen in der Adresse und überleben das Neuladen
+- Suche nach Sender, Genre oder Ort; ein Wort mit Minus davor lässt alle Sender weg, die es enthalten
+  (`jazz -werbung -shop`)
+- Minus an jedem Sender blendet ihn sofort dauerhaft aus, mit Rückgängig
+- Varianten eines Senders (mehrere Ströme, Bitraten) gebündelt, die beste vorn
+- Steckbrief je Sender: Homepage, Strom, Codec, gemessene Bitrate, Titel im Strom, eigene Bewertung und Kategorien
+- Favoriten, eigene Bewertungen (Sterne und Markierungen), eigene Stream-Adresse
 
-- Sendersuche mit Echtzeit-Filter und Sortierung
-- Länderliste mit Senderanzahl
-- Favoritensystem mit Drag-and-Drop-Sortierung
-- Sender-Details: Homepage, Codec, Bitrate, Stream-URL
-- Favicon-Caching für schnelle Darstellung
-- Laufschrift mit aktuellem Titel (ICY-Metadata)
+![Radio hell, Varianten eines Senders aufgeklappt](media/radio-hell.png)
 
-### Recorder - Aufnahmen
+### Ausschlussregeln
 
-Laufende Streams mitschneiden, segmentieren und bearbeiten.
-Integrierter Waveform-Cutter für präzises Schneiden.
+Dauerhafte Ausschlüsse sind lebende Regeln: Sie gelten auch für Sender, die erst später ins Verzeichnis kommen.
 
-![Recorder - Aufnahmen](media/feature-recorder.png)
+- Arten: Sprache, Genre, Tag, Mindeststimmen, Werbung, eigene Bewertung, Einzelsender
+- Erst die Vorschau mit Zahl und Beispielen, dann anlegen; Entfernen zeigt vorher, wie viele Sender wieder sichtbar
+  werden
+- Ausgeblendete Sender mit Grund, einzelne lassen sich freigeben; Favoriten bleiben immer sichtbar
+- Werbeerkennung mit eigener Entscheidung je Sender
+
+![Einstellungen, Ausschlussregeln mit Vorschau](media/regeln.png)
+
+### Abspielleiste
+
+Die Kanzel unten ist gebaut wie ein Gerät: Anzeige, Quelle und Zeit, Lautstärke und Steuerung.
+
+- Punktmatrix mit Sender, Status und laufendem Titel; sie wächst mit der Breite und läuft bei langen Namen
+- Quelle und Zeit als Segmentanzeigen; Zeitversatz über einen Puffer im Backend mit Spulen und Sprung zu Live
+- Lautstärke als Drehregler zwischen zwei Pegeln (Mausrad, Ziehen, Pfeiltasten)
+- Steuerung in einer Tastenreihe: Zurück, Stopp, Spielen, Aufnahme, Weiter, dazu Original oder Zeitversatz,
+  Reihenfolge und die Bitrate des Zeitversatzes als Drehwahl; die Tasten leuchten nur über ihr Tastenlicht
+- Spielen startet, hält an und setzt fort; beendet wird nur über Stopp
+- Tastatur: Leertaste spielt oder hält an, S beendet, Pfeile für Lautstärke und Sender, M stumm, Ziffern für die
+  Bereiche
+
+### Am Telefon
+
+Eine eigene Oberfläche mit denselben Filtern: Liste mit Treffern, Filterblatt von unten, Spieler als Vollbild,
+quer die Weckeransicht für den Nachttisch (siehe unten).
+
+![Telefon: Liste und Filterblatt der vollen App, rechts die Webversion hell](media/telefon.png)
+
+### Aufnahmen
+
+Laufende Streams mitschneiden, segmentieren und bearbeiten, mit Wellenform zum Schneiden.
+
+![Aufnahmen](media/feature-recorder.png)
 
 - Zeitgesteuerte und manuelle Aufnahme
-- Waveform-basierter Audio-Cutter mit Minimap
-- Segment-Schnitt per Doppelklick oder Tastatur
-- Normalisierung (LUFS) und Format-Konvertierung (MP3, FLAC, OGG, WAV)
-- Datei-Explorer mit Sortierung und Segment-Selektion
+- Schnitt an der Wellenform mit Übersicht, per Doppelklick oder Tastatur
+- Normalisierung (LUFS) und Umwandeln (MP3, FLAC, OGG, WAV)
+- Dateiansicht mit Sortierung und Auswahl der Stücke
 
 ### Podcasts
 
-RSS-Feeds abonnieren, Episoden streamen oder herunterladen.
+Feeds abonnieren, Folgen streamen oder herunterladen.
 
 ![Podcasts](media/feature-podcasts.png)
 
-- Podcast-Suche und Abonnement-Verwaltung
-- Episoden-Filter: Alle, Ungehört, Downloads
-- Streaming und Offline-Downloads
-- Automatische Feed-Aktualisierung
+- Suche und Abos
+- Folgen filtern: alle, ungehört, heruntergeladen
+- Streamen mit Spulen, heruntergeladene Folgen aus der Ablage
+- Abos aktualisieren sich von selbst
 
-### Setup
+### Darstellung
 
-Umfangreiche Einstellungen für Darstellung, Sprache und System.
+- Vorlagen HiFi und Klassisch, jeweils hell, dunkel oder nach dem System
+- Schriftstufen bis sehr groß, ohne dass Bedienteile abgeschnitten werden
+- 20 Sprachen der Oberfläche
 
-![Setup - Einstellungen](media/feature-settings.png)
+---
 
-- Dark Mode und Light Mode
-- 20+ Sprachen mit Flaggen-Auswahl
-- Aufnahme-Einstellungen (Format, Qualität, Speicherpfad)
-- Timeshift-Buffer-Konfiguration
-- System-Informationen und Dienste-Verwaltung
+## Webversion
 
-### HiFi-Player
+Die Webversion zeigt nur das Radio und braucht kein Backend: Sie läuft als statische Seite auf GitHub Pages unter
+[hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/).
 
-Der Player orientiert sich an klassischer HiFi-Geräte-Optik:
+![Webversion am Rechner](media/webversion.png)
 
-- Gebürstetes Edelstahl-Design (Brushed Metal)
-- VU-Meter mit Echtzeit-Pegelanzeige
-- Transport-Buttons im Hardware-Look
-- Drehregler für Lautstärke
-- LED-Anzeigen für Status und Navigation
-- Laufschrift-Display mit Stream-Titel
-- Tastatursteuerung (Space, Pfeiltasten, 1-4 für Tabs)
+- **Sender:** eine feste Liste der Sender, die direkt im Browser spielen (Strom über https, zuletzt erreichbar),
+  aufbereitet wie in der vollen App; etwa 35.000 Sender
+- **Gleiche Bedienung:** Suche mit Minus, Schnellfilter, Varianten, Ausschlussregeln mit Vorschau, ausgeblendete
+  Sender, Länder der Seitenleiste, Favoriten und Bewertungen, Telefonansicht, Darstellung
+- **Eigene Daten im Browser:** Favoriten, Regeln und Sperren bleiben in diesem Browser; unter Einstellungen > Radio >
+  Eigene Daten lassen sie sich als Datei sichern und wieder einspielen (mit Rückfrage, was ersetzt wird)
+- **Ohne:** Zeitversatz, Aufnahmen, Podcasts, laufende Titel, Werbeerkennung und Senderlogos; die Oberfläche zeigt
+  nur, was die Webversion kann
+- **Datenschutz:** Die Seite lädt beim Blättern nichts von fremden Servern (darum auch keine Logos); erst beim
+  Abspielen holt der Browser den Strom direkt beim Sender
 
-### Light Mode
+Die Liste erzeugt ein Werkzeug des Backends mit derselben Aufbereitung wie der nächtliche Abgleich:
 
-Alle Oberflächen sind auch im hellen Design verfügbar.
+```bash
+cd backend
+.venv/bin/python -m app.werkzeuge.statische_liste --aus ../web/daten                       # aus dem Senderverzeichnis
+.venv/bin/python -m app.werkzeuge.statische_liste --aus ../web/daten --aus-datenbank <db>   # aus einer Datenbank
+```
 
-![Tuner - Light Mode](media/feature-tuner-light.png)
+Gebaut und ausgeliefert wird bei jedem Push auf `main` (`.github/workflows/pages.yml`: Tests, `npm run build:web`,
+Auslieferung). Herkunft und Lizenz der Daten stehen in [web/daten/LIESMICH.md](web/daten/LIESMICH.md).
 
 ---
 
@@ -94,6 +136,7 @@ Alle Oberflächen sind auch im hellen Design verfügbar.
 
 ```
 frontend/             Svelte 5 SPA (im Betrieb vom Backend ausgeliefert, beim Entwickeln Vite)
+  src/ziel/           was die Bauziele unterscheidet: voll (Backend, Anmeldung) oder web (statische Liste)
 backend/              FastAPI REST-API (Python 3.12, Paket app nach dem Schema des Appkerns)
   app/
     ablage/           Ablage der Dateien (Schnittstelle, Kellerwolke, Testablage, Ordnerstruktur)
@@ -106,6 +149,8 @@ architektur/          harte Architekturregeln (regeln.toml), geprüft vor jedem 
 deploy/               Vorschaltdienst (Caddyfile), Ziel des Ausrollens, Probelauf des Handbuchs
 docs/                 Architektur, Handbuchseite, Plan der Überarbeitung
 tools/                Git-Haken, Fassung, Ausrollen, Umzug, Symbole, Zertifikat
+web/daten/            statische Senderliste der Webversion (per Werkzeug erzeugt)
+.github/workflows/    Bau und Auslieferung der Webversion auf GitHub Pages
 compose.pi.yml        Betrieb auf dem Pi
 docker-compose.yml    Betrieb auf einem anderen Rechner
 version.json          die eine Fassung für Backend und Oberfläche
@@ -293,11 +338,12 @@ dc run --rm -T -v <Ordner des alten Radios>:/altes-radio -v <Papierkorb-Ordner>:
   radiohub python -u -m app.umzug --altes-radio /altes-radio --aufraeumen --papierkorb /papierkorb
 ```
 
-### Am Telefon
+### Am Telefon: Ansicht und Web-App
 
 Unter 900 Pixeln Breite, im Querformat und bei Fingerbedienung zeigt das RadioHub eine eigene Telefonansicht: nur
 Radio und Podcasts, unten die Fußleiste, darüber die Spielerleiste; antippen öffnet den Spieler als Vollbild
-(bei Folgen Position, 15 s zurück, 30 s vor; beim Radio voriger und nächster Favorit). Am Sperrbildschirm stehen
+(bei Folgen Position, 15 s zurück, 30 s vor; beim Radio voriger und nächster Sender der Liste und Stopp; der
+große Knopf hält nur an und setzt fort). Am Sperrbildschirm stehen
 Titel, Sender oder Abo und Bild; dort lässt sich anhalten, spulen und der Favorit wechseln. Aufnahmen, Schneiden
 und die Einrichtung gibt es nur am Rechner.
 
@@ -398,6 +444,14 @@ npm run dev
 ```
 
 Die App ist im Dev-Modus unter `http://localhost:5180` erreichbar (nur am eigenen Rechner).
+
+Die Webversion braucht kein Backend:
+
+```bash
+cd frontend
+npm run dev:web      # http://localhost:5190/RadioHub/
+npm run build:web    # nach frontend/dist-web, wie auf GitHub Pages
+```
 
 ### Fassung, Git-Haken und Regeln
 
