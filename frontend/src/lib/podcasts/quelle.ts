@@ -6,7 +6,9 @@ import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fund
 export interface Podcastfaehigkeiten {
   /** im Verzeichnis suchen und abonnieren */
   abonnieren: boolean;
-  /** Folgen herunterladen (in die Ablage, auch ohne Netz zu hören) */
+  /** Folgen in der Kellerwolke speichern (Ablage der vollen App) */
+  speichern: boolean;
+  /** eine Folge als Datei auf das Gerät laden, das gerade bedient */
   herunterladen: boolean;
   /** automatische Aktualisierung mit Abstand */
   automatisch: boolean;
@@ -47,8 +49,10 @@ export interface Podcastquelle {
   gehoert(id: number, an: boolean): Promise<void>;
   /** gehörte Stelle merken (Sekunden) */
   stelleMerken(id: number, sekunden: number): Promise<void>;
-  /** herunterladen oder den Download löschen */
-  herunterladen(id: number, an: boolean): Promise<void>;
+  /** in der Kellerwolke speichern oder dort löschen (in den Papierkorb) */
+  speichern(id: number, an: boolean): Promise<void>;
+  /** Adresse, unter der der Browser die Folge als Datei lädt (Herunterladen aufs Gerät) */
+  dateiAdresse(id: number): string;
   /** was der Spieler für eine Folge braucht; `liste` wird die Wiedergabeliste (Vor und Zurück) */
   wiedergabe(folge: Folge, liste?: Folge[]): Promise<Folgenwiedergabe>;
 }

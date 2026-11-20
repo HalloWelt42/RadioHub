@@ -9,7 +9,7 @@ export interface Abo {
   /** Adresse des Bilds, über die eigene App (nie direkt fremde Server) */
   bild: string;
   feed: string;
-  /** neue Folgen von selbst herunterladen */
+  /** neue Folgen von selbst in der Kellerwolke speichern */
   autoLaden: boolean;
   /** oben angeheftet (steht vor den übrigen) */
   angeheftet: boolean;
@@ -18,7 +18,8 @@ export interface Abo {
   /** zuletzt aktualisiert (ISO) oder leer */
   aktualisiert: string;
   folgen: number;
-  heruntergeladen: number;
+  /** Zahl der in der Kellerwolke gespeicherten Folgen */
+  gespeichert: number;
   ungehoert: number;
   heuteUngehoert: number;
   wocheUngehoert: number;
@@ -38,9 +39,11 @@ export interface Folge {
   /** zuletzt gehörte Stelle in Sekunden */
   stelle: number;
   gehoert: boolean;
-  /** heruntergeladen (in der Ablage), auch ohne Netz zu hören */
-  heruntergeladen: boolean;
-  /** Größe der heruntergeladenen Datei in Bytes */
+  /** in der Kellerwolke gespeichert (Ablage), hörbar auch wenn der Feed sie nicht mehr hat */
+  gespeichert: boolean;
+  /** Pfad der gespeicherten Datei in der Ablage, leer ohne */
+  ablagePfad: string;
+  /** Größe der gespeicherten Datei in Bytes */
   groesse: number;
   bild: string;
   /** nur in Listen über mehrere Abos */
@@ -48,8 +51,8 @@ export interface Folge {
 }
 
 /** Welche Folgen: ein Filter für Rechner und Telefon (früher dort heute/Woche/alle, hier alle/ungehört/geladen) */
-export type Folgenfilter = "alle" | "heute" | "woche" | "ungehoert" | "heruntergeladen" | "gehoert";
-export const FOLGENFILTER: readonly Folgenfilter[] = ["alle", "heute", "woche", "ungehoert", "heruntergeladen", "gehoert"];
+export type Folgenfilter = "alle" | "heute" | "woche" | "ungehoert" | "gespeichert" | "gehoert";
+export const FOLGENFILTER: readonly Folgenfilter[] = ["alle", "heute", "woche", "ungehoert", "gespeichert", "gehoert"];
 
 /** Sortierung der Folgen in der Ansicht (und je Abo gemerkt) */
 export type Podcastsortierung = "neu" | "alt" | "titel" | "laenge";

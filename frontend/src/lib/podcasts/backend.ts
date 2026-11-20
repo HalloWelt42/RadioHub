@@ -14,7 +14,7 @@ export interface Anfrager {
 type Roh = Record<string, any>;
 
 const FILTER: Record<Folgenfilter, string> = {
-  alle: "all", heute: "today", woche: "week", ungehoert: "unplayed", heruntergeladen: "downloaded", gehoert: "played",
+  alle: "all", heute: "today", woche: "week", ungehoert: "unplayed", gespeichert: "downloaded", gehoert: "played",
 };
 const SORTIERUNG: Record<Folgensortierung, string> = { datum: "published_at", titel: "title", dauer: "duration" };
 export const SEITE = 50;
@@ -23,7 +23,7 @@ const text = (w: unknown) => (typeof w === "string" ? w : "");
 const zahl = (w: unknown) => (typeof w === "number" && Number.isFinite(w) ? w : 0);
 
 export class BackendPodcastquelle implements Podcastquelle {
-  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, herunterladen: true, automatisch: true };
+  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, speichern: true, herunterladen: true, automatisch: true };
   /** zuletzt gesehene Rohdaten je Kennung: der Spieler braucht sie in seinem Format */
   private rohFolgen = new Map<number, Roh>();
   private rohAbos = new Map<number, Roh>();
@@ -44,7 +44,7 @@ export class BackendPodcastquelle implements Podcastquelle {
       id: r.id, titel: text(r.title), autor: text(r.author), beschreibung: text(r.description), bild: this.aboBild(r.id),
       feed: text(r.feed_url), autoLaden: !!r.auto_download, angeheftet: !!r.angeheftet,
       sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", aktualisiert: text(r.last_updated),
-      folgen: zahl(r.episode_count), heruntergeladen: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
+      folgen: zahl(r.episode_count), gespeichert: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
       wocheUngehoert: zahl(r.week_unplayed), dauerGesamt: zahl(r.total_duration),
     };
   }
@@ -53,7 +53,8 @@ export class BackendPodcastquelle implements Podcastquelle {
     this.rohFolgen.set(r.id, r);
     return {
       id: r.id, aboId: r.podcast_id, titel: text(r.title), beschreibung: text(r.description), dauer: zahl(r.duration),
-      datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, heruntergeladen: !!r.is_downloaded,
+      datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, gespeichert: !!r.is_downloaded,
+      ablagePfad: r.is_downloaded ? text(r.local_path) : "",
       groesse: zahl(r.file_size), bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.aboBild(r.podcast_id),
       ...(r.podcast_title ? { aboTitel: text(r.podcast_title) } : {}),
     };
@@ -147,7 +148,11 @@ export class BackendPodcastquelle implements Podcastquelle {
       body: JSON.stringify({ position_seconds: Math.max(0, Math.round(sekunden)) }) });
   }
 
-  async herunterladen(id: number, an: boolean): Promise<void> {
+  dateiAdresse(id: number): string {
+    return `${this.api.baseUrl}/api/podcasts/episodes/${id}/datei`;
+  }
+
+  async speichern(id: number, an: boolean): Promise<void> {
     await this.api.fetch(`/api/podcasts/episodes/${id}/download`, { method: an ? "POST" : "DELETE" });
   }
 

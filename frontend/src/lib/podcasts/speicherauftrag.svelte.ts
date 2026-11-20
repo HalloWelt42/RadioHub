@@ -1,8 +1,8 @@
-// "Alle herunterladen" (RAD-17): die Folgen eines Abos nacheinander herunterladen, mit Fortschritt, Anhalten, Weiter und
-// Abbrechen. Eine Folge nach der anderen, damit die Ablage nicht überlastet und jede fertige sofort in der Liste steht.
+// "Alle speichern" (RAD-17): die Folgen eines Abos nacheinander in der Kellerwolke speichern, mit Fortschritt, Anhalten,
+// Weiter und Abbrechen. Eine Folge nach der anderen, damit die Ablage nicht überlastet und jede fertige sofort in der Liste steht.
 import type { Podcastquelle } from "./quelle";
 
-export class Ladeauftrag {
+export class Speicherauftrag {
   gesamt = $state(0);
   fertig = $state(0);
   fehler = $state(0);
@@ -14,7 +14,7 @@ export class Ladeauftrag {
   private abbruch = false;
   private weiter: (() => void) | null = null;
 
-  constructor(private readonly quelle: Podcastquelle, private readonly geladen: (id: number) => void) {}
+  constructor(private readonly quelle: Podcastquelle, private readonly gespeichert: (id: number) => void) {}
 
   async starten(aboId: number, ids: number[]): Promise<void> {
     if (this.laeuft || !ids.length) return;
@@ -30,8 +30,8 @@ export class Ladeauftrag {
         if (this.abbruch) break;
         const id = this.offen.shift()!;
         try {
-          await this.quelle.herunterladen(id, true);
-          this.geladen(id);
+          await this.quelle.speichern(id, true);
+          this.gespeichert(id);
         } catch {
           this.fehler += 1;
         }

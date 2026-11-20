@@ -8,7 +8,7 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import * as sfx from "../../lib/uiSounds.js";
-  import { aboliste, Folgenliste, Ladeauftrag, podcastquelle, podcastzustand, zuAbfrage, type Aktualisierungsstand, type Folge,
+  import { aboliste, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, zuAbfrage, type Aktualisierungsstand, type Folge,
     type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
@@ -20,7 +20,8 @@
   import Verzeichnis from "./Verzeichnis.svelte";
 
   const liste = new Folgenliste(podcastquelle);
-  const auftrag = new Ladeauftrag(podcastquelle, (id) => liste.aendern(id, { heruntergeladen: true }));
+  const auftrag = new Speicherauftrag(podcastquelle, (id) => liste.aendern(id, { gespeichert: true }));
+  const kann = podcastquelle.faehig;
   let band = $state<BandInhalt | null>(null);
   let stand = $state<Aktualisierungsstand | null>(null);
   let leisteOffen = $state(false);
@@ -106,13 +107,13 @@
     });
   }
 
-  function laden(f: Folge) {
-    void sicher(async () => {
-      await podcastquelle.herunterladen(f.id, !f.heruntergeladen);
-      liste.aendern(f.id, { heruntergeladen: !f.heruntergeladen });
-      aboliste.aendern(f.aboId, { heruntergeladen: Math.max(0, (aboliste.abo(f.aboId)?.heruntergeladen ?? 0) + (f.heruntergeladen ? -1 : 1)) });
-      meldung(f.heruntergeladen ? "fa-trash-can" : "fa-circle-down", f.titel,
-        f.heruntergeladen ? t("podcastAnsicht.bandDownloadGeloescht") : t("podcastAnsicht.bandHeruntergeladen"));
+  /** in der Kellerwolke speichern (an) oder dort löschen (aus, nach der Rückfrage in der Zeile) */
+  async function speichern(f: Folge, an: boolean) {
+    await sicher(async () => {
+      await podcastquelle.speichern(f.id, an);
+      liste.aendern(f.id, { gespeichert: an, ablagePfad: an ? f.ablagePfad : "" });
+      aboliste.aendern(f.aboId, { gespeichert: Math.max(0, (aboliste.abo(f.aboId)?.gespeichert ?? 0) + (an ? 1 : -1)) });
+      meldung(an ? "fa-cloud" : "fa-trash-can", f.titel, an ? t("podcastAnsicht.bandGespeichert") : t("podcastAnsicht.bandGeloescht"));
     });
   }
 
@@ -144,8 +145,8 @@
     aktualisiert = false;
   }
 
-  async function alleLaden(aboId: number) {
-    const offen = liste.folgen.filter((f) => f.aboId === aboId && !f.heruntergeladen).map((f) => f.id);
+  async function alleSpeichern(aboId: number) {
+    const offen = liste.folgen.filter((f) => f.aboId === aboId && !f.gespeichert).map((f) => f.id);
     await auftrag.starten(aboId, offen);
     void aboliste.laden();
   }
@@ -184,6 +185,7 @@
   <main class="rh-haupt">
     <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} {stand} laedt={aktualisiert} {leisteOffen}
                      onaendern={aendern} onsortierung={sortieren} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
+                     onabonnieren={() => aendern((a) => ({ ...a, verzeichnis: true, offen: null }))}
                      oneinstellungen={() => actions.navigateTo("/einstellungen/podcast")} />
     <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl}>
       {#if ansicht.verzeichnis}
@@ -191,8 +193,8 @@
                      onzu={() => aendern((a) => ({ ...a, verzeichnis: false }))} />
       {:else}
         {#if einAbo}
-          <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
-                   onaktualisieren={() => void aktualisieren(einAbo.id)} onalleladen={() => void alleLaden(einAbo.id)}
+          <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} kannSpeichern={kann.speichern} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
+                   onaktualisieren={() => void aktualisieren(einAbo.id)} onallespeichern={() => void alleSpeichern(einAbo.id)}
                    onanheften={() => void sicher(() => aboliste.anheften(einAbo.id, !einAbo.angeheftet))}
                    onabbestellen={() => abbestellen(einAbo.id)} />
         {/if}
@@ -209,7 +211,9 @@
         {:else}
           {#each liste.folgen as f (f.id)}
             <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id}
-                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} onladen={() => laden(f)}
+                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} kannSpeichern={kann.speichern}
+                        dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
+                        onloeschen={() => speichern(f, false)}
                         ongehoert={() => gehoert(f)} ondetails={() => details(f)}
                         onabo={() => aendern((a) => ({ ...a, abos: [f.aboId], offen: null }))} />
           {/each}

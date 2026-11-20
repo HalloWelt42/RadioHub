@@ -60,7 +60,7 @@
 .rh-folgen-spalten[hidden] { display: none; }
 
 /* Folgen: dasselbe Zeilenraster wie die Sender, mit Stand und Länge statt Genres, Qualität und Stimmen */
-.rh-folgen-spalten, .rh-folge .rh-sender-kern { --rh-aktionen: calc(44px * 3 + 8px);
+.rh-folgen-spalten, .rh-folge .rh-sender-kern { --rh-aktionen: calc(44px * 4 + 12px);
   grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 10) calc(var(--klein) * 5) var(--rh-aktionen);
   grid-template-areas: "led logo name stand laenge aktionen"; }
 .rh-folgen-spalten > span:nth-child(2) { grid-area: stand; }
@@ -68,7 +68,9 @@
 .rh-folgen-spalten > span:nth-child(4) { grid-area: aktionen; }
 .rh-folge .stand-zelle { grid-area: stand; padding-top: 6px; font-size: var(--klein); }
 .rh-folge .laenge { grid-area: laenge; padding-top: 6px; text-align: right; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
-.rh-folgen-aktionen { grid-template-columns: 44px 44px 44px; }
+.rh-folgen-aktionen { grid-template-columns: repeat(auto-fill, 44px); justify-content: end; }
+.rh-folgen-aktionen a.rund { display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; color: inherit; }
+.rh-folge-frage { padding: 0 14px 12px; }
 .rh-folgen-aktionen .rund.an { color: var(--led-gruen); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gruen) 55%, transparent); }
 .rh-folge.gehoert .name b { color: var(--text-2); font-weight: 500; }
 .rh-stand { display: grid; grid-template-columns: auto; gap: 4px; color: var(--text-2); }
@@ -76,7 +78,7 @@
 .rh-stand.neu { color: var(--text); font-weight: 600; }
 .rh-stand.fertig { color: var(--text-3); }
 .rh-stand.fertig i { color: var(--led-gruen); }
-.rh-heruntergeladen { color: var(--led-gruen); display: inline-flex; gap: 6px; align-items: center; }
+.rh-gespeichert { color: var(--led-gruen); display: inline-flex; gap: 6px; align-items: center; }
 .rh-folge-detail { grid-template-columns: minmax(0, 1fr); }
 .rh-folge-detail p { margin: 0; color: var(--text-2); max-inline-size: 72ch; }
 .rh-detail-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }

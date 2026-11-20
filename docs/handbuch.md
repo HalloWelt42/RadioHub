@@ -47,14 +47,16 @@ Die Fokus-Taste der Spielerleiste (Fadenkreuz, blaues Licht heißt ein, gemerkt 
 Sender, klappt ihn auf und folgt ihm bei jedem Wechsel (Weiter, Zurück, neuer Sender), dazwischen rollt man frei; aus
 rollt nur frei. Wird der aufgeklappte Sender ausgeblendet, rückt der nächste der Reihe nach.
 
-Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Heruntergeladen, darunter die Abos
-mit der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die
-Nadel heftet ein Abo oben an; die Reihenfolge ändert Ziehen am Griff (eine Linie zeigt die Einfügestelle). Abonnieren
-über die Suche im Verzeichnis. Oben Zählwerk, Suche in Titeln und Beschreibungen, Sortierung (jedes Abo merkt sich
-seine) und Aktualisieren. Ein gewähltes Abo zeigt seinen Kopf mit "Neue herunterladen" (von selbst), Aktualisieren,
-"Alle herunterladen" mit Fortschritt, Oben anheften und Abbestellen (mit Rückgängig). Je Folge: hören, herunterladen
-oder den Download löschen, als gehört setzen, Details. Spielt eine Folge, hat die Abspielleiste statt der Bitrate eine
-Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
+Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gespeichert, darunter die Abos mit
+der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die Nadel
+heftet ein Abo oben an; die Reihenfolge ändert Ziehen am Griff (ein gestrichelter Platzhalter zeigt, wo es landet).
+Neue Podcasts über "Abonnieren" oben in der Werkzeugleiste (Suche im Verzeichnis oder die Adresse eines Feeds). Oben
+Zählwerk, Suche in Titeln und Beschreibungen, Sortierung (jedes Abo merkt sich seine) und Aktualisieren. Ein
+gewähltes Abo zeigt seinen Kopf mit "Neue speichern", Aktualisieren, "Alle speichern" mit Fortschritt, Oben anheften
+und Abbestellen (mit Rückgängig). Je Folge: hören; Speichern legt sie in der Kellerwolke ab (Podcasts/<Abo>/),
+Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespeicherte löschen fragt vorher und nennt
+die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
+Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
 
 Wecker am Telefon (Wecker-Taste oben): je Wecker Uhrzeit, Tage, Sender oder neueste Folge eines Abos, Weckton,
 Lautstärke und wie langsam es lauter wird. Den Weckton (neun zur Wahl, Vorgabe Doppelpiep, alle im Gerät erzeugt und

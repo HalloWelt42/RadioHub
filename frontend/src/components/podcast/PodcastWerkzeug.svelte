@@ -1,6 +1,6 @@
 <script lang="ts">
   // Werkzeugleiste der Podcasts (Entwurf podcasts.html), dieselben Bausteine wie beim Radio: Knopf Abos (unter 1100
-  // Pixeln), Zählwerk der Folgen, Suche mit eigenem Verlauf, Sortierung, Aktualisieren; darunter die aktiven Filter als
+  // Pixeln), Zählwerk der Folgen, Suche mit eigenem Verlauf, Sortierung, Aktualisieren, Abonnieren; darunter die aktiven Filter als
   // Chips und der Hinweis auf die nächste automatische Aktualisierung.
   import { Auswahl } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
@@ -12,7 +12,7 @@
 
   const verlauf = new Suchverlauf("radiohub_podcast_suche");
 
-  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onsortierung, onleiste, onaktualisieren, oneinstellungen }: {
+  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onsortierung, onleiste, onaktualisieren, onabonnieren, oneinstellungen }: {
     ansicht: Podcastansicht;
     abos: Abo[];
     gesamt: number | null;
@@ -25,6 +25,8 @@
     onsortierung: (s: Podcastsortierung) => void;
     onleiste: () => void;
     onaktualisieren: () => void;
+    /** Suche im Verzeichnis öffnen (neuen Podcast abonnieren) */
+    onabonnieren: () => void;
     oneinstellungen: () => void;
   } = $props();
 
@@ -75,6 +77,9 @@
     <button class="knopf" type="button" title={t("podcastAnsicht.aktualisierenHilfe")} aria-label={t("podcastAnsicht.aktualisieren")} disabled={laedt}
             onclick={() => { onaktualisieren(); sfx.click(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("podcastAnsicht.aktualisieren")}</span></button>
+    <button class="knopf" type="button" title={t("podcastAnsicht.abonnierenHilfe")} aria-label={t("podcastAnsicht.abonnieren")} aria-pressed={ansicht.verzeichnis}
+            onclick={() => { onabonnieren(); sfx.click(); }}>
+      <i class="fa-solid fa-plus"></i><span class="rh-breit">{t("podcastAnsicht.abonnieren")}</span></button>
   </div>
   <div class="rh-werkzeug-zeile">
     <div class="rh-aktiv-chips" aria-label={t("podcastAnsicht.aktiveFilter")}>

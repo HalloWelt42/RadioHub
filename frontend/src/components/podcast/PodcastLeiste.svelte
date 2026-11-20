@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Seitenleiste der Podcasts (Entwurf podcasts.html): oben eine schlichte Wahl (alle, ungehört, heruntergeladen),
+  // Seitenleiste der Podcasts (Entwurf podcasts.html): oben eine schlichte Wahl (alle, ungehört, gespeichert),
   // darunter die Abos mit der Zahl ungehörter Folgen. Ein Klick wählt genau ein Abo (Nutzer: "meist wird eh nur einer
   // gewählt"), noch einmal zurück zu allen; mit Befehls- oder Strg-Taste mehrere. Angeheftete stehen fest oben
   // (Nadel am Abo heftet an und löst). Reihenfolge per Ziehen an der Griffleiste: das gezogene Abo bleibt blass sichtbar,
@@ -92,7 +92,7 @@
   <div class="rh-filter-oben rh-folgen-wahl">
     <div class="segment" role="group" aria-label={t("podcastAnsicht.welcheFolgen")}>
       {#each FOLGENWAHL as w (w)}
-        <button type="button" class:aktiv={wahl === w} aria-pressed={wahl === w} title={w === "heruntergeladen" ? t("podcastAnsicht.heruntergeladenHilfe") : undefined}
+        <button type="button" class:aktiv={wahl === w} aria-pressed={wahl === w} title={w === "gespeichert" ? t("podcastAnsicht.gespeichertHilfe") : undefined}
                 onclick={() => onwahl(w)}>{t(`podcastAnsicht.wahl_${w}`)}</button>
       {/each}
     </div>

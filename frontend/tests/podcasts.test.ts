@@ -8,7 +8,8 @@ const ABO = { id: 3, title: "Probefunk", author: "Haus", description: "<p>x</p>"
               last_updated: "2026-11-20T08:00:00", episode_count: 12, downloaded_count: 2, unplayed_count: 5, today_unplayed: 1,
               week_unplayed: 3, total_duration: 3600 };
 const folge = (id: number, extra = {}) => ({ id, podcast_id: 3, title: `Folge ${id}`, description: "", duration: 600,
-  published_at: "2026-11-19", resume_position: 30, is_played: 0, is_downloaded: id === 1 ? 1 : 0, file_size: 1000, image_url: null, ...extra });
+  published_at: "2026-11-19", resume_position: 30, is_played: 0, is_downloaded: id === 1 ? 1 : 0, local_path: id === 1 ? "Podcasts/Probefunk/Folge 1.mp3" : null,
+  file_size: 1000, image_url: null, ...extra });
 
 function backend(antworten: Record<string, unknown> = {}) {
   const aufrufe: { pfad: string; optionen?: RequestInit }[] = [];
@@ -29,28 +30,31 @@ describe("Podcastquelle gegen das Backend", () => {
       "/api/podcasts/3/episodes": { episodes: [folge(1), folge(2, { image_url: "https://fremd.test/b.jpg" })], total: 2 } });
     const [abo] = await quelle.abos();
     expect(abo).toMatchObject({ id: 3, titel: "Probefunk", autoLaden: true, ungehoert: 5, heuteUngehoert: 1, bild: "/api/podcasts/3/image",
-      angeheftet: false, sortierung: "", heruntergeladen: 2 });
+      angeheftet: false, sortierung: "", gespeichert: 2 });
     const s = await quelle.folgen({ abos: [3] });
-    expect(s.folgen[0]).toMatchObject({ id: 1, aboId: 3, heruntergeladen: true, gehoert: false, stelle: 30, bild: "/api/podcasts/3/image" });
+    expect(s.folgen[0]).toMatchObject({ id: 1, aboId: 3, gespeichert: true, ablagePfad: "Podcasts/Probefunk/Folge 1.mp3", gehoert: false, stelle: 30, bild: "/api/podcasts/3/image" });
     expect(s.folgen[1].bild).toBe("/api/podcasts/episodes/2/image");                 // nie direkt der fremde Server
+    expect(s.folgen[1].ablagePfad).toBe("");
+    expect(quelle.dateiAdresse(2)).toBe("/api/podcasts/episodes/2/datei");           // Herunterladen aufs Gerät
+    expect(quelle.faehig).toMatchObject({ speichern: true, herunterladen: true });
     expect(s.weiter).toBeNull();
   });
 
   it("übersetzt Filter, Sortierung und Seiten in die Parameter des Backends", async () => {
     const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/all": { episodes: [folge(1), folge(2)], total: 5 } });
-    const s = await quelle.folgen({ abos: [3, 4], filter: "heruntergeladen", sortierung: "dauer", absteigend: false, anzahl: 2, nach: "2" });
+    const s = await quelle.folgen({ abos: [3, 4], filter: "gespeichert", sortierung: "dauer", absteigend: false, anzahl: 2, nach: "2" });
     const q = new URLSearchParams(aufrufe[0].pfad.split("?")[1]);
     expect(Object.fromEntries(q)).toEqual({ limit: "2", offset: "2", filter_status: "downloaded", sort_by: "duration", sort_order: "asc", podcast_ids: "3,4" });
     expect(s.weiter).toBe("4");
   });
 
-  it("schreibt Gehört, Stelle, Herunterladen, Anheften und Sortierung an die richtigen Stellen", async () => {
+  it("schreibt Gehört, Stelle, Speichern, Anheften und Sortierung an die richtigen Stellen", async () => {
     const { quelle, aufrufe } = backend();
     await quelle.gehoert(7, true);
     await quelle.gehoert(7, false);
     await quelle.stelleMerken(7, 61.6);
-    await quelle.herunterladen(7, true);
-    await quelle.herunterladen(7, false);
+    await quelle.speichern(7, true);
+    await quelle.speichern(7, false);
     await quelle.anheften(3, true);
     await quelle.sortierungSetzen(3, "alt");
     expect(aufrufe.map((a) => `${a.optionen?.method} ${a.pfad}`)).toEqual([
@@ -126,8 +130,8 @@ describe("Adresse der Podcast-Ansicht", async () => {
   it("liest und schreibt Abo, Folge, Wahl, Suche, Sortierung und Verzeichnis, auch die Adressen des Telefons", () => {
     expect(ausAdresse("/podcasts", "")).toEqual(leer());
     expect(ausAdresse("/podcasts/3/17", "")).toMatchObject({ abos: [3], offen: 17 });
-    expect(ausAdresse("/podcasts", "abo=3,4,3&wahl=heruntergeladen&suche=Wetter&sort=laenge&verzeichnis=1"))
-      .toMatchObject({ abos: [3, 4], wahl: "heruntergeladen", suche: "Wetter", sortierung: "laenge", verzeichnis: true });
+    expect(ausAdresse("/podcasts", "abo=3,4,3&wahl=gespeichert&suche=Wetter&sort=laenge&verzeichnis=1"))
+      .toMatchObject({ abos: [3, 4], wahl: "gespeichert", suche: "Wetter", sortierung: "laenge", verzeichnis: true });
     expect(ausAdresse("/podcasts", "wahl=boese&sort=boese")).toMatchObject({ wahl: "alle", sortierung: "neu" });
     expect(ausAdresse("/podcasts/search/Wetter%20heute", "")).toMatchObject({ suche: "Wetter heute", abos: [] });
     for (const a of [leer(), { ...leer(), abos: [3] }, { ...leer(), abos: [3], offen: 17 }, { ...leer(), abos: [3, 4], wahl: "ungehoert" as const, suche: "x" }]) {
@@ -145,15 +149,15 @@ describe("Adresse der Podcast-Ansicht", async () => {
   });
 });
 
-describe("Alle herunterladen", async () => {
-  const { Ladeauftrag } = await import("../src/lib/podcasts/ladeauftrag.svelte");
+describe("Alle speichern", async () => {
+  const { Speicherauftrag } = await import("../src/lib/podcasts/speicherauftrag.svelte");
 
   it("lädt der Reihe nach mit Fortschritt, hält an, setzt fort und bricht ab", async () => {
     const geladen: number[] = [];
     const offen: { id: number; gut: () => void; schlecht: () => void }[] = [];
-    const quelle = { herunterladen: (id: number) => new Promise<void>((gut, schlecht) => offen.push({ id, gut, schlecht: () => schlecht(new Error("x")) })) };
+    const quelle = { speichern: (id: number) => new Promise<void>((gut, schlecht) => offen.push({ id, gut, schlecht: () => schlecht(new Error("x")) })) };
     const ruhe = () => new Promise((r) => setTimeout(r, 0));
-    const auftrag = new Ladeauftrag(quelle as never, (id) => geladen.push(id));
+    const auftrag = new Speicherauftrag(quelle as never, (id) => geladen.push(id));
     const lauf = auftrag.starten(7, [1, 2, 3, 4]);
     expect([auftrag.laeuft, auftrag.gesamt]).toEqual([true, 4]);
     offen.shift()!.gut(); await ruhe();               // 1 geladen
