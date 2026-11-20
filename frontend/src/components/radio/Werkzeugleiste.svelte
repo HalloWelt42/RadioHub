@@ -1,14 +1,13 @@
 <script lang="ts">
   // Kopf der Liste (Entwurf rechner.html): Knopf Filter (unter 1100 Pixel), Trefferzähler als Segmentanzeige mit der
-  // echten Gesamtzahl, Suche mit Verlauf, Sortierung, Neu laden (nur die Liste, Vorgabe 4); darunter die aktiven Filter
+  // echten Gesamtzahl, Suche mit Verlauf, Neu laden (sortiert wird am Tabellenkopf, RAD-25) (nur die Liste, Vorgabe 4); darunter die aktiven Filter
   // als Chips, der Hinweis auf die durch Regeln ausgeblendeten Sender mit Sprung und Alle zurücksetzen.
-  import { Auswahl } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
   import * as sfx from "../../lib/uiSounds.js";
   import { bewertungName, landName, qualitaetName, zahl } from "../../lib/radio/anzeige";
   import { aktive, ohne, zurueckgesetzt, type Chip, type Schnellfilter } from "../../lib/radio/schnellfilter";
-  import type { Qualitaet, Sortierung } from "../../lib/radio/typen";
+  import type { Qualitaet } from "../../lib/radio/typen";
   import Suchfeld from "./Suchfeld.svelte";
 
   let { filter, gesamt, sichtbar, ausgeblendet, kategorieName, filterOffen, laedt, onaendern, onfilter, onneuladen }: {
@@ -25,8 +24,6 @@
   } = $props();
 
   const chips = $derived(aktive(filter));
-  const SORTEN: Sortierung[] = ["stimmen", "name", "qualitaet", "bitrate"];
-  const sorten = $derived(SORTEN.map((s) => ({ wert: s, titel: t(`radio.sortierung.${s}`), hinweis: ` · ${t(`radio.sortierungHinweis.${s}`)}` })));
 
   /** Beschriftung eines Chips: Art und Wert */
   function beschriftung(c: Chip): { art: string; wert: string } {
@@ -61,10 +58,6 @@
       <span class="rh-breit">{sichtbar === null ? "" : t("radio.vonSichtbaren", { n: zahl(sichtbar) })}</span>
     </div>
     <Suchfeld wert={filter.suche} onsuche={(s) => onaendern((f) => ({ ...f, suche: s }))} />
-    <span class="rh-sortierung">
-      <Auswahl wert={filter.sortierung} optionen={sorten} symbol="fa-arrow-down-wide-short" titel={t("radio.sortierungTitel")}
-               onwahl={(s) => onaendern((f) => ({ ...f, sortierung: s }))} />
-    </span>
     <button class="knopf rh-neu-laden" type="button" title={t("radio.neuLadenHilfe")} aria-label={t("radio.neuLaden")} disabled={laedt}
             onclick={() => { onneuladen(); sfx.click(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("radio.neuLaden")}</span></button>

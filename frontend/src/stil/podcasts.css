@@ -7,7 +7,9 @@
 .rh-podcasts { --rh-filter-breite: calc(var(--gross) * 26); }
 /* Luft über dem ersten Inhalt der Liste (Verzeichnis, Kopf des Abos): ohne sie schnitt das Rollfeld Rand und Schatten
    oben ab (Nutzer 20.11.2026: "die box verschwindet immer noch wenige pixel oben im rand") */
-.rh-podcasts .rh-liste { padding-top: 6px; }
+/* Abstand oben nie am Rollfeld (sonst klebt der Tabellenkopf darunter und Folgen scheinen oben durch, RAD-24): nur am
+   ersten Inhalt, der mitrollt */
+.rh-podcasts .rh-liste > :first-child:not(.rh-spalten) { margin-top: 6px; }
 .rh-folgen-wahl { display: flex; align-items: center; gap: 8px; }
 .rh-folgen-wahl .segment { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rh-folgen-wahl .segment button { min-block-size: var(--rh-taste-klein); font-size: var(--klein); white-space: normal; line-height: 1.2; }
@@ -87,7 +89,8 @@
 .rh-detail-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
 
 @container liste (max-width: 52em) {
-  .rh-folgen-spalten { display: none; }
+  .rh-folgen-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .rh-folgen-spalten > .rh-ohne-sort { display: none; }
   .rh-folge .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "stand stand laenge"; gap: 8px 12px; padding: 10px; }
   .rh-folge .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-folge .stand-zelle, .rh-folge .laenge { padding-top: 0; }

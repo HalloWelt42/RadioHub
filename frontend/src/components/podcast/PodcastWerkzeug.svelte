@@ -2,17 +2,16 @@
   // Werkzeugleiste der Podcasts (Entwurf podcasts.html), dieselben Bausteine wie beim Radio: Knopf Abos (unter 1100
   // Pixeln), Zählwerk der Folgen, Suche mit eigenem Verlauf, Sortierung, Aktualisieren, Abonnieren; darunter die aktiven Filter als
   // Chips und der Hinweis auf die nächste automatische Aktualisierung.
-  import { Auswahl } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import * as sfx from "../../lib/uiSounds.js";
   import { zahl } from "../../lib/radio/anzeige";
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
-  import { PODCASTSORTIERUNG, type Abo, type Aktualisierungsstand, type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
+  import { type Abo, type Aktualisierungsstand, type Podcastansicht } from "../../lib/podcasts";
   import Suchfeld from "../radio/Suchfeld.svelte";
 
   const verlauf = new Suchverlauf("radiohub_podcast_suche");
 
-  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onsortierung, onleiste, onaktualisieren, onabonnieren, oneinstellungen }: {
+  let { ansicht, abos, gesamt, ungehoert, stand, laedt, leisteOffen, onaendern, onleiste, onaktualisieren, onabonnieren, oneinstellungen }: {
     ansicht: Podcastansicht;
     abos: Abo[];
     gesamt: number | null;
@@ -22,7 +21,6 @@
     leisteOffen: boolean;
     onaendern: (arbeit: (a: Podcastansicht) => Podcastansicht) => void;
     /** Sortierung gewählt (gilt bei einem Abo für dieses Abo) */
-    onsortierung: (s: Podcastsortierung) => void;
     onleiste: () => void;
     onaktualisieren: () => void;
     /** Suche im Verzeichnis öffnen (neuen Podcast abonnieren) */
@@ -30,7 +28,6 @@
     oneinstellungen: () => void;
   } = $props();
 
-  const sorten = $derived(PODCASTSORTIERUNG.map((s) => ({ wert: s, titel: t(`podcastAnsicht.sort_${s}`), hinweis: ` · ${t(`podcastAnsicht.sortHinweis_${s}`)}` })));
   const name = (id: number) => abos.find((a) => a.id === id)?.titel ?? String(id);
 
   type Chip = { art: "abo" | "wahl" | "suche"; wert: string; text: string };
@@ -70,10 +67,6 @@
     <Suchfeld wert={ansicht.suche} gedaechtnis={verlauf} name="folgen-suche" platzhalter={t("podcastAnsicht.sucheHilfe")}
               beschriftung={t("podcastAnsicht.sucheHilfe")} hilfe={t("podcastAnsicht.sucheHilfe")}
               onsuche={(s) => onaendern((a) => ({ ...a, suche: s, offen: null }))} />
-    <span class="rh-sortierung">
-      <Auswahl wert={ansicht.sortierung} optionen={sorten} symbol="fa-arrow-down-wide-short" titel={t("podcastAnsicht.sortierungTitel")}
-               onwahl={(s: Podcastsortierung) => onsortierung(s)} />
-    </span>
     <button class="knopf" type="button" title={t("podcastAnsicht.aktualisierenHilfe")} aria-label={t("podcastAnsicht.aktualisieren")} disabled={laedt}
             onclick={() => { onaktualisieren(); sfx.click(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("podcastAnsicht.aktualisieren")}</span></button>

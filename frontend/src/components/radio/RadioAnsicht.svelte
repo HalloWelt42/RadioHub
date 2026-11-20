@@ -17,6 +17,8 @@
   import Band from "./Band.svelte";
   import Seitenleiste from "./Seitenleiste.svelte";
   import SenderZeile from "./SenderZeile.svelte";
+  import SortSpalte from "./SortSpalte.svelte";
+  import type { Sortierung } from "../../lib/radio/typen";
   import Werkzeugleiste from "./Werkzeugleiste.svelte";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
 
@@ -199,8 +201,14 @@
                     onneuladen={() => { void liste.laden(zuAbfrage(filter)); void bedienung.bestandLaden(); }} />
     <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
     <div class="rh-liste" bind:this={listeEl} tabindex="0" role="list" aria-label={t("radio.senderliste")} onkeydown={taste}>
-      <div class="rh-spalten" aria-hidden="true"><span>{t("radio.sender")}</span><span>{t("radio.genres")}</span><span>{t("radio.qualitaetTitel")}</span>
-        <span class="rechts">{t("radio.stimmen")}</span><span></span></div>
+      {#snippet sortspalte(s: Sortierung, titel: string)}
+        <SortSpalte {titel} hilfe={t(`radio.sortierungHinweis.${s}`)} aktiv={filter.sortierung === s} absteigend={s !== "name"}
+                    onwahl={() => aendern((f) => ({ ...f, sortierung: s }))} />
+      {/snippet}
+      <div class="rh-spalten" role="group" aria-label={t("radio.sortierungTitel")}>
+        <span>{@render sortspalte("name", t("radio.sender"))}</span><span class="rh-ohne-sort">{t("radio.genres")}</span>
+        <span>{@render sortspalte("bitrate", t("radio.sortierung.bitrate"))}</span>
+        <span class="rechts">{@render sortspalte("stimmen", t("radio.stimmen"))}</span><span class="rh-ohne-sort"></span></div>
       {#if !liste.geladen}
         <div class="rh-ohne-treffer"><i class="fa-solid fa-spinner fa-spin"></i><b>{t("radio.laedt")}</b></div>
       {:else if liste.fehler && !liste.eintraege.length}

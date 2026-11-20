@@ -15,6 +15,7 @@
   import Band from "../radio/Band.svelte";
   import AboKopf from "./AboKopf.svelte";
   import FolgeZeile from "./FolgeZeile.svelte";
+  import SortSpalte from "../radio/SortSpalte.svelte";
   import PodcastLeiste from "./PodcastLeiste.svelte";
   import PodcastWerkzeug from "./PodcastWerkzeug.svelte";
   import Verzeichnis from "./Verzeichnis.svelte";
@@ -184,7 +185,7 @@
 
   <main class="rh-haupt">
     <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} {stand} laedt={aktualisiert} {leisteOffen}
-                     onaendern={aendern} onsortierung={sortieren} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
+                     onaendern={aendern} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
                      onabonnieren={() => aendern((a) => ({ ...a, verzeichnis: true, offen: null }))}
                      oneinstellungen={() => actions.navigateTo("/einstellungen/podcast")} />
     <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl}>
@@ -198,8 +199,17 @@
                    onanheften={() => void sicher(() => aboliste.anheften(einAbo.id, !einAbo.angeheftet))}
                    onabbestellen={() => abbestellen(einAbo.id)} />
         {/if}
-        <div class="rh-spalten rh-folgen-spalten" aria-hidden="true"><span>{t("podcastAnsicht.folge")}</span><span>{t("podcastAnsicht.stand")}</span>
-          <span class="rechts">{t("podcastAnsicht.laenge")}</span><span></span></div>
+        {#snippet sortspalte(titel: string, s: Podcastsortierung, absteigend: boolean, aktiv: boolean, weiter: Podcastsortierung)}
+          <SortSpalte {titel} hilfe={t(`podcastAnsicht.sortHinweis_${s}`)} {aktiv} {absteigend} onwahl={() => sortieren(weiter)} />
+        {/snippet}
+        {@const datum = ansicht.sortierung === "neu" || ansicht.sortierung === "alt"}
+        <div class="rh-spalten rh-folgen-spalten" role="group" aria-label={t("podcastAnsicht.sortierungTitel")}>
+          <span>{@render sortspalte(t("podcastAnsicht.folge"), "titel", false, ansicht.sortierung === "titel", "titel")}
+            {@render sortspalte(t("podcastAnsicht.datum"), datum ? ansicht.sortierung : "neu", ansicht.sortierung !== "alt", datum,
+                                ansicht.sortierung === "neu" ? "alt" : "neu")}</span>
+          <span class="rh-ohne-sort">{t("podcastAnsicht.stand")}</span>
+          <span class="rechts">{@render sortspalte(t("podcastAnsicht.laenge"), "laenge", false, ansicht.sortierung === "laenge", "laenge")}</span>
+          <span class="rh-ohne-sort"></span></div>
         {#if !liste.geladen}
           <div class="rh-ohne-treffer"><i class="fa-solid fa-spinner fa-spin"></i><b>{t("podcastAnsicht.laedt")}</b></div>
         {:else if liste.fehler && !liste.folgen.length}

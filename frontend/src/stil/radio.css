@@ -92,7 +92,6 @@
 .rh-suchfeld .suche .rund { inline-size: 32px; block-size: 32px; margin-right: -6px; }
 .rh-werkzeug .auswahl-knopf, .rh-werkzeug .knopf { block-size: var(--rh-taste); font-size: var(--klein); }
 .rh-filter-auf .pille, .t-suche .knopf .pille { block-size: 24px; padding: 0 8px; font-family: var(--schrift-zahl); background-color: var(--akzent-flaeche); color: var(--auf-akzent); }
-.rh-sortierung .auswahl-liste { left: auto; right: 0; }
 .rh-aktiv-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
 .rh-aktiv-chips .chip, .t-chips .chip { min-block-size: var(--rh-taste-klein); padding: 0 4px 0 12px; gap: 6px; font-size: var(--klein); white-space: nowrap; max-inline-size: 100%; }
 .rh-aktiv-chips .chip b { font-weight: 600; }
@@ -114,6 +113,16 @@
 .rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
   font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); box-shadow: 0 1px 0 var(--rand); }
 .rh-spalten .rechts { text-align: right; }
+/* sortierbare Titel (RAD-25): sehen aus wie der Spaltentitel, der aktive hell mit Pfeil seiner Richtung */
+.rh-sortspalte { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 4px 0; border: 0; background: none;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; cursor: pointer; }
+.rh-sortspalte + .rh-sortspalte { margin-left: 14px; }
+.rh-sortspalte i { font-size: .9em; opacity: 0; transition: opacity var(--ruhig); }
+.rh-sortspalte:hover { color: var(--text); }
+.rh-sortspalte:hover i { opacity: .5; }
+.rh-sortspalte.aktiv { color: var(--text); }
+.rh-sortspalte.aktiv i { opacity: 1; color: var(--akzent); }
+.rh-sortspalte:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; border-radius: 4px; }
 .rh-spalten > span:first-child { grid-column: led / name; }
 .rh-spalten > span:nth-child(2) { grid-area: genres; }
 .rh-spalten > span:nth-child(3) { grid-area: guete; }
@@ -163,7 +172,8 @@
   .rh-sender .genres { padding-top: 6px; }
 }
 @container liste (max-width: 44em) {
-  .rh-spalten { display: none; }
+  .rh-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .rh-spalten > .rh-ohne-sort { display: none; }
   .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
   .rh-sender .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-sender .guete-zelle { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "licht stufe format"; padding-top: 0; }
