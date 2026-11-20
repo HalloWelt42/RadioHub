@@ -45,8 +45,11 @@ class AbgleichErgebnis(BaseModel):
     aufbereitet: int
 
 
-async def _seite(client: httpx.AsyncClient, server: list[str], bevorzugt: int, versatz: int) -> tuple[list[dict[str, Any]], int]:
-    """Eine Seite des Verzeichnisses; beginnt beim zuletzt erfolgreichen Server und nimmt bei Fehlern den nächsten."""
+async def seite_laden(client: httpx.AsyncClient, server: list[str], bevorzugt: int,
+                      versatz: int) -> tuple[list[dict[str, Any]], int]:
+    """Eine Seite des Verzeichnisses (roh, mit nicht erreichbaren Sendern) und die Nummer des Servers, der sie lieferte;
+    beginnt beim zuletzt erfolgreichen Server und nimmt bei Fehlern den nächsten. Auch für das Werkzeug der statischen
+    Senderliste (RAD-4)."""
     fehler = []
     for schritt in range(len(server)):
         nummer = (bevorzugt + schritt) % len(server)
@@ -80,7 +83,7 @@ async def abgleichen(kontext: Kontext, client_bauen: ClientBauen) -> AbgleichErg
     async with client_bauen() as client:
         while True:
             await kontext.pruefen()
-            roh, nummer = await _seite(client, server, nummer, versatz)
+            roh, nummer = await seite_laden(client, server, nummer, versatz)
             saetze = []
             for eintrag in roh:
                 try:
