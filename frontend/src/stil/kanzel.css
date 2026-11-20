@@ -49,7 +49,7 @@
 .rh-display-quelle { display: block; inline-size: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--r1); background: none; color: inherit; font: inherit;
   text-align: start; cursor: pointer; }
 .rh-display-quelle:disabled { cursor: default; }
-.rh-display-quelle:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-display-quelle:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 
 /* ═══ Quelle und Zeit ═══ 14 Segmente für die Quelle, 7 für die Zeit; darunter Zeitversatz oder Position */
 .rh-zeit { flex: 1; display: grid; gap: 6px; align-content: center; }
@@ -78,7 +78,7 @@
 .rh-spulregler::-moz-range-thumb { inline-size: 6px; block-size: 18px; border: 0; border-radius: var(--r1); background-color: var(--rh-geraet-tinte); box-shadow: var(--rh-geraet-schatten-klein); }
 .rh-spulregler:disabled::-webkit-slider-thumb { visibility: hidden; }
 .rh-spulregler:disabled::-moz-range-thumb { visibility: hidden; }
-.rh-spulregler:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-spulregler:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 .rh-spulbahn.sucht .balken { animation: rh-suchen .6s ease-in-out infinite alternate; }
 @keyframes rh-suchen { from { opacity: .55; } }
 

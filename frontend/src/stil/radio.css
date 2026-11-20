@@ -18,7 +18,7 @@
   border: 0; border-radius: var(--r2); background-color: var(--rh-kappe); color: var(--rh-geraet-tinte); box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark);
   font-size: var(--marke); cursor: pointer; }
 .rh-kopf-taste:disabled { cursor: default; color: var(--ak-gesperrt-tinte); background-color: var(--ak-kappe-gesperrt); box-shadow: var(--ak-mulde-tiefe); }
-.rh-kopf-taste:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-kopf-taste:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 /* Leuchtziffer: satt und ohne Weiß, wenn Filter wirken; sonst die unbeleuchtete Ziffer */
 .rh-leuchtzahl { font-family: var(--schrift-zahl); font-weight: 700; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--led-bernstein) 18%, var(--ak-glas)); }
 .rh-leuchtzahl.an { color: var(--led-bernstein); text-shadow: 0 0 calc(8px * var(--ak-leuchten)) var(--led-bernstein); }
@@ -57,7 +57,7 @@
   box-shadow: 0 0 calc(10px * var(--ak-leuchten, 0)) var(--akzent-flaeche); transition: opacity var(--schnell, 0.15s);
 }
 .rh-facette input[type="checkbox"]:checked::after { opacity: 1; }
-.rh-facette input[type="checkbox"]:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-facette input[type="checkbox"]:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 .rh-facette > span:nth-child(3) { overflow-wrap: anywhere; line-height: 1.4; }
 .rh-facette .rh-zahl { font-size: var(--klein); color: var(--text-3); padding-top: 2px; }
 .rh-facette:has(input:checked) > span:nth-child(3) { color: var(--text); font-weight: 600; }

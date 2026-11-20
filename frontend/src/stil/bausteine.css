@@ -19,7 +19,7 @@ html, body { height: 100%; overflow: hidden; }
   color: var(--rh-herz); font-size: 19px; text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-herz) 75%, transparent), var(--rh-praegung); }
 .rh-herz i { animation: rh-pochen 2.2s ease-in-out infinite; }
 .rh-herz:hover i { animation: none; transform: scale(1.18); }
-.rh-herz:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-herz:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 @keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
 .rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
 :root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
@@ -34,7 +34,7 @@ html, body { height: 100%; overflow: hidden; }
 .rh-nav-knopf:hover { color: var(--rh-nav-tinte-an); }
 .rh-nav-knopf[aria-current="page"] { color: var(--rh-nav-tinte-aktiv); background-color: var(--rh-nav-an); background-image: var(--rh-erhaben); box-shadow: var(--rh-nav-an-schatten);
   text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--akzent-flaeche) 60%, transparent); }
-.rh-nav-knopf:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-nav-knopf:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 .rh-nav-knopf i { display: none; }
 
 .rh-status { display: inline-flex; align-items: center; gap: 12px; min-block-size: var(--rh-taste-klein); padding: 0 12px; border-radius: var(--r2); background-color: var(--ak-glas);
