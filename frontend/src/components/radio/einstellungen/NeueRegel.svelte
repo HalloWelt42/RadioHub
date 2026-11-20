@@ -19,7 +19,9 @@
   } = $props();
 
   type Art = Exclude<RegelArt, "altsperren">;
-  const ARTEN: Art[] = ["sprache", "genre", "tag", "stimmen", "werbung", "bewertung", "einzeln"];
+  // Werbung nur, wo die Quelle eine Werbeerkennung hat (nicht in der Webversion)
+  const ARTEN: Art[] = (["sprache", "genre", "tag", "stimmen", "werbung", "bewertung", "einzeln"] as Art[])
+    .filter((a) => a !== "werbung" || senderquelle.faehig.werbung);
   const MIT_LISTE: Art[] = ["sprache", "genre", "tag", "bewertung", "einzeln"];
   const STIMMEN = [1, 3, 5, 10, 25, 50, 100];
   const WERBUNG: WerbeStufe[] = ["eigene", "hoch", "mittel", "verdacht"];

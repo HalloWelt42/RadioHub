@@ -64,7 +64,7 @@ async function ohneNichtDa(arbeit: Promise<unknown>): Promise<void> {
 }
 
 export class BackendQuelle implements Senderquelle {
-  readonly faehig: Faehigkeiten = { abgleich: true, eigeneAdresse: true, messen: true, kategorien: true, titelBewerten: true };
+  readonly faehig: Faehigkeiten = { abgleich: true, eigeneAdresse: true, messen: true, kategorien: true, titelBewerten: true, werbung: true, datei: false };
   private readonly a: Anfrage;
   private readonly beiFavoriten: () => void;
   private readonly messenNachMs: number;

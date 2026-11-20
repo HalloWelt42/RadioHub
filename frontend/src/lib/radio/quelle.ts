@@ -19,6 +19,19 @@ export interface Faehigkeiten {
   kategorien: boolean;
   /** Titelangaben im Strom bewerten (genaue oder ungenaue Schnitte für Aufnahmen) */
   titelBewerten: boolean;
+  /** Werbeerkennung: Werbeverdacht je Sender, Regelart Werbung, Widerspruch "kein Werbeverdacht" */
+  werbung: boolean;
+  /** eigene Angaben (Favoriten, Bewertungen, Regeln, Sperren, Freigaben, Länder) als Datei sichern und einspielen */
+  datei: boolean;
+}
+
+/** Was beim Einspielen einer Datei übernommen wurde */
+export interface Einspielbericht {
+  favoriten: number;
+  bewertungen: number;
+  regeln: number;
+  sperren: number;
+  freigaben: number;
 }
 
 /** Ein Sender, wie ihn die Wiedergabe braucht (Felder der bisherigen Wiedergabe: Adresse für Zeitversatz und Aufnahme). */
@@ -132,5 +145,11 @@ export interface Senderquelle {
   abgleich(): Promise<Abgleichstand>;
   /** startet den Abgleich als Auftrag; Kennung des Auftrags */
   abgleichStarten(): Promise<string>;
+
+  // ----- Eigene Angaben als Datei (nur mit faehig.datei) -------------------------------------------------------------
+  /** alle eigenen Angaben als Text einer Datei (JSON) */
+  sichern?(): Promise<string>;
+  /** Text einer gesicherten Datei einspielen; ersetzt die eigenen Angaben, meldet was übernommen wurde */
+  einspielen?(inhalt: string): Promise<Einspielbericht>;
 }
 

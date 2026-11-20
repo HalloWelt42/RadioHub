@@ -184,7 +184,7 @@
                   title={t("radio.titelUngenauHilfe")} onclick={() => titelGuete("ungenau")}>{t("radio.titelUngenau")}</button>
         </span></dd>
       {/if}
-      <dt>{t("radio.werbungTitel")}</dt><dd>{werbeText()}</dd>
+      {#if faehig.werbung}<dt>{t("radio.werbungTitel")}</dt><dd>{werbeText()}</dd>{/if}
       {#if eintrag.ausnahme.length}
         <dt>{t("radio.sichtbarkeit")}</dt>
         <dd class="rh-ausnahme"><i class="fa-solid fa-star"></i>{t("radio.ausnahme", { gruende: eintrag.ausnahme.map((g) => g.titel).join("; ") })}</dd>
@@ -202,7 +202,7 @@
         <button type="button" class="chip wahl" class:an aria-pressed={an} onclick={() => markieren(b)}>
           {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}</button>
       {/each}
-      {#if steckbrief}
+      {#if steckbrief && faehig.werbung}
         <button type="button" class="chip wahl" class:an={steckbrief.widerspruch} aria-pressed={steckbrief.widerspruch}
                 title={t("radio.keinWerbeverdachtHilfe")} onclick={widersprechen}><i class="fa-solid fa-ban"></i>{t("radio.keinWerbeverdacht")}</button>
       {/if}
