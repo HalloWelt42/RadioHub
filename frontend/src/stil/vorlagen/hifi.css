@@ -28,15 +28,13 @@
   --rh-tafel-dunkel: rgb(0 0 0 / calc(.10 + .1 * var(--hifi-tiefe)));
   --rh-zeile-auf-geraet: rgb(255 255 255 / calc(.04 * var(--hifi-glanz)));
 
-  /* Navigation: Schiene aus gebürstetem Metall wie die Geräte (Nutzer 20.11.2026: "hintergrund der taster auch metall
-     machen"), versenkt in die Platte; der gewählte Bereich erhaben und dunkel mit Tastenlicht */
+  /* Navigation: Metallplatte, gewählter Bereich erhaben auf dunkler Schiene */
   --rh-nav-an: #2a2e35;
   --rh-nav-an-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.14 * var(--hifi-glanz))), 0 1px 3px rgb(0 0 0 / .6);
-  --rh-nav-tinte: var(--rh-geraet-tinte-2);
-  --rh-nav-tinte-an: var(--rh-geraet-tinte);
+  --rh-nav-tinte: var(--ak-mulde-tinte);
+  --rh-nav-tinte-an: var(--ak-mulde-tinte-an);
   --rh-nav-tinte-aktiv: var(--akzent-flaeche); /* gewählter Bereich leuchtet auf dunklem Metall */
-  --rh-nav-schiene: var(--rh-geraet);
-  --rh-nav-schiene-bild: var(--rh-geraet-bild);
+  --rh-nav-schiene: var(--ak-mulde);
 
   /* Logo und Prägung */
   --rh-lack-bild: var(--hifi-licht-oben), var(--hifi-koernung);

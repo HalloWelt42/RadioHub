@@ -35,7 +35,6 @@
   --rh-nav-tinte-an: var(--text);
   --rh-nav-tinte-aktiv: var(--akzent);         /* gewählter Bereich: Akzent als Schrift, lesbar auf heller Fläche */
   --rh-nav-schiene: var(--flaeche-2);
-  --rh-nav-schiene-bild: none;
 
   /* Logo ohne Prägung */
   --rh-lack-bild: none;
