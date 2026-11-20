@@ -27,12 +27,21 @@
 <section class="rh-abo-kopf">
   <AboBild {abo} gross />
   <div class="rh-abo-text">
-    <h2>{abo.titel}</h2>
+    <div class="rh-abo-titel"><h2>{abo.titel}</h2>
+      {#if kannSpeichern && abo.folgen}
+        <!-- Vollständigkeit der gespeicherten Folgen (RAD-23, nur im großen Kopf) -->
+        <span class="rh-vollstaendig" class:fertig={abo.gespeichert >= abo.folgen} title={t("podcastAnsicht.vollstaendigHilfe", { n: abo.gespeichert, von: abo.folgen })}>
+          <i class="fa-solid {abo.gespeichert >= abo.folgen ? 'fa-circle-check' : 'fa-cloud'}"></i>
+          <b>{abo.gespeichert}/{abo.folgen}</b>{t("podcastAnsicht.gespeichert")}
+          <span class="balken"><span style:width="{Math.min(100, Math.round((abo.gespeichert / abo.folgen) * 100))}%"></span></span>
+        </span>
+      {/if}
+    </div>
     {#if abo.autor}<p class="rh-still">{abo.autor}</p>{/if}
     {#if beschreibung}<Langtext text={beschreibung} klasse="rh-abo-beschreibung" />{/if}
     <div class="rh-abo-zahlen">
       <span>{t("podcastAnsicht.folgenZahl", { n: abo.folgen })}</span><span>{t("podcastAnsicht.ungehoertKopf", { n: abo.ungehoert })}</span>
-      {#if kannSpeichern}<span>{t("podcastAnsicht.gespeichertKopf", { n: abo.gespeichert })}</span>{/if}<span>{t("podcastAnsicht.zusammen", { zeit: dauerText(abo.dauerGesamt) })}</span>
+<span>{t("podcastAnsicht.zusammen", { zeit: dauerText(abo.dauerGesamt) })}</span>
     </div>
   </div>
   {#if kannSpeichern}

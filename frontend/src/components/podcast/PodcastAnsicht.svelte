@@ -173,11 +173,16 @@
 </script>
 
 <div class="rh-radio rh-podcasts">
-  <PodcastLeiste abos={aboliste.abos} gewaehlt={ansicht.abos} wahl={ansicht.wahl} offen={leisteOffen}
+  <PodcastLeiste abos={aboliste.abos} ordner={aboliste.ordner} gewaehlt={ansicht.abos} wahl={ansicht.wahl} offen={leisteOffen}
                  onwahl={(w) => aendern((a) => ({ ...a, wahl: w, offen: null }))}
                  onabos={(ids) => aendern((a) => ({ ...a, abos: ids, offen: null, verzeichnis: false }))}
                  onordnen={(ids) => void sicher(() => aboliste.ordnen(ids))}
                  onanheften={(id, an) => void sicher(() => aboliste.anheften(id, an))}
+                 onordnerneu={(name) => void sicher(async () => { await aboliste.ordnerAnlegen(name); })}
+                 onordneraendern={(id, teil) => void sicher(() => aboliste.ordnerAendern(id, teil))}
+                 onordnerloeschen={(id) => sicher(() => aboliste.ordnerLoeschen(id))}
+                 onordnerordnen={(ids) => void sicher(() => aboliste.ordnerOrdnen(ids))}
+                 onzuordnen={(abo, ordner, ids) => void sicher(() => aboliste.zuordnen(abo, ordner, ids))}
                  onabonnieren={() => { leisteOffen = false; aendern((a) => ({ ...a, verzeichnis: true })); }}
                  onzu={() => (leisteOffen = false)} />
   <button class="rh-schleier" class:offen={leisteOffen} type="button" aria-label={t("radio.schliessen")} tabindex="-1"

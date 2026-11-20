@@ -114,3 +114,35 @@
 }
 
 .rh-abo-kopf ak-taster { align-self: start; }
+
+/* Ordner der Abos (RAD-23): Kopf wie eine Abo-Zeile mit Klappe und Ordnersymbol, Inhalt eingerückt; Ziel beim Ziehen
+   gestrichelt wie der Platzhalter */
+.rh-ordner { grid-template-columns: 22px 22px minmax(0, 1fr) auto; position: relative; padding-left: 26px; align-items: center; cursor: pointer; }
+.rh-ordner .rh-klappe { font-size: var(--klein); color: var(--text-3); transition: transform var(--schnell); }
+.rh-ordner.zu .rh-klappe { transform: rotate(-90deg); }
+.rh-ordner .rh-ordner-symbol { color: var(--akzent); }
+.rh-ordner .rh-abo-name { font-weight: 600; }
+.rh-ordner:hover .rh-griff, .rh-ordner:focus-within .rh-griff { opacity: 1; }
+.rh-ordner:hover .rh-nadel, .rh-ordner:focus-within .rh-nadel { opacity: 1; }
+.rh-ordner:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 1px; }
+.rh-ordner.ziel, .rh-ohne-ordner.ziel { outline: 2px dashed var(--akzent); outline-offset: -2px; background-color: var(--flaeche); }
+.rh-ordner-block.gezogen { opacity: .4; }
+.rh-ordner-inhalt { display: grid; gap: inherit; padding-left: 18px; }
+.rh-ordner-leer { margin: 2px 0 6px 26px; font-size: var(--klein); }
+.rh-ordner-frage { margin: 4px 0 8px; }
+.rh-ohne-ordner { padding: 8px 10px 4px 26px; border-radius: var(--r2); font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-3); font-weight: 600; }
+.rh-ordner-eingabe { display: flex; align-items: center; gap: 8px; min-inline-size: 0; }
+.rh-ordner-neu { padding: 4px 10px 4px 26px; color: var(--akzent); }
+.rh-ordner-eingabe input { flex: 1; min-inline-size: 0; block-size: 32px; padding: 0 10px; border: 1px solid var(--rand); border-radius: var(--r2);
+  background-color: var(--flaeche); color: var(--text); font: inherit; outline: none; }
+.rh-ordner-eingabe input:focus { border-color: var(--fokus-rand, var(--akzent)); }
+
+/* Kopf des Abos: Vollständigkeit x/y gespeichert neben dem Titel (RAD-23) */
+.rh-abo-titel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.rh-abo-titel h2 { margin: 0; }
+.rh-vollstaendig { display: inline-flex; align-items: center; gap: 6px; font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
+.rh-vollstaendig b { font-family: var(--schrift-zahl); color: var(--text); }
+.rh-vollstaendig i { color: var(--led-gruen); }
+.rh-vollstaendig .balken { inline-size: calc(var(--klein) * 5); }   /* der Balken der Schale, wie beim Hörstand */
+.rh-vollstaendig.fertig b { color: var(--led-gruen); }
