@@ -44,6 +44,12 @@ nur unter Einstellungen > Radio: Ausschlussregeln (erst Vorschau, dann anlegen, 
 vorher die Folgen), Ausgeblendete Sender (Grund je Sender, Freigeben), Länder der Seitenleiste (blendet nichts aus),
 Werbeerkennung, Senderverzeichnis (letzter Abgleich, Uhrzeit, Jetzt abgleichen) und Kategorien.
 
+Wecker am Telefon (Wecker-Taste oben): je Wecker Uhrzeit, Tage, Sender oder neueste Folge eines Abos, Weckton,
+Lautstärke und wie langsam es lauter wird. Den Weckton (neun zur Wahl, Vorgabe Doppelpiep, alle im Gerät erzeugt und
+ohne Netz) hört man in der Bearbeitung über den Knopf daneben an. Er klingelt, wenn beim Wecken auf Ton geschaltet wird
+oder das Radio nicht zu hören ist; das Radio versucht es dabei weiter. Beim Klingeln lässt sich jederzeit zwischen Radio
+und Ton wechseln. Geweckt wird nur bei offener Weckeransicht (Telefon quer, Seite offen).
+
 ## Was sie braucht
 
 - Den Pi ({{rechner}}) nach [[Grundlage Pi]] mit Docker und dem gemeinsamen Netz `haus`; RadioHub läuft dort mit

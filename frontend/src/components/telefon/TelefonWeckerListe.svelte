@@ -5,9 +5,13 @@
   import { t } from '../../lib/i18n.svelte.js';
   import { weckerdaten, weckerLaden, weckerSpeichern, weckerLoeschen } from '../../lib/telefon/weckerdaten.svelte.js';
   import { sperren, freigeben } from '../../lib/aktualisierung.svelte.js';
+  import { WECKTOENE, VORGABE } from '../../lib/telefon/wecktoene.js';
+  import { wecktonAn, wecktonAus } from '../../lib/telefon/weckton.js';
 
   let entwurf = $state(null);
   let meldung = $state('');
+  // Hörprobe des Wecktons im Entwurf: läuft, bis angehalten, ein anderer Ton gewählt oder die Bearbeitung geschlossen wird
+  let probe = $state(false);
   const tageKurz = $derived(t('telefon.tageKurz').split(','));
   const STUNDEN = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const MINUTEN = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
@@ -25,13 +29,13 @@
     const sender = appState.favorites[0] || null;
     entwurf = { aktiv: true, stunde: '07', minute: '00', tage: [1, 2, 3, 4, 5], quelle: sender ? 'sender' : 'podcast',
                 sender_uuid: sender?.uuid || '', podcast_id: appState.podcasts[0]?.id || null, lautstaerke: 60, anstieg_s: 60,
-                schlummern_min: 9 };
+                schlummern_min: 9, weckton: VORGABE };
     meldung = '';
   }
 
   function bearbeiten(w) {
     const [stunde, minute] = w.zeit.split(':');
-    entwurf = { ...w, stunde, minute, tage: [...w.tage], sender_uuid: w.sender?.uuid || '' };
+    entwurf = { ...w, stunde, minute, tage: [...w.tage], sender_uuid: w.sender?.uuid || '', weckton: w.weckton || VORGABE };
     meldung = '';
   }
 
@@ -50,12 +54,27 @@
       await weckerSpeichern({ id: e.id, aktiv: e.aktiv, zeit: `${e.stunde}:${e.minute}`, tage: e.tage, quelle: e.quelle,
         sender: e.quelle === 'sender' ? senderZu(e.sender_uuid, e.sender) : null,
         podcast_id: e.quelle === 'podcast' ? Number(e.podcast_id) : null,
-        lautstaerke: Number(e.lautstaerke), anstieg_s: Number(e.anstieg_s), schlummern_min: Number(e.schlummern_min) });
+        lautstaerke: Number(e.lautstaerke), anstieg_s: Number(e.anstieg_s), schlummern_min: Number(e.schlummern_min),
+        weckton: e.weckton });
       entwurf = null;
     } catch (f) {
       meldung = f.message || t('telefon.fehler');
     }
   }
+
+  function probeSchalten() {
+    if (probe) { wecktonAus(); probe = false; return; }
+    try { wecktonAn(entwurf.weckton, Number(entwurf.lautstaerke) / 100); probe = true; } catch { /* ohne Web Audio keine Hörprobe */ }
+  }
+
+  // ein anderer Ton oder eine andere Lautstärke klingt sofort; ohne Entwurf ist die Probe aus
+  $effect(() => {
+    const e = entwurf;
+    if (!e) { untrack(() => { if (probe) { wecktonAus(); probe = false; } }); return; }
+    const id = e.weckton, laut = Number(e.lautstaerke) / 100;
+    untrack(() => { if (probe) wecktonAn(id, laut); });
+  });
+  $effect(() => () => untrack(() => { if (probe) wecktonAus(); }));
 
   async function umschalten(w) {
     await weckerSpeichern({ ...w, aktiv: !w.aktiv });
@@ -108,6 +127,17 @@
           {#each appState.podcasts as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
         </select>
       {/if}
+
+      <span class="beschriftung">{t('telefon.weckton')}</span>
+      <div class="tonwahl">
+        <select name="wecker-weckton" bind:value={entwurf.weckton} aria-label={t('telefon.weckton')}>
+          {#each WECKTOENE as id (id)}<option value={id}>{t(`telefon.ton_${id}`)}</option>{/each}
+        </select>
+        <button class="probe" class:tf-an={probe} aria-pressed={probe} onclick={probeSchalten}
+                aria-label={probe ? t('telefon.tonAnhalten') : t('telefon.tonAnhoeren')} title={probe ? t('telefon.tonAnhalten') : t('telefon.tonAnhoeren')}>
+          <i class="fa-solid {probe ? 'fa-stop' : 'fa-play'}"></i></button>
+      </div>
+      <p class="tf-klein">{t('telefon.wecktonHinweis')}</p>
 
       <label class="regler"><span>{t('telefon.lautstaerke')}: {entwurf.lautstaerke} %</span>
         <input name="wecker-lautstaerke" type="range" min="5" max="100" step="5" bind:value={entwurf.lautstaerke} /></label>
@@ -162,7 +192,7 @@
   .form { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
   .beschriftung { margin-top: 8px; font-size: 15px; color: var(--t-text-2); }
   .tf-zeit { display: flex; align-items: center; gap: 8px; font-size: 28px; }
-  select, .tf-wahl button, .tage button, .loeschen, .tf-gross {
+  select, .tf-wahl button, .tage button, .loeschen, .tf-gross, .probe {
     min-height: 48px;
     border: 1px solid var(--t-linie);
     border-radius: 12px;
@@ -178,6 +208,10 @@
   .tage button { padding: 0; font-size: 15px; }
   .tf-wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tf-wahl button.tf-an, .tage button.tf-an { background: var(--t-akzent-flaeche); border-color: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 600; }
+  .tonwahl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .probe { aspect-ratio: 1; display: grid; place-items: center; padding: 0; }
+  .probe.tf-an { background: var(--t-akzent-flaeche); border-color: var(--t-akzent-flaeche); color: var(--t-akzent-text); }
+  .tf-klein { margin: 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
   .regler { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--t-text-2); margin-top: 8px; }
   .regler input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .loeschen { color: var(--t-fehler); }

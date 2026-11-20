@@ -19,3 +19,14 @@ def test_ort_fuer_sonnenzeiten(client):
     assert client.put("/api/wecker/ort", json={"name": "Probeort", "breite": 50.9, "laenge": 6.9}).status_code == 200
     assert client.get("/api/wecker/ort").json() == {"name": "Probeort", "breite": 50.9, "laenge": 6.9}
     assert client.put("/api/wecker/ort", json={"breite": 99}).status_code == 422
+
+
+def test_weckton_je_wecker(client):
+    sender = {"uuid": "u-2", "name": "Testwelle", "url": "http://welle.test/stream"}
+    neu = client.post("/api/wecker", json={"zeit": "06:00", "sender": sender}).json()
+    assert neu["weckton"] == "doppelpiep"                     # Vorgabe: der bisherige Ton
+    geaendert = client.put(f"/api/wecker/{neu['id']}", json={"zeit": "06:00", "sender": sender, "weckton": "glocke"}).json()
+    assert geaendert["weckton"] == "glocke"
+    assert client.put(f"/api/wecker/{neu['id']}", json={"zeit": "06:00", "sender": sender,
+                                                        "weckton": "<script>"}).status_code == 422
+    client.delete(f"/api/wecker/{neu['id']}")

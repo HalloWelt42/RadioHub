@@ -17,7 +17,7 @@
   import { naechsterWecker, faelligInMinute } from '../../lib/wecker.js';
   import { geste } from '../../lib/telefon/geste.js';
   import { Waechter, hoerbarMesser, wunsch } from '../../lib/telefon/verbindung.svelte.js';
-  import { wecktonVorbereiten, wecktonAn, wecktonAus } from '../../lib/telefon/weckton.js';
+  import { wecktonVorbereiten, wecktonWaehlen, wecktonAn, wecktonAus } from '../../lib/telefon/weckton.js';
   import { weckeransichtOffen } from '../../lib/telefon/wachHalten.svelte.js';
   import { weckerdaten, weckerLaden } from '../../lib/telefon/weckerdaten.svelte.js';
   import { zeit, ansagen, abbrechen, entsperren, bausteineLaden, zeitansageSchalten } from '../../lib/telefon/zeitansage.svelte.js';
@@ -120,6 +120,7 @@
     quelleWahl = 'radio';
     wunsch.spielen = true;
     const ziel = w.lautstaerke || 60;
+    try { wecktonWaehlen(w.weckton, ziel / 100); } catch { /* ohne Web Audio kein Weckton */ }
     const schritte = Math.max(1, w.anstieg_s || 0);
     let stufe = 0;
     actions.setVolume(w.anstieg_s ? 5 : ziel);
@@ -295,7 +296,11 @@
   weckerLaden();
   entsperren();   // ohne Geste bleibt der Ton gesperrt, bis getippt wird; die Ansicht zeigt das am Ansage-Knopf
   bausteineLaden();
-  try { wecktonVorbereiten(); } catch { /* ohne Web Audio kein Weckton */ }
+  // die Töne aller Wecker vorab erzeugen, damit beim Klingeln nichts mehr gerechnet werden muss
+  $effect(() => {
+    const toene = [...new Set(weckerdaten.liste.map((w) => w.weckton).filter(Boolean))];
+    try { wecktonVorbereiten(toene); } catch { /* ohne Web Audio kein Weckton */ }
+  });
   const takt = setInterval(() => {
     jetzt = new Date();
     pruefen();

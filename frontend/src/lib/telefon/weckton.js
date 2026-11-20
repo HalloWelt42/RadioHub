@@ -1,45 +1,62 @@
 /**
- * Weckton aus dem Gerät, ohne Netz: ein im Speicher erzeugter Puffer (Doppelpiep, Pause), der in Schleife läuft,
- * solange der Sender beim Wecken nicht zu hören ist.
+ * Weckton aus dem Gerät, ohne Netz (RAD-15): spielt einen der Wecktöne aus `wecktoene.js` in Schleife, solange er weckt.
+ * Beim Klingeln wählt die Weckansicht den Ton und die Lautstärke des Weckers (`wecktonWaehlen`); wer den Ton dann
+ * einschaltet, die Person oder der Wächter bei stummem Radio, ruft nur `wecktonAn()`. Die Weckerliste spielt mit
+ * `wecktonAn(id, laut)` eine Hörprobe. Es läuft immer höchstens ein Ton.
  */
 import { kontext } from './tonkontext.svelte.js';
+import { VORGABE, WECKTOENE, wecktonDaten } from './wecktoene.js';
 
-let _puffer = null;
-let _quelle = null;
+const _puffer = new Map();
+let _gewaehlt = { id: VORGABE, laut: 1 };
+let _laeuft = null;   // { quelle, verstaerker, id }
 
-/** Einmal erzeugen (beim Öffnen der Weckeransicht), damit im Ernstfall nichts mehr geladen werden muss. */
-export function wecktonVorbereiten() {
-  if (_puffer) return _puffer;
-  const c = kontext();
-  const rate = c.sampleRate;
-  const laenge = Math.round(rate * 1.6);
-  _puffer = c.createBuffer(1, laenge, rate);
-  const daten = _puffer.getChannelData(0);
-  const pieps = [[0, 0.18], [0.28, 0.46]];          // zwei kurze Pieptöne, dann Ruhe
-  for (const [von, bis] of pieps) {
-    for (let i = Math.round(von * rate); i < Math.round(bis * rate); i++) {
-      const t = i / rate - von;
-      const huelle = Math.min(1, t / 0.01, (bis - von - t) / 0.01);   // weiche Kanten, kein Knacken
-      daten[i] = 0.6 * huelle * Math.sin(2 * Math.PI * 1000 * (i / rate));
-    }
+function puffer(id) {
+  const kennung = WECKTOENE.includes(id) ? id : VORGABE;
+  if (!_puffer.has(kennung)) {
+    const c = kontext();
+    const daten = wecktonDaten(kennung, c.sampleRate);
+    const p = c.createBuffer(1, daten.length, c.sampleRate);
+    p.copyToChannel(daten, 0);
+    _puffer.set(kennung, p);
   }
-  return _puffer;
+  return _puffer.get(kennung);
 }
 
-export function wecktonAn() {
-  if (_quelle) return;
+/** Vorab erzeugen (beim Öffnen der Weckansicht), damit beim Klingeln nichts mehr gerechnet werden muss; die Vorgabe immer */
+export function wecktonVorbereiten(ids = []) {
+  for (const id of new Set([VORGABE, ...ids])) puffer(id);
+}
+
+/** Ton und Lautstärke (0 bis 1) für das nächste `wecktonAn()`; ein laufender Ton wechselt sofort */
+export function wecktonWaehlen(id, laut = 1) {
+  _gewaehlt = { id: WECKTOENE.includes(id) ? id : VORGABE, laut };
+  puffer(_gewaehlt.id);
+  if (_laeuft) wecktonAn();
+}
+
+export function wecktonAn(id = _gewaehlt.id, laut = _gewaehlt.laut) {
   const c = kontext();
   if (c.state === 'suspended') c.resume().catch(() => {});
+  if (_laeuft?.id === id) {
+    _laeuft.verstaerker.gain.setTargetAtTime(laut, c.currentTime, 0.05);
+    return;
+  }
+  wecktonAus();
+  const verstaerker = c.createGain();
+  verstaerker.gain.value = laut;
+  verstaerker.connect(c.destination);
   const quelle = c.createBufferSource();
-  quelle.buffer = wecktonVorbereiten();
+  quelle.buffer = puffer(id);
   quelle.loop = true;
-  quelle.connect(c.destination);
+  quelle.connect(verstaerker);
   quelle.start();
-  _quelle = quelle;
+  _laeuft = { quelle, verstaerker, id };
 }
 
 export function wecktonAus() {
-  if (!_quelle) return;
-  try { _quelle.stop(); } catch { /* schon aus */ }
-  _quelle = null;
+  if (!_laeuft) return;
+  try { _laeuft.quelle.stop(); } catch { /* schon aus */ }
+  _laeuft.verstaerker.disconnect();
+  _laeuft = null;
 }

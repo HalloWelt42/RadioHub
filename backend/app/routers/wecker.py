@@ -30,6 +30,8 @@ class WeckerDaten(BaseModel):
     lautstaerke: int = Field(60, ge=5, le=100)
     anstieg_s: int = Field(60, ge=0, le=600)
     schlummern_min: int = Field(9, ge=1, le=60)
+    weckton: str = Field("doppelpiep", pattern=r"^[a-z]{2,24}$",
+                         description="Kennung des Wecktons; die Töne entstehen im Gerät, ein unbekannter klingt wie die Vorgabe")
 
     @field_validator("zeit")
     @classmethod
@@ -50,7 +52,7 @@ def _aus_zeile(r) -> dict:
     return {"id": r["id"], "aktiv": bool(r["aktiv"]), "zeit": r["zeit"], "tage": json.loads(r["tage"] or "[]"),
             "quelle": r["quelle"], "sender": json.loads(r["sender_json"]) if r["sender_json"] else None,
             "podcast_id": r["podcast_id"], "lautstaerke": r["lautstaerke"], "anstieg_s": r["anstieg_s"],
-            "schlummern_min": r["schlummern_min"]}
+            "schlummern_min": r["schlummern_min"], "weckton": r["weckton"]}
 
 
 def _pruefen(d: WeckerDaten) -> None:
@@ -62,7 +64,7 @@ def _pruefen(d: WeckerDaten) -> None:
 
 def _werte(d: WeckerDaten) -> tuple:
     return (int(d.aktiv), d.zeit, json.dumps(d.tage), d.quelle, json.dumps(d.sender) if d.sender else None,
-            d.podcast_id, d.lautstaerke, d.anstieg_s, d.schlummern_min)
+            d.podcast_id, d.lautstaerke, d.anstieg_s, d.schlummern_min, d.weckton)
 
 
 # --- Ort für Sonnenzeiten ------------------------------------------------------------------------------------------
@@ -127,7 +129,7 @@ async def anlegen(d: WeckerDaten):
     _pruefen(d)
     with db_session() as conn:
         neu = conn.execute("""INSERT INTO wecker (aktiv, zeit, tage, quelle, sender_json, podcast_id, lautstaerke,
-                              anstieg_s, schlummern_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", _werte(d)).lastrowid
+                              anstieg_s, schlummern_min, weckton) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", _werte(d)).lastrowid
         return _aus_zeile(conn.execute("SELECT * FROM wecker WHERE id = ?", (neu,)).fetchone())
 
 
@@ -136,7 +138,7 @@ async def aendern(wecker_id: int, d: WeckerDaten):
     _pruefen(d)
     with db_session() as conn:
         c = conn.execute("""UPDATE wecker SET aktiv = ?, zeit = ?, tage = ?, quelle = ?, sender_json = ?, podcast_id = ?,
-                            lautstaerke = ?, anstieg_s = ?, schlummern_min = ? WHERE id = ?""", (*_werte(d), wecker_id))
+                            lautstaerke = ?, anstieg_s = ?, schlummern_min = ?, weckton = ? WHERE id = ?""", (*_werte(d), wecker_id))
         if c.rowcount == 0:
             raise HTTPException(404, "Wecker nicht gefunden")
         return _aus_zeile(conn.execute("SELECT * FROM wecker WHERE id = ?", (wecker_id,)).fetchone())

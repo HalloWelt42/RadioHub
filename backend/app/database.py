@@ -449,7 +449,12 @@ INSERT INTO regel (id, art, wert, an, herkunft, angelegt_am, geaendert_am)
     WHERE EXISTS (SELECT 1 FROM blocklist);
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2]
+# Stufe 3 (RAD-15): jeder Wecker hat seinen Weckton; die Töne selbst entstehen im Gerät (frontend lib/telefon/wecktoene.js)
+STUFE_3 = """
+ALTER TABLE wecker ADD COLUMN weckton TEXT NOT NULL DEFAULT 'doppelpiep';
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [
