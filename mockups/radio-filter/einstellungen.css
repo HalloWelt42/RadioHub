@@ -1,0 +1,108 @@
+/* Entwurf RAD-11: Einstellungen aller Bereiche. Rahmen, Karten, Regelzeilen und Geräte kommen aus regeln.css und
+   radio-bausteine.css; hier nur die Zeile einer einfachen Einstellung (Name, Geltung, ein Satz, Bedienteil), die
+   Leiste Speichern und die Sonderteile. Nur Marken. */
+
+/* Zeile: links Beschreibung, rechts das Bedienteil; schmal untereinander */
+.rh-e-zeilen { display: grid; }
+.rh-e-zeile { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: 10px 28px; align-items: center; padding: 16px 0;
+  box-shadow: 0 -1px 0 var(--rand); }
+.rh-e-zeile:first-child { box-shadow: none; padding-top: 4px; }
+.rh-e-zeile.breit { grid-template-columns: minmax(0, 1fr); }
+.rh-e-zeile.fest .rh-e-wert { opacity: .6; }
+.rh-e-beschreibung { min-width: 0; }
+.rh-e-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.rh-e-name b { font-weight: 600; }
+.rh-e-beschreibung p { margin: 4px 0 0; color: var(--text-2); font-size: var(--klein); max-inline-size: 70ch; }
+.rh-e-pruefung { color: var(--text-3); }
+.rh-e-wert { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+.rh-e-zeile.breit .rh-e-wert { justify-content: flex-start; }
+.rh-e-wert ak-schieber { inline-size: calc(var(--gross) * 17); max-inline-size: 100%; }
+/* der Name steht schon in der Zeile; im Schieber nur für Vorleser */
+.rh-e-wert ak-schieber .ak-dreh-name { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.rh-e-wert ak-schieber .ak-schieber-kopf { justify-content: flex-end; }
+.einstellung-punkt { inline-size: 8px; block-size: 8px; border-radius: 50%; background-color: var(--akzent); flex: none;
+  box-shadow: 0 0 calc(8px * var(--ak-leuchten)) var(--akzent-flaeche); }
+
+/* Geltung: für alle Geräte, nur dieses Gerät, fest gesetzt */
+.rh-geltung { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: var(--marke);
+  letter-spacing: .04em; text-transform: uppercase; font-weight: 600; color: var(--text-3); background-color: var(--mulde); box-shadow: var(--rh-mulde); white-space: nowrap; }
+.rh-geltung.alle i { color: var(--led-blau); }
+.rh-geltung.geraet i { color: var(--led-gruen); }
+.rh-geltung.fest i { color: var(--text-3); }
+
+/* Eingaben: Adresse, Liste von Adressen, Uhrzeit, Zeitraum */
+.rh-e-text-wert { display: flex; gap: 8px; align-items: center; inline-size: min(100%, calc(var(--gross) * 40)); }
+.rh-e-eingabe { flex: 1; min-width: 0; }
+.rh-e-eingabe input { font-family: var(--schrift-zahl); }
+.rh-e-liste { display: grid; gap: 6px; inline-size: 100%; }
+.rh-e-listeneintrag { display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: var(--r2); background-color: var(--mulde);
+  box-shadow: var(--rh-mulde); font-family: var(--schrift-zahl); font-size: var(--klein); }
+.rh-e-listeneintrag span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rh-e-neu, .rh-e-neu-zeile { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.rh-e-neu-zeile { margin-top: 14px; }
+.rh-e-neu-zeile .rh-e-eingabe { flex: 1 1 260px; }
+.rh-uhr { display: inline-flex; align-items: center; gap: 4px; font-family: var(--schrift-zahl); }
+.rh-uhr .auswahl-liste { max-block-size: 260px; }
+.rh-zeitraum { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-3); }
+.rh-schrift-wahl { display: inline-flex; align-items: center; gap: 8px; }
+.rh-schrift-wahl output { min-inline-size: 7em; text-align: center; font-weight: 600; }
+.rh-e-zeilenknoepfe { display: inline-flex; gap: 6px; }
+
+/* Leiste Speichern: steht über dem Rollfeld unten, solange Werte für alle Geräte geändert sind */
+.rh-speichern { position: absolute; left: var(--rh-rand); right: var(--rh-rand); bottom: 14px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px 14px; padding: 10px 14px; border-radius: var(--r3, 14px); background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-2, 0 8px 24px rgb(0 0 0 / .35)); }
+.rh-speichern[hidden] { display: none; }
+.rh-einst-haupt:has(.rh-speichern:not([hidden])) .rh-einst-rollt { padding-bottom: 110px; }
+.rh-speichern > span:nth-child(2) { flex: 1 1 240px; min-width: 0; font-size: var(--klein); color: var(--text-2); }
+.rh-speichern b { color: var(--text); }
+
+/* Sonderteile */
+.rh-tasten { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 20)), 1fr)); gap: 18px 28px; }
+.rh-tasten h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); }
+.rh-tasten dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; margin: 0; align-items: center; }
+.rh-tasten dd { margin: 0; color: var(--text-2); font-size: var(--klein); }
+.rh-tasten kbd { display: inline-block; min-inline-size: 30px; padding: 3px 8px; border-radius: 6px; text-align: center; font-family: var(--schrift-zahl); font-size: var(--klein);
+  color: var(--text); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+.rh-langtext { display: grid; justify-items: start; gap: 4px; }
+.rh-langtext p { margin: 0; color: var(--text-2); max-inline-size: 80ch; }
+.rh-langtext p.gekuerzt { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.rh-langtext .rh-mehr { margin-left: -10px; }
+.rh-dank { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.rh-e-gesperrt { grid-column: 1 / -1; margin: 6px 0 0; }
+.rh-regel .rueckfrage { grid-column: 1 / -1; }
+/* Listen aus Regelzeilen mit festen Spalten, damit Zahl, Aktion und Entfernen über alle Zeilen fluchten */
+@media (min-width: 761px) {
+  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) calc(var(--klein) * 6) var(--aktion) var(--weg); }
+}
+.rh-regeln.rh-feste .rh-regel > .rh-regel-aktion { grid-area: schalter; justify-self: stretch; justify-content: center; }
+@media (max-width: 760px) {
+  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" ". . zahl zahl" "schalter schalter schalter weg"; }
+}
+.rh-regeln.rh-feste .rh-regel > .knopf.gefahr, .rh-regeln.rh-feste .rh-regel > .rh-e-zeilenknoepfe, .rh-regeln.rh-feste .rh-regel > .rh-geltung { grid-area: weg; justify-self: end; }
+.rh-bausteine { gap: 12px; }
+.rh-ort { display: grid; gap: 14px; }
+.rh-ort-suche { display: flex; flex-wrap: wrap; gap: 10px; }
+.rh-ort-suche .suche { flex: 1 1 260px; }
+.rh-ort-treffer { display: grid; gap: 6px; }
+.rh-ort-treffer button { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto; gap: 14px; align-items: baseline; padding: 10px 14px; border: 0; border-radius: var(--r2);
+  text-align: left; font: inherit; color: var(--text-2); background-color: var(--mulde); box-shadow: var(--rh-mulde); cursor: pointer; }
+.rh-ort-treffer button b { color: var(--text); }
+.rh-ort-treffer button.aktiv { box-shadow: var(--rh-mulde), inset 0 0 0 2px var(--akzent); }
+.rh-ort-felder { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.rh-ort-felder label { display: grid; gap: 6px; }
+.rh-sonne { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; padding: 22px 26px 16px; max-inline-size: 640px; }
+.rh-ablage { display: grid; gap: 14px; }
+.rh-pfadwert { justify-self: start; padding: 6px 12px; border-radius: var(--r2); font-family: var(--schrift-zahl); background-color: var(--mulde); box-shadow: var(--rh-mulde); overflow-wrap: anywhere; }
+.rh-belegung { block-size: 10px; border-radius: 5px; background-color: var(--mulde); box-shadow: var(--rh-mulde); overflow: hidden; }
+.rh-belegung span { display: block; block-size: 100%; background-color: var(--led-gruen); }
+.rh-reiter-verweis { display: inline-flex; align-items: center; gap: 8px; min-block-size: 44px; padding: 0 14px; border-radius: var(--r2); text-decoration: none; color: var(--text-2); }
+.rh-reiter-verweis:hover { color: var(--text); }
+
+@media (max-width: 760px) {
+  .rh-e-zeile { grid-template-columns: minmax(0, 1fr); }
+  .rh-e-wert { justify-content: flex-start; }
+  .rh-e-wert ak-schieber { inline-size: 100%; }
+  .rh-ort-felder { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .rh-ort-felder label:first-child { grid-column: 1 / -1; }
+  .rh-sonne { grid-template-columns: minmax(0, 1fr); padding: 20px 14px 14px; }
+}

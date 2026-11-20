@@ -19,6 +19,7 @@
   <!-- Schicht 3: Anordnung der Seite -->
   <link rel="stylesheet" href="rahmen.css">
   <link rel="stylesheet" href="regeln.css">
+  <link rel="stylesheet" href="einstellungen.css">
 </head>
 <body>
 <div class="rh-app rh-app-einst">
@@ -62,13 +63,15 @@
   <div class="rh-einst">
     <!-- Bereiche der Einstellungen -->
     <nav class="rh-einst-nav" aria-label="Einstellungen">
-      <a href="#" onclick="return false"><i class="fa-solid fa-gear"></i>Allgemein</a>
-      <a href="#" onclick="return false"><i class="fa-solid fa-circle-half-stroke"></i>Darstellung</a>
+      <a href="einstellungen.html?bereich=allgemein"><i class="fa-solid fa-gear"></i>Allgemein</a>
+      <a href="einstellungen.html?bereich=darstellung"><i class="fa-solid fa-circle-half-stroke"></i>Darstellung</a>
       <a href="regeln.html" class="aktiv" aria-current="page"><i class="fa-solid fa-radio"></i>Radio</a>
-      <a href="#" onclick="return false"><i class="fa-solid fa-circle-dot"></i>Aufnahmen</a>
-      <a href="#" onclick="return false"><i class="fa-solid fa-podcast"></i>Podcasts</a>
-      <a href="#" onclick="return false"><i class="fa-solid fa-bell"></i>Wecker</a>
-      <a href="#" onclick="return false"><i class="fa-solid fa-tower-broadcast"></i>Hausempfang</a>
+      <a href="einstellungen.html?bereich=wiedergabe"><i class="fa-solid fa-clock-rotate-left"></i>Wiedergabe</a>
+      <a href="einstellungen.html?bereich=aufnahmen"><i class="fa-solid fa-circle-dot"></i>Aufnahmen</a>
+      <a href="einstellungen.html?bereich=podcasts"><i class="fa-solid fa-podcast"></i>Podcasts</a>
+      <a href="einstellungen.html?bereich=wecker"><i class="fa-solid fa-bell"></i>Wecker und Zeitansage</a>
+      <a href="einstellungen.html?bereich=ablage"><i class="fa-solid fa-hard-drive"></i>Ablage</a>
+      <a href="einstellungen.html?bereich=dienste"><i class="fa-solid fa-plug"></i>Dienste</a>
     </nav>
 
     <main class="rh-einst-haupt">
@@ -78,6 +81,9 @@
           <button type="button" role="tab" data-reiter="regeln"><i class="fa-solid fa-filter-circle-xmark"></i>Ausschlussregeln</button>
           <button type="button" role="tab" data-reiter="ausgeblendet"><i class="fa-solid fa-eye-slash"></i>Ausgeblendete Sender</button>
           <button type="button" role="tab" data-reiter="laender"><i class="fa-solid fa-earth-europe"></i>Länder der Seitenleiste</button>
+          <a role="tab" class="rh-reiter-verweis" href="einstellungen.html?bereich=radio&amp;reiter=werbung"><i class="fa-solid fa-rectangle-ad"></i>Werbeerkennung</a>
+          <a role="tab" class="rh-reiter-verweis" href="einstellungen.html?bereich=radio&amp;reiter=abgleich"><i class="fa-solid fa-arrows-rotate"></i>Senderverzeichnis</a>
+          <a role="tab" class="rh-reiter-verweis" href="einstellungen.html?bereich=radio&amp;reiter=kategorien"><i class="fa-solid fa-folder"></i>Kategorien</a>
         </nav>
       </div>
 

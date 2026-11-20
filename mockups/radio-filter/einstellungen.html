@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Einstellungen</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/schriften/orbitron/900.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="rahmen.css">
+  <link rel="stylesheet" href="regeln.css">
+  <link rel="stylesheet" href="einstellungen.css">
+</head>
+<body>
+<div class="rh-app rh-app-einst">
+
+  <div class="rh-entwurf">
+    <span class="pille">Entwurf RAD-11</span>
+    <a href="index.html"><i class="fa-solid fa-table-cells-large"></i>Übersicht</a>
+    <a href="rechner.html"><i class="fa-solid fa-radio"></i>Radio</a>
+    <a href="telefon.html"><i class="fa-solid fa-mobile-screen"></i>Telefon</a>
+  </div>
+
+  <header class="rh-kopf">
+    <div class="rh-marke">
+      <span class="rh-marke-zeile"><a class="rh-logo" href="index.html">RadioHub</a>
+        <button class="rh-herz" type="button" title="Unterstützen" aria-label="Unterstützen"><i class="fa-solid fa-heart"></i></button></span>
+      <span class="rh-unterzeile">Digitales Audiosystem</span>
+    </div>
+    <nav class="rh-nav" aria-label="Bereiche"><div class="rh-nav-schiene">
+      <a class="rh-nav-knopf" href="rechner.html"><ak-led class="rh-tastenlicht" farbe="blau" zustand="an" groesse="klein" hilfe="spielt"></ak-led><i class="fa-solid fa-radio"></i><span>Radio</span></a>
+      <span class="rh-nav-knopf" aria-disabled="true" title="Aufnahmen: nicht Teil dieses Entwurfs"><ak-led class="rh-tastenlicht" farbe="rot" zustand="aus" groesse="klein"></ak-led><i class="fa-solid fa-circle-dot"></i><span>Aufnahmen</span></span>
+      <span class="rh-nav-knopf" aria-disabled="true" title="Podcasts: nicht Teil dieses Entwurfs"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="aus" groesse="klein"></ak-led><i class="fa-solid fa-podcast"></i><span>Podcasts</span></span>
+      <a class="rh-nav-knopf" href="einstellungen.html" aria-current="page"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="an" groesse="klein"></ak-led><i class="fa-solid fa-sliders"></i><span>Einstellungen</span></a>
+    </div></nav>
+    <div class="rh-kopf-rechts">
+      <div class="rh-status"><ak-led farbe="gruen" zustand="an" text="Online" hilfe="Dienst erreichbar"></ak-led><ak-led farbe="gruen" zustand="an" text="Ablage" hilfe="Ablage verbunden"></ak-led></div>
+      <div class="rh-darstellung">
+        <button class="knopf" type="button" data-darstellung-knopf aria-controls="tafel-darstellung" aria-expanded="false" title="Darstellung: Thema und Schrift"><i class="fa-solid fa-circle-half-stroke"></i><span>Darstellung</span></button>
+        <div class="rh-tafel" id="tafel-darstellung" role="dialog" aria-label="Darstellung" hidden>
+          <div><h3>Vorlage</h3><div class="segment" role="group" aria-label="Vorlage"><button type="button" data-vorlage-wahl="hifi"><i class="fa-solid fa-compact-disc"></i>HiFi</button><button type="button" data-vorlage-wahl="ruhig"><i class="fa-solid fa-feather"></i>Ruhig</button></div></div>
+          <div><h3>Thema</h3><div class="segment" role="group" aria-label="Thema">
+            <button type="button" data-thema-wahl="hell"><i class="fa-solid fa-sun"></i>Hell</button><button type="button" data-thema-wahl="dunkel"><i class="fa-solid fa-moon"></i>Dunkel</button><button type="button" data-thema-wahl="system"><i class="fa-solid fa-display"></i>System</button></div></div>
+          <div><h3>Schrift</h3><div class="rh-schrift-wahl">
+            <button class="knopf" type="button" data-schrift-schritt="-1" aria-label="Schrift kleiner" title="Schrift kleiner"><i class="fa-solid fa-minus"></i></button>
+            <output data-schrift-anzeige>Normal</output>
+            <button class="knopf" type="button" data-schrift-schritt="1" aria-label="Schrift größer" title="Schrift größer"><i class="fa-solid fa-plus"></i></button></div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="rh-einst">
+    <!-- Bereiche der Einstellungen; Radio führt in den abgenommenen Entwurf regeln.html -->
+    <nav class="rh-einst-nav" aria-label="Einstellungen" id="bereiche"></nav>
+    <main class="rh-einst-haupt">
+      <div class="rh-einst-kopf">
+        <div class="rh-pfad"><span>Einstellungen</span><i class="fa-solid fa-chevron-right"></i><span id="pfad-bereich"></span></div>
+        <nav class="reiterleiste" role="tablist" id="reiter" aria-label="Reiter"></nav>
+      </div>
+      <div class="rh-einst-rollt" id="inhalt"></div>
+      <!-- Änderungen an Werten für alle Geräte sammeln sich hier, bis sie gespeichert sind (wie der Einstellungsbaustein des Appkerns) -->
+      <div class="rh-speichern" id="speichern" role="status" hidden>
+        <span class="einstellung-punkt" aria-hidden="true"></span><span id="speichern-text"></span>
+        <button class="knopf" type="button" id="verwerfen"><i class="fa-solid fa-rotate-left"></i>Verwerfen</button>
+        <button class="knopf primaer" type="button" id="uebernehmen"><i class="fa-solid fa-floppy-disk"></i>Speichern</button>
+      </div>
+      <div class="rh-band" id="band" role="status" hidden></div>
+    </main>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+<script src="daten.js"></script>
+<script src="radio.js"></script>
+<script src="einstellungen-daten.js"></script>
+<script src="einstellungen.js"></script>
+</body>
+</html>
