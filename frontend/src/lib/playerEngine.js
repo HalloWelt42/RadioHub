@@ -55,7 +55,7 @@ function _showPlayerError(msg) {
 
 /**
  * Setzt Audio-Element und State-Referenz.
- * Wird vom HiFiPlayer-Component beim Mount aufgerufen.
+ * Wird vom Tonausgang der Kanzel (Rechner) und von der Telefonansicht beim Einhängen aufgerufen.
  */
 export function init(audioElement, appState) {
   _audioEl = audioElement;

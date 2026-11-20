@@ -15,8 +15,9 @@ import "./stil/bausteine.css";
 import "./stil/radio.css";
 import "./stil/einstellungen.css";
 import "./stil/telefon.css";
+import "./stil/kanzel.css";
 import "./stil/rechner.css";
-// Alte Bereiche bis zu ihrem Neubau (Etappen 3, 4 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
+// Alte Bereiche bis zu ihrem Neubau (Etappen 3 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
 import "./styles/bruecke.css";
 import "./styles/hifi-base.css";
 import "./styles/hifi-components.css";

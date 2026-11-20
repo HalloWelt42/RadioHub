@@ -267,7 +267,7 @@
     { id: "live", name: "spielt live", quelle: ["LIVE", "blau"], led: ["blau", "an"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause" },
     { id: "versatz", name: "zeitversetzt", quelle: ["VERSATZ", "bernstein"], led: ["bernstein", "an"], art: "4:12 HINTER LIVE", titel: null, zeit: "-00:04:12", puffer: 42, play: "fa-pause" },
     { id: "aufnahme", name: "Aufnahme läuft", quelle: ["REC", "rot"], led: ["rot", "blinkt"], art: "AUFNAHME 00:12:48", titel: null, zeit: "00:12:48", puffer: 42, play: "fa-pause", rec: true },
-    { id: "fehler", name: "Fehler", quelle: ["FEHLER", "rot"], led: ["rot", "an"], art: "VERBINDUNG VERLOREN", titel: "Neuer Versuch in 5 s", zeit: "--:--:--", puffer: 42, play: "fa-play", ton: "fehler" },
+    { id: "fehler", name: "Fehler", quelle: ["FEHLER", "rot"], led: ["rot", "an"], art: "VERBINDUNG VERLOREN", titel: "Neuer Versuch in 5 s", zeit: "--:--:--", puffer: 42, play: "fa-rotate-right", ton: "fehler" },
     { id: "fern", name: "anderes Gerät spielt", quelle: ["FERN", "blau"], led: ["blau", "atmet"], art: "SPIELT AUF TELEFON", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause", ton: "fern" },
     { id: "web", name: "Webversion", quelle: ["LIVE", "blau"], led: ["blau", "an"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 0, play: "fa-pause" },
   ];
@@ -304,9 +304,11 @@
     K.rec.setzen(!!st.rec);
     K.navLed.setAttribute("zustand", st.rec ? "blinkt" : "aus");
     for (const t of [K.prev, K.next]) { t.toggleAttribute("gesperrt", !!st.rec); t.querySelector("ak-led")?.setAttribute("zustand", st.rec ? "an" : "aus"); t.title = st.rec ? "Kein Senderwechsel während der Aufnahme" : t.dataset.hilfe; }
-    K.qaktion.innerHTML = st.id === "fehler" ? `<button class="knopf primaer" type="button" title="Sofort neu verbinden"><i class="fa-solid fa-rotate-right"></i>Wiederverbinden</button>`
-      : st.id === "laedt" || st.id === "puffert" ? `<div class="balken"><span style="width:${st.id === "laedt" ? 18 : 64}%"></span></div>`
-      : st.rec ? `<span title="Kein Senderwechsel während der Aufnahme"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led> Wechsel gesperrt</span>` : "";
+    // Im Glas nur Anzeige (RAD-8): Neu verbinden ist die Spielen-Taste im Fehlerfall, die Bitrate eine Leiste der Steuerung
+    K.qaktion.innerHTML = st.id === "laedt" || st.id === "puffert" ? `<div class="balken"><span style="width:${st.id === "laedt" ? 18 : 64}%"></span></div>`
+      : st.rec ? `<span title="Kein Senderwechsel während der Aufnahme"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led> WECHSEL GESPERRT</span>`
+      : ["live", "versatz"].includes(st.id) ? "PUFFER WIE GESENDET" : "";
+    K.play.title = st.id === "fehler" ? "Die Quelle sofort neu laden" : "Hören oder anhalten";
     const fern = st.id === "fern";
     K.haus.textContent = fern ? "Telefon" : "Rechner im Arbeitszimmer";
     K.hausText.textContent = fern ? "Spielt auf" : "Spielt hier:";

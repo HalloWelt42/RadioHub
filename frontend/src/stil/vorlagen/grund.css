@@ -23,6 +23,7 @@
   --rh-geraet-kante: 0 0 0 1px var(--rand);
   --rh-geraet-schatten: var(--schatten);
   --rh-geraet-schatten-klein: 0 0 0 1px var(--rand);
+  --rh-kanzel-schatten: 0 -1px 0 var(--rand), 0 -6px 18px -10px color-mix(in srgb, var(--schattenfarbe) 35%, transparent);
   --rh-tafel-dunkel: var(--flaeche-2);
   --rh-zeile-auf-geraet: var(--flaeche);
 

@@ -1,4 +1,4 @@
-/* Brücke der alten Bereiche (Radio, Aufnahmen, Podcasts, Einstellungen, Spieler) auf die Marken des Appkerns (RAD-6,
+/* Brücke der alten Bereiche (Radio, Aufnahmen, Podcasts, Einstellungen; die Kanzel ist seit RAD-8 neu) auf die Marken des Appkerns (RAD-6,
    Teil 2c). Die Bereiche lesen weiter ihre Variablen --hifi-*; sie sind hier alle aus den Marken des Appkerns, der
    Instrumente und des Radios abgeleitet, darum folgen Farben, Flächen, Licht und Schriften der gewählten Vorlage und
    dem Thema (Hell, Dunkel), ohne eine feste Farbe. Ersetzt hifi-variables.css und fonts.css; entfällt Bereich für
@@ -12,10 +12,11 @@
 /* ═══ Schriftstufe der alten Bereiche ═══ Grundschrift wie bisher (16 Pixel, am Telefon 17), dann als Ganzes
    vergrößert; ohne die feste Grundschrift wüchse geerbter Text doppelt (Grundschrift der Stufe und zoom) */
 .rh-alt { zoom: var(--rh-alt-zoom); font-size: 16px; line-height: 1.5; min-width: 0; }
-/* Die alte Spielerleiste hat feste Teile (Kanzel, Zeit, Transport); mit Faktor 1,25 sind sie unter 1100 Pixeln breiter
-   als das Fenster. Dort bleibt sie in normaler Größe, bis Etappe 4 sie neu baut (gemessen: 1024 px, sehr groß). */
-@media (max-width: 1099px) { .rh-alt .hifi-player { zoom: calc(1 / var(--rh-alt-zoom)); } }
 .rh-telefon .rh-alt { font-size: 17px; line-height: 1.35; }
+/* Das Lautstärkegehäuse der Kanzel ragt in die Liste (wie im Entwurf, dort .rh-liste mit Platz am Ende): die Rollfelder
+   der alten Bereiche, die bis an die Kanzel reichen, bekommen unten so viel Platz, dass ihr Ende nie darunter bleibt */
+.rh-mitte.rh-alt :is(.station-list, .setup-main, .episode-list, .detail-body, .search-view, .sender-root) {
+  padding-bottom: calc(var(--rh-kanzel-ueberstand) + 16px); }
 
 :root, :root [data-theme] {
   /* Flächen */
