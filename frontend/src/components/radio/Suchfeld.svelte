@@ -6,7 +6,7 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { merken, suchverlauf, vergessen } from "../../lib/radio/suchverlauf";
 
-  let { wert, onsuche }: { wert: string; onsuche: (suche: string) => void } = $props();
+  let { wert, onsuche, platzhalter = "" }: { wert: string; onsuche: (suche: string) => void; platzhalter?: string } = $props();
 
   const PAUSE_MS = 300;
   let text = $state("");
@@ -80,7 +80,7 @@
 <div class="auswahl rh-suchfeld" bind:this={wurzel} onfocusout={verlassen}>
   <label class="suche" role="search">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input bind:this={feld} bind:value={text} type="search" name="sender-suche" placeholder={t("radio.suchePlatzhalter")}
+    <input bind:this={feld} bind:value={text} type="search" name="sender-suche" placeholder={platzhalter || t("radio.suchePlatzhalter")}
            aria-label={t("radio.sucheLabel")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
            onfocus={() => (offen = !text && verlauf.length > 0)} />
     {#if text}

@@ -22,7 +22,8 @@
 .rh-laender { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--gross) * 15)), 1fr)); gap: 4px 12px; }
 @media (max-width: 1099px) {
   .rh-neu { grid-template-columns: minmax(0, 1fr); }
-  .rh-vorschau { position: static; }
+  /* nicht static: die Schrauben des Geräts sitzen absolut in ihm */
+  .rh-vorschau { position: relative; top: 0; }
 }
 @media (max-width: 760px) {
   .rh-bestand { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 20px 14px 14px; }
@@ -61,7 +62,9 @@
 .rh-regel > .knopf { grid-area: weg; block-size: 44px; }
 .rh-regel .rueckfrage { grid-column: 1 / -1; margin: 6px 0 0; }
 .rh-regel .rueckfrage .aktionen .knopf { block-size: 40px; }
-@media (max-width: 760px) {
+/* nach der Breite der Karte statt des Fensters: neben den Bereichen der Einstellungen ist sie schon bei 900 Pixeln schmal */
+.rh-karte { container: karte / inline-size; }
+@container karte (max-width: 46em) {
   .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" "zahl zahl schalter weg"; }
   .rh-regel-zahl { text-align: left; }
   .rh-regel-zahl b { display: inline; margin-right: 6px; }
@@ -109,7 +112,7 @@
 .rh-a-zeile .stimmen { grid-area: stimmen; text-align: right; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-3); }
 .rh-a-zeile .knopf { grid-area: frei; block-size: var(--rh-taste-klein); justify-content: center; }
 .rh-a-zeile.frei { opacity: .7; }
-@media (max-width: 760px) { .rh-a-zeile { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name stimmen" "grund grund frei"; } }
+@container karte (max-width: 46em) { .rh-a-zeile { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name stimmen" "grund grund frei"; } }
 .rh-seiten .knopf { block-size: 44px; }
 
 /* ═══ Was die App über den Entwurf hinaus braucht ═══ */

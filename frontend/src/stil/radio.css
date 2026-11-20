@@ -246,3 +246,5 @@
 .rh-schnellwahl-taster ak-taster[art="flach"] .ak-taster-knopf { block-size: 100%; }
 /* Trefferzähler wächst mit der Breite des Fensters (Raster- und Segmentanzeigen wachsen mit, RAD-8) */
 .rh-werkzeug .rh-zaehler ak-segmente { --ak-zelle: clamp(calc(var(--gross) * 7.5), 9vw, calc(var(--gross) * 11)); }
+/* Hinrollen zu einer Zeile: nicht unter den klebenden Spaltenkopf */
+.rh-sender { scroll-margin-top: calc(var(--marke) * 1.5 + 30px); }

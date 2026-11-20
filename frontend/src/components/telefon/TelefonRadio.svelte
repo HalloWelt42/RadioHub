@@ -91,7 +91,7 @@
 
 <div class="tf-radio">
   <div class="t-suche">
-    <Suchfeld wert={filter.suche} onsuche={(s) => aendern((f) => ({ ...f, suche: s }))} />
+    <Suchfeld wert={filter.suche} platzhalter={t("telefon.senderSuchen")} onsuche={(s) => aendern((f) => ({ ...f, suche: s }))} />
     <button class="knopf" type="button" aria-expanded={blatt} onclick={() => (blatt = true)}><i class="fa-solid fa-sliders"></i>{t("radio.filter")}<span class="pille">{chips.length}</span></button>
   </div>
   <div class="t-chips">

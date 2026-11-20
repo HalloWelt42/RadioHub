@@ -116,7 +116,11 @@
 
   async function rollenZu(uuid: string, sanft = true) {
     await tick();
-    listeEl?.querySelector(`[data-uuid="${CSS.escape(uuid)}"]`)?.scrollIntoView({ block: "center", behavior: sanft ? "smooth" : "auto" });
+    const zeile = listeEl?.querySelector<HTMLElement>(`[data-uuid="${CSS.escape(uuid)}"]`);
+    if (!zeile || !listeEl) return;
+    // eine aufgeklappte Zeile ist höher als das halbe Rollfeld: oben unter dem Spaltenkopf, sonst in die Mitte
+    const hoch = zeile.offsetHeight > listeEl.clientHeight / 2;
+    zeile.scrollIntoView({ block: hoch ? "start" : "center", behavior: sanft ? "smooth" : "auto" });
   }
 
   // Nach 90 Sekunden ohne Bedienung zum spielenden Sender

@@ -1,7 +1,8 @@
 <script lang="ts">
   // Reiter Ausschlussregeln (Entwurf regeln.html): Bestand als Gerät (gesamt, sichtbar, durch Regeln aus, verschwunden),
-  // die lebenden Regeln (an und aus, entfernen mit Folgenvorschau; lange Listen laden beim Rollen nach) und die neue Regel
-  // mit Vorschau. Jede Änderung meldet das Band mit Rückgängig.
+  // die neue Regel mit Vorschau und die lebenden Regeln (an und aus, entfernen mit Folgenvorschau). Die neue Regel steht
+  // vor der Liste: die überführten Regeln sind fast 200, die Liste lädt beim Rollen nach und schöbe sie sonst immer weiter
+  // nach unten. Jede Änderung meldet das Band mit Rückgängig.
   import { onMount } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../../lib/i18n.svelte.js";
@@ -93,6 +94,10 @@
   </div>
 
   <div class="karte rh-karte">
+    <div class="rh-karte-kopf"><h2><i class="fa-solid fa-plus"></i>{t("radio.einst.neueRegel")}</h2><span class="rh-still">{t("radio.einst.erstVorschau")}</span></div>
+    <NeueRegel onangelegt={angelegt} oneinzeln={einzeln} />
+  </div>
+  <div class="karte rh-karte">
     <div class="rh-karte-kopf"><h2><i class="fa-solid fa-list-check"></i>{t("radio.einst.lebendeRegeln")}</h2>
       <span class="rh-still">{t("radio.einst.lebendeRegelnHilfe", { n: zahl(regeln.length) })}</span></div>
     {#if fehler}<p class="hinweis-band"><i class="fa-solid fa-triangle-exclamation"></i><span>{fehler}</span></p>{/if}
@@ -107,9 +112,5 @@
     </div>
   </div>
 
-  <div class="karte rh-karte">
-    <div class="rh-karte-kopf"><h2><i class="fa-solid fa-plus"></i>{t("radio.einst.neueRegel")}</h2><span class="rh-still">{t("radio.einst.erstVorschau")}</span></div>
-    <NeueRegel onangelegt={angelegt} oneinzeln={einzeln} />
-  </div>
 </section>
 <Band bind:inhalt={band} />
