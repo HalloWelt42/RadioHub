@@ -17,36 +17,56 @@ export const DRAHT = {
 // Reihenfolge von vorn nach hinten wie in echten Röhren (die vorderste verdeckt am wenigsten)
 const STAPEL = [1, 6, 2, 7, 5, 0, 4, 9, 8, 3];
 
-/** Eine Röhre als SVG; `farbe`: { glut, kern, kalt } */
+/** Eine Röhre als SVG; `farbe`: { glut, kern, kalt }. Glas als Zylinder: dunkle Ränder, Lichtkante, Kuppel mit Getterspiegel
+ *  oben; unten Sockel mit Kupferstiften (Nutzer 20.11.2026: 3D-Effekt des Glases und Kupferanschlüsse herausarbeiten). */
 export function roehre(ziffer, farbe, kennung) {
   const hinten = STAPEL.filter((z) => z !== Number(ziffer)).reverse()
     .map((z, i) => `<path d="${DRAHT[z]}" transform="translate(${0.6 * (i % 3) - 0.6} ${0.4 * (i % 2)})" stroke="${farbe.kalt}" stroke-width="1.6" opacity="${0.35 + i * 0.04}"/>`).join("");
   const id = `g${kennung}`;
-  return `<svg viewBox="-34 -40 128 190" class="nixie">
+  const kolben = "M-24 -6 C-24 -40 84 -40 84 -6 L84 124 C84 130 -24 130 -24 124 Z";
+  const stifte = [-12, 4, 20, 36, 52, 68].map((x) => `<rect x="${x - 2.2}" y="140" width="4.4" height="14" rx="2" fill="url(#${id}-kupfer)"/>
+    <ellipse cx="${x}" cy="141" rx="3.6" ry="1.6" fill="#3a1d0c"/><rect x="${x - 0.8}" y="141" width="1.2" height="12" fill="#ffd2a6" opacity=".55"/>`).join("");
+  return `<svg viewBox="-34 -46 128 204" class="nixie">
     <defs>
-      <radialGradient id="${id}-glas" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#ffffff" stop-opacity=".07"/><stop offset=".6" stop-color="#ffffff" stop-opacity=".02"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
-      <linearGradient id="${id}-licht" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".18" stop-color="#fff" stop-opacity=".22"/><stop offset=".26" stop-color="#fff" stop-opacity="0"/><stop offset=".84" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <radialGradient id="${id}-hof" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${farbe.glut}" stop-opacity=".35"/><stop offset="1" stop-color="${farbe.glut}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-zyl" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".12" stop-color="#000" stop-opacity=".1"/>
+        <stop offset=".5" stop-color="#fff" stop-opacity=".02"/><stop offset=".88" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
+      <linearGradient id="${id}-kante" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".14" stop-color="#fff" stop-opacity=".0"/>
+        <stop offset=".19" stop-color="#fff" stop-opacity=".42"/><stop offset=".23" stop-color="#fff" stop-opacity=".08"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset=".86" stop-color="#fff" stop-opacity=".16"/><stop offset=".9" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="${id}-kuppel" cx="38%" cy="18%" r="40%"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-getter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9c3bb" stop-opacity=".55"/><stop offset="1" stop-color="#c9c3bb" stop-opacity="0"/></linearGradient>
+      <radialGradient id="${id}-hof" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${farbe.glut}" stop-opacity=".32"/><stop offset="1" stop-color="${farbe.glut}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-kupfer" x1="0" x2="1"><stop offset="0" stop-color="#6b3415"/><stop offset=".35" stop-color="#e9a26a"/><stop offset=".55" stop-color="#b8662f"/><stop offset="1" stop-color="#5a2a10"/></linearGradient>
+      <linearGradient id="${id}-sockel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2c22"/><stop offset=".5" stop-color="#1a130e"/><stop offset="1" stop-color="#0c0907"/></linearGradient>
       <pattern id="${id}-gitter" width="5" height="8.66" patternUnits="userSpaceOnUse"><path d="M0 0 L2.5 4.33 L0 8.66 M5 0 L2.5 4.33 L5 8.66" fill="none" stroke="#9a8a78" stroke-width=".35"/></pattern>
+      <clipPath id="${id}-innen"><path d="${kolben}"/></clipPath>
       <filter id="${id}-glimm" x="-40%" y="-40%" width="180%" height="180%">
         <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="nah"/><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="fern"/>
         <feMerge><feMergeNode in="fern"/><feMergeNode in="fern"/><feMergeNode in="nah"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <!-- Kolben -->
-    <path d="M-24 -10 C-24 -36 84 -36 84 -10 L84 128 L-24 128 Z" fill="url(#${id}-glas)" stroke="#d8c8b0" stroke-opacity=".22" stroke-width="1"/>
-    <ellipse cx="30" cy="50" rx="44" ry="62" fill="url(#${id}-hof)"/>
-    <g fill="none" stroke-linecap="round" stroke-linejoin="round">${hinten}
-      <path d="${DRAHT[ziffer]}" stroke="${farbe.glut}" stroke-width="3.2" filter="url(#${id}-glimm)"/>
-      <path d="${DRAHT[ziffer]}" stroke="${farbe.kern}" stroke-width="1.1"/>
+    <!-- Kolben: Rückwand, Glut, Ziffern, Gitter, dann das Glas mit Zylinderschatten, Kante und Kuppel -->
+    <path d="${kolben}" fill="#0a0806" fill-opacity=".55"/>
+    <g clip-path="url(#${id}-innen)">
+      <ellipse cx="30" cy="50" rx="44" ry="62" fill="url(#${id}-hof)"/>
+      <rect x="-24" y="-40" width="108" height="16" fill="url(#${id}-getter)"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">${hinten}
+        <path d="${DRAHT[ziffer]}" stroke="${farbe.glut}" stroke-width="3.2" filter="url(#${id}-glimm)"/>
+        <path d="${DRAHT[ziffer]}" stroke="${farbe.kern}" stroke-width="1.1"/>
+      </g>
+      <rect x="-14" y="-4" width="88" height="108" fill="url(#${id}-gitter)" opacity=".5"/>
+      <path d="M-14 -4 L-14 108 M74 -4 L74 108 M-14 108 L74 108" stroke="#8d7c68" stroke-width="1.2" opacity=".55" fill="none"/>
+      <path d="M-4 108 L-4 126 M64 108 L64 126" stroke="#8d7c68" stroke-width="1" opacity=".5"/>
+      <path d="${kolben}" fill="url(#${id}-zyl)"/>
+      <path d="${kolben}" fill="url(#${id}-kante)"/>
+      <ellipse cx="18" cy="-18" rx="34" ry="16" fill="url(#${id}-kuppel)"/>
     </g>
-    <!-- Anodengitter vor den Ziffern, Halterungen -->
-    <rect x="-14" y="-4" width="88" height="108" fill="url(#${id}-gitter)" opacity=".55"/>
-    <path d="M-14 -4 L-14 104 M74 -4 L74 104" stroke="#8d7c68" stroke-width="1.2" opacity=".6"/>
-    <!-- Spiegelung, Sockel, Stifte -->
-    <path d="M-24 -10 C-24 -36 84 -36 84 -10 L84 128 L-24 128 Z" fill="url(#${id}-licht)"/>
-    <rect x="-26" y="126" width="112" height="16" rx="3" fill="#1a1410" stroke="#4a3a2a" stroke-width="1"/>
-    <path d="M-10 142 v6 M8 142 v6 M26 142 v6 M44 142 v6 M62 142 v6" stroke="#8d7c68" stroke-width="2"/>
+    <path d="${kolben}" fill="none" stroke="#e8dccb" stroke-opacity=".32" stroke-width="1.1"/>
+    <path d="M-17 -14 C-17 -30 -6 -34 6 -35" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- Sockel mit Rand und Kupferstiften -->
+    <rect x="-27" y="122" width="114" height="20" rx="4" fill="url(#${id}-sockel)" stroke="#5b4634" stroke-width="1"/>
+    <rect x="-27" y="122" width="114" height="3" rx="1.5" fill="#7a5e44" opacity=".55"/>
+    ${stifte}
   </svg>`;
 }
 

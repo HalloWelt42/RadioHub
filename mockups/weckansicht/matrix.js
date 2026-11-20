@@ -55,18 +55,34 @@ const Z = {
   "|": ["11011", "11011", "11011", "11011", "11011", "11011", "11011"],
 };
 
-/** Breite eines Textes in Punkten (Zeichen plus eine Spalte Abstand) */
-export function breite(text, mass = 1) {
+// Winzige Pixelschrift 3 x 5 für ganz grobe Raster (RGB-Pixeluhr)
+const K = {
+  "0": ["111", "101", "101", "101", "111"], "1": ["010", "110", "010", "010", "111"], "2": ["111", "001", "111", "100", "111"],
+  "3": ["111", "001", "111", "001", "111"], "4": ["101", "101", "111", "001", "001"], "5": ["111", "100", "111", "001", "111"],
+  "6": ["111", "100", "111", "101", "111"], "7": ["111", "001", "010", "010", "010"], "8": ["111", "101", "111", "101", "111"],
+  "9": ["111", "101", "111", "001", "111"], ":": ["0", "1", "0", "1", "0"], " ": ["00", "00", "00", "00", "00"],
+  "A": ["010", "101", "111", "101", "101"], "U": ["101", "101", "101", "101", "111"], "S": ["111", "100", "111", "001", "111"],
+  "D": ["110", "101", "101", "101", "110"], "L": ["100", "100", "100", "100", "111"], "F": ["111", "100", "110", "100", "100"],
+  "R": ["110", "101", "110", "101", "101"], "T": ["111", "010", "010", "010", "010"], "O": ["111", "101", "101", "101", "111"],
+  "N": ["101", "111", "111", "111", "101"], "Z": ["111", "001", "010", "100", "111"], "E": ["111", "100", "110", "100", "111"],
+};
+const satz = (schrift) => (schrift === "klein" ? K : Z);
+
+/** Breite eines Textes in Punkten (Zeichen plus eine Spalte Abstand); schrift "klein" ist die 3 x 5 */
+export function breite(text, mass = 1, schrift) {
+  const s = satz(schrift);
   let b = 0;
-  for (const z of text.toUpperCase()) b += ((Z[z] ?? Z[" "])[0].length + 1) * mass;
+  for (const z of text.toUpperCase()) b += ((s[z] ?? s[" "])[0].length + 1) * mass;
   return Math.max(0, b - mass);
 }
 
 /**
- * Zeichnet ein Punktfeld. `ebenen`: { text, x, y, mass, farbe, mitte } (x, y in Punkten; mitte: waagrecht zentriert);
- * `rahmen`: { x, y, b, h, farbe } als Umriss aus Punkten (Tastenfelder).
+ * Zeichnet ein Punktfeld. `ebenen`: { text, x, y, mass, farbe, mitte } (x, y in Punkten; mitte: waagrecht zentriert;
+ * farbe auch als Funktion (x, y) für Verläufe); `rahmen`: { x, y, b, h, farbe } als Umriss aus Punkten (Tastenfelder);
+ * `bilder`: { x, y, pixel: ["..ab..", ...], farben: { a: "#f00" } } als Pixelbilder; `form`: "rund" (Vorgabe) oder
+ * "quadrat" (RGB-Leuchtfeld mit schmalen Fugen); `glanz`: Leuchthof um beleuchtete Punkte (Vorgabe ja).
  */
-export function zeichnen(canvas, { spalten, zeilen, aus, ebenen = [], rahmen = [] }) {
+export function zeichnen(canvas, { spalten, zeilen, aus, ebenen = [], rahmen = [], bilder = [], form = "rund", glanz = true }) {
   const pixel = window.devicePixelRatio || 1;
   const w = canvas.clientWidth, h = canvas.clientHeight;
   canvas.width = w * pixel; canvas.height = h * pixel;
@@ -76,28 +92,35 @@ export function zeichnen(canvas, { spalten, zeilen, aus, ebenen = [], rahmen = [
   const ox = (w - schritt * spalten) / 2, oy = (h - schritt * zeilen) / 2;
   const feld = Array.from({ length: zeilen }, () => Array(spalten).fill(null));
   const setzen = (x, y, f) => { if (x >= 0 && y >= 0 && x < spalten && y < zeilen) feld[y][x] = f; };
+  const farbeAn = (f, x, y) => (typeof f === "function" ? f(x, y) : f);
   for (const r of rahmen) {
-    for (let i = 0; i < r.b; i++) { setzen(r.x + i, r.y, r.farbe); setzen(r.x + i, r.y + r.h - 1, r.farbe); }
-    for (let j = 0; j < r.h; j++) { setzen(r.x, r.y + j, r.farbe); setzen(r.x + r.b - 1, r.y + j, r.farbe); }
+    for (let i = 0; i < r.b; i++) { setzen(r.x + i, r.y, farbeAn(r.farbe, r.x + i, r.y)); setzen(r.x + i, r.y + r.h - 1, farbeAn(r.farbe, r.x + i, r.y + r.h - 1)); }
+    for (let j = 0; j < r.h; j++) { setzen(r.x, r.y + j, farbeAn(r.farbe, r.x, r.y + j)); setzen(r.x + r.b - 1, r.y + j, farbeAn(r.farbe, r.x + r.b - 1, r.y + j)); }
   }
+  for (const b of bilder) b.pixel.forEach((reihe, y) => [...reihe].forEach((z, x) => { if (b.farben[z]) setzen(b.x + x, b.y + y, b.farben[z]); }));
   for (const e of ebenen) {
     const m = e.mass ?? 1;
-    let x = e.mitte ? Math.round((spalten - breite(e.text, m)) / 2) + (e.x ?? 0) : e.x;
+    const s = satz(e.schrift);
+    let x = e.mitte ? Math.round((spalten - breite(e.text, m, e.schrift)) / 2) + (e.x ?? 0) : e.x;
     for (const z of e.text.toUpperCase()) {
-      const glyphe = Z[z] ?? Z[" "];
+      const glyphe = s[z] ?? s[" "];
       glyphe.forEach((reihe, gy) => [...reihe].forEach((p, gx) => {
-        if (p === "1") for (let a = 0; a < m; a++) for (let b = 0; b < m; b++) setzen(x + gx * m + a, e.y + gy * m + b, e.farbe);
+        if (p === "1") for (let a = 0; a < m; a++) for (let b = 0; b < m; b++) {
+          const px = x + gx * m + a, py = e.y + gy * m + b;
+          setzen(px, py, farbeAn(e.farbe, px, py));
+        }
       }));
       x += (glyphe[0].length + 1) * m;
     }
   }
-  const radius = schritt * 0.38;
+  const radius = schritt * 0.38, kante = schritt * 0.84;
   for (let y = 0; y < zeilen; y++) for (let x = 0; x < spalten; x++) {
     const f = feld[y][x];
     g.beginPath();
-    g.arc(ox + (x + 0.5) * schritt, oy + (y + 0.5) * schritt, radius, 0, Math.PI * 2);
+    if (form === "quadrat") g.roundRect(ox + x * schritt + (schritt - kante) / 2, oy + y * schritt + (schritt - kante) / 2, kante, kante, schritt * 0.12);
+    else g.arc(ox + (x + 0.5) * schritt, oy + (y + 0.5) * schritt, radius, 0, Math.PI * 2);
     g.fillStyle = f ?? aus;
-    if (f) { g.shadowColor = f; g.shadowBlur = schritt * 0.9; } else g.shadowBlur = 0;
+    if (f && glanz) { g.shadowColor = f; g.shadowBlur = schritt * 0.9; } else g.shadowBlur = 0;
     g.fill();
   }
 }
