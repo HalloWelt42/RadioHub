@@ -33,6 +33,7 @@ from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, 
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.hls_recorder import hls_recorder
+from .services import zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
@@ -65,6 +66,7 @@ class Radiobetrieb(Begleiter):
 
     async def starten(self) -> None:
         einstellungen.binden(self.geruest.einstellungen)
+        self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         try:
             self.datenbank = await database.einrichten(DB_PATH)
         except Exception as f:  # noqa: BLE001 - ohne Datenbank läuft nichts; /health und Protokoll sagen es

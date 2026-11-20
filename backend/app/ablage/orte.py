@@ -5,7 +5,7 @@
     Aufnahmen/<Sender>/<JJJJ-MM-TT HH-MM-SS>/Wellenform.peaks     Wellenform für den Schnitt (entsteht bei Bedarf)
     Aufnahmen/<Ordner>/<Sender>/<JJJJ-MM-TT HH-MM-SS>/...         eine Aufnahme in einem eigenen Aufnahmeordner
     Podcasts/<Abo>/<JJJJ-MM-TT> <Folge>.mp3                       eine heruntergeladene Folge
-    Zeitansage/es-ist.mp3, stunde-05.mp3, minute-34.mp3          Bausteine der Zeitansage
+    Zeitansage/<Stimme>/es-ist.mp3, stunde-05.mp3, minute-34.mp3  Bausteine der Zeitansage, je Stimme ein Ordner
 """
 
 from __future__ import annotations
@@ -84,6 +84,12 @@ def folge(abo: str, titel: str, veroeffentlicht: str | None, endung: str) -> str
 ZEITANSAGE = "Zeitansage"
 
 
-def zeitansage(baustein: str) -> str:
-    """Ein Baustein der Zeitansage (`es-ist`, `stunde-05`, `minute-34`) als MP3."""
-    return f"{ZEITANSAGE}/{baustein}.mp3"
+def zeitansage_ordner(stimme: str) -> str:
+    """Die Bausteine einer Stimme (`katalog:sohee` oder die Kennung einer privaten Stimme): jede Stimme spricht ihren
+    eigenen Satz, ein Wechsel der Stimme vermischt nichts."""
+    return f"{ZEITANSAGE}/{re.sub(r'[^A-Za-z0-9_-]', '-', stimme)}"
+
+
+def zeitansage(stimme: str, baustein: str) -> str:
+    """Ein Baustein der Zeitansage (`es-ist`, `stunde-05`, `minute-34`) einer Stimme als MP3."""
+    return f"{zeitansage_ordner(stimme)}/{baustein}.mp3"

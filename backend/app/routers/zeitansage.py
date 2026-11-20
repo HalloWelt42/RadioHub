@@ -5,11 +5,12 @@ Stand der Bausteine, Erzeugen der fehlenden (im Hintergrund, über die Vertonung
 """
 import asyncio
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 
 from ..ablage import orte
 from ..ablage.wiedergabe import ausliefern
-from ..services.zeitansage import bausteine, zeitansage
+from ..einstellungen import stand as einstellungen_stand
+from ..services.zeitansage import ZeitansageEinstellungen, bausteine, zeitansage
 
 router = APIRouter(prefix="/api/zeitansage", tags=["zeitansage"])
 _lauf: asyncio.Task | None = None
@@ -31,10 +32,12 @@ async def erzeugen():
 
 
 @router.get("/ton/{name}")
-async def ton(name: str, request: Request):
-    """Ein Baustein als MP3."""
+async def ton(name: str, request: Request, stimme: str | None = Query(None, max_length=200)):
+    """Ein Baustein als MP3, von `stimme` (wie im Stand genannt; so trennt der Zwischenspeicher die Stimmen), ohne
+    Angabe von der eingestellten."""
     if name not in bausteine():
         raise HTTPException(404, "Unbekannter Baustein")
-    antwort = await ausliefern(orte.zeitansage(name), request)
+    stimme = stimme or ZeitansageEinstellungen.aus(einstellungen_stand()).stimme
+    antwort = await ausliefern(orte.zeitansage(stimme, name), request)
     antwort.headers["Cache-Control"] = "public, max-age=86400"
     return antwort

@@ -58,8 +58,10 @@ class AppEinstellungen(Grundeinstellungen):
     vertonung_adresse: str = Field("", max_length=200, title="Vertonung", json_schema_extra=WECKER,
                                    description="Vertonung, die die Bausteine der Zeitansage spricht. Sie nimmt den "
                                                "App-Schlüssel der Kellerwolke als Zugang.")
-    zeitstimme: str = Field("", max_length=200, title="Zeit-Stimme", json_schema_extra=WECKER,
-                            description="Kennung der Stimme für die Zeitansage; in der Vertonung für RadioHub freigeben.")
+    zeitstimme: str = Field("katalog:sohee", max_length=200, title="Zeit-Stimme", json_schema_extra=WECKER,
+                            description="Stimme der Zeitansage aus der Vertonung: aus dem Katalog oder eine private, die "
+                                        "die Vertonung für RadioHub freigibt. Jede Stimme spricht ihre eigenen Bausteine; "
+                                        "nach einem Wechsel fehlen sie, bis sie erzeugt sind.")
     zeitstimme_tempo: float = Field(1.0, ge=0.5, le=2.0, title="Tempo der Zeit-Stimme",
                                     json_schema_extra={**WECKER, "schritt": 0.05},
                                     description="1,0 ist das Tempo der Stimme; kleiner spricht langsamer.")

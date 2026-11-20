@@ -292,12 +292,18 @@ selbst schaltet dann die Ansage nicht aus). Solange der Ton frei ist, wartet ein
 Weckeransicht verlässt, denn nach dem Neuladen wäre er wieder gesperrt.
 
 Gesprochen wird aus 84 Bausteinen ("Es ist", "null Uhr" bis "dreiundzwanzig Uhr", "eins" bis "neunundfünfzig") in
-der Kellerwolke unter `Apps/RadioHub/Zeitansage/`. Erzeugt werden fehlende einmal über die hauseigene Vertonung mit
-der Zeit-Stimme (Einstellungen am Telefon, "Bausteine erzeugen", oder `POST /api/zeitansage/erzeugen`):
+der Kellerwolke unter `Apps/RadioHub/Zeitansage/<Stimme>/`, je Stimme ein eigener Satz. Erzeugt werden fehlende
+einmal über die hauseigene Vertonung mit der Zeit-Stimme (Einstellungen am Telefon, "Bausteine erzeugen", oder
+`POST /api/zeitansage/erzeugen`):
 
-- `.env`: `RADIOHUB_VERTONUNG_ADRESSE=https://<rechner>:8641` und `RADIOHUB_ZEITSTIMME=<Kennung der Zeit-Stimme>`
-- in der Vertonung die Stimme für die App RadioHub freigeben (Private Stimmen für); angemeldet wird mit dem
+- `.env`: `RADIOHUB_VERTONUNG_ADRESSE=https://<rechner>:8641`; die Zeit-Stimme wählt man in den Einstellungen
+  (Telefon und Wecker, Zeit-Stimme) aus dem Katalog der Vertonung und den für RadioHub freigegebenen privaten Stimmen.
+  Vorgabe ist `katalog:sohee`, dieselbe Stimme wie in Basic; `RADIOHUB_ZEITSTIMME` setzt sie in der Umgebung
+  (`katalog:<Name>` oder die Kennung einer privaten Stimme) und gilt, bis in der App eine gewählt ist
+- eine private Stimme in der Vertonung für die App RadioHub freigeben (Private Stimmen für); angemeldet wird mit dem
   App-Schlüssel der Kellerwolke
+- Basic (Pages) spricht aus den Bausteinen im Repo (`web/daten/zeitansage/`, Katalogstimme sohee, das Repo ist
+  öffentlich); neu sprechen lässt sie `app.werkzeuge.zeitansage_bausteine` (Kopf der Datei)
 - Stand: `GET /api/zeitansage` (fehlende Bausteine, Meldung der Erzeugung)
 
 ## Neue Fassung

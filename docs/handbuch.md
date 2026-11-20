@@ -111,7 +111,8 @@ Datenbank gesund; das Protokoll der App nennt "Stand Stufe 2" und "Senderbestand
 
 Alle Einstellungen stehen an einer Stelle, den Einstellungen des Appkerns: gespeichert in der App, sonst aus der `.env`
 im Ordner `{{wurzel}}` (Modus 0600, Namen `RADIOHUB_<FELD>`), sonst die Vorgabe; fest (nicht änderbar) sind die Werte
-`RADIOHUB_FEST_*`, die das Ausrollen setzt. Für die Vertonung `RADIOHUB_VERTONUNG_ADRESSE` und `RADIOHUB_ZEITSTIMME`;
+`RADIOHUB_FEST_*`, die das Ausrollen setzt. Für die Vertonung `RADIOHUB_VERTONUNG_ADRESSE`, die Zeit-Stimme wählt man in den Einstellungen (Vorgabe Katalogstimme
+sohee wie in Basic, austauschbar gegen jede für RadioHub freigegebene Stimme);
 die Zertifikatsstelle (`RADIOHUB_CA_DATEI`) und die Ortssuche (OSMLocal im Netz `haus`) setzt `compose.pi.yml`. Die
 Namen von vor RAD-6 gelten weiter (`RADIOHUB_KELLERWOLKE_CA`, `RADIOHUB_KELLERWOLKE_SCHLUESSEL` als Pfad einer Datei,
 ohne Angabe `data/kellerwolke.schluessel`); Werte, die früher in der Tabelle `config` standen (Abruf der Podcasts,

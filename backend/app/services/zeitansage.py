@@ -2,13 +2,14 @@
 RadioHub v0.8.0 - Zeitansage
 
 Bausteine der Zeitansage ("Es ist", "fünf Uhr", "vierunddreißig"), einmal gesprochen von der hauseigenen Vertonung
-mit der Zeit-Stimme und als MP3 in der Ablage unter Zeitansage/. Das Telefon setzt sie zusammen ("Es ist fünf Uhr
+mit der Zeit-Stimme und als MP3 in der Ablage unter Zeitansage/<Stimme>/. Das Telefon setzt sie zusammen ("Es ist fünf Uhr
 vierunddreißig", zur vollen Stunde ohne Minuten); so reichen 84 kurze Dateien statt einer je Minute.
 
 Einstellungen (einstellungen.AppEinstellungen, in der Umgebung wie früher):
     vertonung_adresse   RADIOHUB_VERTONUNG_ADRESSE, Adresse der Vertonung, etwa https://<rechner>:8641
-    zeitstimme          RADIOHUB_ZEITSTIMME, Kennung der Zeit-Stimme (Klonstimme der Vertonung; dort für die App RadioHub
-                        unter "Private Stimmen für" freigeben)
+    zeitstimme          RADIOHUB_ZEITSTIMME, Stimme der Vertonung: `katalog:<Name>` (Vorgabe `katalog:sohee`, dieselbe
+                        wie in Basic) oder die Kennung einer privaten Stimme (dort für RadioHub unter "Private Stimmen für"
+                        freigeben); jede Stimme hat ihren eigenen Satz Bausteine
     zeitstimme_tempo    RADIOHUB_ZEITSTIMME_TEMPO, Sprechtempo, Vorgabe 1.0
 Angemeldet wird mit dem App-Schlüssel der Kellerwolke (Verbund der Apps), geprüft mit derselben Zertifikatsstelle.
 """
@@ -20,6 +21,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
+
+from appkern.vorlesen import stimmwahl
 
 from ..einstellungen import stand as einstellungen_stand
 from ..ablage import ablage, orte
@@ -99,15 +102,42 @@ async def _kuerzen(wav: bytes) -> bytes:
         return aus.read_bytes()
 
 
+def stimme_der_app(e: ZeitansageEinstellungen) -> dict:
+    """Stimmwahl der Vertonung für die eingestellte Zeit-Stimme (Katalog oder private Stimme, Format des Appkerns)."""
+    wahl = stimmwahl(e.stimme)
+    if wahl is None:
+        raise ValueError("Keine Zeit-Stimme eingestellt")
+    return wahl
+
+
+async def baustein_sprechen(client: httpx.AsyncClient, e: ZeitansageEinstellungen, text: str, stimme: dict) -> bytes:
+    """Einen Baustein sprechen lassen und zuschneiden (MP3 mono ohne Stille am Rand). `stimme` ist die Stimmwahl der
+    Vertonung: {"art": "klon", "knoten_id": ...} oder {"art": "katalog", "name": ...}; gesprochen wird deutsch."""
+    antwort = await client.post(f"{e.adresse}/api/v1/sprechen", headers={"Authorization": f"Bearer {e.schluessel}"},
+                                json={"text": text, "stimme": stimme, "sprache": "de", "tempo": e.tempo,
+                                      "ausschreiben": False})
+    if antwort.status_code != 200:
+        hinweis = " (Stimme für RadioHub freigeben: Vertonung, Private Stimmen für)" \
+            if antwort.status_code in (403, 404) else ""
+        raise RuntimeError(f"Vertonung antwortet {antwort.status_code}{hinweis}: {antwort.text[:200]}")
+    return await _kuerzen(antwort.content)
+
+
+def client_fuer(e: ZeitansageEinstellungen, transport: httpx.AsyncBaseTransport | None = None) -> httpx.AsyncClient:
+    return httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0), transport=transport, verify=tls_pruefung(e.ca_datei))
+
+
 class Zeitansage:
     def __init__(self) -> None:
         self.laeuft = False
         self.meldung = ""
 
-    async def stand(self) -> dict:
+    async def stand(self, stimme: str | None = None) -> dict:
+        """Bausteine der eingestellten Stimme (oder von `stimme`): alle, die fehlenden, die laufende Erzeugung."""
+        stimme = stimme if stimme is not None else ZeitansageEinstellungen.aus(einstellungen_stand()).stimme
         namen = list(bausteine())
-        vorhanden = {e.name.removesuffix(".mp3") for e in await ablage().liste(orte.ZEITANSAGE)}
-        return {"bausteine": namen, "fehlend": [n for n in namen if n not in vorhanden],
+        vorhanden = {e.name.removesuffix(".mp3") for e in await ablage().liste(orte.zeitansage_ordner(stimme))}
+        return {"stimme": stimme, "bausteine": namen, "fehlend": [n for n in namen if n not in vorhanden],
                 "erzeugung": {"laeuft": self.laeuft, "meldung": self.meldung}}
 
     async def erzeugen(self, einstellungen: ZeitansageEinstellungen | None = None,
@@ -123,20 +153,12 @@ class Zeitansage:
         self.laeuft, neu = True, 0
         try:
             texte = bausteine()
-            fehlend = (await self.stand())["fehlend"]
-            schluessel = e.schluessel
-            async with httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0), transport=transport,
-                                         verify=tls_pruefung(e.ca_datei)) as client:
+            fehlend = (await self.stand(e.stimme))["fehlend"]
+            async with client_fuer(e, transport) as client:
                 for i, name in enumerate(fehlend, 1):
                     self.meldung = f"Spreche {name} ({i} von {len(fehlend)})"
-                    antwort = await client.post(f"{e.adresse}/api/v1/sprechen", headers={"Authorization": f"Bearer {schluessel}"},
-                                                json={"text": texte[name], "stimme": {"art": "klon", "knoten_id": e.stimme},
-                                                      "sprache": "de", "tempo": e.tempo, "ausschreiben": False})
-                    if antwort.status_code != 200:
-                        hinweis = " (Stimme für RadioHub freigeben: Vertonung, Private Stimmen für)" \
-                            if antwort.status_code in (403, 404) else ""
-                        raise RuntimeError(f"Vertonung antwortet {antwort.status_code}{hinweis}: {antwort.text[:200]}")
-                    await ablage().schreiben(orte.zeitansage(name), await _kuerzen(antwort.content))
+                    ton = await baustein_sprechen(client, e, texte[name], stimme_der_app(e))
+                    await ablage().schreiben(orte.zeitansage(e.stimme, name), ton)
                     neu += 1
             self.meldung = f"Fertig: {neu} Bausteine erzeugt"
         except Exception as f:  # Meldung für die Oberfläche; ein neuer Lauf macht den Rest

@@ -24,3 +24,20 @@ Ohne `--aus-datenbank` lädt das Werkzeug das ganze Verzeichnis seitenweise übe
 Angabe liest es die Tabelle `stations` der Datenbank nur lesend (ohne verschwundene Sender). Das Format beschreibt der
 Kopf des Werkzeugs (`backend/app/werkzeuge/statische_liste.py`), gelesen wird es in
 `frontend/src/lib/radio/statisch/format.ts`.
+
+# Zeitansage der Webversion
+
+`zeitansage/` hält die 84 Bausteine der Zeitansage ("Es ist", "null Uhr" bis "dreiundzwanzig Uhr", "eins" bis
+"neunundfünfzig") als MP3 mono, gesprochen von der hauseigenen Vertonung mit der Katalogstimme sohee des
+Sprachmodells. Eigene oder geklonte Stimmen kommen nie hierher, denn die Webversion ist öffentlich. Das Telefon setzt
+die Bausteine zusammen wie in der vollen App ("Es ist sechs Uhr zweiundvierzig").
+
+Neu sprechen lassen (dort, wo die Einstellungen der App liegen, etwa im Container des Pi), danach den Ordner hierher
+holen:
+
+```
+python -m app.werkzeuge.zeitansage_bausteine --stimme katalog:sohee --aus /tmp/zeitansage
+```
+
+Das Werkzeug misst die Länge je Silbe und spricht auffällige Bausteine bis zu viermal neu; anhören muss man sie danach
+trotzdem (Sprache, Aussprache).
