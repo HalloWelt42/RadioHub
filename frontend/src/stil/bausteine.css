@@ -27,7 +27,8 @@ html, body { height: 100%; overflow: hidden; }
 /* Navigation: Pillenleiste als Gerät, ragt in den Inhalt; gewählter Bereich erhaben mit leuchtender Schrift */
 .rh-nav { padding: 6px; border-radius: var(--rh-pille); min-width: 0; max-inline-size: 100%;
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-geraet-kante), var(--rh-geraet-schatten); }
-.rh-nav-schiene { display: flex; gap: 4px; padding: 4px; border-radius: var(--rh-pille); background-color: var(--rh-nav-schiene); box-shadow: var(--rh-mulde); }
+.rh-nav-schiene { display: flex; gap: 4px; padding: 4px; border-radius: var(--rh-pille); background-color: var(--rh-nav-schiene);
+  background-image: var(--rh-nav-schiene-bild); box-shadow: var(--rh-mulde); }
 .rh-nav-knopf { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-block-size: var(--rh-taste-klein); padding: 0 18px; border: 0;
   border-radius: var(--rh-pille); cursor: pointer; text-decoration: none; font-size: var(--klein); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
   color: var(--rh-nav-tinte); background: transparent; transition: color var(--schnell), background-color var(--schnell); --ak-schlitz-oben: 4px; }
