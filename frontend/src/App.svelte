@@ -1,13 +1,13 @@
 <script lang="ts">
   // RadioHub nach der Anmeldung: am Rechner Kopf, Bereich und Abspielleiste (Kanzel), am Telefon die eigene Ansicht
   // (quer die Weckeransicht). Radio ist neu gebaut (RAD-7), die Kanzel ebenso (RAD-8, wächst über die Marken der
-  // Schriftstufen); Aufnahmen, Podcasts und Einstellungen sind die bisherigen, sie stehen in .rh-alt und wachsen mit der
-  // Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
+  // Schriftstufen), Podcasts auch (RAD-17); Aufnahmen und Einstellungen sind die bisherigen, sie stehen in .rh-alt und
+  // wachsen mit der Schriftstufe als Ganzes, bis sie neu gebaut sind (styles/bruecke.css).
   import Kanzel from "./spieler/Kanzel.svelte";
   import { tasteDerApp } from "./schale/tastatur";
   import RadioAnsicht from "./components/radio/RadioAnsicht.svelte";
   import RecordingsTab from "./components/RecordingsTab.svelte";
-  import PodcastsTab from "./components/PodcastsTab.svelte";
+  import PodcastAnsicht from "./components/podcast/PodcastAnsicht.svelte";
   import SettingsTab from "./components/SettingsTab.svelte";
   import Telefon from "./components/telefon/Telefon.svelte";
   import Kopf from "./schale/Kopf.svelte";
@@ -71,14 +71,14 @@
 {:else}
   <div class="rh-app">
     <Kopf {online} {ablage} bereiche={[...BEREICHE]} />
-    <!-- die neue Radio-Ansicht liest die Marken direkt; nur die alten Bereiche wachsen als Ganzes (rh-alt) -->
-    <main class="rh-mitte" class:rh-alt={appState.activeTab !== "radio" && appState.activeTab !== "wecker"}>
+    <!-- die neuen Ansichten (Radio, Podcasts) lesen die Marken direkt; nur die alten Bereiche wachsen als Ganzes (rh-alt) -->
+    <main class="rh-mitte" class:rh-alt={!["radio", "wecker", "podcasts"].includes(appState.activeTab as string)}>
       {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}
         <RadioAnsicht />
       {:else if appState.activeTab === "recordings"}
         <RecordingsTab />
       {:else if appState.activeTab === "podcasts"}
-        <PodcastsTab />
+        <PodcastAnsicht />
       {:else if appState.activeTab === "settings"}
         <SettingsTab />
       {/if}

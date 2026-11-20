@@ -85,11 +85,3 @@ export interface Aktualisierungsstand {
   abstandStunden: number;
   automatisch: boolean;
 }
-
-/** Ergebnis von "mehrere merken" */
-export interface Merkbericht {
-  gesamt: number;
-  neu: number;
-  schonDa: number;
-  fehler: number;
-}

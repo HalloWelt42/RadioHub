@@ -1,7 +1,7 @@
 // Schnittstelle Podcastquelle (RAD-17): alles, was die Podcast-Ansichten am Rechner und am Telefon über Abos und
 // Folgen wissen und ändern. Die volle App setzt sie gegen das Backend um (backend.ts). Was eine Umsetzung nicht kann,
 // meldet sie in `faehig`; die Ansichten zeigen den Teil dann nicht (keine toten Knöpfe), wie bei der Senderquelle.
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Merkbericht } from "./typen";
+import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck } from "./typen";
 
 export interface Podcastfaehigkeiten {
   /** im Verzeichnis suchen und abonnieren */
@@ -16,6 +16,8 @@ export interface Podcastfaehigkeiten {
 export interface Folgenwiedergabe {
   folge: Record<string, unknown>;
   abo: Record<string, unknown>;
+  /** die Liste für Vor und Zurück, im selben Format */
+  liste: Record<string, unknown>[];
 }
 
 export interface Podcastquelle {
@@ -43,7 +45,6 @@ export interface Podcastquelle {
   stelleMerken(id: number, sekunden: number): Promise<void>;
   /** im Gerät merken (herunterladen) oder wieder freigeben */
   merken(id: number, an: boolean): Promise<void>;
-  /** mehrere Folgen eines Abos merken, am Stück im Backend */
-  mehrereMerken(aboId: number, ids: number[]): Promise<Merkbericht>;
-  wiedergabe(folge: Folge): Promise<Folgenwiedergabe>;
+  /** was der Spieler für eine Folge braucht; `liste` wird die Wiedergabeliste (Vor und Zurück) */
+  wiedergabe(folge: Folge, liste?: Folge[]): Promise<Folgenwiedergabe>;
 }

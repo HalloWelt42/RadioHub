@@ -2,8 +2,7 @@
 // Seiten zählt das Backend ab einer Stelle (offset); der Zeiger der nächsten Seite ist diese Stelle als Text.
 // Bilder kommen über die eigene App, nie direkt von fremden Servern.
 import type { Folgenwiedergabe, Podcastfaehigkeiten, Podcastquelle } from "./quelle";
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenfilter, Folgenseite, Folgensortierung, Fundstueck,
-  Merkbericht } from "./typen";
+import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenfilter, Folgenseite, Folgensortierung, Fundstueck } from "./typen";
 
 /** der Teil von lib/api.js, den die Quelle braucht */
 export interface Anfrager {
@@ -142,18 +141,14 @@ export class BackendPodcastquelle implements Podcastquelle {
     await this.api.fetch(`/api/podcasts/episodes/${id}/download`, { method: an ? "POST" : "DELETE" });
   }
 
-  async mehrereMerken(aboId: number, ids: number[]): Promise<Merkbericht> {
-    const r = await this.api.fetch(`/api/podcasts/${aboId}/download-batch`, { method: "POST", body: JSON.stringify({ episode_ids: ids }) });
-    return { gesamt: zahl(r.total), neu: zahl(r.success), schonDa: zahl(r.skipped), fehler: zahl(r.failed) };
-  }
-
-  async wiedergabe(f: Folge): Promise<Folgenwiedergabe> {
+  async wiedergabe(f: Folge, liste: Folge[] = [f]): Promise<Folgenwiedergabe> {
     const folge = this.rohFolgen.get(f.id) ?? (await this.api.fetch(`/api/podcasts/episodes/${f.id}`));
     let abo = this.rohAbos.get(f.aboId);
     if (!abo) {
       await this.abos();
       abo = this.rohAbos.get(f.aboId) ?? { id: f.aboId };
     }
-    return { folge, abo };
+    const roh = liste.map((x) => (x.id === f.id ? folge : this.rohFolgen.get(x.id))).filter((x): x is Roh => !!x);
+    return { folge, abo, liste: roh.length ? roh : [folge] };
   }
 }

@@ -2,10 +2,12 @@
  * RadioHub - Deutsche Übersetzungen
  */
 import radio from './radio/de.js';
+import podcastAnsicht from './podcastansicht/de.js';
 
 export default {
   // === Radio mit Senderfilterung (RAD-7) ===
   radio,
+  podcastAnsicht,
 
   // === Telefonansicht ===
   telefon: {
@@ -885,6 +887,8 @@ export default {
     bitrate: 'Bitrate des Zeitversatzes',
     pufferBitrate: 'PUFFER {wert}',
     pufferWechselt: 'PUFFER WECHSELT ...',
+    tempoName: 'Tempo',
+    tempoHilfe: 'Tempo der Folge',
     bitrateName: 'Bitrate',
     bitrateWieGesendetName: 'Original',
     bitrateHilfe: 'Bitrate des Zeitversatzes: wie gesendet oder eine feste Stufe; wirkt nur im Zeitversatz',

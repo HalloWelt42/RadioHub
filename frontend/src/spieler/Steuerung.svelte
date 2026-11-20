@@ -1,7 +1,8 @@
 <script lang="ts">
   // Modul Steuerung: alle Tasten in einer Reihe, in jeder Breite (Nutzer 20.11.2026), gleich groß und auf einer
   // Grundlinie; erst der Transport (Zurück, Stopp, Spielen oder Anhalten, Aufnahme, Weiter), mit Abstand das Seltene
-  // (Original oder Zeitversatz, Reihenfolge), am Ende die Bitrate des Zeitversatzes als Drehwahl (Nutzer 17.11.2026).
+  // (Original oder Zeitversatz, Reihenfolge), am Ende die Bitrate des Zeitversatzes als Drehwahl (Nutzer 17.11.2026);
+  // spielt eine Folge, steht dort das Tempo (RAD-17).
   // Die Kappen leuchten nie, nur ihr Tastenlicht (Nutzer 20.11.2026). Was der Weg der Wiedergabe nicht kann, steht nicht
   // da (Webversion: ohne Aufnahme, Zeitversatz und Folgen, also ohne Aufnahme, Original oder Zeitversatz, Reihenfolge
   // und Bitrate). Zurück, Stopp und Weiter leuchten, solange sie
@@ -13,7 +14,9 @@
   import * as sfx from "../lib/uiSounds.js";
   import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurueck, andereVariante } from "./aktionen";
   import { fokusSchalten } from "./fokus.svelte";
-  import { bitrateAusStellung, bitrateRaster, bitrateStellung, type BitrateLage, type Tasten } from "./kanzel";
+  import { bitrateAusStellung, bitrateRaster, bitrateStellung, tempoAusStellung, tempoRaster, tempoStellung, type BitrateLage, type Tasten } from "./kanzel";
+  import { app } from "./app";
+  import { actions } from "../lib/store.svelte.js";
   import type { Bitrate } from "./bitrate.svelte";
   import { taste } from "./taste";
   import { faehigkeiten } from "../lib/playerEngine.js";
@@ -76,7 +79,11 @@
                        symbol: tasten.reihenfolge.symbol, beiDruck: mitKlang(reihenfolgeWeiter), beiZeigen: zeigen }}></ak-taster>
       {/if}
     </div>
-    {#if kann.zeitversatz}
+    {#if app.playerMode === "podcast"}
+    <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.tempoName")} hilfe={t("kanzel.tempoHilfe")} raster={tempoRaster()} vorgabe="1"
+        role="slider" aria-valuenow={tempoStellung(app.podcastSpeed)} wert={tempoStellung(app.podcastSpeed)}
+        oninput={(e: Event) => actions.setPodcastSpeed(tempoAusStellung((e.currentTarget as Drehregler).wert ?? 1))}></ak-dreh>
+    {:else if kann.zeitversatz}
     <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.bitrateName")} hilfe={t("kanzel.bitrateHilfe")} raster={bitrateRaster(t)} vorgabe="0"
         role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== null ? 'gelb' : 'gruen'})"
         oninput={gedreht} onchange={() => bitrate.anwenden()}></ak-dreh>

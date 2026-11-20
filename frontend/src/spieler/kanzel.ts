@@ -409,6 +409,15 @@ export function bitrateLage(s: Stand): BitrateLage {
 /** Stellungen der Drehwahl als Raster des Appkerns ("|"-getrennt) */
 export const bitrateRaster = (t: Uebersetzer): string => [t("kanzel.bitrateWieGesendetName"), ...BITRATEN.map(String)].join("|");
 
+/** Tempo einer Folge (RAD-17, Entwurf podcasts.html): Drehwahl an der Stelle der Bitrate, solange eine Folge spielt */
+export const TEMPI = [0.75, 1, 1.25, 1.5, 1.75, 2] as const;
+export const tempoRaster = (): string => TEMPI.map((x) => String(x).replace(".", ",")).join("|");
+export function tempoStellung(tempo: number): number {
+  const i = TEMPI.findIndex((x) => Math.abs(x - tempo) < 0.01);
+  return i < 0 ? 1 : i;
+}
+export const tempoAusStellung = (stellung: number): number => TEMPI[Math.min(TEMPI.length - 1, Math.max(0, Math.round(stellung)))];
+
 /** Stellung der Drehwahl für eine Vorgabe (0: wie gesendet) und zurück */
 export function bitrateStellung(vorgabe: number | null): number {
   const i = vorgabe === null ? -1 : BITRATEN.indexOf(vorgabe as (typeof BITRATEN)[number]);

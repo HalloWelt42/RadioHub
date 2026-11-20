@@ -1,16 +1,22 @@
 <script lang="ts">
-  // Sendersuche mit Verlauf (am Rechner und am Telefon): sucht nach kurzer Pause ab zwei Zeichen, leer sofort; die
-  // letzten Suchen klappen unter dem leeren Feld auf (wählen, Verlauf löschen). Gemerkt wird mit Eingabe oder beim
-  // Verlassen des Felds, nicht jeder Zwischenstand beim Tippen.
+  // Suchfeld mit Verlauf (Sender am Rechner und am Telefon, Folgen der Podcasts): sucht nach kurzer Pause ab zwei
+  // Zeichen, leer sofort; die letzten Suchen klappen unter dem leeren Feld auf (wählen, Verlauf löschen). Gemerkt wird
+  // mit Eingabe oder beim Verlassen des Felds, nicht jeder Zwischenstand beim Tippen. Ohne Angaben: die Sendersuche.
   import { untrack } from "svelte";
   import { t } from "../../lib/i18n.svelte.js";
-  import { merken, suchverlauf, vergessen } from "../../lib/radio/suchverlauf";
+  import { senderSuchverlauf, type Suchverlauf } from "../../lib/radio/suchverlauf";
 
-  let { wert, onsuche, platzhalter = "" }: { wert: string; onsuche: (suche: string) => void; platzhalter?: string } = $props();
+  let { wert, onsuche, platzhalter = "", beschriftung = "", hilfe = "", name = "sender-suche", gedaechtnis = senderSuchverlauf }: {
+    wert: string; onsuche: (suche: string) => void; platzhalter?: string; beschriftung?: string; hilfe?: string; name?: string;
+    /** wo der Verlauf liegt (je Bereich einer) */
+    gedaechtnis?: Suchverlauf;
+  } = $props();
+  const merken = (s: string) => gedaechtnis.merken(s);
+  const vergessen = () => gedaechtnis.vergessen();
 
   const PAUSE_MS = 300;
   let text = $state("");
-  let verlauf = $state<string[]>(suchverlauf());
+  let verlauf = $state<string[]>(untrack(() => gedaechtnis.alle()));
   let offen = $state(false);
   let feld = $state<HTMLInputElement>();
   let wurzel = $state<HTMLElement>();
@@ -80,8 +86,8 @@
 <div class="auswahl rh-suchfeld" bind:this={wurzel} onfocusout={verlassen}>
   <label class="suche" role="search">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input bind:this={feld} bind:value={text} type="search" name="sender-suche" placeholder={platzhalter || t("radio.suchePlatzhalter")}
-           aria-label={t("radio.sucheLabel")} title={t("radio.sucheMinusHilfe")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
+    <input bind:this={feld} bind:value={text} type="search" {name} placeholder={platzhalter || t("radio.suchePlatzhalter")}
+           aria-label={beschriftung || t("radio.sucheLabel")} title={hilfe || t("radio.sucheMinusHilfe")} autocomplete="off" enterkeyhint="search" oninput={eingabe} onkeydown={taste}
            onfocus={() => (offen = !text && verlauf.length > 0)} />
     {#if text}
       <button class="rund" type="button" aria-label={t("radio.sucheLeeren")} title={t("radio.sucheLeeren")} onclick={leeren}>

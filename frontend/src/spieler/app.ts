@@ -29,6 +29,8 @@ export interface AppZustand {
   canPlayDirect: boolean;
   canPlayHLS: boolean | null;
   playMode: string;
+  /** Tempo der Folge (0,75 bis 2) */
+  podcastSpeed: number;
   stations: Sender[];
   podcastPlaylist: Folge[];
   podcastPlaylistPodcast: Podcast | null;

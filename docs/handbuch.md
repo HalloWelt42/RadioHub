@@ -47,6 +47,13 @@ Die Fokus-Taste der Spielerleiste (Fadenkreuz, blaues Licht heißt ein, gemerkt 
 Sender, klappt ihn auf und folgt ihm bei jedem Wechsel (Weiter, Zurück, neuer Sender), dazwischen rollt man frei; aus
 rollt nur frei. Wird der aufgeklappte Sender ausgeblendet, rückt der nächste der Reihe nach.
 
+Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gemerkt, darunter die Abos mit der
+Zahl ungehörter Folgen (mehrere wählbar, Reihenfolge per Ziehen, Abonnieren über die Suche im Verzeichnis); oben
+Zählwerk, Suche in Titeln und Beschreibungen, Sortierung und Aktualisieren. Ein gewähltes Abo zeigt seinen Kopf mit
+"Neue merken" (neue Folgen von selbst im Gerät), Aktualisieren, "Alle merken" mit Fortschritt und Abbestellen (mit
+Rückgängig). Je Folge: hören, merken oder freigeben, als gehört setzen, Details. Spielt eine Folge, hat die
+Abspielleiste statt der Bitrate eine Drehwahl für das Tempo.
+
 Wecker am Telefon (Wecker-Taste oben): je Wecker Uhrzeit, Tage, Sender oder neueste Folge eines Abos, Weckton,
 Lautstärke und wie langsam es lauter wird. Den Weckton (neun zur Wahl, Vorgabe Doppelpiep, alle im Gerät erzeugt und
 ohne Netz) hört man in der Bearbeitung über den Knopf daneben an. Er klingelt, wenn beim Wecken auf Ton geschaltet wird

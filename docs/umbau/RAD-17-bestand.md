@@ -44,16 +44,16 @@ da sein oder ausdrücklich entfallen (Spalte Stand).
 
 | Nr. | Bereich | Funktion | Stand |
 | --- | --- | --- | --- |
-| P1 | Podcasts | abonnieren, Abo entfernen, Abos umsortieren (ziehen) | |
-| P2 | Podcasts | einen Feed und alle aktualisieren, Countdown bis zur nächsten automatischen Aktualisierung | |
-| P3 | Podcasts | automatisch herunterladen je Abo | |
-| P4 | Podcasts | suchen in Folgen, Abos und extern, Suchverlauf, Adressen /podcasts/search/q und /podcasts/id/folge | |
-| P5 | Podcasts | alle Folgen, Filter heute/Woche/alle, sortieren nach Titel, Datum, Dauer, Nachladen | |
-| P6 | Podcasts | Folge aufklappen, hören (Liste wird Wiedergabeliste), herunterladen, Download löschen, gehört/ungehört | |
-| P7 | Podcasts | alles herunterladen mit Pause, Fortsetzen, Abbruch | |
-| P8 | Podcasts | Dateien: abspielen, löschen, ZIP | |
-| P9 | Podcasts | Sprung zum spielenden Podcast, Pfeiltasten, Eingabe, Esc | |
-| P10 | Podcasts | Einstellungen: automatische Aktualisierung, Abstand 1 bis 48 h | |
+| P1 | Podcasts | abonnieren, Abo entfernen, Abos umsortieren (ziehen) | da (Abbestellen mit Rückgängig) |
+| P2 | Podcasts | einen Feed und alle aktualisieren, Countdown bis zur nächsten automatischen Aktualisierung | da (Hinweis mit Zeit bis zur nächsten) |
+| P3 | Podcasts | automatisch herunterladen je Abo | da (Taster Neue merken im Kopf des Abos) |
+| P4 | Podcasts | suchen in Folgen, Abos und extern, Suchverlauf, Adressen /podcasts/search/q und /podcasts/id/folge | da: Volltext der Folgen, Verzeichnis, eigener Verlauf, Adressen (auch /podcasts/search/q); Suche in Abos entfällt (Abos stehen in der Seitenleiste) |
+| P5 | Podcasts | alle Folgen, Filter heute/Woche/alle, sortieren nach Titel, Datum, Dauer, Nachladen | da; heute/Woche ersetzt durch Alle/Ungehört/Gemerkt (Nutzer: Gerät war zu viel) |
+| P6 | Podcasts | Folge aufklappen, hören (Liste wird Wiedergabeliste), herunterladen, Download löschen, gehört/ungehört | da |
+| P7 | Podcasts | alles herunterladen mit Pause, Fortsetzen, Abbruch | da (Folge für Folge mit Fortschritt) |
+| P8 | Podcasts | Dateien: abspielen, löschen, ZIP | entfällt am Rechner: Gemerkt-Filter zeigt die Dateien, Freigeben löscht; ZIP entfällt |
+| P9 | Podcasts | Sprung zum spielenden Podcast, Pfeiltasten, Eingabe, Esc | Sprung über /podcasts/abo; Pfeiltasten in der Liste noch offen |
+| P10 | Podcasts | Einstellungen: automatische Aktualisierung, Abstand 1 bis 48 h | da (Verweis Abstand ändern in die Einstellungen) |
 | T1 | Telefon | Abos mit Zahl ungehörter Folgen, gemerkte Folgen, filtern, mehr laden, abspielen, Detail, Fortschritt | |
 | T2 | Telefon | RAD-14: suchen und abonnieren, laden und merken, neue Folgen zuerst | neu |
 | A1 | Aufnahmen | stoppen, Titel und Lücken live (Entwicklermodus) | |
@@ -81,4 +81,4 @@ da sein oder ausdrücklich entfallen (Spalte Stand).
 Reihenfolge: erst die Schichten unter den Ansichten (Quelle und Zustand mit Tests); dann die Entwürfe im Stil der
 Radioseite; dann die neuen Ansichten nach Entwurf auf denselben Schichten. Die alten Ansichten werden nicht erst auf
 die Schicht umgestellt, weil die neuen sie ersetzen (sonst doppelte Arbeit, Nutzer 20.11.2026: "wir müssen mal
-langsam zum ui kommen"). Stand: Schicht der Podcasts fertig (lib/podcasts, 7 Tests).
+langsam zum ui kommen"). Stand: Podcasts am Rechner nach Entwurf gebaut (components/podcast, lib/podcasts, Tests in tests/podcasts.test.ts); die alte Ansicht ist entfernt.

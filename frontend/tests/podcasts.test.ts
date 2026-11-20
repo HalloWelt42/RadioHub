@@ -43,17 +43,16 @@ describe("Podcastquelle gegen das Backend", () => {
     expect(s.weiter).toBe("4");
   });
 
-  it("schreibt Gehört, Stelle, Merken und mehrere merken an die richtigen Stellen", async () => {
-    const { quelle, aufrufe } = backend({ "/api/podcasts/3/download-batch": { total: 3, success: 1, skipped: 1, failed: 1 } });
+  it("schreibt Gehört, Stelle und Merken an die richtigen Stellen", async () => {
+    const { quelle, aufrufe } = backend();
     await quelle.gehoert(7, true);
     await quelle.gehoert(7, false);
     await quelle.stelleMerken(7, 61.6);
     await quelle.merken(7, true);
     await quelle.merken(7, false);
-    expect(await quelle.mehrereMerken(3, [7, 8, 9])).toEqual({ gesamt: 3, neu: 1, schonDa: 1, fehler: 1 });
     expect(aufrufe.map((a) => `${a.optionen?.method} ${a.pfad}`)).toEqual([
       "PUT /api/podcasts/episodes/7/played", "PUT /api/podcasts/episodes/7/unplayed", "PUT /api/podcasts/episodes/7/position",
-      "POST /api/podcasts/episodes/7/download", "DELETE /api/podcasts/episodes/7/download", "POST /api/podcasts/3/download-batch"]);
+      "POST /api/podcasts/episodes/7/download", "DELETE /api/podcasts/episodes/7/download"]);
     expect(JSON.parse(aufrufe[2].optionen!.body as string)).toEqual({ position_seconds: 62 });
   });
 
@@ -114,5 +113,71 @@ describe("Aboliste", () => {
     expect(liste.abos.map((a) => a.id)).toEqual([5, 3, 4]);
     await liste.abbestellen(3);
     expect(liste.abos.map((a) => a.id)).toEqual([5, 4]);
+  });
+});
+
+describe("Adresse der Podcast-Ansicht", async () => {
+  const { ausAdresse, zuAdresse, zuAbfrage, leer } = await import("../src/lib/podcasts/ansicht.svelte");
+
+  it("liest und schreibt Abo, Folge, Wahl, Suche, Sortierung und Verzeichnis, auch die Adressen des Telefons", () => {
+    expect(ausAdresse("/podcasts", "")).toEqual(leer());
+    expect(ausAdresse("/podcasts/3/17", "")).toMatchObject({ abos: [3], offen: 17 });
+    expect(ausAdresse("/podcasts", "abo=3,4,3&wahl=gemerkt&suche=Wetter&sort=laenge&verzeichnis=1"))
+      .toMatchObject({ abos: [3, 4], wahl: "gemerkt", suche: "Wetter", sortierung: "laenge", verzeichnis: true });
+    expect(ausAdresse("/podcasts", "wahl=boese&sort=boese")).toMatchObject({ wahl: "alle", sortierung: "neu" });
+    expect(ausAdresse("/podcasts/search/Wetter%20heute", "")).toMatchObject({ suche: "Wetter heute", abos: [] });
+    for (const a of [leer(), { ...leer(), abos: [3] }, { ...leer(), abos: [3], offen: 17 }, { ...leer(), abos: [3, 4], wahl: "ungehoert" as const, suche: "x" }]) {
+      const adresse = zuAdresse(a);
+      const [pfad, abfrage = ""] = adresse.split("?");
+      expect(ausAdresse(pfad, abfrage)).toEqual(a);
+    }
+    expect(zuAdresse({ ...leer(), offen: 9 }, 5)).toBe("/podcasts/5/9");
+  });
+
+  it("übersetzt die Ansicht in die Abfrage der Folgen", () => {
+    expect(zuAbfrage({ ...leer(), abos: [3], wahl: "ungehoert", sortierung: "laenge" }))
+      .toEqual({ abos: [3], filter: "ungehoert", sortierung: "dauer", absteigend: false });
+    expect(zuAbfrage(leer())).toMatchObject({ sortierung: "datum", absteigend: true });
+  });
+});
+
+describe("Alle merken", async () => {
+  const { Merkauftrag } = await import("../src/lib/podcasts/merkauftrag.svelte");
+
+  it("merkt der Reihe nach mit Fortschritt, hält an, setzt fort und bricht ab", async () => {
+    const gemerkt: number[] = [];
+    const offen: { id: number; gut: () => void; schlecht: () => void }[] = [];
+    const quelle = { merken: (id: number) => new Promise<void>((gut, schlecht) => offen.push({ id, gut, schlecht: () => schlecht(new Error("x")) })) };
+    const ruhe = () => new Promise((r) => setTimeout(r, 0));
+    const auftrag = new Merkauftrag(quelle as never, (id) => gemerkt.push(id));
+    const lauf = auftrag.starten(7, [1, 2, 3, 4]);
+    expect([auftrag.laeuft, auftrag.gesamt]).toEqual([true, 4]);
+    offen.shift()!.gut(); await ruhe();               // 1 gemerkt
+    offen.shift()!.schlecht(); await ruhe();          // 2 scheitert, zählt als fertig mit Fehler
+    expect([auftrag.fertig, auftrag.fehler, gemerkt]).toEqual([2, 1, [1]]);
+    auftrag.anhalten();
+    offen.shift()!.gut(); await ruhe();               // 3 lief schon, danach steht er
+    expect([auftrag.fertig, auftrag.angehalten, offen.length]).toEqual([3, true, 0]);
+    auftrag.fortsetzen(); await ruhe();               // 4 beginnt
+    expect(offen.map((o) => o.id)).toEqual([4]);
+    auftrag.abbrechen();
+    offen.shift()!.gut();
+    await lauf;
+    expect([auftrag.laeuft, gemerkt]).toEqual([false, [1, 3, 4]]);
+  });
+});
+
+describe("Anzeige der Podcasts", async () => {
+  const { datumKurz, dauerText, standVon, stelleText, tageHer } = await import("../src/lib/podcasts/anzeige");
+  it("Datum mit Jahr nur aus einem anderen Jahr, Tage her, Längen, Stand", () => {
+    const heute = new Date(2026, 10, 20, 12);
+    expect(datumKurz("2025-09-09T09:20:15", heute)).toMatch(/2025/);
+    expect(datumKurz("2026-04-09T07:15:07", heute)).not.toMatch(/2026/);
+    expect([tageHer("2026-11-20T01:00:00", heute), tageHer("2026-11-19 23:00:00", heute), tageHer("", heute)]).toEqual([0, 1, null]);
+    expect([dauerText(6000), dauerText(2880), stelleText(723), stelleText(3723)]).toEqual(["1 h 40 min", "48 min", "12:03", "1:02:03"]);
+    const f = { dauer: 600, stelle: 0, gehoert: false } as never;
+    expect(standVon(f).art).toBe("neu");
+    expect(standVon({ ...(f as object), stelle: 300 } as never)).toMatchObject({ art: "laeuft", anteil: 0.5, rest: 300 });
+    expect(standVon({ ...(f as object), stelle: 598 } as never).art).toBe("gehoert");
   });
 });
