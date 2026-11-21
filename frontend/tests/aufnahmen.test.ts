@@ -75,7 +75,7 @@ describe("Liste", () => {
 });
 
 const info = (stuecke: Schnittinfo["stuecke"], dauer = 100): Schnittinfo => ({
-  art: "sitzung", kennung: "s", titel: "T", zeit: null, format: "MP3", bitrate: 128, dauer, stuecke, titelwechsel: [], ziel: "", schritte: [],
+  art: "sitzung", kennung: "s", titel: "T", zeit: null, format: "MP3", bitrate: 128, dauer, stuecke, titelwechsel: [], ziel: "", schritte: [], werbestellen: [],
 });
 
 describe("Arbeitsplatz", () => {
@@ -101,6 +101,21 @@ describe("Arbeitsplatz", () => {
     expect([p.marker, p.stuecke.map((s) => s.name)]).toEqual([[55], ["A", "B"]]);
     p.leeren();
     expect(p.stuecke.length).toBe(1);
+  });
+  it("Werbestellen der Aufnahme werden Stücke der Art Werbung, fallen beim Schneiden weg, Irrtum ausschaltbar", () => {
+    const p = new Arbeitsplatz();
+    p.uebernehmen(info([{ von: 0, bis: 82.38, name: "Michael Jackson" }, { von: 82.38, bis: 148, name: "OLDIE ANTENNE" }], 148));
+    p.markerSetzen(90);                     // liegt mitten in der Werbung: fällt weg
+    p.werbestellenUebernehmen([{ von: 82.38, bis: 102.5, text: "adac.de" }, { von: 102.5, bis: 121, text: "vodafone.de" }],
+                              (w) => `Werbung: ${w.text}`);
+    expect(p.marker).toEqual([82.4, 102.5, 121]);
+    expect(p.stuecke.map((s) => [s.name, s.werbung, s.behalten])).toEqual([
+      ["Michael Jackson", false, true], ["Werbung: adac.de", true, false], ["Werbung: vodafone.de", true, false], ["OLDIE ANTENNE", false, true]]);
+    expect(p.wahl().filter((s) => s.behalten).map((s) => [s.von, s.bis])).toEqual([[0, 82.4], [121, 148]]);
+    p.umschalten(p.stuecke[2]);             // keine Werbung: ein gewöhnliches Stück, behalten
+    expect([p.stuecke[2].werbung, p.stuecke[2].behalten, p.behalten]).toEqual([false, true, 3]);
+    p.leeren();
+    expect(p.stuecke.map((s) => s.werbung)).toEqual([false]);
   });
   it("Ausschnitt: zoomen um die Mitte, Grenzen, mitlaufen bei 70 Prozent", () => {
     const p = new Arbeitsplatz();

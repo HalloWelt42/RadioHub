@@ -1,9 +1,11 @@
 // Zustand des Schnitt-Arbeitsplatzes (RAD-17, Entwurf aufnahmen.html): Marker, Stücke zwischen ihnen (Name, behalten
-// oder verwerfen), Ausschnitt der Wellenform, Abspielkopf. Rein rechnend bis auf die Quelle; die Ansicht zeichnet nur.
-import type { Schnittinfo, StueckWahl } from "./quelle";
+// oder verwerfen, Werbung aus den Sendedaten), Ausschnitt der Wellenform, Abspielkopf. Rein rechnend bis auf die Quelle; die Ansicht zeichnet nur.
+import type { Schnittinfo, StueckWahl, Werbestelle } from "./quelle";
 
 export interface Stueck extends StueckWahl {
   nr: number;
+  /** ein Stück der Art Werbung: fällt beim Schneiden weg wie ein verworfenes (RAD-33, Entwurf aus RAD-32) */
+  werbung: boolean;
 }
 
 /** kürzester sichtbarer Ausschnitt in Sekunden */
@@ -20,6 +22,8 @@ export class Arbeitsplatz {
   namen = $state<Record<string, string>>({});
   /** verworfene Stücke, nach Startzeit */
   verworfen = $state<Set<string>>(new Set());
+  /** Stücke der Art Werbung, nach Startzeit */
+  werbung = $state<Set<string>>(new Set());
   von = $state(0);
   bis = $state(0);
   kopf = $state(0);
@@ -35,6 +39,7 @@ export class Arbeitsplatz {
     this.vorschlaege = info.stuecke.map((s) => ({ start: runden(s.von), titel: s.name }));
     this.namen = {};
     this.verworfen = new Set();
+    this.werbung = new Set();
     this.von = 0;
     this.bis = info.dauer;
     this.kopf = 0;
@@ -45,7 +50,9 @@ export class Arbeitsplatz {
     return grenzen.slice(0, -1).map((von, i) => {
       const schluessel = von.toFixed(1);
       const vorschlag = [...this.vorschlaege].reverse().find((v) => v.start <= von + NAEHE)?.titel ?? `Teil ${i + 1}`;
-      return { nr: i + 1, von, bis: grenzen[i + 1], name: this.namen[schluessel] ?? vorschlag, behalten: !this.verworfen.has(schluessel) };
+      const werbung = this.werbung.has(schluessel);
+      return { nr: i + 1, von, bis: grenzen[i + 1], name: this.namen[schluessel] ?? vorschlag, werbung,
+               behalten: !werbung && !this.verworfen.has(schluessel) };
     });
   }
 
@@ -74,16 +81,45 @@ export class Arbeitsplatz {
     this.marker = [...new Set(wechsel.map((w) => runden(w.start)).filter((t) => t > 0 && t < this.dauer))].sort((a, b) => a - b);
     this.namen = {};
     this.verworfen = new Set();
+    this.werbung = new Set();
+  }
+
+  /** Werbestellen als Stücke der Art Werbung: Marker an Anfang und Ende jeder Stelle (die übrigen Marker bleiben),
+   *  das Stück dazwischen heißt nach dem Werbenden und fällt beim Schneiden weg */
+  werbestellenUebernehmen(stellen: Werbestelle[], name: (s: Werbestelle) => string): void {
+    const innen = (t: number) => t > 0 && t < this.dauer;
+    const neu = stellen.map((s) => ({ ...s, von: runden(Math.max(0, s.von)), bis: runden(Math.min(this.dauer, s.bis)) })).filter((s) => s.bis > s.von);
+    let marker = [...this.marker];
+    for (const s of neu) for (const t of [s.von, s.bis]) if (innen(t) && !marker.some((m) => Math.abs(m - t) < NAEHE)) marker.push(t);
+    marker = marker.filter((m) => !neu.some((s) => m > s.von + NAEHE && m < s.bis - NAEHE));    // keine Marker mitten in der Werbung
+    this.marker = marker.sort((a, b) => a - b);
+    const werbung = new Set(this.werbung), namen = { ...this.namen };
+    for (const s of neu) {
+      const k = s.von.toFixed(1);
+      werbung.add(k);
+      namen[k] = name(s);
+    }
+    this.werbung = werbung;
+    this.namen = namen;
   }
 
   leeren(): void {
     this.marker = [];
     this.namen = {};
     this.verworfen = new Set();
+    this.werbung = new Set();
   }
 
+  /** Schalter eines Stücks: Werbung wird wieder ein gewöhnliches Stück (Irrtum), sonst behalten oder verwerfen */
   umschalten(s: Stueck): void {
-    const k = s.von.toFixed(1), neu = new Set(this.verworfen);
+    const k = s.von.toFixed(1);
+    if (s.werbung) {
+      const neu = new Set(this.werbung);
+      neu.delete(k);
+      this.werbung = neu;
+      return;
+    }
+    const neu = new Set(this.verworfen);
     neu.has(k) ? neu.delete(k) : neu.add(k);
     this.verworfen = neu;
   }

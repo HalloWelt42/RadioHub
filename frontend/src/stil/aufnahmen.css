@@ -100,6 +100,9 @@
 .rh-stueck .rh-a-nr { grid-area: auto; }
 .rh-stueck.weg { opacity: .6; }
 .rh-stueck.weg .rh-stueck-name input { text-decoration: line-through; }
+/* Stück der Art Werbung (RAD-33, Entwurf podcast-werbung.html Zustand 5): Ring und Name in Bernstein, fällt beim Schneiden weg */
+.rh-stueck.werbung { box-shadow: var(--rh-kante), 0 0 0 1px color-mix(in srgb, var(--led-bernstein) 60%, transparent); }
+.rh-stueck.werbung .rh-stueck-name input { color: var(--warn); }   /* Schrift: im hellen Modus dunkler (Lesbarkeit) */
 .rh-stueck .rechts { text-align: right; }
 .rh-stueck-name input { font-weight: 600; }
 .rh-schnitt-aktionen { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; padding: 8px 12px; border-radius: var(--rh-ecke-zeile);

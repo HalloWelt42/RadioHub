@@ -23,10 +23,19 @@ export interface Schnittinfo {
   stuecke: { von: number; bis: number; name: string }[];
   /** beim Aufnehmen erkannte Titelwechsel */
   titelwechsel: { start: number; titel: string }[];
+  /** Werbung, die der Sender beim Aufnehmen angekündigt hat (RAD-33); nur solange der Ton unverändert ist */
+  werbestellen: Werbestelle[];
   /** in Worten, wohin Ergebnisse gehen */
   ziel: string;
   neben?: boolean;
   schritte: { id: number; was: string; zeit: string }[];
+}
+
+export interface Werbestelle {
+  von: number;
+  bis: number;
+  /** wer wirbt, laut Sendedaten */
+  text: string;
 }
 
 export interface StueckWahl {

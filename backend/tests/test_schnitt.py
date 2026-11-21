@@ -87,3 +87,18 @@ async def test_schnitt_geht_auch_ohne_titelliste_in_der_ablage(client, speicher,
     info = client.get("/api/schnitt/info", params={"art": "sitzung", "kennung": sitzung["id"]})
     assert info.status_code == 200, info.text
     assert info.json()["titelwechsel"] == [] and len(info.json()["stuecke"]) == 1
+
+
+async def test_werbestellen_der_aufnahme_nur_fuer_den_ton_wie_aufgenommen(client, speicher, tmp_path):
+    """RAD-33: der Schnitt bekommt die Werbestellen der Aufnahme, solange ihr Ton unverändert ist; nach dem ersten
+    Schritt passen ihre Zeiten nicht mehr, Rückgängig bringt sie zurück."""
+    from app.services import werbestellen as ws
+    sitzung = await _mit_stuecken(tmp_path, 2, 4.0)
+    art = {"art": "sitzung", "kennung": sitzung["id"]}
+    ws.ersetzen(ws.Bezug.aufnahme(sitzung["id"]), "sendedaten", [ws.Neu(von=0, bis=3, text="otto.de (beim Verbinden)")])
+    assert client.get("/api/schnitt/info", params=art).json()["werbestellen"] == [{"von": 0, "bis": 3, "text": "otto.de (beim Verbinden)"}]
+    stuecke = [{"von": 0, "bis": 3, "name": "Werbung: otto.de", "behalten": False}, {"von": 3, "bis": 8, "name": "Rest"}]
+    assert _ereignisse(client.post("/api/schnitt/schneiden", json={**art, "stuecke": stuecke}))[-1]["type"] == "done"
+    assert client.get("/api/schnitt/info", params=art).json()["werbestellen"] == []
+    assert client.post("/api/schnitt/rueckgaengig", json=art).status_code == 200
+    assert len(client.get("/api/schnitt/info", params=art).json()["werbestellen"]) == 1

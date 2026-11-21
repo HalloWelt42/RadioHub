@@ -21,6 +21,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
+from . import werbestellen
 from ..ablage import ablage, orte, wolke
 from ..ablage.port import eltern, sauberer_pfad
 from ..config import AUDIO_EXTENSIONS, get_arbeit_dir
@@ -193,7 +194,15 @@ class SitzungGegenstand(Gegenstand):
                 "stuecke": [{"von": (x.get("start_ms") or 0) / 1000, "bis": (x.get("end_ms") or 0) / 1000, "name": x["title"]}
                             for x in segmente],
                 "titelwechsel": wechsel, "ziel": "Ersetzt die Stücke der Aufnahme; die vorige Fassung bleibt in den Schritten.",
-                "schritte": schritte(self.schluessel)}
+                "schritte": (fertig := schritte(self.schluessel)), "werbestellen": self._werbestellen(fertig)}
+
+    def _werbestellen(self, fertig: list[dict]) -> list[dict]:
+        """Werbestellen der Aufnahme (RAD-33, aus den Sendedaten beim Aufnehmen). Ihre Zeiten gelten für den Ton, wie
+        er aufgenommen wurde: nach dem ersten Schritt nicht mehr, dann gibt es keine (Rückgängig bringt sie zurück)."""
+        if fertig:
+            return []
+        return [{"von": w.von, "bis": w.bis, "text": w.text}
+                for w in werbestellen.stellen(werbestellen.Bezug.aufnahme(self.kennung))]
 
     async def arbeitskopie(self) -> Path:
         self._sitzung()
@@ -325,7 +334,7 @@ class DateiGegenstand(Gegenstand):
                 "format": PurePosixPath(self.kennung).suffix.lstrip(".").upper(), "bitrate": None, "dauer": dauer,
                 "stuecke": [{"von": 0, "bis": dauer, "name": name}], "titelwechsel": [],
                 "ziel": f"Neue Dateien in {ziel}; das Original bleibt.", "zielordner": ziel,
-                "neben": ziel == eltern(self.kennung), "schritte": schritte(self.schluessel)}
+                "neben": ziel == eltern(self.kennung), "schritte": schritte(self.schluessel), "werbestellen": []}
 
     async def arbeitskopie(self) -> Path:
         ziel = get_arbeit_dir("schnitt") / f"w_{self._stamm}{PurePosixPath(self.kennung).suffix.lower()}"

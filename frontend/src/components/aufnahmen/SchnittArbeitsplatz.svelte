@@ -75,15 +75,20 @@
   });
 
   // ----- Hören -----
-  function abspielen(ab?: number): void {
+  /** Ende eines gehörten Stücks (RAD-42): dort hält die Wiedergabe an; null spielt bis zum Ende der Aufnahme */
+  let stueckEnde: number | null = null;
+  function abspielen(ab?: number, bis: number | null = null): void {
     if (!ton) return;
     if (!appState.isRecording && appState.isPlaying) actions.stop();
     if (ab !== undefined) ton.currentTime = ab;
+    stueckEnde = bis;
     void ton.play();
   }
+  /** Leertaste und großer Knopf: anhalten oder weiter; ein angehaltenes Stück spielt bis zu seinem Ende weiter */
   function umschalten(): void {
     if (!ton) return;
-    if (ton.paused) abspielen(); else ton.pause();
+    if (!ton.paused) { ton.pause(); return; }
+    abspielen(undefined, stueckEnde !== null && ton.currentTime < stueckEnde ? stueckEnde : null);
   }
   function suchen(tz: number): void {
     platz.kopf = tz;
@@ -93,6 +98,11 @@
     if (!spielt) return;
     let lauf = 0;
     const schritt = () => {
+      if (ton && stueckEnde !== null && ton.currentTime >= stueckEnde) {
+        ton.pause();
+        ton.currentTime = stueckEnde;
+        stueckEnde = null;
+      }
       if (ton) { platz.kopf = ton.currentTime; if (platz.mitlaufen) platz.zeigen(ton.currentTime); }
       lauf = requestAnimationFrame(schritt);
     };
@@ -225,19 +235,31 @@
       <div class="rh-spalten rh-stueck-spalten" aria-hidden="true"><span>{t("aufnahmenAnsicht.schnitt.stueck")}</span><span>{t("aufnahmenAnsicht.schnitt.von")}</span>
         <span>{t("aufnahmenAnsicht.schnitt.bis")}</span><span class="rechts">{t("aufnahmenAnsicht.schnitt.laenge")}</span><span>{t("aufnahmenAnsicht.schnitt.behalten")}</span></div>
       {#each stuecke as s (s.von)}
-        <div class="rh-stueck" class:weg={!s.behalten}>
+        <div class="rh-stueck" class:weg={!s.behalten && !s.werbung} class:werbung={s.werbung}>
           <span class="rh-a-nr">{String(s.nr).padStart(2, "0")}</span>
           <label class="suche rh-stueck-name"><input type="text" value={s.name} spellcheck="false" maxlength="200" aria-label={t("aufnahmenAnsicht.schnitt.stueckName", { n: s.nr })}
                  onchange={(e) => platz.benennen(s, (e.currentTarget as HTMLInputElement).value)} /></label>
           <span class="rh-zahl">{zeit(s.von)}</span><span class="rh-zahl">{zeit(s.bis)}</span><span class="rh-zahl rechts">{zeit(s.bis - s.von)}</span>
-          <Schalter an={s.behalten} text={s.behalten ? t("aufnahmenAnsicht.schnitt.behalten") : t("aufnahmenAnsicht.schnitt.weg")}
-                    hilfe={t("aufnahmenAnsicht.schnitt.behaltenHilfe")} onwechsel={() => platz.umschalten(s)} />
-          <button class="rund" type="button" title={t("aufnahmenAnsicht.schnitt.stueckHoeren")} aria-label={t("aufnahmenAnsicht.schnitt.stueckHoeren")} onclick={() => abspielen(s.von)}><i class="fa-solid fa-play"></i></button>
+          {#if s.werbung}
+            <Schalter an={true} text={t("aufnahmenAnsicht.schnitt.werbung")} farbe="bernstein" hilfe={t("aufnahmenAnsicht.schnitt.werbungHilfe")}
+                      onwechsel={() => platz.umschalten(s)} />
+          {:else}
+            <Schalter an={s.behalten} text={s.behalten ? t("aufnahmenAnsicht.schnitt.behalten") : t("aufnahmenAnsicht.schnitt.weg")}
+                      hilfe={t("aufnahmenAnsicht.schnitt.behaltenHilfe")} onwechsel={() => platz.umschalten(s)} />
+          {/if}
+          <button class="rund" type="button" title={t("aufnahmenAnsicht.schnitt.stueckHoeren")} aria-label={t("aufnahmenAnsicht.schnitt.stueckHoeren")} onclick={() => abspielen(s.von, s.bis)}><i class="fa-solid fa-play"></i></button>
         </div>
       {/each}
     </div>
 
     <div class="rh-schnitt-aktionen">
+      {#if info.werbestellen.length}
+        <div class="rh-schnitt-block"><span class="ak-etikett">{t("aufnahmenAnsicht.schnitt.werbung")}</span>
+          <button class="knopf" type="button" disabled={!!auftrag} title={t("aufnahmenAnsicht.schnitt.werbungUebernehmenHilfe")}
+                  onclick={() => platz.werbestellenUebernehmen(info!.werbestellen, (w) => t("aufnahmenAnsicht.schnitt.werbungName", { wer: w.text }))}>
+            <i class="fa-solid fa-rectangle-ad"></i>{info.werbestellen.length === 1 ? t("aufnahmenAnsicht.schnitt.werbungUebernehmenEins")
+              : t("aufnahmenAnsicht.schnitt.werbungUebernehmen", { n: info.werbestellen.length })}</button></div>
+      {/if}
       <div class="rh-schnitt-block"><span class="ak-etikett">{t("aufnahmenAnsicht.schnitt.schneiden")}</span>
         <button class="knopf primaer" type="button" disabled={!!auftrag || !platz.behalten} onclick={() => (fragt = true)}><i class="fa-solid fa-scissors"></i>
           {platz.behalten === 1 ? t("aufnahmenAnsicht.schnitt.behaltenEins") : t("aufnahmenAnsicht.schnitt.behaltenKnopf", { n: platz.behalten })}</button></div>
