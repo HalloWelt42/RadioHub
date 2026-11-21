@@ -11,6 +11,7 @@ import logging
 import asyncio
 import shutil
 import json
+from collections import deque
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -18,6 +19,8 @@ from dataclasses import dataclass, field
 
 from .stromleser import StromFehler, Stromleser, Wiedergabeliste
 from .titelbuch import Titelbuch
+from ..sendewerbung.sitzung import Sitzungswerbung
+from ..sendewerbung.angaben import regeln as werberegeln
 
 logger = logging.getLogger("radiohub.hls_buffer")
 
@@ -86,6 +89,7 @@ class HLSBufferService:
         self._stromleser: Optional[Stromleser] = None
         self._strom_task: Optional[asyncio.Task] = None
         self._titelbuch: Optional[Titelbuch] = None
+        self._werbung: Optional[Sitzungswerbung] = None
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
@@ -197,10 +201,13 @@ class HLSBufferService:
         else:
             hls_flags = "delete_segments+append_list+omit_endlist"
 
+        # Mit dem Stromleser meldet ffmpeg auch die Stille (silencedetect, Stufe info); sie gibt Werbestellen die
+        # genaue Grenze. -nostats: kein Fortschritt auf stderr
         cmd = [
             "ffmpeg",
             "-hide_banner",
-            "-loglevel", "warning",
+            "-loglevel", "info" if aus_stromleser else "warning",
+            "-nostats",
             "-y",  # Überschreiben ohne Nachfrage
         ]
         if aus_stromleser:
@@ -213,6 +220,10 @@ class HLSBufferService:
         # Radio: loudnorm fuer konsistente Lautstaerke bei Live-Streams
         if self.session.is_podcast:
             cmd += ["-vn"]
+        elif aus_stromleser:
+            g = werberegeln().grenze      # Stille vor loudnorm messen: dort ist digitale Stille noch still
+            cmd += ["-af", f"silencedetect=noise={g.stille_db}dB:duration={g.stille_mindestens_s},"
+                           "loudnorm=I=-16:TP=-1.5:LRA=11"]
         else:
             cmd += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"]
 
@@ -286,7 +297,8 @@ class HLSBufferService:
         kopf = None
         if not is_podcast:
             self._titelbuch = Titelbuch()
-            self._stromleser = Stromleser(stream_url, self._in_ffmpeg, self._titelbuch.angabe, bitrate=bitrate)
+            self._werbung = Sitzungswerbung()
+            self._stromleser = Stromleser(stream_url, self._in_ffmpeg, self._angabe, bitrate=bitrate)
             try:
                 kopf = await self._stromleser.verbinden()
                 self._titelbuch.metaint = kopf.metaint
@@ -378,6 +390,13 @@ class HLSBufferService:
             logger.warning(f"HLS Start Fehler: {e}")
             return {"status": "error", "error": str(e)}
     
+    async def _angabe(self, a) -> None:
+        """Eine Angabe der Sendedaten: Titel ins Titelbuch, Werbung in die Werbestellen der Sitzung."""
+        if self._titelbuch:
+            await self._titelbuch.angabe(a)
+        if self._werbung and (neu := self._werbung.angabe(a.roh, a.sekunde)):
+            logger.info(f"Werbung ab {neu.von:.2f} s: {neu.werbender or neu.kennung} ({neu.format})")
+
     async def _in_ffmpeg(self, daten: bytes) -> None:
         """Ziel des Stromlesers: der Ton in ffmpeg (stdin); ist ffmpeg weg, hört der Leser auf."""
         eingang = self._ffmpeg_process.stdin if self._ffmpeg_process else None
@@ -419,6 +438,7 @@ class HLSBufferService:
         self._stromleser = None
         self._strom_task = None
         self._titelbuch = None
+        self._werbung = None
 
     def _update_icy_flag(self, uuid: str):
         """Setzt icy=1 in detected_bitrates falls noch nicht gesetzt."""
@@ -445,13 +465,20 @@ class HLSBufferService:
             return
             
         try:
-            # Warten bis Prozess endet
-            stderr_data = await self._ffmpeg_process.stderr.read()
+            # stderr zeilenweise: Stille geht an die Werbestellen, die letzten Zeilen bleiben für eine Fehlermeldung
+            letzte: deque[str] = deque(maxlen=12)
+            while (zeile := await self._ffmpeg_process.stderr.readline()):
+                text = zeile.decode("utf-8", errors="ignore").rstrip()
+                if "silence_" in text:
+                    if self._werbung:
+                        self._werbung.stille_zeile(text)
+                else:
+                    letzte.append(text)
             return_code = await self._ffmpeg_process.wait()
-            
+
             if self.session:
-                stderr_text = stderr_data.decode('utf-8', errors='ignore')[-500:]
-                if return_code != 0:
+                stderr_text = "\n".join(letzte)[-500:]
+                if return_code != 0 and self.session.is_active:     # beim Stoppen beendet: kein Fehler
                     self.session.error = f"ffmpeg beendet (Code {return_code}): {stderr_text}"
                     logger.warning(f"ffmpeg Fehler: {stderr_text}")
                 self.session.is_active = False
@@ -471,7 +498,8 @@ class HLSBufferService:
         
         station_name = self.session.station_name
 
-        # Stromleser stoppen (vor ffmpeg, damit kein Ton mehr nachkommt)
+        # Stromleser stoppen (vor ffmpeg, damit kein Ton mehr nachkommt); die Sitzung gilt ab hier als beendet
+        self.session.is_active = False
         await self._strom_stoppen()
 
         # ffmpeg beenden
@@ -539,7 +567,10 @@ class HLSBufferService:
             "error": self.session.error,
             # Aktueller ICY-Titel (letzter erkannter)
             "icy_title": (self._titelbuch.entries[-1].get("title", "")
-                          if self._titelbuch and self._titelbuch.entries else None)
+                          if self._titelbuch and self._titelbuch.entries else None),
+            # Werbestellen im Puffer (RAD-33), in Sekunden des Tons wie die Segmente
+            "werbestellen": ([w.model_dump() for w in self._werbung.im_fenster(
+                (segments["first"] or 0) * self.session.segment_duration)] if self._werbung else []),
         }
     
     def _get_segment_info(self) -> dict:

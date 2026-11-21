@@ -1,0 +1,52 @@
+# Werbung in den Sendedaten (RAD-33): woran eine Angabe im Strom (ICY, etwa "StreamTitle='...';adId='...';") als
+# Werbung zu erkennen ist und was sie über den Spot sagt. Gefunden im Versuch an 30 Sendern am 21.11.2026 (RAD-33).
+#
+# Je [[format]] gilt:
+#   erkennen   regulärer Ausdruck: trifft er, ist die Angabe Werbung dieses Formats (das erste treffende Format zählt)
+#   kennung    Ausdruck mit einer Gruppe: die Kennung des Spots; Folgeangaben mit derselben Kennung gehören zum Spot
+#   werbender, titel, dauer_ms, einfuegung   wie kennung, jeweils optional
+#   ende       "dauer": der Spot endet nach dauer_ms; "wechsel": er endet mit der ersten Angabe, die nicht mehr zu ihm
+#              gehört (andere Kennung oder keine Werbung). Fehlt dauer_ms, gilt immer "wechsel".
+#   verbinden  Werte von einfuegung, die "Spot beim Verbinden" bedeuten
+#
+# Ein neues Format ist ein neuer Eintrag; Code braucht es dafür nicht. Werte der Angaben stehen in einfachen
+# Anführungszeichen, darum enden die Gruppen an einem "'".
+
+[grenze]
+# Die genaue Grenze kommt aus der Stille, die ffmpeg im Zeitversatz mitmeldet (silencedetect): die Stille, die einer
+# Grenze laut Angabe am nächsten liegt, höchstens fenster_s davon entfernt. Ohne Stille bleibt die Grenze der Angabe.
+fenster_s = 1.5
+stille_db = -50
+stille_mindestens_s = 0.02
+
+[[format]]
+name = "adswizz"
+erkennen = "adw_ad='true'"
+kennung = "adId='([^']+)'"
+dauer_ms = "durationMilliseconds='(\\d+)'"
+einfuegung = "insertionType='([^']+)'"
+verbinden = ["preroll"]
+ende = "dauer"
+
+[[format]]
+name = "creative"
+erkennen = "AdCreativeId='"
+kennung = "AdCreativeId='([^']+)'"
+werbender = "Advertiser='([^']+)'"
+titel = "AdTitle='([^']+)'"
+ende = "wechsel"
+
+[[format]]
+name = "titel"
+# laut.fm: der Werbende steht vorn im Titel, dahinter ein Fortschritt ("Ein bisschen Verbraucherinformationen ...")
+erkennen = "StreamTitle='[^']+ - [^']*(Verbraucherinformationen|Hälfte geschafft|zweite Halbzeit|gleich geht's los)"
+kennung = "StreamTitle='([^' ]+) - "
+werbender = "StreamTitle='([^' ]+) - "
+ende = "wechsel"
+
+[[format]]
+name = "werbepause"
+erkennen = "StreamTitle='Kurze Werbepause"
+kennung = "StreamTitle='(Kurze Werbepause)"
+titel = "StreamTitle='([^']+)'"
+ende = "wechsel"
