@@ -54,6 +54,8 @@ export interface Podcastquelle {
 
   // ----- Folgen ----------------------------------------------------------------------------------------------------
   folgen(abfrage: Folgenabfrage, signal?: AbortSignal): Promise<Folgenseite>;
+  /** eine Folge allein (Direktlink oder laufende Folge, die nicht auf der geladenen Seite steht); null, wenn es sie nicht gibt */
+  einzelfolge(id: number): Promise<Folge | null>;
   /** Volltextsuche in Titeln und Beschreibungen aller Folgen */
   folgenSuchen(text: string, abfrage: Folgenabfrage, signal?: AbortSignal): Promise<Folgenseite>;
   gehoert(id: number, an: boolean): Promise<void>;

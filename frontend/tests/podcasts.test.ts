@@ -92,6 +92,22 @@ describe("Folgenliste", () => {
     expect(liste.folgen[1].gehoert).toBe(true);
   });
 
+  it("eine Folge außerhalb der geladenen Seiten kommt vorn dazu (Direktlink, laufende Folge), eine unbekannte nicht", async () => {
+    const { quelle } = backend({
+      "/api/podcasts/episodes/all": { episodes: [folge(1), folge(2)], total: 9 },
+      "/api/podcasts/episodes/7": folge(7, { werbung_anzahl: 1, werbung_dauer: 30 }),
+      "/api/podcasts/episodes/8": () => { throw new Error("Episode nicht gefunden"); },
+    });
+    const liste = new Folgenliste(quelle);
+    await liste.laden({ filter: "alle" });
+    expect(await liste.sicherstellen(2)).toBe(true);
+    expect(await liste.sicherstellen(7)).toBe(true);
+    expect(liste.folgen.map((f) => f.id)).toEqual([7, 1, 2]);
+    expect(liste.folgen[0].werbung).toEqual({ anzahl: 1, dauer: 30 });
+    expect(await liste.sicherstellen(8)).toBe(false);
+    expect(liste.folgen.length).toBe(3);
+  });
+
   it("sucht mit Suchtext im Volltext", async () => {
     const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/search": { episodes: [folge(9)], total: 1 } });
     const liste = new Folgenliste(quelle);

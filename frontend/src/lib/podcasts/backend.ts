@@ -164,6 +164,14 @@ export class BackendPodcastquelle implements Podcastquelle {
     return this.seite(await this.api.fetch(`${pfad}?${suche}`, { signal }), stelle);
   }
 
+  async einzelfolge(id: number): Promise<Folge | null> {
+    try {
+      return this.folge(await this.api.fetch(`/api/podcasts/episodes/${id}`));
+    } catch {
+      return null;
+    }
+  }
+
   async folgenSuchen(suchtext: string, a: Folgenabfrage, signal?: AbortSignal): Promise<Folgenseite> {
     const stelle = Math.max(0, Number(a.nach ?? 0) || 0);
     const suche = new URLSearchParams({ q: suchtext, limit: String(a.anzahl ?? SEITE), offset: String(stelle), search_in: "all" });

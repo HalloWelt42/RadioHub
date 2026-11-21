@@ -73,6 +73,17 @@ export class Folgenliste {
     }
   }
 
+  /** eine Folge, die nicht auf den geladenen Seiten steht (Direktlink, laufende Folge), vorn einfügen wie in der
+   *  Senderliste; liefert, ob sie jetzt da ist */
+  async sicherstellen(id: number): Promise<boolean> {
+    if (this.folgen.some((f) => f.id === id)) return true;
+    const lauf = this.lauf;
+    const f = await this.quelle.einzelfolge(id);
+    if (!f || lauf !== this.lauf || this.folgen.some((x) => x.id === id)) return !!f && this.folgen.some((x) => x.id === id);
+    this.folgen = [f, ...this.folgen];
+    return true;
+  }
+
   aendern(id: number, teil: Partial<Folge>): void {
     this.folgen = this.folgen.map((f) => (f.id === id ? { ...f, ...teil } : f));
   }

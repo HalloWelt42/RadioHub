@@ -89,6 +89,24 @@
       void hinrollen(id);
     });
   });
+  // Aufgeklappte Folge aus der Adresse (Direktlink, Fokus auf die laufende Folge): steht sie nicht auf den geladenen
+  // Seiten (etwa bei anderer Sortierung), kommt sie vorn in die Liste, wie in der Senderliste; einmal je Folge und Laden
+  let gesucht: number | null = null;
+  $effect(() => {
+    const offen = ansicht.offen;
+    const bereit = liste.geladen && !liste.laedt && !ansicht.verzeichnis;
+    const da = offen !== null && liste.folgen.some((f) => f.id === offen);
+    untrack(() => {
+      if (offen === null || !bereit || da || gesucht === offen) return;
+      gesucht = offen;
+      void liste.sicherstellen(offen).then((jetzt) => { if (jetzt) void hinrollen(offen); });
+    });
+  });
+  $effect(() => {
+    void liste.laedt;
+    untrack(() => { if (liste.laedt) gesucht = null; });
+  });
+
   async function hinrollen(id: number) {
     await tick();
     listeEl?.querySelector<HTMLElement>(`[data-folge="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
