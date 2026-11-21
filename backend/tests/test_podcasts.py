@@ -162,3 +162,20 @@ def test_ordner_gruppieren_und_loesen(client):
     assert subs[abos[0]]["ordner_id"] is None and subs[abos[0]]["title"] == "Eins"           # das Abo bleibt
     assert client.delete(f"/api/podcast-ordner/{a['id']}").status_code == 404
     client.delete(f"/api/podcast-ordner/{b['id']}")
+
+
+def test_suche_mit_abo_wahl_und_filter(client):
+    """RAD-44: die Suche gilt innerhalb der gewählten Abos und des Filters, wie die Liste ohne Suchtext."""
+    spektrum = _folge("Spektrum", "Hugging-Face-Vorfall: Wie gefährlich ist KI?")
+    bits = _folge("Bits und so", "Hugging Face in der Praxis")
+    andere = _folge("Bits und so", "Neue Macs")
+    with db_session() as conn:
+        abo_bits = conn.execute("SELECT podcast_id FROM podcast_episodes WHERE id = ?", (bits,)).fetchone()[0]
+        conn.execute("UPDATE podcast_episodes SET podcast_id = ? WHERE id = ?", (abo_bits, andere))
+        conn.execute("UPDATE podcast_episodes SET is_downloaded = 1 WHERE id = ?", (bits,))
+    ids = lambda **p: [e["id"] for e in client.get("/api/podcasts/episodes/all", params=p).json()["episodes"]]
+    assert set(ids(q="hugging")) >= {spektrum, bits}
+    assert ids(q="hugging", podcast_ids=str(abo_bits)) == [bits]
+    assert ids(q="hugging", podcast_ids=str(abo_bits), filter_status="unplayed") == [bits]
+    assert ids(q="macs", podcast_ids=str(abo_bits), filter_status="downloaded") == []
+    assert client.get("/api/podcasts/episodes/all", params={"q": "h"}).status_code == 422

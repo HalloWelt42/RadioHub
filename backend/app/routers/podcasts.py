@@ -240,9 +240,10 @@ async def get_all_episodes(
     filter_status: str = Query("all"),
     sort_by: str = Query("published_at"),
     sort_order: str = Query("desc"),
-    podcast_ids: Optional[str] = Query(None, description="Komma-getrennte Podcast-IDs")
+    podcast_ids: Optional[str] = Query(None, description="Komma-getrennte Podcast-IDs"),
+    q: Optional[str] = Query(None, min_length=2, max_length=200, description="Suchtext in Titel, Beschreibung, Transkript")
 ):
-    """Episoden über alle Abos"""
+    """Episoden über alle Abos; mit `q` nur die passenden, mit Abos, Filter und Sortierung wie ohne (RAD-44)"""
     pid_list = None
     if podcast_ids:
         try:
@@ -252,7 +253,7 @@ async def get_all_episodes(
 
     return await podcast_service.get_all_episodes(
         limit=limit, offset=offset, filter_status=filter_status,
-        sort_by=sort_by, sort_order=sort_order, podcast_ids=pid_list
+        sort_by=sort_by, sort_order=sort_order, podcast_ids=pid_list, suchtext=q
     )
 
 

@@ -172,10 +172,13 @@ export class BackendPodcastquelle implements Podcastquelle {
     }
   }
 
+  /** Suche in Titel, Beschreibung und Transkript, mit derselben Abo-Wahl, demselben Filter und derselben Sortierung wie
+   *  die Liste ohne Suchtext (RAD-44: vorher suchte sie über alle Abos) */
   async folgenSuchen(suchtext: string, a: Folgenabfrage, signal?: AbortSignal): Promise<Folgenseite> {
-    const stelle = Math.max(0, Number(a.nach ?? 0) || 0);
-    const suche = new URLSearchParams({ q: suchtext, limit: String(a.anzahl ?? SEITE), offset: String(stelle), search_in: "all" });
-    return this.seite(await this.api.fetch(`/api/podcasts/episodes/search?${suche}`, { signal }), stelle);
+    const { stelle, suche } = BackendPodcastquelle.parameter(a);
+    suche.set("q", suchtext);
+    if (a.abos?.length) suche.set("podcast_ids", a.abos.join(","));
+    return this.seite(await this.api.fetch(`/api/podcasts/episodes/all?${suche}`, { signal }), stelle);
   }
 
   async gehoert(id: number, an: boolean): Promise<void> {

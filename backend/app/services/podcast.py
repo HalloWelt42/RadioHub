@@ -429,8 +429,9 @@ class PodcastService:
 
     async def get_all_episodes(self, limit: int = 50, offset: int = 0,
                                filter_status: str = "all", sort_by: str = "published_at",
-                               sort_order: str = "desc", podcast_ids: Optional[List[int]] = None) -> dict:
-        """Episoden über alle Abos, mit optionalem Podcast-Filter"""
+                               sort_order: str = "desc", podcast_ids: Optional[List[int]] = None,
+                               suchtext: Optional[str] = None) -> dict:
+        """Episoden über alle Abos, mit optionalem Podcast-Filter und Suchtext (Titel, Beschreibung, Transkript)"""
         allowed_sort = {"published_at", "title", "duration"}
         if sort_by not in allowed_sort:
             sort_by = "published_at"
@@ -444,6 +445,10 @@ class PodcastService:
             placeholders = ",".join("?" * len(podcast_ids))
             where_clauses.append(f"pe.podcast_id IN ({placeholders})")
             params.extend(podcast_ids)
+
+        if suchtext and len(suchtext.strip()) >= 2:
+            where_clauses.append("(pe.title LIKE ? OR pe.description LIKE ? OR pe.transcript LIKE ?)")
+            params.extend([f"%{suchtext.strip()}%"] * 3)
 
         if filter_status == "unplayed":
             where_clauses.append("pe.is_played = 0")

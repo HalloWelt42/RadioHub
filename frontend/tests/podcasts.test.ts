@@ -108,11 +108,14 @@ describe("Folgenliste", () => {
     expect(liste.folgen.length).toBe(3);
   });
 
-  it("sucht mit Suchtext im Volltext", async () => {
-    const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/search": { episodes: [folge(9)], total: 1 } });
+  it("sucht mit Suchtext im Volltext, mit Abo-Wahl, Filter und Sortierung wie die Liste (RAD-44)", async () => {
+    const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/all": { episodes: [folge(9)], total: 1 } });
     const liste = new Folgenliste(quelle);
-    await liste.laden({}, " Wetter ");
-    expect(aufrufe[0].pfad).toContain("q=Wetter");
+    await liste.laden({ abos: [3], filter: "gespeichert", sortierung: "titel", absteigend: false }, " Wetter ");
+    const adresse = new URLSearchParams(aufrufe[0].pfad.split("?")[1]);
+    expect(aufrufe[0].pfad.startsWith("/api/podcasts/episodes/all?")).toBe(true);
+    expect([adresse.get("q"), adresse.get("podcast_ids"), adresse.get("filter_status"), adresse.get("sort_by"), adresse.get("sort_order")])
+      .toEqual(["Wetter", "3", "downloaded", "title", "asc"]);
     expect(liste.folgen.map((f) => f.id)).toEqual([9]);
   });
 });
