@@ -68,7 +68,7 @@
     <div class="name"><b>{folge.titel}</b>
       <div class="meta"><span>{aboTitel}</span><span>{datum}</span>
         {#if folge.gespeichert}<span class="rh-gespeichert" title={t("podcastAnsicht.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i>{t("podcastAnsicht.gespeichert")}</span>{/if}
-        {#if folge.werbung.anzahl}<span class="rh-werbemarke-text" title={t("podcastAnsicht.werbung.markeHilfe", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}>
+        {#if folge.werbung.anzahl}<span class="rh-werbemarke-text" title={t(folge.werbung.anzahl === 1 ? "podcastAnsicht.werbung.markeHilfeEins" : "podcastAnsicht.werbung.markeHilfe", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}>
           <i class="fa-solid fa-forward"></i>{t("podcastAnsicht.werbung.marke", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}</span>{/if}</div></div>
     <div class="stand-zelle">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>

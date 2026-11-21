@@ -100,7 +100,7 @@ export default {
   bandNeueFolgen: 'Alle Abos gefragt: {n} neue Folgen',
   bandKeineNeuen: 'keine neuen Folgen',
   // Kopf eines Abos
-  folgenZahl: '{n} Folgen',
+  folgenZahlEins: '1 Folge', folgenZahl: '{n} Folgen',
   ungehoertKopf: '{n} ungehört',
   zusammen: '{zeit} zusammen',
   neueSpeichern: 'Neue speichern',
@@ -143,11 +143,11 @@ export default {
     anhoeren: 'Diese Stelle anhören', keineWerbung: 'Keine Werbung', keineWerbungHilfe: 'Keine Werbung: nicht mehr überspringen (mit Rückgängig)',
     verworfen: 'Die Stelle ab {von} gilt nicht mehr als Werbung.', rueckgaengig: 'Rückgängig',
     ueberspringen: 'Überspringen', ueberspringenHilfe: 'Werbestellen beim Hören überspringen (gilt für dieses Abo)',
-    suchen: 'Werbung suchen', suchenHilfe: 'Alle möglichen Quellen nach Werbestellen durchsuchen', gefunden: '{n} Werbestellen gefunden',
+    suchen: 'Werbung suchen', suchenHilfe: 'Alle möglichen Quellen nach Werbestellen durchsuchen', gefundenEins: '1 Werbestelle gefunden', gefunden: '{n} Werbestellen gefunden',
     beginnt: 'Werbung beginnt hier', endet: 'Werbung endet hier (ab {von})', markierenHilfe: 'Beim Hören markieren: erst am Beginn, dann am Ende tippen',
     ohneSpeichern: 'Ohne Werbung speichern', ohneSpeichernHilfe: 'Neue Datei ohne die Werbestellen daneben; das Original bleibt',
-    ohneFertig: 'Ohne Werbung gespeichert: {pfad}', marke: '{n} × Werbung, {zeit}', markeHilfe: '{n} Werbestellen, zusammen {zeit}, werden übersprungen',
+    ohneFertig: 'Ohne Werbung gespeichert: {pfad}', marke: '{n} × Werbung, {zeit}', markeHilfeEins: '1 Werbestelle, {zeit}, wird übersprungen', markeHilfe: '{n} Werbestellen, zusammen {zeit}, werden übersprungen',
     aboUeberspringen: 'Werbung überspringen', aboUeberspringenHilfe: 'Erkannte Werbestellen in allen Folgen dieses Abos überspringen',
-    aboZahl: '{n} Folgen mit Werbung', aboPruefen: 'Neue Folgen prüfen', aboPruefenHilfe: 'Neue Folgen dieses Abos von selbst auf Werbung durchsuchen',
+    aboZahlEins: '1 Folge mit Werbung', aboZahl: '{n} Folgen mit Werbung', aboPruefen: 'Neue Folgen prüfen', aboPruefenHilfe: 'Neue Folgen dieses Abos von selbst auf Werbung durchsuchen',
   },
 };

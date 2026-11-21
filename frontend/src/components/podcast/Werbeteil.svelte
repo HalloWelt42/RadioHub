@@ -95,7 +95,7 @@
     await sicher(async () => {
       const gefunden = await werbequelle.suchen(folge.id, (f) => (auftrag = { was, f }));
       const zahl = Object.values(gefunden).reduce((s, n) => s + n, 0);
-      actions.showToast(t("podcastAnsicht.werbung.gefunden", { n: zahl }), "success");
+      actions.showToast(t(zahl === 1 ? "podcastAnsicht.werbung.gefundenEins" : "podcastAnsicht.werbung.gefunden", { n: zahl }), "success");
       await laden();
       gemeldet();
     });

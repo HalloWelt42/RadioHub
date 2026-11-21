@@ -43,9 +43,9 @@
     {#if abo.autor}<p class="rh-still">{abo.autor}</p>{/if}
     {#if beschreibung}<Langtext text={beschreibung} klasse="rh-abo-beschreibung" />{/if}
     <div class="rh-abo-zahlen">
-      <span>{t("podcastAnsicht.folgenZahl", { n: abo.folgen })}</span><span>{t("podcastAnsicht.ungehoertKopf", { n: abo.ungehoert })}</span>
+      <span>{t(abo.folgen === 1 ? "podcastAnsicht.folgenZahlEins" : "podcastAnsicht.folgenZahl", { n: abo.folgen })}</span><span>{t("podcastAnsicht.ungehoertKopf", { n: abo.ungehoert })}</span>
 <span>{t("podcastAnsicht.zusammen", { zeit: dauerText(abo.dauerGesamt) })}</span>
-      {#if abo.werbungFolgen}<span class="rh-werbemarke-text"><i class="fa-solid fa-rectangle-ad"></i>{t("podcastAnsicht.werbung.aboZahl", { n: abo.werbungFolgen })}</span>{/if}
+      {#if abo.werbungFolgen}<span class="rh-werbemarke-text"><i class="fa-solid fa-rectangle-ad"></i>{abo.werbungFolgen === 1 ? t("podcastAnsicht.werbung.aboZahlEins") : t("podcastAnsicht.werbung.aboZahl", { n: abo.werbungFolgen })}</span>{/if}
     </div>
   </div>
   {#if kannSpeichern}
