@@ -111,6 +111,12 @@ Umwandeln (MP3, OGG, AAC, Bitrate, Mono) gehen genauso. Jeder Schritt lässt sic
 vorige Fassung im Unterordner `Schritte/<Nr>` ihres Ordners, eine Datei legt das Ergebnis beim Rückgängig in den
 Papierkorb; die letzten zehn Schritte bleiben. Am Telefon gibt es den Reiter Aufnahmen nur zum Hören (Suche, Ordner,
 Titel, Alles hören).
+Nach dem Stopp schneidet RadioHub jede Aufnahme fein (RAD-45, Status "feinschnitt", solange bleibt die Wiedergabe
+gesperrt): Grenzen an den Pausen zwischen den Titeln, bei Sendern mit Überblendung am tiefsten Pegeltal, Werbung als
+eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, der Titel eines Stücks ist der mit dem
+größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
+der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
+Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
 
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo

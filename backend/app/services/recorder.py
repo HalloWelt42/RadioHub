@@ -38,7 +38,7 @@ from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
 from .aufnahmen import aufnahmen
 from .config_service import config_service
-from . import feinschnitt, werbestellen
+from . import feinschnitt_lauf, werbestellen
 from ..sendewerbung.sitzung import Sitzungswerbung
 from .stromleser import StromFehler, Stromleser, Wiedergabeliste
 from .stillenwaechter import Stillenwaechter
@@ -124,6 +124,7 @@ class RecordingSession:
         self.titelbuch: Optional[Titelbuch] = None
         self.werbung: Optional[Sitzungswerbung] = None
         self.stillen: Optional[Stillenwaechter] = None
+        self.pegel: list[tuple[float, float]] = []      # Momentanlautheit je 100 ms für den Feinschnitt
         self.stromleser: Optional[Stromleser] = None   # None: FFmpeg liest selbst (Wiedergabeliste)
         self.strom_task: Optional[asyncio.Task] = None
         self.eingang_format: Optional[str] = None
@@ -365,7 +366,8 @@ class RecorderManager:
             kopf = await session.stromleser.verbinden()
             session.titelbuch.metaint = kopf.metaint
             session.eingang_format = kopf.format
-            session.stillen = Stillenwaechter(kopf.format, session.werbung.stille_zeile)
+            session.stillen = Stillenwaechter(kopf.format, session.werbung.stille_zeile,
+                                              lambda t, m: session.pegel.append((round(t, 2), round(m, 1))))
             await session.stillen.starten()
         except StromFehler as f:
             art = "Wiedergabeliste" if isinstance(f, Wiedergabeliste) else f"Stromleser: {f}"
@@ -917,7 +919,7 @@ class RecorderManager:
         duration = real_duration if real_duration > 0 else (
             sum(s["duration_ms"] or 0 for s in segmente) / 1000.0 or session.duration)
         quality_json = self._build_quality_json(session) if session.events else None
-        plan = self._feinschnitt_planen(session, duration) if status == "completed" and segmente else None
+        plan = await self._feinschnitt_vorbereiten(session, duration) if status == "completed" and segmente else None
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE sessions SET
@@ -933,33 +935,31 @@ class RecorderManager:
         if self._feinschnitt_task:
             await asyncio.gather(self._feinschnitt_task, return_exceptions=True)
 
-    def _feinschnitt_planen(self, session: RecordingSession, dauer: float) -> Optional[list]:
-        """Die Stücke nach dem Feinschnitt; None, wenn es nichts zu verbessern gibt (ohne Sendedaten, ein Stück)."""
+    async def _feinschnitt_vorbereiten(self, session: RecordingSession, dauer: float) -> Optional[list]:
+        """Die Analyse der Aufnahme festhalten (Analyse.json in der Ablage, zum späteren Neurechnen) und die Stücke des
+        Feinschnitts planen; None, wenn es nichts zu verbessern gibt (ohne Sendedaten, ein Stück)."""
         if not session.titelbuch or not session.werbung or dauer <= 0:
             return None
-        angaben = [feinschnitt.Angabe(t, titel, gesperrt) for t, titel, gesperrt in session.titelbuch.wechsel]
-        werbung = [feinschnitt.Werbung(w.von, w.bis if w.bis is not None else dauer, w.werbender or w.titel or w.kennung)
-                   for w in session.werbung.stellen]
-        stuecke = feinschnitt.stuecke(dauer, angaben, session.werbung.stillen, werbung)
-        if len(stuecke) <= 1 and not werbung:
-            return None
-        session.logger.log("FEINSCHNITT " + "; ".join(f"{s.von:.2f}-{s.bis:.2f} {s.art} {s.name}" for s in stuecke))
+        analyse = feinschnitt_lauf.Analyse(
+            dauer=dauer, wechsel=session.titelbuch.wechsel, stillen=session.werbung.stillen, pegel=session.pegel,
+            werbung=[(w.von, w.bis if w.bis is not None else dauer, w.werbender or w.titel or w.kennung)
+                     for w in session.werbung.stellen])
+        try:
+            await feinschnitt_lauf.analyse_ablegen(session.id, analyse)
+        except Exception as f:            # ohne gespeicherte Analyse geht nur das spätere Neurechnen nicht
+            logger.warning(f"REC Analyse nicht abgelegt: {f}")
+        stuecke = feinschnitt_lauf.planen(analyse)
+        if stuecke:
+            session.logger.log("FEINSCHNITT " + feinschnitt_lauf.zusammenfassung(stuecke))
         return stuecke
 
     async def _feinschnitt(self, session: RecordingSession, stuecke: list) -> None:
-        """Den Feinschnitt als Schritt des Schnitts ausführen; schlägt er fehl, bleiben die groben Stücke."""
-        from .schnitt import StueckWahl, gegenstand
-        wahl = [StueckWahl(von=s.von, bis=s.bis, name=s.name) for s in stuecke]
+        """Den Feinschnitt ausführen; schlägt er fehl, bleiben die groben Stücke."""
         try:
-            await gegenstand("sitzung", session.id).schneiden(
-                wahl, lambda *_: None, was=f"Feinschnitt: {len(wahl)} Stücke an der Stille, Werbung für sich")
-            logger.info(f"REC Feinschnitt {session.id}: {len(wahl)} Stücke")
+            await feinschnitt_lauf.ausfuehren(session.id, stuecke)
         except Exception as f:
             logger.warning(f"REC Feinschnitt {session.id} fehlgeschlagen: {f} (die groben Stücke bleiben)")
             session.logger.log(f"FEINSCHNITT-FEHLER {f}")
-        finally:
-            with db_session() as conn:
-                conn.execute("UPDATE sessions SET status = 'completed' WHERE id = ? AND status = 'feinschnitt'", (session.id,))
 
     async def stop(self) -> dict:
         """Stoppt aktive Aufnahme.

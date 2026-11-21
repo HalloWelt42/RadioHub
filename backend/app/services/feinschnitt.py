@@ -44,6 +44,19 @@ class Regeln:
     #: Angaben so nah an einer Werbestelle setzen keine eigene Grenze: dort gilt die Grenze der Werbung (Titel und
     #: Werbung kommen aus derselben Angabe, ihre Grenzen lägen sonst knapp nebeneinander)
     werbung_rand_s: float = 2.0
+    #: ein Titel, der zwischen zwei Angaben desselben anderen Titels höchstens so lange steht, ist eingestreut (Muster
+    #: A, B, A: SWR3 sendet mitten im Lied den Sendungsnamen) und teilt nicht
+    einstreu_hoechstens_s: float = 90.0
+    #: so kurz eingestreut zählt immer als Einstreuung (Kontakt, Slogan); länger nur, wenn der Titel in der Aufnahme
+    #: mindestens so oft vorkommt wie der, in den er eingestreut ist (ein Lied zwischen zwei Sendungsnamen bleibt)
+    einstreu_kurz_s: float = 25.0
+    #: ohne Stille: ein Pegeltal so weit vor oder nach der Angabe zählt (überblendende Sender, gemessen bis 4 s danach)
+    tal_vor_s: float = 6.0
+    tal_nach_s: float = 4.5
+    #: so viel tiefer als der Median der Umgebung (30 s) muss das Tal sein (LU)
+    tal_tiefe: float = 12.0
+    #: der Momentanwert misst die letzten 400 ms: die Mitte des Fensters liegt so weit vor seiner Zeit
+    tal_versatz_s: float = 0.2
     #: so viel seiner Dauer muss ein Titel abdecken, damit das Stück sicher nach ihm heißt
     sicher_anteil: float = 2 / 3
 
@@ -78,13 +91,34 @@ class Stueck:
         return self.bis - self.von
 
 
-def grenze(t: float, stillen: list[tuple[float, float]], r: Regeln = Regeln(), nach: float = float("-inf")) -> float:
-    """Wo der Wechsel zur Angabe bei `t` wirklich liegt: am Ende der passenden Stille, sonst bei der Angabe. `nach`:
-    die Grenze des vorigen Wechsels; die Stille muss dahinter enden (eine Stille dient nur einem Wechsel: sonst nähme
-    der Titel nach einem kurzen Einspieler dieselbe lange Pause wie der Einspieler, Mangoradio 2:25)."""
+Pegel = list[tuple[float, float]]
+"""Momentanlautheit: (Zeit in Sekunden, LUFS), etwa alle 100 ms"""
+
+
+def tal(t: float, pegel: Pegel, r: Regeln = Regeln(), nach: float = float("-inf")) -> float | None:
+    """Das tiefste Pegeltal um die Angabe bei `t`, wenn es deutlich unter der Umgebung liegt; sonst None."""
+    if not pegel:
+        return None
+    fenster = [(zeit, wert) for zeit, wert in pegel if t - r.tal_vor_s <= zeit <= t + r.tal_nach_s and zeit - r.tal_versatz_s > nach + r.naehe_s]
+    umgebung = sorted(wert for zeit, wert in pegel if t - 15 <= zeit <= t + 15)
+    if not fenster or not umgebung:
+        return None
+    zeit, wert = min(fenster, key=lambda p: p[1])
+    if wert > umgebung[len(umgebung) // 2] - r.tal_tiefe:
+        return None
+    return round(zeit - r.tal_versatz_s, 2)
+
+
+def grenze(t: float, stillen: list[tuple[float, float]], r: Regeln = Regeln(), nach: float = float("-inf"),
+           pegel: Pegel | None = None) -> float:
+    """Wo der Wechsel zur Angabe bei `t` wirklich liegt: am Ende der passenden Stille; ohne Stille im tiefsten
+    Pegeltal, wenn eines deutlich ist (überblendende Sender); sonst bei der Angabe. `nach`: die Grenze des vorigen
+    Wechsels; die Stille muss dahinter enden (eine Stille dient nur einem Wechsel: sonst nähme der Titel nach einem
+    kurzen Einspieler dieselbe lange Pause wie der Einspieler, Mangoradio 2:25)."""
     kandidaten = [s for s in stillen if t - r.vor_s <= s[1] <= t + r.nach_s and s[1] > nach + r.naehe_s]
     if not kandidaten:
-        return t
+        im_tal = tal(t, pegel or [], r, nach)
+        return t if im_tal is None else im_tal
     wert = lambda s: abs(s[1] - (t - r.verzug_s)) - r.gewicht_je_s * min(s[1] - s[0], r.lange_bis_s)
     return min(kandidaten, key=wert)[1]
 
@@ -97,20 +131,41 @@ def schnittstelle(t: float, stillen: list[tuple[float, float]], r: Regeln = Rege
     return t
 
 
+def einstreuungen_entfernen(angaben: list[Angabe], r: Regeln = Regeln()) -> list[Angabe]:
+    """Muster A, B, A mit eingestreutem B (Sendungsname, Kontakt, Slogan): B gehört zu A, das zweite A ist dieselbe
+    Stelle wie das erste. Eingestreut ist B, wenn es kurz steht oder in der Aufnahme mindestens so oft vorkommt wie A
+    (SWR3 21.11.2026: der Sendungsname kommt zehnmal, ein Lied zwei- bis dreimal). Wiederholt, bis nichts mehr
+    eingestreut ist (A, B, A, B, A wird A)."""
+    liste = list(angaben)
+    haeufig = {x.titel: sum(1 for y in angaben if y.titel == x.titel) for x in angaben}
+    geaendert = True
+    while geaendert:
+        geaendert = False
+        for i in range(1, len(liste) - 1):
+            a, b, c = liste[i - 1], liste[i], liste[i + 1]
+            dauer = c.t - b.t
+            eingestreut = dauer <= r.einstreu_kurz_s or haeufig[b.titel] >= haeufig[a.titel]
+            if a.titel == c.titel and b.titel != a.titel and dauer <= r.einstreu_hoechstens_s and eingestreut:
+                del liste[i:i + 2]
+                geaendert = True
+                break
+    return liste
+
+
 def stuecke(dauer: float, angaben: list[Angabe], stillen: list[tuple[float, float]], werbung: list[Werbung],
-            r: Regeln = Regeln(), einschub: str = "Einschub") -> list[Stueck]:
+            r: Regeln = Regeln(), einschub: str = "Einschub", pegel: Pegel | None = None) -> list[Stueck]:
     """Die Stücke einer Aufnahme von 0 bis `dauer` (Sekunden des aufgenommenen Tons)."""
     if dauer <= 0:
         return []
     werbung = sorted((w for w in werbung if w.bis > w.von), key=lambda w: w.von)
     # Grenzen aus Angaben in einer Werbestelle oder an ihrem Rand fallen weg: die Werbestelle hat dort ihre eigene
     in_werbung = lambda t: any(w.von - r.werbung_rand_s <= t <= w.bis + r.werbung_rand_s for w in werbung)
-    gueltig = sorted((a for a in angaben if not a.gesperrt), key=lambda a: a.t)
+    gueltig = einstreuungen_entfernen(sorted((a for a in angaben if not a.gesperrt), key=lambda a: a.t), r)
 
     # Titel mit ihren Abschnitten: von ihrer Grenze bis zur Grenze des nächsten
     grenzen_t: list[float] = []
     for a in gueltig:
-        grenzen_t.append(grenze(a.t, stillen, r, grenzen_t[-1] if grenzen_t else float("-inf")))
+        grenzen_t.append(grenze(a.t, stillen, r, grenzen_t[-1] if grenzen_t else float("-inf"), pegel))
     abschnitte = [(g, grenzen_t[i + 1] if i + 1 < len(gueltig) else dauer, a.titel) for i, (g, a) in enumerate(zip(grenzen_t, gueltig))]
 
     punkte = {0.0, dauer}

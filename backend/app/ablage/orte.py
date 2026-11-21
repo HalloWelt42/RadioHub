@@ -17,6 +17,8 @@ AUFNAHMEN = "Aufnahmen"
 PODCASTS = "Podcasts"
 BEREICHE = (AUFNAHMEN, PODCASTS)   # was Explorer und Wiedergabe zeigen dürfen (nicht etwa die Bausteine der Zeitansage)
 TITELLISTE = "Titelliste.json"
+#: Analyse der Aufnahme für den Feinschnitt (Wechsel, Stillen, Pegel, Werbung; RAD-45)
+ANALYSE = "Analyse.json"
 WELLENFORM = "Wellenform.peaks"
 
 _UNERLAUBT = re.compile(r'[/\\:*?"<>|\x00-\x1f]+')
@@ -64,6 +66,10 @@ def stueck(sitzungsordner: str, index: int, titel: str, endung: str) -> str:
 
 def titelliste(sitzungsordner: str) -> str:
     return f"{sitzungsordner}/{TITELLISTE}"
+
+
+def analyse(sitzungsordner: str) -> str:
+    return f"{sitzungsordner}/{ANALYSE}"
 
 
 def wellenform(sitzungsordner: str) -> str:

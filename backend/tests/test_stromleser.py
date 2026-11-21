@@ -219,3 +219,13 @@ async def test_aufnahme_speichert_werbestellen_aus_den_sendedaten(client, mp3, m
     assert client.get(f"/api/schnitt/info", params={"art": "sitzung", "kennung": ergebnis["session_id"]}).json()["werbestellen"]
     sitzung = client.get(f"/api/recording/sessions/{ergebnis['session_id']}").json()
     assert sitzung["status"] == "completed"
+    # die Analyse liegt neben den Stücken; aus ihr lässt sich der Feinschnitt neu rechnen (ersetzt den vorigen)
+    from app.services import feinschnitt_lauf
+    from app.services.schnitt import gegenstand, schritte
+    analyse = await feinschnitt_lauf.analyse_lesen(ergebnis["session_id"])
+    assert analyse and analyse.wechsel and analyse.werbung and len(analyse.pegel) > 20
+    assert client.post(f"/api/recording/sessions/{ergebnis['session_id']}/feinschnitt").status_code == 202
+    namen = [s["was"] for s in schritte(gegenstand("sitzung", ergebnis["session_id"]).schluessel)]
+    assert len(namen) == 1 and namen[0].startswith("Feinschnitt")
+    assert [s["title"] for s in aufnahmen.segmente(ergebnis["session_id"])] == ["Werbung: 198927", "B - Zwei"]
+    assert client.post("/api/recording/sessions/gibt-es-nicht/feinschnitt").status_code == 404

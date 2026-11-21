@@ -89,3 +89,40 @@ def test_pause_schlaegt_luecke_in_der_sprache():
     # PayPal-Spot (Mangoradio 21.11.2026): Angabe 30,0; 50-ms-Lücke in der Sprache 29,32 bis 29,35, echte Pause
     # 29,77 bis 29,89 (danach beginnt das Programm)
     assert fs.grenze(30.0, [(29.32, 29.35), (29.77, 29.89)]) == 29.89
+
+
+def test_eingestreuter_sendungsname_teilt_nicht():
+    # SWR3 21.11.2026: mitten im Lied kommt immer wieder "SWR3 EASY - Die Samstagsshow"
+    lied, show = "Should have known better / Pedro Santos", "SWR3 EASY   Die Samstagsshow"
+    angaben = [fs.Angabe(153.6, lied), fs.Angabe(192.5, show), fs.Angabe(214.0, lied), fs.Angabe(276.5, show),
+               fs.Angabe(294.9, lied), fs.Angabe(321.5, "Aicha / Outlandish"), fs.Angabe(363.5, show),
+               fs.Angabe(382.0, "Aicha / Outlandish")]
+    liste = fs.stuecke(400.0, angaben, [], [])
+    assert [(s.von, s.bis, s.name) for s in liste] == [
+        (0.0, 153.6, "Einschub"), (153.6, 321.5, lied), (321.5, 400.0, "Aicha / Outlandish")]
+    # ein echtes kurzes Stück zwischen zwei verschiedenen Titeln bleibt
+    liste = fs.stuecke(300.0, [fs.Angabe(0.0, "A"), fs.Angabe(100.0, "Jingle"), fs.Angabe(110.0, "B")], [], [])
+    assert [s.name for s in liste] == ["A", "Jingle", "B"]
+
+
+def test_lied_zwischen_sendungsnamen_bleibt():
+    # SWR3 8:21 bis 10:44: Sendungsname, Lied, Sendungsname, Lied, Sendungsname; das Lied (34 s und 61 s) bleibt
+    show, lied = "SWR3 EASY   Die Samstagsshow", "Soleil bleu / Bleu Soleil & Luiza"
+    angaben = [fs.Angabe(t, x) for t, x in [(0.0, show), (20.0, "X"), (40.0, show), (60.0, "Y"), (80.0, show),
+                                            (501.8, show), (525.3, lied), (559.1, show), (579.6, lied), (640.0, show),
+                                            (644.5, "EASY mit Volker Janitz")]]
+    namen = [(s.name, round(s.von, 1)) for s in fs.stuecke(700.0, angaben, [], [])]
+    assert (lied, 525.3) in namen and (show, 559.1) not in namen
+
+
+def test_ohne_stille_im_pegeltal():
+    # überblendender Sender (FFH 21.11.2026): keine digitale Stille, aber 3,3 s nach der Angabe ein Tal von -27 LUFS
+    # bei sonst etwa -10; die Zeit des Momentanwerts ist das Ende seines Fensters (400 ms), geschnitten wird in der Mitte
+    pegel = [(i / 10, -10.0) for i in range(1500, 1800)]
+    pegel = [(z, -27.0 if abs(z - 168.3) < 0.05 else -20.0 if abs(z - 168.3) < 0.35 else w) for z, w in pegel]
+    assert fs.grenze(165.0, [], pegel=pegel) == 168.1
+    # ein flaches Tal (nur 5 dB) zählt nicht: dann die Angabe
+    flach = [(z, -15.0 if abs(z - 168.3) < 0.05 else w) for z, w in [(i / 10, -10.0) for i in range(1500, 1800)]]
+    assert fs.grenze(165.0, [], pegel=flach) == 165.0
+    # digitale Stille geht dem Pegel vor
+    assert fs.grenze(165.0, [(163.9, 164.4)], pegel=pegel) == 164.4

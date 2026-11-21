@@ -22,7 +22,7 @@ from ..config import AUDIO_MIMETYPES, get_arbeit_dir
 from ..services.aufnahmen import aufnahmen
 from ..services.recorder import rec_manager
 from ..services.hls_recorder import hls_recorder
-from ..services import werbestellen
+from ..services import feinschnitt_lauf, werbestellen
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
@@ -97,6 +97,21 @@ async def werbung(session_id: str) -> list[werbestellen.Werbestelle]:
     if not rec_manager.get_session(session_id):
         raise HTTPException(404, "Session nicht gefunden")
     return werbestellen.stellen(werbestellen.Bezug.aufnahme(session_id))
+
+
+@router.post("/sessions/{session_id}/feinschnitt", status_code=202)
+async def feinschnitt_neu(session_id: str, hintergrund: BackgroundTasks):
+    """Feinschnitt aus der gespeicherten Analyse neu rechnen (RAD-45), etwa nach besseren Regeln; ein voriger
+    Feinschnitt wird dabei zurückgenommen. Läuft im Hintergrund, solange heißt die Aufnahme "feinschnitt"."""
+    sitzung = rec_manager.get_session(session_id)
+    if not sitzung:
+        raise HTTPException(404, "Session nicht gefunden")
+    if sitzung.get("status") in ("recording", "feinschnitt"):
+        raise HTTPException(409, "Die Aufnahme läuft noch oder wird gerade geschnitten")
+    if await feinschnitt_lauf.analyse_lesen(session_id) is None:
+        raise HTTPException(404, "Zu dieser Aufnahme gibt es keine Analyse")
+    hintergrund.add_task(feinschnitt_lauf.neu, session_id)
+    return {"status": "feinschnitt"}
 
 
 @router.delete("/sessions/{session_id}")
