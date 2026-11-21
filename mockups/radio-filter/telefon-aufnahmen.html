@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Aufnahmen am Telefon</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/schriften/orbitron/900.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="telefon.css">
+  <link rel="stylesheet" href="aufnahmen.css">
+</head>
+<body>
+<div class="rh-buehne-seite">
+  <div class="rh-entwurf">
+    <span class="pille">Entwurf RAD-17: Aufnahmen am Telefon</span>
+    <a href="index.html"><i class="fa-solid fa-table-cells-large"></i>Übersicht</a>
+    <a href="aufnahmen.html"><i class="fa-solid fa-display"></i>Rechner</a>
+  </div>
+  <div class="rh-buehne-rollt">
+    <div class="rh-buehne-kopf">
+      <h1>Aufnahmen am Telefon</h1>
+      <p>Am Telefon wird nur gehört: Aufnahmen nach Ordner wählen, eine öffnen und ab einem Titel hören. Kein Schnitt, kein Verschieben, kein Löschen; das bleibt am Rechner. Aufnehmen startet wie beim Radio über die rote Taste im großen Spieler.</p>
+    </div>
+    <div class="rh-buehne">
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">1</span><span>Liste</span><span>Ordner als Chips</span></p><div class="rh-telefon" data-telefon="liste"></div></div>
+      <div class="rh-rahmen-block"><p class="rh-rahmen-titel"><span class="pille">2</span><span>Eine Aufnahme</span><span>Titel hören</span></p><div class="rh-telefon" data-telefon="aufnahme"></div></div>
+    </div>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+<script src="daten.js"></script>
+<script src="radio.js"></script>
+<script src="aufnahmen-daten.js"></script>
+<script src="telefon-aufnahmen.js"></script>
+</body>
+</html>
