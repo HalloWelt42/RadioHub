@@ -98,3 +98,29 @@ async def test_zeitversatz_meldet_werbestelle_mit_grenze_an_der_stille(tmp_path,
     (s,) = stellen
     assert (s["von"], s["von_aus"], s["bis_aus"], s["kennung"]) == (0.0, "verbinden", "stille", "198927")
     assert abs(s["bis"] - 3.3) < 0.1, s                        # Ende der Stille nach dem Spot
+
+
+def test_spots_zaehlen_und_schalter_je_sender(client):
+    """Jede abgeschlossene Stelle zählt ihren Spot beim Sender; ein Fund macht den Sender werbend. Der Schalter je
+    Sender nimmt ihn aus, die Einstellung für alle schaltet es überall ab."""
+    from app.sendewerbung import spots
+    w = Sitzungswerbung(bei_ende=lambda s: spots.merken("sender-1", s))
+    w.angabe(FFH, 1.0)                                        # endet sofort (angekündigte Länge)
+    w.angabe(OLDIE, 20.0)
+    w.angabe(OTTO, 40.0)
+    w.angabe(OLDIE, 55.0)                                     # beendet otto.de
+    w.angabe(OTTO, 90.0)
+    w.angabe(OLDIE, 105.0)                                    # derselbe Spot ein zweites Mal
+    (eintrag,) = [e for e in client.get("/api/sendewerbung").json() if e["uuid"] == "sender-1"]
+    assert (eintrag["uuid"], eintrag["spots"], eintrag["ueberspringen"]) == ("sender-1", 2, True)
+    brief = client.get("/api/sendewerbung/sender-1").json()
+    assert {(s["kennung"], s["anzahl"], s["dauer_ms"], s["beim_verbinden"]) for s in brief["liste"]} == {
+        ("198927", 1, 15046, True), ("199103", 2, 15000, False)}
+    assert client.put("/api/sendewerbung/sender-1", json={"ueberspringen": False}).json()["ausgenommen"] is True
+    assert spots.ueberspringt("sender-1") is False and spots.ueberspringt("anderer") is True
+    assert client.put("/api/config", json={"updates": {"werbung_ueberspringen": False}}).status_code == 200
+    assert spots.ueberspringt("anderer") is False
+    client.put("/api/config", json={"updates": {"werbung_ueberspringen": True}})       # für die übrigen Tests zurück
+    spots.setzen("sender-1", True)
+    assert client.get("/api/sendewerbung/ohne-spots").json() == {
+        "uuid": "ohne-spots", "name": "", "spots": 0, "zuletzt": None, "ueberspringen": True, "ausgenommen": False, "liste": []}

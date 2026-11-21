@@ -21,6 +21,7 @@ from .stromleser import StromFehler, Stromleser, Wiedergabeliste
 from .titelbuch import Titelbuch
 from ..sendewerbung.sitzung import Sitzungswerbung
 from ..sendewerbung.angaben import regeln as werberegeln
+from ..sendewerbung import spots as werbespots
 
 logger = logging.getLogger("radiohub.hls_buffer")
 
@@ -297,7 +298,7 @@ class HLSBufferService:
         kopf = None
         if not is_podcast:
             self._titelbuch = Titelbuch()
-            self._werbung = Sitzungswerbung()
+            self._werbung = Sitzungswerbung(bei_ende=self._spot_zaehlen)
             self._stromleser = Stromleser(stream_url, self._in_ffmpeg, self._angabe, bitrate=bitrate)
             try:
                 kopf = await self._stromleser.verbinden()
@@ -390,6 +391,19 @@ class HLSBufferService:
             logger.warning(f"HLS Start Fehler: {e}")
             return {"status": "error", "error": str(e)}
     
+    def _ueberspringt(self) -> bool:
+        try:
+            return bool(self.session and not self.session.is_podcast and werbespots.ueberspringt(self.session.station_uuid))
+        except Exception:
+            return False
+
+    def _spot_zaehlen(self, stelle) -> None:
+        """Eine abgeschlossene Werbestelle zählt ihren Spot beim Sender (der Sender gilt damit als werbend)."""
+        try:
+            werbespots.merken(self.session.station_uuid if self.session else "", stelle)
+        except Exception as f:            # die Wiedergabe hängt nicht an der Zählung
+            logger.warning(f"Spot nicht gezählt: {f}")
+
     async def _angabe(self, a) -> None:
         """Eine Angabe der Sendedaten: Titel ins Titelbuch, Werbung in die Werbestellen der Sitzung."""
         if self._titelbuch:
@@ -568,7 +582,8 @@ class HLSBufferService:
             # Aktueller ICY-Titel (letzter erkannter)
             "icy_title": (self._titelbuch.entries[-1].get("title", "")
                           if self._titelbuch and self._titelbuch.entries else None),
-            # Werbestellen im Puffer (RAD-33), in Sekunden des Tons wie die Segmente
+            # Werbestellen im Puffer (RAD-33), in Sekunden des Tons wie die Segmente, und ob sie hier gelten
+            "werbung_ueberspringen": self._ueberspringt(),
             "werbestellen": ([w.model_dump() for w in self._werbung.im_fenster(
                 (segments["first"] or 0) * self.session.segment_duration)] if self._werbung else []),
         }

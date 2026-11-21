@@ -143,6 +143,10 @@ class AppEinstellungen(Grundeinstellungen):
     ad_detection_threshold: int = Field(80, ge=40, le=100, title="Schwelle",
                                         json_schema_extra={**RADIO, "einheit": "%", "schritt": 5},
                                         description="Ab dieser Sicherheit gilt ein Sender als verdächtig.")
+    werbung_ueberspringen: bool = Field(True, title="Angekündigte Werbung überspringen", json_schema_extra=RADIO,
+                                        description="Gilt für alle Sender, je Sender abschaltbar: der Spot beim Verbinden "
+                                                    "wird nicht gespielt, im Zeitversatz wird Werbung übersprungen, live "
+                                                    "stumm geschaltet, bis sie vorbei ist (RAD-33).")
     ort_name: str = Field("", max_length=120, title="Ort", json_schema_extra=WECKER,
                           description="Name des Orts der Sonnenzeiten (Nachtmodus der Weckeransicht).")
     ort_breite: float | None = Field(None, ge=-90, le=90, title="Breite", json_schema_extra=WECKER,
@@ -182,7 +186,7 @@ UEBERTRAEGE: tuple[tuple[str, frozenset[str]], ...] = (
     ("radiohub_config_uebertrag", CONFIG_FELDER),
     ("radiohub_config_uebertrag_rad11", CONFIG_FELDER_RAD11),
 )
-CONFIG_FELDER = CONFIG_FELDER | CONFIG_FELDER_RAD11 | {"hls_puffer_minuten"}
+CONFIG_FELDER = CONFIG_FELDER | CONFIG_FELDER_RAD11 | {"hls_puffer_minuten", "werbung_ueberspringen"}
 
 
 def regeln_pruefen(alt: AppEinstellungen, neu: AppEinstellungen) -> str | None:

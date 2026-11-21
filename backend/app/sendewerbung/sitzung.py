@@ -14,7 +14,7 @@ Ohne Ein- und Ausgabe; ffmpeg und der Stromleser rufen nur `angabe` und `stille`
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -43,8 +43,10 @@ class Werbestelle(BaseModel):
 
 
 class Sitzungswerbung:
-    def __init__(self, r: Optional[Regeln] = None):
+    def __init__(self, r: Optional[Regeln] = None, bei_ende: Optional[Callable[[Werbestelle], None]] = None):
+        """`bei_ende`: wird einmal je Stelle gerufen, sobald ihr Ende feststeht (etwa um den Spot zu zählen)."""
         self._regeln = r or regeln()
+        self._bei_ende = bei_ende
         self.stellen: list[Werbestelle] = []
         self._stillen: list[tuple[float, float]] = []
         self._stille_beginn: Optional[float] = None
@@ -63,6 +65,7 @@ class Sitzungswerbung:
             offen.bis, offen.bis_aus = sekunde, "angabe"
             self._offen = None
             self._an_stille(offen)
+            self._geendet(offen)
         if not w:
             return None
         neu = self._beginnen(w, 0.0 if erste else sekunde, "verbinden" if erste else "angabe")
@@ -77,7 +80,13 @@ class Sitzungswerbung:
             self._offen = s
         self.stellen.append(s)
         self._an_stille(s)
+        if s.bis is not None:
+            self._geendet(s)
         return s
+
+    def _geendet(self, s: Werbestelle) -> None:
+        if self._bei_ende:
+            self._bei_ende(s)
 
     def stille_zeile(self, zeile: str) -> None:
         """Eine Zeile von ffmpeg (silencedetect): silence_start und silence_end ergeben eine Stille."""

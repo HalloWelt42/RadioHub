@@ -506,7 +506,31 @@ ALTER TABLE podcast_subscriptions ADD COLUMN werbung_ueberspringen INTEGER NOT N
 ALTER TABLE podcast_subscriptions ADD COLUMN werbung_pruefen INTEGER NOT NULL DEFAULT 0;
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7]
+# Stufe 8 (RAD-33): Werbung aus den Sendedaten. Spots, die Sender in ihren Sendedaten ankündigen (je Sender, Format
+# und Kennung einmal, mit Zähler), und je Sender, ob angekündigte Werbung übersprungen wird (ohne Zeile: ja)
+STUFE_8 = """
+CREATE TABLE werbespots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_uuid TEXT NOT NULL,
+    format TEXT NOT NULL,
+    kennung TEXT NOT NULL,
+    werbender TEXT NOT NULL DEFAULT '',
+    titel TEXT NOT NULL DEFAULT '',
+    dauer_ms INTEGER,
+    beim_verbinden INTEGER NOT NULL DEFAULT 0,
+    anzahl INTEGER NOT NULL DEFAULT 1,
+    zuerst TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    zuletzt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(sender_uuid, format, kennung)
+);
+CREATE INDEX idx_werbespots_sender ON werbespots(sender_uuid, zuletzt);
+CREATE TABLE sender_werbung (
+    uuid TEXT PRIMARY KEY,
+    ueberspringen INTEGER NOT NULL DEFAULT 1
+);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [
