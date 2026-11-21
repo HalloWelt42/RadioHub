@@ -27,6 +27,7 @@ from pydantic import BaseModel
 from ..ablage import ablage
 from ..config import get_arbeit_dir
 from ..database import db_session
+from . import propagandafilter
 from .segment_splitter import _ffmpeg
 
 logger = logging.getLogger("radiohub.werbestellen")
@@ -155,12 +156,36 @@ async def kapitel_lesen(adresse: str, dauer: float, client: httpx.AsyncClient | 
     return kapitel_werbung(daten.get("chapters") or [], dauer)
 
 
+def gespeichert(folge: dict) -> bool:
+    return bool(folge.get("is_downloaded") and folge.get("local_path"))
+
+
 def quellen(folge: dict) -> list[Herkunft]:
-    """Welche Quellen für diese Folge gehen (nur die zeigt die Oberfläche)."""
+    """Welche Quellen für diese Folge gehen (nur die zeigt die Oberfläche). Der Vergleich braucht die gespeicherte
+    Datei: nur für sie gelten die Zeiten, die er findet."""
     was: list[Herkunft] = []
     if folge.get("chapters_url"):
         was.append("kapitel")
+    if gespeichert(folge) and folge.get("audio_url") and propagandafilter.FilterEinstellungen.jetzt().eingerichtet:
+        was.append("vergleich")
     return was
+
+
+NAMEN: dict[str, str] = {"kapitel": "Kapitel im Feed", "vergleich": "Vergleich zweier Fassungen"}
+
+
+async def vergleich_suchen(folge: dict, melden: propagandafilter.Melden) -> list[Neu]:
+    """Die gespeicherte Datei mit einer frisch geholten Fassung derselben Folge vergleichen lassen (Propaganda-Filter);
+    was nur in der gespeicherten vorkommt, ist beim Abruf eingesetzte Werbung."""
+    titel = str(folge.get("title") or "")
+    ergebnis = await propagandafilter.vergleichen(propagandafilter.FilterEinstellungen.jetzt(),
+                                                  ablage().lesen(folge["local_path"]), folge["audio_url"],
+                                                  f"Podcast: {titel}"[:300], melden)
+    if ergebnis.gleich or not ergebnis.verwertbar:
+        if ergebnis.hinweis:
+            logger.info("Vergleich Folge %s: %s", folge["id"], ergebnis.hinweis)
+        return []
+    return [Neu(von=s.von, bis=s.bis, text="Nur in dieser Fassung (Vergleich)") for s in ergebnis.nur_in_a]
 
 
 async def suchen(folge: dict, fortschritt: Fortschritt) -> dict[str, int]:
@@ -168,10 +193,17 @@ async def suchen(folge: dict, fortschritt: Fortschritt) -> dict[str, int]:
     was = quellen(folge)
     ergebnis: dict[str, int] = {}
     for i, q in enumerate(was):
-        fortschritt(i + 1, len(was), {"kapitel": "Kapitel im Feed"}.get(q, q))
+        name = NAMEN.get(q, q)
+        fortschritt(i + 1, len(was), name)
         if q == "kapitel":
             neue = await kapitel_lesen(folge["chapters_url"], float(folge.get("duration") or 0))
-            ergebnis[q] = ersetzen(folge["id"], "kapitel", neue)
+        elif q == "vergleich":
+            def melden(anteil: float, schritt: str, i: int = i) -> None:
+                fortschritt(i + 1, len(was), f"{name}: {schritt} ({anteil:.0%})")
+            neue = await vergleich_suchen(folge, melden)
+        else:
+            continue
+        ergebnis[q] = ersetzen(folge["id"], q, neue)
     return ergebnis
 
 

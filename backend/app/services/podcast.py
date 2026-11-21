@@ -316,19 +316,20 @@ class PodcastService:
             except Exception:
                 pass
 
-        # Neue Folgen von selbst auf Werbung durchsuchen (Schalter des Abos, RAD-32)
-        if sub.get("werbung_pruefen") and new_episodes > 0:
-            try:
-                await self._werbung_pruefen(podcast_id, new_episodes)
-            except Exception as e:
-                logger.warning(f"Werbung prüfen fehlgeschlagen: {e}")
-
         # Auto-Download für neue Episoden
         if sub.get("auto_download") and new_episodes > 0:
             try:
                 await self._auto_download_new(podcast_id)
             except Exception as e:
                 logger.warning(f"Auto-Download fehlgeschlagen: {e}")
+
+        # Neue Folgen von selbst auf Werbung durchsuchen (Schalter des Abos, RAD-32); nach dem Auto-Download, damit der
+        # Vergleich zweier Fassungen die gespeicherten Folgen schon vorfindet
+        if sub.get("werbung_pruefen") and new_episodes > 0:
+            try:
+                await self._werbung_pruefen(podcast_id, new_episodes)
+            except Exception as e:
+                logger.warning(f"Werbung prüfen fehlgeschlagen: {e}")
 
         return {"success": True, "new_episodes": new_episodes}
 

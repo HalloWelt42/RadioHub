@@ -79,6 +79,17 @@ Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespe
 die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
 Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
 
+Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
+des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
+zweier Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge
+reicht RadioHub die Datei an den Propaganda-Filter (eigener Dienst am Mac, Einstellungen > Dienste > Propaganda-Filter),
+der dieselbe Folge noch einmal holt, beide am Klang ausrichtet und auf 10 ms genau nennt, was nur in der gespeicherten
+vorkommt; die Zeiten gelten genau für diese Datei. "Werbung suchen" fragt alle Quellen, die für die Folge gehen, mit
+Fortschritt; "Neue Folgen prüfen" im Kopf des Abos tut das von selbst nach dem Aktualisieren (nach dem Speichern neuer
+Folgen, damit der Vergleich sie schon vorfindet). Beim Hören springt die Wiedergabe über die Stellen ("Überspringen" je
+Abo), "Keine Werbung" verwirft eine Stelle (mit Rückgängig, eine neue Suche bringt sie nicht wieder), "Ohne Werbung
+speichern" legt eine neue Datei ohne die Stellen neben das Original.
+
 Aufnahmen am Rechner (RAD-17, wie die Podcasts): links oben die Quelle, eigene Aufnahmen oder die ganze Kellerwolke.
 Bei den Aufnahmen die Ordner mit Zahl; das rote Licht und der Kreis zeigen, wohin neue Aufnahmen gehen (ein Klick auf
 den Kreis macht einen Ordner zum Ziel), umbenennen an Ort und Stelle, löschen nur leer. Oben Zählwerk, Suche nach

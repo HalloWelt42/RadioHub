@@ -78,6 +78,12 @@ class AppEinstellungen(Grundeinstellungen):
     zeitstimme_tempo: float = Field(1.0, ge=0.5, le=2.0, title="Sprechtempo der Zeitansage",
                                     json_schema_extra={**WECKER, "schritt": 0.05},
                                     description="1,0 ist das Tempo der Stimme; kleiner spricht langsamer.")
+    # --- Propaganda-Filter (HELF-256) ---
+    propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
+                                           description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "
+                                                       "zweier Fassungen einer gespeicherten Folge). Er nimmt den "
+                                                       "App-Schlüssel der Kellerwolke als Zugang. Leer: RadioHub "
+                                                       "bietet den Vergleich nicht an.")
     # --- Zugriff (früher ALLOWED_ORIGINS) ---
     erlaubte_urspruenge: list[str] = Field(default_factory=list, title="Erlaubte Ursprünge (CORS)",
                                            json_schema_extra=DIENSTE,
