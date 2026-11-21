@@ -3,13 +3,15 @@
   // (Rückfall Englisch, dann Deutsch), je Text gekürzt mit "Mehr zeigen".
   import { t, currentLanguage } from "../../lib/i18n.svelte.js";
   import { parseMarkdown } from "../../lib/markdown.js";
+  import { EINSTELLUNGEN } from "$ziel/einstellungen";
   import Karte from "./Karte.svelte";
 
-  const TEXTE = [
+  // welche Texte eine Fassung zeigt, sagt ihr Bauziel (die Basic ohne die technischen Informationen des Servers)
+  const TEXTE = ([
     { id: "info", dateien: ["info.md"], symbol: "fa-microchip" },
     { id: "lizenz", dateien: ["lizenz.md"], symbol: "fa-scale-balanced" },
     { id: "recht", dateien: ["datenschutz.md", "agb.md"], symbol: "fa-shield-halved" },
-  ] as const;
+  ] as const).filter((x) => (EINSTELLUNGEN.ueber as readonly string[]).includes(x.id));
 
   let inhalt = $state<Record<string, string>>({});
   let offen = $state<Record<string, boolean>>({});

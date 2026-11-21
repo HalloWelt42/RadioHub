@@ -179,7 +179,7 @@
 .rh-geltung { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: var(--marke);
   letter-spacing: .04em; text-transform: uppercase; font-weight: 600; color: var(--text-3); background-color: var(--mulde); box-shadow: var(--rh-mulde); white-space: nowrap; }
 .rh-geltung.alle i { color: var(--led-blau); }
-.rh-geltung.geraet i { color: var(--led-gruen); }
+.rh-geltung.geraet i { color: var(--gut); }
 .rh-e-text-wert { display: flex; gap: 8px; align-items: center; inline-size: min(100%, calc(var(--gross) * 40)); }
 .rh-e-eingabe { flex: 1; min-width: 0; }
 .rh-e-eingabe input { font-family: var(--schrift-zahl); }
@@ -192,8 +192,9 @@
 .rh-e-neu-zeile .rh-e-eingabe { flex: 1 1 260px; }
 .rh-uhr { display: inline-flex; align-items: center; gap: 4px; font-family: var(--schrift-zahl); }
 .rh-zeitraum { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-3); }
-.rh-schrift-wahl { display: inline-flex; align-items: center; gap: 8px; }
-.rh-schrift-wahl output { min-inline-size: 7em; text-align: center; font-weight: 600; }
+/* Stufe in einer Zeile der Einstellungen: dieselbe Wahl wie in der Tafel Darstellung (bausteine.css: quadratische Knöpfe
+   gleich hoch), nur so breit wie nötig statt über die ganze Breite (RAD-37: inline-flex nahm den Knöpfen die Breite) */
+.rh-e-wert .rh-schrift-wahl { display: inline-grid; grid-template-columns: var(--rh-taste) minmax(7em, auto) var(--rh-taste); }
 .rh-e-zeilenknoepfe { display: inline-flex; gap: 6px; }
 .rh-speichern { position: absolute; left: var(--rh-rand); right: var(--rh-rand); bottom: 14px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center;
   gap: 10px 14px; padding: 10px 14px; border-radius: var(--r3, 14px); background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }

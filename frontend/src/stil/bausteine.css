@@ -62,7 +62,11 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
   border-radius: var(--r3); background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-schwebend); }
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }
-.rh-wahl .segment button { flex: 1; min-block-size: var(--rh-taste-klein); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+/* Symbol und Text in Segmenten der eigenen Ansichten mit Abstand (RAD-37: in den Einstellungen klebten sie aneinander;
+   das Segment der Schale selbst hat keinen, Vorschlag am Appkern) */
+.rh-wahl .segment button, .rh-e-wert .segment button, .rh-e-neu-zeile .segment button { display: inline-flex; align-items: center;
+  justify-content: center; gap: 6px; }
+.rh-wahl .segment button { flex: 1; min-block-size: var(--rh-taste-klein); }
 .rh-schrift-wahl { display: grid; grid-template-columns: var(--rh-taste) minmax(0, 1fr) var(--rh-taste); gap: 8px; align-items: center; }
 .rh-schrift-wahl .knopf { block-size: var(--rh-taste); justify-content: center; padding: 0; }
 .rh-schrift-wahl output { text-align: center; font-family: var(--schrift-zahl); font-size: var(--gross); padding: 8px; border-radius: var(--r2); background-color: var(--mulde); box-shadow: var(--rh-mulde); }

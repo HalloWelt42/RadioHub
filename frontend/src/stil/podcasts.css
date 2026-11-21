@@ -40,7 +40,7 @@
 .rh-nadel.an { color: var(--akzent); }
 .rh-nadel.an i { rotate: -30deg; }
 .rh-angeheftet { color: var(--akzent); }
-.rh-auto { color: var(--led-gruen); font-size: .85em; margin-left: 4px; }
+.rh-auto { color: var(--gut); font-size: .85em; margin-left: 4px; }
 .rh-abos-hinweis { display: flex; gap: 8px; align-items: center; margin: 8px 8px 0; font-size: var(--klein); }
 
 /* Kopf eines gewählten Abos über der Liste */
@@ -76,14 +76,14 @@
 .rh-folgen-aktionen { grid-template-columns: repeat(auto-fill, 44px); justify-content: end; }
 .rh-folgen-aktionen a.rund { display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; color: inherit; }
 .rh-folge-frage { padding: 0 14px 12px; }
-.rh-folgen-aktionen .rund.an { color: var(--led-gruen); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gruen) 55%, transparent); }
+.rh-folgen-aktionen .rund.an { color: var(--gut); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--gut) 55%, transparent); }
 .rh-folge.gehoert .name b { color: var(--text-2); font-weight: 500; }
 .rh-stand { display: grid; grid-template-columns: auto; gap: 4px; color: var(--text-2); }
 .rh-stand.neu, .rh-stand.fertig { display: inline-flex; gap: 8px; align-items: center; }
 .rh-stand.neu { color: var(--text); font-weight: 600; }
 .rh-stand.fertig { color: var(--text-3); }
-.rh-stand.fertig i { color: var(--led-gruen); }
-.rh-gespeichert { color: var(--led-gruen); display: inline-flex; gap: 6px; align-items: center; }
+.rh-stand.fertig i { color: var(--gut); }
+.rh-gespeichert { color: var(--gut); display: inline-flex; gap: 6px; align-items: center; }
 .rh-folge-detail { grid-template-columns: minmax(0, 1fr); }
 .rh-folge-detail .rh-langtext p { color: var(--text-2); max-inline-size: 72ch; }
 .rh-detail-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -143,9 +143,9 @@
 .rh-abo-titel h2 { margin: 0; }
 .rh-vollstaendig { display: inline-flex; align-items: center; gap: 6px; font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-vollstaendig b { font-family: var(--schrift-zahl); color: var(--text); }
-.rh-vollstaendig i { color: var(--led-gruen); }
+.rh-vollstaendig i { color: var(--gut); }
 .rh-vollstaendig .balken { inline-size: calc(var(--klein) * 5); }   /* der Balken der Schale, wie beim Hörstand */
-.rh-vollstaendig.fertig b { color: var(--led-gruen); }
+.rh-vollstaendig.fertig b { color: var(--gut); }
 
 /* Werbung in Folgen (Entwurf podcast-werbung.html, RAD-32): bernstein heißt Werbung */
 .rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }

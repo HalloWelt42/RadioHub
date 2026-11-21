@@ -82,10 +82,10 @@
 .tp-stand { grid-template-columns: calc(var(--gross) * 5) auto; align-items: center; gap: 8px; }
 .tp-gespeichert { color: var(--led-blau); }
 .tp-ungehoert { display: inline-flex; gap: 6px; align-items: center; color: var(--text-2); }
-.tp-auto { color: var(--led-gruen); display: inline-flex; gap: 4px; align-items: center; }
+.tp-auto { color: var(--gut); display: inline-flex; gap: 4px; align-items: center; }
 .tp-ordner { display: flex; gap: 8px; align-items: center; margin: 12px 4px 6px; font-size: var(--klein); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
 .tp-ordner i { color: var(--akzent); }
-.tp-abonniert { display: inline-flex; gap: 6px; align-items: center; color: var(--led-gruen); font-size: var(--klein); align-self: center; white-space: nowrap; }
+.tp-abonniert { display: inline-flex; gap: 6px; align-items: center; color: var(--gut); font-size: var(--klein); align-self: center; white-space: nowrap; }
 .tp-abokopf { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; padding: 12px; margin: 6px 0 8px; border-radius: var(--rh-ecke-zeile);
   background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .tp-abokopf .rh-logo-bild.gross { --s: calc(var(--gross) * 5.4); font-size: calc(var(--gross) * 1.3); }

@@ -33,15 +33,24 @@ const ORDNER = (pfad: string) => fileURLToPath(new URL(pfad, import.meta.url));
 
 // Webversion: Basis des Repos auf GitHub Pages (https://hallowelt42.github.io/RadioHub/)
 const WEB_BASIS = "/RadioHub/";
-// aus public nur die Symbole; dazu die statische Senderliste aus web/daten (per Skript erzeugt, LIESMICH dort)
+// aus public die Symbole und die Ordner, die auch die Basic liest: legal (Texte unter Über) und images (Bildcodes unter
+// Bedanken; RAD-36: fehlten sie, zeigte Über "Text nicht gefunden"); dazu die statische Senderliste aus web/daten (per
+// Skript erzeugt, LIESMICH dort)
 const WEB_SYMBOLE = ["favicon.ico", "favicon-32.png", "favicon.svg", "icon-192.png", "icon-512.png", "icon-maskable-192.png",
   "icon-maskable-512.png", "apple-touch-icon.png"];
+const WEB_ORDNER = ["legal", "images"];
 const WEB_DATEN = ORDNER("../web/daten");
 // Adressen der Basic ohne Kennung (Bereiche und Reiter der Einstellungen), siehe webDateien
 const WEB_ADRESSEN = ["radio", "einstellungen", "einstellungen/radio", "einstellungen/radio/regeln", "einstellungen/radio/ausgeblendet",
-  "einstellungen/radio/laender", "einstellungen/radio/datei"];
+  "einstellungen/radio/laender", "einstellungen/radio/datei", "einstellungen/allgemein", "einstellungen/allgemein/bedienung",
+  "einstellungen/allgemein/tastatur", "einstellungen/allgemein/ueber", "einstellungen/allgemein/bedanken", "einstellungen/darstellung",
+  "einstellungen/wecker", "einstellungen/wecker/zeitansage", "einstellungen/wecker/ort"];
 // Name der Webversion: RadioHub Basic (die volle Version ist RadioHub PRO, Nutzer 20.11.2026)
 const WEB_NAME = "RadioHub Basic";
+
+/** Typen der Dateien, die der Entwicklungsdienst der Webversion selbst ausliefert */
+const ARTEN: Record<string, string> = { svg: "image/svg+xml", png: "image/png", ico: "image/x-icon", md: "text/markdown; charset=utf-8",
+  json: "application/json" };
 
 /** Manifest der Webversion: Pfade unter der Basis */
 function webManifest(): string {
@@ -66,14 +75,17 @@ function webDateien(): Plugin {
         const pfad = (req.url ?? "").split("?")[0].replace(WEB_BASIS, "/");
         const name = pfad.replace(/^\//, "");
         const datei = name === "site.webmanifest" ? null : name.startsWith("daten/") ? `${WEB_DATEN}/${name.slice(6)}`
-          : WEB_SYMBOLE.includes(name) ? ORDNER(`public/${name}`) : "";
+          : WEB_SYMBOLE.includes(name) || WEB_ORDNER.some((o) => name.startsWith(`${o}/`)) ? ORDNER(`public/${name}`) : "";
         if (datei === null) { res.setHeader("Content-Type", "application/manifest+json"); res.end(webManifest()); return; }
         if (!datei || !existsSync(datei)) return weiter();
+        const art = ARTEN[datei.slice(datei.lastIndexOf(".") + 1)];
+        if (art) res.setHeader("Content-Type", art);          // ohne Typ zeigt der Browser etwa SVG nicht als Bild
         res.end(readFileSync(datei));
       });
     },
     closeBundle() {
       for (const n of WEB_SYMBOLE) copyFileSync(ORDNER(`public/${n}`), `${aus}/${n}`);
+      for (const o of WEB_ORDNER) cpSync(ORDNER(`public/${o}`), `${aus}/${o}`, { recursive: true });
       writeFileSync(`${aus}/site.webmanifest`, webManifest());
       mkdirSync(`${aus}/daten`, { recursive: true });
       if (existsSync(WEB_DATEN)) cpSync(WEB_DATEN, `${aus}/daten`, { recursive: true });
