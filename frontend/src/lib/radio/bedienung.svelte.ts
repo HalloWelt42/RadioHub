@@ -31,6 +31,8 @@ export class Radiobedienung {
   /** Felder der Wiedergabe je Sender, sobald geholt (für Vor und Zurück über die Liste) */
   private wiedergabe = $state<Record<string, Wiedergabesender>>({});
   private messung: AbortController | null = null;
+  /** zuletzt eine Variante aus der aufgeklappten Zeile eines anderen Senders gespielt (RAD-41): welche, aus welcher Zeile */
+  private ausZeile: { uuid: string; zeile: string } | null = null;
 
   constructor(private readonly quelle: Senderquelle) {
     this.liste = new Senderliste(quelle);
@@ -61,9 +63,10 @@ export class Radiobedienung {
 
   /** Nachbarn des spielenden Senders vorbereiten, damit Vor und Zurück mit allen Feldern spielen */
   nachbarnVorbereiten(uuid: string | null): void {
-    if (!uuid) return;
+    const zeile = this.zeileFuer(uuid);
+    if (!zeile) return;
     const liste = this.liste.eintraege;
-    const i = liste.findIndex((e) => e.uuid === uuid);
+    const i = liste.findIndex((e) => e.uuid === zeile);
     if (i < 0 || !liste.length) return;
     for (const j of [i - 1, i + 1]) {
       const e = liste[(j + liste.length) % liste.length];
@@ -71,7 +74,15 @@ export class Radiobedienung {
     }
   }
 
-  async spielen(e: SenderEintrag): Promise<void> {
+  /** Die Zeile der Liste, die für den laufenden Sender steht: bei einer Variante die Zeile, aus der sie gespielt wurde
+   *  (sie kann selbst weit weg in der Liste stehen oder gar nicht), sonst der Sender selbst */
+  zeileFuer(uuid: string | null): string | null {
+    return uuid && this.ausZeile?.uuid === uuid ? this.ausZeile.zeile : uuid;
+  }
+
+  /** `zeile`: gespielt aus den Varianten dieser Zeile */
+  async spielen(e: SenderEintrag, zeile?: SenderEintrag): Promise<void> {
+    this.ausZeile = zeile && zeile.uuid !== e.uuid ? { uuid: e.uuid, zeile: zeile.uuid } : null;
     const w = await this.holen(e);
     await actions.playStation(w);
     if (!this.quelle.faehig.messen || (appState.currentStation as { uuid?: string } | null)?.uuid !== e.uuid) return;

@@ -144,7 +144,7 @@
           </span>
         </div>
         {#if offeneVarianten === e.uuid}
-          <div class="tf-varianten"><Varianten eintrag={e} spielt={spielend} onspielen={(v) => void bedienung.spielen(v)} /></div>
+          <div class="tf-varianten"><Varianten eintrag={e} spielt={spielend} onspielen={(v) => void bedienung.spielen(v, e)} /></div>
         {/if}
       {/each}
       <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()} einheit={t("radio.geladen")} />

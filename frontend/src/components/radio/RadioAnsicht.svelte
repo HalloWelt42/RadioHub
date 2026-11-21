@@ -153,8 +153,11 @@
       if (!uuid || uuid === gefolgt) return;
       gefolgt = uuid;
       vonHier = null;
-      if (filterzustand.offen === uuid && gerollt === uuid) void rollenZu(uuid);
-      else filterzustand.oeffnen(uuid);
+      // eine Variante steht für die Zeile, aus der sie gespielt wurde (RAD-41: sonst sprang die Liste zu einem anderen Sender)
+      const ziel = bedienung.zeileFuer(uuid);
+      if (!ziel) return;
+      if (filterzustand.offen === ziel && gerollt === ziel) void rollenZu(ziel);
+      else filterzustand.oeffnen(ziel);
     });
   });
 
@@ -169,9 +172,9 @@
     filterzustand.oeffnen(naechster?.uuid ?? null);
   }
 
-  function spielen(e: SenderEintrag) {
+  function spielen(e: SenderEintrag, zeile?: SenderEintrag) {
     sfx.click();
-    void bedienung.spielen(e);
+    void bedienung.spielen(e, zeile);
   }
 
   function details(e: SenderEintrag) {

@@ -25,7 +25,8 @@
     /** Kennung des gerade spielenden Senders (für die Varianten) */
     spielend: string | null;
     kategorien: Kategorie[];
-    onspielen: (e: SenderEintrag) => void;
+    /** `zeile`: gespielt aus den Varianten dieser Zeile */
+    onspielen: (e: SenderEintrag, zeile?: SenderEintrag) => void;
     ondetails: () => void;
     onvarianten: () => void;
     onfavorit: () => void;
@@ -91,6 +92,6 @@
               onclick={(ev) => halt(ev, ondetails)}><i class="fa-solid fa-chevron-down"></i></button>
     </div>
   </div>
-  {#if mehrere && variantenOffen}<Varianten eintrag={e} spielt={spielend} {onspielen} />{/if}
+  {#if mehrere && variantenOffen}<Varianten eintrag={e} spielt={spielend} onspielen={(v) => onspielen(v, e)} />{/if}
   {#if offen}<SenderDetail eintrag={e} {kategorien} {spielt} {onaendern} onneustart={onspielen} />{/if}
 </article>
