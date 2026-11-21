@@ -99,12 +99,16 @@ class Sitzungswerbung:
             self._wartet.remove(s)
             self._bei_ende(s)
 
-    def stille_zeile(self, zeile: str) -> None:
-        """Eine Zeile von ffmpeg (silencedetect): silence_start und silence_end ergeben eine Stille."""
+    def stille_zeile(self, zeile: str, versatz: float = 0.0, anlauf_s: float = 0.0) -> None:
+        """Eine Zeile von ffmpeg (silencedetect): silence_start und silence_end ergeben eine Stille. `versatz`: wo im Ton
+        der ffmpeg begann, der die Zeile schreibt (eine Aufnahme startet je Stück einen neuen). `anlauf_s`: Stille, die
+        so früh nach dem Start dieses ffmpeg beginnt, zählt nicht: mitten im Strom angesetzt, liefert der Decoder erst
+        leere Rahmen (MP3 ohne Bit-Reservoir), die keine Stille im Ton sind."""
         if (t := STILLE_BEGINN.search(zeile)):
-            self._stille_beginn = float(t.group(1))
+            beginn = float(t.group(1))
+            self._stille_beginn = None if beginn < anlauf_s else versatz + beginn
         elif (t := STILLE_ENDE.search(zeile)) and self._stille_beginn is not None:
-            self.stille(self._stille_beginn, float(t.group(1)))
+            self.stille(self._stille_beginn, versatz + float(t.group(1)))
             self._stille_beginn = None
 
     def stille(self, von: float, bis: float) -> None:

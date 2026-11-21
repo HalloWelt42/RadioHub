@@ -12,6 +12,8 @@ Ablauf:
    einen Spot
 4. Stop: Letztes Segment finalisieren, kein Concat noetig
 5. Fallback ohne ICY: Ein Segment pro Session; ist der Sender eine Wiedergabeliste, liest FFmpeg selbst
+6. Werbung aus den Sendedaten (RAD-33): dieselben Angaben ergeben Werbestellen, die Grenze sitzt an der Stille, die
+   FFmpeg mitmeldet (silencedetect). Beim Abschluss kommen die Stellen zur Aufnahme (Sekunden des ganzen Tons).
 
 Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
 Stall nach 60s ohne Wachstum -> FFmpeg Kill.
@@ -31,11 +33,17 @@ from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
 from .aufnahmen import aufnahmen
 from .config_service import config_service
+from . import werbestellen
+from ..sendewerbung.angaben import regeln as werberegeln
+from ..sendewerbung.sitzung import Sitzungswerbung
 from .stromleser import StromFehler, Stromleser, Wiedergabeliste
 from .titelbuch import Titelbuch
 from .audio_utils import probe_duration
 
 logger = logging.getLogger("radiohub.recorder")
+
+# Stille so kurz nach dem Start eines neuen FFmpeg (beim Teilen) kommt vom Anlauf des Decoders, nicht aus dem Ton
+ANLAUF_S = 0.25
 
 # Minimaler freier Speicherplatz (100 MB)
 MIN_FREE_DISK_MB = 100
@@ -112,6 +120,8 @@ class RecordingSession:
         self.session_dir: Optional[Path] = None
         self.meta_file_path: Optional[Path] = None
         self.titelbuch: Optional[Titelbuch] = None
+        self.werbung: Optional[Sitzungswerbung] = None
+        self.ton_versatz_s: float = 0.0      # wo im Ton der laufende FFmpeg begann (für die Zeiten seiner Stille)
         self.stromleser: Optional[Stromleser] = None   # None: FFmpeg liest selbst (Wiedergabeliste)
         self.strom_task: Optional[asyncio.Task] = None
         self.eingang_format: Optional[str] = None
@@ -242,22 +252,31 @@ class RecorderManager:
 
     def _build_ffmpeg_cmd(self, session: RecordingSession,
                           output_file: Path) -> list[str]:
-        """Baut FFmpeg-Kommando fuer Einzeldatei-Aufnahme (mit stdin=PIPE)."""
+        """Baut FFmpeg-Kommando fuer Einzeldatei-Aufnahme (mit stdin=PIPE). Mit dem Stromleser meldet FFmpeg auch die
+        Stille (silencedetect, Stufe info, ohne Fortschritt auf stderr); beim Kopieren über eine zweite Ausgabe ins
+        Leere, damit der Ton unverändert bleibt."""
+        stille = None
+        kopf = ["ffmpeg", "-y"]
+        if session.stromleser:
+            g = werberegeln().grenze
+            stille = f"silencedetect=noise={g.stille_db}dB:duration={g.stille_mindestens_s}"
+            kopf = ["ffmpeg", "-hide_banner", "-loglevel", "info", "-nostats", "-y"]
         if session.codec:
             return [
-                "ffmpeg", "-y",
+                *kopf,
                 *self._eingang(session),
-                "-c:a", "copy",
-                str(output_file)
+                "-map", "0:a", "-c:a", "copy",
+                str(output_file),
+                *(["-map", "0:a", "-af", stille, "-f", "null", "-"] if stille else []),
             ]
         else:
             configured_bitrate = config_service.get("recording_bitrate", 192)
             br = (f"{session.bitrate}k" if session.bitrate > 0
                   else f"{configured_bitrate}k")
             return [
-                "ffmpeg", "-y",
+                *kopf,
                 *self._eingang(session),
-                "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+                "-af", (f"{stille}," if stille else "") + "loudnorm=I=-16:TP=-1.5:LRA=11",
                 "-c:a", "libmp3lame", "-b:a", br,
                 "-ac", "2",       # Stereo
                 "-ar", "44100",   # Samplerate
@@ -340,8 +359,9 @@ class RecorderManager:
         meta_path = session_dir / orte.TITELLISTE
         session.meta_file_path = meta_path
         session.titelbuch = Titelbuch(sperrliste=self._sperrliste(), bei_wechsel=self._on_title_change, datei=meta_path)
-        session.stromleser = Stromleser(stream_url, lambda daten: self._ton(session, daten), session.titelbuch.angabe,
-                                        bitrate=bitrate)
+        session.werbung = Sitzungswerbung()
+        session.stromleser = Stromleser(stream_url, lambda daten: self._ton(session, daten),
+                                        lambda angabe: self._angabe(session, angabe), bitrate=bitrate)
         try:
             kopf = await session.stromleser.verbinden()
             session.titelbuch.metaint = kopf.metaint
@@ -430,6 +450,29 @@ class RecorderManager:
         except Exception:
             return []
 
+    async def _angabe(self, session: RecordingSession, a) -> None:
+        """Eine Angabe der Sendedaten: Werbung in die Werbestellen der Aufnahme, Titel ins Titelbuch (teilt die Aufnahme)."""
+        if session.werbung and (neu := session.werbung.angabe(a.roh, a.sekunde)):
+            session.logger.log(f"WERBUNG ab {neu.von:.2f} s: {neu.werbender or neu.kennung} ({neu.format})")
+        if session.titelbuch:
+            await session.titelbuch.angabe(a)
+
+    def _werbung_ablegen(self, session: RecordingSession) -> None:
+        """Die Werbestellen der Aufnahme speichern (Sekunden des ganzen aufgenommenen Tons); eine noch offene endet mit
+        der Aufnahme."""
+        if not session.werbung or not session.werbung.stellen:
+            return
+        ende = session.kumuliert_ms / 1000 or (session.stromleser.sekunde(session.stromleser.ton_bytes)
+                                               if session.stromleser else session.duration)
+        neue = [werbestellen.Neu(von=s.von, bis=min(ende, s.bis if s.bis is not None else ende),
+                                 text=(s.werbender or s.titel or s.kennung) + (" (beim Verbinden)" if s.beim_verbinden else ""))
+                for s in session.werbung.stellen if s.von < ende]
+        try:
+            zahl = werbestellen.ersetzen(werbestellen.Bezug.aufnahme(session.id), "sendedaten", neue)
+            session.logger.log(f"WERBUNG {zahl} Stellen zur Aufnahme")
+        except Exception as f:          # die Aufnahme hängt nicht an den Stellen
+            logger.warning(f"REC Werbestellen nicht gespeichert: {f}")
+
     async def _ton(self, session: RecordingSession, daten: bytes) -> None:
         """Ziel des Stromlesers: der Ton in den laufenden FFmpeg; beim Teilen wartet er auf den neuen."""
         async with session._split_lock:
@@ -483,6 +526,11 @@ class RecorderManager:
 
                 text = line.decode("utf-8", errors="replace").strip()
                 if not text:
+                    continue
+                if session.werbung and "silence_" in text:
+                    # ab dem zweiten Stück setzt FFmpeg mitten im Strom an: sein Anlauf ist keine Stille
+                    session.werbung.stille_zeile(text, versatz=session.ton_versatz_s,
+                                                 anlauf_s=ANLAUF_S if session.ton_versatz_s > 0 else 0.0)
                     continue
 
                 # Pruefen ob stderr-Zeile auf Codec-Fehler hinweist
@@ -542,6 +590,8 @@ class RecorderManager:
 
                     session.current_segment_file = new_file
                     session.current_segment_start = datetime.now()
+                    if session.stromleser:
+                        session.ton_versatz_s = session.stromleser.sekunde(session.stromleser.ton_bytes)
                     session.live_split = True
 
                     # Alten Prozess stoppen
@@ -603,6 +653,7 @@ class RecorderManager:
             session.current_segment_file = new_file
             session.current_segment_title = title
             session.current_segment_start = datetime.now()
+            session.ton_versatz_s = elapsed_ms / 1000
             session.live_split = True
 
             # Alten FFmpeg sauber stoppen
@@ -848,6 +899,8 @@ class RecorderManager:
                     json.dump(meta, f, ensure_ascii=False, indent=2)
             except Exception:
                 pass
+
+        self._werbung_ablegen(session)
 
         try:
             await aufnahmen.rest_ablegen(session.id, session.session_dir, session.kumuliert_ms)

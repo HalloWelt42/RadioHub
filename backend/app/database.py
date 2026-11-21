@@ -530,7 +530,30 @@ CREATE TABLE sender_werbung (
 );
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8]
+# Stufe 9 (RAD-33, Schritt 7): Werbestellen gehören zu einer Quelle, einer Folge oder einer Aufnahme (genau einer).
+# SQLite ändert keine Spalte: die Tabelle wird mit denselben Zeilen und Kennungen neu angelegt
+STUFE_9 = """
+CREATE TABLE werbestellen_neu (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    folge_id INTEGER REFERENCES podcast_episodes(id) ON DELETE CASCADE,
+    aufnahme_id TEXT REFERENCES sessions(id) ON DELETE CASCADE,
+    von REAL NOT NULL,
+    bis REAL NOT NULL,
+    herkunft TEXT NOT NULL,
+    text TEXT NOT NULL DEFAULT '',
+    verworfen INTEGER NOT NULL DEFAULT 0,
+    angelegt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK ((folge_id IS NULL) <> (aufnahme_id IS NULL))
+);
+INSERT INTO werbestellen_neu (id, folge_id, von, bis, herkunft, text, verworfen, angelegt)
+    SELECT id, folge_id, von, bis, herkunft, text, verworfen, angelegt FROM werbestellen;
+DROP TABLE werbestellen;
+ALTER TABLE werbestellen_neu RENAME TO werbestellen;
+CREATE INDEX idx_werbestellen_folge ON werbestellen(folge_id, von);
+CREATE INDEX idx_werbestellen_aufnahme ON werbestellen(aufnahme_id, von);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

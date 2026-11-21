@@ -8,6 +8,10 @@ Herkunft einer Stelle:
     hand         von Hand gesetzt (Folgendetail oder Schnitt)
     vergleich    Vergleich zweier Fassungen derselben Folge (eingefügte Werbung unterscheidet sich)
     transkript   aus dem Transkript (sobald es Transkripte gibt, RAD-22)
+    sendedaten   bei Aufnahmen: Werbung, die der Sender in seinen Sendedaten ankündigt (RAD-33)
+
+Stellen gehören zu genau einer Quelle (`Bezug`): einer Folge (Sekunden der gespeicherten Datei) oder einer Aufnahme
+(Sekunden des aufgenommenen Tons über alle Stücke). Die Funktionen nehmen einen Bezug; eine Zahl allein ist eine Folge.
 
 "Keine Werbung" verwirft eine Stelle nur (verworfen = 1): eine neue Suche legt eine Stelle, die eine verworfene
 überdeckt, nicht wieder an. Eine neue Suche ersetzt die Stellen ihrer Quelle, die von Hand bleiben.
@@ -18,6 +22,7 @@ import logging
 import re
 import shutil
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Literal
 
@@ -32,7 +37,7 @@ from .segment_splitter import _ffmpeg
 
 logger = logging.getLogger("radiohub.werbestellen")
 
-Herkunft = Literal["kapitel", "hand", "vergleich", "transkript"]
+Herkunft = Literal["kapitel", "hand", "vergleich", "transkript", "sendedaten"]
 Fortschritt = Callable[[int, int, str], None]
 
 # Titel von Kapiteln, die Werbung meinen (deutsch und englisch, wie sie in Feeds vorkommen)
@@ -42,9 +47,29 @@ WERBETITEL = re.compile(r"\b(werbung|werbepause|anzeige|sponsor\w*|unterst[üu]t
 KUERZESTE_S = 2.0
 
 
+@dataclass(frozen=True)
+class Bezug:
+    """Zu welcher Quelle Stellen gehören: einer Folge oder einer Aufnahme."""
+    spalte: Literal["folge_id", "aufnahme_id"]
+    wert: int | str
+
+    @staticmethod
+    def folge(folge_id: int) -> Bezug:
+        return Bezug("folge_id", folge_id)
+
+    @staticmethod
+    def aufnahme(aufnahme_id: str) -> Bezug:
+        return Bezug("aufnahme_id", aufnahme_id)
+
+
+def _bezug(quelle: Bezug | int) -> Bezug:
+    return quelle if isinstance(quelle, Bezug) else Bezug.folge(quelle)
+
+
 class Werbestelle(BaseModel):
     id: int
-    folge_id: int
+    folge_id: int | None = None
+    aufnahme_id: str | None = None
     von: float
     bis: float
     herkunft: Herkunft
@@ -59,14 +84,15 @@ class Neu(BaseModel):
 
 
 def _zeile(r) -> Werbestelle:
-    return Werbestelle(id=r["id"], folge_id=r["folge_id"], von=r["von"], bis=r["bis"], herkunft=r["herkunft"],
+    return Werbestelle(id=r["id"], folge_id=r["folge_id"], aufnahme_id=r["aufnahme_id"], von=r["von"], bis=r["bis"], herkunft=r["herkunft"],
                        text=r["text"], verworfen=bool(r["verworfen"]))
 
 
-def stellen(folge_id: int, mit_verworfenen: bool = False) -> list[Werbestelle]:
+def stellen(quelle: Bezug | int, mit_verworfenen: bool = False) -> list[Werbestelle]:
+    b = _bezug(quelle)
     with db_session() as conn:
-        rows = conn.execute("SELECT * FROM werbestellen WHERE folge_id = ?" + ("" if mit_verworfenen else " AND verworfen = 0")
-                            + " ORDER BY von", (folge_id,)).fetchall()
+        rows = conn.execute(f"SELECT * FROM werbestellen WHERE {b.spalte} = ?" + ("" if mit_verworfenen else " AND verworfen = 0")
+                            + " ORDER BY von", (b.wert,)).fetchall()
     return [_zeile(r) for r in rows]
 
 
@@ -98,18 +124,19 @@ def _ueberdeckt(a: tuple[float, float], b: tuple[float, float]) -> bool:
     return ueber > 0.5 * min(a[1] - a[0], b[1] - b[0])
 
 
-def ersetzen(folge_id: int, herkunft: Herkunft, neue: list[Neu]) -> int:
-    """Die Stellen einer Quelle neu setzen; verworfene bleiben verworfen (auch für überdeckende neue). Liefert die Zahl."""
+def ersetzen(quelle: Bezug | int, herkunft: Herkunft, neue: list[Neu]) -> int:
+    """Die Stellen einer Herkunft neu setzen; verworfene bleiben verworfen (auch für überdeckende neue). Liefert die Zahl."""
+    b = _bezug(quelle)
     with db_session() as conn:
         verworfen = [(r["von"], r["bis"]) for r in conn.execute(
-            "SELECT von, bis FROM werbestellen WHERE folge_id = ? AND verworfen = 1", (folge_id,)).fetchall()]
-        conn.execute("DELETE FROM werbestellen WHERE folge_id = ? AND herkunft = ? AND verworfen = 0", (folge_id, herkunft))
+            f"SELECT von, bis FROM werbestellen WHERE {b.spalte} = ? AND verworfen = 1", (b.wert,)).fetchall()]
+        conn.execute(f"DELETE FROM werbestellen WHERE {b.spalte} = ? AND herkunft = ? AND verworfen = 0", (b.wert, herkunft))
         zahl = 0
         for n in neue:
             if n.bis - n.von < KUERZESTE_S or any(_ueberdeckt((n.von, n.bis), v) for v in verworfen):
                 continue
-            conn.execute("INSERT INTO werbestellen (folge_id, von, bis, herkunft, text) VALUES (?, ?, ?, ?, ?)",
-                         (folge_id, max(0.0, n.von), n.bis, herkunft, n.text[:300]))
+            conn.execute(f"INSERT INTO werbestellen ({b.spalte}, von, bis, herkunft, text) VALUES (?, ?, ?, ?, ?)",
+                         (b.wert, max(0.0, n.von), n.bis, herkunft, n.text[:300]))
             zahl += 1
     return zahl
 

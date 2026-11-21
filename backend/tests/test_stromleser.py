@@ -187,3 +187,25 @@ async def test_aufnahme_teilt_ohne_neue_verbindung(client, mp3, monkeypatch):
         await rec.stop()
         assert sender.mit_sendedaten == 1                   # früher: eine neue Verbindung je Titelwechsel
     assert [e["title"] for e in status["icy_entries"]] == ["A - Eins", "B - Zwei"]
+
+
+async def test_aufnahme_speichert_werbestellen_aus_den_sendedaten(client, mp3, monkeypatch):
+    """RAD-33, Schritt 7: ein Spot beim Verbinden kommt als Werbestelle zur Aufnahme (Sekunden des ganzen Tons)."""
+    monkeypatch.setattr(recorder_modul, "MIN_SEGMENT_SECONDS", 0)
+    rec = recorder_modul.rec_manager
+    spot = WERBUNG.replace("15046", "3000")
+    async with Sender(mp3 * 3, {0: spot, 8: "StreamTitle='B - Zwei';"}, takt_s=0.1) as sender:
+        ergebnis = await rec.start("s1", "Probesender", sender.adresse(), 64)
+        assert ergebnis["success"], ergebnis
+        for _ in range(100):
+            if rec.active_session and rec.active_session.segment_index >= 1:
+                break
+            await asyncio.sleep(0.1)
+        await asyncio.sleep(0.5)
+        await rec.stop()
+    stellen = client.get(f"/api/recording/sessions/{ergebnis['session_id']}/werbung").json()
+    assert len(stellen) == 1, stellen
+    s = stellen[0]
+    assert s["aufnahme_id"] == ergebnis["session_id"] and s["folge_id"] is None and s["herkunft"] == "sendedaten"
+    assert s["von"] == 0 and 2.9 <= s["bis"] <= 3.1 and s["text"] == "198927 (beim Verbinden)"
+    assert client.get("/api/recording/sessions/gibt-es-nicht/werbung").status_code == 404

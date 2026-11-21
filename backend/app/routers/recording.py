@@ -22,6 +22,7 @@ from ..config import AUDIO_MIMETYPES, get_arbeit_dir
 from ..services.aufnahmen import aufnahmen
 from ..services.recorder import rec_manager
 from ..services.hls_recorder import hls_recorder
+from ..services import werbestellen
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
@@ -88,6 +89,14 @@ async def get_session(session_id: str):
     if not session:
         raise HTTPException(404, "Session nicht gefunden")
     return session
+
+
+@router.get("/sessions/{session_id}/werbung")
+async def werbung(session_id: str) -> list[werbestellen.Werbestelle]:
+    """Werbestellen der Aufnahme (RAD-33): aus den Sendedaten beim Aufnehmen, Sekunden des ganzen Tons"""
+    if not rec_manager.get_session(session_id):
+        raise HTTPException(404, "Session nicht gefunden")
+    return werbestellen.stellen(werbestellen.Bezug.aufnahme(session_id))
 
 
 @router.delete("/sessions/{session_id}")

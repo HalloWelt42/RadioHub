@@ -50,6 +50,20 @@ def test_spot_beim_verbinden_mit_laenge_und_stille():
     assert (s.bis, s.bis_aus) == (15.071, "stille")           # die Stille gehört noch zur Werbung
 
 
+def test_stille_eines_spaeteren_stuecks_mit_versatz_ohne_anlauf():
+    """Aufnahme (RAD-33, Schritt 7): jedes Stück hat seinen eigenen ffmpeg; seine Zeiten zählen ab seinem Start im Ton,
+    und die leeren Rahmen seines Anlaufs sind keine Stille."""
+    w = Sitzungswerbung()
+    w.angabe(FFH, 1.0)
+    (s,) = w.stellen                                          # Spot 0 bis 15,046
+    w.stille_zeile("[silencedetect @ 0x1] silence_start: 0", versatz=14.0, anlauf_s=0.25)
+    w.stille_zeile("[silencedetect @ 0x1] silence_end: 0.07 | silence_duration: 0.07", versatz=14.0, anlauf_s=0.25)
+    assert (s.bis, s.bis_aus) == (15.046, "dauer")            # der Anlauf bei 14,0 zählt nicht
+    w.stille_zeile("[silencedetect @ 0x1] silence_start: 1.01", versatz=14.0, anlauf_s=0.25)
+    w.stille_zeile("[silencedetect @ 0x1] silence_end: 1.09 | silence_duration: 0.08", versatz=14.0, anlauf_s=0.25)
+    assert (s.bis, s.bis_aus) == (15.09, "stille")
+
+
 def test_spots_im_programm_enden_mit_dem_wechsel():
     w = Sitzungswerbung()
     w.angabe(OLDIE, 1.0)
