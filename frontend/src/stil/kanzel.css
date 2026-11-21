@@ -48,6 +48,8 @@
 .rh-display-zeile ak-segmente { --farbe: color-mix(in srgb, var(--rh-anzeige) 82%, transparent); }
 .rh-display-titel ak-segmente { --farbe: var(--rh-anzeige); }
 .rh-display[data-ton="fehler"] { --farbe: var(--led-rot); }
+/* Werbung läuft und ist nicht zu hören (RAD-33): bernstein wie überall Werbung */
+.rh-display[data-ton="werbung"] { --farbe: var(--led-bernstein); }
 /* Punktmatrix als Weg zur Quelle: sieht aus wie die Anzeige, ist aber eine Taste */
 .rh-display-quelle { display: block; inline-size: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--r1); background: none; color: inherit; font: inherit;
   text-align: start; cursor: pointer; }

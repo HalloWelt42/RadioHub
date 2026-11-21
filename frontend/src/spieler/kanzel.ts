@@ -25,6 +25,8 @@ export interface HlsStand {
   segment_duration?: number;
   buffered_seconds?: number;
   max_segments?: number;
+  /** RAD-33: Werbestellen im Puffer, Sekunden des Tons wie die Segmente (bis null: läuft noch) */
+  werbestellen?: { von: number; bis: number | null }[];
 }
 
 /** Ausschnitt aus appState und dem Tonausgang, den die Kanzel liest */
@@ -60,6 +62,8 @@ export interface Stand {
   hoerdauer: number;
   /** was der Weg der Wiedergabe kann (wiedergabeweg.js); ohne Angabe alles wie in der vollen App */
   weg?: { zeitversatz: boolean; aufnahme: boolean };
+  /** RAD-33: Werbung läuft und ist nicht zu hören (Spot beim Verbinden abgewartet, live stumm); rest in Sekunden */
+  werbung?: { art: "verbinden" | "stumm"; rest: number | null } | null;
 }
 
 /** Woher der Ton kommt, unabhängig davon, ob er gerade läuft */
@@ -115,8 +119,8 @@ export interface Anzeige {
   titel: string | null;
   quelle: { text: string; farbe: Leuchtfarbe };
   zeit: string;
-  /** Anzeige rot getönt */
-  ton: "fehler" | "";
+  /** Anzeige getönt: rot bei Fehler, bernstein, solange Werbung nicht zu hören ist */
+  ton: "fehler" | "werbung" | "";
   /** Zeile unter Quelle und Zeit: Zeitversatz (Sender im HLS), Position (Folge, Aufnahme) oder keine */
   zeile: "zeitversatz" | "position" | null;
 }
@@ -184,10 +188,28 @@ function zeitText(z: Zustand, s: Stand): string {
   return formatTime(hatPosition(s) ? s.zeit : s.hoerdauer);
 }
 
+/** Restzeit der Werbung für Anzeige und Zeit, ohne Ende "--" */
+const restText = (rest: number | null): string => (rest === null ? "--" : formatTimeShort(rest));
+
 export function kanzelAnzeige(s: Stand, t: Uebersetzer): Anzeige {
   const zustand = zustandVon(s);
   const aktiv = zustand !== "leer" || s.isRecording;
   const { sender, titel } = aktiv ? senderUndTitel(s) : { sender: "", titel: null };
+  // Werbung, die nicht zu hören ist (RAD-33): Anzeige und Quelle bernstein, statt des Titels die Restzeit
+  const w = s.werbung && artVon(s) === "sender" && zustand !== "fehler" && zustand !== "pause" && zustand !== "aufnahme" ? s.werbung : null;
+  if (w) {
+    return {
+      zustand,
+      art: t(`kanzel.art_werbung_${w.art}`),
+      format: formatText(zustand, s, t),
+      sender,
+      titel: t(`kanzel.titel_werbung_${w.art}`, { zeit: restText(w.rest) }),
+      quelle: { text: t("kanzel.quelle_werbung"), farbe: "bernstein" },
+      zeit: w.art === "verbinden" ? (w.rest === null ? "--:--:--" : `-${formatTime(w.rest)}`) : zeitText(zustand, s),
+      ton: "werbung",
+      zeile: hatZeitversatz(s) ? "zeitversatz" : null,
+    };
+  }
   return {
     zustand,
     art: artText(zustand, s, t),
@@ -380,6 +402,19 @@ export function zeitversatzStand(s: Stand, t: Uebersetzer): Spulstand & { live: 
     gesperrt: s.isRecording || bereich <= 0,
     live: s.isLive,
   };
+}
+
+/** Werbestellen im Zeitversatz als Marken auf dem Balken (RAD-33): gleicher Maßstab wie die Füllung (Anteil des
+ *  größten Puffers), links beginnt der älteste Ton im Puffer; eine laufende Stelle reicht bis zur Live-Kante */
+export function pufferMarken(s: Stand): { von: number; breite: number }[] {
+  const hls = s.hlsStatus;
+  const max = (hls?.max_segments || 0) * (hls?.segment_duration || 1);
+  if (!hls?.werbestellen?.length || !max || hls.first_segment == null || hls.last_segment == null) return [];
+  const dauer = hls.segment_duration || 1, anfang = hls.first_segment * dauer, ende = (hls.last_segment + 1) * dauer;
+  return hls.werbestellen.map((w) => {
+    const von = Math.max(w.von, anfang), bis = Math.min(w.bis ?? ende, ende);
+    return { von: ((von - anfang) / max) * 100, breite: Math.max(0.4, ((bis - von) / max) * 100) };
+  }).filter((m) => m.breite > 0 && m.von < 100);
 }
 
 /** Position einer Folge oder Aufnahme */

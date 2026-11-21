@@ -51,6 +51,17 @@ gedämpft mit dem Hinweis "ausgeblendet, Favorit" stehen; das Auge blendet ihn w
 Basic merkt sich die Sprache (Deutsch oder Englisch) je Gerät unter Einstellungen > Allgemein; ohne Wahl gilt die des
 Browsers.
 
+Werbung im Radio (RAD-33): viele Sender kündigen Werbung in ihren Sendedaten an, oft mit der Länge auf die Millisekunde;
+das Ende sitzt an der Stille danach. Ist "Angekündigte Werbung überspringen" an (Einstellungen > Radio >
+Werbeerkennung, für alle Sender, je Sender abschaltbar im Steckbrief), spielt RadioHub einen Sender von Anfang an aus
+dem Zeitversatz (eine Verbindung zum Sender, sonst gehörte die erkannte Werbung zu einem anderen Ton): einen Spot beim
+Verbinden spielt es nicht, die Wiedergabe beginnt danach (Hinweis mit Restzeit und "Trotzdem hören"); im Zeitversatz
+springt es über Werbung ("Zurück und anhören"), live schaltet es stumm, bis sie vorbei ist ("Ton an"). Solange
+Werbung nicht zu hören ist, steht die Kanzel in Bernstein auf WERBUNG; die Stellen stehen bernsteinfarben auf dem
+Balken des Zeitversatzes. Ein Sender mit einem einzigen gefundenen Spot trägt in der Liste die Marke "Werbung"; sein
+Steckbrief nennt die bekannten Spots (Werbender, Länge, wie oft, beim Verbinden oder im Programm). Woran Werbung in den
+Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`.
+
 Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gespeichert, darunter die Abos mit
 der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die Nadel
 heftet ein Abo oben an; die Reihenfolge ändert Ziehen am Griff (ein gestrichelter Platzhalter zeigt, wo es landet).

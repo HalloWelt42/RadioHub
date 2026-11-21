@@ -80,6 +80,8 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-band > i { color: var(--led-bernstein); }
 .rh-band.gut > i { color: var(--gut); }
 .rh-band.fehler > i { color: var(--gefahr); }
+/* Hinweis zur Werbung (RAD-32, RAD-33): auf schmalen Geräten ohne die Angaben in Klammern (Entwurf radio-werbung, 7 und 8) */
+@media (max-width: 560px) { .rh-werbehinweis .rh-werbe-mehr { display: none; } }
 .rh-band span { min-width: 0; }
 @keyframes rh-ein { from { opacity: 0; translate: 0 10px; } }
 

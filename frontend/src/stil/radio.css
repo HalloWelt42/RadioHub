@@ -296,3 +296,11 @@
 .rh-ausgeblendet-marke { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
 /* Varianten aufgeklappt: der Knopf bleibt eingedrückt wie beim Drücken im HiFi-Stil (RAD-28) */
 .rh-sender .rh-varianten-knopf.aktiv { transform: translateY(1px); background-image: none; box-shadow: var(--hifi-mulde, var(--rh-mulde)); }
+
+/* Werbung aus den Sendedaten (RAD-33, Entwurf radio-werbung.html): Marke an Sendern, die Werbung ankündigen,
+   Angabe im Steckbrief und die bekannten Spots (Liste wie die Werbestellen der Folgen, ohne Knöpfe) */
+.rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
+.rh-werbe-angekuendigt { display: block; margin-top: 4px; }
+.rh-werbe-angekuendigt .rh-werbemarke-text { display: inline-flex; }
+.rh-werbespots .rh-werbestellen li { grid-template-columns: auto calc(var(--klein) * 5) minmax(0, 1fr); }
+.rh-werbespots > .rh-still { display: block; margin-top: 6px; }

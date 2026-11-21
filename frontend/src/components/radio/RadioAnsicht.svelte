@@ -21,6 +21,7 @@
   import type { Sortierung } from "../../lib/radio/typen";
   import Werkzeugleiste from "./Werkzeugleiste.svelte";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
+  import { werbende } from "../../lib/radio/werbende.svelte";
 
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -96,6 +97,18 @@
     window.addEventListener("popstate", zurueck);
     void bedienung.bestandLaden();
     return () => window.removeEventListener("popstate", zurueck);
+  });
+
+  // Sender mit Werbung in den Sendedaten (RAD-33): beim Öffnen, wenn ein anderer Sender spielt und sobald im
+  // Zeitversatz eine Werbestelle abgeschlossen ist (dann ist ihr Spot gezählt, der Sender womöglich neu werbend)
+  const fertigeStellen = $derived(((appState.hlsStatus as { werbestellen?: { bis: number | null }[] } | null)?.werbestellen ?? [])
+    .filter((w) => w.bis !== null).length);
+  $effect(() => {
+    void spielend;
+    if (senderquelle.faehig.werbung) untrack(() => void werbende.laden());
+  });
+  $effect(() => {
+    if (fertigeStellen && senderquelle.faehig.werbung) untrack(() => void werbende.laden(true));
   });
 
   // Vor und Zurück der Wiedergabe folgen der sichtbaren Liste (Vorgabe 7); die Nachbarn bekommen ihre Felder vorab

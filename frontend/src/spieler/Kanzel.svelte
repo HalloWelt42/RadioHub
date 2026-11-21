@@ -14,6 +14,7 @@
   import { Bitrate } from "./bitrate.svelte";
   import { bitrateLage, bitrateText, kanzelAnzeige, kanzelTasten, type Stand } from "./kanzel";
   import { fokus } from "./fokus.svelte";
+  import { werbungLaeuft } from "./werbehinweis.svelte";
   import { modusWechseln } from "./aktionen";
   import { faehigkeiten } from "../lib/playerEngine.js";
   import { kanzelReihen } from "./kanzelreihen";
@@ -56,6 +57,7 @@
     lage: wiedergabe.lage,
     hoerdauer: wiedergabe.hoerdauer,
     weg,
+    werbung: werbungLaeuft(),
   });
 
   // Original oder Zeitversatz: Taste bleibt gedrückt, bis der neue Modus gilt

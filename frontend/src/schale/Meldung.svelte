@@ -17,10 +17,21 @@
 
 {#if werbehinweis.jetzt}
   {@const w = werbehinweis.jetzt}
+  {@const wer = w.werbender || t(`schale.werbeherkunft_${w.herkunft}`)}
   <div class="rh-band rh-werbehinweis" role="status" aria-live="polite">
-    <i class="fa-solid fa-forward"></i><span><b>{t("schale.werbungUebersprungen")}</b> ({dauerKurz(w.dauer)}, {t(`schale.werbeherkunft_${w.herkunft}`)})</span>
-    <button class="knopf" type="button" onclick={w.zurueck}><i class="fa-solid fa-rotate-left"></i>{t("schale.werbungAnhoeren")}</button>
-    <button class="rund" type="button" aria-label={t("schale.schliessen")} title={t("schale.schliessen")} onclick={w.schliessen}><i class="fa-solid fa-xmark"></i></button>
+    {#if w.art === "verbinden"}
+      <i class="fa-solid fa-rectangle-ad"></i><span><b>{t("schale.werbungVerbinden")}</b>{" "}<span class="rh-werbe-mehr">({w.dauer ? `${dauerKurz(w.dauer)}, ` : ""}{wer})</span>:
+        {w.rest == null ? t("schale.werbungNichtGespieltOffen") : t("schale.werbungNichtGespielt")}{#if w.rest != null}{" "}<b class="rh-zahl">{dauerKurz(w.rest)}</b>{/if}</span>
+      <button class="knopf" type="button" onclick={w.anhoeren}><i class="fa-solid fa-volume-high"></i>{t("schale.werbungTrotzdem")}</button>
+    {:else if w.art === "stumm"}
+      <i class="fa-solid fa-volume-xmark"></i><span><b>{t("schale.werbungLaeuft")}</b>{" "}<span class="rh-werbe-mehr">({wer})</span>:
+        {#if w.rest == null}{t("schale.werbungStummOffen")}{:else}{t("schale.werbungStumm")}{" "}<b class="rh-zahl">{dauerKurz(w.rest)}</b><span class="rh-werbe-mehr">, {t("schale.werbungDannTon")}</span>{/if}</span>
+      <button class="knopf" type="button" onclick={w.anhoeren}><i class="fa-solid fa-volume-high"></i>{t("schale.werbungTonAn")}</button>
+    {:else}
+      <i class="fa-solid fa-forward"></i><span><b>{t("schale.werbungUebersprungen")}</b>{" "}<span class="rh-werbe-mehr">({w.dauer ? `${dauerKurz(w.dauer)}, ` : ""}{wer})</span></span>
+      <button class="knopf" type="button" onclick={w.anhoeren}><i class="fa-solid fa-rotate-left"></i>{t("schale.werbungAnhoeren")}</button>
+      {#if w.schliessen}<button class="rund" type="button" aria-label={t("schale.schliessen")} title={t("schale.schliessen")} onclick={w.schliessen}><i class="fa-solid fa-xmark"></i></button>{/if}
+    {/if}
   </div>
 {:else if meldung}
   <div class="rh-band" class:gut={meldung.type === "success"} class:fehler={meldung.type === "error"} role="status" aria-live="polite">

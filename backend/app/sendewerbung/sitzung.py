@@ -44,9 +44,11 @@ class Werbestelle(BaseModel):
 
 class Sitzungswerbung:
     def __init__(self, r: Optional[Regeln] = None, bei_ende: Optional[Callable[[Werbestelle], None]] = None):
-        """`bei_ende`: wird einmal je Stelle gerufen, sobald ihr Ende feststeht (etwa um den Spot zu zählen)."""
+        """`bei_ende`: wird einmal je Stelle gerufen, sobald ihr Ende feststeht (etwa um den Spot zu zählen): mit der
+        Stille daran, oder wenn der Ton das Fenster der Stille hinter dem Ende hat und keine kam."""
         self._regeln = r or regeln()
         self._bei_ende = bei_ende
+        self._wartet: list[Werbestelle] = []
         self.stellen: list[Werbestelle] = []
         self._stillen: list[tuple[float, float]] = []
         self._stille_beginn: Optional[float] = None
@@ -55,6 +57,7 @@ class Sitzungswerbung:
 
     def angabe(self, roh: str, sekunde: float) -> Optional[Werbestelle]:
         """Eine Angabe an ihrer Stelle im Ton; gibt die neu begonnene Stelle zurück, falls eine beginnt."""
+        self._melden(sekunde)
         erste = self._angaben == 0
         self._angaben += 1
         w = lesen(roh)
@@ -86,6 +89,14 @@ class Sitzungswerbung:
 
     def _geendet(self, s: Werbestelle) -> None:
         if self._bei_ende:
+            self._wartet.append(s)
+
+    def _melden(self, jetzt: Optional[float] = None) -> None:
+        """Wartende Stellen melden: mit Stille an ihrem Ende, oder wenn `jetzt` das Fenster hinter dem Ende passiert hat."""
+        fenster = self._regeln.grenze.fenster_s
+        fertig = [s for s in self._wartet if s.bis_aus == "stille" or (jetzt is not None and jetzt > (s.bis or 0) + fenster)]
+        for s in fertig:
+            self._wartet.remove(s)
             self._bei_ende(s)
 
     def stille_zeile(self, zeile: str) -> None:
@@ -101,6 +112,7 @@ class Sitzungswerbung:
         del self._stillen[:-STILLEN_HOECHSTENS]
         for s in self.stellen[-20:]:
             self._an_stille(s)
+        self._melden(bis)
 
     def _an_stille(self, s: Werbestelle) -> None:
         fenster = self._regeln.grenze.fenster_s

@@ -2,6 +2,8 @@
   // Reiter Werbeerkennung (bisher Einstellungen > Radio > Sender): Stand als Gerät, Prüfung aller noch nicht geprüften
   // sichtbaren Sender mit Fortschritt und Stopp, Verdächtige einzeln oder alle entscheiden, Einstellungen der Erkennung.
   // "Ausblenden" ist eine eigene Werbeentscheidung (blendet aus, Entscheidung 32), "Keine Werbung" nimmt den Verdacht zurück.
+  // Dazu Werbung in den Sendedaten (RAD-33): überspringen für alle Sender und die Sender, die Werbung ankündigen, je mit
+  // ihrem Schalter.
   import { onMount } from "svelte";
   import type { Schieber } from "appkern-oberflaeche/instrumente";
   import { t } from "../../../lib/i18n.svelte.js";
@@ -10,6 +12,9 @@
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import type { ScanStand, Verdaechtiger, WerbeEinstellungen, WerbeStand } from "../../../lib/radio/werbeerkennung";
   import Band from "../Band.svelte";
+  import Schalter from "../Schalter.svelte";
+  import { sendewerbung } from "../../../lib/radio/sendewerbung";
+  import { wann, werbende } from "../../../lib/radio/werbende.svelte";
 
   const RUNDE = 50;
   const SCHWELLEN = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
@@ -26,7 +31,32 @@
     stand = await werbeerkennung.stand().catch(() => null);
     if (einst) verdaechtige = await werbeerkennung.verdaechtige(einst.schwelle).catch(() => []);
   }
+  // Werbung in den Sendedaten: Einstellung für alle, Liste der werbenden Sender (aufgeklappt)
+  let alleAn = $state<boolean | null>(null);
+  let listeOffen = $state(false);
+  const werbendeListe = $derived([...werbende.sender.values()]);
+  const spotsZusammen = $derived(werbendeListe.reduce((n, s) => n + s.spots, 0));
+  const ausgenommen = $derived(werbendeListe.filter((s) => s.ausgenommen).length);
+  async function alleSchalten(an: boolean) {
+    try {
+      await sendewerbung.alleSetzen(an);
+      alleAn = an;
+      await werbende.laden(true);
+    } catch (f) {
+      band = { symbol: "fa-triangle-exclamation", art: "fehler", text: (f as Error).message };
+    }
+  }
+  async function senderSchalten(uuid: string, an: boolean) {
+    try {
+      werbende.merken(await sendewerbung.setzen(uuid, an));
+    } catch (f) {
+      band = { symbol: "fa-triangle-exclamation", art: "fehler", text: (f as Error).message };
+    }
+  }
+
   onMount(() => {
+    void sendewerbung.alle().then((an) => (alleAn = an)).catch(() => (alleAn = null));
+    void werbende.laden(true);
     void werbeerkennung.einstellungen().then((e) => { einst = e; return standLaden(); });
     return () => abbruch?.abort();
   });
@@ -80,6 +110,32 @@
 </script>
 
 <section class="rh-reiter">
+  {#if alleAn !== null}
+    <div class="karte rh-karte">
+      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-rectangle-ad"></i>{t("radio.einst.sendedaten")}</h2></div>
+      <p class="hinweis-band"><i class="fa-solid fa-circle-info"></i><span>{t("radio.einst.sendedatenHinweis")}</span></p>
+      <div class="rh-schalter-zeile"><span><b>{t("radio.einst.werbungUeberspringen")}</b><span>{t("radio.einst.werbungUeberspringenHilfe")}</span></span>
+        <button class="schalter" class:an={alleAn} type="button" aria-pressed={alleAn} aria-label={t("radio.einst.werbungUeberspringen")} onclick={() => alleSchalten(!alleAn)}></button></div>
+      <div class="rh-schalter-zeile"><span><b>{t("radio.einst.senderMitWerbung")}</b>
+          <span>{werbendeListe.length ? t(ausgenommen ? "radio.einst.senderMitWerbungZahlAus" : "radio.einst.senderMitWerbungZahl", { n: zahl(werbendeListe.length), s: zahl(spotsZusammen), a: zahl(ausgenommen) }) : t("radio.einst.senderMitWerbungKeine")}</span></span>
+        {#if werbendeListe.length}<button class="knopf" type="button" aria-expanded={listeOffen} onclick={() => (listeOffen = !listeOffen)}>
+          <i class="fa-solid {listeOffen ? 'fa-chevron-up' : 'fa-list'}"></i>{t("radio.einst.liste")}</button>{/if}</div>
+      {#if listeOffen}
+        <div class="rh-a-liste" role="list">
+          {#each werbendeListe as s (s.uuid)}
+            <div class="rh-a-zeile" role="listitem">
+              <ak-led farbe="bernstein" zustand={s.ueberspringen ? "an" : "aus"} groesse="klein"></ak-led>
+              <span class="name"><b>{s.name || s.uuid}</b></span>
+              <span class="grund"><i class="fa-solid fa-rectangle-ad"></i><span>{t("radio.einst.spotsZuletzt", { n: zahl(s.spots), wann: wann(s.zuletzt) })}</span></span>
+              <span class="stimmen"></span>
+              <span class="rh-a-knoepfe"><Schalter an={!s.ausgenommen} farbe="bernstein" text={t("radio.werbungUeberspringen")} hilfe={t("radio.werbungUeberspringenHilfe")}
+                onwechsel={(an) => senderSchalten(s.uuid, an)} /></span>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
   <div class="ak-geraet rh-bestand" data-bauform="inspektor">
     <span class="ak-schraube lo" style="--dreh:14deg"></span><span class="ak-schraube ro" style="--dreh:58deg"></span><span class="ak-schraube lu" style="--dreh:-24deg"></span><span class="ak-schraube ru" style="--dreh:39deg"></span>
     <div class="rh-bestand-feld"><ak-segmente art="7" stellen="6" farbe="weiss" text={stand ? zahl(stand.total_checked) : "------"}></ak-segmente><span class="ak-etikett">{t("radio.einst.geprueft")}</span></div>

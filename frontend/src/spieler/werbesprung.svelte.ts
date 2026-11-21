@@ -63,7 +63,7 @@ class Werbesprung {
 
   private zeigen(s: Werbestelle): void {
     this.hinweis = s;
-    werbehinweis.jetzt = { dauer: s.bis - s.von, herkunft: s.herkunft, zurueck: () => this.zurueck(), schliessen: () => this.schliessen() };
+    werbehinweis.jetzt = { art: "uebersprungen", dauer: s.bis - s.von, herkunft: s.herkunft, anhoeren: () => this.zurueck(), schliessen: () => this.schliessen() };
     clearTimeout(this.uhr);
     this.uhr = setTimeout(() => this.schliessen(), HINWEIS_MS);
   }

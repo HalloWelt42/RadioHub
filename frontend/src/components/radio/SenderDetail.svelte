@@ -11,6 +11,9 @@
   import { MARKIERUNGEN, bewertungName, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import type { Kategorie, Steckbrief, TitelGuete } from "../../lib/radio/quelle";
   import type { Bewertung, SenderEintrag } from "../../lib/radio/typen";
+  import { sendewerbung, type Steckbrief as Werbesteckbrief } from "../../lib/radio/sendewerbung";
+  import { wann, werbende } from "../../lib/radio/werbende.svelte";
+  import Schalter from "./Schalter.svelte";
 
   let { eintrag, kategorien, spielt, onaendern, onvarianten, onneustart }: {
     eintrag: SenderEintrag;
@@ -35,6 +38,22 @@
     senderquelle.steckbrief(eintrag).then((s) => { if (aktuell) steckbrief = s; }).catch(() => {});
     return () => { aktuell = false; };
   });
+
+  // Werbung aus den Sendedaten (RAD-33): bekannte Spots und der Schalter je Sender
+  let werbung = $state<Werbesteckbrief | null>(null);
+  $effect(() => {
+    const uuid = eintrag.uuid;
+    let aktuell = true;
+    if (faehig.werbung) sendewerbung.steckbrief(uuid).then((w) => { if (aktuell) werbung = w; }).catch(() => {});
+    return () => { aktuell = false; };
+  });
+  function werbungSchalten(an: boolean) {
+    void tun(async () => {
+      werbung = await sendewerbung.setzen(eintrag.uuid, an);
+      werbende.merken(werbung);
+    });
+  }
+  const spotDauer = (ms: number | null) => (ms ? `${Math.floor(ms / 60000)}:${String(Math.round((ms % 60000) / 1000)).padStart(2, "0")}` : "?");
 
   const sterne = $derived(Math.max(0, ...eintrag.bewertungen.map(sterneVon)));
   const strom = $derived(steckbrief ? (steckbrief.eigeneAdresse || steckbrief.adresse) : "");
@@ -184,13 +203,32 @@
                   title={t("radio.titelUngenauHilfe")} onclick={() => titelGuete("ungenau")}>{t("radio.titelUngenau")}</button>
         </span></dd>
       {/if}
-      {#if faehig.werbung}<dt>{t("radio.werbungTitel")}</dt><dd>{werbeText()}</dd>{/if}
+      {#if faehig.werbung}<dt>{t("radio.werbungTitel")}</dt><dd>{werbeText()}{#if werbung?.spots}<span class="rh-werbe-angekuendigt">
+        <span class="rh-werbemarke-text"><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungKuendigtAn")}</span>{t("radio.werbungSpots", { n: zahl(werbung.spots), zuletzt: wann(werbung.zuletzt) })}</span>{/if}</dd>{/if}
       {#if eintrag.ausnahme.length}
         <dt>{t("radio.sichtbarkeit")}</dt>
         <dd class="rh-ausnahme"><i class="fa-solid fa-star"></i>{t("radio.ausnahme", { gruende: eintrag.ausnahme.map((g) => g.titel).join("; ") })}</dd>
       {/if}
     </dl>
+    {#if faehig.werbung && werbung}
+      <div class="rh-detail-knoepfe"><Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringen")}
+        hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
+        onwechsel={werbungSchalten} /></div>
+    {/if}
   </section>
+  {#if werbung?.liste.length}
+    <section class="rh-tafel-detail rh-werbespots"><h4><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungBekannt")}</h4>
+      <ol class="rh-werbestellen">
+        {#each werbung.liste as s, i (s.format + s.kennung)}
+          <li><span class="rh-a-nr">{String(i + 1).padStart(2, "0")}</span>
+            <span class="zeit"><b>{spotDauer(s.dauer_ms)}</b><span>{t("radio.werbungMal", { n: zahl(s.anzahl) })}</span></span>
+            <span class="herkunft"><span><i class="fa-solid {s.beim_verbinden ? 'fa-plug' : 'fa-tower-broadcast'}"></i>{s.werbender || s.kennung}</span>
+              <span class="rh-still">{[s.titel, t(s.beim_verbinden ? "radio.werbungBeimVerbinden" : "radio.werbungImProgramm"), t("radio.werbungZuletzt", { wann: wann(s.zuletzt) })].filter(Boolean).join(" · ")}</span></span></li>
+        {/each}
+      </ol>
+      <span class="rh-still">{t("radio.werbungAusSendedaten")}</span>
+    </section>
+  {/if}
   <section class="rh-tafel-detail"><h4><i class="fa-solid fa-star"></i>{t("radio.eigeneBewertung")}<span class="rh-still rh-h4-hinweis">{t("radio.einschaetzungHinweis")}</span></h4>
     <div class="rh-bewerten">
       {#each [1, 2, 3] as i (i)}

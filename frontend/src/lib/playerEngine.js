@@ -20,6 +20,7 @@
 import Hls from 'hls.js';
 import { api } from './api.js';
 import { ueberBackend } from './wiedergabeweg.js';
+import { sendewerbung, startwahl } from './radio/sendewerbung';
 
 // === Interne State-Variablen (nicht reaktiv) ===
 let _audioEl = null;
@@ -37,6 +38,8 @@ let _userModeOverride = false;
 let _podcastPositionInterval = null;
 let _errorTimer = null;
 let _reconnectAttempts = 0;
+/** RAD-33: den Spot beim Verbinden doch hören (die Wiedergabe beginnt dann am Anfang des Puffers) */
+let _vorabHoeren = false;
 const _MAX_RECONNECT = 3;
 /** Weg der Wiedergabe (wiedergabeweg.js): Backend in der vollen App, direkt in der Webversion */
 let _weg = ueberBackend;
@@ -160,6 +163,7 @@ export async function playStation(station) {
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
+  _appState.werbeStart = null;
   _userModeOverride = false;
   _lastSeekPosition = 100; // Live = rechter Rand
 
@@ -168,6 +172,18 @@ export async function playStation(station) {
     _showPlayerError('Kein Audio-Element');
     _appState.isPlaying = false;
     return;
+  }
+
+  // RAD-33: wird angekündigte Werbung übersprungen, kommt der Ton von Anfang an aus dem Zeitversatz (eine Verbindung
+  // zum Sender: die erkannte Werbung gehört zu dem Ton, der zu hören ist, und der Spot beim Verbinden wird nicht
+  // gespielt); direkt nur, wenn das nicht geht
+  if (_weg.zeitversatz && await _werbungUeberspringen(station)) {
+    if (_generation !== gen) return;
+    if (await _ueberZeitversatz(station, gen)) {
+      _weg.merken(station);
+      return;
+    }
+    if (_generation !== gen) return;
   }
 
 
@@ -471,6 +487,7 @@ export async function stop() {
   _appState.currentSegment = null;
   _appState.canPlayDirect = true;
   _appState.canPlayHLS = null;
+  _appState.werbeStart = null;
   _appState.currentRecording = null;
   _appState.recordingPlaylist = [];
   _appState.podcastPlaylist = [];
@@ -1300,6 +1317,102 @@ function _attemptReconnect(gen) {
 //  HLS Management (intern)
 // ============================================================
 
+async function _werbungUeberspringen(station) {
+  try {
+    return (await sendewerbung.steckbrief(station.uuid || station.stationuuid)).ueberspringen;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * RAD-33: Wiedergabe aus dem Zeitversatz von Anfang an. Wartet, bis der Puffer genug Stücke hat; spielt der Sender
+ * beim Verbinden einen Spot, beginnt die Wiedergabe nach ihm (die Restzeit steht bis dahin in appState.werbeStart).
+ * Gibt false zurück, wenn der Zeitversatz nicht anläuft (dann spielt der Aufrufer direkt).
+ */
+async function _ueberZeitversatz(station, gen) {
+  _vorabHoeren = false;
+  let result;
+  try {
+    result = await api.startHLS(station);
+  } catch (e) {
+    console.warn('Zeitversatz startet nicht, direkt:', e.message);
+    return false;
+  }
+  if (_generation !== gen) return true;
+  if (result.status !== 'started' && result.status !== 'already_active') return false;
+  _hlsSessionId = result.session_id || null;
+  _appState.hlsActive = true;
+  _appState.canPlayHLS = true;
+  _startHLSPolling(gen);
+  // höchstens so lange auf Stücke und das Ende eines Spots warten (Spots sind selten länger als eine Minute)
+  for (let i = 0; i < 240; i++) {
+    await new Promise(r => setTimeout(r, 500));
+    if (_generation !== gen) return true;
+    let status;
+    try { status = await api.getHLSStatus(); } catch { continue; }
+    if (_generation !== gen) return true;
+    _appState.hlsStatus = status;
+    const wahl = _vorabHoeren ? { art: 'start', sekunde: 0 } : startwahl(status);
+    if (wahl.art === 'werbung') {
+      _appState.werbeStart = { stelle: wahl.stelle, rest: wahl.rest };
+      continue;
+    }
+    if (wahl.art === 'start') {
+      _appState.werbeStart = null;
+      _appState.isLive = wahl.sekunde === null;
+      _switchToHLS(gen, wahl.sekunde);
+      return true;
+    }
+  }
+  _appState.werbeStart = null;
+  _destroyHLS();
+  return false;
+}
+
+/** RAD-33: den Spot beim Verbinden doch hören */
+export function vorabHoeren() {
+  _vorabHoeren = true;
+}
+
+/** Fragmente der laufenden Wiedergabeliste (hls.js): Nummer (wie die Stücke des Puffers) und Zeit im Tonelement */
+function _fragmente() {
+  const stufen = _hlsInstance?.levels;
+  if (!stufen?.length) return [];
+  const stufe = stufen[_hlsInstance.currentLevel >= 0 ? _hlsInstance.currentLevel : 0];
+  return stufe?.details?.fragments ?? [];
+}
+
+/** Sekunde des Puffers (Stelle im Ton beim Sender) -> Zeit im Tonelement; null ohne Wiedergabeliste */
+export function pufferZuTon(sekunde, fragmente = _fragmente()) {
+  if (!fragmente.length) return null;
+  const dauer = _appState?.hlsStatus?.segment_duration || 1;
+  const nummer = Math.floor(sekunde / dauer);
+  const f = fragmente.find((x) => x.sn === nummer) ?? fragmente[0];
+  return f.start + (sekunde - f.sn * dauer);
+}
+
+/** Zeit im Tonelement -> Sekunde des Puffers; null ohne Wiedergabeliste */
+export function tonZuPuffer(zeit, fragmente = _fragmente()) {
+  if (!fragmente.length) return null;
+  const dauer = _appState?.hlsStatus?.segment_duration || 1;
+  const f = fragmente.find((x) => zeit >= x.start && zeit < x.start + x.duration)
+    ?? (zeit < fragmente[0].start ? fragmente[0] : fragmente[fragmente.length - 1]);
+  return f.sn * dauer + (zeit - f.start);
+}
+
+/** RAD-33: an eine Sekunde des Puffers springen (Werbung überspringen, zurück zum Anfang einer Stelle) */
+export function springeZuPuffer(sekunde) {
+  const zeit = pufferZuTon(sekunde);
+  if (zeit === null || !_audioEl) return false;
+  _audioEl.currentTime = zeit;
+  const hs = _appState.hlsStatus;
+  const segment = Math.floor(sekunde / (hs?.segment_duration || 1));
+  _appState.isLive = hs?.last_segment != null && segment >= hs.last_segment - 1;
+  _appState.currentSegment = _appState.isLive ? hs.last_segment : segment;
+  return true;
+}
+
 async function _startHLSBackground(station, gen) {
   try {
     const result = await api.startHLS(station);
@@ -1384,18 +1497,29 @@ async function _waitForHLSSegments(gen) {
   // HLS-Segmente nicht rechtzeitig bereit
 }
 
-function _switchToHLS(gen) {
+function _switchToHLS(gen, startSekunde = null) {
   if (_generation !== gen) return;
   if (!_audioEl || !Hls.isSupported()) return;
 
   _destroyHLS();
 
+  // RAD-33: mit `startSekunde` beginnt die Wiedergabe an dieser Stelle des Puffers (nach dem Spot beim Verbinden)
+  // statt an der Live-Kante; die Stelle ist erst mit der Wiedergabeliste bekannt
   _hlsInstance = new Hls({
     debug: false,
     enableWorker: true,
     lowLatencyMode: false,
-    backBufferLength: 90
+    backBufferLength: 90,
+    autoStartLoad: startSekunde === null
   });
+  if (startSekunde !== null) {
+    _hlsInstance.once(Hls.Events.LEVEL_LOADED, (event, data) => {
+      if (_generation !== gen) return;
+      const zeit = pufferZuTon(startSekunde, data.details?.fragments ?? []);
+      _hlsInstance?.startLoad(zeit ?? -1);
+      if (zeit !== null) _audioEl.currentTime = zeit;
+    });
+  }
 
   _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
     if (_generation !== gen) return;

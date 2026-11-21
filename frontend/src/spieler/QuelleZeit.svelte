@@ -7,7 +7,7 @@
   import Spulzeile from "./Spulzeile.svelte";
   import { werbemarken } from "./werbehinweis.svelte";
   import { live, spulen } from "./aktionen";
-  import { positionStand, SPUL_RUHE, zeitversatzStand, type Anzeige, type Stand } from "./kanzel";
+  import { positionStand, pufferMarken, SPUL_RUHE, zeitversatzStand, type Anzeige, type Stand } from "./kanzel";
   import { faehigkeiten } from "../lib/playerEngine.js";
 
   // ohne Zeitversatz und ohne Folgen (Webversion) gibt es nichts zu spulen: die Zeile entfällt dort
@@ -31,7 +31,7 @@
       <ak-segmente class="rh-zeit-uhr" art="7" stellen="7" farbe="gruen" text={anzeige.zeit} hilfe={t("kanzel.zeitHilfe")}></ak-segmente>
     </div>
     {#if versatz}
-      <Spulzeile stand={versatz} {wiedergabe} hilfe={t("kanzel.pufferHilfe", { max: versatz.max })}>
+      <Spulzeile stand={versatz} {wiedergabe} hilfe={t("kanzel.pufferHilfe", { max: versatz.max })} marken={anzeige.zeile === "zeitversatz" ? pufferMarken(stand) : []}>
         {#snippet links()}
           <button class="knopf" type="button" title={t("kanzel.zurueck30Hilfe")} aria-label={t("kanzel.zurueck30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt}
             onmouseenter={sfx.hover} onclick={() => { spulen(-30); sfx.click(); }}><i class="fa-solid fa-rotate-left"></i>{t("kanzel.sekunden30")}</button>

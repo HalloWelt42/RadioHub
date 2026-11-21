@@ -111,11 +111,13 @@ def test_spots_zaehlen_und_schalter_je_sender(client):
     w.angabe(OLDIE, 55.0)                                     # beendet otto.de
     w.angabe(OTTO, 90.0)
     w.angabe(OLDIE, 105.0)                                    # derselbe Spot ein zweites Mal
+    w.stille(104.6, 104.65)                                   # Stille am Ende: jetzt erst gezählt, mit genauer Länge
+    w.angabe(OLDIE, 130.0)                                    # ohne Stille: gezählt, sobald das Fenster vorbei ist
     (eintrag,) = [e for e in client.get("/api/sendewerbung").json() if e["uuid"] == "sender-1"]
     assert (eintrag["uuid"], eintrag["spots"], eintrag["ueberspringen"]) == ("sender-1", 2, True)
     brief = client.get("/api/sendewerbung/sender-1").json()
     assert {(s["kennung"], s["anzahl"], s["dauer_ms"], s["beim_verbinden"]) for s in brief["liste"]} == {
-        ("198927", 1, 15046, True), ("199103", 2, 15000, False)}
+        ("198927", 1, 15046, True), ("199103", 2, 14650, False)}                  # Länge der letzten Messung
     assert client.put("/api/sendewerbung/sender-1", json={"ueberspringen": False}).json()["ausgenommen"] is True
     assert spots.ueberspringt("sender-1") is False and spots.ueberspringt("anderer") is True
     assert client.put("/api/config", json={"updates": {"werbung_ueberspringen": False}}).status_code == 200

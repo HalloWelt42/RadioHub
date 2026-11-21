@@ -60,6 +60,7 @@ export const appState = $state({
   // Stream Mode Capabilities
   canPlayDirect: true,   // true=ja, false=Codec nicht abspielbar
   canPlayHLS: null,      // null=unbekannt, true=Segmente verfügbar, false=Start fehlgeschlagen
+  werbeStart: null,      // RAD-33: Spot beim Verbinden läuft noch ({ stelle, rest }), die Wiedergabe beginnt danach
 
   // Data
   stations: [],
