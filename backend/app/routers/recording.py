@@ -10,8 +10,9 @@ import shutil
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -73,10 +74,12 @@ async def recording_status():
 
 
 @router.get("/sessions")
-async def get_sessions(limit: int = 50):
-    """Alle Sessions"""
-    sessions = rec_manager.get_sessions(limit)
-    return {"count": len(sessions), "sessions": sessions}
+async def get_sessions(limit: int = Query(50, ge=1, le=500), ab: int = Query(0, ge=0), suche: str = "",
+                       ordner: str = Query("", pattern=r"^(|ohne|\d+)$"),
+                       sort: Literal["datum", "sender", "dauer", "groesse"] = "datum", absteigend: bool = True):
+    """Aufnahmen seitenweise mit Suche in Sender und Titeln, Ordnerfilter und Sortierung (RAD-17)."""
+    sessions, gesamt = rec_manager.get_sessions(limit, ab, suche, ordner, sort, absteigend)
+    return {"count": len(sessions), "gesamt": gesamt, "sessions": sessions}
 
 
 @router.get("/sessions/{session_id}")

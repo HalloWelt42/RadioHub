@@ -32,6 +32,10 @@ class NichtGefunden(AblageFehler):
     """Unter dem Pfad liegt nichts."""
 
 
+class KeinRecht(AblageFehler):
+    """Die App darf hier nicht lesen oder schreiben (Freigaben der Kellerwolke)."""
+
+
 class Belegt(AblageFehler):
     """Unter dem Zielpfad liegt schon etwas."""
 
@@ -105,6 +109,10 @@ class Ablage(ABC):
 
     async def schliessen(self) -> None:
         """Verbindungen freigeben."""
+
+    async def darf_schreiben(self, ordner: str) -> bool:
+        """Darf die App in diesem Ordner neue Dateien anlegen? Im eigenen Ordner immer."""
+        return True
 
     # --- Abgeleitet: für alle Adapter gleich ---------------------------------------------------------------------
 

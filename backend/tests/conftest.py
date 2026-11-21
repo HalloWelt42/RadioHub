@@ -102,3 +102,10 @@ def ton(ziel: Path, sekunden: float = 6.0, frequenz: int = 440) -> Path:
 @pytest.fixture
 def tonquelle(tmp_path) -> Path:
     return ton(tmp_path / "quelle.mp3")
+
+
+@pytest.fixture
+def wolke_speicher():
+    """Frische Test-Kellerwolke (ganze Wolke, RAD-17) für App und Dienste."""
+    from app.ablage import wolke_setzen
+    return wolke_setzen(SpeicherAblage())

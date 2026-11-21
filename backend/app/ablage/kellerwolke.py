@@ -15,10 +15,10 @@ from pathlib import Path
 
 from appkern.kellerwolke import (
     Kellerwolke, KellerwolkeFehler, Knoten, Konflikt, StandVeraltet,
-    NichtErreichbar as KwNichtErreichbar, NichtGefunden as KwNichtGefunden,
+    KeinRecht as KwKeinRecht, NichtErreichbar as KwNichtErreichbar, NichtGefunden as KwNichtGefunden,
 )
 
-from .port import Ablage, AblageFehler, Belegt, Eintrag, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
+from .port import Ablage, AblageFehler, Belegt, Eintrag, KeinRecht, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
 
 log = logging.getLogger("radiohub.ablage")
 
@@ -28,6 +28,8 @@ def _uebersetzt(fehler: KellerwolkeFehler) -> AblageFehler:
         return NichtErreichbar(str(fehler))
     if isinstance(fehler, KwNichtGefunden):
         return NichtGefunden(str(fehler))
+    if isinstance(fehler, KwKeinRecht):
+        return KeinRecht(str(fehler))
     if isinstance(fehler, (Konflikt, StandVeraltet)):
         return Belegt(str(fehler))
     return AblageFehler(f"Kellerwolke: {fehler}")
@@ -153,3 +155,44 @@ class KellerwolkeAblage(Ablage):
 
     async def schliessen(self) -> None:
         """Der Zugang gehört dem Gerüst; es schließt ihn selbst."""
+
+
+class KellerwolkeWolke(KellerwolkeAblage):
+    """Die ganze Kellerwolke des Kontos (RAD-17): Pfade ab der obersten Ebene, Lesen mit der Freigabe "Alles lesen"
+    am App-Zugang. Schreiben nur, wo die Kellerwolke es der App erlaubt (`darf_schreiben`); der Schnitt legt
+    Ergebnisse sonst im eigenen Ordner ab."""
+
+    def __init__(self, zugang: Kellerwolke, geduld_s: float) -> None:
+        super().__init__(zugang, "", geduld_s)
+
+    def __repr__(self) -> str:
+        return f"KellerwolkeWolke({self._zugang.adresse!r})"
+
+    def _voll(self, pfad: str) -> str:
+        return sauberer_pfad(pfad)
+
+    def _eintrag(self, knoten: Knoten) -> Eintrag:
+        return Eintrag(knoten.pfad.strip("/"), knoten.ist_ordner, knoten.groesse or 0, knoten.geaendert_am)
+
+    async def liste(self, ordner: str) -> list[Eintrag]:
+        if sauberer_pfad(ordner):
+            return await super().liste(ordner)
+        try:                                      # oberste Ebene: kein Knoten, eigene Abfrage
+            eintraege, ab = [], 0
+            while True:
+                seite = await self._sofort.wurzel(ab, 200)
+                eintraege += [self._eintrag(k) for k in seite]
+                if len(seite) < 200:
+                    return eintraege
+                ab += 200
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+
+    async def darf_schreiben(self, ordner: str) -> bool:
+        ziel = sauberer_pfad(ordner)
+        try:
+            ich = await self._sofort.ich()
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+        erlaubt = [r.pfad.strip("/") for r in ich.rechte if r.recht == "schreiben"] + [ich.zweig]
+        return any(ziel == p or ziel.startswith(f"{p}/") for p in erlaubt)

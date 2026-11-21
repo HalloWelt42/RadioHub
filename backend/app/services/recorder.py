@@ -1027,17 +1027,37 @@ class RecorderManager:
 
         return status
 
-    def get_sessions(self, limit: int = 50) -> list:
-        """Alle Sessions aus DB. Hängengebliebene 'recording'-Einträge ohne laufende Aufnahme werden 'interrupted'.
-        Fehlende Dateien in der Ablage bereinigt nur `repair` auf Anfrage, nie das Listen."""
+    SORTIERUNG = {"datum": "s.start_time", "sender": "s.station_name COLLATE NOCASE", "dauer": "s.duration",
+                  "groesse": "s.file_size"}
 
+    def get_sessions(self, limit: int = 50, ab: int = 0, suche: str = "", ordner: str = "", sort: str = "datum",
+                     absteigend: bool = True) -> tuple[list, int]:
+        """Sessions seitenweise (RAD-17: nicht mehr nur die neuesten 50), gefiltert nach Ordner ("" alle, "ohne" ohne
+        Ordner, sonst die Kennung) und Suche in Sender und Titeln; dazu die Zahl aller Treffer. Hängengebliebene
+        'recording'-Einträge ohne laufende Aufnahme werden 'interrupted'. Fehlende Dateien in der Ablage bereinigt nur
+        `repair` auf Anfrage, nie das Listen."""
+        bedingungen, werte = [], []
+        if ordner == "ohne":
+            bedingungen.append("s.folder_id IS NULL")
+        elif ordner:
+            bedingungen.append("s.folder_id = ?")
+            werte.append(int(ordner))
+        if suche.strip():
+            muster = f"%{suche.strip()}%"
+            bedingungen.append("(s.station_name LIKE ? OR EXISTS (SELECT 1 FROM segments t WHERE t.session_id = s.id AND t.title LIKE ?))")
+            werte += [muster, muster]
+        wo = f"WHERE {' AND '.join(bedingungen)}" if bedingungen else ""
+        reihe = self.SORTIERUNG.get(sort, "s.start_time")
+        richtung = "DESC" if absteigend else "ASC"
         with db_session() as conn:
             c = conn.cursor()
-            c.execute('''SELECT s.*, COUNT(seg.id) as segment_count
+            gesamt = c.execute(f"SELECT COUNT(*) FROM sessions s {wo}", werte).fetchone()[0]
+            c.execute(f'''SELECT s.*, COUNT(seg.id) as segment_count
                 FROM sessions s
                 LEFT JOIN segments seg ON seg.session_id = s.id
+                {wo}
                 GROUP BY s.id
-                ORDER BY s.start_time DESC LIMIT ?''', (limit,))
+                ORDER BY {reihe} {richtung}, s.start_time DESC LIMIT ? OFFSET ?''', (*werte, limit, ab))
             rows = [dict(row) for row in c.fetchall()]
 
         active_id = self.active_session.id if self.active_session else None
@@ -1049,7 +1069,7 @@ class RecorderManager:
                 with db_session() as conn:
                     conn.cursor().execute(
                         "UPDATE sessions SET status = 'interrupted' WHERE id = ?", (row["id"],))
-        return rows
+        return rows, gesamt
 
     def get_session(self, session_id: str) -> Optional[dict]:
         """Einzelne Session"""

@@ -473,7 +473,20 @@ CREATE TABLE podcast_ordner (
 ALTER TABLE podcast_subscriptions ADD COLUMN ordner_id TEXT REFERENCES podcast_ordner(id) ON DELETE SET NULL;
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5]
+# RAD-17: Schritte des Schnitts je Gegenstand ("sitzung:<id>" oder "datei:<pfad>"), damit Rückgängig auch nach dem
+# Neuladen geht; `daten` sagt, wie (Sitzung: Ordner mit der vorigen Fassung und die Titel; Datei: neue Dateien)
+STUFE_6 = """
+CREATE TABLE schnitt_schritte (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gegenstand TEXT NOT NULL,
+    was TEXT NOT NULL,
+    daten TEXT NOT NULL DEFAULT '{}',
+    zeit TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_schnitt_schritte_gegenstand ON schnitt_schritte(gegenstand, id);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

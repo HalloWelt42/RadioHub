@@ -54,10 +54,22 @@ class KeineAblage(Ablage):
 
 _aktuell: Ablage = KeineAblage("Ablage noch nicht gestartet")
 _vorgegeben = False
+_wolke: Ablage = KeineAblage("Kellerwolke nicht eingerichtet")
 
 
 def ablage() -> Ablage:
     return _aktuell
+
+
+def wolke() -> Ablage:
+    """Die ganze Kellerwolke (RAD-17), Pfade ab der obersten Ebene; Lesen braucht die Freigabe "Alles lesen"."""
+    return _wolke
+
+
+def wolke_setzen(neu: Ablage) -> Ablage:
+    global _wolke
+    _wolke = neu
+    return neu
 
 
 def setzen(neu: Ablage) -> Ablage:
@@ -86,14 +98,16 @@ def einrichten(zugang: Kellerwolke | None, einstellungen: AblageEinstellungen | 
     """Ablage über den Zugang zur Kellerwolke (der des Gerüsts, er gehört nicht der Ablage); ohne Zugang der
     Platzhalter, der bei jeder Dateiarbeit sagt, was fehlt."""
     if zugang is None:
+        wolke_setzen(KeineAblage(NICHT_EINGERICHTET))
         return setzen(KeineAblage(NICHT_EINGERICHTET))
-    from .kellerwolke import KellerwolkeAblage
+    from .kellerwolke import KellerwolkeAblage, KellerwolkeWolke
     e = einstellungen or AblageEinstellungen()
+    wolke_setzen(KellerwolkeWolke(zugang, e.geduld_s))
     return setzen(KellerwolkeAblage(zugang, e.wurzel, e.geduld_s))
 
 
 __all__ = [
     "Ablage", "AblageEinstellungen", "AblageFehler", "Belegt", "Eintrag", "KeineAblage", "NichtEingerichtet",
     "NichtErreichbar", "NichtGefunden", "SpeicherAblage", "ablage", "einrichten", "eltern", "setzen", "starten",
-    "vorgeben",
+    "vorgeben", "wolke", "wolke_setzen",
 ]
