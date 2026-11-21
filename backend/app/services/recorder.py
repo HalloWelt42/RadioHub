@@ -122,6 +122,7 @@ class RecordingSession:
         self.titelbuch: Optional[Titelbuch] = None
         self.werbung: Optional[Sitzungswerbung] = None
         self.ton_versatz_s: float = 0.0      # wo im Ton der laufende FFmpeg begann (für die Zeiten seiner Stille)
+        self.geschrieben_bytes: int = 0      # Ton, der schon bei FFmpeg angekommen ist (über alle Stücke)
         self.stromleser: Optional[Stromleser] = None   # None: FFmpeg liest selbst (Wiedergabeliste)
         self.strom_task: Optional[asyncio.Task] = None
         self.eingang_format: Optional[str] = None
@@ -457,6 +458,13 @@ class RecorderManager:
         if session.titelbuch:
             await session.titelbuch.angabe(a)
 
+    @staticmethod
+    def _versatz(session: RecordingSession) -> float:
+        """Wo im Ton ein FFmpeg beginnt, der jetzt (unter der Sperre des Teilens) den Ton übernimmt: hinter allem, was
+        die bisherigen schon bekommen haben. Nicht die Zählung des Stromlesers, die schon den Block enthält, der gerade
+        auf den Wechsel wartet und erst im neuen FFmpeg landet."""
+        return session.stromleser.sekunde(session.geschrieben_bytes) if session.stromleser else 0.0
+
     def _werbung_ablegen(self, session: RecordingSession) -> None:
         """Die Werbestellen der Aufnahme speichern (Sekunden des ganzen aufgenommenen Tons); eine noch offene endet mit
         der Aufnahme."""
@@ -481,6 +489,7 @@ class RecorderManager:
                 return
             try:
                 prozess.stdin.write(daten)
+                session.geschrieben_bytes += len(daten)
                 await prozess.stdin.drain()
             except (BrokenPipeError, ConnectionResetError):
                 pass   # FFmpeg endet gerade; die Überwachung entscheidet, wie es weitergeht
@@ -590,8 +599,7 @@ class RecorderManager:
 
                     session.current_segment_file = new_file
                     session.current_segment_start = datetime.now()
-                    if session.stromleser:
-                        session.ton_versatz_s = session.stromleser.sekunde(session.stromleser.ton_bytes)
+                    session.ton_versatz_s = self._versatz(session)
                     session.live_split = True
 
                     # Alten Prozess stoppen
@@ -653,7 +661,7 @@ class RecorderManager:
             session.current_segment_file = new_file
             session.current_segment_title = title
             session.current_segment_start = datetime.now()
-            session.ton_versatz_s = elapsed_ms / 1000
+            session.ton_versatz_s = self._versatz(session)
             session.live_split = True
 
             # Alten FFmpeg sauber stoppen

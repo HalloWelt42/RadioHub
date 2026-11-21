@@ -7,7 +7,11 @@ Stille, die ffmpeg mitmeldet; ohne Stille bleibt die Grenze der Angabe.
 - Ende "dauer": die Stelle endet nach der angekündigten Länge. Ende "wechsel": sie endet mit der ersten Angabe, die
   nicht mehr zu ihr gehört (andere Kennung oder keine Werbung); bis dahin ist sie offen.
 - Stille (von, bis): liegt eine Grenze höchstens `fenster_s` neben einer Stille, gehört die Stille zur Stelle (der
-  Anfang rückt an den Beginn der Stille davor, das Ende an das Ende der Stille danach).
+  Anfang rückt an den Beginn der Stille davor, das Ende an das Ende der Stille danach). Maßgeblich ist immer die
+  Stille, die der Grenze laut Angabe am nächsten liegt: ffmpeg meldet Stille etwas später, als die Angabe kommt, darum
+  wird jede neue Stille gegen die Grenze laut Angabe geprüft, nicht gegen die schon gerückte.
+- Gemeldet (`bei_ende`) wird eine Stelle, wenn der Ton das Fenster hinter ihrem Ende laut Angabe passiert hat; dann
+  steht auch die Stille fest.
 
 Ohne Ein- und Ausgabe; ffmpeg und der Stromleser rufen nur `angabe` und `stille`."""
 
@@ -16,7 +20,7 @@ from __future__ import annotations
 import re
 from typing import Callable, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 
 from .angaben import Regeln, Werbeangabe, lesen, regeln
 
@@ -40,6 +44,12 @@ class Werbestelle(BaseModel):
     titel: str = ""
     angekuendigt_ms: Optional[int] = None
     beim_verbinden: bool = False
+    # Grenzen laut Angabe (vor dem Rücken an die Stille); nicht Teil der Antwort
+    _von_angabe: Optional[float] = PrivateAttr(None)
+    _bis_angabe: Optional[float] = PrivateAttr(None)
+
+    def ende_setzen(self, bis: float, aus: Herkunft) -> None:
+        self.bis, self.bis_aus, self._bis_angabe = bis, aus, bis
 
 
 class Sitzungswerbung:
@@ -65,7 +75,7 @@ class Sitzungswerbung:
         if offen and w and w.kennung == offen.kennung:
             return None                                       # derselbe Spot, die Angabe wiederholt sich
         if offen:
-            offen.bis, offen.bis_aus = sekunde, "angabe"
+            offen.ende_setzen(sekunde, "angabe")
             self._offen = None
             self._an_stille(offen)
             self._geendet(offen)
@@ -77,8 +87,10 @@ class Sitzungswerbung:
     def _beginnen(self, w: Werbeangabe, von: float, von_aus: Herkunft) -> Werbestelle:
         s = Werbestelle(von=von, von_aus=von_aus, format=w.format, kennung=w.kennung, werbender=w.werbender,
                         titel=w.titel, angekuendigt_ms=w.dauer_ms, beim_verbinden=w.beim_verbinden or von_aus == "verbinden")
+        if von_aus != "verbinden":
+            s._von_angabe = von
         if w.ende == "dauer" and w.dauer_ms:
-            s.bis, s.bis_aus = von + w.dauer_ms / 1000, "dauer"
+            s.ende_setzen(von + w.dauer_ms / 1000, "dauer")
         else:
             self._offen = s
         self.stellen.append(s)
@@ -94,7 +106,7 @@ class Sitzungswerbung:
     def _melden(self, jetzt: Optional[float] = None) -> None:
         """Wartende Stellen melden: mit Stille an ihrem Ende, oder wenn `jetzt` das Fenster hinter dem Ende passiert hat."""
         fenster = self._regeln.grenze.fenster_s
-        fertig = [s for s in self._wartet if s.bis_aus == "stille" or (jetzt is not None and jetzt > (s.bis or 0) + fenster)]
+        fertig = [s for s in self._wartet if jetzt is not None and jetzt > (s._bis_angabe or s.bis or 0) + fenster]
         for s in fertig:
             self._wartet.remove(s)
             self._bei_ende(s)
@@ -119,13 +131,14 @@ class Sitzungswerbung:
         self._melden(bis)
 
     def _an_stille(self, s: Werbestelle) -> None:
+        """Jede Grenze an die Stille, die ihrer Stelle laut Angabe am nächsten liegt (oder bleibt bei der Angabe)."""
         fenster = self._regeln.grenze.fenster_s
-        if s.von_aus not in ("stille", "verbinden"):
-            nah = self._naechste(s.von, fenster)
+        if s._von_angabe is not None:
+            nah = self._naechste(s._von_angabe, fenster)
             if nah:
                 s.von, s.von_aus = nah[0], "stille"
-        if s.bis is not None and s.bis_aus != "stille":
-            nah = self._naechste(s.bis, fenster)
+        if s._bis_angabe is not None:
+            nah = self._naechste(s._bis_angabe, fenster)
             if nah:
                 s.bis, s.bis_aus = nah[1], "stille"
 

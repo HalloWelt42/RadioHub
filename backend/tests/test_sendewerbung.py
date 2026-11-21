@@ -50,6 +50,21 @@ def test_spot_beim_verbinden_mit_laenge_und_stille():
     assert (s.bis, s.bis_aus) == (15.071, "stille")           # die Stille gehört noch zur Werbung
 
 
+def test_spaeter_gemeldete_naehere_stille_gilt():
+    """Echter Fall MANGORADIO 21.11.2026: der Spot endet laut Angabe bei 30,0; ffmpeg meldet erst die Stille bei 29,32
+    bis 29,35, danach die nähere bei 29,77 bis 29,89. Es gilt die nähere, nicht die zuerst gemeldete."""
+    w = Sitzungswerbung()
+    w.angabe("StreamTitle='paypal.com - Ein bisschen Verbraucherinformationen ...';StreamUrl='0';", 1.0)
+    w.angabe("StreamTitle='MANGORADIO - Nachrichten';StreamUrl='1';", 30.0)
+    (s,) = w.stellen
+    w.stille(29.32, 29.35)
+    assert (s.bis, s.bis_aus) == (29.35, "stille")
+    w.stille(29.77, 29.89)
+    assert (s.bis, s.bis_aus) == (29.89, "stille")
+    w.stille(30.97, 31.01)                                     # weiter weg als die gewählte: bleibt
+    assert s.bis == 29.89
+
+
 def test_stille_eines_spaeteren_stuecks_mit_versatz_ohne_anlauf():
     """Aufnahme (RAD-33, Schritt 7): jedes Stück hat seinen eigenen ffmpeg; seine Zeiten zählen ab seinem Start im Ton,
     und die leeren Rahmen seines Anlaufs sind keine Stille."""
