@@ -7,6 +7,8 @@ export type Aufnahmestatus = "fertig" | "laeuft" | "abgebrochen" | "unterbrochen
 export interface Aufnahme {
   id: string;
   sender: string;
+  /** Kennung des Senders (für sein Logo), leer ohne */
+  senderUuid: string;
   /** ISO-Zeit des Beginns */
   beginn: string;
   /** Sekunden */

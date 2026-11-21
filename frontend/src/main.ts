@@ -19,6 +19,7 @@ import "./stil/telefon.css";
 import "./stil/kanzel.css";
 import "./stil/rechner.css";
 import "./stil/podcasts.css";
+import "./stil/aufnahmen.css";
 // Alte Bereiche bis zu ihrem Neubau (Etappen 3 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
 import "./styles/bruecke.css";
 import "./styles/hifi-base.css";

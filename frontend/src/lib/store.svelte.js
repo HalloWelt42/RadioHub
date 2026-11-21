@@ -42,7 +42,8 @@ export const appState = $state({
   recordingIcyEntries: [],  // [{title, t, ignored, raw_title}] live ICY-Einträge
   recordingEvents: [],      // [{type, t, detail}] Gap/Stall/Codec-Events
   currentRecording: null,   // {path, name, session_id, station_name, date, duration, playUrl}
-  recordingPlaylist: [],    // [{path, name, session_id, playUrl, ...}] Segment-Liste für Prev/Next
+  /** @type {{ path: string, name: string, session_id?: string, station_name?: string, date?: string, duration?: number, playUrl: string, source?: string }[]} */
+  recordingPlaylist: [],    // Titel einer Aufnahme oder Dateien eines Ordners für Vor und Zurück
   playMode: 'linear',       // 'linear' | 'reverse' | 'loop' | 'shuffle' - Wiedergabe-Modus für Playlists
 
   // Podcast-Playlist

@@ -22,7 +22,6 @@ from ..config import AUDIO_MIMETYPES, get_arbeit_dir
 from ..services.aufnahmen import aufnahmen
 from ..services.recorder import rec_manager
 from ..services.hls_recorder import hls_recorder
-from ..services.segment_splitter import titel_eintraege
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
 
@@ -100,24 +99,7 @@ async def delete_session(session_id: str):
     return {"success": True}
 
 
-@router.get("/sessions/{session_id}/metadata")
-async def get_session_metadata(session_id: str):
-    """ICY-Metadata einer Session (Titelwechsel mit Zeitstempeln) aus der Titelliste in der Ablage"""
-    session = rec_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(404, "Session nicht gefunden")
-    entries = titel_eintraege(await aufnahmen.titelliste(session))
-    return {"entries": entries, "count": len(entries)}
-
-
 # === Segment-Endpoints ===
-
-@router.get("/segments")
-async def get_all_segments():
-    """Alle Segmente aller Sessions."""
-    segments = aufnahmen.alle_segmente()
-    return {"count": len(segments), "segments": segments}
-
 
 @router.get("/sessions/{session_id}/segments")
 async def get_segments(session_id: str):
@@ -185,19 +167,6 @@ async def split_session(session_id: str):
     """Nachträglich an den Titelwechseln der Titelliste teilen"""
     anzahl = await aufnahmen.nach_titeln_teilen(session_id)
     return {"success": True, "segments": anzahl}
-
-
-class CustomSplitRequest(BaseModel):
-    cut_points: list[float]
-    trim_start: bool = False  # Erstes Segment (Anfangsfragment) löschen
-    trim_end: bool = False    # Letztes Segment (Endfragment) löschen
-
-
-@router.post("/sessions/{session_id}/custom-split")
-async def custom_split_session(session_id: str, req: CustomSplitRequest):
-    """Manueller Schnitt an expliziten Zeitpunkten (vom Cutter-UI); neue Stücke gehen in die Ablage."""
-    result = await aufnahmen.neu_schneiden(session_id, req.cut_points, req.trim_start, req.trim_end)
-    return {"success": True, **result}
 
 
 def _aufraeumen(*pfade: str):

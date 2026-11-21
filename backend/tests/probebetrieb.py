@@ -1,6 +1,8 @@
 """Probebetrieb für Rauchtests der Oberfläche, nur am eigenen Rechner: die ganze App auf 127.0.0.1 mit einer KOPIE der
 Daten, Ablage im Speicher und nachgestellter Kellerwolke wie in den Tests (conftest.py). Anmelden mit beliebiger
-Kennung und dem Passwort "geheim"; ein echter Dienst wird nie gefragt.
+Kennung und dem Passwort "geheim"; ein echter Dienst wird nie gefragt. Damit Hören, Wellenform und Schnitt etwas zu
+tun haben, bekommt jedes Stück der Aufnahmen in der Kopie einen erzeugten Ton in der Testablage, und die nachgestellte
+Kellerwolke hat einige Ordner mit Audiodateien (RAD-17); die Töne liegen zwischengespeichert im Datenordner.
 
     RADIOHUB_DATEN=/pfad/zur/kopie .venv/bin/python tests/probebetrieb.py [port]      (im Ordner backend, Vorgabe 9091)
 
@@ -10,8 +12,11 @@ landet keine Änderung des Rauchtests in echten Daten.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
+import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -50,6 +55,36 @@ def datenordner() -> Path:
     return daten
 
 
+def ton(ziel: Path, sekunden: float, frequenz: int) -> Path:
+    """Ton mit wechselnder Lautstärke (die Wellenform zeigt etwas), Format nach der Endung; einmal erzeugt, dann gemerkt."""
+    if not ziel.exists():
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["ffmpeg", "-y", "-v", "quiet", "-f", "lavfi", "-i", f"sine=frequency={frequenz}:duration={sekunden:.1f}",
+                        "-af", "volume='0.25+0.75*abs(sin(t/2.3))':eval=frame", "-b:a", "96k", str(ziel)], check=True)
+    return ziel
+
+
+WOLKE = {   # Pfad in der nachgestellten Kellerwolke: (Sekunden, Frequenz)
+    "Musik/Konzerte/Probe im Keller.mp3": (95, 330), "Musik/Konzerte/Zugabe.mp3": (40, 440),
+    "Musik/Mitschnitte 2025/Sommerfest.mp3": (150, 262), "Hörspiele/Die Kiste, Folge 1.mp3": (120, 196),
+}
+
+
+async def toene_hinlegen(speicher, wolke, daten: Path) -> None:
+    """Jedem Stück der Aufnahmen und den Dateien der Kellerwolke einen Ton geben (nur in den Testablagen)."""
+    lager = daten / "probetoene"
+    with sqlite3.connect(daten / "radiohub.db") as db:
+        stuecke = db.execute("SELECT id, file_path, duration_ms FROM segments WHERE file_path IS NOT NULL").fetchall()
+    for kennung, pfad, dauer in stuecke:
+        endung = Path(pfad).suffix or ".mp3"
+        await speicher.ablegen(pfad, ton(lager / f"stueck_{kennung}{endung}", min(max((dauer or 10000) / 1000, 2), 600), 220 + kennung % 7 * 55))
+    for pfad, (sekunden, frequenz) in WOLKE.items():
+        await wolke.ablegen(pfad, ton(lager / "wolke" / Path(pfad).name, sekunden, frequenz))
+    nicht_audio = lager / "Brief.txt"
+    nicht_audio.write_text("kein Ton")
+    await wolke.ablegen("Dokumente/Brief.txt", nicht_audio)
+
+
 def main() -> None:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 9091
     daten = datenordner()
@@ -65,7 +100,8 @@ def main() -> None:
     from app.ablage import SpeicherAblage
     from app.main import app_bauen
 
-    ablage.vorgeben(SpeicherAblage())
+    speicher, wolke = ablage.vorgeben(SpeicherAblage()), ablage.wolke_setzen(SpeicherAblage())
+    asyncio.run(toene_hinlegen(speicher, wolke, daten))
     uvicorn.run(app_bauen(daten, transport=httpx.MockTransport(kellerwolke)), host="127.0.0.1", port=port, log_level="warning")
 
 

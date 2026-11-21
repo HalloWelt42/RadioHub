@@ -44,6 +44,7 @@
   --rh-licht-unbekannt: #1a1e24;               /* Qualität unbekannt: Lichter schraffiert */
   --rh-schraffur: rgb(255 255 255 / .08);      /* Schraffur auf dunklem Licht */
   --rh-favorit: var(--led-gelb);               /* Stern eines Favoriten */
+  --rh-verworfen: color-mix(in srgb, var(--led-rot) 16%, transparent);   /* verworfenes Stück im Schnitt */
   --rh-bildcode-grund: #fff;                    /* heller Grund unter Bildcodes (Bedanken), in beiden Themen lesbar */
   --rh-lack-1: #2759a6; --rh-lack-2: #23804a; --rh-lack-3: #b3302c; --rh-lack-4: #7442b8; --rh-lack-5: #8d5229; /* Lackflächen der Senderlogos ohne Bild */
   --rh-lack-6: #11807a; --rh-lack-7: #5f6b78; --rh-lack-8: #a0457a; --rh-lack-9: #3f6f8f; --rh-lack-10: #6b7a1f;

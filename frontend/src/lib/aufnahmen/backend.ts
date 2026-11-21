@@ -23,7 +23,7 @@ function luecken(roh: unknown): number {
 
 export function aufnahmeAus(r: Roh): Aufnahme {
   return {
-    id: String(r.id), sender: String(r.station_name ?? ""), beginn: String(r.start_time ?? ""), dauer: Number(r.duration) || 0,
+    id: String(r.id), sender: String(r.station_name ?? ""), senderUuid: String(r.station_uuid ?? ""), beginn: String(r.start_time ?? ""), dauer: Number(r.duration) || 0,
     groesse: Number(r.file_size) || 0, codec: String(r.codec ?? r.file_format ?? "").replace(/^\./, "").toUpperCase(),
     bitrate: r.bitrate ? Number(r.bitrate) : null, art: r.rec_type === "hls-rec" ? "puffer" : "direkt",
     ordnerId: r.folder_id ?? null, titelzahl: Number(r.segment_count) || 0, status: STATUS[r.status] ?? "fertig",

@@ -1072,11 +1072,12 @@ class RecorderManager:
         return rows, gesamt
 
     def get_session(self, session_id: str) -> Optional[dict]:
-        """Einzelne Session"""
+        """Einzelne Session, mit der Zahl ihrer Stücke wie in der Liste (get_sessions)"""
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute("SELECT * FROM sessions WHERE id = ?", (session_id,))
+            c.execute("SELECT s.*, (SELECT COUNT(*) FROM segments t WHERE t.session_id = s.id) AS segment_count "
+                      "FROM sessions s WHERE s.id = ?", (session_id,))
             row = c.fetchone()
             return dict(row) if row else None
 

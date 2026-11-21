@@ -24,6 +24,8 @@ async def test_aufnahme_schneiden_mit_verworfenem_stueck_und_rueckgaengig(client
     assert ende == {"type": "done", "count": 2}, ende
     neu = aufnahmen.segmente(sitzung["id"])
     assert [s["title"] for s in neu] == ["Mitte", "Schluss"] and all(s["file_path"] in speicher.dateien for s in neu)
+    assert neu[0]["start_ms"] == 0 and neu[1]["start_ms"] == neu[0]["end_ms"]          # ohne den Anfang zusammengerückt
+    assert abs(aufnahmen.sitzung(sitzung["id"])["duration"] - neu[1]["end_ms"] / 1000) < 0.01
     assert not any(p in speicher.dateien for _, p in vorher)                     # die alten liegen jetzt unter Schritte
     assert any("/Schritte/001/" in p for p in speicher.dateien)
     schritte = client.get("/api/schnitt/info", params={"art": "sitzung", "kennung": sitzung["id"]}).json()["schritte"]
@@ -45,7 +47,7 @@ async def test_datei_der_kellerwolke_ergebnis_daneben_original_bleibt(client, sp
     info = client.get("/api/schnitt/info", params=art).json()
     assert info["neben"] is True and info["stuecke"][0]["name"] == "Interview" and info["dauer"] > 5
     assert len(client.get("/api/schnitt/wellenform", params={**art, "start": 0, "dauer": 2}).content) > 0
-    stuecke = [{"von": 0, "bis": 3, "name": "", "behalten": False}, {"von": 3, "bis": 6, "name": ""}]
+    stuecke = [{"von": 0, "bis": 3, "name": "", "behalten": False}, {"von": 3, "bis": 6, "name": "Interview"}]  # vorgeschlagener Name
     assert _ereignisse(client.post("/api/schnitt/schneiden", json={**art, "stuecke": stuecke}))[-1]["type"] == "done"
     assert wolke_speicher.dateien["Interviews/Interview.mp3"] == inhalt                  # das Original bleibt
     assert "Interviews/Interview (geschnitten).mp3" in wolke_speicher.dateien
@@ -75,3 +77,13 @@ async def test_liste_der_aufnahmen_seitenweise_mit_suche_und_ordner(client, spei
     nach_name = client.get("/api/recording/sessions", params={"suche": "Suchfunk", "sort": "sender", "absteigend": False}).json()
     assert [s["station_name"] for s in nach_name["sessions"]] == ["Suchfunk Nord", "Suchfunk Süd"]
     assert client.get("/api/recording/sessions", params={"ordner": "x"}).status_code == 422
+
+
+async def test_schnitt_geht_auch_ohne_titelliste_in_der_ablage(client, speicher, tmp_path):
+    from app.database import db_session
+    sitzung = await _mit_stuecken(tmp_path, 1)
+    with db_session() as conn:
+        conn.execute("UPDATE sessions SET meta_file_path = ? WHERE id = ?", ("Aufnahmen/weg/Titelliste.json", sitzung["id"]))
+    info = client.get("/api/schnitt/info", params={"art": "sitzung", "kennung": sitzung["id"]})
+    assert info.status_code == 200, info.text
+    assert info.json()["titelwechsel"] == [] and len(info.json()["stuecke"]) == 1

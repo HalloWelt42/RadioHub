@@ -70,29 +70,13 @@ async def test_wiedergabe_mit_range(client, speicher, tmp_path):
 
 async def test_wellenform_entsteht_in_der_ablage(client, speicher, tmp_path):
     sitzung = await _mit_stuecken(tmp_path, 2)
-    info = client.get(f"/api/recording/sessions/{sitzung['id']}/peaks/info").json()
-    assert info["has_cache"] is False
-    antwort = client.get(f"/api/recording/sessions/{sitzung['id']}/peaks", params={"start": 1, "duration": 2})
-    assert antwort.status_code == 200
-    assert int(antwort.headers["x-chunk-samples"]) == 200 and len(antwort.content) == 800
+    art = {"art": "sitzung", "kennung": sitzung["id"]}
+    assert orte.wellenform(sitzung["file_path"]) not in speicher.dateien
+    antwort = client.get("/api/schnitt/wellenform", params={**art, "start": 1, "dauer": 2})
+    assert antwort.status_code == 200 and len(antwort.content) == 800    # 2 s zu 100 Werten, je 4 Bytes
     assert orte.wellenform(sitzung["file_path"]) in speicher.dateien
-    assert client.get(f"/api/recording/sessions/{sitzung['id']}/peaks/info").json()["has_cache"] is True
-    audio = client.get(f"/api/recording/sessions/{sitzung['id']}/audio")
-    assert audio.status_code == 200 and len(audio.content) > 0
-
-
-async def test_schnitt_schreibt_neue_stuecke_und_raeumt_alte_in_den_papierkorb(client, speicher, tmp_path):
-    sitzung = await _mit_stuecken(tmp_path, 2)
-    alte = {s["file_path"] for s in aufnahmen.segmente(sitzung["id"])}
-    antwort = client.post(f"/api/recording/sessions/{sitzung['id']}/custom-split",
-                          json={"cut_points": [2.0, 5.0], "trim_start": True})
-    assert antwort.status_code == 200, antwort.text
-    assert antwort.json()["segments"] == 2 and antwort.json()["trimmed"] == 1
-    neue = aufnahmen.segmente(sitzung["id"])
-    assert [s["segment_index"] for s in neue] == [0, 1]
-    assert all(s["file_path"] in speicher.dateien for s in neue)
-    assert all(p in speicher.papierkorb for p in alte - {s["file_path"] for s in neue})
-    assert not any(get_arbeit_dir("schnitt").glob(f"{sitzung['id']}*"))
+    ton = client.get("/api/schnitt/ton", params=art)
+    assert ton.status_code == 200 and len(ton.content) > 0
 
 
 async def test_segment_und_sitzung_loeschen_gehen_in_den_papierkorb(client, speicher, tmp_path):
@@ -121,19 +105,6 @@ async def test_verschieben_in_eigenen_ordner_und_umbenennen(client, speicher, tm
     assert aufnahmen.sitzung(sitzung["id"])["file_path"] == f"Aufnahmen/Live/Testfunk/{zeit}"
     antwort = client.delete(f"/api/recording/folders/{ordner['id']}")
     assert antwort.status_code == 400  # noch eine Aufnahme darin
-
-
-async def test_explorer_listet_und_loescht_ueber_die_ablage(client, speicher, tmp_path):
-    sitzung = await _mit_stuecken(tmp_path, 2)
-    daten = client.get("/api/files/recordings").json()
-    ordner = next(f for f in daten["folders"] if f["dir_name"] == "Testfunk")
-    assert ordner["orphaned"] is False and ordner["file_count"] >= 2
-    pfad = aufnahmen.segmente(sitzung["id"])[0]["file_path"]
-    assert client.delete("/api/files/delete", params={"path": pfad}).status_code == 200
-    assert pfad in speicher.papierkorb and len(aufnahmen.segmente(sitzung["id"])) == 1
-    assert client.delete("/api/files/delete", params={"path": "../geheim"}).status_code == 403
-    zip_antwort = client.post("/api/files/download-zip", json={"files": [aufnahmen.segmente(sitzung["id"])[0]["file_path"]]})
-    assert zip_antwort.status_code == 200 and zip_antwort.content[:2] == b"PK"
 
 
 async def test_aufnahme_abschliessen_legt_rest_und_titelliste_ab(speicher, tmp_path):
@@ -168,17 +139,17 @@ async def test_liegengebliebene_aufnahme_wird_nachgeholt(speicher, tmp_path):
 async def test_ohne_ablage_kommt_eine_klare_meldung(client, tmp_path):
     from app.ablage import KeineAblage, vorgeben
     vorgeben(KeineAblage("Kellerwolke nicht eingerichtet"))
-    antwort = client.get("/api/files/recordings")
+    antwort = client.get("/api/recordings/play", params={"path": "Aufnahmen/Testfunk/x.mp3"})
     assert antwort.status_code == 503 and "nicht eingerichtet" in antwort.json()["detail"]
 
 
-async def test_umwandeln_schreibt_neue_datei_und_normalisieren_neue_version(client, speicher, tmp_path):
+async def test_umwandeln_legt_neue_stuecke_ab_und_geht_rueckgaengig(client, speicher, tmp_path):
     sitzung = await _mit_stuecken(tmp_path, 1)
+    art = {"art": "sitzung", "kennung": sitzung["id"]}
     alt = aufnahmen.segmente(sitzung["id"])[0]["file_path"]
-    strom = client.post(f"/api/recording/sessions/{sitzung['id']}/convert", json={"format": "aac", "bitrate": 64})
+    strom = client.post("/api/schnitt/umwandeln", json={**art, "format": "aac", "bitrate": 64, "mono": False})
     assert '"type": "done"' in strom.text, strom.text
     neu = aufnahmen.segmente(sitzung["id"])[0]["file_path"]
-    assert neu == alt[:-4] + ".m4a" and neu in speicher.dateien and alt in speicher.papierkorb
-    strom = client.post(f"/api/recording/sessions/{sitzung['id']}/normalize", json={"target_lufs": -18})
-    assert '"type": "done"' in strom.text, strom.text
-    assert speicher.versionen[neu] == 2
+    assert neu.endswith(".m4a") and neu in speicher.dateien and alt not in speicher.dateien
+    assert client.post("/api/schnitt/rueckgaengig", json=art).status_code == 200
+    assert aufnahmen.segmente(sitzung["id"])[0]["file_path"] == alt and alt in speicher.dateien

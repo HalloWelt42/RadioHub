@@ -2,7 +2,7 @@
 RadioHub - Recordings Router
 
 Statistik der Aufnahmen und Wiedergabe einer Datei aus der Ablage (Pfad relativ zur Wurzel der Ablage).
-Ordner und Dateien zeigt der Datei-Explorer (routers/file_explorer.py).
+Ordner und Dateien zeigen die Aufnahmen (routers/recording.py) und die Kellerwolke (routers/wolke.py).
 """
 import shutil
 

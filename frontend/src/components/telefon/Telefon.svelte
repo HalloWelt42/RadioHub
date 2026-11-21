@@ -1,6 +1,6 @@
 <script>
   /**
-   * Telefonansicht: nur Radio und Podcasts, Spielerleiste über der Fußleiste, Spieler als Vollbild, quer die
+   * Telefonansicht: Radio, Aufnahmen (nur hören) und Podcasts, Spielerleiste über der Fußleiste, Spieler als Vollbild, quer die
    * Weckeransicht. Kopf, Fußleiste, Höhe und sichere Ränder kommen allein aus dem Rahmen des Appkerns (data-rahmen,
    * Klassen der Telefonansicht .mobil, .t-kopf, .t-inhalt, .t-reiter); quer zeichnet die Weckeransicht den ganzen Schirm
    * selbst. Eigenes Audio-Element (die Rechneransicht ist nicht geladen), es bleibt beim Drehen dasselbe; die
@@ -17,6 +17,7 @@
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import TelefonRadio from './TelefonRadio.svelte';
   import TelefonPodcasts from './TelefonPodcasts.svelte';
+  import TelefonAufnahmen from './TelefonAufnahmen.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
   import TelefonWecker from './TelefonWecker.svelte';
   import TelefonWeckerListe from './TelefonWeckerListe.svelte';
@@ -24,7 +25,7 @@
   import Meldung from '../../schale/Meldung.svelte';
 
   /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
-  let { angebot = { podcasts: true, wecker: true, backend: true } } = $props();
+  let { angebot = { podcasts: true, aufnahmen: true, wecker: true, backend: true } } = $props();
 
   let audioEl = $state();
   let zeit = $state(0);
@@ -123,6 +124,7 @@
 
   const titel = $derived(
     appState.activeTab === 'podcasts' ? t('telefon.podcasts')
+      : appState.activeTab === 'recordings' ? t('aufnahmenAnsicht.telefon.aufnahmen')
       : appState.activeTab === 'wecker' ? t('telefon.wecker') : t('telefon.radio')
   );
 </script>
@@ -149,6 +151,8 @@
           class:tf-radio-inhalt={appState.activeTab !== "podcasts" && appState.activeTab !== "wecker"} data-rahmen="inhalt">
       {#if appState.activeTab === 'podcasts' && angebot.podcasts}
         <TelefonPodcasts />
+      {:else if appState.activeTab === 'recordings' && angebot.aufnahmen}
+        <TelefonAufnahmen />
       {:else if appState.activeTab === 'wecker' && angebot.wecker}
         <TelefonWeckerListe />
       {:else}
@@ -163,6 +167,11 @@
       <button class:aktiv={appState.activeTab === 'radio'} onclick={() => actions.navigateTo('/radio')}>
         <i class="fa-solid fa-radio"></i><span class="t-reiter-name">{t('telefon.radio')}</span>
       </button>
+      {#if angebot.aufnahmen}
+      <button class:aktiv={appState.activeTab === 'recordings'} onclick={() => actions.navigateTo('/aufnahmen')}>
+        <i class="fa-solid fa-circle-dot"></i><span class="t-reiter-name">{t('aufnahmenAnsicht.telefon.aufnahmen')}</span>
+      </button>
+      {/if}
       <button class:aktiv={appState.activeTab === 'podcasts'} onclick={() => actions.navigateTo('/podcasts')}>
         <i class="fa-solid fa-podcast"></i><span class="t-reiter-name">{t('telefon.podcasts')}</span>
       </button>

@@ -16,7 +16,7 @@
   import { starten as aktualisierungStarten } from "../lib/aktualisierung.svelte.js";
 
   const BEREICHE = ["radio", "settings"] as const;
-  const TELEFON = { podcasts: false, wecker: true, backend: false };
+  const TELEFON = { podcasts: false, aufnahmen: false, wecker: true, backend: false };
 
   // Adresse und Bereich (Zurück und Vor im Browser); es gibt Radio, die Einstellungen (ohne Server: Allgemein,
   // Darstellung, Radio, Wecker und Zeitansage, RAD-11) und am Telefon den Wecker

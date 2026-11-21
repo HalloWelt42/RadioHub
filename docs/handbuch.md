@@ -58,6 +58,26 @@ Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespe
 die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
 Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
 
+Aufnahmen am Rechner (RAD-17, wie die Podcasts): links oben die Quelle, eigene Aufnahmen oder die ganze Kellerwolke.
+Bei den Aufnahmen die Ordner mit Zahl; das rote Licht und der Kreis zeigen, wohin neue Aufnahmen gehen (ein Klick auf
+den Kreis macht einen Ordner zum Ziel), umbenennen an Ort und Stelle, löschen nur leer. Oben Zählwerk, Suche nach
+Sender und Titel, Sortierung über den Tabellenkopf; alles steht in der Adresse (`/aufnahmen?ordner=3&sort=dauer`, eine
+Aufnahme `/aufnahmen/<Kennung>`, ihr Schnitt `/aufnahmen/<Kennung>/schnitt`). Läuft eine Aufnahme, steht oben ihr Kopf
+mit erkannten Titeln, Uhr und "Aufnahme beenden". Eine gewählte Aufnahme zeigt ihren Kopf (Hören, Schneiden, Nach
+Titeln teilen, Titel als ZIP, als eine Datei, Ordner, Löschen mit Rückfrage) und ihre Titel (ab hier hören, laden,
+schneiden, für künftige Aufnahmen sperren, löschen). Die Kellerwolke zeigt Ordner für Ordner nur Audiodateien zum
+Hören, Schneiden und Laden; dafür braucht RadioHub dort die Freigabe "Alles lesen" (Kellerwolke > Einstellungen >
+Zugänge), sonst sagt die Seite das.
+Der Schnitt nimmt die ganze Breite: Wellenform mit Übersicht, Marker per Knopf, Doppelklick, Taste M oder aus den
+Titeln, ziehen zum Verschieben, Entf entfernt den nächsten; zwischen den Markern die Stücke mit Namen und Behalten oder
+Weg. Schneiden fragt vorher und nennt, wohin es geht: bei einer Aufnahme ersetzt es ihre Stücke (die verworfenen fehlen
+danach, die übrigen rücken zusammen), bei einer Datei der Kellerwolke entsteht eine neue Datei daneben und das Original
+bleibt (darf RadioHub dort nicht schreiben, im eigenen Ordner `Schnitt/<Ordner>`). Normalisieren auf -16 LUFS und
+Umwandeln (MP3, OGG, AAC, Bitrate, Mono) gehen genauso. Jeder Schritt lässt sich zurücknehmen: eine Aufnahme hält die
+vorige Fassung im Unterordner `Schritte/<Nr>` ihres Ordners, eine Datei legt das Ergebnis beim Rückgängig in den
+Papierkorb; die letzten zehn Schritte bleiben. Am Telefon gibt es den Reiter Aufnahmen nur zum Hören (Suche, Ordner,
+Titel, Alles hören).
+
 Einstellungen (RAD-11): links die Bereiche Allgemein, Darstellung, Radio, Wiedergabe, Aufnahmen, Podcasts, Wecker und
 Zeitansage, Ablage, Dienste (Basic: Allgemein, Darstellung, Radio, Wecker und Zeitansage), oben Pfad und Reiter. Jede
 Zeile nennt ihre Geltung: "Alle Geräte" (liegt auf dem Server, wartet mit einem Punkt in der Leiste unten, bis

@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..ablage import ablage, orte
-from ..ablage.port import Eintrag
+from ..ablage.port import Eintrag, NichtGefunden
 from ..config import AUDIO_EXTENSIONS, get_arbeit_dir
 from ..database import db_session
 from .audio_utils import probe_duration
@@ -127,12 +127,13 @@ class Aufnahmen:
         return pfad
 
     async def titelliste(self, sitzung: dict) -> dict | list | None:
+        """Die Titelliste der Aufnahme; fehlt sie in der Ablage (gelöscht, nie abgelegt), gibt es eben keine."""
         pfad = sitzung.get("meta_file_path")
         if not pfad:
             return None
         try:
             return json.loads(await ablage().lesen_ganz(pfad))
-        except (ValueError, OSError):
+        except (ValueError, OSError, NichtGefunden):
             return None
 
     async def rest_ablegen(self, session_id: str, arbeitsordner: Path, start_ms: int) -> int:
@@ -255,11 +256,6 @@ class Aufnahmen:
             finally:
                 peaks.unlink(missing_ok=True)
 
-    async def wellenform_vorhanden(self, session_id: str) -> Optional[Eintrag]:
-        sitzung = self._bereit(session_id)
-        eintrag = await ablage().eintrag(orte.wellenform(sitzung["file_path"]))
-        return eintrag if eintrag and eintrag.groesse > 0 else None
-
     # --- Schneiden --------------------------------------------------------------------------------------------------
 
     async def _ersetzen(self, sitzung: dict, stuecke: list[Stueck]) -> int:
@@ -290,35 +286,6 @@ class Aufnahmen:
 
     def _endung(self, sitzung: dict, kopie: Path) -> str:
         return kopie.suffix or sitzung.get("file_format") or ".mp3"
-
-    async def neu_schneiden(self, session_id: str, schnittpunkte: list[float], trim_start: bool = False,
-                            trim_end: bool = False) -> dict:
-        """Schnitt aus dem Schnittplatz: an den Zeitpunkten teilen, auf Wunsch Anfang und Ende verwerfen."""
-        sitzung = self._bereit(session_id)
-        if not schnittpunkte:
-            raise AufnahmeFehler("Keine Schnittpunkte angegeben")
-        kopie = await self.arbeitskopie(session_id)
-        titel = titel_eintraege(await self.titelliste(sitzung))
-        dauer = await probe_duration(kopie) or sitzung.get("duration") or 0
-        ziel_dir = get_arbeit_dir("schnitt", f"{session_id}_neu")
-        try:
-            stuecke = await splitter.an_zeiten(kopie, schnittpunkte, dauer, self._endung(sitzung, kopie), ziel_dir,
-                                               titel)
-            if not stuecke:
-                raise AufnahmeFehler("Schnitt fehlgeschlagen", 500)
-            weg = 0
-            if trim_end and len(stuecke) > 1:
-                stuecke.pop().datei.unlink(missing_ok=True)
-                weg += 1
-            if trim_start and len(stuecke) > 1:
-                stuecke.pop(0).datei.unlink(missing_ok=True)
-                weg += 1
-            anzahl = await self._ersetzen(sitzung, stuecke)
-        finally:
-            shutil.rmtree(ziel_dir, ignore_errors=True)
-        if weg:
-            await self._veraendert(sitzung)
-        return {"segments": anzahl, "trimmed": weg}
 
     async def nach_titeln_teilen(self, session_id: str) -> int:
         """Nachträglich an den Titelwechseln der Titelliste teilen (nur eine noch ungeteilte Aufnahme)."""

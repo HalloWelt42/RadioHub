@@ -49,10 +49,6 @@ async def test_download_landet_in_der_ablage(client, speicher):
     teil = client.get(f"/api/podcasts/episodes/{episode_id}/play", headers={"Range": "bytes=0-9"})
     assert teil.status_code == 206 and teil.content == inhalt[:10]
 
-    dateien = client.get("/api/files/podcasts").json()
-    ordner = next(f for f in dateien["folders"] if f["name"] == "Zeitfragen Wissen")
-    assert ordner["orphaned"] is False and ordner["files"][0]["path"] == pfad
-
     assert client.delete(f"/api/podcasts/episodes/{episode_id}/download").status_code == 200
     assert pfad in speicher.papierkorb
     assert (await podcast_service.get_episode(episode_id))["is_downloaded"] == 0

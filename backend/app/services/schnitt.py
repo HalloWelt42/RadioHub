@@ -140,6 +140,10 @@ class Gegenstand(ABC):
                 if w is not None and w.name.strip():
                     s.titel = w.name.strip()
                 uebrig.append(s)
+            stelle = 0                          # ohne die verworfenen rücken die übrigen zusammen
+            for s in uebrig:
+                s.start_ms, s.end_ms = stelle, stelle + s.dauer_ms
+                stelle = s.end_ms
             fortschritt(3, 3, "Ablegen")
             weg = len(stuecke) - len(uebrig)
             was = f"Geschnitten in {len(uebrig)} {'Stück' if len(uebrig) == 1 else 'Stücke'}" + (f", {weg} verworfen" if weg else "")
@@ -226,8 +230,9 @@ class SitzungGegenstand(Gegenstand):
                                 file_path, file_size) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                              (self.kennung, z["segment_index"], z["title"], z["start_ms"], z["end_ms"],
                               z["duration_ms"], z["file_path"], z["file_size"]))
-            conn.execute("UPDATE sessions SET file_size = ? WHERE id = ?",
-                         (sum(z["file_size"] or 0 for z in zeilen), self.kennung))
+            # Größe und Länge der Aufnahme folgen ihren Stücken (nach dem Schneiden fehlen die verworfenen)
+            conn.execute("UPDATE sessions SET file_size = ?, duration = ? WHERE id = ?",
+                         (sum(z["file_size"] or 0 for z in zeilen), sum(z["duration_ms"] or 0 for z in zeilen) / 1000, self.kennung))
 
     def _titel(self) -> list[dict] | None:
         return None                 # Namen kommen aus der Wahl des Schnitts (dort vorbelegt mit den Titeln)
@@ -361,7 +366,9 @@ class DateiGegenstand(Gegenstand):
 
     async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str) -> int:
         stamm = PurePosixPath(self.kennung).stem
-        namen = [s.titel if s.titel and not s.titel.startswith("Teil ") else f"{stamm} {i + 1}" for i, s in enumerate(stuecke)]
+        # eigener Name, sonst nummeriert nach dem Original (der vorgeschlagene Name ist der des Originals selbst)
+        eigen = lambda t: bool(t) and not t.startswith("Teil ") and t != stamm
+        namen = [s.titel if eigen(s.titel) else f"{stamm} {i + 1}" for i, s in enumerate(stuecke)]
         if len(stuecke) == 1 and namen[0] == f"{stamm} 1":
             namen = [f"{stamm} (geschnitten)"]
         return await self._ablegen(list(zip(namen, (s.datei for s in stuecke))), was)
