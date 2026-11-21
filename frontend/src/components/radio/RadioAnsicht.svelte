@@ -222,7 +222,7 @@
           <SenderZeile eintrag={e} spielt={spielend === e.uuid} aufnahme={appState.isRecording} titel={appState.streamTitle}
                        offen={filterzustand.offen === e.uuid} fokus={fokus === i} variantenOffen={variantenOffen.includes(e.uuid)} {spielend} {kategorien}
                        onspielen={spielen} ondetails={() => details(e)} onvarianten={() => varianten(e)} onfavorit={() => bedienung.favorit(e)}
-                       onausblenden={() => ausblenden(e)} onaendern={(teil) => liste.aendern(e.uuid, teil)} />
+                       onausblenden={() => ausblenden(e)} oneinblenden={() => void bedienung.einblenden(e)} onaendern={(teil) => liste.aendern(e.uuid, teil)} />
         {/each}
         <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()}
                    einheit={t("radio.geladen")} />

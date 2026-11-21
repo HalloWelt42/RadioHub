@@ -35,6 +35,7 @@ export default {
   gemessen: 'measured',
   gemessenHilfe: 'from measured bitrate and codec',
   codec: 'Codec',
+  codecUndBitrate: 'Codec and bitrate',
   unbekannt: 'unknown',
   eigeneBewertung: 'My assessment',
   einschaetzungHinweis: 'only for me, used in filters and rules',
@@ -63,7 +64,7 @@ export default {
   treffer: 'Matches',
   trefferHilfe: 'Total matches for the selection, not only the loaded ones',
   vonSichtbaren: 'of {n} visible',
-  suchePlatzhalter: 'Station, genre or place, -word leaves out',
+  suchePlatzhalter: 'Station, genre or place; -word excludes',
   sucheMinusHilfe: 'Search by station, genre or place. A word with a minus in front leaves out every station containing it, e.g.: jazz -ads -shop',
   sucheLabel: 'Search stations',
   sucheLeeren: 'Clear search',
@@ -109,6 +110,10 @@ export default {
   ausFavoriten: 'Remove from favourites',
   ausblendenHilfe: 'Hide station; can be undone',
   ausblendenVon: 'Hide {name}',
+  einblendenHilfe: 'Show again',
+  einblendenVon: 'Show {name} again',
+  ausgeblendetFavorit: 'hidden, favourite',
+  ausgeblendetFavoritHilfe: 'Hidden, but stays visible while it is a favourite; without the star it leaves the list',
   details: 'Details',
   detailsZu: 'Details of {name}',
   stimmenHilfeZeile: 'Popularity: listener votes in the station directory',
@@ -161,7 +166,9 @@ export default {
   // Undo band
   rueckgaengig: 'Undo',
   bandAusgeblendet: 'hidden',
-  bandBleibtFavorit: 'blocked, stays visible as a favourite',
+  bandBleibtFavorit: 'hidden; stays visible as a favourite until you remove the star',
+  bandKeinFavoritMehr: 'no longer a favourite and therefore hidden',
+  bandEingeblendet: 'shown again',
   bandListe: 'List',
 
   // Phone

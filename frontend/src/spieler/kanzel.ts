@@ -253,9 +253,11 @@ export function nachbar(s: Stand, schritt: -1 | 1): string | null {
   return s.stations[(i + schritt + n) % n]?.name ?? null;
 }
 
-/** Senderwechsel und Blättern möglich (wie HiFiPlayer): Senderliste, Folge oder Aufnahmen mit mehr als einem Eintrag */
+/** Senderwechsel und Blättern möglich: ein laufender Sender in einer Liste mit Nachbarn, eine Folge oder Aufnahmen mit
+ *  mehr als einem Eintrag. Ohne laufenden Sender springt Vor und Zurück nirgendwohin, die Tasten sind dann gesperrt
+ *  statt wirkungslos (RAD-28). */
 export const kannBlaettern = (s: Stand): boolean =>
-  s.stations.length > 0 || !!s.currentEpisode || (s.playerMode === "recording" && s.recordingPlaylist.length > 1);
+  (!!s.currentStation && s.stations.length > 1) || !!s.currentEpisode || (s.playerMode === "recording" && s.recordingPlaylist.length > 1);
 
 export const kannModusWechseln = (s: Stand): boolean =>
   !s.isRecording && !s.currentEpisode && ((s.playerMode === "hls" && s.canPlayDirect) || (s.playerMode === "direct" && s.canPlayHLS === true));

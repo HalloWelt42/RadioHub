@@ -45,7 +45,8 @@
     { id: "allgemein", symbol: "fa-gear", reiter: [
       ...(S ? [r("bedienung", "fa-hand-pointer", [
         { karte: "sprache", symbol: "fa-language", felder: ["language", "ui_click_sounds"] },
-        { karte: "fehlersuche", symbol: "fa-stethoscope", felder: ["geraet:entwickleransicht"] }])] : []),
+        { karte: "fehlersuche", symbol: "fa-stethoscope", felder: ["geraet:entwickleransicht"] }])]
+        : [r("bedienung", "fa-hand-pointer", [{ karte: "spracheGeraet", symbol: "fa-language", felder: ["geraet:sprache"] }])]),
       r("tastatur", "fa-keyboard", [{ teil: TastaturTeil }]),
       r("ueber", "fa-circle-info", [{ teil: UeberTeil }]),
       r("bedanken", "fa-heart", [{ teil: BedankenTeil }]),

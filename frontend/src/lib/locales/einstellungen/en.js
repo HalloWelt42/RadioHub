@@ -11,7 +11,7 @@ export default {
     technik: 'Technical', zeitansage: 'Time announcement', ort: 'Location',
   },
   karte: {
-    sprache: 'Language and sounds', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
+    sprache: 'Language and sounds', spracheGeraet: 'Language', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
     zeitversatz: 'Time shift', aufnahme: 'Recording', abruf: 'Fetching subscriptions', zeitansage: 'Time announcement', stimme: 'Voice',
     kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', helfer: 'Services in the home network', zugang: 'Access',
     abgleich: 'Nightly sync',
@@ -44,6 +44,7 @@ export default {
   ladeFehler: 'The server settings cannot be reached right now: {grund}', nochmal: 'Try again',
   laedt: 'Loading settings',
   geraet: {
+    sprache: 'Language', spracheHilfe: 'Language of the interface on this device.',
     vorlage: 'Style', vorlageHilfe: 'Look of all controls.',
     thema: 'Mode', themaHilfe: 'Light, dark or as the device is set.',
     schrift: 'Text size', schriftHilfe: 'Size of all text; controls grow with it.',

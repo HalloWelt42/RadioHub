@@ -35,6 +35,7 @@ export default {
   gemessen: 'gemessen',
   gemessenHilfe: 'aus gemessener Bitrate und Codec',
   codec: 'Codec',
+  codecUndBitrate: 'Codec und Bitrate',
   unbekannt: 'unbekannt',
   eigeneBewertung: 'Meine Einschätzung',
   einschaetzungHinweis: 'nur für mich, wirkt in Filtern und Regeln',
@@ -63,7 +64,7 @@ export default {
   treffer: 'Treffer',
   trefferHilfe: 'Treffer gesamt für die Auswahl, nicht nur die geladenen',
   vonSichtbaren: 'von {n} sichtbaren',
-  suchePlatzhalter: 'Sender, Genre oder Ort, -Wort lässt weg',
+  suchePlatzhalter: 'Sender, Genre oder Ort; -Wort schließt aus',
   sucheMinusHilfe: 'Suche nach Sender, Genre oder Ort. Ein Wort mit Minus davor lässt alle Sender weg, die es enthalten, etwa: jazz -werbung -shop',
   sucheLabel: 'Sender suchen',
   sucheLeeren: 'Suche leeren',
@@ -109,6 +110,10 @@ export default {
   ausFavoriten: 'Aus den Favoriten nehmen',
   ausblendenHilfe: 'Sender ausblenden; lässt sich rückgängig machen',
   ausblendenVon: '{name} ausblenden',
+  einblendenHilfe: 'Wieder einblenden',
+  einblendenVon: '{name} wieder einblenden',
+  ausgeblendetFavorit: 'ausgeblendet, Favorit',
+  ausgeblendetFavoritHilfe: 'Ausgeblendet, bleibt aber sichtbar, solange er ein Favorit ist; ohne Stern verschwindet er aus der Liste',
   details: 'Details',
   detailsZu: 'Details zu {name}',
   stimmenHilfeZeile: 'Beliebtheit: Stimmen von Hörern im Senderverzeichnis',
@@ -161,7 +166,9 @@ export default {
   // Rückgängig-Band
   rueckgaengig: 'Rückgängig',
   bandAusgeblendet: 'ausgeblendet',
-  bandBleibtFavorit: 'ausgeblendet, bleibt als Favorit sichtbar',
+  bandBleibtFavorit: 'ausgeblendet; bleibt als Favorit sichtbar, bis du den Stern entfernst',
+  bandKeinFavoritMehr: 'kein Favorit mehr und darum ausgeblendet',
+  bandEingeblendet: 'wieder eingeblendet',
   bandListe: 'Liste',
 
   // Telefon

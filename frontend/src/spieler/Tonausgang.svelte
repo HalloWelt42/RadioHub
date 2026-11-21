@@ -1,29 +1,35 @@
 <script lang="ts">
-  // Tonausgang am Rechner: das eine Audio-Element (die Schnittansicht greift per document.querySelector("audio") darauf
-  // zu), angebunden an die Engine (lib/playerEngine.js) wie bisher in HiFiPlayer. Dazu, was nur am Rechner läuft: beim
+  // Tonausgang am Rechner: hängt die Kanzel an das eine Tonelement der Seite (spieler/tonelement.ts, bleibt beim Wechsel
+  // zwischen Rechner und Telefon bestehen, RAD-28). Dazu, was nur am Rechner läuft: beim
   // Start eine laufende Aufnahme wiederherstellen, Lautstärke angleichen, den Titel des Senders alle 15 Sekunden
   // abfragen und die Hördauer des Senders zählen. Was das Element meldet, landet in der Wiedergabe der Kanzel.
   import { app } from "./app";
   import { api } from "../lib/api.js";
   import * as engine from "../lib/playerEngine.js";
+  import { anhaengen, tonelement } from "./tonelement";
   import type { Wiedergabe } from "./wiedergabe.svelte";
 
   let { wiedergabe }: { wiedergabe: Wiedergabe } = $props();
 
   const TITEL_TAKT_MS = 15000;
 
-  let audio = $state<HTMLAudioElement>();
+  const audio = tonelement();
 
-  // Engine an das Element binden, eine beim Neuladen laufende Aufnahme wiederherstellen
+  // eine beim Neuladen laufende Aufnahme wiederherstellen; die Meldungen des Elements in die Wiedergabe der Kanzel
   $effect(() => {
-    if (!audio) return;
-    engine.init(audio, app);
     engine.checkAndRecoverRecordingState();
+    const zeit = () => wiedergabe.zeitAktualisieren();
+    return anhaengen({
+      timeupdate: zeit, loadedmetadata: zeit, durationchange: zeit,
+      seeking: () => (wiedergabe.sucht = true), seeked: () => (wiedergabe.sucht = false),
+      loadstart: () => wiedergabe.laden(), waiting: () => wiedergabe.warten(), playing: () => wiedergabe.spielen(),
+      error: () => wiedergabe.fehler(audio.error?.code),
+    });
   });
 
   // Lautstärke angleichen (auch wenn sie über die Tastatur kommt)
   $effect(() => {
-    if (audio) audio.volume = app.volume / 100;
+    audio.volume = app.volume / 100;
   });
 
   // Titel des Senders: sofort, dann alle 15 Sekunden, solange ein Sender mit Titelangabe (ICY) spielt
@@ -60,19 +66,3 @@
     return () => clearInterval(uhr);
   });
 </script>
-
-<!-- ohne crossorigin: Ströme kommen in Basic direkt vom Sender, und die meisten Sender schicken keine CORS-Kopfzeilen;
-     mit dem Merkmal verweigerte der Browser sie ganz (RAD-10). Keine Auswertung braucht den Ton im Skript. -->
-<audio
-  bind:this={audio}
-  ontimeupdate={() => wiedergabe.zeitAktualisieren()}
-  onloadedmetadata={() => wiedergabe.zeitAktualisieren()}
-  ondurationchange={() => wiedergabe.zeitAktualisieren()}
-  onseeking={() => (wiedergabe.sucht = true)}
-  onseeked={() => (wiedergabe.sucht = false)}
-  onloadstart={() => wiedergabe.laden()}
-  onwaiting={() => wiedergabe.warten()}
-  onplaying={() => wiedergabe.spielen()}
-  onended={() => engine.handleEnded()}
-  onerror={(e) => { engine.handleError(e); wiedergabe.fehler(audio?.error?.code); }}
-></audio>

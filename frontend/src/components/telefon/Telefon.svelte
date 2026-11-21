@@ -3,7 +3,7 @@
    * Telefonansicht: Radio, Aufnahmen (nur hören) und Podcasts, Spielerleiste über der Fußleiste, Spieler als Vollbild, quer die
    * Weckeransicht. Kopf, Fußleiste, Höhe und sichere Ränder kommen allein aus dem Rahmen des Appkerns (data-rahmen,
    * Klassen der Telefonansicht .mobil, .t-kopf, .t-inhalt, .t-reiter); quer zeichnet die Weckeransicht den ganzen Schirm
-   * selbst. Eigenes Audio-Element (die Rechneransicht ist nicht geladen), es bleibt beim Drehen dasselbe; die
+   * selbst. Das Tonelement ist das eine der Seite (spieler/tonelement.ts), es bleibt beim Drehen und beim Wechsel zum Rechner dasselbe; die
    * Wiedergabe steuert dieselbe playerEngine wie am Rechner.
    */
   import * as engine from '../../lib/playerEngine.js';
@@ -15,6 +15,7 @@
   import * as medien from '../../lib/telefon/medien.js';
   import { radioSetzen } from '../../lib/telefon/zeitansage.svelte.js';
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
+  import { anhaengen, tonelement } from '../../spieler/tonelement';
   import TelefonRadio from './TelefonRadio.svelte';
   import TelefonPodcasts from './TelefonPodcasts.svelte';
   import TelefonAufnahmen from './TelefonAufnahmen.svelte';
@@ -27,17 +28,16 @@
   /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
   let { angebot = { podcasts: true, aufnahmen: true, wecker: true, backend: true } } = $props();
 
-  let audioEl = $state();
+  // das eine Tonelement der Seite (bleibt beim Wechsel zwischen Rechner und Telefon bestehen, RAD-28)
+  const audioEl = tonelement();
   let zeit = $state(0);
   let dauer = $state(0);
   let spielerOffen = $state(false);
   let einstellungenOffen = $state(false);
 
   $effect(() => {
-    if (audioEl) {
-      engine.init(audioEl, appState);
-      radioSetzen(audioEl);
-    }
+    radioSetzen(audioEl);
+    return anhaengen({ timeupdate: zeitAktualisieren, loadedmetadata: zeitAktualisieren });
   });
 
   // Favoriten und Abos beim Start und wieder, wenn die App nach vorn kommt (die Ansicht bleibt am Telefon und am
@@ -184,9 +184,6 @@
     <TelefonEinstellungen onschliessen={() => (einstellungenOffen = false)} angebot={{ wecker: angebot.wecker, backend: angebot.backend }} />
   {/if}
 
-  <!-- svelte-ignore a11y_media_has_caption -->
-  <audio bind:this={audioEl} preload="none" ontimeupdate={zeitAktualisieren} onloadedmetadata={zeitAktualisieren}
-    onended={() => engine.handleEnded()} onerror={(e) => engine.handleError(e)}></audio>
 </div>
 
 <style>

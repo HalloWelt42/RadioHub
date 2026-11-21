@@ -9,6 +9,7 @@
   import { appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
+  import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
   import { bewertungName, format, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
   import { aktive, ohne, umschalten, zuAbfrage, zurueckgesetzt, type Chip, type Schnellfilter } from "../../lib/radio/schnellfilter";
@@ -17,6 +18,7 @@
   import Guete from "../radio/Guete.svelte";
   import Logo from "../radio/Logo.svelte";
   import Schnellwahl from "../radio/Schnellwahl.svelte";
+  import BitrateWahl from "../radio/BitrateWahl.svelte";
   import Sterne from "../radio/Sterne.svelte";
   import Suchfeld from "../radio/Suchfeld.svelte";
   import Varianten from "../radio/Varianten.svelte";
@@ -119,18 +121,23 @@
       {#each liste.eintraege as e (e.uuid)}
         {@const spielt = spielend === e.uuid}
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-        <div class="tf-sender" class:spielt onclick={() => void bedienung.spielen(e)}>
+        <div class="tf-sender" class:spielt class:rh-ausgeblendet={einzelnAusgeblendet(e)} onclick={() => void bedienung.spielen(e)}>
           <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
           <div><b title={e.name}>{e.name}</b>
             <div class="tf-meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<Guete stufe={e.qualitaet} /><span>{format(e)}</span>
-              {#if e.varianten > 1}<button class="t-var" type="button" aria-expanded={offeneVarianten === e.uuid}
+              {#if e.varianten > 1}<button class="t-var" type="button" aria-expanded={offeneVarianten === e.uuid} aria-pressed={offeneVarianten === e.uuid}
                 onclick={(ev) => { ev.stopPropagation(); offeneVarianten = offeneVarianten === e.uuid ? null : e.uuid; }}><i class="fa-solid fa-layer-group"></i>{t("radio.variantenZahl", { n: e.varianten })}<i class="fa-solid fa-chevron-{offeneVarianten === e.uuid ? 'up' : 'down'}"></i></button>{/if}</div>
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}
           </div>
           <span class="tf-aktionen">
-            <!-- Minus blendet den Sender sofort dauerhaft aus (Einzelsperre, Rückgängig im Band), wie am Rechner -->
-            <button class="rund" type="button" aria-label={t("radio.ausblendenVon", { name: e.name })} title={t("radio.ausblendenHilfe")}
-                    onclick={(ev) => { ev.stopPropagation(); void bedienung.ausblenden(e); }}><i class="fa-solid fa-minus"></i></button>
+            <!-- Minus blendet den Sender sofort aus (Rückgängig im Band); blieb er als Favorit sichtbar, blendet das Auge ihn wieder ein -->
+            {#if einzelnAusgeblendet(e)}
+              <button class="rund" type="button" aria-label={t("radio.einblendenVon", { name: e.name })} title={t("radio.einblendenHilfe")}
+                      onclick={(ev) => { ev.stopPropagation(); void bedienung.einblenden(e); }}><i class="fa-solid fa-eye"></i></button>
+            {:else}
+              <button class="rund" type="button" aria-label={t("radio.ausblendenVon", { name: e.name })} title={t("radio.ausblendenHilfe")}
+                      onclick={(ev) => { ev.stopPropagation(); void bedienung.ausblenden(e); }}><i class="fa-solid fa-minus"></i></button>
+            {/if}
             <button class="rund" class:favorit={e.favorit} type="button" aria-pressed={e.favorit} aria-label={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")}
                     title={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")} onclick={(ev) => { ev.stopPropagation(); void bedienung.favorit(e); }}>
               <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
@@ -156,7 +163,8 @@
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.laender")}</h3></div>{@render chipwahl("laender", liste.facetten?.laender ?? [])}</section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.genres")}</h3></div>{@render chipwahl("genres", liste.facetten?.genres ?? [])}</section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.qualitaetTitel")}</h3><span class="rh-still">{t("radio.gemessen")}</span></div>{@render chipwahl("qualitaet", liste.facetten?.qualitaet ?? [])}</section>
-      <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.codec")}</h3></div>{@render chipwahl("codecs", liste.facetten?.codecs ?? [])}</section>
+      <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.codecUndBitrate")}</h3></div>{@render chipwahl("codecs", liste.facetten?.codecs ?? [])}
+        <BitrateWahl {filter} onaendern={aendern} /></section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.eigeneBewertung")}</h3></div>
         {#if liste.facetten?.bewertungen.length}{@render chipwahl("bewertungen", liste.facetten.bewertungen)}{:else}<p class="rh-leer-facette">{t("radio.keineBewertungen")}</p>{/if}</section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.eigeneKategorien")}</h3></div>

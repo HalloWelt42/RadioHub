@@ -119,8 +119,9 @@ export function t(key, params = null) {
  * Verfügbare Sprachen - 20 Sprachen mit Flaggen
  */
 export const availableLanguages = [
-  { code: 'de', label: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}' },
-  { code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}' },
+  // vollständig: alle Bereiche übersetzt (die neuen Ansichten gibt es bisher nur auf Deutsch und Englisch)
+  { code: 'de', label: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}', vollstaendig: true },
+  { code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}', vollstaendig: true },
   { code: 'fr', label: 'Fran\u00e7ais', flag: '\u{1F1EB}\u{1F1F7}' },
   { code: 'es', label: 'Espa\u00f1ol', flag: '\u{1F1EA}\u{1F1F8}' },
   { code: 'it', label: 'Italiano', flag: '\u{1F1EE}\u{1F1F9}' },

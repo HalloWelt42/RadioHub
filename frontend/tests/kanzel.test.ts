@@ -1,7 +1,7 @@
 // Kanzel (RAD-8): Zuordnung Zustand -> Anzeige und Steuerung, Spulzeilen und Stellen der Punktmatrix aus der Breite
 import { describe, expect, it } from "vitest";
 import { t as uebersetzen } from "../src/lib/i18n.js";
-import {
+import { kannBlaettern,
   bitrateAusStellung, bitrateLage, bitrateRaster, bitrateStellung, bitrateText, kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive,
   zeitversatzStand, zustandVon, type Stand,
 } from "../src/spieler/kanzel";
@@ -214,5 +214,14 @@ describe("Bitrate des Zeitversatzes", () => {
     expect(bitrateText(zv(), 64, false, t)).toBe("PUFFER 64 kbit/s");
     expect(bitrateText(zv(), 64, true, t)).toBe("PUFFER WECHSELT ...");
     expect(bitrateText(spielt(), 64, false, t)).toBeNull();
+  });
+});
+
+describe("Vor und Zurück (RAD-28)", () => {
+  const liste = [SENDER, { ...SENDER, uuid: "b", name: "B" }];
+  it("frisch geöffnet ohne laufenden Sender gesperrt, mit laufendem Sender in der Liste frei", () => {
+    expect(kannBlaettern(stand({ stations: liste }))).toBe(false);
+    expect(kannBlaettern(spielt({ stations: liste }))).toBe(true);
+    expect(kannBlaettern(spielt({ stations: [SENDER] }))).toBe(false);
   });
 });

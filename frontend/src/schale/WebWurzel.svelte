@@ -14,8 +14,11 @@
   import { geraet } from "../lib/geraet.svelte.js";
   import { tasteDerApp } from "./tastatur";
   import { starten as aktualisierungStarten } from "../lib/aktualisierung.svelte.js";
+  import { geraetespracheAnwenden } from "../lib/sprache";
 
   const BEREICHE = ["radio", "settings"] as const;
+  // ohne Server: Sprache dieses Geräts (RAD-28)
+  geraetespracheAnwenden();
   const TELEFON = { podcasts: false, aufnahmen: false, wecker: true, backend: false };
 
   // Adresse und Bereich (Zurück und Vor im Browser); es gibt Radio, die Einstellungen (ohne Server: Allgemein,

@@ -5,6 +5,7 @@ import { VORLAGEN } from "appkern-oberflaeche";
 import { DARSTELLUNG } from "../darstellung-vorab";
 import { darstellung, darstellungSetzen } from "../darstellung.svelte";
 import { t } from "../i18n.svelte.js";
+import { geraetesprache, geraetespracheSetzen, SPRACHANGEBOT } from "../sprache";
 import { actions, appState } from "../store.svelte.js";
 import { wach, wachHaltenSetzen } from "../telefon/wachHalten.svelte.js";
 import { nachtsSetzen, planSetzen, zeit, zeitansageSchalten } from "../telefon/zeitansage.svelte.js";
@@ -28,6 +29,10 @@ const THEMEN = [["hell", "fa-sun"], ["dunkel", "fa-moon"], ["system", "fa-displa
 const NACHTS = ["normal", "leise", "aus"] as const;
 
 export const GERAET: Record<string, Geraetewert> = {
+  sprache: {
+    zeile: () => geraetezeile("sprache", "wahl", geraetesprache(), { optionen: SPRACHANGEBOT.map((l) => ({ wert: l.code, titel: l.label })) }),
+    setzen: (w) => geraetespracheSetzen(String(w)),
+  },
   vorlage: {
     zeile: () => geraetezeile("vorlage", "auswahl", darstellung.vorlage,
       { optionen: VORLAGEN.map((v) => ({ wert: v.id, titel: v.name, hinweis: v.text, symbol: v.symbol })) }),

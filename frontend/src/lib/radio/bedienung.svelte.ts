@@ -9,6 +9,9 @@ import { Senderliste } from "./senderliste.svelte";
 import type { Bestand, SenderEintrag, StationQuery } from "./typen";
 
 /** Inhalt des Rückgängig-Bands */
+/** einzeln ausgeblendet, aber als Favorit sichtbar geblieben (Ausnahme mit dem Grund der einzelnen Sperre) */
+export const einzelnAusgeblendet = (e: SenderEintrag): boolean => e.ausnahme.some((g) => g.art === "einzeln");
+
 export interface BandInhalt {
   symbol: string;
   text: string;
@@ -88,6 +91,13 @@ export class Radiobedienung {
     const an = !e.favorit;
     try {
       await this.quelle.favorit(e, an);
+      // war er nur als Favorit trotz Ausblenden sichtbar, verschwindet er jetzt (RAD-28: so angekündigt)
+      if (!an && einzelnAusgeblendet(e)) {
+        const stelle = this.liste.entfernen(e.uuid);
+        this.band = { symbol: "fa-eye-slash", name: e.name, text: t("radio.bandKeinFavoritMehr"),
+                      rueckgaengig: async () => { await this.quelle.favorit(e, true); this.liste.einfuegen({ ...e, favorit: true }, stelle); } };
+        return;
+      }
       this.liste.aendern(e.uuid, { favorit: an });
       actions.showToast(an ? t("toast.favHinzu") : t("toast.favEntfernt"), an ? "success" : "info");
     } catch (f) {
@@ -109,6 +119,16 @@ export class Radiobedienung {
       if (this.bestand) this.bestand = { ...this.bestand, ausgeblendet: this.bestand.ausgeblendet + 1, sichtbar: this.bestand.sichtbar - 1 };
       this.band = { symbol: "fa-eye-slash", name: e.name, text: t("radio.bandAusgeblendet"), rueckgaengig: () => this.entsperren(e, stelle),
                     verweis: { text: t("radio.bandListe"), pfad: "/einstellungen/radio/ausgeblendet" } };
+    } catch (f) {
+      actions.showToast((f as Error).message || t("common.fehler"), "error");
+    }
+  }
+
+  /** einen einzeln ausgeblendeten Sender, der als Favorit sichtbar blieb, wieder einblenden */
+  async einblenden(e: SenderEintrag): Promise<void> {
+    try {
+      await this.entsperren(e, -1);
+      this.band = { symbol: "fa-eye", name: e.name, text: t("radio.bandEingeblendet"), rueckgaengig: () => this.ausblenden({ ...e, ausnahme: [] }) };
     } catch (f) {
       actions.showToast((f as Error).message || t("common.fehler"), "error");
     }

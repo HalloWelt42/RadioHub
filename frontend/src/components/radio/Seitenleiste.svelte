@@ -1,13 +1,15 @@
 <script lang="ts">
   // Seitenleiste der Schnellfilter (Entwurf rechner.html): oben fest das Gerät der Schnellwahl mit dem Kopf (Zahl der
   // aktiven Filter, Zurücksetzen, unter 1100 Pixel Schließen), darunter rollen die Facetten mit Zahlen unter allen
-  // übrigen Filtern: Länder (welche, legen die Einstellungen fest), Genres, Qualität, Codec, eigene Bewertung, eigene
-  // Kategorien.
+  // übrigen Filtern: Länder (welche, legen die Einstellungen fest), Genres, Qualität, Codec mit Mindestbitrate, eigene
+  // Bewertung, eigene Kategorien. Lange Gruppen zeigen nur die häufigsten Einträge (gewählte immer), den Rest auf Wunsch
+  // (RAD-28: sonst lagen Genre, Qualität und Codec weit unten).
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
   import { bewertungName, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import { aktive, umschalten, zurueckgesetzt, type Schnellfilter } from "../../lib/radio/schnellfilter";
   import type { Bewertung, Facette, Facetten, Qualitaet } from "../../lib/radio/typen";
+  import BitrateWahl from "./BitrateWahl.svelte";
   import Guete from "./Guete.svelte";
   import Schnellwahl from "./Schnellwahl.svelte";
   import Sterne from "./Sterne.svelte";
@@ -20,14 +22,18 @@
     onzu: () => void;
   } = $props();
 
-  const GENRES_OBEN = 12;
-  let alleGenres = $state(false);
+  /** so viele Einträge zeigt eine Gruppe, bis man sie aufklappt */
+  const OBEN = 6;
+  let aufgeklappt = $state<Partial<Record<Gruppe, boolean>>>({});
   const anzahl = $derived(aktive(filter).length);
-  // gewählte Genres stehen immer oben, auch wenn sie selten sind
-  const genresOben = $derived((facetten?.genres ?? []).filter((g, i) => i < GENRES_OBEN || filter.genres.includes(g.wert)));
-  const genresMehr = $derived((facetten?.genres ?? []).filter((g, i) => i >= GENRES_OBEN && !filter.genres.includes(g.wert)));
 
   type Gruppe = "laender" | "genres" | "qualitaet" | "bewertungen" | "kategorien";
+  /** die häufigsten Einträge und gewählte (auch seltene) stehen immer da, der Rest nur aufgeklappt */
+  function sichtbar(g: Gruppe, liste: Facette[]): { zeigen: Facette[]; versteckt: number } {
+    if (aufgeklappt[g] || liste.length <= OBEN) return { zeigen: liste, versteckt: 0 };
+    const zeigen = liste.filter((f, i) => i < OBEN || gewaehlt(g, f.wert));
+    return { zeigen, versteckt: liste.length - zeigen.length };
+  }
   const gewaehlt = (g: Gruppe, wert: string): boolean =>
     g === "kategorien" ? filter.kategorien.includes(Number(wert)) : (filter[g] as string[]).includes(wert);
 
@@ -60,6 +66,17 @@
   </label>
 {/snippet}
 
+{#snippet gruppe(g: Gruppe, liste: Facette[])}
+  {@const s = sichtbar(g, liste)}
+  <div class="rh-facetten">{#each s.zeigen as f (f.wert)}{@render facette(g, f)}{/each}</div>
+  {#if s.versteckt || aufgeklappt[g]}
+    {#if liste.length > OBEN}
+      <button class="knopf still rh-mehr" type="button" aria-expanded={!!aufgeklappt[g]} onclick={() => (aufgeklappt = { ...aufgeklappt, [g]: !aufgeklappt[g] })}>
+        {aufgeklappt[g] ? t("radio.wenigerZeigen") : t("radio.alleZeigen", { n: liste.length })}</button>
+    {/if}
+  {/if}
+{/snippet}
+
 <aside class="rh-filter" class:offen id="rh-filter" aria-label={t("radio.schnellfilter")}>
   <div class="rh-filter-oben">
     <Schnellwahl {filter} {onaendern}>
@@ -80,25 +97,18 @@
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("radio.laender")}</h3>
         <a href="/einstellungen/radio/laender" title={t("radio.laenderWaehlenHilfe")} onclick={(e) => gehe(e, "/einstellungen/radio/laender")}>{t("radio.laenderWaehlen")}</a></div>
-      <div class="rh-facetten">{#each facetten?.laender ?? [] as f (f.wert)}{@render facette("laender", f)}{/each}</div>
+      {@render gruppe("laender", facetten?.laender ?? [])}
     </section>
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("radio.genres")}</h3></div>
-      <div class="rh-facetten">
-        {#each genresOben as f (f.wert)}{@render facette("genres", f)}{/each}
-        {#if alleGenres}{#each genresMehr as f (f.wert)}{@render facette("genres", f)}{/each}{/if}
-      </div>
-      {#if genresMehr.length}
-        <button class="knopf still rh-mehr" type="button" onclick={() => (alleGenres = !alleGenres)}>
-          {alleGenres ? t("radio.wenigerZeigen") : t("radio.alleZeigen", { n: genresOben.length + genresMehr.length })}</button>
-      {/if}
+      {@render gruppe("genres", facetten?.genres ?? [])}
     </section>
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("radio.qualitaetTitel")}</h3><span class="rh-still" title={t("radio.gemessenHilfe")}>{t("radio.gemessen")}</span></div>
-      <div class="rh-facetten">{#each facetten?.qualitaet ?? [] as f (f.wert)}{@render facette("qualitaet", f)}{/each}</div>
+      {@render gruppe("qualitaet", facetten?.qualitaet ?? [])}
     </section>
     <section class="rh-gruppe">
-      <div class="rh-gruppe-kopf"><h3>{t("radio.codec")}</h3></div>
+      <div class="rh-gruppe-kopf"><h3>{t("radio.codecUndBitrate")}</h3></div>
       <div class="rh-chips-wahl">
         {#each facetten?.codecs ?? [] as f (f.wert)}
           {@const an = filter.codecs.includes(f.wert)}
@@ -106,11 +116,12 @@
                   onclick={() => onaendern((x) => ({ ...x, codecs: umschalten(x.codecs, f.wert) }))}>{f.wert === "unbekannt" ? t("radio.unbekannt") : f.wert}<span class="rh-zahl">{zahl(f.anzahl)}</span></button>
         {/each}
       </div>
+      <BitrateWahl {filter} {onaendern} />
     </section>
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("radio.eigeneBewertung")}</h3></div>
       {#if facetten?.bewertungen.length}
-        <div class="rh-facetten">{#each facetten.bewertungen as f (f.wert)}{@render facette("bewertungen", f)}{/each}</div>
+        {@render gruppe("bewertungen", facetten.bewertungen)}
       {:else}
         <p class="rh-leer-facette">{t("radio.keineBewertungen")}</p>
       {/if}
@@ -119,7 +130,7 @@
       <div class="rh-gruppe-kopf"><h3>{t("radio.eigeneKategorien")}</h3>
         <a href="/einstellungen/radio/kategorien" onclick={(e) => gehe(e, "/einstellungen/radio/kategorien")}>{t("radio.verwalten")}</a></div>
       {#if facetten?.kategorien.length}
-        <div class="rh-facetten">{#each facetten.kategorien as f (f.wert)}{@render facette("kategorien", f)}{/each}</div>
+        {@render gruppe("kategorien", facetten.kategorien)}
       {:else}
         <p class="rh-leer-facette">{t("radio.keineKategorien")}</p>
       {/if}

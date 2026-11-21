@@ -34,8 +34,9 @@ der Container erreichbar. Angemeldet wird mit dem Konto der [[Kellerwolke]], dem
 koppelt man einmal mit einem Code aus der Kellerwolke. Architektur und harte Regeln stehen in `docs/ARCHITEKTUR.md`,
 der Plan der Überarbeitung in `docs/umbau/PLAN.md`.
 
-Radio bedienen: am Rechner stehen links die Schnellfilter (oben fest das Gerät mit Nur Favoriten, Erreichbare, Mindeststimmen und
-Mindestbitrate, darunter Länder, Genres, Qualität, Codec, eigene Bewertung und Kategorien mit Zahlen); unter 1100 Pixeln
+Radio bedienen: am Rechner stehen links die Schnellfilter (oben fest das Gerät mit Nur Favoriten, Erreichbare und
+Beliebtheit, darunter Länder, Genres, Qualität, Codec und Bitrate mit der Mindestbitrate, eigene Bewertung und Kategorien
+mit Zahlen; lange Gruppen zeigen die häufigsten sechs und "Alle zeigen"); unter 1100 Pixeln
 fährt die Leiste über den Knopf Filter ein. Alle Schnellfilter, Suche und Sortierung stehen in der Adresse
 (`/radio?land=DE&genre=Rock&sort=name`, ein aufgeklappter Sender als `/radio/<Kennung>?...`), Neuladen und Lesezeichen
 behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Der Minus-Knopf blendet einen einzelnen Sender aus
@@ -45,7 +46,10 @@ vorher die Folgen), Ausgeblendete Sender (Grund je Sender, Freigeben), Länder d
 Werbeerkennung, Senderverzeichnis (letzter Abgleich, Uhrzeit, Jetzt abgleichen) und Kategorien.
 Die Fokus-Taste der Spielerleiste (Fadenkreuz, blaues Licht heißt ein, gemerkt im Gerät): ein springt zum laufenden
 Sender, klappt ihn auf und folgt ihm bei jedem Wechsel (Weiter, Zurück, neuer Sender), dazwischen rollt man frei; aus
-rollt nur frei. Wird der aufgeklappte Sender ausgeblendet, rückt der nächste der Reihe nach.
+rollt nur frei. Wird der aufgeklappte Sender ausgeblendet, rückt der nächste der Reihe nach. Ein ausgeblendeter Favorit bleibt
+gedämpft mit dem Hinweis "ausgeblendet, Favorit" stehen; das Auge blendet ihn wieder ein, ohne Stern verschwindet er.
+Basic merkt sich die Sprache (Deutsch oder Englisch) je Gerät unter Einstellungen > Allgemein; ohne Wahl gilt die des
+Browsers.
 
 Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gespeichert, darunter die Abos mit
 der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die Nadel

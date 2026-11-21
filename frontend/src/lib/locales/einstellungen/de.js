@@ -11,7 +11,7 @@ export default {
     technik: 'Technik', zeitansage: 'Zeitansage', ort: 'Ort',
   },
   karte: {
-    sprache: 'Sprache und Töne', fehlersuche: 'Fehlersuche', aussehen: 'Aussehen', bildschirm: 'Bildschirm',
+    sprache: 'Sprache und Töne', spracheGeraet: 'Sprache', fehlersuche: 'Fehlersuche', aussehen: 'Aussehen', bildschirm: 'Bildschirm',
     zeitversatz: 'Zeitversatz', aufnahme: 'Aufnahme', abruf: 'Abruf der Abos', zeitansage: 'Zeitansage', stimme: 'Stimme',
     kellerwolke: 'Kellerwolke', verzeichnisse: 'Verzeichnisse', helfer: 'Dienste im Heimnetz', zugang: 'Zugang',
     abgleich: 'Nächtlicher Abgleich',
@@ -44,6 +44,7 @@ export default {
   ladeFehler: 'Die Einstellungen des Servers sind gerade nicht erreichbar: {grund}', nochmal: 'Noch einmal',
   laedt: 'Einstellungen werden geladen',
   geraet: {
+    sprache: 'Sprache', spracheHilfe: 'Sprache der Oberfläche auf diesem Gerät.',
     vorlage: 'Stil', vorlageHilfe: 'Aussehen aller Bedienelemente.',
     thema: 'Modus', themaHilfe: 'Hell, dunkel oder wie das Gerät eingestellt ist.',
     schrift: 'Schrift', schriftHilfe: 'Größe aller Texte; Bedienelemente wachsen mit.',
