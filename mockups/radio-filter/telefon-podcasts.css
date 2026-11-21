@@ -1,6 +1,6 @@
 /* Podcasts am Telefon (Entwurf RAD-14): nur, was über Radio und Aufnahmen am Telefon hinausgeht (telefon.css,
    aufnahmen.css, podcasts.css). */
-.rh-telefon > .t-app-podcasts { display: flex; flex-direction: column; position: relative; }
+.rh-telefon > .t-app-podcasts { display: flex; flex-direction: column; position: relative; block-size: 100%; }
 .t-app-podcasts > .t-liste { flex: 1; }
 .tp-suche { grid-template-columns: minmax(0, 1fr); }
 .tp-kopf { padding: 0 var(--rh-rand) 8px; }

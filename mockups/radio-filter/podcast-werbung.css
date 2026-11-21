@@ -1,0 +1,42 @@
+/* Werbung in Podcasts (Entwurf RAD-32): nur, was über Podcasts, Schnitt und Telefon hinausgeht. Bernstein = Werbung. */
+.rh-rahmen-block.rp-breit { flex-basis: 100%; max-inline-size: 1180px; }
+.rp-flaeche { padding: 16px; border-radius: var(--rh-ecke-geraet); background-color: var(--hg); box-shadow: var(--rh-kante); position: relative; }
+.rp-rechner { container-type: inline-size; container-name: liste; }
+.rp-kanzel { display: grid; gap: 14px; justify-items: start; }
+.rp-kanzel > .rh-modul { grid-area: auto; inline-size: min(100%, 520px); }
+.rp-puffer { gap: 4px; }
+.rp-ohne { color: var(--led-bernstein); }
+/* Leiste der Stelle: gehört grün, Werbestellen bernstein, Kopf blau */
+.rp-leiste { position: relative; block-size: 8px; border-radius: 4px; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); overflow: hidden; }
+.rp-leiste.gross { block-size: 14px; margin: 4px 0 10px; }
+.rp-gehoert { position: absolute; inset: 0 auto 0 0; background-color: var(--led-gruen); opacity: .55; }
+.rp-werbung { position: absolute; top: 0; bottom: 0; background-color: var(--led-bernstein); }
+.rp-kopf { position: absolute; top: 0; bottom: 0; inline-size: 2px; margin-left: -1px; background-color: var(--led-blau); }
+.rp-band { position: static; }
+.rp-marke { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
+.rp-werbeteil { display: grid; gap: 8px; grid-column: 1 / -1; padding: 12px 14px; border-radius: var(--rh-ecke-zeile); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
+.rp-kopf-zeile { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.rp-kopf-zeile h3, .rp-blatt-titel { margin: 0; display: flex; gap: 8px; align-items: center; font-size: var(--gross); }
+.rp-kopf-zeile h3 i, .rp-blatt-titel i { color: var(--led-bernstein); }
+.rp-blatt-titel { margin: 14px 0 0; }
+.rp-stellen { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.rp-stellen li { display: grid; grid-template-columns: auto calc(var(--klein) * 9) minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 6px 8px;
+  border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
+.rp-stellen .rh-a-nr { grid-area: auto; inline-size: 36px; block-size: 36px; }
+.rp-zeit { display: grid; font-family: var(--schrift-zahl); font-size: var(--klein); }
+.rp-zeit span { color: var(--text-3); }
+.rp-herkunft { display: grid; gap: 2px; font-size: var(--klein); color: var(--text-2); }
+.rp-herkunft i { color: var(--led-bernstein); margin-right: 6px; }
+.rp-herkunft .rh-still { overflow-wrap: anywhere; }
+.rp-aktionen { display: flex; gap: 4px; }
+.rp-schritte { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 0; font-size: var(--klein); }
+.rp-schritte i { color: var(--led-gruen); }
+.rp-werbung-stueck { box-shadow: 0 0 0 1px color-mix(in srgb, var(--led-bernstein) 60%, transparent); }
+.rp-werbung-stueck .rh-stueck-name input { color: var(--led-bernstein); }
+.rh-schalter { gap: 8px; }
+/* Telefon: die Liste der Stellen schmaler (ohne Spalte Zeit, die steht über der Herkunft) */
+.rh-telefon .rp-stellen li { grid-template-columns: auto minmax(0, 1fr) auto; }
+.rh-telefon .rp-stellen .rp-zeit { grid-column: 2; }
+.rh-telefon .rp-stellen .rp-herkunft { grid-column: 2; }
+.rh-telefon .rp-stellen .rp-aktionen { grid-column: 3; grid-row: 1 / span 2; }
+.rp-band-telefon { position: absolute; left: 12px; right: 12px; bottom: 150px; }

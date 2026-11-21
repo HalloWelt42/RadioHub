@@ -84,10 +84,11 @@
 .rh-wellenform canvas { display: block; inline-size: 100%; block-size: calc(var(--gross) * 13); cursor: crosshair; }
 .rh-uebersicht canvas { display: block; inline-size: 100%; block-size: calc(var(--gross) * 2.6); cursor: pointer; }
 .rh-stuecke { display: grid; gap: 6px; }
-.rh-stueck-spalten, .rh-stueck { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) calc(var(--klein) * 5) calc(var(--klein) * 5) calc(var(--klein) * 5) auto 44px; gap: 10px 14px; align-items: center; }
+.rh-stueck-spalten, .rh-stueck { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) calc(var(--klein) * 5) calc(var(--klein) * 5) calc(var(--klein) * 5) calc(var(--gross) * 7) 44px; gap: 10px 14px; align-items: center; }
 .rh-stueck-spalten { position: static; margin: 0; padding: 4px 12px; box-shadow: none; }
-.rh-stueck-spalten > span:first-child { grid-column: 1 / 3; }
-.rh-stueck-spalten > span:nth-child(5) { grid-column: 6 / 8; }
+.rh-spalten.rh-stueck-spalten > span:nth-child(n) { grid-area: auto; display: block; }   /* Bereichsnamen und Ausblenden des Senderkopfs gelten hier nicht */
+.rh-spalten.rh-stueck-spalten > span:first-child { grid-column: 1 / 3; }
+.rh-spalten.rh-stueck-spalten > span:nth-child(5) { grid-column: 6 / 8; }
 .rh-stueck { padding: 6px 12px; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .rh-stueck .rh-a-nr { grid-area: auto; }
 .rh-stueck.weg { opacity: .6; }
