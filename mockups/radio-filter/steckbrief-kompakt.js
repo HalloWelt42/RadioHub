@@ -163,10 +163,7 @@
   const VARIANTEN = { heute, a, b, c };
   function zeichnen() {
     $$("[data-variante]").forEach((el) => { el.innerHTML = VARIANTEN[el.dataset.variante](); });
-    requestAnimationFrame(() => $$("[data-fuer]").forEach((h) => {
-      const art = $(`[data-variante="${h.dataset.fuer}"] article`);
-      h.textContent = art ? `${Math.round(art.getBoundingClientRect().height)} px` : "";
-    }));
+    requestAnimationFrame(zeichnenHoehen);
   }
   document.addEventListener("click", (e) => {
     const t = e.target.closest("button, summary");
@@ -190,7 +187,16 @@
     if (t.dataset.marke && !t.closest("[data-variante='heute']")) { z.marken.has(t.dataset.marke) ? z.marken.delete(t.dataset.marke) : z.marken.add(t.dataset.marke); return zeichnenOffen(t); }
     if (t.dataset.kategorie && !t.closest("[data-variante='heute']")) { z.kategorien.has(t.dataset.kategorie) ? z.kategorien.delete(t.dataset.kategorie) : z.kategorien.add(t.dataset.kategorie); return zeichnenOffen(t); }
     if (t.dataset.thema) { document.documentElement.dataset.theme = t.dataset.thema; $$(".sk-wahl button").forEach((x) => x.classList.toggle("aktiv", x === t)); return zeichnen(); }
+    if (t.dataset.zeige) return zeigen(t.dataset.zeige);
   });
+
+  // Vergleichen: eine Fassung an derselben Stelle zeigen (oder alle untereinander); der Bildlauf bleibt, wo er ist
+  function zeigen(welche) {
+    document.body.dataset.zeige = welche;
+    $$(".sk-sprung [data-zeige]").forEach((x) => x.classList.toggle("aktiv", x.dataset.zeige === welche));
+    $$("[data-block]").forEach((b) => b.classList.toggle("sk-gezeigt", welche === "alle" || b.dataset.block === welche));
+    zeichnenHoehen();
+  }
   // nach einer Änderung in der Tafel bleibt sie offen
   function zeichnenOffen(t) {
     const offen = t.closest(".sk-tafel")?.dataset.tafelFuer;
@@ -198,7 +204,23 @@
     if (offen) { $(`[data-tafel-fuer="${offen}"]`).hidden = false; $(`[data-tafel="${offen}"]`)?.setAttribute("aria-expanded", "true"); }
   }
   document.addEventListener("toggle", () => zeichnenHoehen(), true);
-  function zeichnenHoehen() { $$("[data-fuer]").forEach((h) => { const art = $(`[data-variante="${h.dataset.fuer}"] article`); h.textContent = art ? `${Math.round(art.getBoundingClientRect().height)} px` : ""; }); }
-  customElements.whenDefined("ak-led").then(zeichnen);
-  setTimeout(zeichnen, 400);
+  // Höhen: nur sichtbare Fassungen lassen sich messen; die übrigen behalten ihren letzten Wert
+  const hoehen = {};
+  function zeichnenHoehen() {
+    $$("[data-variante]").forEach((v) => {
+      const art = $("article", v);
+      const h = art ? Math.round(art.getBoundingClientRect().height) : 0;
+      if (h) hoehen[v.dataset.variante] = h;
+    });
+    $$("[data-fuer]").forEach((x) => { x.textContent = hoehen[x.dataset.fuer] ? `${hoehen[x.dataset.fuer]} px` : ""; });
+  }
+  // einmal alle zeigen, um jede Höhe zu kennen, dann die gewählte Fassung
+  function anfangen() {
+    const welche = document.body.dataset.zeige || "a";
+    zeichnen();
+    zeigen("alle");
+    requestAnimationFrame(() => { zeichnenHoehen(); zeigen(welche); });
+  }
+  customElements.whenDefined("ak-led").then(anfangen);
+  document.fonts?.ready.then(() => setTimeout(anfangen, 50));
 })();

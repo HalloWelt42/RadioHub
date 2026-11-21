@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" data-theme="dunkel" data-schrift="mittel" data-vorlage="hifi">
+<html lang="de" class="sk-entwurf" data-theme="dunkel" data-schrift="mittel" data-vorlage="hifi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -7,9 +7,20 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <!-- Stil der laufenden App (tools/entwurf-stil.sh), nicht die Entwurfskopien: so sieht es in der App aus -->
   <link rel="stylesheet" href="app-stil/app.css">
-  <link rel="stylesheet" href="steckbrief-kompakt.css">
+  <link rel="stylesheet" href="steckbrief-kompakt.css?v=6">
 </head>
-<body>
+<body class="sk-entwurf" data-zeige="a">
+<nav class="sk-sprung" aria-label="Fassung zeigen">
+  <span class="pille">RAD-35</span>
+  <div class="segment" role="group" aria-label="Fassung">
+    <button type="button" data-zeige="heute">Heute<span class="sk-hoehe" data-fuer="heute"></span></button>
+    <button type="button" data-zeige="a" class="aktiv">A Dicht<span class="sk-hoehe" data-fuer="a"></span></button>
+    <button type="button" data-zeige="b">B Reiter<span class="sk-hoehe" data-fuer="b"></span></button>
+    <button type="button" data-zeige="c">C Eine Zeile<span class="sk-hoehe" data-fuer="c"></span></button>
+    <button type="button" data-zeige="alle">Alle untereinander</button>
+  </div>
+  <span class="rh-still">Umschalten zeigt die Fassung an derselben Stelle</span>
+</nav>
 <div class="sk-seite">
   <header class="sk-kopf">
     <span class="pille">Entwurf RAD-35</span>
@@ -20,19 +31,19 @@
       <button type="button" data-thema="hell"><i class="fa-solid fa-sun"></i>Hell</button>
     </div>
   </header>
-  <section class="sk-block"><h2><span class="pille">0</span>Heute <span class="sk-hoehe" data-fuer="heute"></span></h2>
+  <section class="sk-block" data-block="heute"><h2><span class="pille">0</span>Heute <span class="sk-hoehe" data-fuer="heute"></span></h2>
     <div class="rh-liste sk-liste" data-variante="heute"></div></section>
-  <section class="sk-block"><h2><span class="pille">A</span>Dicht: drei Spalten, aber knapp <span class="sk-hoehe" data-fuer="a"></span></h2>
+  <section class="sk-block sk-gezeigt" data-block="a"><h2><span class="pille">A</span>Dicht: drei Spalten, aber knapp <span class="sk-hoehe" data-fuer="a"></span></h2>
     <p class="sk-idee">Werte in zwei schmalen Spalten, Hinweise nur noch als Tooltip am Info-Zeichen. Spots nach Werbenden zusammengefasst, die drei häufigsten sichtbar, der Rest auf Klick. Einschätzung zeigt nur, was gewählt ist; alles Übrige liegt hinter dem kleinen Plus.</p>
     <div class="rh-liste sk-liste" data-variante="a"></div></section>
-  <section class="sk-block"><h2><span class="pille">B</span>Reiter: ein Teil zur Zeit <span class="sk-hoehe" data-fuer="b"></span></h2>
+  <section class="sk-block" data-block="b"><h2><span class="pille">B</span>Reiter: ein Teil zur Zeit <span class="sk-hoehe" data-fuer="b"></span></h2>
     <p class="sk-idee">Oben drei kleine Reiter mit Zahl; daneben stehen immer die gewählten Einschätzungen. Unten nur der gewählte Teil. Hier: Werbung, nach Werbenden gruppiert, aufklappbar bis zu den einzelnen Spots.</p>
     <div class="rh-liste sk-liste" data-variante="b"></div></section>
-  <section class="sk-block"><h2><span class="pille">C</span>Eine Zeile, Rest auf Klick <span class="sk-hoehe" data-fuer="c"></span></h2>
+  <section class="sk-block" data-block="c"><h2><span class="pille">C</span>Eine Zeile, Rest auf Klick <span class="sk-hoehe" data-fuer="c"></span></h2>
     <p class="sk-idee">Das Wichtigste als eine Zeile kleiner Angaben, dazu die gewählten Einschätzungen. Stream, Werbung und Einschätzung klappen einzeln auf; Bearbeiten über den Stift.</p>
     <div class="rh-liste sk-liste" data-variante="c"></div></section>
 </div>
 <script src="vendor/instrumente/instrumente.js"></script>
-<script src="steckbrief-kompakt.js"></script>
+<script src="steckbrief-kompakt.js?v=5"></script>
 </body>
 </html>

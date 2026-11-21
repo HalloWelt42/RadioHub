@@ -1,5 +1,13 @@
 /* Entwurf RAD-35: nur, was über das CSS der App (app-stil/app.css) hinausgeht; Größen und Farben aus deren Marken. */
-body { background-color: var(--hg); color: var(--text); margin: 0; }
+/* Die App rollt nur innen und sperrt darum den Bildlauf der Seite (html und body: overflow hidden, Fensterhöhe);
+   die Entwurfsseite rollt als Ganzes */
+html.sk-entwurf, body.sk-entwurf { height: auto; min-height: 100%; overflow-x: clip; overflow-y: visible; }
+body.sk-entwurf { background-color: var(--hg); color: var(--text); margin: 0; }
+/* feste Leiste: eine Fassung zur Zeit an derselben Stelle zeigen (Vergleichen), oder alle untereinander */
+.sk-sprung { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px;
+  background-color: var(--hg); box-shadow: var(--rh-kante); }
+.sk-sprung .sk-hoehe { margin-left: 6px; }
+body[data-zeige]:not([data-zeige="alle"]) .sk-block:not(.sk-gezeigt) { display: none; }
 .sk-seite { max-inline-size: 1180px; margin: 0 auto; padding: 18px 16px 80px; display: grid; gap: 26px; }
 .sk-kopf { display: grid; gap: 8px; }
 .sk-kopf h1 { margin: 0; font-size: var(--gross); }
