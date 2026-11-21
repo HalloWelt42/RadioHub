@@ -22,6 +22,7 @@ from typing import Callable, Literal, Optional
 
 from pydantic import BaseModel, PrivateAttr
 
+from ..services.feinschnitt import grenze as wechsel_grenze
 from .angaben import Regeln, Werbeangabe, lesen, regeln
 
 Herkunft = Literal["angabe", "stille", "verbinden", "dauer"]
@@ -48,8 +49,10 @@ class Werbestelle(BaseModel):
     _von_angabe: Optional[float] = PrivateAttr(None)
     _bis_angabe: Optional[float] = PrivateAttr(None)
 
+    _bis_quelle: Optional[Herkunft] = PrivateAttr(None)
+
     def ende_setzen(self, bis: float, aus: Herkunft) -> None:
-        self.bis, self.bis_aus, self._bis_angabe = bis, aus, bis
+        self.bis, self.bis_aus, self._bis_angabe, self._bis_quelle = bis, aus, bis, aus
 
 
 class Sitzungswerbung:
@@ -133,14 +136,22 @@ class Sitzungswerbung:
         self._melden(bis)
 
     def _an_stille(self, s: Werbestelle) -> None:
-        """Jede Grenze an die Stille, die ihrer Stelle laut Angabe am nächsten liegt (oder bleibt bei der Angabe)."""
-        fenster = self._regeln.grenze.fenster_s
+        """Grenzen an die Stille. Kommt eine Grenze aus einer Angabe (Anfang, Ende durch die nächste Angabe), gilt die
+        Regel des Feinschnitts: die Angabe kommt etwas nach dem echten Wechsel, maßgeblich ist das Ende der passenden
+        Pause davor (vorher: die nächste Stille, das war bei Mangoradio ein 30-ms-Loch im Spot statt der Pause 0,8 s
+        davor). Ein Ende aus der angekündigten Länge liegt genau: dort zählt die nächste Stille."""
         if s._von_angabe is not None:
-            nah = self._naechste(s._von_angabe, fenster)
-            if nah:
-                s.von, s.von_aus = nah[0], "stille"
-        if s._bis_angabe is not None:
-            nah = self._naechste(s._bis_angabe, fenster)
+            g = wechsel_grenze(s._von_angabe, self._stillen)
+            if g != s._von_angabe:
+                s.von, s.von_aus = g, "stille"
+        if s._bis_angabe is None:
+            return
+        if s._bis_quelle == "angabe":
+            g = wechsel_grenze(s._bis_angabe, self._stillen, nach=s.von)
+            if g != s._bis_angabe:
+                s.bis, s.bis_aus = g, "stille"
+        else:
+            nah = self._naechste(s._bis_angabe, self._regeln.grenze.fenster_s)
             if nah:
                 s.bis, s.bis_aus = nah[1], "stille"
 

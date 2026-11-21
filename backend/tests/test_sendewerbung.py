@@ -75,10 +75,10 @@ def test_spots_im_programm_enden_mit_dem_wechsel():
     w.angabe(OLDIE, 117.0)
     assert [(s.werbender, s.von, s.bis, s.von_aus) for s in w.stellen] == [
         ("adac.de", 82.0, 102.0, "angabe"), ("vodafone.de", 102.0, 117.0, "angabe")]
-    w.stille(81.6, 81.65)                                     # Stille kurz vor dem Spot: der Anfang rückt dorthin
-    w.stille(101.95, 102.02)
-    w.stille(119.0, 119.1)                                    # zu weit weg (über 1,5 s): bleibt die Angabe
-    assert [(s.von, s.bis) for s in w.stellen] == [(81.6, 102.02), (101.95, 117.0)]
+    w.stille(81.6, 81.65)                                     # Pause kurz vor dem Spot: er beginnt an ihrem Ende
+    w.stille(101.95, 102.02)                                  # die Spots stoßen am Ende der Pause aneinander
+    w.stille(119.0, 119.1)                                    # zu weit nach der Angabe (über 2 s): bleibt die Angabe
+    assert [(s.von, s.bis) for s in w.stellen] == [(81.65, 102.02), (102.02, 117.0)]
     assert [s.werbender for s in w.im_fenster(110.0)] == ["vodafone.de"]
 
 

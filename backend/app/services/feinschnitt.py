@@ -29,10 +29,14 @@ class Regeln:
     nach_s: float = 2.0
     #: so viel später als der echte Wechsel kommt die Angabe gewöhnlich (die Stille dort wird bevorzugt)
     verzug_s: float = 0.7
-    #: längere Stille zählt mehr: je Sekunde Stille (bis `lange_bis_s`) wiegt sie so viele Sekunden Abstand auf,
-    #: damit ein kurzer Aussetzer im Lied nicht gegen die Pause zwischen zwei Liedern gewinnt
-    gewicht_je_s: float = 0.5
-    lange_bis_s: float = 3.0
+    #: längere Stille zählt mehr: je Sekunde Stille (bis `lange_bis_s`) wiegt sie so viele Sekunden Abstand auf. Eine
+    #: echte Pause (ab etwa 0,1 s) schlägt so eine kurze Lücke mitten in Sprache oder Lied, auch wenn die Lücke näher am
+    #: erwarteten Verzug liegt (gemessen: PayPal-Spot 29,30 s Lücke 30 ms gegen Pause 120 ms; Mikolas 646,08 gegen 645,25)
+    gewicht_je_s: float = 8.0
+    lange_bis_s: float = 0.5
+    #: geschnitten wird in der Pause, so weit vor ihrem Ende (höchstens in ihrer Mitte): ohne Neukodieren schneidet
+    #: FFmpeg an ganzen Rahmen (MP3 26 ms), am Ende der Pause rutschte sonst etwas vom Neuen ins Stück davor
+    schnitt_vor_s: float = 0.15
     #: Grenzen, die näher beieinander liegen, sind eine
     naehe_s: float = 0.5
     #: kürzere Stücke gehen im nächsten auf (vor einer Werbung im vorigen)
@@ -85,6 +89,14 @@ def grenze(t: float, stillen: list[tuple[float, float]], r: Regeln = Regeln(), n
     return min(kandidaten, key=wert)[1]
 
 
+def schnittstelle(t: float, stillen: list[tuple[float, float]], r: Regeln = Regeln()) -> float:
+    """Wo an einem Wechsel bei `t` (Ende einer Pause oder ohne Pause) geschnitten wird: in der Pause davor."""
+    for a, b in stillen:
+        if abs(b - t) < 1e-6:
+            return round(max(a + (b - a) / 2, b - r.schnitt_vor_s), 3)
+    return t
+
+
 def stuecke(dauer: float, angaben: list[Angabe], stillen: list[tuple[float, float]], werbung: list[Werbung],
             r: Regeln = Regeln(), einschub: str = "Einschub") -> list[Stueck]:
     """Die Stücke einer Aufnahme von 0 bis `dauer` (Sekunden des aufgenommenen Tons)."""
@@ -116,7 +128,11 @@ def stuecke(dauer: float, angaben: list[Angabe], stillen: list[tuple[float, floa
     ergebnis: list[Stueck] = []
     for von, bis in zip(sortiert, sortiert[1:]):
         ergebnis.append(_benennen(von, bis, abschnitte, werbung, r, einschub))
-    return _kurze_zusammenlegen(ergebnis, r)
+    ergebnis = _kurze_zusammenlegen(ergebnis, r)
+    # geschnitten wird in der Pause vor jedem Wechsel, nicht genau an ihrem Ende
+    for vorher, nachher in zip(ergebnis, ergebnis[1:]):
+        vorher.bis = nachher.von = schnittstelle(nachher.von, stillen, r)
+    return ergebnis
 
 
 def _benennen(von: float, bis: float, abschnitte: list[tuple[float, float, str]], werbung: list[Werbung], r: Regeln,

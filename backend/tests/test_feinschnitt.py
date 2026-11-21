@@ -27,11 +27,12 @@ def test_stuecke_wie_mangoradio():
     stillen = [(19.99, 20.12), (145.30, 145.46), (147.75, 147.94)]
     werbung = [fs.Werbung(0.0, 20.12, "o2online.de")]
     liste = fs.stuecke(300.0, angaben, stillen, werbung)
-    assert [(round(s.von, 2), round(s.bis, 2), s.art, s.name) for s in liste] == [
-        (0.0, 20.12, "werbung", "Werbung: o2online.de"),
-        (20.12, 145.46, "titel", "Alvaro Soler - Sofia"),
-        (145.46, 147.94, "einschub", "Einschub"),
-        (147.94, 300.0, "titel", "Cash Cash, Taylor Dayne - Tell It To My Heart")]
+    # geschnitten wird in der Pause: 0,15 s vor ihrem Ende, bei kurzen Pausen in ihrer Mitte
+    assert [(round(s.von, 3), round(s.bis, 3), s.art, s.name) for s in liste] == [
+        (0.0, 20.055, "werbung", "Werbung: o2online.de"),
+        (20.055, 145.38, "titel", "Alvaro Soler - Sofia"),
+        (145.38, 147.845, "einschub", "Einschub"),
+        (147.845, 300.0, "titel", "Cash Cash, Taylor Dayne - Tell It To My Heart")]
     assert all(s.sicher for s in liste)
 
 
@@ -64,8 +65,8 @@ def test_kein_splitter_vor_der_werbung():
                fs.Angabe(666.0, "The Chainsmokers, ROZES - Roses")]
     liste = fs.stuecke(700.0, angaben, [(645.0, 645.25), (665.5, 665.7)], [fs.Werbung(646.08, 665.70, "o2online.de")])
     assert [(s.von, s.bis, s.name) for s in liste] == [
-        (0.0, 646.08, "Mikolas Josef - Lie To Me"), (646.08, 665.7, "Werbung: o2online.de"),
-        (665.7, 700.0, "The Chainsmokers, ROZES - Roses")]
+        (0.0, 646.08, "Mikolas Josef - Lie To Me"), (646.08, 665.6, "Werbung: o2online.de"),
+        (665.6, 700.0, "The Chainsmokers, ROZES - Roses")]
 
 
 def test_einschub_nach_langer_pause():
@@ -73,5 +74,18 @@ def test_einschub_nach_langer_pause():
     # dann das nächste Lied (Angabe 148,0). Die lange Pause gehört dem Einspieler, nicht dem Lied.
     angaben = [fs.Angabe(21.0, "Alvaro Soler - Sofia"), fs.Angabe(146.0, ""), fs.Angabe(148.0, "Cash Cash - Tell It To My Heart")]
     liste = fs.stuecke(300.0, angaben, [(142.32, 145.46), (147.75, 147.94)], [])
-    assert [(round(s.von, 2), round(s.bis, 2), s.name) for s in liste][2:] == [
-        (145.46, 147.94, "Einschub"), (147.94, 300.0, "Cash Cash - Tell It To My Heart")]
+    assert [(round(s.von, 3), round(s.bis, 3), s.name) for s in liste][2:] == [
+        (145.31, 147.845, "Einschub"), (147.845, 300.0, "Cash Cash - Tell It To My Heart")]
+
+
+def test_schnitt_in_der_pause():
+    # lange Pause: 0,15 s vor ihrem Ende; kurze Pause (40 ms): in ihrer Mitte; ohne Pause genau am Wechsel
+    assert fs.schnittstelle(323.16, [(320.54, 323.16)]) == 323.01
+    assert fs.schnittstelle(29.89, [(29.85, 29.89)]) == 29.87
+    assert fs.schnittstelle(50.0, [(29.85, 29.89)]) == 50.0
+
+
+def test_pause_schlaegt_luecke_in_der_sprache():
+    # PayPal-Spot (Mangoradio 21.11.2026): Angabe 30,0; 50-ms-Lücke in der Sprache 29,32 bis 29,35, echte Pause
+    # 29,77 bis 29,89 (danach beginnt das Programm)
+    assert fs.grenze(30.0, [(29.32, 29.35), (29.77, 29.89)]) == 29.89
