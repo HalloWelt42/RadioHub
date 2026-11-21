@@ -1332,15 +1332,17 @@ async function _werbungUeberspringen(station) {
  */
 async function _ueberZeitversatz(station, gen) {
   _vorabHoeren = false;
+  _appState.playerMode = 'hls';      // die Kanzel zeigt nicht "direkt", während der Zeitversatz anläuft
   let result;
   try {
     result = await api.startHLS(station);
   } catch (e) {
     console.warn('Zeitversatz startet nicht, direkt:', e.message);
+    _appState.playerMode = 'direct';
     return false;
   }
   if (_generation !== gen) return true;
-  if (result.status !== 'started' && result.status !== 'already_active') return false;
+  if (result.status !== 'started' && result.status !== 'already_active') { _appState.playerMode = 'direct'; return false; }
   _hlsSessionId = result.session_id || null;
   _appState.hlsActive = true;
   _appState.canPlayHLS = true;
@@ -1366,6 +1368,7 @@ async function _ueberZeitversatz(station, gen) {
     }
   }
   _appState.werbeStart = null;
+  _appState.playerMode = 'direct';
   _destroyHLS();
   return false;
 }
