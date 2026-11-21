@@ -57,6 +57,9 @@
   const gruppen = $derived(nachWerbenden(werbung?.liste ?? []));
   const mal = $derived(gruppen.reduce((n, g) => n + g.mal, 0));
   const werbendeListe = $derived(haeufigste(gruppen));
+  /** ohne Namen aus den Sendedaten: eine Kennung aus Ziffern als "Spot 199326", ein Text (etwa "Kurze Werbepause") selbst */
+  const werbendenName = (g: { name: string; kennung: string }) =>
+    g.name || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
 
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);
@@ -227,7 +230,7 @@
           {#each werbendeListe.zeigen as g (g.name || g.kennung)}
             {@const spots = haeufigste(g.spots)}
             <details class="rh-werbender">
-              <summary><i class="fa-solid fa-chevron-right rh-pfeil"></i><b title={g.name || t("radio.werbungOhneName", { k: g.kennung })}>{g.name || t("radio.werbungOhneName", { k: g.kennung })}</b>
+              <summary><i class="fa-solid fa-chevron-right rh-pfeil"></i><b title={werbendenName(g)}>{werbendenName(g)}</b>
                 <span class="rh-zahl">{t("radio.werbungMal", { n: zahl(g.mal) })}</span>
                 {#if g.beimVerbinden}<i class="fa-solid fa-plug rh-verbinden" title={t("radio.werbungBeimVerbinden")}></i>{:else}<span></span>{/if}</summary>
               <ul class:rh-liste-rollt={spots.rollt}>
