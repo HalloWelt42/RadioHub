@@ -1,9 +1,10 @@
 <script lang="ts">
-  // Eine lebende Regel (Entwurf regeln.html): Leuchte an oder aus, Art, Titel und Erklärung, betroffene Sender und davon
+  // Eine Ausschlussregel (Entwurf regeln.html): Leuchte an oder aus, Art, Titel und Erklärung, betroffene Sender und davon
   // Favoriten, Schalter, Entfernen. Entfernen fragt erst mit der Folgenvorschau (so viele Sender werden wieder sichtbar,
   // Beispiele) über die Rückfrage der Schale (Vorgabe 9).
   import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../../lib/i18n.svelte.js";
+  import { actions } from "../../../lib/store.svelte.js";
   import { senderquelle } from "../../../lib/radio";
   import { REGEL_SYMBOL, zahl } from "../../../lib/radio/anzeige";
   import type { Regel, RegelFolgen } from "../../../lib/radio/typen";
@@ -59,7 +60,13 @@
           aria-label={regel.an ? t("radio.einst.ausschalten") : t("radio.einst.einschalten")}
           title={regel.an ? t("radio.einst.ausschaltenHilfe", { n: zahl(regel.nur_diese) }) : t("radio.einst.einschalten")}
           onclick={() => onschalten(regel)}></button>
-  <button class="knopf gefahr" type="button" onclick={fragen} disabled={fragt}><i class="fa-solid fa-trash"></i>{t("radio.entfernen")}</button>
+  {#if regel.art === "einzeln"}
+    <!-- einzeln ausgeblendete Sender sind keine Regel zum Entfernen: freigegeben wird je Sender (RAD-28) -->
+    <a class="knopf" href="/einstellungen/radio/ausgeblendet" title={t("radio.einst.einzelnHilfe")}
+       onclick={(e) => { e.preventDefault(); actions.navigateTo("/einstellungen/radio/ausgeblendet"); }}><i class="fa-solid fa-eye"></i>{t("radio.einst.einzelnFreigeben")}</a>
+  {:else}
+    <button class="knopf gefahr" type="button" onclick={fragen} disabled={fragt}><i class="fa-solid fa-trash"></i>{t("radio.entfernen")}</button>
+  {/if}
   {#if fragt}
     <Rueckfrage frage={t("radio.einst.entfernenFrage")} {hinweis} knopf={t("radio.einst.endgueltigEntfernen")}
                 beschaeftigt={arbeitet || !folgen} onabbrechen={() => (fragt = false)} onja={entfernen} />

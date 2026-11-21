@@ -278,7 +278,7 @@ export class StatischeQuelle implements Senderquelle {
 
   async entfernen(id: string): Promise<RegelAenderung> {
     await this.bereit();
-    if (id === EINZELSPERREN) throw new Quellfehler("Die Einzelsperren sind keine entfernbare Regel; einzelne Sender gibt das Auge frei");
+    if (id === EINZELSPERREN) throw new Quellfehler("Einzeln ausgeblendete Sender gibst du je Sender frei: Einstellungen > Radio > Ausgeblendete Sender");
     this.regelDa(id);
     return this.regelAendern(null, (a) => {
       a.regeln = a.regeln.filter((r) => r.id !== id);

@@ -64,12 +64,12 @@ def titel(art: str, entwurf: RegelEntwurf | None) -> str:
     if isinstance(entwurf, TagEntwurf):
         return f"Tag ist {_aufzaehlung(entwurf.tags)}"
     if isinstance(entwurf, StimmenEntwurf):
-        return f"weniger als {entwurf.mindeststimmen} Stimmen"
+        return f"Beliebtheit unter {entwurf.mindeststimmen} Stimmen"
     if isinstance(entwurf, WerbungEntwurf):
         return f"Werbeverdacht {_WERBUNG_TITEL[entwurf.stufe]}"
     if isinstance(entwurf, BewertungEntwurf):
         return f"meine Einschätzung {_aufzaehlung([BEWERTUNGEN[b] for b in entwurf.bewertungen])}"
-    return {"einzeln": "Einzelsperren", "altsperren": "Sperren von früher (vor der Überführung)"}.get(art, art)
+    return {"einzeln": "Einzeln ausgeblendet", "altsperren": "Frühere Sperren"}.get(art, art)
 
 
 def treffer_sql(art: str, entwurf: RegelEntwurf | None) -> tuple[str, list[object]]:
@@ -152,7 +152,7 @@ def schalten(v: sqlite3.Connection, regel_id: str, an: bool, zeit: str) -> bool:
 def entfernen(v: sqlite3.Connection, regel_id: str) -> bool:
     """Entfernt eine Regel samt Treffern; die Einzelsperren bleiben als Regel immer da."""
     if regel_id == EINZELSPERREN:
-        raise ValueError("Die Einzelsperren sind keine entfernbare Regel; einzelne Sender gibt das Auge frei")
+        raise ValueError("Einzeln ausgeblendete Sender gibst du je Sender frei: Einstellungen > Radio > Ausgeblendete Sender")
     return v.execute("DELETE FROM regel WHERE id = ?", (regel_id,)).rowcount > 0
 
 

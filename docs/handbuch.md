@@ -1,5 +1,5 @@
 ---
-zweck: "Internetradio, Podcasts, Aufnahmen und Wecker im HiFi-Look: Senderverzeichnis mit Schnellfiltern, lebenden Ausschlussregeln und Favoriten, Zeitversatz, Aufnahmen mit Schnitt, Podcast-Abos, Weckeransicht mit Zeitansage am Telefon; Aufnahmen und Folgen liegen in der Kellerwolke."
+zweck: "Internetradio, Podcasts, Aufnahmen und Wecker im HiFi-Look: Senderverzeichnis mit Schnellfiltern, Ausschlussregeln und Favoriten, Zeitversatz, Aufnahmen mit Schnitt, Podcast-Abos, Weckeransicht mit Zeitansage am Telefon; Aufnahmen und Folgen liegen in der Kellerwolke."
 geraet: [pi]
 abhaengigkeiten: [kellerwolke]
 daten:
@@ -21,8 +21,8 @@ stand: 9ff31bd
 ## Zweck
 
 RadioHub ist das Radio des Hauses, Fassung {{fassung}}: tausende Sender aus dem Senderverzeichnis (jede Nacht
-abgeglichen, Sprachen, Genres, Qualität und Varianten aufbereitet) mit Suche, Schnellfiltern, lebenden
-Ausschlussregeln (mit Grund je ausgeblendetem Sender) und Favoriten, Zeitversatz (zurückspulen im laufenden Sender), Aufnahmen von Hand oder nach Zeitplan mit
+abgeglichen, Sprachen, Genres, Qualität und Varianten aufbereitet) mit Suche, Schnellfiltern,
+Ausschlussregeln, die auch für neue Sender gelten (mit Grund je ausgeblendetem Sender) und Favoriten, Zeitversatz (zurückspulen im laufenden Sender), Aufnahmen von Hand oder nach Zeitplan mit
 Schnitt in der Wellenform, Podcast-Abos zum Hören und Herunterladen. Am Telefon gibt es eine eigene Ansicht und quer
 gelegt die Weckeransicht für den Nachttisch mit Wecker, Sonnenband und Zeitansage. Aufnahmen und heruntergeladene
 Folgen liegen in der [[Kellerwolke]]; RadioHub hält lokal nur die Datenbank und Zwischenstände.
@@ -38,7 +38,7 @@ Radio bedienen: am Rechner stehen links die Schnellfilter (oben fest das Gerät 
 Mindestbitrate, darunter Länder, Genres, Qualität, Codec, eigene Bewertung und Kategorien mit Zahlen); unter 1100 Pixeln
 fährt die Leiste über den Knopf Filter ein. Alle Schnellfilter, Suche und Sortierung stehen in der Adresse
 (`/radio?land=DE&genre=Rock&sort=name`, ein aufgeklappter Sender als `/radio/<Kennung>?...`), Neuladen und Lesezeichen
-behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Das Auge blendet einen Sender als Einzelsperre aus
+behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Der Minus-Knopf blendet einen einzelnen Sender aus
 und bietet Rückgängig, nichts anderes startet. Am Telefon dieselben Filter als Blatt von unten. Dauerhafte Ausschlüsse
 nur unter Einstellungen > Radio: Ausschlussregeln (erst Vorschau, dann anlegen, danach Rückgängig; Entfernen nennt
 vorher die Folgen), Ausgeblendete Sender (Grund je Sender, Freigeben), Länder der Seitenleiste (blendet nichts aus),

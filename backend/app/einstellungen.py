@@ -59,7 +59,7 @@ class AppEinstellungen(Grundeinstellungen):
                                     json_schema_extra=ABLAGE,
                                     description="Wurzelordner der Aufnahmen, Podcast-Folgen und Bausteine der Zeitansage "
                                                 "in der Kellerwolke.")
-    kellerwolke_geduld_s: float = Field(900.0, ge=0, le=3600, title="Geduld beim Ablegen",
+    kellerwolke_geduld_s: float = Field(900.0, ge=0, le=3600, title="Wartezeit beim Speichern",
                                         json_schema_extra={**ABLAGE, "einheit": "s", "schritt": 60},
                                         description="So lange wartet das Ablegen einer Aufnahme oder Folge, wenn die "
                                                     "Kellerwolke gerade nicht erreichbar ist, damit ein Neustart dort "
@@ -71,15 +71,15 @@ class AppEinstellungen(Grundeinstellungen):
     vertonung_adresse: str = Field("", max_length=200, title="Vertonung", json_schema_extra=WECKER,
                                    description="Vertonung, die die Bausteine der Zeitansage spricht. Sie nimmt den "
                                                "App-Schlüssel der Kellerwolke als Zugang.")
-    zeitstimme: str = Field("katalog:sohee", max_length=200, title="Zeit-Stimme", json_schema_extra=WECKER,
+    zeitstimme: str = Field("katalog:sohee", max_length=200, title="Stimme der Zeitansage", json_schema_extra=WECKER,
                             description="Stimme der Zeitansage aus der Vertonung: aus dem Katalog oder eine private, die "
                                         "die Vertonung für RadioHub freigibt. Jede Stimme spricht ihre eigenen Bausteine; "
                                         "nach einem Wechsel fehlen sie, bis sie erzeugt sind.")
-    zeitstimme_tempo: float = Field(1.0, ge=0.5, le=2.0, title="Tempo der Zeit-Stimme",
+    zeitstimme_tempo: float = Field(1.0, ge=0.5, le=2.0, title="Sprechtempo der Zeitansage",
                                     json_schema_extra={**WECKER, "schritt": 0.05},
                                     description="1,0 ist das Tempo der Stimme; kleiner spricht langsamer.")
     # --- Zugriff (früher ALLOWED_ORIGINS) ---
-    erlaubte_urspruenge: list[str] = Field(default_factory=list, title="Fremde Ursprünge",
+    erlaubte_urspruenge: list[str] = Field(default_factory=list, title="Erlaubte Ursprünge (CORS)",
                                            json_schema_extra=DIENSTE,
                                            description="Nur nötig, wenn eine fremde Seite die Schnittstelle im Browser "
                                                        "nutzen soll (etwa https://rechner:5180); nie *. Leer: die "
@@ -138,13 +138,13 @@ class AppEinstellungen(Grundeinstellungen):
                                        description="Prüft Sender auf reine Werbe- und Verkaufskanäle.")
     ad_detection_methods: list[Pruefart] = Field(default_factory=lambda: ["url_check", "header_check"], title="Verfahren",
                                                  json_schema_extra={**RADIO, "beschriftungen": {
-                                                     "url_check": "Adresse prüfen", "header_check": "Kopf des Stroms"}},
+                                                     "url_check": "Adresse prüfen", "header_check": "HTTP-Header prüfen"}},
                                                  description="Woran ein Sender erkannt wird; beide zugleich sind möglich.")
     ad_detection_threshold: int = Field(80, ge=40, le=100, title="Schwelle",
                                         json_schema_extra={**RADIO, "einheit": "%", "schritt": 5},
                                         description="Ab dieser Sicherheit gilt ein Sender als verdächtig.")
     ort_name: str = Field("", max_length=120, title="Ort", json_schema_extra=WECKER,
-                          description="Name des Orts der Sonnenzeiten (Nachtschaltung der Weckansicht).")
+                          description="Name des Orts der Sonnenzeiten (Nachtmodus der Weckeransicht).")
     ort_breite: float | None = Field(None, ge=-90, le=90, title="Breite", json_schema_extra=WECKER,
                                      description="Geografische Breite des Orts.")
     ort_laenge: float | None = Field(None, ge=-180, le=180, title="Länge", json_schema_extra=WECKER,

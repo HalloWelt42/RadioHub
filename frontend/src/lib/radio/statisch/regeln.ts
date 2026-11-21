@@ -118,9 +118,9 @@ export function titel(b: Senderbestand, art: RegelArt, entwurf: RegelEntwurf | n
     }
     case "genre": return `Genre ist ${aufzaehlung(entwurf.genres)}`;
     case "tag": return `Tag ist ${aufzaehlung(entwurf.tags)}`;
-    case "stimmen": return `weniger als ${entwurf.mindeststimmen} Stimmen`;
+    case "stimmen": return `Beliebtheit unter ${entwurf.mindeststimmen} Stimmen`;
     case "bewertung": return `meine Einschätzung ${aufzaehlung(entwurf.bewertungen.map((x) => BEWERTUNGEN[x]))}`;
-    default: return art === "einzeln" ? "Einzelsperren" : art;
+    default: return art === "einzeln" ? "Einzeln ausgeblendet" : art;
   }
 }
 

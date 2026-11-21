@@ -68,7 +68,7 @@ def test_ausgeblendete_liste_und_freigeben_ohne_loeschen(alt):
     alt.post("/api/filters/push", json={"excluded_languages": [], "excluded_tags": ["tv"], "min_votes": 0})
     assert _suche(alt) == set()
     verborgen = {s["uuid"]: s for s in alt.get("/api/filters/hidden").json()["stations"]}
-    assert verborgen[hand]["category"] == "manual" and verborgen[hand]["reason"] == "Einzelsperren"
+    assert verborgen[hand]["category"] == "manual" and verborgen[hand]["reason"] == "Einzeln ausgeblendet"
     assert verborgen[fernsehen]["category"] == "filter" and verborgen[fernsehen]["reason"] == "Tag ist tv"
     assert alt.get(f"/api/blocklist/check/{hand}").json()["blocked"]
 

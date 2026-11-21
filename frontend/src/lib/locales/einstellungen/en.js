@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Language and sounds', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
     zeitversatz: 'Time shift', aufnahme: 'Recording', abruf: 'Fetching subscriptions', zeitansage: 'Time announcement', stimme: 'Voice',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', helfer: 'Helpers in the house', zugang: 'Access',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', helfer: 'Services in the home network', zugang: 'Access',
     abgleich: 'Nightly sync',
   },
   hinweis: {
@@ -26,7 +26,7 @@ export default {
     alle: 'All devices', geraet: 'This device', fest: 'Fixed',
     alleHilfe: 'Applies to all devices; save with the bar below',
     geraetHilfe: 'Applies immediately and only on this device',
-    festHilfe: 'Set by the deployment, cannot be changed here',
+    festHilfe: 'Set during installation, cannot be changed here',
   },
   an: 'On', aus: 'Off', leer: 'Empty', bis: 'to', stunde: 'Hour', minute: 'Minute', ohneZeit: 'empty',
   kleiner: 'Smaller', groesser: 'Larger', entfernen: 'Remove', abbrechen: 'Cancel',
@@ -44,8 +44,8 @@ export default {
   ladeFehler: 'The server settings cannot be reached right now: {grund}', nochmal: 'Try again',
   laedt: 'Loading settings',
   geraet: {
-    vorlage: 'Template', vorlageHilfe: 'Basic shape of all controls.',
-    thema: 'Theme', themaHilfe: 'Light, dark or as the device is set.',
+    vorlage: 'Style', vorlageHilfe: 'Look of all controls.',
+    thema: 'Mode', themaHilfe: 'Light, dark or as the device is set.',
     schrift: 'Text size', schriftHilfe: 'Size of all text; controls grow with it.',
     wachHalten: 'Keep screen awake', wachHaltenHilfe: 'The device does not turn the screen off while RadioHub is open.',
     wachHaltenFehlt: 'This browser cannot keep the screen awake.',
@@ -74,13 +74,13 @@ export default {
     seite: 'Open donation page', adresse: 'Address', kopieren: 'Copy', kopiert: 'Address copied',
   },
   ordner: {
-    titel: 'Recording folders', hilfe: 'new recordings go to the folder with the light', stamm: 'Root folder',
+    titel: 'Recording folders', hilfe: 'new recordings go to the folder with the light', stamm: 'No folder',
     stammHilfe: 'no folder of its own, directly under recordings', aufnahmen: 'Recordings', ordner: 'Folder',
     hierhin: 'Record here', nimmtAuf: 'Recording here', landetHier: 'new recordings go here',
     umbenennen: 'Rename', loeschen: 'Delete', anlegen: 'Create', neu: 'New folder, e.g. Radio plays',
     loeschenFrage: 'Delete folder "{name}"? It is empty; no recording is lost.',
     voll: '"{name}" holds {n} recordings and can only be deleted when empty. Move recordings under Recordings.',
-    verstanden: 'Understood', aktivGesetzt: 'New recordings now go to "{name}".', stammGesetzt: 'New recordings now go to the root folder.',
+    verstanden: 'Understood', aktivGesetzt: 'New recordings now go to "{name}".', stammGesetzt: 'New recordings now go to no folder.',
     geloescht: 'Folder "{name}" deleted.',
   },
   muster: {
@@ -110,8 +110,8 @@ export default {
     vollstaendig: 'All pieces are present', laeuft: 'Being created',
   },
   ablage: {
-    datenordner: 'Data folder', festHilfe: 'Set by the deployment',
-    hinweis: 'Where the database and buffer live is set by the deployment. This only shows what is used; moving happens on deployment, never from the interface.',
+    datenordner: 'Data folder', festHilfe: 'Set during installation',
+    hinweis: 'Where the database and buffer live is set during installation. This only shows how much is used; moving them takes a new installation.',
     gb: '{name} GB', dateien: 'Files', frei: 'Free GB', belegt: 'Used {belegt} GB of {gesamt} GB',
   },
 };

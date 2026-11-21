@@ -219,7 +219,7 @@ describe("Regeln", () => {
     expect(namen(await q.abfragen({ sortierung: "name" }))).toEqual(["Fernsehturm", "Ganz"]);
     expect((await q.sichtbarkeit("eintrag")).sichtbar).toBe(false);
     const titel = (await q.regeln()).regeln.map((r) => r.titel);
-    expect(titel).toEqual(['Sprache ist "ger"', "Tag ist tv", "Einzelsperren"]);       // neueste zuerst, Einzelsperren am Ende
+    expect(titel).toEqual(['Sprache ist "ger"', "Tag ist tv", "Einzeln ausgeblendet"]);       // neueste zuerst, Einzelsperren am Ende
   });
 
   it("Titel für genaue Einträge einer Sprache, Genres, Stimmen und Bewertungen", async () => {
@@ -229,7 +229,7 @@ describe("Regeln", () => {
     expect((await q.vorschau({ art: "genre", genres: ["Pop", "Rock", "Jazz", "Klassik", "Folk"] })).titel)
       .toBe("Genre ist Pop, Rock, Jazz, Klassik und 1 weitere");
     const stimmen = await q.vorschau({ art: "stimmen", mindeststimmen: 5 });
-    expect([stimmen.titel, stimmen.betroffen]).toEqual(["weniger als 5 Stimmen", 1]);
+    expect([stimmen.titel, stimmen.betroffen]).toEqual(["Beliebtheit unter 5 Stimmen", 1]);
     expect((await q.vorschau({ art: "bewertung", bewertungen: ["sterne:1", "religioes"] })).titel)
       .toBe("meine Einschätzung Geht so, Religiös");
     await expect(q.vorschau({ art: "werbung", stufe: "hoch" })).rejects.toThrow("Werbung");
@@ -253,7 +253,7 @@ describe("Regeln", () => {
   it("Einzelsperre und Freigabe mit Rückgängig", async () => {
     const { q } = quelle([{ uuid: "auge", name: "Auge", stimmen: 50 }, { uuid: "getroffen", name: "Getroffen", sprachen: ["ru"], eintraege: ["russian"] }]);
     const gesperrt = await q.sperren("auge");
-    expect([gesperrt.sichtbar, gesperrt.gesperrt, gesperrt.gruende.map((g) => g.titel)]).toEqual([false, true, ["Einzelsperren"]]);
+    expect([gesperrt.sichtbar, gesperrt.gesperrt, gesperrt.gruende.map((g) => g.titel)]).toEqual([false, true, ["Einzeln ausgeblendet"]]);
     expect(namen(await q.abfragen({}))).toEqual(["Getroffen"]);
     expect((await q.vorschau({ art: "sprache", schluessel: ["ru"], eintraege: [] })).betroffen).toBe(1);
     expect((await q.entsperren("auge")).sichtbar).toBe(true);

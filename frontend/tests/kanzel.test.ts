@@ -103,7 +103,7 @@ describe("Steuerung", () => {
   });
   it("nach einem Fehler wird Spielen zu Neu verbinden (rot), außerhalb des Glases", () => {
     expect(kanzelTasten(spielt({ medium: "fehler", fehlerCode: 2 }), t).spielen)
-      .toMatchObject({ neuVerbinden: true, symbol: "fa-play", farbe: "rot", gesperrt: false, hilfe: "Die Quelle sofort neu laden" });
+      .toMatchObject({ neuVerbinden: true, symbol: "fa-play", farbe: "rot", gesperrt: false, hilfe: "Sofort neu verbinden" });
     expect(kanzelTasten(spielt(), t).spielen.neuVerbinden).toBe(false);
   });
   it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, Wechsel gesperrt", () => {
@@ -168,7 +168,7 @@ describe("Webversion ohne Zeitversatz und Aufnahme", () => {
   it("die Statuszeile sagt LIVE statt Originalstrom, Stopp verspricht keine Aufnahme", () => {
     const weg = { zeitversatz: false, aufnahme: false };
     expect(kanzelAnzeige(spielt({ weg }), t).art).toBe("LIVE");
-    expect(kanzelAnzeige(spielt(), t).art).toBe("LIVE, ORIGINALSTROM");
+    expect(kanzelAnzeige(spielt(), t).art).toBe("LIVE, ORIGINAL-STREAM");
     expect(kanzelTasten(spielt({ weg }), t).stopp.hilfe).toBe("Stopp: beendet das Hören (S)");
   });
 });
