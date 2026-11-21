@@ -16,7 +16,8 @@ from datetime import datetime
 from typing import Optional
 from dataclasses import dataclass, field
 
-from .icy_metadata import IcyMetadataLogger
+from .stromleser import StromFehler, Stromleser, Wiedergabeliste
+from .titelbuch import Titelbuch
 
 logger = logging.getLogger("radiohub.hls_buffer")
 
@@ -81,8 +82,10 @@ class HLSBufferService:
         self.session: Optional[HLSSession] = None
         self._ffmpeg_process: Optional[asyncio.subprocess.Process] = None
         self._monitor_task: Optional[asyncio.Task] = None
-        self._icy_logger: Optional[IcyMetadataLogger] = None
-        self._icy_task: Optional[asyncio.Task] = None
+        # Radio: eine Verbindung für Ton und Sendedaten (RAD-33); der Ton geht über stdin an ffmpeg
+        self._stromleser: Optional[Stromleser] = None
+        self._strom_task: Optional[asyncio.Task] = None
+        self._titelbuch: Optional[Titelbuch] = None
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
@@ -181,8 +184,9 @@ class HLSBufferService:
         # Auf Standard-Stufe snappen
         return snap_to_step(output)
         
-    def _build_ffmpeg_cmd(self, stream_url: str) -> list:
-        """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate"""
+    def _build_ffmpeg_cmd(self, stream_url: str, aus_stromleser: bool = False, eingang_format: Optional[str] = None) -> list:
+        """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate. Mit `aus_stromleser` liest ffmpeg den Ton
+        über stdin (der Stromleser verbindet und verbindet neu), sonst selbst von der Adresse."""
         playlist = self.buffer_dir / "playlist.m3u8"
         segment_pattern = str(self.buffer_dir / "segment_%d.ts")
 
@@ -198,11 +202,11 @@ class HLSBufferService:
             "-hide_banner",
             "-loglevel", "warning",
             "-y",  # Überschreiben ohne Nachfrage
-            "-reconnect", "1",
-            "-reconnect_streamed", "1",
-            "-reconnect_delay_max", "5",
-            "-i", stream_url,
         ]
+        if aus_stromleser:
+            cmd += (["-f", eingang_format] if eingang_format else []) + ["-i", "pipe:0"]
+        else:
+            cmd += ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", stream_url]
 
         # Podcast: Kein loudnorm (buffert gesamten Stream, blockiert Output)
         #          + -vn: Embedded Cover/Chapter-Images ignorieren (blockieren sonst libx264)
@@ -277,9 +281,28 @@ class HLSBufferService:
         mode_label = "Podcast" if is_podcast else "Radio"
         logger.info(f"HLS Buffer starten ({mode_label}): {station_name}")
         
-        # Stream-Info erkennen
-        logger.info(f"Erkenne Stream-Eigenschaften...")
-        stream_info = await self._detect_stream_info(stream_url)
+        # Radio: erst verbinden (Stromleser), später bekommt ffmpeg den Ton über stdin; eine Wiedergabeliste oder ein
+        # nicht lesbarer Kopf nimmt den bisherigen Weg (ffmpeg liest selbst, ohne Sendedaten)
+        kopf = None
+        if not is_podcast:
+            self._titelbuch = Titelbuch()
+            self._stromleser = Stromleser(stream_url, self._in_ffmpeg, self._titelbuch.angabe, bitrate=bitrate)
+            try:
+                kopf = await self._stromleser.verbinden()
+                self._titelbuch.metaint = kopf.metaint
+            except Wiedergabeliste as f:
+                logger.info(f"Wiedergabeliste ({f}): ffmpeg liest selbst, ohne Sendedaten")
+                self._stromleser = None
+            except StromFehler as f:
+                logger.warning(f"Stromleser: {f}; ffmpeg liest selbst, ohne Sendedaten")
+                self._stromleser = None
+
+        # Stream-Info: aus dem Kopf des Stromlesers, sonst ffprobe (das verbindet sich dafür eigens)
+        if kopf and kopf.bitrate and kopf.format:
+            stream_info = StreamInfo(codec=kopf.format, bitrate=kopf.bitrate)
+        else:
+            logger.info(f"Erkenne Stream-Eigenschaften...")
+            stream_info = await self._detect_stream_info(stream_url)
         
         # Input-Bitrate: Erkannt oder Fallback
         input_bitrate = stream_info.bitrate if stream_info.bitrate > 0 else bitrate
@@ -314,23 +337,25 @@ class HLSBufferService:
         # Buffer-Verzeichnis vorbereiten
         self._ensure_buffer_dir()
         
+
         # ffmpeg starten
         try:
-            cmd = self._build_ffmpeg_cmd(stream_url)
-            logger.info(f"ffmpeg: {' '.join(cmd[:5])}...")
-            
+            cmd = self._build_ffmpeg_cmd(stream_url, aus_stromleser=self._stromleser is not None,
+                                         eingang_format=kopf.format if kopf else None)
+            logger.info(f"ffmpeg: {' '.join(cmd[:8])}...")
+
             self._ffmpeg_process = await asyncio.create_subprocess_exec(
                 *cmd,
+                stdin=asyncio.subprocess.PIPE if self._stromleser else asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             # Monitor-Task starten
             self._monitor_task = asyncio.create_task(self._monitor_ffmpeg())
 
-            # ICY-Metadata-Logger parallel starten (nur fuer Radio, nicht Podcast)
-            if not is_podcast:
-                self._start_icy_tracking(stream_url)
+            if self._stromleser:
+                self._strom_task = asyncio.create_task(self._strom_laufen())
 
             return {
                 "status": "started",
@@ -341,43 +366,59 @@ class HLSBufferService:
             }
             
         except FileNotFoundError:
+            await self._strom_stoppen()
             self.session = None
             error_msg = "ffmpeg nicht gefunden. Bitte installieren: sudo apt install ffmpeg"
             logger.warning(f"{error_msg}")
             return {"status": "error", "error": error_msg}
-            
+
         except Exception as e:
+            await self._strom_stoppen()
             self.session = None
             logger.warning(f"HLS Start Fehler: {e}")
             return {"status": "error", "error": str(e)}
     
-    def _start_icy_tracking(self, stream_url: str):
-        """Startet ICY-Metadata-Logger parallel zum HLS-Buffer."""
-        self._icy_logger = IcyMetadataLogger()
-        icy_path = self.buffer_dir / "icy_metadata.json"
-        self._icy_task = asyncio.create_task(
-            self._icy_logger.run(stream_url, icy_path)
-        )
-        logger.info("ICY-Tracking gestartet (parallel zum HLS-Buffer)")
+    async def _in_ffmpeg(self, daten: bytes) -> None:
+        """Ziel des Stromlesers: der Ton in ffmpeg (stdin); ist ffmpeg weg, hört der Leser auf."""
+        eingang = self._ffmpeg_process.stdin if self._ffmpeg_process else None
+        if eingang is None or eingang.is_closing():
+            if self._stromleser:
+                self._stromleser.stop()
+            return
+        try:
+            eingang.write(daten)
+            await eingang.drain()
+        except (BrokenPipeError, ConnectionResetError):
+            if self._stromleser:
+                self._stromleser.stop()
 
-    def _stop_icy_tracking(self):
-        """Stoppt ICY-Metadata-Logger."""
-        if self._icy_logger:
-            self._icy_logger.stop()
-        if self._icy_task and not self._icy_task.done():
-            self._icy_task.cancel()
+    async def _strom_laufen(self) -> None:
+        """Liest den Sender, bis er gestoppt wird oder wegbleibt; danach bekommt ffmpeg das Ende des Tons."""
+        leser = self._stromleser
+        try:
+            await leser.laufen()
+        finally:
+            prozess = self._ffmpeg_process
+            if prozess and prozess.stdin and not prozess.stdin.is_closing():
+                prozess.stdin.close()
+
+    async def _strom_stoppen(self) -> None:
+        """Stoppt den Stromleser und hält die Titel fest."""
+        if self._stromleser:
+            self._stromleser.stop()
+        if self._strom_task and not self._strom_task.done():
+            self._strom_task.cancel()
             try:
-                self._icy_task.result()
-            except (asyncio.CancelledError, asyncio.InvalidStateError):
+                await self._strom_task
+            except asyncio.CancelledError:
                 pass
-        entries = len(self._icy_logger.entries) if self._icy_logger else 0
-        if entries > 0:
-            logger.info(f"ICY-Tracking gestoppt ({entries} Titelwechsel)")
-            # DB aktualisieren: icy=1 wenn Probe das nicht erkannt hatte
-            if self.session and self.session.station_uuid:
-                self._update_icy_flag(self.session.station_uuid)
-        self._icy_logger = None
-        self._icy_task = None
+        eintraege = self._titelbuch.entry_count if self._titelbuch else 0
+        if eintraege and self.session and self.session.station_uuid:
+            logger.info(f"Sendedaten gestoppt ({eintraege} Titelwechsel)")
+            self._update_icy_flag(self.session.station_uuid)
+        self._stromleser = None
+        self._strom_task = None
+        self._titelbuch = None
 
     def _update_icy_flag(self, uuid: str):
         """Setzt icy=1 in detected_bitrates falls noch nicht gesetzt."""
@@ -395,14 +436,8 @@ class HLSBufferService:
             logger.warning(f"ICY-Flag Update fehlgeschlagen: {e}")
 
     def get_icy_entries(self) -> list[dict]:
-        """Aktuelle ICY-Metadata-Einträge aus Memory."""
-        if self._icy_logger:
-            return list(self._icy_logger.entries)
-        return []
-
-    def get_icy_logger(self) -> Optional[IcyMetadataLogger]:
-        """ICY-Logger-Referenz (oder None wenn inaktiv)."""
-        return self._icy_logger
+        """Titelwechsel der laufenden Sitzung, Stellen in Millisekunden des Tons (wie die Segmente)."""
+        return list(self._titelbuch.entries) if self._titelbuch else []
 
     async def _monitor_ffmpeg(self):
         """Überwacht ffmpeg Prozess im Hintergrund"""
@@ -436,8 +471,8 @@ class HLSBufferService:
         
         station_name = self.session.station_name
 
-        # ICY-Logger stoppen
-        self._stop_icy_tracking()
+        # Stromleser stoppen (vor ffmpeg, damit kein Ton mehr nachkommt)
+        await self._strom_stoppen()
 
         # ffmpeg beenden
         if self._ffmpeg_process and self._ffmpeg_process.returncode is None:
@@ -503,8 +538,8 @@ class HLSBufferService:
             "sample_rate": self.session.sample_rate,
             "error": self.session.error,
             # Aktueller ICY-Titel (letzter erkannter)
-            "icy_title": (self._icy_logger.entries[-1].get("title", "")
-                          if self._icy_logger and self._icy_logger.entries else None)
+            "icy_title": (self._titelbuch.entries[-1].get("title", "")
+                          if self._titelbuch and self._titelbuch.entries else None)
         }
     
     def _get_segment_info(self) -> dict:

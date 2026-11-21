@@ -4,11 +4,14 @@ RadioHub v0.5.0 - Recorder Service (Live-Split)
 Stream-Aufnahme mit Live-Split bei ICY-Titelwechsel.
 
 Ablauf:
-1. FFmpeg schreibt Audio in eine Einzeldatei (stdin=PIPE fuer sauberes "q")
-2. ICY-Logger erkennt Titelwechsel -> Callback
-3. Callback: Neuen FFmpeg starten, alten per "q" stoppen, Segment in DB
+1. Der Stromleser hält die eine Verbindung zum Sender (RAD-33) und gibt den Ton über stdin an FFmpeg, das ihn in
+   eine Einzeldatei schreibt; die Sendedaten derselben Verbindung führt das Titelbuch
+2. Titelwechsel -> Callback, zwischen zwei Blöcken des Tons, also genau an der Stelle
+3. Callback: Neuen FFmpeg starten, den Ton dorthin lenken, dem alten das Ende des Tons geben (EOF), Segment ablegen.
+   Früher verband jeder neue FFmpeg sich selbst neu, und Sender mit Werbung beim Verbinden setzten vor jedes Stück
+   einen Spot
 4. Stop: Letztes Segment finalisieren, kein Concat noetig
-5. Fallback ohne ICY: Ein Segment pro Session
+5. Fallback ohne ICY: Ein Segment pro Session; ist der Sender eine Wiedergabeliste, liest FFmpeg selbst
 
 Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
 Stall nach 60s ohne Wachstum -> FFmpeg Kill.
@@ -28,7 +31,8 @@ from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
 from .aufnahmen import aufnahmen
 from .config_service import config_service
-from .icy_metadata import IcyMetadataLogger
+from .stromleser import StromFehler, Stromleser, Wiedergabeliste
+from .titelbuch import Titelbuch
 from .audio_utils import probe_duration
 
 logger = logging.getLogger("radiohub.recorder")
@@ -55,6 +59,9 @@ CODEC_EXTENSIONS = {
     "pcm_s16le": ".wav",
     "pcm_s16be": ".wav",
 }
+
+# Art des Stroms (Stromleser) -> Codec und Dateiendung; andere Arten erkennt ffprobe
+CODEC_AUS_FORMAT = {"mp3": ("mp3", ".mp3"), "aac": ("aac", ".aac")}
 
 # Snapshot-Intervall: Alle N Monitor-Zyklen einen Groessen-Snapshot loggen
 SNAPSHOT_INTERVAL = 10  # 10 * 10s = ~100 Sekunden
@@ -104,8 +111,10 @@ class RecordingSession:
         self.process: Optional[asyncio.subprocess.Process] = None
         self.session_dir: Optional[Path] = None
         self.meta_file_path: Optional[Path] = None
-        self.icy_logger: Optional[IcyMetadataLogger] = None
-        self.icy_task: Optional[asyncio.Task] = None
+        self.titelbuch: Optional[Titelbuch] = None
+        self.stromleser: Optional[Stromleser] = None   # None: FFmpeg liest selbst (Wiedergabeliste)
+        self.strom_task: Optional[asyncio.Task] = None
+        self.eingang_format: Optional[str] = None
         self.logger: Optional[SessionLogger] = None
         self.events: list[dict] = []  # Gap/Stall/Codec-Events
 
@@ -225,16 +234,19 @@ class RecorderManager:
 
         return "", ".mp3"
 
+    def _eingang(self, session: RecordingSession) -> list[str]:
+        """Eingang von FFmpeg: der Ton des Stromlesers über stdin, ohne ihn liest FFmpeg selbst."""
+        if session.stromleser:
+            return (["-f", session.eingang_format] if session.eingang_format else []) + ["-i", "pipe:0"]
+        return ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", session.stream_url]
+
     def _build_ffmpeg_cmd(self, session: RecordingSession,
                           output_file: Path) -> list[str]:
         """Baut FFmpeg-Kommando fuer Einzeldatei-Aufnahme (mit stdin=PIPE)."""
         if session.codec:
             return [
                 "ffmpeg", "-y",
-                "-reconnect", "1",
-                "-reconnect_streamed", "1",
-                "-reconnect_delay_max", "5",
-                "-i", session.stream_url,
+                *self._eingang(session),
                 "-c:a", "copy",
                 str(output_file)
             ]
@@ -244,10 +256,7 @@ class RecorderManager:
                   else f"{configured_bitrate}k")
             return [
                 "ffmpeg", "-y",
-                "-reconnect", "1",
-                "-reconnect_streamed", "1",
-                "-reconnect_delay_max", "5",
-                "-i", session.stream_url,
+                *self._eingang(session),
                 "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
                 "-c:a", "libmp3lame", "-b:a", br,
                 "-ac", "2",       # Stereo
@@ -267,12 +276,16 @@ class RecorderManager:
         )
 
     async def _stop_ffmpeg_graceful(self, process: asyncio.subprocess.Process,
-                                    timeout: float = 5.0):
-        """Stoppt FFmpeg sauber via stdin 'q', Fallback auf terminate/kill."""
+                                    timeout: float = 5.0, ende_des_tons: bool = False):
+        """Stoppt FFmpeg sauber, Fallback auf terminate/kill. Liest FFmpeg den Ton über stdin (`ende_des_tons`),
+        endet es mit dem Ende des Tons (stdin schließen); sonst über "q" auf stdin."""
         if process.returncode is not None:
             return
         try:
-            if process.stdin:
+            if process.stdin and ende_des_tons:
+                if not process.stdin.is_closing():
+                    process.stdin.close()
+            elif process.stdin:
                 process.stdin.write(b"q\n")
                 await process.stdin.drain()
             await asyncio.wait_for(process.wait(), timeout=timeout)
@@ -306,9 +319,6 @@ class RecorderManager:
         except Exception:
             pass
 
-        # Codec erkennen
-        codec, ext = await self._detect_codec(stream_url)
-
         # Aktiven Aufnahmeordner bestimmen
         folder_name, folder_id = get_active_recording_folder()
 
@@ -324,9 +334,26 @@ class RecorderManager:
             bitrate=bitrate
         )
         session.session_dir = session_dir
+        session._split_lock = asyncio.Lock()
+
+        # Eine Verbindung für Ton und Sendedaten (RAD-33): erst verbinden, dann den Codec aus der Art des Stroms
+        meta_path = session_dir / orte.TITELLISTE
+        session.meta_file_path = meta_path
+        session.titelbuch = Titelbuch(sperrliste=self._sperrliste(), bei_wechsel=self._on_title_change, datei=meta_path)
+        session.stromleser = Stromleser(stream_url, lambda daten: self._ton(session, daten), session.titelbuch.angabe,
+                                        bitrate=bitrate)
+        try:
+            kopf = await session.stromleser.verbinden()
+            session.titelbuch.metaint = kopf.metaint
+            session.eingang_format = kopf.format
+        except StromFehler as f:
+            art = "Wiedergabeliste" if isinstance(f, Wiedergabeliste) else f"Stromleser: {f}"
+            logger.info(f"REC {art}; FFmpeg liest selbst, ohne Sendedaten")
+            session.stromleser, kopf = None, None
+        codec, ext = CODEC_AUS_FORMAT.get(kopf.format) if kopf and kopf.format in CODEC_AUS_FORMAT else \
+            await self._detect_codec(stream_url)
         session.codec = codec
         session.file_format = ext
-        session._split_lock = asyncio.Lock()
 
         # Debug-Logger (optional, per Config zuschaltbar)
         safe_name = "".join(
@@ -350,25 +377,9 @@ class RecorderManager:
             self._monitor_task = asyncio.create_task(self._monitor_process(session))
             self._stderr_task = asyncio.create_task(self._watch_stderr(session))
 
-            # ICY-Metadata-Logger mit Live-Split Callback starten
-            meta_path = session_dir / orte.TITELLISTE
-            session.meta_file_path = meta_path
-            # Ignorier-Liste aus DB laden
-            ignore_rules = []
-            try:
-                with db_session() as conn:
-                    c = conn.cursor()
-                    c.execute("SELECT pattern, match_type FROM icy_title_ignore")
-                    ignore_rules = [{"pattern": r[0], "match_type": r[1]} for r in c.fetchall()]
-            except Exception:
-                pass  # Tabelle existiert evtl. noch nicht
-            session.icy_logger = IcyMetadataLogger(
-                ignore_rules=ignore_rules,
-                on_title_change=self._on_title_change
-            )
-            session.icy_task = asyncio.create_task(
-                session.icy_logger.run(stream_url, meta_path)
-            )
+            # Ton und Sendedaten aus der einen Verbindung lesen; Titelwechsel teilen die Aufnahme
+            if session.stromleser:
+                session.strom_task = asyncio.create_task(self._strom_laufen(session))
 
             # In DB speichern (file_path = Ordner der Aufnahme in der Ablage; die Titelliste
             # wird beim Ablegen eingetragen)
@@ -403,10 +414,45 @@ class RecorderManager:
 
         except Exception as e:
             # Aufraumen bei Fehler
+            if session.stromleser:
+                session.stromleser.stop()
             if session_dir.exists():
                 shutil.rmtree(session_dir, ignore_errors=True)
             logger.warning(f"REC fehlgeschlagen: {e}")
             return {"success": False, "error": str(e)}
+
+    def _sperrliste(self) -> list[dict]:
+        """Gesperrte Titel (icy_title_ignore): sie teilen die Aufnahme nicht."""
+        try:
+            with db_session() as conn:
+                return [{"pattern": r[0], "match_type": r[1]}
+                        for r in conn.execute("SELECT pattern, match_type FROM icy_title_ignore")]
+        except Exception:
+            return []
+
+    async def _ton(self, session: RecordingSession, daten: bytes) -> None:
+        """Ziel des Stromlesers: der Ton in den laufenden FFmpeg; beim Teilen wartet er auf den neuen."""
+        async with session._split_lock:
+            prozess = session.process
+            if not prozess or not prozess.stdin or prozess.stdin.is_closing():
+                return
+            try:
+                prozess.stdin.write(daten)
+                await prozess.stdin.drain()
+            except (BrokenPipeError, ConnectionResetError):
+                pass   # FFmpeg endet gerade; die Überwachung entscheidet, wie es weitergeht
+
+    async def _strom_laufen(self, session: RecordingSession) -> None:
+        """Liest, bis die Aufnahme stoppt oder der Sender wegbleibt; dann bekommt FFmpeg das Ende des Tons und die
+        Überwachung schließt die Aufnahme ab wie früher, wenn FFmpeg den Strom verlor."""
+        try:
+            await session.stromleser.laufen()
+        finally:
+            if session.titelbuch:
+                session.titelbuch.abschliessen(session.stromleser.ton_bytes)
+            prozess = session.process
+            if prozess and prozess.stdin and not prozess.stdin.is_closing():
+                prozess.stdin.close()
 
     async def _watch_stderr(self, session: RecordingSession):
         """Liest FFmpeg stderr zeilenweise und erkennt Codec-Wechsel.
@@ -499,7 +545,7 @@ class RecorderManager:
                     session.live_split = True
 
                     # Alten Prozess stoppen
-                    await self._stop_ffmpeg_graceful(old_process)
+                    await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.stromleser is not None)
 
                     # Altes Segment ablegen
                     if old_file and old_file.exists() and old_file.stat().st_size > 0:
@@ -560,7 +606,7 @@ class RecorderManager:
             session.live_split = True
 
             # Alten FFmpeg sauber stoppen
-            await self._stop_ffmpeg_graceful(old_process)
+            await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.stromleser is not None)
 
             # Altes Segment ablegen
             if old_file and old_file.exists() and old_file.stat().st_size > 0:
@@ -848,21 +894,21 @@ class RecorderManager:
             except asyncio.CancelledError:
                 pass
 
-        # ICY-Logger stoppen (vor FFmpeg, damit kein Callback mehr kommt)
-        if session.icy_logger:
-            session.icy_logger.stop()
-        if session.icy_task and not session.icy_task.done():
-            session.icy_task.cancel()
+        # Stromleser stoppen (vor FFmpeg, damit kein Ton und kein Titelwechsel mehr kommt)
+        if session.stromleser:
+            session.stromleser.stop()
+        if session.strom_task and not session.strom_task.done():
+            session.strom_task.cancel()
             try:
-                await session.icy_task
+                await session.strom_task
             except asyncio.CancelledError:
                 pass
 
         # FFmpeg sauber stoppen
         if session.process and session.process.returncode is None:
-            await self._stop_ffmpeg_graceful(session.process)
+            await self._stop_ffmpeg_graceful(session.process, ende_des_tons=session.stromleser is not None)
 
-        meta_count = session.icy_logger.entry_count if session.icy_logger else 0
+        meta_count = session.titelbuch.entry_count if session.titelbuch else 0
         log = session.logger
         seg_count = session.segment_count
 
@@ -1012,9 +1058,9 @@ class RecorderManager:
         }
 
         # ICY-Daten mitliefern wenn Logger laeuft
-        if session.icy_logger and session.icy_logger.entries:
-            status["icy_title"] = session.icy_logger.entries[-1].get("title", "")
-            status["icy_count"] = session.icy_logger.entry_count
+        if session.titelbuch and session.titelbuch.entries:
+            status["icy_title"] = session.titelbuch.entries[-1].get("title", "")
+            status["icy_count"] = session.titelbuch.entry_count
             status["icy_entries"] = [
                 {
                     "title": e.get("title", ""),
@@ -1022,7 +1068,7 @@ class RecorderManager:
                     "ignored": e.get("ignored", False),
                     "raw_title": e.get("raw_title", e.get("title", ""))
                 }
-                for e in session.icy_logger.entries
+                for e in session.titelbuch.entries
             ]
 
         return status
