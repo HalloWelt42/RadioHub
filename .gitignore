@@ -47,3 +47,6 @@ backups/
 
 # Zertifikatsstelle der Kellerwolke (pro Rechner)
 zertifikate/
+
+# Stil der App für Entwürfe (tools/entwurf-stil.sh)
+mockups/radio-filter/app-stil/
