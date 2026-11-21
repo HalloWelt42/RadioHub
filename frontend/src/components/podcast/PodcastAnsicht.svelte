@@ -19,7 +19,7 @@
   import PodcastLeiste from "./PodcastLeiste.svelte";
   import PodcastWerkzeug from "./PodcastWerkzeug.svelte";
   import Verzeichnis from "./Verzeichnis.svelte";
-  import { tonelement } from "../../spieler/tonelement";
+  import { hoerenAb } from "../../spieler/aktionen";
   import { werbesprung } from "../../spieler/werbesprung.svelte";
 
   const liste = new Folgenliste(podcastquelle);
@@ -159,7 +159,8 @@
   /** eine Werbestelle bewusst hören: läuft die Folge, springt sie dorthin, sonst startet sie dort (RAD-32) */
   async function anhoeren(f: Folge, von: number) {
     werbesprung.durchlassen(f.id, von);
-    if (spielend === f.id) { tonelement().currentTime = von; return; }
+    // läuft oder pausiert die Folge schon: dorthin springen und spielen (RAD-32: angehalten passierte sonst nichts)
+    if (spielend === f.id && hoerenAb(von)) return;
     await sicher(async () => {
       const w = await podcastquelle.wiedergabe(f, liste.folgen);
       actions.playEpisodeFromList({ ...w.folge, resume_position: Math.floor(von) }, w.abo, w.liste);

@@ -5,6 +5,7 @@ import { actions } from "../lib/store.svelte.js";
 import { app } from "./app";
 import * as engine from "../lib/playerEngine.js";
 import { naechsteReihenfolge } from "./kanzel";
+import { tonelement } from "./tonelement";
 
 /** Die Taste Spielen (und die Leertaste), streng nach einer Regel (Nutzer 20.11.2026): sie bleibt Spielen und beendet
  *  nie; beendet wird nur über Stopp. Gestoppt startet sie die Quelle, beim Spielen hält sie an, in der Pause geht es
@@ -15,6 +16,15 @@ export function spielenOderPause(): void {
   if (app.isPaused) engine.resume();
   else if (app.isPlaying) engine.pause();
   else quelleStarten();
+}
+
+/** Die geladene Quelle an der Stelle `sekunde` hören: springen und, war sie angehalten, weiterspielen. Liefert false,
+ *  wenn gerade nichts geladen ist (dann muss die Quelle erst gestartet werden). */
+export function hoerenAb(sekunde: number): boolean {
+  if (app.isRecording || !(app.isPlaying || app.isPaused)) return false;
+  tonelement().currentTime = sekunde;
+  if (app.isPaused) engine.resume();
+  return true;
 }
 
 /** Die gewählte Quelle von vorn laden (auch: neu verbinden nach einem Fehler) */
