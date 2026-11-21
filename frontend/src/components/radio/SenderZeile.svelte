@@ -92,5 +92,5 @@
     </div>
   </div>
   {#if mehrere && variantenOffen}<Varianten eintrag={e} spielt={spielend} {onspielen} />{/if}
-  {#if offen}<SenderDetail eintrag={e} {kategorien} {spielt} {onaendern} onvarianten={onvarianten} onneustart={onspielen} />{/if}
+  {#if offen}<SenderDetail eintrag={e} {kategorien} {spielt} {onaendern} onneustart={onspielen} />{/if}
 </article>

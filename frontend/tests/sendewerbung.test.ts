@@ -8,7 +8,7 @@ vi.mock("hls.js", () => ({ default: class {} }));
 vi.mock("../src/lib/api.js", () => ({ api: {} }));
 import { t as uebersetzen } from "../src/lib/i18n.js";
 import { pufferZuTon, tonZuPuffer } from "../src/lib/playerEngine.js";
-import { startwahl, stellenSchluessel, werbetat, type Pufferstand, type Werbestelle } from "../src/lib/radio/sendewerbung";
+import { haeufigste, nachWerbenden, startwahl, stellenSchluessel, werbetat, type Pufferstand, type Werbestelle } from "../src/lib/radio/sendewerbung";
 import { kanzelAnzeige, pufferMarken, type Stand } from "../src/spieler/kanzel";
 
 const t = (k: string, w?: Record<string, string | number>) => uebersetzen(k, w) as string;
@@ -97,5 +97,32 @@ describe("Kanzel und Balken", () => {
     const hls = { first_segment: 0, last_segment: 599, segment_duration: 1, buffered_seconds: 600, max_segments: 1200,
                   werbestellen: [{ von: 60, bis: 72 }, { von: 590, bis: null }] };
     expect(pufferMarken(stand({ hlsStatus: hls }))).toEqual([{ von: 5, breite: 1 }, { von: 590 / 12, breite: 10 / 12 }]);
+  });
+});
+
+describe("Steckbrief: Spots nach Werbenden (RAD-35)", () => {
+  const spot = (werbender: string, kennung: string, anzahl: number, zuletzt: string, beim_verbinden = false) =>
+    ({ format: werbender ? "creative" : "adswizz", kennung, werbender, titel: "", dauer_ms: 15000, beim_verbinden, anzahl, zuerst: zuletzt, zuletzt });
+  it("fasst zusammen, die häufigsten zuerst, mit beim Verbinden und zuletzt", () => {
+    const g = nachWerbenden([
+      spot("werkzeugladen.de", "1", 2, "2026-11-20 10:00:00"), spot("autoglas.de", "2", 5, "2026-11-21 09:00:00", true),
+      spot("werkzeugladen.de", "3", 6, "2026-11-21 11:00:00"), spot("autoglas.de", "4", 1, "2026-11-19 08:00:00"),
+    ]);
+    expect(g.map((x) => [x.name, x.mal, x.spots.length, x.beimVerbinden, x.zuletzt])).toEqual([
+      ["werkzeugladen.de", 8, 2, false, "2026-11-21 11:00:00"], ["autoglas.de", 6, 2, true, "2026-11-21 09:00:00"]]);
+    expect(g[0].spots.map((s) => s.kennung)).toEqual(["3", "1"]);                     // der häufigste Spot zuerst
+  });
+  it("Spots ohne Werbenden bleiben je Kennung für sich", () => {
+    expect(nachWerbenden([spot("", "198927", 1, "a"), spot("", "195341", 2, "b")]).map((x) => [x.name, x.kennung])).toEqual([["", "195341"], ["", "198927"]]);
+  });
+});
+
+describe("Werbelisten: Bildlauf und Grenze (Nutzer 21.11.2026)", () => {
+  it("bis fünf Einträge ohne Bildlauf, ab sechs mit, höchstens die 40 häufigsten", () => {
+    const n = (k: number) => Array.from({ length: k }, (_, i) => i);
+    expect(haeufigste(n(5))).toEqual({ zeigen: n(5), weggelassen: 0, rollt: false });
+    expect(haeufigste(n(6)).rollt).toBe(true);
+    const lang = haeufigste(n(57));
+    expect([lang.zeigen.length, lang.zeigen[39], lang.weggelassen, lang.rollt]).toEqual([40, 39, 17, true]);
   });
 });

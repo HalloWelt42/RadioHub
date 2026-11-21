@@ -58,9 +58,15 @@ dem Zeitversatz (eine Verbindung zum Sender, sonst gehörte die erkannte Werbung
 Verbinden spielt es nicht, die Wiedergabe beginnt danach (Hinweis mit Restzeit und "Trotzdem hören"); im Zeitversatz
 springt es über Werbung ("Zurück und anhören"), live schaltet es stumm, bis sie vorbei ist ("Ton an"). Solange
 Werbung nicht zu hören ist, steht die Kanzel in Bernstein auf WERBUNG; die Stellen stehen bernsteinfarben auf dem
-Balken des Zeitversatzes. Ein Sender mit einem einzigen gefundenen Spot trägt in der Liste die Marke "Werbung"; sein
-Steckbrief nennt die bekannten Spots (Werbender, Länge, wie oft, beim Verbinden oder im Programm). Woran Werbung in den
-Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`.
+Balken des Zeitversatzes. Ein Sender mit einem einzigen gefundenen Spot trägt in der Liste die Marke "Werbung". Woran
+Werbung in den Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`.
+
+Ein aufgeklappter Sender (RAD-35) zeigt drei schmale Spalten: den Steckbrief (Läuft, Stream mit Kopieren und eigener
+Adresse, Codec, Homepage, Sprache, Ort, Prüfung, Titel pünktlich oder ungenau; Erklärungen als Tooltip am Info-Zeichen),
+die Werbung (Werbende nach Häufigkeit, aufklappbar bis zu den einzelnen Spots, Schalter Überspringen und das Ergebnis
+der Prüfung) und die eigene Einschätzung. Dort steht nur, was gewählt ist; ein Klick auf das x wählt ab, das Plus
+öffnet die Tafel mit Bewertung, Markierungen und Kategorien. Werbelisten ab sechs Einträgen rollen in sich und zeigen
+höchstens die 40 häufigsten.
 
 Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gespeichert, darunter die Abos mit
 der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die Nadel

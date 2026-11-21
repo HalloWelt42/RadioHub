@@ -13,7 +13,7 @@
   import type { ScanStand, Verdaechtiger, WerbeEinstellungen, WerbeStand } from "../../../lib/radio/werbeerkennung";
   import Band from "../Band.svelte";
   import Schalter from "../Schalter.svelte";
-  import { sendewerbung } from "../../../lib/radio/sendewerbung";
+  import { haeufigste, sendewerbung } from "../../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../../lib/radio/werbende.svelte";
 
   const RUNDE = 50;
@@ -35,6 +35,8 @@
   let alleAn = $state<boolean | null>(null);
   let listeOffen = $state(false);
   const werbendeListe = $derived([...werbende.sender.values()]);
+  // in der Liste die häufigsten zuerst; lange Listen rollen in sich und zeigen höchstens die häufigsten
+  const gezeigt = $derived(haeufigste([...werbendeListe].sort((a, b) => b.spots - a.spots || (b.zuletzt ?? "").localeCompare(a.zuletzt ?? ""))));
   const spotsZusammen = $derived(werbendeListe.reduce((n, s) => n + s.spots, 0));
   const ausgenommen = $derived(werbendeListe.filter((s) => s.ausgenommen).length);
   async function alleSchalten(an: boolean) {
@@ -121,8 +123,8 @@
         {#if werbendeListe.length}<button class="knopf" type="button" aria-expanded={listeOffen} onclick={() => (listeOffen = !listeOffen)}>
           <i class="fa-solid {listeOffen ? 'fa-chevron-up' : 'fa-list'}"></i>{t("radio.einst.liste")}</button>{/if}</div>
       {#if listeOffen}
-        <div class="rh-a-liste" role="list">
-          {#each werbendeListe as s (s.uuid)}
+        <div class="rh-a-liste" class:rh-liste-rollt={gezeigt.rollt} role="list">
+          {#each gezeigt.zeigen as s (s.uuid)}
             <div class="rh-a-zeile" role="listitem">
               <ak-led farbe="bernstein" zustand={s.ueberspringen ? "an" : "aus"} groesse="klein"></ak-led>
               <span class="name"><b>{s.name || s.uuid}</b></span>
@@ -133,6 +135,7 @@
             </div>
           {/each}
         </div>
+        {#if gezeigt.weggelassen}<p class="rh-still">{t("radio.listeHaeufigste", { n: zahl(gezeigt.zeigen.length), von: zahl(werbendeListe.length) })}</p>{/if}
       {/if}
     </div>
   {/if}

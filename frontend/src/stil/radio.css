@@ -217,16 +217,11 @@
 .rh-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 17)), 1fr)); gap: 14px; padding: 4px 14px 14px; }
 .rh-tafel-detail { min-width: 0; display: grid; gap: 8px; align-content: start; }
 .rh-tafel-detail h4 { margin: 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
-/* Hinweis hinter der Überschrift, etwa "nur für mich" bei Meine Einschätzung: normale Schrift, nicht in Versalien */
-.rh-h4-hinweis { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .rh-werte { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: var(--klein); }
 .rh-werte dt { color: var(--text-3); }
 .rh-werte dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .rh-werte dd a { color: var(--akzent); }
 .rh-werte code { font-family: var(--schrift-code); font-size: var(--klein); }
-.rh-strom { display: flex; gap: 8px; align-items: start; }
-.rh-strom code { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.rh-strom .rund { inline-size: 36px; block-size: 36px; flex: none; }
 .rh-verlauf { padding: 10px 12px; display: grid; gap: 4px; --farbe: var(--rh-anzeige); }
 .rh-verlauf div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; font-family: var(--schrift-zahl); font-size: var(--klein); line-height: 1.4;
   color: color-mix(in srgb, var(--farbe) 72%, var(--licht)); }
@@ -268,7 +263,7 @@
 .rh-strom-eingabe { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; }
 .rh-strom-eingabe .eingabe { block-size: 40px; font-family: var(--schrift-code); font-size: var(--klein); }
 .rh-strom-eingabe input { font-size: max(16px, var(--klein)); }
-.rh-strom-eingabe .rund, .rh-strom .rund + .rund { inline-size: 36px; block-size: 36px; flex: none; }
+.rh-strom-eingabe .rund { inline-size: 36px; block-size: 36px; flex: none; }
 .rh-eigen { font-size: var(--marke); color: var(--akzent); font-weight: 600; margin-left: 6px; }
 /* Läuft gerade (Titel aus dem Strom) und Gründe der Sichtbarkeit im Steckbrief */
 .rh-laeuft { display: flex; gap: 8px; align-items: start; }
@@ -276,8 +271,6 @@
 .rh-laeuft .rund { inline-size: 32px; block-size: 32px; flex: none; }
 .rh-ausnahme { color: var(--text-2); }
 .rh-ausnahme i { color: var(--led-gelb); margin-right: 6px; }
-.rh-titelguete { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-.rh-titelguete .chip.wahl { min-block-size: 32px; padding: 2px 10px; }
 .rh-leer-facette { margin: 0 0 4px 8px; font-size: var(--klein); color: var(--text-3); }
 /* Rückgängig-Band: Knöpfe wie im Entwurf */
 .rh-band .knopf { block-size: 40px; }
@@ -297,10 +290,54 @@
 /* Varianten aufgeklappt: der Knopf bleibt eingedrückt wie beim Drücken im HiFi-Stil (RAD-28) */
 .rh-sender .rh-varianten-knopf.aktiv { transform: translateY(1px); background-image: none; box-shadow: var(--hifi-mulde, var(--rh-mulde)); }
 
-/* Werbung aus den Sendedaten (RAD-33, Entwurf radio-werbung.html): Marke an Sendern, die Werbung ankündigen,
-   Angabe im Steckbrief und die bekannten Spots (Liste wie die Werbestellen der Folgen, ohne Knöpfe) */
+/* Werbung aus den Sendedaten (RAD-33, Entwurf radio-werbung.html): Marke an Sendern, die Werbung ankündigen */
 .rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
-.rh-werbe-angekuendigt { display: block; margin-top: 4px; }
-.rh-werbe-angekuendigt .rh-werbemarke-text { display: inline-flex; }
-.rh-werbespots .rh-werbestellen li { grid-template-columns: auto calc(var(--klein) * 5) minmax(0, 1fr); }
-.rh-werbespots > .rh-still { display: block; margin-top: 6px; }
+
+/* Aufgeklappter Sender dicht (RAD-35, Entwurf A in steckbrief-kompakt.html): drei schmale Spalten, Werte zweispaltig,
+   Erklärungen als Tooltip am Info-Zeichen, Werbung nach Werbenden, Einschätzung nur mit Gewähltem und Tafel am Plus */
+.rh-detail-dicht { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, .9fr); }
+.rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+@container liste (max-width: 820px) { .rh-detail-dicht, .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); } }
+.rh-werte-dicht { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; font-size: var(--klein); align-items: center; }
+.rh-werte-dicht dt { color: var(--text-3); }
+.rh-werte-dicht dd { margin: 0; min-width: 0; }
+.rh-werte-dicht dd a { color: var(--akzent); }
+.rh-werte-dicht .rh-laeuft { align-items: center; }
+.rh-werte-dicht .rh-laeuft span, .rh-kurz { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-kurz { display: block; }
+.rh-strom-dicht { display: flex; gap: 4px; align-items: center; min-width: 0; }
+.rh-strom-dicht code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--schrift-code); font-size: var(--klein); }
+.rund.rh-mini { inline-size: 28px; block-size: 28px; min-block-size: 0; flex: none; }
+.rh-info { margin-left: 6px; color: var(--text-3); font-size: .85em; cursor: help; text-transform: none; }
+.rh-gut { color: var(--led-gruen); margin-right: 5px; }
+.rh-schlecht { color: var(--led-rot); margin-right: 5px; }
+.rh-segment-klein button { padding: 2px 10px; min-block-size: 0; font-size: var(--klein); }
+.rh-h4-zahl { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-2); }
+.rh-zeile-dicht { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--klein); }
+.rh-zeile-dicht .rh-schalter { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
+/* Werbende zusammengefasst, aufklappbar bis zu den Spots */
+.rh-werbende { display: grid; gap: 4px; }
+.rh-werbender { border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
+.rh-werbender summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 5px 10px; font-size: var(--klein); }
+.rh-werbender summary::-webkit-details-marker { display: none; }
+.rh-werbender summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-pfeil { color: var(--text-3); font-size: .8em; transition: transform .15s; }
+.rh-werbender[open] .rh-pfeil { transform: rotate(90deg); }
+.rh-verbinden { color: var(--led-bernstein); }
+.rh-werbender ul { margin: 0; padding: 2px 10px 8px 30px; list-style: none; display: grid; gap: 3px; font-size: var(--klein); }
+.rh-werbender li { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; gap: 2px 10px; }
+.rh-werbender li > .rh-still { grid-column: 2 / -1; }
+/* Werbelisten ab sechs Einträgen rollen in sich (fünf Zeilen hoch), lange zeigen nur die häufigsten (sendewerbung.ts) */
+.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.5 + 14px); max-block-size: calc(var(--rh-zeile) * 5 + 16px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
+/* Einschätzung: nur Gewähltes (mit x zum Abwählen), alles Übrige in der Tafel am Plus */
+.rh-einschaetzung { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit, var(--led-gelb)); font-size: var(--klein); }
+.chip.rh-chip-klein { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
+.chip .rh-weg { margin-left: 6px; opacity: .6; }
+.rh-tafel-anker { position: relative; }
+.rh-einschaetzung-tafel { position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; inline-size: min(560px, 86vw); display: grid; gap: 10px; padding: 12px;
+  border-radius: var(--r3); background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-schwebend); }
+.rh-tafel-zeile { display: grid; grid-template-columns: 8em minmax(0, 1fr); gap: 8px; align-items: start; }
+.rh-einschaetzung-tafel .rh-bewerten { gap: 4px; }
+@container liste (max-width: 820px) { .rh-einschaetzung-tafel { right: auto; left: 0; } .rh-tafel-zeile { grid-template-columns: minmax(0, 1fr); } }

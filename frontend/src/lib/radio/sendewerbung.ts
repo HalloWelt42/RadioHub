@@ -69,6 +69,44 @@ export class Sendewerbung {
   }
 }
 
+/** Werbelisten (Werbende, Spots, Sender mit Werbung; Nutzer 21.11.2026): ab so vielen Einträgen rollt die Liste in
+ *  sich, und mehr als HOECHSTENS zeigt sie nicht, sondern nur die häufigsten */
+export const LISTE_ROLLT_AB = 6;
+export const LISTE_HOECHSTENS = 40;
+
+/** Die häufigsten Einträge einer schon nach Häufigkeit sortierten Liste und wie viele weggelassen sind */
+export function haeufigste<T>(liste: T[]): { zeigen: T[]; weggelassen: number; rollt: boolean } {
+  const zeigen = liste.slice(0, LISTE_HOECHSTENS);
+  return { zeigen, weggelassen: liste.length - zeigen.length, rollt: zeigen.length >= LISTE_ROLLT_AB };
+}
+
+/** Spots eines Werbenden (Steckbrief, RAD-35): wie oft zusammen, ob einer beim Verbinden kam, zuletzt */
+export interface Werbender {
+  /** Name aus den Sendedaten; leer, wenn der Sender keinen nennt (dann steht jede Kennung für sich) */
+  name: string;
+  kennung: string;
+  spots: Spot[];
+  mal: number;
+  beimVerbinden: boolean;
+  zuletzt: string;
+}
+
+/** Spots nach Werbenden zusammengefasst, die häufigsten zuerst; Spots ohne Namen bleiben je Kennung für sich */
+export function nachWerbenden(liste: Spot[]): Werbender[] {
+  const gruppen = new Map<string, Werbender>();
+  for (const s of liste) {
+    const schluessel = s.werbender || `${s.format}:${s.kennung}`;
+    const g = gruppen.get(schluessel) ?? { name: s.werbender, kennung: s.kennung, spots: [], mal: 0, beimVerbinden: false, zuletzt: "" };
+    g.spots.push(s);
+    g.mal += s.anzahl;
+    g.beimVerbinden ||= s.beim_verbinden;
+    if (s.zuletzt > g.zuletzt) g.zuletzt = s.zuletzt;
+    gruppen.set(schluessel, g);
+  }
+  for (const g of gruppen.values()) g.spots.sort((a, b) => b.anzahl - a.anzahl || b.zuletzt.localeCompare(a.zuletzt));
+  return [...gruppen.values()].sort((a, b) => b.mal - a.mal || b.zuletzt.localeCompare(a.zuletzt));
+}
+
 /** Was der Puffer dem Start sagen muss (Ausschnitt aus /api/hls/status) */
 export interface Pufferstand {
   segment_count?: number;
