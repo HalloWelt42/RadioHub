@@ -82,6 +82,12 @@ vorige Fassung im Unterordner `Schritte/<Nr>` ihres Ordners, eine Datei legt das
 Papierkorb; die letzten zehn Schritte bleiben. Am Telefon gibt es den Reiter Aufnahmen nur zum Hören (Suche, Ordner,
 Titel, Alles hören).
 
+Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
+Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo
+zeigt seinen Kopf mit Aktualisieren, Neue speichern und Abbestellen (fragt vorher) und seine Folgen mit Sortierung. Der
+Knopf rechts an einer Folge hört sofort, weiter ab der gemerkten Stelle; ein Tipp auf die Folge öffnet ihr Blatt mit
+Weiter ab, Von vorn, Speichern (eine gespeicherte löschen fragt mit Datei und Größe), Herunterladen und Gehört.
+
 Einstellungen (RAD-11): links die Bereiche Allgemein, Darstellung, Radio, Wiedergabe, Aufnahmen, Podcasts, Wecker und
 Zeitansage, Ablage, Dienste (Basic: Allgemein, Darstellung, Radio, Wecker und Zeitansage), oben Pfad und Reiter. Jede
 Zeile nennt ihre Geltung: "Alle Geräte" (liegt auf dem Server, wartet mit einem Punkt in der Leiste unten, bis

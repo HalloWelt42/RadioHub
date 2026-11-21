@@ -17,7 +17,7 @@
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import { anhaengen, tonelement } from '../../spieler/tonelement';
   import TelefonRadio from './TelefonRadio.svelte';
-  import TelefonPodcasts from './TelefonPodcasts.svelte';
+  import TelefonPodcasts from './podcasts/TelefonPodcasts.svelte';
   import TelefonAufnahmen from './TelefonAufnahmen.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
   import TelefonWecker from './TelefonWecker.svelte';
@@ -146,9 +146,10 @@
       </span>
     </div>
 
-    <!-- Radio ist neu gebaut (RAD-7): eigene Rollfelder, Marken direkt; die übrigen Bereiche wachsen als Ganzes (rh-alt) -->
-    <main class="t-inhalt" class:rh-alt={appState.activeTab === "podcasts" || appState.activeTab === "wecker"}
-          class:tf-radio-inhalt={appState.activeTab !== "podcasts" && appState.activeTab !== "wecker"} data-rahmen="inhalt">
+    <!-- Radio, Aufnahmen und Podcasts sind neu gebaut (RAD-7, RAD-17, RAD-14): eigene Rollfelder, Marken direkt; nur die
+         Liste der Wecker wächst noch als Ganzes (rh-alt) -->
+    <main class="t-inhalt" class:rh-alt={appState.activeTab === "wecker"}
+          class:tf-radio-inhalt={appState.activeTab !== "wecker"} data-rahmen="inhalt">
       {#if appState.activeTab === 'podcasts' && angebot.podcasts}
         <TelefonPodcasts />
       {:else if appState.activeTab === 'recordings' && angebot.aufnahmen}

@@ -122,4 +122,18 @@ export default {
   nichtsGefundenHilfe: 'Ein anderes Wort oder die Adresse des Feeds.',
   bandAbonniert: 'abonniert, die Folgen kommen gleich',
   feedAbonnieren: 'Feed abonnieren',
+  // Telefon (RAD-14)
+  telefon: {
+    wahl: 'Was zeigen', neu: 'Neu', ungehoert: 'Ungehört', gespeichert: 'Gespeichert', abos: 'Abos',
+    inFolgenSuchen: 'In Folgen suchen', inAbosSuchen: 'In Abos suchen', abosZahl: 'Abos', folgenZahl: 'Folgen',
+    ohneOrdner: 'Ohne Ordner', alleGehoert: 'alles gehört', ungehoertZahl: '{n} ungehört', gespeichertVon: '{n}/{von}',
+    gespeichertHilfe: 'In der Kellerwolke gespeichert', neueSpeichernAn: 'neue speichern', oeffnen: 'Öffnen',
+    zurueck: 'Zurück', sortierung: 'Sortierung', sort_neu: 'Neueste', sort_alt: 'Älteste', sort_laenge: 'Kürzeste',
+    hoeren: 'Hören', weiterAb: 'Weiter ab {zeit}', vonVorn: 'Von vorn', speichern: 'Speichern', gespeichertKnopf: 'Gespeichert',
+    herunterladen: 'Herunterladen', gehoert: 'Gehört', schliessen: 'Schließen', mbWolke: '{mb} MB in der Kellerwolke',
+    abbestellenFrage: '"{name}" abbestellen?', abbestellenHinweis: 'Die Folgen verschwinden aus der Liste; gespeicherte bleiben in der Kellerwolke.',
+    abonnierenTitel: 'Abonnieren', abonnierenHilfe: 'Verzeichnis durchsuchen oder Adresse eines Feeds',
+    keineFolgen: 'Keine Folgen für diese Auswahl', keineAbos: 'Noch keine Abos. Mit dem Plus oben einen Podcast suchen.',
+    naechsteIn: 'Nächste Aktualisierung in {zeit}',
+  },
 };

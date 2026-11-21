@@ -239,3 +239,13 @@ describe("Ordner der Abos (RAD-23)", () => {
     expect(wege).toContain("DELETE /api/podcast-ordner/o1");
   });
 });
+
+describe("Übersicht der Abos am Telefon (RAD-14)", () => {
+  it("steht als ?liste=abos in der Adresse und kommt so zurück", async () => {
+    const { ausAdresse, zuAdresse } = await import("../src/lib/podcasts/ansicht.svelte");
+    const a = ausAdresse("/podcasts", "liste=abos");
+    expect(a.aboUebersicht).toBe(true);
+    expect(zuAdresse(a)).toBe("/podcasts?liste=abos");
+    expect(ausAdresse("/podcasts", "").aboUebersicht).toBe(false);
+  });
+});

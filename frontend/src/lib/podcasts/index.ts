@@ -17,6 +17,7 @@ export const podcastzustand = new Podcastzustand({
 
 export { Folgenliste } from "./folgenliste.svelte";
 export { Speicherauftrag } from "./speicherauftrag.svelte";
+export { Verzeichnissuche } from "./verzeichnissuche.svelte";
 export * from "./ansicht.svelte";
 export type { Podcastquelle } from "./quelle";
 export * from "./typen";

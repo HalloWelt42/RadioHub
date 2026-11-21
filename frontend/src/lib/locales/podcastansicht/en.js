@@ -117,4 +117,18 @@ export default {
   nichtsGefundenHilfe: 'Another word or the address of the feed.',
   bandAbonniert: 'subscribed, the episodes are on their way',
   feedAbonnieren: 'Subscribe to feed',
+  // Phone (RAD-14)
+  telefon: {
+    wahl: 'What to show', neu: 'New', ungehoert: 'Unplayed', gespeichert: 'Saved', abos: 'Subscriptions',
+    inFolgenSuchen: 'Search episodes', inAbosSuchen: 'Search subscriptions', abosZahl: 'Subs', folgenZahl: 'Episodes',
+    ohneOrdner: 'No folder', alleGehoert: 'all played', ungehoertZahl: '{n} unplayed', gespeichertVon: '{n}/{von}',
+    gespeichertHilfe: 'Saved in the Kellerwolke', neueSpeichernAn: 'saves new', oeffnen: 'Open',
+    zurueck: 'Back', sortierung: 'Sorting', sort_neu: 'Newest', sort_alt: 'Oldest', sort_laenge: 'Shortest',
+    hoeren: 'Play', weiterAb: 'Continue at {zeit}', vonVorn: 'From the start', speichern: 'Save', gespeichertKnopf: 'Saved',
+    herunterladen: 'Download', gehoert: 'Played', schliessen: 'Close', mbWolke: '{mb} MB in the Kellerwolke',
+    abbestellenFrage: 'Unsubscribe from "{name}"?', abbestellenHinweis: 'The episodes leave the list; saved ones stay in the Kellerwolke.',
+    abonnierenTitel: 'Subscribe', abonnierenHilfe: 'Search the directory or enter a feed address',
+    keineFolgen: 'No episodes for this selection', keineAbos: 'No subscriptions yet. Use the plus at the top to find a podcast.',
+    naechsteIn: 'Next refresh in {zeit}',
+  },
 };

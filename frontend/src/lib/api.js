@@ -360,12 +360,6 @@ class RadioHubAPI {
     return this.fetch(`/api/podcasts/${podcastId}/episodes?${params}`);
   }
 
-  async getAllEpisodes({ limit = 50, offset = 0, filterStatus = 'all', sortBy = 'published_at', sortOrder = 'desc', podcastIds = null } = {}) {
-    let params = `limit=${limit}&offset=${offset}&filter_status=${filterStatus}&sort_by=${sortBy}&sort_order=${sortOrder}`;
-    if (podcastIds?.length) params += `&podcast_ids=${podcastIds.join(',')}`;
-    return this.fetch(`/api/podcasts/episodes/all?${params}`);
-  }
-
   async searchEpisodes(query, limit = 50, offset = 0, searchIn = 'all') {
     const params = `q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}&search_in=${searchIn}`;
     return this.fetch(`/api/podcasts/episodes/search?${params}`);
@@ -455,10 +449,6 @@ class RadioHubAPI {
 
   getEpisodeStreamUrl(episodeId) {
     return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/stream`;
-  }
-
-  getPodcastImageUrl(podcastId) {
-    return `${this.baseUrl}/api/podcasts/${podcastId}/image`;
   }
 
   getEpisodeImageUrl(episodeId) {
