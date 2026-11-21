@@ -3,11 +3,13 @@
  */
 import radio from './radio/en.js';
 import podcastAnsicht from './podcastansicht/en.js';
+import einstellungen from './einstellungen/en.js';
 
 export default {
   // === Radio mit Senderfilterung (RAD-7) ===
   radio,
   podcastAnsicht,
+  einstellungen,
 
   // === Phone view ===
   telefon: {
@@ -82,6 +84,7 @@ export default {
     aboWaehlen: 'Subscription',
     lautstaerke: 'Volume',
     anstieg: 'Fade in (seconds)',
+    schlummerdauer: 'Snooze (minutes)',
     aktiv: 'Active',
     loeschen: 'Delete',
     abbrechen: 'Cancel',
@@ -157,240 +160,6 @@ export default {
     ablage: 'STORAGE'
   },
 
-  // === Setup Tabs ===
-  setup: {
-    allgemein: 'GENERAL',
-    radio: 'RADIO',
-    podcast: 'PODCAST',
-    aufnahmen: 'RECORDINGS',
-    speicher: 'STORAGE',
-    dienste: 'SERVICES',
-    // Sub-Tabs
-    filter: 'FILTER',
-    sender: 'STATIONS',
-    kategorien: 'CATEGORIES',
-    // Allgemein Sub-Tabs
-    einstellungen: 'SETTINGS',
-    tastatur: 'KEYBOARD',
-    info: 'INFO',
-    bedanken: 'DONATE',
-    lizenz: 'LICENSE',
-    recht: 'LEGAL'
-  },
-
-  // === Setup Allgemein ===
-  allgemein: {
-    displayTheme: 'DISPLAY THEME',
-    dark: 'DARK',
-    light: 'LIGHT',
-    uiSounds: 'UI SOUNDS',
-    clickSounds: 'CLICK-SOUNDS',
-    timeshiftBuffer: 'TIMESHIFT BUFFER',
-    minBitrate: 'MIN BITRATE',
-    maxBitrate: 'MAX BITRATE',
-    timeshiftHint: 'Output bitrate is automatically adjusted to input (never higher than source)',
-    hlsRec: 'HLS-REC',
-    bufferAufnahme: 'BUFFER RECORDING',
-    lookback: 'LOOKBACK',
-    lookbackHint: 'How many minutes should the HLS recording look back into the past?',
-    language: 'LANGUAGE',
-    datenschutzNutzung: 'PRIVACY & TERMS OF SERVICE',
-    // Info
-    infoTitle: 'TECHNICAL INFORMATION',
-    badgeRef: 'Badge Reference',
-    badgeRefHint: 'This is how the badges look in the station list:',
-    icyBadges: 'ICY Badges',
-    icyDefault: 'Not rated - ICY present, quality unknown',
-    icyGood: 'Good quality - precise title changes, clean cuts',
-    icyPoor: 'Poor quality - inaccurate timestamps, check cuts',
-    icySystem: 'ICY Rating System',
-    icySystemHint: 'Click the ICY badge to rate the quality. The state cycles through:',
-    icySystemBack: 'reset',
-    icySystemText: 'The rating affects how RadioHub handles cuts. With "good", ICY markers are used directly as cut points. With "poor", cuts should be manually reviewed in the Cutter.',
-    adBadges: 'Ad Badges',
-    adClean: 'No ad suspicion after automatic scan',
-    adSuspect: 'Ad suspicion (percent = detection confidence)',
-    adBlocked: 'Manually marked as ad and hidden',
-    adOk: 'Manually approved despite suspicion',
-    adSystem: 'Ad Detection System',
-    adSystemHint: 'Ad detection works in two stages:',
-    adStep1Label: '1. Automatic',
-    adStep1Text: 'Under Setup > Radio > Stations a scan can be started. RadioHub checks stream URLs for ad domains and analyzes server responses. The result is a percentage value.',
-    adStep2Label: '2. Manual',
-    adStep2Text: 'Via the context menu of a station (right-click or action buttons) a station can be marked as "ad" or "approved". This overrides the automatic rating.',
-    // Keyboard
-    tastaturTitle: 'KEYBOARD SHORTCUTS',
-    tastaturHint: 'Active when no input field is focused',
-    keyPlayback: 'PLAYBACK',
-    keyNavigation: 'NAVIGATION',
-    keyTabs: 'TABS',
-    keySpace: 'Play / Pause (HLS only)',
-    keyStop: 'Stop (incl. recording)',
-    keyUp: 'Volume up (+5%)',
-    keyDown: 'Volume down (-5%)',
-    keyMute: 'Mute toggle',
-    keyLeft: 'Previous station / track',
-    keyRight: 'Next station / track',
-    keyTab1: 'Radio',
-    keyTab2: 'Recording',
-    keyTab3: 'Podcast',
-    keyTab4: 'Settings'
-  },
-
-  // === Setup Podcast ===
-  podcast: {
-    autoRefresh: 'AUTO-REFRESH',
-    aktiv: 'ON',
-    aus: 'OFF',
-    refreshIntervall: 'REFRESH INTERVAL',
-    intervall: 'INTERVAL',
-    refreshHint: 'Podcast feeds are automatically checked for new episodes',
-    refreshHintDynamic: 'Subscribed feeds are updated every {hours} hours'
-  },
-
-  // === Setup Aufnahmen ===
-  aufnahmen: {
-    aufnahmeFormat: 'RECORDING FORMAT',
-    bitrate: 'BITRATE',
-    ordner: 'RECORDING FOLDERS',
-    neuerOrdner: '+ NEW FOLDER',
-    ordnername: 'FOLDER NAME',
-    neueAufnahmenIn: 'New recordings go to:',
-    standardOrdner: 'New recordings go to the default folder (Root)',
-    aktivieren: 'ACTIVATE',
-    root: 'ROOT',
-    aufnahmen: 'Recordings',
-    nochKeineOrdner: 'No folders created yet',
-    ordnerHint: 'Folders help organize recordings',
-    ordnernameErforderlich: 'Folder name required',
-    // ICY Ignore
-    ignorierteIcyTitel: 'IGNORED ICY TITLES',
-    ignoreHint: 'These titles will be ignored during recording -- the previous title continues.',
-    muster: 'PATTERN',
-    typ: 'TYPE',
-    quelle: 'SOURCE',
-    exact: 'Exact',
-    contains: 'Contains',
-    builtin: 'System',
-    user: 'User',
-    musterHinzufuegen: 'Add pattern...',
-    hinzufuegen: 'ADD',
-    nochKeineIgnore: 'No ignored titles',
-    ignoreListeHint: 'Add titles that should be skipped during recording'
-  },
-
-  // === Setup Filter ===
-  filter: {
-    suchfilter: 'SEARCH FILTER',
-    laender: 'COUNTRIES',
-    sprachenAusschliessen: 'EXCLUDE LANGUAGES',
-    tagsAusschliessen: 'EXCLUDE TAGS',
-    minVotes: 'MIN VOTES',
-    permanentAusblenden: 'PERMANENTLY HIDE',
-    permanentHint: 'Permanently remove stations matching the above criteria',
-    vorschau: 'PREVIEW',
-    zaehle: 'COUNTING...',
-    ausblenden: 'HIDE',
-    blendeAus: 'HIDING...',
-    betroffen: 'affected',
-    alle: 'All',
-    keine: 'None',
-    seltene: 'RARE',
-    spracheSuchen: 'Search language...',
-    landSuchen: 'Search country...',
-    sichtbareLaender: 'VISIBLE COUNTRIES',
-    tagHinzufuegen: 'Add tag...',
-    aktiv: 'Active:',
-    sprachen: 'Languages',
-    tags: 'Tags',
-    ausblendenFehler: 'Hide failed',
-    senderAusgeblendet: '{count} stations hidden ({total} total)'
-  },
-
-  // === Setup Sender ===
-  senderSetup: {
-    adBlocker: 'AD-BLOCKER',
-    ausgeblendet: 'HIDDEN',
-    werbeerkennung: 'AD DETECTION',
-    werbeHint: 'Check stations for ads and decide',
-    alleScannen: 'SCAN ALL',
-    nochNichtGeprueft: 'not yet checked',
-    geprueft: 'CHECKED',
-    sauber: 'CLEAN',
-    verdaechtig: 'SUSPECT',
-    ausgeblendetLabel: 'HIDDEN',
-    alleAusblenden: 'HIDE ALL',
-    alleOk: 'ALL OK',
-    ok: 'OK',
-    freigeben: 'RELEASE',
-    manuell: 'MANUAL',
-    filterLabel: 'FILTER',
-    werbung: 'AD',
-    ein: 'ON',
-    ausLabel: 'OFF',
-    stopp: 'STOP',
-    ausgeblendete: 'HIDDEN STATIONS',
-    alleFreigeben: 'RELEASE ALL',
-    keineAusgeblendet: 'No hidden stations',
-    adressPruefung: 'URL check',
-    adressPruefungHint: 'Detects ad keywords in stream URLs',
-    serverPruefung: 'Server check',
-    serverPruefungHint: 'Detects ad servers from response data',
-    abWannVerdaechtig: 'SUSPECT THRESHOLD',
-    thresholdHint: 'Stations below this value are ignored',
-    senderGeprueft: '{checked} stations checked, {suspects} suspect',
-    entscheidungFehler: 'Decision failed',
-    freigabeFehler: 'Release failed',
-    kategorieFreigegeben: 'Category released',
-    senderFreigegeben: '{count} stations released'
-  },
-
-  // === Setup Kategorien ===
-  kategorien: {
-    kategorien: 'CATEGORIES',
-    podcastKategorien: 'PODCAST CATEGORIES',
-    aufnahmeKategorien: 'RECORDING CATEGORIES',
-    neueKategorie: '+ NEW CATEGORY',
-    kategorieBearbeiten: 'EDIT CATEGORY',
-    nochKeine: 'No categories created yet',
-    hintRadio: 'Categories filter stations in the sidebar',
-    hintPodcast: 'Categories filter podcasts in the sidebar',
-    hintRecording: 'Categories filter recordings in the sidebar',
-    nameErforderlich: 'Name required'
-  },
-
-  // === Setup Speicher ===
-  speicher: {
-    speicherZonen: 'STORAGE ZONES',
-    belegt: 'used',
-    frei: 'free',
-    datei: 'File',
-    dateien: 'Files',
-    pfadHint: 'Path changes do not move data. Existing files remain at their current location.',
-    pruefen: 'Check',
-    beschreibbar: 'Writable',
-    nichtBeschreibbar: 'Path not writable',
-    validierungFehler: 'Validation failed',
-    verzeichnisErstellt: 'Directory was created',
-    pfadAendern: 'Change path',
-    speichert: 'Saving...',
-    pfadAktualisiert: 'Storage path updated'
-  },
-
-  // === Setup Dienste ===
-  dienste: {
-    externeDienste: 'EXTERNAL SERVICES',
-    hint: 'Shows all external data sources. Configurable services can be redirected to custom instances if needed.',
-    eingehend: 'INCOMING',
-    ausgehend: 'OUTGOING',
-    lokal: 'LOCAL',
-    endpunktAendern: 'Change endpoint',
-    standard: 'Default',
-    zuruecksetzenFehler: 'Reset failed',
-    placeholderMulti: 'One URL per line...',
-    placeholderSingle: 'Enter URL...'
-  },
-
   // === Player ===
   player: {
     play: 'Play',
@@ -439,36 +208,6 @@ export default {
     cutter: 'Cutter',
     datei: 'File',
     podcast: 'Podcast'
-  },
-
-  // === Stations ===
-  stations: {
-    senderSuchen: 'Search stations...',
-    podcastsSuchen: 'Search podcasts...',
-    alleSender: 'Show all stations',
-    nurFavoriten: 'Show favorites only',
-    filterZuruecksetzen: 'Reset all filters',
-    setupFilter: 'Setup: Open filters',
-    neuLaden: 'Reload station list from server',
-    zuFavoriten: 'Add to favorites',
-    ausFavoriten: 'Remove from favorites',
-    alsWerbung: 'Mark as advertisement',
-    senderAusblenden: 'Hide station',
-    laenderKonfigurieren: 'Configure countries in Setup',
-    kategorienErstellen: 'Create categories in Setup',
-    kategorienLabel: 'CATEGORIES'
-  },
-
-  // === HiFi UI Components ===
-  hifi: {
-    keineEintraege: 'No entries',
-    ausgewaehlt: '{count} selected',
-    auswahlSchliessen: 'Close selection',
-    auswahlOeffnen: 'Open selection',
-    auswahlZuruecksetzen: 'Reset entire selection',
-    alleEntfernen: 'Remove all',
-    abwaehlen: 'Deselect {label}',
-    auswaehlen: 'Select {label}'
   },
 
   // === Common Buttons ===
@@ -521,88 +260,6 @@ export default {
     aktivierungFehler: 'Activation failed',
     deaktivierungFehler: 'Deactivation failed',
     kategorienLadenFehler: 'Failed to load categories'
-  },
-
-  // === Podcasts ===
-  podcasts: {
-    podcastDateien: 'Podcast Files',
-    podcastsSuchen: 'Search podcasts...',
-    alleEpisoden: 'All Episodes',
-    podcastAuswaehlen: 'Select a podcast from the sidebar',
-    podcastsSuchenAbonnieren: 'Search and subscribe to podcasts',
-    podcastsSuchenBtn: 'Search podcasts',
-    dateienLadenFehler: 'Failed to load files',
-    sucheFehler: 'Search failed',
-    abonnierenFehler: 'Subscribe failed',
-    aboEntfernt: 'Subscription removed',
-    entfernenFehler: 'Remove failed',
-    aktualisiereFehler: 'Update failed',
-    autoDownloadAktiviert: 'Auto-download enabled',
-    autoDownloadDeaktiviert: 'Auto-download disabled',
-    autoDownloadAus: 'Disable auto-download',
-    einstellungFehler: 'Setting failed',
-    episodeHeruntergeladen: 'Episode downloaded',
-    downloadFehler: 'Download failed',
-    downloadGeloescht: 'Download deleted',
-    markierungFehler: 'Mark failed',
-    alleBereitsHeruntergeladen: 'All episodes already downloaded',
-    downloadAbgebrochen: 'Download cancelled ({done} of {total})',
-    episodenHeruntergeladen: '{total} episodes downloaded',
-    aktualisiereFeeds: 'Updating all feeds...',
-    alleFeedsAktualisiert: 'All feeds updated',
-    abonnements: 'SUBSCRIPTIONS',
-    ungehoert: 'Unplayed',
-    alle: 'All',
-    heute: 'Today',
-    woche: 'Week',
-    downloadsFilter: 'Downloads',
-    filterLabel: 'FILTER',
-    filterAktiv: 'Filter active',
-    filterInaktiv: 'Filter inactive',
-    sucheSchliessen: 'Close search',
-    suchen: 'Search',
-    alleEpisodenAnzeigen: 'Show all episodes',
-    dateiExplorerSchliessen: 'Close file explorer',
-    dateiExplorerOeffnen: 'Open file explorer',
-    alleFeedsHolen: 'Fetch all feeds from server',
-    episodenLaden: 'Fetch episodes from server',
-    wirdAbgespielt: 'Playing',
-    ausgewaehltStatus: 'Selected',
-    neueEpisoden: 'New episodes available',
-    keineNeuen: 'No new episodes',
-    naechsterRefresh: 'Next automatic feed refresh',
-    episodenLabel: 'Episodes',
-    zurueckZurUebersicht: 'Back to overview',
-    gesamt: 'Total',
-    autoDl: 'Auto-DL',
-    feedHolen: 'Fetch feed from server',
-    alleBereitsLokal: 'All episodes already local',
-    alleLokalHerunterladen: 'Download all episodes locally',
-    autoDownloadAktivierenHint: 'Enable auto-download: New episodes will be downloaded automatically',
-    autoDownloadDeaktivierenHint: 'Disable auto-download: New episodes will not be downloaded automatically',
-    aboEntfernenHint: 'Remove podcast subscription (local files are kept)',
-    datum: 'Date',
-    dauer: 'Duration',
-    groesse: 'Size',
-    staffel: 'Season',
-    heruntergeladen: 'Downloaded',
-    gehoert: 'Played',
-    fortsetzen: 'Resume',
-    fortsetzenBei: 'Resume at {position}',
-    episodeAbspielen: 'Play episode',
-    abspielen: 'Play',
-    downloadLoeschen: 'Delete download',
-    loeschenLabel: 'Delete',
-    episodeHerunterladen: 'Download episode locally',
-    lade: 'Loading...',
-    herunterladen: 'Download',
-    alsUngehoert: 'Mark as unplayed',
-    alsGehoert: 'Mark as played',
-    ungehoertLabel: 'Unplayed',
-    gehoertLabel: 'Played',
-    breiteAnpassen: 'Adjust width',
-    epLabel: 'Ep.',
-    neuLabel: 'new'
   },
 
   // === Recordings ===
@@ -759,58 +416,6 @@ export default {
     unterstuetzenTitle: 'Support'
   },
 
-  // === Player Labels (HiFi device) ===
-  playerLabel: {
-    display: 'DISPLAY',
-    source: 'SOURCE',
-    vu: 'VU',
-    volume: 'VOLUME',
-    timer: 'TIMER',
-    transport: 'TRANSPORT',
-    playback: 'PLAYBACK',
-    timeshift: 'TIMESHIFT',
-    hlsRec: 'HLS-REC',
-    recording: 'RECORDING',
-    podcast: 'PODCAST',
-    live: 'LIVE',
-    bitrate: 'BITRATE',
-    hlsBitrate: 'HLS-BITRATE',
-    hlsBitrateNurHls: 'Only available in HLS mode',
-    deaktiviert: 'disabled',
-    bitrateWechsel: 'switching...'
-  },
-
-  // === Station Details ===
-  stationDetail: {
-    favoriten: 'FAVORITES',
-    country: 'COUNTRY',
-    bitrate: 'BITRATE',
-    votes: 'VOTES',
-    stations: 'STATIONS',
-    refresh: 'REFRESH',
-    nowPlaying: 'NOW PLAYING',
-    homepage: 'HOMEPAGE',
-    tags: 'TAGS',
-    language: 'LANGUAGE',
-    codec: 'CODEC',
-    clicks: 'CLICKS',
-    streamUrl: 'STREAM URL',
-    werbung: 'AD',
-    ausblenden: 'HIDE',
-    historieLoschen: 'Clear history',
-    name: 'NAME'
-  },
-
-  // === Download Panel ===
-  downloadPanel: {
-    massendownload: 'Batch download',
-    fehlgeschlagen: 'failed',
-    fortsetzen: 'Resume',
-    pause: 'Pause',
-    abbrechen: 'Cancel',
-    pausieren: 'Pause'
-  },
-
   // === Cutter Extra ===
   cutterExtra: {
     autoPlay: 'Auto-Play',
@@ -824,19 +429,6 @@ export default {
     heruntergeladenFailed: '{ok} downloaded, {failed} failed',
     ladePodcast: 'Loading "{title}" from server...',
     podcastAktualisiert: '"{title}" updated'
-  },
-
-  // === Donation ===
-  spende: {
-    adresseKopiert: 'Address copied',
-    kopierenFehler: 'Copy failed',
-    unterstuetzen: 'Support RadioHub',
-    introText: 'RadioHub is a non-commercial open-source project. If you enjoy the software, I would be happy about your support.',
-    kofiText: 'Support me on Ko-fi',
-    oderKrypto: 'OR VIA CRYPTOCURRENCY',
-    kopiert: 'COPIED',
-    adresseKopieren: 'COPY ADDRESS',
-    danke: 'Thank you for your support!'
   },
 
   // === Console: player bar on the desktop (RAD-8). Source in 14 segments: at most 7 characters ===

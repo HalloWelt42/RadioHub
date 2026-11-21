@@ -3,11 +3,13 @@
  */
 import radio from './radio/de.js';
 import podcastAnsicht from './podcastansicht/de.js';
+import einstellungen from './einstellungen/de.js';
 
 export default {
   // === Radio mit Senderfilterung (RAD-7) ===
   radio,
   podcastAnsicht,
+  einstellungen,
 
   // === Telefonansicht ===
   telefon: {
@@ -82,6 +84,7 @@ export default {
     aboWaehlen: 'Abo',
     lautstaerke: 'Lautstärke',
     anstieg: 'Langsam lauter (Sekunden)',
+    schlummerdauer: 'Schlummern (Minuten)',
     aktiv: 'Aktiv',
     loeschen: 'Löschen',
     abbrechen: 'Abbrechen',
@@ -157,240 +160,6 @@ export default {
     ablage: 'ABLAGE'
   },
 
-  // === Setup Tabs ===
-  setup: {
-    allgemein: 'ALLGEMEIN',
-    radio: 'RADIO',
-    podcast: 'PODCAST',
-    aufnahmen: 'AUFNAHMEN',
-    speicher: 'SPEICHER',
-    dienste: 'DIENSTE',
-    // Sub-Tabs
-    filter: 'FILTER',
-    sender: 'SENDER',
-    kategorien: 'KATEGORIEN',
-    // Allgemein Sub-Tabs
-    einstellungen: 'EINSTELLUNGEN',
-    tastatur: 'TASTATUR',
-    info: 'INFO',
-    bedanken: 'BEDANKEN',
-    lizenz: 'LIZENZ',
-    recht: 'RECHT'
-  },
-
-  // === Setup Allgemein ===
-  allgemein: {
-    displayTheme: 'ANZEIGEMODUS',
-    dark: 'DUNKEL',
-    light: 'HELL',
-    uiSounds: 'BEDIENTÖNE',
-    clickSounds: 'KLICKTÖNE',
-    timeshiftBuffer: 'ZEITVERSATZ-PUFFER',
-    minBitrate: 'MIN BITRATE',
-    maxBitrate: 'MAX BITRATE',
-    timeshiftHint: 'Output-Bitrate wird automatisch an Input angepasst (nicht höher als Quelle)',
-    hlsRec: 'HLS-AUFNAHME',
-    bufferAufnahme: 'PUFFER-AUFNAHME',
-    lookback: 'RÜCKBLICK',
-    lookbackHint: 'Wie viele Minuten soll die HLS-Aufnahme in die Vergangenheit zurückgreifen?',
-    language: 'SPRACHE',
-    datenschutzNutzung: 'DATENSCHUTZ & NUTZUNGSBEDINGUNGEN',
-    // Info
-    infoTitle: 'TECHNISCHE INFORMATIONEN',
-    badgeRef: 'Badge-Referenz',
-    badgeRefHint: 'So sehen die Badges in der Senderliste aus:',
-    icyBadges: 'ICY-Badges',
-    icyDefault: 'Nicht bewertet - ICY vorhanden, Qualität unbekannt',
-    icyGood: 'Gute Qualität - präzise Titelwechsel, saubere Schnitte',
-    icyPoor: 'Schlechte Qualität - ungenaue Zeitpunkte, Schnitte prüfen',
-    icySystem: 'ICY-Bewertungssystem',
-    icySystemHint: 'Per Klick auf den ICY-Badge wird die Qualität bewertet. Der Zustand wechselt zyklisch:',
-    icySystemBack: 'zurück',
-    icySystemText: 'Die Bewertung beeinflusst, wie RadioHub Schnitte behandelt. Bei "good" werden ICY-Marker direkt als Schnittpunkte verwendet. Bei "poor" sollten Schnitte manuell im Cutter geprüft werden.',
-    adBadges: 'Werbe-Badges',
-    adClean: 'Kein Werbeverdacht nach automatischer Prüfung',
-    adSuspect: 'Werbeverdacht (Prozent = Konfidenz der Erkennung)',
-    adBlocked: 'Manuell als Werbung markiert und ausgeblendet',
-    adOk: 'Manuell freigegeben trotz Verdacht',
-    adSystem: 'Werbe-Bewertungssystem',
-    adSystemHint: 'Die Werbeerkennung arbeitet in zwei Stufen:',
-    adStep1Label: '1. Automatisch',
-    adStep1Text: 'Unter Setup > Radio > Sender kann ein Scan gestartet werden. RadioHub prüft Stream-URLs auf Werbe-Domains und analysiert Server-Antworten. Das Ergebnis ist ein Prozentwert.',
-    adStep2Label: '2. Manuell',
-    adStep2Text: 'Über das Kontextmenü eines Senders (Rechtsklick oder Aktions-Buttons) kann ein Sender als "Werbung" markiert oder "freigegeben" werden. Das überschreibt die automatische Bewertung.',
-    // Tastatur
-    tastaturTitle: 'TASTATURKÜRZEL',
-    tastaturHint: 'Aktiv wenn kein Eingabefeld fokussiert ist',
-    keyPlayback: 'WIEDERGABE',
-    keyNavigation: 'NAVIGATION',
-    keyTabs: 'TABS',
-    keySpace: 'Wiedergabe / Pause (nur HLS)',
-    keyStop: 'Stopp (inkl. Aufnahme)',
-    keyUp: 'Lauter (+5%)',
-    keyDown: 'Leiser (-5%)',
-    keyMute: 'Stumm ein/aus',
-    keyLeft: 'Vorheriger Sender / Titel',
-    keyRight: 'Nächster Sender / Titel',
-    keyTab1: 'Radio',
-    keyTab2: 'Aufnahme',
-    keyTab3: 'Podcast',
-    keyTab4: 'Einstellungen'
-  },
-
-  // === Setup Podcast ===
-  podcast: {
-    autoRefresh: 'AUTO-AKTUALISIERUNG',
-    aktiv: 'AKTIV',
-    aus: 'AUS',
-    refreshIntervall: 'AKTUALISIERUNGSINTERVALL',
-    intervall: 'INTERVALL',
-    refreshHint: 'Podcast-Feeds werden automatisch auf neue Episoden geprüft',
-    refreshHintDynamic: 'Alle {hours} Stunden werden abonnierte Feeds aktualisiert'
-  },
-
-  // === Setup Aufnahmen ===
-  aufnahmen: {
-    aufnahmeFormat: 'AUFNAHME-FORMAT',
-    bitrate: 'BITRATE',
-    ordner: 'AUFNAHME-ORDNER',
-    neuerOrdner: '+ NEUER ORDNER',
-    ordnername: 'ORDNERNAME',
-    neueAufnahmenIn: 'Neue Aufnahmen gehen in:',
-    standardOrdner: 'Neue Aufnahmen gehen in den Standard-Ordner (Root)',
-    aktivieren: 'AKTIVIEREN',
-    root: 'STAMMVERZEICHNIS',
-    aufnahmen: 'Aufnahmen',
-    nochKeineOrdner: 'Noch keine Ordner erstellt',
-    ordnerHint: 'Ordner helfen beim Organisieren von Aufnahmen',
-    ordnernameErforderlich: 'Ordnername erforderlich',
-    // ICY Ignore
-    ignorierteIcyTitel: 'IGNORIERTE ICY-TITEL',
-    ignoreHint: 'Diese Titel werden bei Aufnahmen ignoriert -- der vorherige Titel läuft weiter.',
-    muster: 'MUSTER',
-    typ: 'TYP',
-    quelle: 'QUELLE',
-    exact: 'Exakt',
-    contains: 'Enthält',
-    builtin: 'System',
-    user: 'Benutzer',
-    musterHinzufuegen: 'Muster hinzufügen...',
-    hinzufuegen: 'HINZUFÜGEN',
-    nochKeineIgnore: 'Keine ignorierten Titel',
-    ignoreListeHint: 'Füge Titel hinzu, die bei Aufnahmen übersprungen werden sollen'
-  },
-
-  // === Setup Filter ===
-  filter: {
-    suchfilter: 'SUCHFILTER',
-    laender: 'LÄNDER',
-    sprachenAusschliessen: 'SPRACHEN AUSSCHLIEßEN',
-    tagsAusschliessen: 'TAGS AUSSCHLIEßEN',
-    minVotes: 'MIN STIMMEN',
-    permanentAusblenden: 'PERMANENT AUSBLENDEN',
-    permanentHint: 'Sender mit obigen Kriterien dauerhaft entfernen',
-    vorschau: 'VORSCHAU',
-    zaehle: 'ZÄHLE...',
-    ausblenden: 'AUSBLENDEN',
-    blendeAus: 'BLENDE AUS...',
-    betroffen: 'betroffen',
-    alle: 'Alle',
-    keine: 'Keine',
-    seltene: 'SELTENE',
-    spracheSuchen: 'Sprache suchen...',
-    landSuchen: 'Land suchen...',
-    sichtbareLaender: 'SICHTBARE LÄNDER',
-    tagHinzufuegen: 'Tag hinzufügen...',
-    aktiv: 'Aktiv:',
-    sprachen: 'Sprachen',
-    tags: 'Tags',
-    ausblendenFehler: 'Ausblenden fehlgeschlagen',
-    senderAusgeblendet: '{count} Sender ausgeblendet ({total} gesamt)'
-  },
-
-  // === Setup Sender ===
-  senderSetup: {
-    adBlocker: 'WERBEBLOCKER',
-    ausgeblendet: 'AUSGEBLENDET',
-    werbeerkennung: 'WERBEERKENNUNG',
-    werbeHint: 'Sender auf Werbung prüfen und entscheiden',
-    alleScannen: 'ALLE SCANNEN',
-    nochNichtGeprueft: 'noch nicht geprüft',
-    geprueft: 'GEPRÜFT',
-    sauber: 'SAUBER',
-    verdaechtig: 'VERDÄCHTIG',
-    ausgeblendetLabel: 'AUSGEBLENDET',
-    alleAusblenden: 'ALLE AUSBLENDEN',
-    alleOk: 'ALLE OK',
-    ok: 'OK',
-    freigeben: 'FREIGEBEN',
-    manuell: 'MANUELL',
-    filterLabel: 'FILTER',
-    werbung: 'WERBUNG',
-    ein: 'EIN',
-    ausLabel: 'AUS',
-    stopp: 'STOPP',
-    ausgeblendete: 'AUSGEBLENDETE SENDER',
-    alleFreigeben: 'ALLE FREIGEBEN',
-    keineAusgeblendet: 'Keine ausgeblendeten Sender',
-    adressPruefung: 'Adress-Prüfung',
-    adressPruefungHint: 'Erkennt Werbe-Begriffe in der Stream-URL',
-    serverPruefung: 'Server-Prüfung',
-    serverPruefungHint: 'Erkennt Werbe-Server anhand der Antwort-Daten',
-    abWannVerdaechtig: 'AB WANN VERDÄCHTIG?',
-    thresholdHint: 'Sender unter diesem Wert werden ignoriert',
-    senderGeprueft: '{checked} Sender geprüft, {suspects} verdächtig',
-    entscheidungFehler: 'Entscheidung fehlgeschlagen',
-    freigabeFehler: 'Freigabe fehlgeschlagen',
-    kategorieFreigegeben: 'Kategorie freigegeben',
-    senderFreigegeben: '{count} Sender freigegeben'
-  },
-
-  // === Setup Kategorien ===
-  kategorien: {
-    kategorien: 'KATEGORIEN',
-    podcastKategorien: 'PODCAST-KATEGORIEN',
-    aufnahmeKategorien: 'AUFNAHME-KATEGORIEN',
-    neueKategorie: '+ NEUE KATEGORIE',
-    kategorieBearbeiten: 'KATEGORIE BEARBEITEN',
-    nochKeine: 'Noch keine Kategorien erstellt',
-    hintRadio: 'Kategorien filtern Sender in der Seitenleiste',
-    hintPodcast: 'Kategorien filtern Podcasts in der Seitenleiste',
-    hintRecording: 'Kategorien filtern Aufnahmen in der Seitenleiste',
-    nameErforderlich: 'Name erforderlich'
-  },
-
-  // === Setup Speicher ===
-  speicher: {
-    speicherZonen: 'SPEICHER-ZONEN',
-    belegt: 'belegt',
-    frei: 'frei',
-    datei: 'Datei',
-    dateien: 'Dateien',
-    pfadHint: 'Pfad-Änderungen verschieben keine Daten. Bestehende Dateien bleiben am alten Speicherort erhalten.',
-    pruefen: 'Prüfen',
-    beschreibbar: 'Beschreibbar',
-    nichtBeschreibbar: 'Pfad nicht beschreibbar',
-    validierungFehler: 'Validierung fehlgeschlagen',
-    verzeichnisErstellt: 'Verzeichnis wurde erstellt',
-    pfadAendern: 'Pfad ändern',
-    speichert: 'Speichert...',
-    pfadAktualisiert: 'Speicherpfad aktualisiert'
-  },
-
-  // === Setup Dienste ===
-  dienste: {
-    externeDienste: 'EXTERNE DIENSTE',
-    hint: 'Zeigt alle externen Datenquellen. Konfigurierbare Dienste können bei Bedarf auf eigene Instanzen umgestellt werden.',
-    eingehend: 'EINGEHEND',
-    ausgehend: 'AUSGEHEND',
-    lokal: 'INTERN',
-    endpunktAendern: 'Endpunkt ändern',
-    standard: 'Standard',
-    zuruecksetzenFehler: 'Zurücksetzen fehlgeschlagen',
-    placeholderMulti: 'Eine URL pro Zeile...',
-    placeholderSingle: 'URL eingeben...'
-  },
-
   // === Player ===
   player: {
     play: 'Abspielen',
@@ -439,36 +208,6 @@ export default {
     cutter: 'Cutter',
     datei: 'Datei',
     podcast: 'Podcast'
-  },
-
-  // === Stations ===
-  stations: {
-    senderSuchen: 'Sender suchen...',
-    podcastsSuchen: 'Podcasts suchen...',
-    alleSender: 'Alle Sender anzeigen',
-    nurFavoriten: 'Nur Favoriten anzeigen',
-    filterZuruecksetzen: 'Alle Filter zurücksetzen',
-    setupFilter: 'Setup: Filter öffnen',
-    neuLaden: 'Senderliste vom Server neu laden',
-    zuFavoriten: 'Zu Favoriten hinzufügen',
-    ausFavoriten: 'Aus Favoriten entfernen',
-    alsWerbung: 'Als Werbung markieren',
-    senderAusblenden: 'Sender ausblenden',
-    laenderKonfigurieren: 'Länder im Setup konfigurieren',
-    kategorienErstellen: 'Kategorien im Setup erstellen',
-    kategorienLabel: 'KATEGORIEN'
-  },
-
-  // === HiFi UI Komponenten ===
-  hifi: {
-    keineEintraege: 'Keine Einträge',
-    ausgewaehlt: '{count} ausgewählt',
-    auswahlSchliessen: 'Auswahl schließen',
-    auswahlOeffnen: 'Auswahl öffnen',
-    auswahlZuruecksetzen: 'Gesamte Auswahl zurücksetzen',
-    alleEntfernen: 'Alle entfernen',
-    abwaehlen: '{label} abwählen',
-    auswaehlen: '{label} auswählen'
   },
 
   // === Gemeinsame Buttons ===
@@ -521,88 +260,6 @@ export default {
     aktivierungFehler: 'Aktivierung fehlgeschlagen',
     deaktivierungFehler: 'Deaktivierung fehlgeschlagen',
     kategorienLadenFehler: 'Kategorien laden fehlgeschlagen'
-  },
-
-  // === Podcasts ===
-  podcasts: {
-    podcastDateien: 'Podcast-Dateien',
-    podcastsSuchen: 'Podcasts suchen...',
-    alleEpisoden: 'Alle Episoden',
-    podcastAuswaehlen: 'Podcast in der Seitenleiste auswählen',
-    podcastsSuchenAbonnieren: 'Podcasts suchen und abonnieren',
-    podcastsSuchenBtn: 'Podcasts suchen',
-    dateienLadenFehler: 'Dateien laden fehlgeschlagen',
-    sucheFehler: 'Suche fehlgeschlagen',
-    abonnierenFehler: 'Abonnieren fehlgeschlagen',
-    aboEntfernt: 'Abo entfernt',
-    entfernenFehler: 'Entfernen fehlgeschlagen',
-    aktualisiereFehler: 'Aktualisierung fehlgeschlagen',
-    autoDownloadAktiviert: 'Auto-Download aktiviert',
-    autoDownloadDeaktiviert: 'Auto-Download deaktiviert',
-    autoDownloadAus: 'Auto-Download ausschalten',
-    einstellungFehler: 'Einstellung fehlgeschlagen',
-    episodeHeruntergeladen: 'Episode heruntergeladen',
-    downloadFehler: 'Download fehlgeschlagen',
-    downloadGeloescht: 'Download gelöscht',
-    markierungFehler: 'Markierung fehlgeschlagen',
-    alleBereitsHeruntergeladen: 'Alle Episoden bereits heruntergeladen',
-    downloadAbgebrochen: 'Download abgebrochen ({done} von {total})',
-    episodenHeruntergeladen: '{total} Episoden heruntergeladen',
-    aktualisiereFeeds: 'Aktualisiere alle Feeds...',
-    alleFeedsAktualisiert: 'Alle Feeds aktualisiert',
-    abonnements: 'ABONNEMENTS',
-    ungehoert: 'Ungehört',
-    alle: 'Alle',
-    heute: 'Heute',
-    woche: 'Woche',
-    downloadsFilter: 'Downloads',
-    filterLabel: 'FILTER',
-    filterAktiv: 'Filter aktiv',
-    filterInaktiv: 'Filter inaktiv',
-    sucheSchliessen: 'Suche schließen',
-    suchen: 'Suchen',
-    alleEpisodenAnzeigen: 'Alle Episoden anzeigen',
-    dateiExplorerSchliessen: 'Datei-Explorer schließen',
-    dateiExplorerOeffnen: 'Datei-Explorer öffnen',
-    alleFeedsHolen: 'Alle Feeds vom Server holen',
-    episodenLaden: 'Episoden vom Server laden',
-    wirdAbgespielt: 'Wird abgespielt',
-    ausgewaehltStatus: 'Ausgewählt',
-    neueEpisoden: 'Neue Episoden vorhanden',
-    keineNeuen: 'Keine neuen Episoden',
-    naechsterRefresh: 'Nächster automatischer Feed-Refresh',
-    episodenLabel: 'Episoden',
-    zurueckZurUebersicht: 'Zurück zur Übersicht',
-    gesamt: 'Gesamt',
-    autoDl: 'Auto-DL',
-    feedHolen: 'Feed vom Server holen',
-    alleBereitsLokal: 'Alle Episoden bereits lokal',
-    alleLokalHerunterladen: 'Alle Episoden lokal herunterladen',
-    autoDownloadAktivierenHint: 'Auto-Download aktivieren: Neue Episoden werden automatisch heruntergeladen',
-    autoDownloadDeaktivierenHint: 'Auto-Download deaktivieren: Neue Episoden werden nicht automatisch heruntergeladen',
-    aboEntfernenHint: 'Podcast-Abo entfernen (lokale Dateien bleiben erhalten)',
-    datum: 'Datum',
-    dauer: 'Dauer',
-    groesse: 'Größe',
-    staffel: 'Staffel',
-    heruntergeladen: 'Heruntergeladen',
-    gehoert: 'Gehört',
-    fortsetzen: 'Fortsetzen',
-    fortsetzenBei: 'Fortsetzen bei {position}',
-    episodeAbspielen: 'Episode abspielen',
-    abspielen: 'Abspielen',
-    downloadLoeschen: 'Download löschen',
-    loeschenLabel: 'Löschen',
-    episodeHerunterladen: 'Episode lokal herunterladen',
-    lade: 'Lade...',
-    herunterladen: 'Herunterladen',
-    alsUngehoert: 'Als ungehört markieren',
-    alsGehoert: 'Als gehört markieren',
-    ungehoertLabel: 'Ungehört',
-    gehoertLabel: 'Gehört',
-    breiteAnpassen: 'Breite anpassen',
-    epLabel: 'Ep.',
-    neuLabel: 'neu'
   },
 
   // === Recordings ===
@@ -759,58 +416,6 @@ export default {
     unterstuetzenTitle: 'Unterstützen'
   },
 
-  // === Player Labels (HiFi-Gerät) ===
-  playerLabel: {
-    display: 'ANZEIGE',
-    source: 'QUELLE',
-    vu: 'VU',
-    volume: 'LAUTSTÄRKE',
-    timer: 'ZEIT',
-    transport: 'STEUERUNG',
-    playback: 'WIEDERGABE',
-    timeshift: 'ZEITVERSATZ',
-    hlsRec: 'HLS-AUFNAHME',
-    recording: 'AUFNAHME',
-    podcast: 'PODCAST',
-    live: 'LIVE',
-    bitrate: 'BITRATE',
-    hlsBitrate: 'HLS-BITRATE',
-    hlsBitrateNurHls: 'Nur im HLS-Modus verfügbar',
-    deaktiviert: 'deaktiviert',
-    bitrateWechsel: 'wechselt...'
-  },
-
-  // === Sender-Details ===
-  stationDetail: {
-    favoriten: 'FAVORITEN',
-    country: 'LAND',
-    bitrate: 'BITRATE',
-    votes: 'STIMMEN',
-    stations: 'SENDER',
-    refresh: 'AKTUALISIEREN',
-    nowPlaying: 'AKTUELLER TITEL',
-    homepage: 'WEBSEITE',
-    tags: 'TAGS',
-    language: 'SPRACHE',
-    codec: 'CODEC',
-    clicks: 'KLICKS',
-    streamUrl: 'STREAM-ADRESSE',
-    werbung: 'WERBUNG',
-    ausblenden: 'AUSBLENDEN',
-    historieLoschen: 'Historie löschen',
-    name: 'NAME'
-  },
-
-  // === Download-Panel ===
-  downloadPanel: {
-    massendownload: 'Massendownload',
-    fehlgeschlagen: 'fehlgeschlagen',
-    fortsetzen: 'Fortsetzen',
-    pause: 'Pause',
-    abbrechen: 'Abbrechen',
-    pausieren: 'Pausieren'
-  },
-
   // === Cutter Zusatz ===
   cutterExtra: {
     autoPlay: 'Autom. Wiedergabe',
@@ -824,19 +429,6 @@ export default {
     heruntergeladenFailed: '{ok} heruntergeladen, {failed} fehlgeschlagen',
     ladePodcast: 'Lade "{title}" vom Server...',
     podcastAktualisiert: '"{title}" aktualisiert'
-  },
-
-  // === Spende ===
-  spende: {
-    adresseKopiert: 'Adresse kopiert',
-    kopierenFehler: 'Kopieren fehlgeschlagen',
-    unterstuetzen: 'RadioHub unterstützen',
-    introText: 'RadioHub ist ein nicht-kommerzielles Open-Source-Projekt. Wenn dir die Software gefällt, freue ich mich über eine kleine Unterstützung.',
-    kofiText: 'Unterstütze mich auf Ko-fi',
-    oderKrypto: 'ODER PER KRYPTOWÄHRUNG',
-    kopiert: 'KOPIERT',
-    adresseKopieren: 'ADRESSE KOPIEREN',
-    danke: 'Vielen Dank für deine Unterstützung!'
   },
 
   // === Kanzel: Abspielleiste am Rechner (RAD-8). Quelle in 14 Segmenten: höchstens 7 Zeichen ===

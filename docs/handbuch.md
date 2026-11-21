@@ -58,8 +58,17 @@ Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespe
 die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
 Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
 
+Einstellungen (RAD-11): links die Bereiche Allgemein, Darstellung, Radio, Wiedergabe, Aufnahmen, Podcasts, Wecker und
+Zeitansage, Ablage, Dienste (Basic: Allgemein, Darstellung, Radio, Wecker und Zeitansage), oben Pfad und Reiter. Jede
+Zeile nennt ihre Geltung: "Alle Geräte" (liegt auf dem Server, wartet mit einem Punkt in der Leiste unten, bis
+Speichern oder Verwerfen), "Dieses Gerät" (gilt sofort) oder "Fest gesetzt" (vom Ausrollen, gesperrt). Speichern prüft
+zusammen, etwa dass die kleinste Bitrate nicht über der größten liegt, und nennt sonst den Grund. Löschen fragt immer
+vorher mit den Folgen (Kategorie mit Zahl der Zuordnungen, Aufnahmeordner nur leer, eingebaute Titelmuster bleiben).
+Die Ablage zeigt Datenordner und Belegung nur an; Pfade setzt das Ausrollen. Die Tastatur steht unter Allgemein,
+abgeleitet aus der wirksamen Belegung.
+
 Wecker am Telefon (Wecker-Taste oben): je Wecker Uhrzeit, Tage, Sender oder neueste Folge eines Abos, Weckton,
-Lautstärke und wie langsam es lauter wird. Den Weckton (neun zur Wahl, Vorgabe Doppelpiep, alle im Gerät erzeugt und
+Lautstärke, wie langsam es lauter wird und wie lange Schlummern dauert. Den Weckton (neun zur Wahl, Vorgabe Doppelpiep, alle im Gerät erzeugt und
 ohne Netz) hört man in der Bearbeitung über den Knopf daneben an. Er klingelt, wenn beim Wecken auf Ton geschaltet wird
 oder das Radio nicht zu hören ist; das Radio versucht es dabei weiter. Beim Klingeln lässt sich jederzeit zwischen Radio
 und Ton wechseln. Geweckt wird nur bei offener Weckeransicht (Telefon quer, Seite offen).
@@ -130,8 +139,9 @@ sohee wie in Basic, austauschbar gegen jede für RadioHub freigegebene Stimme);
 die Zertifikatsstelle (`RADIOHUB_CA_DATEI`) und die Ortssuche (OSMLocal im Netz `haus`) setzt `compose.pi.yml`. Die
 Namen von vor RAD-6 gelten weiter (`RADIOHUB_KELLERWOLKE_CA`, `RADIOHUB_KELLERWOLKE_SCHLUESSEL` als Pfad einer Datei,
 ohne Angabe `data/kellerwolke.schluessel`); Werte, die früher in der Tabelle `config` standen (Abruf der Podcasts,
-Bitraten, Adressen der Verzeichnisse), übernimmt der erste Start einmal. Der Abgleich mit dem Senderverzeichnis läuft
-jede Nacht zur Uhrzeit "Abgleich mit dem Senderverzeichnis" (`abgleich_uhrzeit`, Vorgabe 04:30, leer: nur auf Anstoß)
+Bitraten, Adressen der Verzeichnisse; seit RAD-11 auch Sprache, Klicktöne, Rückblick, Werbeerkennung und Ort), übernimmt
+der erste Start einmal, je Übertrag. Der Abgleich mit dem Senderverzeichnis läuft
+jede Nacht zur "Uhrzeit des Abgleichs" (Einstellungen > Radio > Senderverzeichnis, `abgleich_uhrzeit`, Vorgabe 04:30, leer: nur auf Anstoß)
 als Auftrag mit Fortschritt; die Server stehen unter "Senderverzeichnis" (`service_radio_browser_servers`), der nächste
 springt ein, wenn einer ausfällt. Aus der Sicherung: die alte `.env` zurücklegen.
 Frisch: Werte aus den Seiten von [[Kellerwolke]] und [[Vertonung]], danach `tools/ausrollen.sh` erneut.

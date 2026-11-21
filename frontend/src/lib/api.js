@@ -126,6 +126,7 @@ class RadioHubAPI {
   }
 
   // === Categories ===
+  /** @param {string | null} [scope] */
   async getCategories(scope = null) {
     const url = scope ? `/api/categories?scope=${scope}` : '/api/categories';
     return this.fetch(url);
@@ -735,21 +736,10 @@ class RadioHubAPI {
     });
   }
 
-  // === Storage Zones ===
+  // === Speicherzonen (nur anzeigen, RAD-11) ===
 
   async getStorageZones() {
     return this.fetch('/api/storage/zones');
-  }
-
-  async updateStorageZone(zone, path) {
-    return this.fetch(`/api/storage/zones/${zone}`, {
-      method: 'PUT',
-      body: JSON.stringify({ path })
-    });
-  }
-
-  async validateStoragePath(path) {
-    return this.fetch(`/api/storage/validate?path=${encodeURIComponent(path)}`);
   }
 
   // === Externe Dienste ===

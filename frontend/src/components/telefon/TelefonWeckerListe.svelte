@@ -145,7 +145,9 @@
       <label class="regler"><span>{t('telefon.lautstaerke')}: {entwurf.lautstaerke} %</span>
         <input name="wecker-lautstaerke" type="range" min="5" max="100" step="5" bind:value={entwurf.lautstaerke} /></label>
       <label class="regler"><span>{t('telefon.anstieg')}: {entwurf.anstieg_s}</span>
-        <input name="wecker-anstieg" type="range" min="0" max="300" step="15" bind:value={entwurf.anstieg_s} /></label>
+        <input name="wecker-anstieg" type="range" min="0" max="600" step="15" bind:value={entwurf.anstieg_s} /></label>
+      <label class="regler"><span>{t('telefon.schlummerdauer')}: {entwurf.schlummern_min}</span>
+        <input name="wecker-schlummern" type="range" min="1" max="60" step="1" bind:value={entwurf.schlummern_min} /></label>
 
       {#if meldung}<p class="tf-hinweis tf-fehler">{meldung}</p>{/if}
       <div class="tf-wahl">

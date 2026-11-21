@@ -105,19 +105,11 @@ export const actions = {
 
   async initConfig() {
     try {
-      const config = await api.getConfig();
-      // Click-Sounds aus Config initialisieren
-      const { setEnabled } = await import('./uiSounds.js');
-      if (config.ui_click_sounds !== undefined) {
-        setEnabled(config.ui_click_sounds);
-      }
-      // Sprache aus Config initialisieren
-      if (config.language) {
-        const { setLanguage } = await import('./i18n.js');
-        setLanguage(config.language);
-      }
+      // Sprache, Klicktöne, Rückblick der Puffer-Aufnahme: eine Stelle für Start und Speichern (RAD-11)
+      const { wirkungen } = await import('./einstellungen/wirkung');
+      wirkungen(await api.getConfig());
     } catch (e) {
-      // Config nicht geladen - Defaults nutzen
+      // ohne Server (Basic) oder nicht erreichbar: Vorgaben
     }
   },
 

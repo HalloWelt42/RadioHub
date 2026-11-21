@@ -192,7 +192,7 @@
     <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} {stand} laedt={aktualisiert} {leisteOffen}
                      onaendern={aendern} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
                      onabonnieren={() => aendern((a) => ({ ...a, verzeichnis: true, offen: null }))}
-                     oneinstellungen={() => actions.navigateTo("/einstellungen/podcast")} />
+                     oneinstellungen={() => actions.navigateTo("/einstellungen/podcasts")} />
     <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl}>
       {#if ansicht.verzeichnis}
         <Verzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onabonnieren={abonnieren}

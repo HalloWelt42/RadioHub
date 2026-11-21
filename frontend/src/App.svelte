@@ -72,7 +72,7 @@
   <div class="rh-app">
     <Kopf {online} {ablage} bereiche={[...BEREICHE]} />
     <!-- die neuen Ansichten (Radio, Podcasts) lesen die Marken direkt; nur die alten Bereiche wachsen als Ganzes (rh-alt) -->
-    <main class="rh-mitte" class:rh-alt={!["radio", "wecker", "podcasts"].includes(appState.activeTab as string)}>
+    <main class="rh-mitte" class:rh-alt={!["radio", "wecker", "podcasts", "settings"].includes(appState.activeTab as string)}>
       {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}
         <RadioAnsicht />
       {:else if appState.activeTab === "recordings"}
@@ -80,7 +80,7 @@
       {:else if appState.activeTab === "podcasts"}
         <PodcastAnsicht />
       {:else if appState.activeTab === "settings"}
-        <SettingsTab />
+        <SettingsTab bereichszahl={BEREICHE.length} />
       {/if}
     </main>
     <Kanzel />

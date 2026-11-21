@@ -150,3 +150,13 @@ def test_rad11_regeln_und_felder_ueber_die_schnittstelle(client):
     halb = client.put("/api/wecker/ort", json={"name": "Nirgends", "breite": 10, "laenge": None})
     assert halb.status_code == 422 and "Breite und Länge" in halb.text
     client.patch("/api/v1/einstellungen", json={"werte": {"ort_name": None, "ort_breite": None, "ort_laenge": None}})
+
+
+def test_eingebaute_titelmuster_bleiben(client):
+    """RAD-11: eingebaute Muster der Titel lassen sich nicht löschen, eigene schon."""
+    eintraege = client.get("/api/recording/icy-ignore").json()["items"]
+    eingebaut = next(e for e in eintraege if e["source"] != "user")
+    assert client.delete(f"/api/recording/icy-ignore/{eingebaut['id']}").status_code == 409
+    assert client.post("/api/recording/icy-ignore/remove-by-pattern", json={"pattern": eingebaut["pattern"]}).status_code == 409
+    neu = client.post("/api/recording/icy-ignore", json={"pattern": "Probe RAD-11", "match_type": "contains"}).json()["id"]
+    assert client.delete(f"/api/recording/icy-ignore/{neu}").status_code == 200

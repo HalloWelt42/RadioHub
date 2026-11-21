@@ -87,7 +87,7 @@
       <p class="rh-hinweis" title={t("podcastAnsicht.automatischHilfe")}>
         <ak-led farbe={stand.automatisch ? "gruen" : "bernstein"} zustand="an" groesse="klein"></ak-led>
         <span>{#if stand.automatisch && bis}{t("podcastAnsicht.naechsteIn", { zeit: "" })}<b>{bis}</b>{:else}{t("podcastAnsicht.automatischAus")}{/if}</span>
-        <a href="/einstellungen/podcast" onclick={(e) => { e.preventDefault(); oneinstellungen(); }}>{t("podcastAnsicht.abstandAendern")}<i class="fa-solid fa-arrow-right"></i></a>
+        <a href="/einstellungen/podcasts" onclick={(e) => { e.preventDefault(); oneinstellungen(); }}>{t("podcastAnsicht.abstandAendern")}<i class="fa-solid fa-arrow-right"></i></a>
       </p>
     {/if}
   </div>

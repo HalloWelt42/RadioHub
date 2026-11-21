@@ -71,7 +71,7 @@ export class Werbeerkennung {
     const c = await this.a<Record<string, unknown>>("/api/config");
     const an = c.ad_detection_enabled;
     const arten = liste(c.ad_detection_methods);
-    const schwelle = Number(c.ad_detection_threshold);
+    const schwelle = Number(c.ad_detection_threshold) / 100;           // auf dem Server in Prozent (RAD-11)
     return {
       an: an === undefined || an === null ? VORGABE.an : an === true || an === "true",
       arten: Array.isArray(arten) ? arten.filter((x): x is Pruefart => x === "url_check" || x === "header_check") : VORGABE.arten,
@@ -81,7 +81,7 @@ export class Werbeerkennung {
 
   async speichern(e: WerbeEinstellungen): Promise<void> {
     await this.a("/api/config", { methode: "PUT", daten: { updates: {
-      ad_detection_enabled: e.an, ad_detection_methods: JSON.stringify(e.arten), ad_detection_threshold: e.schwelle,
+      ad_detection_enabled: e.an, ad_detection_methods: e.arten, ad_detection_threshold: Math.round(e.schwelle * 100),
     } } });
   }
 

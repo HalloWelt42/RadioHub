@@ -337,9 +337,12 @@ async def remove_icy_ignore(item_id: int):
     from ..database import db_session
     with db_session() as conn:
         c = conn.cursor()
-        c.execute("DELETE FROM icy_title_ignore WHERE id = ?", (item_id,))
-        if c.rowcount == 0:
+        zeile = c.execute("SELECT source FROM icy_title_ignore WHERE id = ?", (item_id,)).fetchone()
+        if zeile is None:
             raise HTTPException(404, "Eintrag nicht gefunden")
+        if zeile[0] != "user":
+            raise HTTPException(409, "Eingebaute Muster bleiben; nur eigene lassen sich entfernen")
+        c.execute("DELETE FROM icy_title_ignore WHERE id = ?", (item_id,))
     return {"success": True}
 
 
@@ -355,7 +358,10 @@ async def remove_icy_ignore_by_pattern(req: IcyIgnoreByPatternRequest):
     from ..database import db_session
     with db_session() as conn:
         c = conn.cursor()
-        c.execute("DELETE FROM icy_title_ignore WHERE pattern = ?", (req.pattern.strip(),))
-        if c.rowcount == 0:
+        zeile = c.execute("SELECT source FROM icy_title_ignore WHERE pattern = ?", (req.pattern.strip(),)).fetchone()
+        if zeile is None:
             raise HTTPException(404, "Pattern nicht in Ignorier-Liste")
+        if zeile[0] != "user":
+            raise HTTPException(409, "Eingebaute Muster bleiben; nur eigene lassen sich entfernen")
+        c.execute("DELETE FROM icy_title_ignore WHERE pattern = ?", (req.pattern.strip(),))
     return {"success": True}

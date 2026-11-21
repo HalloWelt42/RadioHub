@@ -46,11 +46,10 @@ const ALTE_PRAEFIXE = { tuner: 'radio', recorder: 'aufnahmen', podcast: 'podcast
 const STARTPFAD = '/radio';
 
 // Default-Suffixe für Tabs mit Sub-Navigation
+// (die Einstellungen ergänzen ihren Reiter selbst, components/einstellungen/EinstellungenSeite.svelte, RAD-11)
 const ROUTE_DEFAULTS = {
   einstellungen: {
-    _default: ['allgemein', 'einstellungen'],
-    allgemein: ['einstellungen'],
-    radio: ['regeln']
+    _default: ['allgemein']
   }
 };
 
