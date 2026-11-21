@@ -350,7 +350,7 @@ export default {
   // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
   schale: {
     werbungUebersprungen: 'Werbung übersprungen', werbungAnhoeren: 'Zurück und anhören', schliessen: 'Schließen',
-    werbeherkunft_kapitel: 'Kapitel im Feed', werbeherkunft_hand: 'von Hand', werbeherkunft_vergleich: 'Vergleich zweier Fassungen',
+    werbeherkunft_kapitel: 'Kapitel im Feed', werbeherkunft_hand: 'von Hand', werbeherkunft_vergleich: 'Vergleich der Fassungen',
     werbeherkunft_transkript: 'aus dem Transkript',
     werbeherkunft_sendedaten: 'aus den Sendedaten',
     werbungVerbinden: 'Werbung beim Verbinden', werbungNichtGespielt: 'RadioHub spielt sie nicht, noch',

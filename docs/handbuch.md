@@ -81,10 +81,12 @@ Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden F
 
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
-zweier Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge
+der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge
 reicht RadioHub die Datei an den Propaganda-Filter (eigener Dienst am Mac, Einstellungen > Dienste > Propaganda-Filter),
-der dieselbe Folge noch einmal holt, beide am Klang ausrichtet und auf 10 ms genau nennt, was nur in der gespeicherten
-vorkommt; die Zeiten gelten genau für diese Datei. "Werbung suchen" fragt alle Quellen, die für die Folge gehen, mit
+der dieselbe Folge mehrmals neu holt (Vorgabe drei Fassungen), jede am Klang ausrichtet und auf 10 ms genau nennt, was
+in der gespeicherten vorkommt, in einer anderen aber fehlt; aneinanderstoßende Spots werden ein Werbeplatz. Mehrere
+Fassungen braucht es, weil an einem Platz oft mehrere Spots laufen und einer davon in einer Fassung zufällig gleich
+sein kann. Die Zeiten gelten genau für diese Datei. "Werbung suchen" fragt alle Quellen, die für die Folge gehen, mit
 Fortschritt; "Neue Folgen prüfen" im Kopf des Abos tut das von selbst nach dem Aktualisieren (nach dem Speichern neuer
 Folgen, damit der Vergleich sie schon vorfindet). Beim Hören springt die Wiedergabe über die Stellen ("Überspringen" je
 Abo), "Keine Werbung" verwirft eine Stelle (mit Rückgängig, eine neue Suche bringt sie nicht wieder), "Ohne Werbung

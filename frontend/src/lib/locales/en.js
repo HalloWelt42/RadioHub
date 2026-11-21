@@ -350,7 +350,7 @@ export default {
   // === Shell: header, navigation, display, account (RAD-6) ===
   schale: {
     werbungUebersprungen: 'Ad skipped', werbungAnhoeren: 'Go back and listen', schliessen: 'Close',
-    werbeherkunft_kapitel: 'chapter in the feed', werbeherkunft_hand: 'by hand', werbeherkunft_vergleich: 'comparing two versions',
+    werbeherkunft_kapitel: 'chapter in the feed', werbeherkunft_hand: 'by hand', werbeherkunft_vergleich: 'comparing versions',
     werbeherkunft_transkript: 'from the transcript',
     werbeherkunft_sendedaten: 'from the stream data',
     werbungVerbinden: 'Ad on connect', werbungNichtGespielt: 'RadioHub does not play it, remaining',

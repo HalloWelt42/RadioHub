@@ -22,8 +22,11 @@ export function spielenOderPause(): void {
  *  wenn gerade nichts geladen ist (dann muss die Quelle erst gestartet werden). */
 export function hoerenAb(sekunde: number): boolean {
   if (app.isRecording || !(app.isPlaying || app.isPaused)) return false;
-  tonelement().currentTime = sekunde;
+  const ton = tonelement();
+  ton.currentTime = sekunde;
   if (app.isPaused) engine.resume();
+  // angehalten, ohne dass die Kanzel es weiß (etwa über die Medientasten des Rechners): das Tonelement selbst spielen
+  else if (ton.paused) void ton.play().catch(() => {});
   return true;
 }
 

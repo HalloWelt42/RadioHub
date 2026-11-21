@@ -6,7 +6,7 @@ Gemeinschaft: die Stellen kommen aus eigenen Quellen.
 Herkunft einer Stelle:
     kapitel      Kapitel im Feed (podcast:chapters), deren Titel nach Werbung klingt
     hand         von Hand gesetzt (Folgendetail oder Schnitt)
-    vergleich    Vergleich zweier Fassungen derselben Folge (eingefügte Werbung unterscheidet sich)
+    vergleich    Vergleich mehrerer Fassungen derselben Folge (eingefügte Werbung unterscheidet sich)
     transkript   aus dem Transkript (sobald es Transkripte gibt, RAD-22)
     sendedaten   bei Aufnahmen: Werbung, die der Sender in seinen Sendedaten ankündigt (RAD-33)
 
@@ -198,7 +198,7 @@ def quellen(folge: dict) -> list[Herkunft]:
     return was
 
 
-NAMEN: dict[str, str] = {"kapitel": "Kapitel im Feed", "vergleich": "Vergleich zweier Fassungen"}
+NAMEN: dict[str, str] = {"kapitel": "Kapitel im Feed", "vergleich": "Vergleich der Fassungen"}
 
 
 async def vergleich_suchen(folge: dict, melden: propagandafilter.Melden) -> list[Neu]:

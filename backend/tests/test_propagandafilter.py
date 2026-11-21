@@ -1,4 +1,4 @@
-"""Anschluss an den Propaganda-Filter (HELF-256): Vergleich zweier Fassungen als Auftrag mit Fortschritt, Fehler des
+"""Anschluss an den Propaganda-Filter (HELF-256): Vergleich der Fassungen als Auftrag mit Fortschritt, Fehler des
 Filters, und die Quelle "vergleich" der Werbestellen nur für gespeicherte Folgen."""
 
 from __future__ import annotations
@@ -89,7 +89,7 @@ async def test_quelle_vergleich_nur_fuer_gespeicherte_folgen(client, speicher, m
     antwort = client.post(f"/api/podcasts/episodes/{folge}/werbung/suchen")
     ereignisse = [json.loads(z[6:]) for z in antwort.text.splitlines() if z.startswith("data: ")]
     assert ereignisse[-1] == {"type": "done", "gefunden": {"vergleich": 2}}, ereignisse
-    assert any(e.get("message") == "Vergleich zweier Fassungen: sucht A in B (50%)" for e in ereignisse)
+    assert any(e.get("message") == "Vergleich der Fassungen: sucht A in B (50%)" for e in ereignisse)
     assert gesehen == {"a": b"ID3ton", "zweite": "https://feed.test/f.mp3", "quelle": "Podcast: Lobby-Gipfel"}
     assert [(s.von, s.bis, s.herkunft) for s in ws.stellen(folge)] == [(0.0, 30.12, "vergleich"), (1585.3, 1620.0, "vergleich")]
 
