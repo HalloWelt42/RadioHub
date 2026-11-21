@@ -131,4 +131,18 @@ export default {
     keineFolgen: 'No episodes for this selection', keineAbos: 'No subscriptions yet. Use the plus at the top to find a podcast.',
     naechsteIn: 'Next refresh in {zeit}',
   },
+  // Ads in episodes (RAD-32)
+  werbung: {
+    titel: 'Ads in this episode', zusammenEins: '1 spot, {zeit}; the file stays complete', zusammen: '{n} spots, {zeit} in total; the file stays complete',
+    keine: 'No ad spots known yet', leiste: 'Position in the episode with {n} ad spots', vonBis: '{von} to {bis}',
+    anhoeren: 'Listen to this spot', keineWerbung: 'Not an ad', keineWerbungHilfe: 'Not an ad: stop skipping it (can be undone)',
+    verworfen: 'The spot at {von} no longer counts as an ad.', rueckgaengig: 'Undo',
+    ueberspringen: 'Skip', ueberspringenHilfe: 'Skip ad spots while listening (applies to this subscription)',
+    suchen: 'Find ads', suchenHilfe: 'Search all available sources for ad spots', gefunden: '{n} ad spots found',
+    beginnt: 'Ad starts here', endet: 'Ad ends here (from {von})', markierenHilfe: 'Mark while listening: tap at the start, then at the end',
+    ohneSpeichern: 'Save without ads', ohneSpeichernHilfe: 'New file without the ad spots next to it; the original stays',
+    ohneFertig: 'Saved without ads: {pfad}', marke: '{n} × ad, {zeit}', markeHilfe: '{n} ad spots, {zeit} in total, are skipped',
+    aboUeberspringen: 'Skip ads', aboUeberspringenHilfe: 'Skip detected ad spots in all episodes of this subscription',
+    aboZahl: '{n} episodes with ads', aboPruefen: 'Check new episodes', aboPruefenHilfe: 'Search new episodes of this subscription for ads automatically',
+  },
 };

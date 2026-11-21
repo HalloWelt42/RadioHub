@@ -6,12 +6,14 @@
   import type { Spulstand } from "./kanzel";
   import type { Wiedergabe } from "./wiedergabe.svelte";
 
-  let { stand, wiedergabe, hilfe, links, rechts }: {
+  let { stand, wiedergabe, hilfe, links, rechts, marken = [] }: {
     stand: Spulstand;
     wiedergabe: Wiedergabe;
     hilfe: string;
     links: Snippet;
     rechts: Snippet;
+    /** Abschnitte in Prozent, etwa Werbestellen einer Folge (RAD-32) */
+    marken?: { von: number; breite: number }[];
   } = $props();
 </script>
 
@@ -19,7 +21,8 @@
   {@render links()}
   <div class="rh-puffer" title={hilfe}>
     <div class="rh-spulbahn" class:sucht={wiedergabe.sucht}>
-      <div class="balken"><span style:width="{stand.fuellung}%"></span></div>
+      <div class="balken"><span style:width="{stand.fuellung}%"></span>
+        {#each marken as m (m.von)}<i class="rh-werbemarke" style:left="{m.von}%" style:width="{m.breite}%"></i>{/each}</div>
       <input class="rh-spulregler" type="range" min="0" max="100" step={stand.schritt} value={wiedergabe.lage} aria-label={hilfe}
         aria-valuetext={stand.text} style:inline-size="{stand.bahn}%" disabled={stand.gesperrt || wiedergabe.sucht}
         onpointerdown={() => wiedergabe.ziehenBeginnen()}

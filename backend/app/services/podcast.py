@@ -24,6 +24,11 @@ from .config_service import config_service
 logger = logging.getLogger("radiohub.podcast")
 
 
+# Zahl und Dauer der Werbestellen je Folge in den Listen (RAD-32); die Folge heißt in den Abfragen pe
+WERBUNG_SPALTEN = ("(SELECT COUNT(*) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_anzahl, "
+                   "(SELECT COALESCE(SUM(w.bis - w.von), 0) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_dauer")
+
+
 def _bilder_dir(podcast_id: int) -> Path:
     """Cover sind Zwischenspeicher (jederzeit neu ladbar) und liegen im Cache, nicht in der Ablage."""
     return get_cache_dir() / "podcast-bilder" / str(podcast_id)
@@ -196,13 +201,13 @@ class PodcastService:
             for ep in feed_data.get("episodes", []):
                 c.execute('''INSERT OR IGNORE INTO podcast_episodes
                     (podcast_id, guid, title, description, audio_url, duration,
-                     published_at, image_url, transcript_url)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     published_at, image_url, transcript_url, chapters_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (podcast_id, ep["guid"], ep["title"],
                      ep["description"][:2000] if ep["description"] else "",
                      ep["audio_url"], ep.get("duration", 0),
                      ep.get("published_at"), ep.get("image_url", ""),
-                     ep.get("transcript_url", "")))
+                     ep.get("transcript_url", ""), ep.get("chapters_url", "")))
 
         # Cover-Art async herunterladen
         if feed_data.get("image_url"):
@@ -231,7 +236,9 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-1 day')) as today_unplayed,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-7 days')) as week_unplayed,
-                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
+                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration,
+                (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
+                 WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
                 FROM podcast_subscriptions ps ORDER BY ps.angeheftet DESC, ps.sort_order, ps.title''')
             return [dict(row) for row in c.fetchall()]
 
@@ -242,7 +249,9 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
-                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration
+                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration,
+                (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
+                 WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
                 FROM podcast_subscriptions ps WHERE ps.id = ?''', (podcast_id,))
             row = c.fetchone()
             return dict(row) if row else None
@@ -287,15 +296,18 @@ class PodcastService:
             for ep in feed_data.get("episodes", []):
                 c.execute('''INSERT OR IGNORE INTO podcast_episodes
                     (podcast_id, guid, title, description, audio_url, duration,
-                     published_at, image_url, transcript_url)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     published_at, image_url, transcript_url, chapters_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (podcast_id, ep["guid"], ep["title"],
                      ep["description"][:2000] if ep["description"] else "",
                      ep["audio_url"], ep.get("duration", 0),
                      ep.get("published_at"), ep.get("image_url", ""),
-                     ep.get("transcript_url", "")))
+                     ep.get("transcript_url", ""), ep.get("chapters_url", "")))
                 if c.rowcount > 0:
                     new_episodes += 1
+                elif ep.get("chapters_url"):
+                    c.execute("UPDATE podcast_episodes SET chapters_url = ? WHERE podcast_id = ? AND guid = ? AND chapters_url = ''",
+                              (ep["chapters_url"], podcast_id, ep["guid"]))
 
         # Cover aktualisieren
         if feed_data.get("image_url"):
@@ -303,6 +315,13 @@ class PodcastService:
                 await self.download_image(feed_data["image_url"], podcast_id)
             except Exception:
                 pass
+
+        # Neue Folgen von selbst auf Werbung durchsuchen (Schalter des Abos, RAD-32)
+        if sub.get("werbung_pruefen") and new_episodes > 0:
+            try:
+                await self._werbung_pruefen(podcast_id, new_episodes)
+            except Exception as e:
+                logger.warning(f"Werbung prüfen fehlgeschlagen: {e}")
 
         # Auto-Download für neue Episoden
         if sub.get("auto_download") and new_episodes > 0:
@@ -312,6 +331,16 @@ class PodcastService:
                 logger.warning(f"Auto-Download fehlgeschlagen: {e}")
 
         return {"success": True, "new_episodes": new_episodes}
+
+    async def _werbung_pruefen(self, podcast_id: int, anzahl: int):
+        """die neuesten Folgen eines Abos über alle möglichen Quellen auf Werbung durchsuchen"""
+        from . import werbestellen
+        with db_session() as conn:
+            neue = [dict(r) for r in conn.execute(
+                "SELECT * FROM podcast_episodes WHERE podcast_id = ? ORDER BY id DESC LIMIT ?", (podcast_id, anzahl)).fetchall()]
+        for folge in neue:
+            if werbestellen.quellen(folge):
+                await werbestellen.suchen(folge, lambda *_: None)
 
     async def refresh_all(self) -> dict:
         """Alle Feeds aktualisieren"""
@@ -387,7 +416,7 @@ class PodcastService:
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute(f'''SELECT * FROM podcast_episodes
+            c.execute(f'''SELECT pe.*, {WERBUNG_SPALTEN} FROM podcast_episodes pe
                 {where} ORDER BY {sort_by} {sort_order} LIMIT ? OFFSET ?''',
                 params + [limit, offset])
             episodes = [dict(row) for row in c.fetchall()]
@@ -430,7 +459,7 @@ class PodcastService:
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 {where} ORDER BY pe.{sort_by} {sort_order} LIMIT ? OFFSET ?''',
@@ -473,7 +502,7 @@ class PodcastService:
         with db_session() as conn:
             c = conn.cursor()
 
-            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 WHERE ({where_clause})
@@ -549,7 +578,7 @@ class PodcastService:
     async def get_episode(self, episode_id: int) -> Optional[dict]:
         with db_session() as conn:
             c = conn.cursor()
-            c.execute('''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 WHERE pe.id = ?''', (episode_id,))
@@ -1029,7 +1058,14 @@ class PodcastService:
                     elif url and not transcript_url:
                         transcript_url = url
 
+                # Kapitel (podcast:chapters, JSON): Quelle der Werbestellen (RAD-32)
+                chapters_url = ""
+                kapitel = item.find(f"{podcast_ns}chapters")
+                if kapitel is not None:
+                    chapters_url = kapitel.get("url", "")
+
                 episodes.append({
+                    "chapters_url": chapters_url,
                     "guid": guid,
                     "title": ep_title,
                     "description": ep_desc,

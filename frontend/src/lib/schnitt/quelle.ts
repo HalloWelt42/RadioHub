@@ -1,6 +1,9 @@
 // Schnitt (RAD-17): ein Weg für Aufnahmen und Dateien der Kellerwolke (Backend /api/schnitt). Lange Arbeiten
 // (Schneiden, Normalisieren, Umwandeln) melden ihren Fortschritt als Ereignisstrom.
 import { antwortPruefen, kopf } from "../sitzung";
+import { ereignisse, fehlerText, type Fortschritt } from "../ereignisstrom";
+
+export type { Fortschritt };
 
 export interface Schnittgegenstand {
   art: "sitzung" | "datei";
@@ -33,11 +36,6 @@ export interface StueckWahl {
   behalten: boolean;
 }
 
-export interface Fortschritt {
-  schritt: number;
-  gesamt: number;
-  text: string;
-}
 
 export type Umwandlung = { format: "mp3" | "ogg" | "aac"; bitrate: number; mono: boolean };
 
@@ -54,37 +52,9 @@ export interface Schnittquelle {
 
 const parameter = (g: Schnittgegenstand) => new URLSearchParams({ art: g.art, kennung: g.kennung }).toString();
 
-async function fehlerText(antwort: Response): Promise<string> {
-  try {
-    const d = await antwort.json();
-    return typeof d.detail === "string" ? d.detail : `Fehler ${antwort.status}`;
-  } catch {
-    return `Fehler ${antwort.status}`;
-  }
-}
-
-/** Ereignisstrom lesen: progress meldet, done liefert die Zahl, error wirft mit der Meldung des Servers */
+/** Ereignisstrom lesen: done liefert die Zahl der Ergebnisse (gemeinsamer Leser in lib/ereignisstrom) */
 export async function strom(antwort: Response, melden: (f: Fortschritt) => void): Promise<number> {
-  antwortPruefen(antwort);
-  if (!antwort.ok || !antwort.body) throw new Error(await fehlerText(antwort));
-  const leser = antwort.body.pipeThrough(new TextDecoderStream()).getReader();
-  let rest = "";
-  for (;;) {
-    const { value, done } = await leser.read();
-    if (done) break;
-    rest += value;
-    const bloecke = rest.split("\n\n");
-    rest = bloecke.pop() ?? "";
-    for (const block of bloecke) {
-      const zeile = block.split("\n").find((z) => z.startsWith("data:"));
-      if (!zeile) continue;
-      const d = JSON.parse(zeile.slice(5));
-      if (d.type === "progress") melden({ schritt: d.step, gesamt: d.total, text: d.message });
-      if (d.type === "error") throw new Error(d.message);
-      if (d.type === "done") return Number(d.count) || 0;
-    }
-  }
-  throw new Error("Verbindung abgebrochen, bevor die Arbeit fertig war");
+  return Number(await ereignisse<number>(antwort, melden, "count")) || 0;
 }
 
 export class BackendSchnittquelle implements Schnittquelle {

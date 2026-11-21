@@ -5,6 +5,7 @@
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
   import Spulzeile from "./Spulzeile.svelte";
+  import { werbemarken } from "./werbehinweis.svelte";
   import { live, spulen } from "./aktionen";
   import { positionStand, SPUL_RUHE, zeitversatzStand, type Anzeige, type Stand } from "./kanzel";
   import { faehigkeiten } from "../lib/playerEngine.js";
@@ -45,7 +46,7 @@
         {/snippet}
       </Spulzeile>
     {:else if position}
-      <Spulzeile stand={position} {wiedergabe} hilfe={t("kanzel.positionHilfe")}>
+      <Spulzeile stand={position} {wiedergabe} hilfe={t("kanzel.positionHilfe")} marken={stand.currentEpisode ? werbemarken(wiedergabe.dauer) : []}>
         {#snippet links()}
           <button class="knopf" type="button" title={t("player.skipBack")} aria-label={t("player.skipBack")} disabled={spulenGesperrt || position.gesperrt}
             onmouseenter={sfx.hover} onclick={() => { spulen(-10); sfx.click(); }}><i class="fa-solid fa-rotate-left"></i>10 s</button>

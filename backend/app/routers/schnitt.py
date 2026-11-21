@@ -5,8 +5,6 @@ in der Kellerwolke). Schneiden, Normalisieren und Umwandeln melden ihren Fortsch
 progress, done oder error)."""
 from __future__ import annotations
 
-import asyncio
-import json
 from pathlib import Path
 from typing import Literal
 
@@ -20,6 +18,7 @@ from ..services.audio_processor import audio_processor
 from ..services.aufnahmen import AufnahmeFehler
 from ..services.peaks_generator import BYTES_PER_SAMPLE, SAMPLE_RATE, peaks_bereich
 from ..services.schnitt import StueckWahl, gegenstand
+from .ereignisstrom import ereignisstrom
 
 router = APIRouter(prefix="/api/schnitt", tags=["schnitt"])
 
@@ -65,31 +64,8 @@ class Umwandeln(Gegenstand):
 
 
 def _strom(arbeit) -> StreamingResponse:
-    """`arbeit(fortschritt)` im Hintergrund, Fortschritt und Ende als Ereignisstrom."""
-    queue: asyncio.Queue = asyncio.Queue()
-
-    def fortschritt(schritt: int, gesamt: int, text: str) -> None:
-        queue.put_nowait({"type": "progress", "step": schritt, "total": gesamt, "message": text})
-
-    async def laufen():
-        try:
-            queue.put_nowait({"type": "done", "count": await arbeit(fortschritt)})
-        except (AufnahmeFehler, AblageFehler) as f:
-            queue.put_nowait({"type": "error", "message": str(f)})
-        except Exception as f:  # noqa: BLE001 - jeder Fehler gehört in den Strom, sonst wartet die Oberfläche
-            queue.put_nowait({"type": "error", "message": str(f)})
-
-    async def strom():
-        yield f"data: {json.dumps({'type': 'start'})}\n\n"
-        aufgabe = asyncio.create_task(laufen())
-        while True:
-            evt = await queue.get()
-            yield f"data: {json.dumps(evt)}\n\n"
-            if evt["type"] in ("done", "error"):
-                break
-        await aufgabe
-
-    return StreamingResponse(strom(), media_type="text/event-stream")
+    """`arbeit(fortschritt)` im Hintergrund, Fortschritt und Ende als Ereignisstrom (gemeinsamer Baustein)."""
+    return ereignisstrom(arbeit)
 
 
 @router.get("/info")

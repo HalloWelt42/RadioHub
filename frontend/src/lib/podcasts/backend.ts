@@ -46,6 +46,8 @@ export class BackendPodcastquelle implements Podcastquelle {
       sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", ordnerId: r.ordner_id || null, aktualisiert: text(r.last_updated),
       folgen: zahl(r.episode_count), gespeichert: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
       wocheUngehoert: zahl(r.week_unplayed), dauerGesamt: zahl(r.total_duration),
+      werbungUeberspringen: r.werbung_ueberspringen === undefined ? true : !!r.werbung_ueberspringen, werbungPruefen: !!r.werbung_pruefen,
+      werbungFolgen: zahl(r.werbung_folgen),
     };
   }
 
@@ -55,7 +57,7 @@ export class BackendPodcastquelle implements Podcastquelle {
       id: r.id, aboId: r.podcast_id, titel: text(r.title), beschreibung: text(r.description), dauer: zahl(r.duration),
       datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, gespeichert: !!r.is_downloaded,
       ablagePfad: r.is_downloaded ? text(r.local_path) : "",
-      groesse: zahl(r.file_size), bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.aboBild(r.podcast_id),
+      groesse: zahl(r.file_size), werbung: { anzahl: zahl(r.werbung_anzahl), dauer: zahl(r.werbung_dauer) }, bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.aboBild(r.podcast_id),
       ...(r.podcast_title ? { aboTitel: text(r.podcast_title) } : {}),
     };
   }

@@ -10,7 +10,7 @@
   import { appPfad } from "../../../lib/router.js";
   import { zahl } from "../../../lib/radio/anzeige";
   import { Suchverlauf } from "../../../lib/radio/suchverlauf";
-  import { aboliste, Folgenliste, podcastquelle, podcastzustand, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
+  import { aboliste, Folgenliste, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
     type Podcastsortierung } from "../../../lib/podcasts";
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import AboBild from "../../podcast/AboBild.svelte";
@@ -20,6 +20,8 @@
   import TFolge from "./TFolge.svelte";
   import TFolgeBlatt from "./TFolgeBlatt.svelte";
   import TVerzeichnis from "./TVerzeichnis.svelte";
+  import { tonelement } from "../../../spieler/tonelement";
+  import { werbesprung } from "../../../spieler/werbesprung.svelte";
 
   const verlaufFolgen = new Suchverlauf("radiohub_podcast_suche");
   const verlaufAbos = new Suchverlauf("radiohub_podcast_abosuche");
@@ -80,6 +82,24 @@
     await sicher(async () => {
       const w = await podcastquelle.wiedergabe(f, liste.folgen);
       actions.playEpisodeFromList(vonVorn ? { ...w.folge, resume_position: 0 } : w.folge, w.abo, w.liste);
+    });
+  }
+
+  /** eine Werbestelle bewusst hören (RAD-32): läuft die Folge, springt sie dorthin, sonst startet sie dort */
+  async function anhoeren(f: Folge, von: number) {
+    werbesprung.durchlassen(f.id, von);
+    if (spielend === f.id) { tonelement().currentTime = von; return; }
+    await sicher(async () => {
+      const w = await podcastquelle.wiedergabe(f, liste.folgen);
+      actions.playEpisodeFromList({ ...w.folge, resume_position: Math.floor(von) }, w.abo, w.liste);
+    });
+  }
+
+  async function werbungSetzen(a: Abo, teil: { ueberspringen?: boolean; pruefen?: boolean }) {
+    await sicher(async () => {
+      await werbequelle.aboSetzen(a.id, teil);
+      aboliste.aendern(a.id, { ...(teil.ueberspringen !== undefined ? { werbungUeberspringen: teil.ueberspringen } : {}),
+        ...(teil.pruefen !== undefined ? { werbungPruefen: teil.pruefen } : {}) });
     });
   }
 
@@ -148,7 +168,8 @@
     </div>
     <div class="tf-liste">
       <TAboKopf abo={einAbo} sortierung={ansicht.sortierung} {arbeitet} kannSpeichern={kann.speichern} onaktualisieren={() => void aktualisieren(einAbo)}
-                onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))} onabbestellen={() => abbestellen(einAbo)} onsortieren={sortieren} />
+                onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))} onabbestellen={() => abbestellen(einAbo)} onsortieren={sortieren}
+                onwerbung={(teil) => void werbungSetzen(einAbo, teil)} />
       {@render folgenliste(false)}
     </div>
   {:else}
@@ -218,7 +239,8 @@
 {/snippet}
 
 {#if offen}
-  <TFolgeBlatt folge={offen} abo={aboliste.abo(offen.aboId)} kannSpeichern={kann.speichern} dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(offen.id) : ""}
+  <TFolgeBlatt folge={offen} abo={aboliste.abo(offen.aboId)} spielt={spielend === offen.id}
+               onanhoeren={(von) => void anhoeren(offen, von)} onwerbung={(w) => liste.aendern(offen.id, { werbung: w })} kannSpeichern={kann.speichern} dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(offen.id) : ""}
                onhoeren={() => void hoeren(offen)} onvorn={() => void hoeren(offen, true)} onspeichern={() => void speichern(offen, true)}
                onloeschen={() => speichern(offen, false)} ongehoert={() => gehoert(offen)} onzu={() => history.back()} />
 {/if}

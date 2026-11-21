@@ -30,7 +30,8 @@
   <AboBild abo={abo ?? { titel: f.aboTitel ?? "", bild: f.bild }} bild={f.bild || undefined} />
   <div><b>{f.titel}</b>
     <div class="tf-meta">{#if mitAbo}<span>{abo?.titel ?? f.aboTitel ?? ""}</span>{/if}<span>{tag}</span>{#if f.dauer}<span>{t("podcastAnsicht.minuten", { n: minuten(f.dauer) })}</span>{/if}
-      {#if f.gespeichert}<span class="tp-gespeichert" title={t("podcastAnsicht.telefon.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i></span>{/if}</div>
+      {#if f.gespeichert}<span class="tp-gespeichert" title={t("podcastAnsicht.telefon.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i></span>{/if}
+      {#if f.werbung.anzahl}<span class="rh-werbemarke-text"><i class="fa-solid fa-forward"></i>{t("podcastAnsicht.werbung.marke", { n: f.werbung.anzahl, zeit: stelleText(f.werbung.dauer) })}</span>{/if}</div>
     <div class="tp-stand-zeile">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>

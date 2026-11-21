@@ -138,3 +138,6 @@
 .rh-kanzel-voll[data-reihen="3"] .rh-betrieb { margin-left: auto; }
 
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }
+/* Werbestellen der laufenden Folge auf der Spulbahn (RAD-32): bernstein heißt Werbung */
+.rh-kanzel .balken { position: relative; }
+.rh-werbemarke { position: absolute; top: 0; bottom: 0; background-color: var(--led-bernstein); }

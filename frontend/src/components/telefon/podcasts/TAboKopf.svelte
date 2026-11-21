@@ -9,7 +9,7 @@
   import Langtext from "../../radio/Langtext.svelte";
   import Schalter from "../../radio/Schalter.svelte";
 
-  let { abo, sortierung, arbeitet, kannSpeichern, onaktualisieren, onauto, onabbestellen, onsortieren }: {
+  let { abo, sortierung, arbeitet, kannSpeichern, onaktualisieren, onauto, onabbestellen, onsortieren, onwerbung }: {
     abo: Abo;
     sortierung: Podcastsortierung;
     arbeitet: boolean;
@@ -18,6 +18,7 @@
     onauto: (an: boolean) => void;
     onabbestellen: () => Promise<void>;
     onsortieren: (s: Podcastsortierung) => void;
+    onwerbung: (teil: { ueberspringen?: boolean; pruefen?: boolean }) => void;
   } = $props();
 
   let fragt = $state(false);
@@ -34,6 +35,10 @@
   <div class="tp-knoepfe">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
     {#if kannSpeichern}<Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />{/if}
+    <Schalter an={abo.werbungUeberspringen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboUeberspringen")} hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")}
+              onwechsel={(an) => onwerbung({ ueberspringen: an })} />
+    <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
+              onwechsel={(an) => onwerbung({ pruefen: an })} />
     <button class="knopf gefahr" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can"></i>{t("podcastAnsicht.abbestellen")}</button>
   </div>
   {#if fragt}

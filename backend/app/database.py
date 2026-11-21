@@ -486,7 +486,27 @@ CREATE TABLE schnitt_schritte (
 CREATE INDEX idx_schnitt_schritte_gegenstand ON schnitt_schritte(gegenstand, id);
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6]
+# RAD-32: Werbestellen je Folge (Sekunden) mit Herkunft; verworfen heißt "keine Werbung" (vom Nutzer), damit eine
+# neue Suche sie nicht wieder einträgt. Je Abo: überspringen und neue Folgen von selbst prüfen; je Folge die Adresse
+# der Kapitel aus dem Feed (podcast:chapters)
+STUFE_7 = """
+CREATE TABLE werbestellen (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    folge_id INTEGER NOT NULL REFERENCES podcast_episodes(id) ON DELETE CASCADE,
+    von REAL NOT NULL,
+    bis REAL NOT NULL,
+    herkunft TEXT NOT NULL,
+    text TEXT NOT NULL DEFAULT '',
+    verworfen INTEGER NOT NULL DEFAULT 0,
+    angelegt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_werbestellen_folge ON werbestellen(folge_id, von);
+ALTER TABLE podcast_episodes ADD COLUMN chapters_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE podcast_subscriptions ADD COLUMN werbung_ueberspringen INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE podcast_subscriptions ADD COLUMN werbung_pruefen INTEGER NOT NULL DEFAULT 0;
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

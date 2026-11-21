@@ -2,13 +2,14 @@
   // Kopf eines gewählten Abos über der Liste (Entwurf podcasts.html): Bild, Titel, Autor, Beschreibung, Zahlen; der
   // Schalter "Neue speichern" (flacher Taster wie "Nur Favoriten"), Aktualisieren, Alle speichern, Anheften,
   // Abbestellen; darunter der Fortschritt von "Alle speichern" (in der Kellerwolke).
+  import Schalter from "../radio/Schalter.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { dauerText, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Speicherauftrag } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
 
-  let { abo, auftrag, arbeitet, kannSpeichern, onauto, onaktualisieren, onallespeichern, onanheften, onabbestellen }: {
+  let { abo, auftrag, arbeitet, kannSpeichern, onauto, onaktualisieren, onallespeichern, onanheften, onabbestellen, onwerbung }: {
     abo: Abo;
     auftrag: Speicherauftrag;
     kannSpeichern: boolean;
@@ -18,6 +19,8 @@
     onallespeichern: () => void;
     onanheften: () => void;
     onabbestellen: () => void;
+    /** Schalter der Werbung (RAD-32): überspringen, neue Folgen prüfen */
+    onwerbung: (teil: { ueberspringen?: boolean; pruefen?: boolean }) => void;
   } = $props();
 
   const speichertHier = $derived(auftrag.laeuft && auftrag.aboId === abo.id);
@@ -42,6 +45,7 @@
     <div class="rh-abo-zahlen">
       <span>{t("podcastAnsicht.folgenZahl", { n: abo.folgen })}</span><span>{t("podcastAnsicht.ungehoertKopf", { n: abo.ungehoert })}</span>
 <span>{t("podcastAnsicht.zusammen", { zeit: dauerText(abo.dauerGesamt) })}</span>
+      {#if abo.werbungFolgen}<span class="rh-werbemarke-text"><i class="fa-solid fa-rectangle-ad"></i>{t("podcastAnsicht.werbung.aboZahl", { n: abo.werbungFolgen })}</span>{/if}
     </div>
   </div>
   {#if kannSpeichern}
@@ -50,6 +54,10 @@
   {/if}
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
+    <Schalter an={abo.werbungUeberspringen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboUeberspringen")} hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")}
+              onwechsel={(an) => onwerbung({ ueberspringen: an })} />
+    <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
+              onwechsel={(an) => onwerbung({ pruefen: an })} />
     {#if kannSpeichern}<button class="knopf" type="button" disabled={auftrag.laeuft} onclick={onallespeichern}><i class="fa-solid fa-cloud-arrow-up"></i>{t("podcastAnsicht.alleSpeichern")}</button>{/if}
     <button class="knopf" type="button" aria-pressed={abo.angeheftet} title={abo.angeheftet ? t("podcastAnsicht.loesenHilfe") : t("podcastAnsicht.anheftenHilfe")} onclick={onanheften}>
       <i class="fa-solid fa-thumbtack" class:rh-angeheftet={abo.angeheftet}></i>{abo.angeheftet ? t("podcastAnsicht.loesen") : t("podcastAnsicht.anheften")}</button>

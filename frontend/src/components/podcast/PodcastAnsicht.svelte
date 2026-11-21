@@ -8,7 +8,7 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import * as sfx from "../../lib/uiSounds.js";
-  import { aboliste, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, zuAbfrage, type Aktualisierungsstand, type Folge,
+  import { aboliste, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Aktualisierungsstand, type Folge,
     type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
@@ -19,6 +19,8 @@
   import PodcastLeiste from "./PodcastLeiste.svelte";
   import PodcastWerkzeug from "./PodcastWerkzeug.svelte";
   import Verzeichnis from "./Verzeichnis.svelte";
+  import { tonelement } from "../../spieler/tonelement";
+  import { werbesprung } from "../../spieler/werbesprung.svelte";
 
   const liste = new Folgenliste(podcastquelle);
   const auftrag = new Speicherauftrag(podcastquelle, (id) => liste.aendern(id, { gespeichert: true }));
@@ -105,6 +107,16 @@
       const w = await podcastquelle.wiedergabe(f, liste.folgen);
       const folge = vonVorn ? { ...w.folge, resume_position: 0 } : w.folge;
       actions.playEpisodeFromList(folge, w.abo, w.liste);
+    });
+  }
+
+  /** eine Werbestelle bewusst hören: läuft die Folge, springt sie dorthin, sonst startet sie dort (RAD-32) */
+  async function anhoeren(f: Folge, von: number) {
+    werbesprung.durchlassen(f.id, von);
+    if (spielend === f.id) { tonelement().currentTime = von; return; }
+    await sicher(async () => {
+      const w = await podcastquelle.wiedergabe(f, liste.folgen);
+      actions.playEpisodeFromList({ ...w.folge, resume_position: Math.floor(von) }, w.abo, w.liste);
     });
   }
 
@@ -202,7 +214,10 @@
           <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} kannSpeichern={kann.speichern} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
                    onaktualisieren={() => void aktualisieren(einAbo.id)} onallespeichern={() => void alleSpeichern(einAbo.id)}
                    onanheften={() => void sicher(() => aboliste.anheften(einAbo.id, !einAbo.angeheftet))}
-                   onabbestellen={() => abbestellen(einAbo.id)} />
+                   onabbestellen={() => abbestellen(einAbo.id)}
+                   onwerbung={(teil) => void sicher(async () => { await werbequelle.aboSetzen(einAbo.id, teil);
+                     aboliste.aendern(einAbo.id, { ...(teil.ueberspringen !== undefined ? { werbungUeberspringen: teil.ueberspringen } : {}),
+                       ...(teil.pruefen !== undefined ? { werbungPruefen: teil.pruefen } : {}) }); })} />
         {/if}
         {#snippet sortspalte(titel: string, s: Podcastsortierung, absteigend: boolean, aktiv: boolean, weiter: Podcastsortierung)}
           <SortSpalte {titel} hilfe={t(`podcastAnsicht.sortHinweis_${s}`)} {aktiv} {absteigend} onwahl={() => sortieren(weiter)} />
@@ -230,7 +245,8 @@
                         dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
                         onloeschen={() => speichern(f, false)}
                         ongehoert={() => gehoert(f)} ondetails={() => details(f)}
-                        onabo={() => aendern((a) => ({ ...a, abos: [f.aboId], offen: null }))} />
+                        onabo={() => aendern((a) => ({ ...a, abos: [f.aboId], offen: null }))}
+                        onanhoeren={(von) => void anhoeren(f, von)} onwerbung={(w) => liste.aendern(f.id, { werbung: w })} />
           {/each}
           <Nachladen geladen={liste.folgen.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()}
                      einheit={t("podcastAnsicht.geladen")} />

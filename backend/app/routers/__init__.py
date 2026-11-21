@@ -7,6 +7,7 @@ from .podcasts import router as podcasts_router
 from .podcast_ordner import router as podcast_ordner_router
 from .wolke import router as wolke_router
 from .schnitt import router as schnitt_router
+from .werbung import router as werbung_router
 from .stream import router as stream_router
 from .config import router as config_router
 from .blocklist import router as blocklist_router
@@ -27,7 +28,7 @@ from .radio import router as radio_router
 
 # In dieser Reihenfolge eingebunden (main.app_bauen), alle hinter der Anmeldung
 ALLE = [
-    stations_router, favorites_router, recording_router, recordings_router, podcasts_router, podcast_ordner_router, wolke_router, schnitt_router, stream_router,
+    stations_router, favorites_router, recording_router, recordings_router, podcasts_router, podcast_ordner_router, wolke_router, schnitt_router, werbung_router, stream_router,
     config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router,
     recording_folders_router, storage_router, services_router, favicons_router,
     station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router,
@@ -42,7 +43,7 @@ __all__ = [
     "recording_router",
     "recordings_router",
     "podcasts_router",
-    "podcast_ordner_router", "wolke_router", "schnitt_router",
+    "podcast_ordner_router", "wolke_router", "schnitt_router", "werbung_router",
     "stream_router",
     "config_router",
     "blocklist_router",

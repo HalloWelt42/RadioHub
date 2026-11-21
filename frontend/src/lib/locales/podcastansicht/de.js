@@ -136,4 +136,18 @@ export default {
     keineFolgen: 'Keine Folgen für diese Auswahl', keineAbos: 'Noch keine Abos. Mit dem Plus oben einen Podcast suchen.',
     naechsteIn: 'Nächste Aktualisierung in {zeit}',
   },
+  // Werbung in Folgen (RAD-32)
+  werbung: {
+    titel: 'Werbung in dieser Folge', zusammenEins: '1 Stelle, {zeit}; die Datei bleibt vollständig', zusammen: '{n} Stellen, zusammen {zeit}; die Datei bleibt vollständig',
+    keine: 'Noch keine Werbestellen bekannt', leiste: 'Stelle in der Folge mit {n} Werbestellen', vonBis: '{von} bis {bis}',
+    anhoeren: 'Diese Stelle anhören', keineWerbung: 'Keine Werbung', keineWerbungHilfe: 'Keine Werbung: nicht mehr überspringen (mit Rückgängig)',
+    verworfen: 'Die Stelle ab {von} gilt nicht mehr als Werbung.', rueckgaengig: 'Rückgängig',
+    ueberspringen: 'Überspringen', ueberspringenHilfe: 'Werbestellen beim Hören überspringen (gilt für dieses Abo)',
+    suchen: 'Werbung suchen', suchenHilfe: 'Alle möglichen Quellen nach Werbestellen durchsuchen', gefunden: '{n} Werbestellen gefunden',
+    beginnt: 'Werbung beginnt hier', endet: 'Werbung endet hier (ab {von})', markierenHilfe: 'Beim Hören markieren: erst am Beginn, dann am Ende tippen',
+    ohneSpeichern: 'Ohne Werbung speichern', ohneSpeichernHilfe: 'Neue Datei ohne die Werbestellen daneben; das Original bleibt',
+    ohneFertig: 'Ohne Werbung gespeichert: {pfad}', marke: '{n} × Werbung, {zeit}', markeHilfe: '{n} Werbestellen, zusammen {zeit}, werden übersprungen',
+    aboUeberspringen: 'Werbung überspringen', aboUeberspringenHilfe: 'Erkannte Werbestellen in allen Folgen dieses Abos überspringen',
+    aboZahl: '{n} Folgen mit Werbung', aboPruefen: 'Neue Folgen prüfen', aboPruefenHilfe: 'Neue Folgen dieses Abos von selbst auf Werbung durchsuchen',
+  },
 };

@@ -2,7 +2,8 @@
 Daten, Ablage im Speicher und nachgestellter Kellerwolke wie in den Tests (conftest.py). Anmelden mit beliebiger
 Kennung und dem Passwort "geheim"; ein echter Dienst wird nie gefragt. Damit Hören, Wellenform und Schnitt etwas zu
 tun haben, bekommt jedes Stück der Aufnahmen in der Kopie einen erzeugten Ton in der Testablage, und die nachgestellte
-Kellerwolke hat einige Ordner mit Audiodateien (RAD-17); die Töne liegen zwischengespeichert im Datenordner.
+Kellerwolke hat einige Ordner mit Audiodateien (RAD-17), die zuletzt gespeicherten Podcast-Folgen bekommen kurze Töne
+(RAD-32); die Töne liegen zwischengespeichert im Datenordner.
 
     RADIOHUB_DATEN=/pfad/zur/kopie .venv/bin/python tests/probebetrieb.py [port]      (im Ordner backend, Vorgabe 9091)
 
@@ -75,9 +76,14 @@ async def toene_hinlegen(speicher, wolke, daten: Path) -> None:
     lager = daten / "probetoene"
     with sqlite3.connect(daten / "radiohub.db") as db:
         stuecke = db.execute("SELECT id, file_path, duration_ms FROM segments WHERE file_path IS NOT NULL").fetchall()
+        gespeichert = db.execute("SELECT id, local_path, duration FROM podcast_episodes WHERE is_downloaded = 1 AND local_path != '' "
+                                 "ORDER BY id DESC LIMIT 20").fetchall()
     for kennung, pfad, dauer in stuecke:
         endung = Path(pfad).suffix or ".mp3"
         await speicher.ablegen(pfad, ton(lager / f"stueck_{kennung}{endung}", min(max((dauer or 10000) / 1000, 2), 600), 220 + kennung % 7 * 55))
+    for kennung, pfad, dauer in gespeichert:          # gespeicherte Folgen (RAD-32): kurz, damit der Start schnell bleibt
+        endung = Path(pfad).suffix or ".mp3"
+        await speicher.ablegen(pfad, ton(lager / f"folge_{kennung}{endung}", min(max(dauer or 60, 20), 180), 180 + kennung % 5 * 70))
     for pfad, (sekunden, frequenz) in WOLKE.items():
         await wolke.ablegen(pfad, ton(lager / "wolke" / Path(pfad).name, sekunden, frequenz))
     nicht_audio = lager / "Brief.txt"

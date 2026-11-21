@@ -146,3 +146,29 @@
 .rh-vollstaendig i { color: var(--led-gruen); }
 .rh-vollstaendig .balken { inline-size: calc(var(--klein) * 5); }   /* der Balken der Schale, wie beim Hörstand */
 .rh-vollstaendig.fertig b { color: var(--led-gruen); }
+
+/* Werbung in Folgen (Entwurf podcast-werbung.html, RAD-32): bernstein heißt Werbung */
+.rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
+.rh-werbeteil { grid-column: 1 / -1; display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--rh-ecke-zeile); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
+.rh-werbe-kopf { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.rh-werbe-kopf h3 { margin: 0; display: flex; gap: 8px; align-items: center; font-size: var(--gross); }
+.rh-werbe-kopf h3 i { color: var(--led-bernstein); }
+.rh-werbeleiste { position: relative; block-size: 14px; border-radius: 7px; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); overflow: hidden; }
+.rh-werbeleiste .gehoert { position: absolute; inset: 0 auto 0 0; background-color: var(--led-gruen); opacity: .55; }
+.rh-werbeleiste .werbung { position: absolute; top: 0; bottom: 0; background-color: var(--led-bernstein); }
+.rh-werbeleiste .kopf { position: absolute; top: 0; bottom: 0; inline-size: 2px; margin-left: -1px; background-color: var(--led-blau); }
+.rh-werbestellen { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.rh-werbestellen li { display: grid; grid-template-columns: auto calc(var(--klein) * 9) minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 6px 8px;
+  border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
+.rh-werbestellen .rh-a-nr { grid-area: auto; inline-size: 36px; block-size: 36px; }
+.rh-werbestellen .zeit { display: grid; font-family: var(--schrift-zahl); font-size: var(--klein); }
+.rh-werbestellen .zeit span { color: var(--text-3); }
+.rh-werbestellen .herkunft { display: grid; gap: 2px; font-size: var(--klein); color: var(--text-2); min-width: 0; }
+.rh-werbestellen .herkunft i { color: var(--led-bernstein); margin-right: 6px; }
+.rh-werbestellen .herkunft .rh-still { overflow-wrap: anywhere; }
+.rh-werbestellen .aktionen { display: flex; gap: 4px; }
+.rh-werbe-zurueck { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; font-size: var(--klein); }
+.rh-werbeteil.schmal { padding: 10px; margin-top: 12px; }
+.rh-werbeteil.schmal .rh-werbestellen li { grid-template-columns: auto minmax(0, 1fr) auto; }
+.rh-werbeteil.schmal .zeit, .rh-werbeteil.schmal .herkunft { grid-column: 2; }
+.rh-werbeteil.schmal .aktionen { grid-column: 3; grid-row: 1 / span 2; }

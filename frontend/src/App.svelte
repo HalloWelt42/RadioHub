@@ -18,6 +18,7 @@
   import * as router from "./lib/router.js";
   import { geraet } from "./lib/geraet.svelte.js";
   import { starten as aktualisierungStarten } from "./lib/aktualisierung.svelte.js";
+  import { werbesprungStarten } from "./spieler/werbesprung.svelte";
 
   let online = $state<boolean | null>(null);
   let ablage = $state<{ verbunden: boolean; meldung?: string } | null>(null);   // Stand der Ablage (Kellerwolke)
@@ -43,6 +44,9 @@
       online = false;
     });
   });
+
+  // Werbung in Folgen überspringen (RAD-32), am Rechner und am Telefon, nur in PRO
+  werbesprungStarten();
 
   // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
   $effect(() => {

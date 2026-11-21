@@ -344,6 +344,9 @@ export default {
 
   // === Shell: header, navigation, display, account (RAD-6) ===
   schale: {
+    werbungUebersprungen: 'Ad skipped', werbungAnhoeren: 'Go back and listen', schliessen: 'Close',
+    werbeherkunft_kapitel: 'chapter in the feed', werbeherkunft_hand: 'by hand', werbeherkunft_vergleich: 'comparing two versions',
+    werbeherkunft_transkript: 'from the transcript',
     neueFassung: 'A new version is ready. Reload whenever it suits you; the station carries on afterwards.',
     neuLaden: 'Reload',
     spaeter: 'Later',

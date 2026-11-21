@@ -8,8 +8,9 @@
   import type { Abo, Folge } from "../../../lib/podcasts";
   import Langtext from "../../radio/Langtext.svelte";
   import Schalter from "../../radio/Schalter.svelte";
+  import Werbeteil from "../../podcast/Werbeteil.svelte";
 
-  let { folge: f, abo, kannSpeichern, dateiAdresse, onhoeren, onvorn, onspeichern, onloeschen, ongehoert, onzu }: {
+  let { folge: f, abo, spielt, kannSpeichern, dateiAdresse, onhoeren, onvorn, onspeichern, onloeschen, ongehoert, onzu, onanhoeren, onwerbung }: {
     folge: Folge;
     abo: Abo | undefined;
     kannSpeichern: boolean;
@@ -20,6 +21,9 @@
     onloeschen: () => Promise<void>;
     ongehoert: () => void;
     onzu: () => void;
+    spielt: boolean;
+    onanhoeren: (von: number) => void;
+    onwerbung: (werbung: { anzahl: number; dauer: number }) => void;
   } = $props();
 
   let fragt = $state(false);
@@ -62,6 +66,7 @@
         {#if dateiAdresse}<a class="knopf" href={dateiAdresse} download><i class="fa-solid fa-download"></i>{t("podcastAnsicht.telefon.herunterladen")}</a>{/if}
         <Schalter an={stand.art === "gehoert"} text={t("podcastAnsicht.telefon.gehoert")} onwechsel={ongehoert} />
       </div>
+      <Werbeteil folge={f} {abo} {spielt} schmal {onanhoeren} ongeaendert={onwerbung} />
     {/if}
   </div>
 </div>

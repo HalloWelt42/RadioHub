@@ -27,6 +27,12 @@ export interface Abo {
   wocheUngehoert: number;
   /** Länge aller Folgen in Sekunden */
   dauerGesamt: number;
+  /** Werbestellen beim Hören überspringen (RAD-32) */
+  werbungUeberspringen: boolean;
+  /** neue Folgen von selbst auf Werbung durchsuchen */
+  werbungPruefen: boolean;
+  /** Zahl der Folgen mit Werbestellen */
+  werbungFolgen: number;
 }
 
 /** eigener Ordner der Abos (RAD-23); löschen nimmt nur die Gruppierung */
@@ -56,6 +62,8 @@ export interface Folge {
   /** Größe der gespeicherten Datei in Bytes */
   groesse: number;
   bild: string;
+  /** Werbestellen dieser Folge: Zahl und Dauer in Sekunden (RAD-32) */
+  werbung: { anzahl: number; dauer: number };
   /** nur in Listen über mehrere Abos */
   aboTitel?: string;
 }

@@ -8,8 +8,10 @@
   import type { Abo, Folge } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
+  import Werbeteil from "./Werbeteil.svelte";
 
-  let { folge, abo, spielt, offen, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo }: {
+  let { folge, abo, spielt, offen, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo,
+        onanhoeren, onwerbung }: {
     folge: Folge;
     abo: Abo | undefined;
     spielt: boolean;
@@ -24,6 +26,10 @@
     ongehoert: () => void;
     ondetails: () => void;
     onabo: () => void;
+    /** ab einer Stelle hören (Werbung anhören) */
+    onanhoeren: (von: number) => void;
+    /** Zahl und Dauer der Werbestellen haben sich geändert */
+    onwerbung: (werbung: { anzahl: number; dauer: number }) => void;
   } = $props();
 
   const stand = $derived(standVon(folge));
@@ -59,7 +65,9 @@
     <AboBild abo={{ titel: aboTitel, bild: folge.bild }} />
     <div class="name"><b>{folge.titel}</b>
       <div class="meta"><span>{aboTitel}</span><span>{datum}</span>
-        {#if folge.gespeichert}<span class="rh-gespeichert" title={t("podcastAnsicht.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i>{t("podcastAnsicht.gespeichert")}</span>{/if}</div></div>
+        {#if folge.gespeichert}<span class="rh-gespeichert" title={t("podcastAnsicht.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i>{t("podcastAnsicht.gespeichert")}</span>{/if}
+        {#if folge.werbung.anzahl}<span class="rh-werbemarke-text" title={t("podcastAnsicht.werbung.markeHilfe", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}>
+          <i class="fa-solid fa-forward"></i>{t("podcastAnsicht.werbung.marke", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}</span>{/if}</div></div>
     <div class="stand-zelle">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>
@@ -108,6 +116,7 @@
         {/if}
         {#if aboTitel}<a class="knopf still" href="/podcasts/{folge.aboId}" onclick={(e) => { e.preventDefault(); onabo(); }}><i class="fa-solid fa-podcast"></i>{aboTitel}</a>{/if}
       </div>
+      <Werbeteil {folge} {abo} {spielt} {onanhoeren} ongeaendert={onwerbung} />
     </div>
   {/if}
 </article>
