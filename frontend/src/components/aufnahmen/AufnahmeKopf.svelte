@@ -48,7 +48,7 @@
     </div>
   </div>
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
-    <button class="knopf primaer" type="button" onclick={onhoeren}><i class="fa-solid fa-play"></i>{t("aufnahmenAnsicht.hoeren")}</button>
+    <button class="knopf primaer" type="button" disabled={a.status === "laeuft"} title={a.status === "laeuft" ? t("aufnahmenAnsicht.erstBeenden") : undefined} onclick={onhoeren}><i class="fa-solid fa-play"></i>{t("aufnahmenAnsicht.hoeren")}</button>
     {#if kannSchneiden}<button class="knopf" type="button" onclick={onschneiden}><i class="fa-solid fa-scissors"></i>{t("aufnahmenAnsicht.schneiden")}</button>{/if}
     {#if kannSchneiden && a.titelzahl <= 1 && titelwechsel > 1}
       <button class="knopf" type="button" disabled={arbeitet} title={t("aufnahmenAnsicht.teilenHilfe")} onclick={() => void sicher(onteilen)}>

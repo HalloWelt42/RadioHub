@@ -27,6 +27,8 @@
   grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 6) calc(var(--klein) * 6) calc(var(--klein) * 7) var(--rh-aktionen);
   grid-template-areas: "led logo name titel laenge groesse aktionen"; }
 .rh-a-titel .rh-sender-kern { --rh-aktionen: calc(44px * 5 + 16px); }
+/* Feinschnitt nach dem Aufnehmen (RAD-45): kurzer Hinweis über den Stücken */
+.rh-a-feinschnitt { display: flex; gap: 8px; align-items: center; margin: 0; padding: 4px 12px; }
 .rh-a-spalten { display: grid; }
 .rh-a-spalten > span:first-child { grid-column: led / name; display: flex; gap: 14px; }
 .rh-a-spalten > span:nth-child(2) { grid-area: titel; }

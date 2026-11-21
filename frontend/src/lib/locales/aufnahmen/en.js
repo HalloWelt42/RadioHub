@@ -34,7 +34,7 @@ export default {
   wolkeLeer: 'No audio files in this folder', wolkeLeerHilfe: 'Open a subfolder on the left.', wolkeRecht: 'RadioHub may read all folders', wolkeKeinRecht: 'No permission to read yet',
   nimmtAuf: 'recording', zaehlerHilfe: 'Total recordings for the selection, not just the loaded ones', zaehlerWolkeHilfe: 'Audio files in this folder',
   aktualisierenHilfe: 'Reload the list', aktiveFilter: 'Active filters', geladen: 'loaded', nochmal: 'Try again',
-  ladenFehler: 'Loading failed', gespeichert: 'Recording saved in {name}', erstBeenden: 'Stop the recording first, then listen',
+  ladenFehler: 'Loading failed', gespeichert: 'Recording saved in {name}', erstBeenden: 'Stop the recording first, then listen', begonnen: 'Piece in progress', feinschnittLaeuft: 'The pieces are being cut precisely at the pauses; listening is possible shortly.',
   verschoben: 'Moved to {name}', wolkeGesperrt: 'The Kellerwolke does not share this folder',
   sort_sender: 'Sort by station', sort_datum: 'Sort by date, newest first', sort_dauer: 'Sort by length',
   sort_groesse: 'Sort by size', sortWolke_name: 'Sort by file name', sortWolke_datum: 'Sort by date changed',

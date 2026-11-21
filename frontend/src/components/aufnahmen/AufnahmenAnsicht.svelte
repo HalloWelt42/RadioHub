@@ -60,8 +60,9 @@
     untrack(() => { if (ansicht.quelle === "aufnahmen") void liste.laden(zustand.abfrage()); });
   });
 
-  // Solange aufgenommen wird, wächst die laufende Aufnahme: die Liste holt alle fünf Sekunden nach; am Ende einmal neu
-  // samt Ordnern und Kennzahlen, und das Band sagt, wo sie liegt
+  // Solange aufgenommen oder danach fein geschnitten wird (RAD-45), wächst die laufende Aufnahme: Liste und gewählte
+  // Aufnahme holen alle fünf Sekunden nach; am Ende der Aufnahme einmal alles neu samt Ordnern und Kennzahlen, und das
+  // Band sagt, wo sie liegt
   let nahmAuf = false;
   $effect(() => {
     const an = !!appState.isRecording;
@@ -72,9 +73,6 @@
       }
       nahmAuf = an;
     });
-    if (!an) return;
-    const uhr = setInterval(() => { if (ansicht.quelle === "aufnahmen") void liste.laden(zustand.abfrage()); }, 5000);
-    return () => clearInterval(uhr);
   });
 
   async function allesNeu(): Promise<void> {
@@ -111,6 +109,18 @@
       if (gewaehlt?.id !== id) { gewaehlt = liste.aufnahmen.find((a) => a.id === id) ?? null; titel = []; }
       void details(id);
     });
+  });
+
+  // laufende oder fein geschnittene Aufnahme (RAD-45): alle fünf Sekunden nachholen (siehe oben)
+  const imGange = $derived(!!appState.isRecording || gewaehlt?.status === "laeuft" || liste.aufnahmen.some((a) => a.status === "laeuft"));
+  $effect(() => {
+    if (!imGange) return;
+    const uhr = setInterval(() => {
+      if (ansicht.quelle !== "aufnahmen") return;
+      void liste.laden(zustand.abfrage());
+      if (gewaehlt?.status === "laeuft") void details(gewaehlt.id);
+    }, 5000);
+    return () => clearInterval(uhr);
   });
 
   // ----- Kellerwolke ----------------------------------------------------------------------------------------------
@@ -293,6 +303,14 @@
   const zielName = $derived(ordnerliste.ziel?.name ?? t("aufnahmenAnsicht.ohneOrdner"));
   const ordnerName = (id: number | null) => ordnerliste.name(id) ?? t("aufnahmenAnsicht.ohneOrdner");
   const laufend = $derived(appState.isRecording ? (liste.aufnahmen.find((a) => a.status === "laeuft") ?? null) : null);
+  // das begonnene Stück der gewählten laufenden Aufnahme (RAD-45): ab dem Ende der abgelegten, Titel aus den Sendedaten
+  const begonnen = $derived.by((): Titel | null => {
+    if (!appState.isRecording || !gewaehlt || gewaehlt.id !== laufend?.id) return null;
+    const start = titel.reduce((ende, x) => Math.max(ende, x.start + x.dauer), 0);
+    const angaben = ((appState.recordingIcyEntries as { title: string; ignored?: boolean }[]) ?? []).filter((e) => !e.ignored);
+    return { id: -1, nr: titel.length + 1, titel: angaben.at(-1)?.title || t("aufnahmenAnsicht.begonnen"), start,
+             dauer: Math.max(0, (appState.recordingElapsed as number) - start), groesse: 0, pfad: "" };
+  });
   const ohneOrdner = $derived(alle === null ? null : Math.max(0, alle - ordnerliste.ordner.reduce((s, o) => s + o.anzahl, 0)));
   const wolke = $derived(ansicht.quelle === "wolke");
 
@@ -366,11 +384,19 @@
         {#if detailFehler}
           <div class="rh-ohne-treffer"><i class="fa-solid fa-triangle-exclamation"></i><b>{t("aufnahmenAnsicht.ladenFehler")}</b><span>{detailFehler}</span></div>
         {:else}
+          {#if gewaehlt.status === "laeuft" && !appState.isRecording}
+            <p class="rh-still rh-a-feinschnitt"><i class="fa-solid fa-spinner fa-spin"></i>{t("aufnahmenAnsicht.feinschnittLaeuft")}</p>
+          {/if}
           {#each titel as x (x.id)}
             <TitelZeile titel={x} spielt={jetzt?.path === x.pfad} gesperrt={gesperrt.has(x.titel)} letzter={titel.length === 1} datei={quelle.titelDatei(x.id)}
+                        imGange={gewaehlt.status === "laeuft"}
                         kannSchneiden={kann.schnitt} kannVerwalten={kann.verwalten} onhoeren={() => void hoeren(gewaehlt!, x)} onschneiden={() => schneiden(gewaehlt!, x)}
                         onsperren={() => sperren(x)} onloeschen={() => titelLoeschen(gewaehlt!, x)} />
           {/each}
+          {#if begonnen}
+            <TitelZeile titel={begonnen} spielt={false} gesperrt={false} letzter={false} datei="" imGange={true} laeuft={true}
+                        kannSchneiden={false} kannVerwalten={false} onhoeren={() => {}} onschneiden={() => {}} onsperren={() => {}} onloeschen={async () => {}} />
+          {/if}
         {/if}
       {:else}
         {#if laufend}<LaufendeAufnahme aufnahme={laufend} ziel={zielName} />{/if}

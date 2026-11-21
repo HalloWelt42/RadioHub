@@ -143,6 +143,9 @@ class RecordingSession:
         self.current_segment_file: Optional[Path] = None
         self.current_segment_title: str = ""
         self.current_segment_start: Optional[datetime] = None
+        #: wo im Ton das laufende Stück begann (Sekunden): der Mindestabstand zweier Teilungen gilt im Ton, nicht in
+        #: der Uhrzeit, denn manche Sender schicken beim Verbinden 20 s Ton auf einmal (laut.fm, RAD-45)
+        self.current_segment_ton_s: float = 0.0
         self.live_split: bool = False  # True sobald erster ICY-Split passiert
         self._split_lock: Optional[asyncio.Lock] = None  # Initialisiert bei Start
 
@@ -587,6 +590,8 @@ class RecorderManager:
 
                     session.current_segment_file = new_file
                     session.current_segment_start = datetime.now()
+                    if session.stromleser:
+                        session.current_segment_ton_s = session.stromleser.sekunde(session.stromleser.ton_bytes)
                     session.live_split = True
 
                     # Alten Prozess stoppen
@@ -620,7 +625,7 @@ class RecorderManager:
         async with session._split_lock:
             # Minimum-Segment-Dauer pruefen
             if session.current_segment_start:
-                age = (datetime.now() - session.current_segment_start).total_seconds()
+                age = elapsed_ms / 1000 - session.current_segment_ton_s
                 if age < MIN_SEGMENT_SECONDS:
                     # Zu kurz -- Titel aktualisieren, aber nicht splitten
                     session.current_segment_title = title
@@ -648,6 +653,7 @@ class RecorderManager:
             session.current_segment_file = new_file
             session.current_segment_title = title
             session.current_segment_start = datetime.now()
+            session.current_segment_ton_s = elapsed_ms / 1000
             session.live_split = True
 
             # Alten FFmpeg sauber stoppen
