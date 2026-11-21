@@ -38,7 +38,6 @@ from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
 
-UEBERTRAG = "radiohub_config_uebertrag"     # Baustein in appkern_schema der Datenbank des Gerüsts: Übertrag erledigt
 ERSTER_ABRUF_S = 60
 
 
@@ -67,6 +66,7 @@ class Radiobetrieb(Begleiter):
     async def starten(self) -> None:
         einstellungen.binden(self.geruest.einstellungen)
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
+        self.geruest.einstellungen.regel(einstellungen.regeln_pruefen)
         try:
             self.datenbank = await database.einrichten(DB_PATH)
         except Exception as f:  # noqa: BLE001 - ohne Datenbank läuft nichts; /health und Protokoll sagen es
@@ -119,17 +119,18 @@ class Radiobetrieb(Begleiter):
         return ablage_paket.starten(self.geruest.kellerwolke, AblageEinstellungen.aus(einstellungen.stand()))
 
     async def _config_uebernehmen(self) -> None:
-        """Einmal: Werte der Tabelle config, die jetzt Einstellungen sind; danach merkt sich das Gerüst den Übertrag."""
+        """Je Übertrag einmal: Werte der Tabelle config, die jetzt Einstellungen sind; danach merkt sich das Gerüst den
+        Übertrag (Baustein in appkern_schema). Ein neuer Übertrag (RAD-11) läuft auch dort, wo der erste schon lief."""
         db = self.geruest.db
-        if await db.zeile("SELECT stufe FROM appkern_schema WHERE baustein=?", (UEBERTRAG,)):
-            return
-        uebernommen, uebergangen = await uebergang.config_uebernehmen(self.geruest.einstellungen, DB_PATH,
-                                                                     einstellungen.CONFIG_FELDER)
-        if uebernommen:
-            await self._eintragen("radio.uebertrag", f"Aus der Tabelle config in die Einstellungen: {', '.join(uebernommen)}")
-        for grund in uebergangen:
-            await self._eintragen("radio.uebertrag", f"Nicht übernommen, es gilt die Vorgabe: {grund}", "warnung")
-        await db.einrichten(UEBERTRAG, [""])
+        for baustein, felder in einstellungen.UEBERTRAEGE:
+            if await db.zeile("SELECT stufe FROM appkern_schema WHERE baustein=?", (baustein,)):
+                continue
+            uebernommen, uebergangen = await uebergang.config_uebernehmen(self.geruest.einstellungen, DB_PATH, felder)
+            if uebernommen:
+                await self._eintragen("radio.uebertrag", f"Aus der Tabelle config in die Einstellungen: {', '.join(uebernommen)}")
+            for grund in uebergangen:
+                await self._eintragen("radio.uebertrag", f"Nicht übernommen, es gilt die Vorgabe: {grund}", "warnung")
+            await db.einrichten(baustein, [""])
 
     async def _senderbestand_pruefen(self) -> None:
         """Erster Start mit Stufe 2: Bestand gleich aufbereiten (ohne ihn kennt die Senderquelle keinen Sender). Eine

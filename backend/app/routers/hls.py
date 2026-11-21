@@ -32,7 +32,7 @@ class HLSStartRequest(BaseModel):
     station_name: str
     stream_url: str
     bitrate: int = 128
-    max_minutes: int = 10
+    max_minutes: int | None = None          # leer: Länge des Puffers aus den Einstellungen (RAD-11)
     override_bitrate: int = 0
     is_podcast: bool = False
 
@@ -57,13 +57,14 @@ async def start_hls_buffer(request: HLSStartRequest):
     min_bitrate = config.get("hls_min_bitrate", 32)
     max_bitrate = config.get("hls_max_bitrate", 320)
     sample_rate = config.get("hls_sample_rate", 44100)
+    max_minutes = request.max_minutes or config.get("hls_puffer_minuten", 120)
     
     result = await hls_buffer.start(
         station_uuid=request.station_uuid,
         station_name=request.station_name,
         stream_url=request.stream_url,
         bitrate=request.bitrate,
-        max_minutes=request.max_minutes,
+        max_minutes=max_minutes,
         min_bitrate=min_bitrate,
         max_bitrate=max_bitrate,
         sample_rate=sample_rate,

@@ -1,61 +1,17 @@
-"""
-RadioHub Storage API Router
-
-Endpoints für Storage-Zone-Verwaltung.
-Ermöglicht Frontend-Konfiguration der Speicherpfade.
-"""
+"""Speicherzonen und Ablage anzeigen (RAD-11: nur lesen; Pfade setzt das Ausrollen)."""
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 
 from ..ablage import ablage
-from ..storage import get_all_zones, update_zone, validate_path, reload as reload_storage
+from ..storage import get_all_zones
 
 router = APIRouter(prefix="/api/storage", tags=["storage"])
 
 
-class ZoneUpdateRequest(BaseModel):
-    path: str
-
-
-class PathValidateRequest(BaseModel):
-    path: str
-
-
 @router.get("/zones")
 async def list_zones():
-    """Alle Storage-Zonen mit Pfad, Speicherplatz, Status"""
+    """Alle Speicherzonen mit Pfad, Belegung und freiem Platz"""
     try:
-        zones = get_all_zones()
-        return {"zones": zones}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.put("/zones/{zone}")
-async def update_zone_path(zone: str, req: ZoneUpdateRequest):
-    """Pfad einer Storage-Zone ändern.
-    Verschiebt keine Daten - nur der Pfad wird aktualisiert."""
-    try:
-        result = update_zone(zone, req.path)
-        # Konfiguration neu laden damit Änderungen wirksam werden
-        reload_storage()
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except PermissionError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/validate")
-async def validate_storage_path(path: str):
-    """Pfad prüfen (existiert, beschreibbar, Speicherplatz)"""
-    if not path:
-        raise HTTPException(status_code=400, detail="Pfad darf nicht leer sein")
-    try:
-        result = validate_path(path)
-        return result
+        return {"zones": get_all_zones()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

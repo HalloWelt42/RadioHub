@@ -16,6 +16,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from typing import Optional
 
+from .. import einstellungen
 from ..database import db_session
 
 logger = logging.getLogger("radiohub.ad_detector")
@@ -362,29 +363,13 @@ def determine_block_status(confidence: float, reasons: list, manually_set: bool 
 # === Config-Hilfsfunktion ===
 
 def _get_ad_config() -> dict:
-    """Lädt Ad-Detection-Einstellungen aus Config-Tabelle."""
-    defaults = {
-        'ad_detection_enabled': True,
-        'ad_detection_methods': ['url_check', 'header_check'],
-        'ad_detection_threshold': 0.80,
+    """Einstellungen der Werbeerkennung aus dem Modell (RAD-11); die Schwelle dort in Prozent, hier als Anteil."""
+    stand = einstellungen.stand()
+    return {
+        'ad_detection_enabled': stand.ad_detection_enabled,
+        'ad_detection_methods': list(stand.ad_detection_methods),
+        'ad_detection_threshold': stand.ad_detection_threshold / 100,
     }
-    try:
-        with db_session() as conn:
-            c = conn.cursor()
-            for key in defaults:
-                c.execute("SELECT value FROM config WHERE key = ?", (key,))
-                row = c.fetchone()
-                if row and row[0] is not None:
-                    val = row[0]
-                    if key == 'ad_detection_enabled':
-                        defaults[key] = val.lower() in ('true', '1', 'yes')
-                    elif key == 'ad_detection_methods':
-                        defaults[key] = json.loads(val) if isinstance(val, str) else val
-                    elif key == 'ad_detection_threshold':
-                        defaults[key] = float(val)
-    except Exception:
-        pass
-    return defaults
 
 
 # === Hauptfunktionen ===

@@ -15,7 +15,8 @@ from pydantic import BaseModel, Field, field_validator
 
 from .. import einstellungen
 from ..database import db_session
-from ..services.config_service import config_service
+from appkern.einstellungen import FestesFeld, Unzulaessig
+from pydantic import ValidationError
 
 router = APIRouter(prefix="/api/wecker", tags=["wecker"])
 
@@ -106,13 +107,17 @@ async def orte_suchen(q: str = Query(..., min_length=2, max_length=100)) -> dict
 
 @router.get("/ort")
 async def ort_lesen():
-    return Ort(name=config_service.get("ort_name") or "", breite=config_service.get("ort_breite"),
-               laenge=config_service.get("ort_laenge"))
+    stand = einstellungen.stand()
+    return Ort(name=stand.ort_name, breite=stand.ort_breite, laenge=stand.ort_laenge)
 
 
 @router.put("/ort")
 async def ort_setzen(ort: Ort):
-    config_service.update({"ort_name": ort.name, "ort_breite": ort.breite, "ort_laenge": ort.laenge})
+    """Der Ort ist eine Einstellung (RAD-11); geändert zusammen, geprüft wie jede andere."""
+    try:
+        await einstellungen.aendern({"ort_name": ort.name, "ort_breite": ort.breite, "ort_laenge": ort.laenge})
+    except (FestesFeld, Unzulaessig, ValidationError) as f:
+        raise HTTPException(422, getattr(f, "meldung", None) or str(f)) from f
     return ort
 
 

@@ -1,17 +1,10 @@
-"""
-RadioHub Storage Zone Manager v1.0.0
-
-Verwaltet konfigurierbare Speicher-Zonen für verschiedene Datentypen.
-Ermöglicht es, Datenbank, Cache, Aufnahmen und Podcasts auf
-verschiedene Laufwerke/Pfade zu verteilen.
-
-Konfiguration: storage.json
-Priorität: STORAGE_CONFIG (ort.speicherzonen_datei) > {Datenordner}/storage.json > Defaults
+"""Speicherzonen des Datenordners: wo Datenbank und Puffer liegen. Gesetzt beim Ausrollen über storage.json
+(Priorität: STORAGE_CONFIG > {Datenordner}/storage.json > Vorgabe), in der Oberfläche nur angezeigt (RAD-11: ein neuer
+Pfad aus der Oberfläche verschob nichts und startete danach mit leerer Datenbank).
 
 Zonen:
-  database   - SQLite-Datei (SSD empfohlen)
-  cache      - HLS-Buffer, Cover, Zwischenstände von Aufnahme, Download und Schnitt (SSD empfohlen)
-  config     - App-Einstellungen (SSD empfohlen)
+  database   - Datenbank des Radios
+  cache      - Puffer des Zeitversatzes, Cover, Zwischenstände von Aufnahme, Download und Schnitt
 
 Aufnahmen und Podcast-Folgen liegen nicht lokal, sondern in der Ablage (Kellerwolke, siehe backend/ablage).
 """
@@ -32,30 +25,14 @@ _DATA_DIR = daten_ordner()
 # Standardstruktur (matcht bestehende Verzeichnisstruktur exakt)
 _DEFAULT_ZONE_SUBDIRS = {
     "database": "",                     # radiohub.db liegt direkt in DATA_DIR
-    "cache": "cache",                   # HLS-Buffer, Cover, Zwischenstände
-    "config": "",                       # App-Einstellungen (in DATA_DIR)
+    "cache": "cache",                   # Puffer, Cover, Zwischenstände
 }
 
 # Zone-Beschreibungen für die UI
 ZONE_INFO = {
-    "database": {
-        "label": "Datenbank",
-        "description": "SQLite-Datei, klein, braucht schnelle I/O",
-        "icon": "fa-database",
-        "recommended": "SSD",
-    },
-    "cache": {
-        "label": "Cache / Buffer",
-        "description": "HLS-Buffer, Cover, Zwischenstände von Aufnahme, Download und Schnitt",
-        "icon": "fa-bolt",
-        "recommended": "SSD",
-    },
-    "config": {
-        "label": "Konfiguration",
-        "description": "App-Einstellungen und Präferenzen",
-        "icon": "fa-gear",
-        "recommended": "SSD",
-    },
+    "database": {"label": "Datenbank", "description": "Sender, Regeln, Abos, Wecker und Stand der Oberfläche", "icon": "fa-database"},
+    "cache": {"label": "Puffer", "description": "Puffer des Zeitversatzes, Cover, Zwischenstände von Aufnahme, Download und Schnitt",
+              "icon": "fa-bolt"},
 }
 
 _storage_config: Optional[dict] = None
@@ -185,7 +162,6 @@ def get_all_zones() -> dict:
             "label": meta.get("label", zone_name),
             "description": meta.get("description", ""),
             "icon": meta.get("icon", "fa-folder"),
-            "recommended": meta.get("recommended", ""),
             "writable": False,
             "exists": path.exists(),
             "used_bytes": 0,
@@ -219,73 +195,6 @@ def get_all_zones() -> dict:
 
         result[zone_name] = data
 
-    return result
-
-
-def update_zone(zone: str, new_path: str) -> dict:
-    """Zone-Pfad ändern.
-
-    WICHTIG: Verschiebt keine Daten! Der alte Pfad bleibt erhalten.
-    Der Nutzer muss Daten selbst verschieben oder den
-    "Daten verschieben"-Button nutzen (wenn implementiert).
-
-    Args:
-        zone: Name der Zone
-        new_path: Neuer absoluter Pfad
-
-    Returns:
-        Aktualisierte Zone-Info
-
-    Raises:
-        ValueError: Unbekannte Zone
-        PermissionError: Pfad nicht beschreibbar
-    """
-    config = _load_or_create()
-    zones = config.get("zones", {})
-
-    if zone not in zones or zone not in _DEFAULT_ZONE_SUBDIRS:
-        raise ValueError(f"Unbekannte Zone: {zone}")
-
-    path = Path(new_path)
-    path.mkdir(parents=True, exist_ok=True)
-
-    if not os.access(path, os.W_OK):
-        raise PermissionError(f"Pfad nicht beschreibbar: {new_path}")
-
-    zones[zone]["path"] = str(path.resolve())
-    _save_config()
-
-    return {"path": str(path.resolve()), "zone": zone}
-
-
-def validate_path(path: str) -> dict:
-    """Prüft ob ein Pfad als Zone-Speicher geeignet ist.
-
-    Args:
-        path: Zu prüfender Pfad
-
-    Returns:
-        Dict mit exists, writable, free_bytes, total_bytes, error
-    """
-    p = Path(path)
-    result = {
-        "path": str(p),
-        "exists": p.exists(),
-        "writable": False,
-        "free_bytes": 0,
-        "total_bytes": 0,
-    }
-    try:
-        if not p.exists():
-            p.mkdir(parents=True, exist_ok=True)
-            result["created"] = True
-        result["exists"] = True
-        result["writable"] = os.access(p, os.W_OK)
-        total, used, free = shutil.disk_usage(p)
-        result["free_bytes"] = free
-        result["total_bytes"] = total
-    except OSError as e:
-        result["error"] = str(e)
     return result
 
 

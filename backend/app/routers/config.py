@@ -44,13 +44,6 @@ async def update_config(body: ConfigUpdate):
     return {"success": True, "config": result}
 
 
-@router.post("/reset")
-async def reset_config():
-    """Auf Standardwerte zurücksetzen"""
-    result = await config_service.reset()
-    return {"success": True, "config": result}
-
-
 @router.get("/{key}")
 async def get_config_key(key: str):
     """Einzelne Einstellung holen"""

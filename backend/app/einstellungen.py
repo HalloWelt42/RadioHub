@@ -17,9 +17,10 @@ Gerüsts und der Umgebung.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+import json
+from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from appkern.app import Grundeinstellungen
 from appkern.einstellungen import Einstellungen, nur_lesen
@@ -29,12 +30,24 @@ from . import ort, uebergang
 KENNUNG = "radiohub"
 PRAEFIX = f"{KENNUNG.upper()}_"
 
-ABLAGE = {"gruppe": "Ablage"}
-AUFNAHME = {"gruppe": "Aufnahme"}
-ZEITVERSATZ = {"gruppe": "Zeitversatz"}
+# Gruppe = Bereich der Einstellungsseite (RAD-11): jedes Feld hat genau einen Ort
+ALLGEMEIN = {"gruppe": "Allgemein"}
+RADIO = {"gruppe": "Radio"}
+WIEDERGABE = {"gruppe": "Wiedergabe"}
+AUFNAHMEN = {"gruppe": "Aufnahmen"}
 PODCASTS = {"gruppe": "Podcasts"}
-WECKER = {"gruppe": "Wecker"}
+WECKER = {"gruppe": "Wecker und Zeitansage"}
+ABLAGE = {"gruppe": "Ablage"}
 DIENSTE = {"gruppe": "Dienste"}
+
+SPRACHEN = {"de": "Deutsch", "en": "English", "fr": "Français", "es": "Español", "it": "Italiano", "pt": "Português",
+            "nl": "Nederlands", "pl": "Polski", "cs": "Čeština", "sk": "Slovenčina", "da": "Dansk", "sv": "Svenska",
+            "no": "Norsk", "fi": "Suomi", "hu": "Magyar", "ro": "Română", "tr": "Türkçe", "ru": "Русский", "ja": "日本語",
+            "zh": "中文"}
+Sprache = Literal["de", "en", "fr", "es", "it", "pt", "nl", "pl", "cs", "sk", "da", "sv", "no", "fi", "hu", "ro", "tr", "ru",
+                  "ja", "zh"]
+Pruefart = Literal["url_check", "header_check"]
+Abtastrate = Literal[22050, 32000, 44100, 48000]
 
 RADIO_BROWSER = ["https://de1.api.radio-browser.info", "https://at1.api.radio-browser.info",
                  "https://nl1.api.radio-browser.info"]
@@ -46,8 +59,8 @@ class AppEinstellungen(Grundeinstellungen):
                                     json_schema_extra=ABLAGE,
                                     description="Wurzelordner der Aufnahmen, Podcast-Folgen und Bausteine der Zeitansage "
                                                 "in der Kellerwolke.")
-    kellerwolke_geduld_s: float = Field(900.0, ge=0, le=86400, title="Geduld beim Ablegen",
-                                        json_schema_extra={**ABLAGE, "einheit": "Sekunden"},
+    kellerwolke_geduld_s: float = Field(900.0, ge=0, le=3600, title="Geduld beim Ablegen",
+                                        json_schema_extra={**ABLAGE, "einheit": "s", "schritt": 60},
                                         description="So lange wartet das Ablegen einer Aufnahme oder Folge, wenn die "
                                                     "Kellerwolke gerade nicht erreichbar ist, damit ein Neustart dort "
                                                     "nichts kostet.")
@@ -67,47 +80,89 @@ class AppEinstellungen(Grundeinstellungen):
                                     description="1,0 ist das Tempo der Stimme; kleiner spricht langsamer.")
     # --- Zugriff (früher ALLOWED_ORIGINS) ---
     erlaubte_urspruenge: list[str] = Field(default_factory=list, title="Fremde Ursprünge",
-                                           json_schema_extra={"gruppe": "Zugang"},
+                                           json_schema_extra=DIENSTE,
                                            description="Nur nötig, wenn eine fremde Seite die Schnittstelle im Browser "
                                                        "nutzen soll (etwa https://rechner:5180); nie *. Leer: die "
                                                        "Oberfläche spricht über denselben Ursprung. Gilt nach einem "
                                                        "Neustart.")
     # --- früher in der Tabelle config ---
     recording_bitrate: int = Field(192, ge=8, le=512, title="Bitrate der Aufnahme",
-                                   json_schema_extra={**AUFNAHME, "einheit": "kbit/s"},
+                                   json_schema_extra={**AUFNAHMEN, "einheit": "kbit/s", "schritt": 8},
                                    description="Bitrate, mit der eine Aufnahme gespeichert wird, wenn der Sender sie "
                                                "nicht selbst vorgibt.")
-    recording_debug_log: bool = Field(False, title="Aufnahme protokollieren", json_schema_extra=AUFNAHME,
+    recording_debug_log: bool = Field(False, title="Aufnahme protokollieren", json_schema_extra=AUFNAHMEN,
                                       description="Schreibt zu jeder Aufnahme ein Protokoll der Ereignisse (Start, "
                                                   "Stocken, Größe, Ende) neben die Aufnahme, für die Fehlersuche.")
     hls_min_bitrate: int = Field(32, ge=8, le=512, title="Kleinste Bitrate",
-                                 json_schema_extra={**ZEITVERSATZ, "einheit": "kbit/s"},
+                                 json_schema_extra={**WIEDERGABE, "einheit": "kbit/s", "schritt": 8},
                                  description="Untergrenze der Bitrate im Zeitversatz.")
     hls_max_bitrate: int = Field(320, ge=8, le=512, title="Größte Bitrate",
-                                 json_schema_extra={**ZEITVERSATZ, "einheit": "kbit/s"},
+                                 json_schema_extra={**WIEDERGABE, "einheit": "kbit/s", "schritt": 8},
                                  description="Obergrenze der Bitrate im Zeitversatz; schwächere Sender werden nicht "
                                              "aufgebläht.")
-    hls_sample_rate: int = Field(44100, ge=8000, le=192000, title="Abtastrate",
-                                 json_schema_extra={**ZEITVERSATZ, "einheit": "Hz"},
-                                 description="Abtastrate des Zeitversatzes.")
+    hls_sample_rate: Abtastrate = Field(44100, title="Abtastrate", json_schema_extra={**WIEDERGABE, "beschriftungen": {
+        "22050": "22.050 Hz", "32000": "32.000 Hz", "44100": "44.100 Hz", "48000": "48.000 Hz"}},
+                                        description="Abtastrate des Puffers.")
+    hls_puffer_minuten: int = Field(120, ge=10, le=240, title="Länge des Puffers",
+                                    json_schema_extra={**WIEDERGABE, "einheit": "min", "schritt": 10},
+                                    description="So weit lässt sich ein laufender Sender zurückspulen.")
+    hls_rec_lookback_minutes: int = Field(5, ge=1, le=120, title="Rückblick der Puffer-Aufnahme",
+                                          json_schema_extra={**WIEDERGABE, "einheit": "min"},
+                                          description="Eine Aufnahme aus dem Puffer beginnt so weit vor dem Moment des "
+                                                      "Drückens; höchstens so lang wie der Puffer.")
     podcast_auto_refresh: bool = Field(True, title="Abos von selbst abrufen", json_schema_extra=PODCASTS,
                                        description="Ruft die Feeds aller Abos regelmäßig ab.")
     podcast_refresh_interval: int = Field(21600, ge=60, le=7 * 86400, title="Abstand des Abrufs",
-                                          json_schema_extra={**PODCASTS, "einheit": "Sekunden", "schritt": 3600},
+                                          json_schema_extra={**PODCASTS, "einheit": "s", "schritt": 3600},
                                           description="So viele Sekunden liegen zwischen zwei Abrufen der Feeds.")
     service_radio_browser_servers: list[str] = Field(default_factory=lambda: list(RADIO_BROWSER),
                                                      title="Senderverzeichnis", json_schema_extra=DIENSTE,
                                                      description="Server des Senderverzeichnisses, in dieser Reihenfolge "
                                                                  "gefragt.")
-    abgleich_uhrzeit: str = Field("04:30", pattern=r"^(([01]\d|2[0-3]):[0-5]\d)?$", title="Abgleich mit dem Senderverzeichnis",
-                                  json_schema_extra={**DIENSTE, "einheit": "Uhrzeit"},
+    abgleich_uhrzeit: str = Field("04:30", pattern=r"^(([01]\d|2[0-3]):[0-5]\d)?$", title="Uhrzeit des Abgleichs",
+                                  json_schema_extra={**RADIO, "einheit": "Uhrzeit"},
                                   description="Jede Nacht um diese Uhrzeit (Ortszeit, etwa 04:30) gleicht das Radio seinen "
                                               "Bestand mit dem Senderverzeichnis ab: neue Sender, geänderte Angaben, "
                                               "verschwundene markiert. Leer: nur auf Anstoß.")
-    service_itunes_search_url: str = Field("https://itunes.apple.com/search", title="Podcast-Suche (Apple)",
-                                           json_schema_extra=DIENSTE, description="Suche im Podcast-Verzeichnis von Apple.")
-    service_fyyd_search_url: str = Field("https://api.fyyd.de/0.2/search/podcast", title="Podcast-Suche (fyyd)",
-                                         json_schema_extra=DIENSTE, description="Suche im deutschen Podcast-Verzeichnis fyyd.")
+    service_itunes_search_url: str = Field("https://itunes.apple.com/search", title="Podcast-Verzeichnis, weltweit",
+                                           json_schema_extra=DIENSTE, description="Suche nach Podcasts beim Abonnieren.")
+    service_fyyd_search_url: str = Field("https://api.fyyd.de/0.2/search/podcast", title="Podcast-Verzeichnis, deutsch",
+                                         json_schema_extra=DIENSTE,
+                                         description="Zweite Suche, vor allem deutschsprachige Podcasts.")
+    # --- RAD-11: bisher in der Tabelle config (Stand der Oberfläche), jetzt hier mit Grenzen und Prüfung ---
+    language: Sprache = Field("de", title="Sprache", json_schema_extra={**ALLGEMEIN, "beschriftungen": SPRACHEN},
+                              description="Sprache der Oberfläche, für alle Geräte.")
+    ui_click_sounds: bool = Field(True, title="Klicktöne", json_schema_extra=ALLGEMEIN,
+                                  description="Leise Töne beim Drücken von Tasten und Schaltern.")
+    ad_detection_enabled: bool = Field(True, title="Werbeerkennung", json_schema_extra=RADIO,
+                                       description="Prüft Sender auf reine Werbe- und Verkaufskanäle.")
+    ad_detection_methods: list[Pruefart] = Field(default_factory=lambda: ["url_check", "header_check"], title="Verfahren",
+                                                 json_schema_extra={**RADIO, "beschriftungen": {
+                                                     "url_check": "Adresse prüfen", "header_check": "Kopf des Stroms"}},
+                                                 description="Woran ein Sender erkannt wird; beide zugleich sind möglich.")
+    ad_detection_threshold: int = Field(80, ge=40, le=100, title="Schwelle",
+                                        json_schema_extra={**RADIO, "einheit": "%", "schritt": 5},
+                                        description="Ab dieser Sicherheit gilt ein Sender als verdächtig.")
+    ort_name: str = Field("", max_length=120, title="Ort", json_schema_extra=WECKER,
+                          description="Name des Orts der Sonnenzeiten (Nachtschaltung der Weckansicht).")
+    ort_breite: float | None = Field(None, ge=-90, le=90, title="Breite", json_schema_extra=WECKER,
+                                     description="Geografische Breite des Orts.")
+    ort_laenge: float | None = Field(None, ge=-180, le=180, title="Länge", json_schema_extra=WECKER,
+                                     description="Geografische Länge des Orts.")
+
+    @field_validator("ad_detection_methods", mode="before")
+    @classmethod
+    def _verfahren_aus_text(cls, wert: Any) -> Any:
+        """Früher als JSON-Text im JSON gespeichert (doppelt verpackt); so kommt es aus der Tabelle config."""
+        return json.loads(wert) if isinstance(wert, str) else wert
+
+    @field_validator("ad_detection_threshold", mode="before")
+    @classmethod
+    def _schwelle_in_prozent(cls, wert: Any) -> Any:
+        """Früher ein Anteil (0,8); jetzt Prozent wie in der Oberfläche."""
+        if isinstance(wert, str):
+            wert = float(wert)
+        return round(wert * 100) if isinstance(wert, (int, float)) and 0 < wert <= 1 else wert
 
 
 # Felder, die früher in der Tabelle config standen; über /api/config bleiben sie unter diesen Schlüsseln lesbar und
@@ -117,6 +172,28 @@ CONFIG_FELDER: frozenset[str] = frozenset({
     "podcast_auto_refresh", "podcast_refresh_interval", "service_radio_browser_servers", "service_itunes_search_url",
     "service_fyyd_search_url",
 })
+# RAD-11: aus dem Stand der Oberfläche in die Einstellungen; eigener Übertrag (der erste ist auf bestehenden Rechnern
+# schon gelaufen), danach ebenfalls unter /api/config erreichbar
+CONFIG_FELDER_RAD11: frozenset[str] = frozenset({
+    "language", "ui_click_sounds", "hls_rec_lookback_minutes", "ad_detection_enabled", "ad_detection_methods",
+    "ad_detection_threshold", "ort_name", "ort_breite", "ort_laenge",
+})
+UEBERTRAEGE: tuple[tuple[str, frozenset[str]], ...] = (
+    ("radiohub_config_uebertrag", CONFIG_FELDER),
+    ("radiohub_config_uebertrag_rad11", CONFIG_FELDER_RAD11),
+)
+CONFIG_FELDER = CONFIG_FELDER | CONFIG_FELDER_RAD11 | {"hls_puffer_minuten"}
+
+
+def regeln_pruefen(alt: AppEinstellungen, neu: AppEinstellungen) -> str | None:
+    """Regeln über mehrere Felder (vor jedem Speichern, appkern Einstellungen.regel)."""
+    if neu.hls_min_bitrate > neu.hls_max_bitrate:
+        return "Die kleinste Bitrate darf nicht größer sein als die größte."
+    if neu.hls_rec_lookback_minutes > neu.hls_puffer_minuten:
+        return "Der Rückblick der Puffer-Aufnahme darf nicht länger sein als der Puffer."
+    if (neu.ort_breite is None) != (neu.ort_laenge is None):
+        return "Breite und Länge des Orts gehören zusammen: beide angeben oder beide leer lassen."
+    return None
 
 _gebunden: Einstellungen[AppEinstellungen] | None = None
 _gelesen: AppEinstellungen | None = None

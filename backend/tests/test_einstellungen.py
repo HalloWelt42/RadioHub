@@ -10,7 +10,9 @@ from appkern.einstellungen import Einstellungen
 from appkern.einstellungen.dienst import aus_umgebung
 
 from app import einstellungen, uebergang
-from app.einstellungen import CONFIG_FELDER, PRAEFIX, AppEinstellungen
+from app.einstellungen import PRAEFIX, UEBERTRAEGE, AppEinstellungen
+
+ERSTER_UEBERTRAG = UEBERTRAEGE[0][1]       # die Felder bis RAD-11; die Sprache blieb damals in der Tabelle
 
 # was compose.pi.yml und die .env auf dem Pi bis Fassung 0.15 setzten (Handbuch: Einstellungen des Hauses)
 ALTE_ENV = {
@@ -80,13 +82,13 @@ async def test_config_werte_gehen_einmal_in_die_einstellungen(tmp_path):
     async with Datenbank(":memory:") as db:
         e = Einstellungen(db, AppEinstellungen, umgebung_praefix=PRAEFIX, umgebung={"RADIOHUB_FEST_RECORDING_BITRATE": "256"})
         await e.starten()
-        uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, CONFIG_FELDER)
+        uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, ERSTER_UEBERTRAG)
         assert uebernommen == ["podcast_refresh_interval", "service_itunes_search_url"]
         assert len(uebergangen) == 1 and uebergangen[0].startswith("hls_max_bitrate")
         assert e.stand.podcast_refresh_interval == 7200 and e.herkunft("podcast_refresh_interval") == "gespeichert"
         assert e.stand.recording_bitrate == 256 and e.stand.hls_max_bitrate == 320     # fest bleibt, ungültig: Vorgabe
         await e.aendern({"podcast_refresh_interval": 3600})
-        assert (await uebergang.config_uebernehmen(e, db_pfad, CONFIG_FELDER))[0] == []   # Gespeichertes bleibt
+        assert (await uebergang.config_uebernehmen(e, db_pfad, ERSTER_UEBERTRAG))[0] == []   # Gespeichertes bleibt
         assert e.stand.podcast_refresh_interval == 3600
     v = sqlite3.connect(db_pfad)
     assert v.execute("SELECT COUNT(*) FROM config").fetchone()[0] == 5               # die Tabelle bleibt, wie sie war
@@ -102,5 +104,49 @@ def test_api_config_trennt_einstellungen_und_stand_der_oberflaeche(client):
     assert felder["podcast_refresh_interval"]["wert"] == 10800 and felder["podcast_refresh_interval"]["herkunft"] == "gespeichert"
     assert "kellerwolke_schluessel" not in client.get("/api/config").json()                 # Geheimnisse nie unter /api/config
     assert client.put("/api/config", json={"updates": {"hls_sample_rate": "laut"}}).status_code == 422
-    assert client.post("/api/config/reset").json()["config"]["podcast_refresh_interval"] == 21600
+    zurueck = client.put("/api/config", json={"updates": {"podcast_refresh_interval": None, "language": None}}).json()["config"]
+    assert zurueck["podcast_refresh_interval"] == 21600 and zurueck["language"] == "de"     # None heißt Vorgabe
     assert einstellungen.herkunft("podcast_refresh_interval") == "vorgabe"
+    assert client.post("/api/config/reset").status_code in (404, 405)                       # ohne Bedienung entfallen (RAD-11)
+
+
+async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
+    """Der zweite Übertrag (RAD-11) holt Sprache, Klicktöne, Rückblick, Werbeerkennung und Ort aus der Tabelle, auch die
+    doppelt verpackten Verfahren und die Schwelle als Anteil."""
+    db_pfad = tmp_path / "radiohub.db"
+    v = sqlite3.connect(db_pfad)
+    v.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT)")
+    v.executemany("INSERT INTO config VALUES (?, ?)", [
+        ("language", "\"en\""), ("ui_click_sounds", "false"), ("hls_rec_lookback_minutes", "12"),
+        ("ad_detection_methods", json.dumps(json.dumps(["header_check"]))), ("ad_detection_threshold", "0.9"),
+        ("ort_name", "\"Hannover\""), ("ort_breite", "52.37"), ("ort_laenge", "9.74"), ("last_station_uuid", "\"x\"")])
+    v.commit()
+    v.close()
+    async with Datenbank(":memory:") as db:
+        e = Einstellungen(db, AppEinstellungen, umgebung_praefix=PRAEFIX, umgebung={})
+        await e.starten()
+        uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, UEBERTRAEGE[1][1])
+        assert uebergangen == [] and "last_station_uuid" not in uebernommen
+        st = e.stand
+        assert (st.language, st.ui_click_sounds, st.hls_rec_lookback_minutes) == ("en", False, 12)
+        assert st.ad_detection_methods == ["header_check"] and st.ad_detection_threshold == 90
+        assert (st.ort_name, st.ort_breite, st.ort_laenge) == ("Hannover", 52.37, 9.74)
+
+
+def test_rad11_regeln_und_felder_ueber_die_schnittstelle(client):
+    felder = {f["name"]: f for f in client.get("/api/v1/einstellungen").json()}
+    assert felder["language"]["art"] == "auswahl" and felder["language"]["beschriftungen"]["de"] == "Deutsch"
+    assert felder["hls_puffer_minuten"]["kleinste"] == 10 and felder["hls_puffer_minuten"]["einheit"] == "min"
+    assert felder["hls_sample_rate"]["art"] == "auswahl" and felder["service_fyyd_search_url"]["titel"] == "Podcast-Verzeichnis, deutsch"
+    assert {f["gruppe"] for f in felder.values() if f["name"] in einstellungen.CONFIG_FELDER} <= {
+        "Allgemein", "Radio", "Wiedergabe", "Aufnahmen", "Podcasts", "Wecker und Zeitansage", "Ablage", "Dienste"}
+    falsch = client.patch("/api/v1/einstellungen", json={"werte": {"hls_min_bitrate": 256, "hls_max_bitrate": 128}})
+    assert falsch.status_code in (400, 409, 422) and "kleinste Bitrate" in falsch.text
+    zu_lang = client.patch("/api/v1/einstellungen", json={"werte": {"hls_puffer_minuten": 30, "hls_rec_lookback_minutes": 60}})
+    assert zu_lang.status_code in (400, 409, 422) and "Rückblick" in zu_lang.text
+    assert client.put("/api/wecker/ort", json={"name": "Hannover", "breite": 52.37, "laenge": 9.74}).status_code == 200
+    assert client.get("/api/wecker/ort").json() == {"name": "Hannover", "breite": 52.37, "laenge": 9.74}
+    assert einstellungen.stand().ort_name == "Hannover"
+    halb = client.put("/api/wecker/ort", json={"name": "Nirgends", "breite": 10, "laenge": None})
+    assert halb.status_code == 422 and "Breite und Länge" in halb.text
+    client.patch("/api/v1/einstellungen", json={"werte": {"ort_name": None, "ort_breite": None, "ort_laenge": None}})

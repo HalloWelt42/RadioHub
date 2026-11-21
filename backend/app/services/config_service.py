@@ -17,11 +17,6 @@ log = logging.getLogger("radiohub.config")
 
 # Vorgaben des Stands der Oberfläche (die der Einstellungen stehen in einstellungen.AppEinstellungen)
 DEFAULT_CONFIG = {
-    # --- UI ---
-    "language": "de",
-    "ui_click_sounds": True,
-    # --- Audio / Aufnahme ---
-    "recording_format": "mp3",
     # --- Session ---
     "last_station_uuid": None,
     "last_station_name": None,
@@ -98,19 +93,6 @@ class ConfigService:
         """Mehrere Werte des Stands der Oberfläche setzen (ohne Einstellungen; die gehen über `aendern`)"""
         for key, value in updates.items():
             self.set(key, value)
-        return self.get_all()
-
-    async def reset(self) -> dict:
-        """Auf die Vorgaben zurücksetzen: den Stand der Oberfläche und die hier gespeicherten Einstellungen (feste
-        Einstellungen vom Ausrollen bleiben)"""
-        with db_session() as conn:
-            platzhalter = ",".join("?" * len(CONFIG_FELDER))
-            conn.execute(f"DELETE FROM config WHERE key NOT IN ({platzhalter})", tuple(CONFIG_FELDER))
-        self._cache = {}
-        self._loaded = False
-        zurueck = {k: None for k in CONFIG_FELDER if einstellungen.herkunft(k) == "gespeichert"}
-        if zurueck:
-            await einstellungen.aendern(zurueck)
         return self.get_all()
 
 
