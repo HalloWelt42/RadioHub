@@ -80,6 +80,8 @@
 .rh-knopfgruppe output { min-inline-size: 4.5em; text-align: center; font-size: var(--klein); }
 .rh-schnitt-kopfzeit { min-inline-size: 4em; font-size: var(--klein); }
 .rh-schalter { gap: 8px; }
+/* die Auswahl so hoch wie die Knöpfe daneben (Schnitt, Kopf einer Aufnahme) */
+.rh-schnitt .auswahl-knopf, .rh-a-kopf .auswahl-knopf { block-size: var(--knopf-hoehe); }
 .rh-schnitt-hilfe { margin-left: auto; }
 .rh-schnitt-tasten { flex-basis: 100%; margin: 0; text-align: right; font-size: var(--klein); }
 .rh-schnitt-tasten kbd { display: inline-block; padding: 1px 6px; margin: 0 2px 0 8px; border-radius: 5px; font-family: var(--schrift-zahl); color: var(--text); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
@@ -91,7 +93,7 @@
 /* Kopf und Zeilen sind getrennte Raster: keine Spalte mit auto, sonst laufen sie auseinander */
 .rh-stueck-spalten, .rh-stueck { display: grid; grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) calc(var(--klein) * 5) calc(var(--klein) * 5) calc(var(--klein) * 5) calc(var(--gross) * 7) 44px; gap: 10px 14px; align-items: center; }
 .rh-stueck-spalten { position: static; margin: 0; padding: 4px 12px; box-shadow: none; }
-.rh-spalten.rh-stueck-spalten > span:nth-child(n) { grid-area: auto; }   /* die Bereichsnamen des Senderkopfs (radio.css) gelten hier nicht */
+.rh-spalten.rh-stueck-spalten > span:nth-child(n) { grid-area: auto; display: block; }   /* Bereichsnamen und Ausblenden des Senderkopfs (radio.css) gelten hier nicht */
 .rh-spalten.rh-stueck-spalten > span:first-child { grid-column: 1 / 3; }
 .rh-spalten.rh-stueck-spalten > span:nth-child(5) { grid-column: 6 / 8; }
 .rh-stueck { padding: 4px 12px; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
