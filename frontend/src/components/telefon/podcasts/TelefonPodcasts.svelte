@@ -161,7 +161,7 @@
                   beschriftung={t("podcastAnsicht.telefon.inFolgenSuchen")} hilfe={t("podcastAnsicht.sucheHilfe")} onsuche={(s) => aendern((a) => ({ ...a, suche: s }))} />{/key}
       {/if}
       <span class="t-treffer" title={ansicht.aboUebersicht ? t("podcastAnsicht.telefon.abos") : t("podcastAnsicht.folgenHilfe")}>
-        <ak-segmente art="7" stellen="3" farbe="gruen" text={ansicht.aboUebersicht ? zahl(aboliste.abos.length) : liste.gesamt === null ? "---" : zahl(liste.gesamt)}></ak-segmente>
+        <ak-segmente art="7" stellen="5" farbe="gruen" text={ansicht.aboUebersicht ? zahl(aboliste.abos.length) : liste.gesamt === null ? "-----" : zahl(liste.gesamt)}></ak-segmente>
         <span class="tp-treffer-wort">{ansicht.aboUebersicht ? t("podcastAnsicht.telefon.abosZahl") : t("podcastAnsicht.telefon.folgenZahl")}</span></span>
       {#if kann.abonnieren}
         <button class="rund" type="button" aria-label={t("podcastAnsicht.abonnieren")} title={t("podcastAnsicht.abonnierenHilfe")}

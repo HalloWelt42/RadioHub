@@ -31,7 +31,7 @@ export default {
   fuss: '{n} of {gesamt} recordings', mehr: 'Load more',
   wolkeEbeneHoeher: 'One level up', wolkeWurzel: 'Kellerwolke', wolkeNurAudio: 'Only audio files are shown.',
   wolkeNeben: 'Editing puts a new file next to it; the original stays.', wolkeEigen: 'RadioHub may not write here: results go to its own folder.',
-  wolkeLeer: 'No audio files in this folder', wolkeLeerHilfe: 'Open a subfolder on the left.', wolkeRecht: 'RadioHub may read all folders',
+  wolkeLeer: 'No audio files in this folder', wolkeLeerHilfe: 'Open a subfolder on the left.', wolkeRecht: 'RadioHub may read all folders', wolkeKeinRecht: 'No permission to read yet',
   nimmtAuf: 'recording', zaehlerHilfe: 'Total recordings for the selection, not just the loaded ones', zaehlerWolkeHilfe: 'Audio files in this folder',
   aktualisierenHilfe: 'Reload the list', aktiveFilter: 'Active filters', geladen: 'loaded', nochmal: 'Try again',
   ladenFehler: 'Loading failed', gespeichert: 'Recording saved in {name}', erstBeenden: 'Stop the recording first, then listen',

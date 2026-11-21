@@ -126,7 +126,6 @@
             <button type="button" aria-current={i === (ebene?.kette.length ?? 0) - 1 ? "page" : undefined} onclick={() => onpfad(k.pfad)}>{k.name}</button>
           {/each}
         </nav>
-        {#if wolkeFehler}<p class="hinweis-band rh-leiste-hinweis"><i class="fa-solid fa-lock"></i><span>{wolkeFehler}</span></p>{/if}
         <div class="rh-facetten rh-abos">
           {#if ansicht.pfad}
             <div class="rh-facette rh-aordner" role="button" tabindex="0" onclick={() => onpfad((ebene?.kette ?? []).slice(-2, -1)[0]?.pfad ?? "")}
@@ -145,7 +144,9 @@
 
   <div class="rh-leiste-fuss">
     {#if ansicht.quelle === "wolke"}
-      <span><i class="fa-solid fa-lock-open"></i> {t("aufnahmenAnsicht.wolkeRecht")}</span>
+      <!-- der echte Stand: ohne Freigabe steht der Grund in der Mitte, hier nur, dass das Lesen fehlt -->
+      {#if wolkeFehler}<span><i class="fa-solid fa-lock"></i> {t("aufnahmenAnsicht.wolkeKeinRecht")}</span>
+      {:else}<span><i class="fa-solid fa-lock-open"></i> {t("aufnahmenAnsicht.wolkeRecht")}</span>{/if}
     {:else if kennzahlen}
       <span><b>{kennzahlen.dateien.toLocaleString("de-DE")}</b> {t("aufnahmenAnsicht.dateien")}</span>
       <span><b>{Math.round(kennzahlen.mb).toLocaleString("de-DE")}</b> MB</span>

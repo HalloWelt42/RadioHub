@@ -31,7 +31,7 @@ export default {
   fuss: '{n} von {gesamt} Aufnahmen', mehr: 'Weitere laden',
   wolkeEbeneHoeher: 'Eine Ebene höher', wolkeWurzel: 'Kellerwolke', wolkeNurAudio: 'Gezeigt werden nur Audiodateien.',
   wolkeNeben: 'Schneiden legt eine neue Datei daneben, das Original bleibt.', wolkeEigen: 'Hier darf RadioHub nicht schreiben: Ergebnisse kommen in den eigenen Ordner.',
-  wolkeLeer: 'Keine Audiodateien in diesem Ordner', wolkeLeerHilfe: 'Links in einen Unterordner wechseln.', wolkeRecht: 'RadioHub darf alle Ordner lesen',
+  wolkeLeer: 'Keine Audiodateien in diesem Ordner', wolkeLeerHilfe: 'Links in einen Unterordner wechseln.', wolkeRecht: 'RadioHub darf alle Ordner lesen', wolkeKeinRecht: 'Noch keine Freigabe zum Lesen',
   nimmtAuf: 'nimmt auf', zaehlerHilfe: 'Aufnahmen gesamt für die Auswahl, nicht nur die geladenen', zaehlerWolkeHilfe: 'Audiodateien in diesem Ordner',
   aktualisierenHilfe: 'Liste neu laden', aktiveFilter: 'Aktive Filter', geladen: 'geladen', nochmal: 'Nochmal versuchen',
   ladenFehler: 'Laden hat nicht geklappt', gespeichert: 'Aufnahme gespeichert in {name}', erstBeenden: 'Erst die Aufnahme beenden, dann hören',
