@@ -185,6 +185,7 @@ async def test_aufnahme_teilt_ohne_neue_verbindung(client, mp3, monkeypatch):
         await asyncio.sleep(0.5)
         status = rec.get_status()
         await rec.stop()
+        await rec.feinschnitt_abwarten()
         assert sender.mit_sendedaten == 1                   # früher: eine neue Verbindung je Titelwechsel
     assert [e["title"] for e in status["icy_entries"]] == ["A - Eins", "B - Zwei"]
 
@@ -203,9 +204,18 @@ async def test_aufnahme_speichert_werbestellen_aus_den_sendedaten(client, mp3, m
             await asyncio.sleep(0.1)
         await asyncio.sleep(0.5)
         await rec.stop()
+        await rec.feinschnitt_abwarten()
     stellen = client.get(f"/api/recording/sessions/{ergebnis['session_id']}/werbung").json()
     assert len(stellen) == 1, stellen
     s = stellen[0]
     assert s["aufnahme_id"] == ergebnis["session_id"] and s["folge_id"] is None and s["herkunft"] == "sendedaten"
     assert s["von"] == 0 and 2.9 <= s["bis"] <= 3.1 and s["text"] == "198927 (beim Verbinden)"
     assert client.get("/api/recording/sessions/gibt-es-nicht/werbung").status_code == 404
+    # Feinschnitt (RAD-45): der Spot ist ein Stück für sich, der Rest heißt nach dem Titel; Werbestellen gelten weiter
+    from app.services.aufnahmen import aufnahmen
+    stuecke = aufnahmen.segmente(ergebnis["session_id"])
+    assert [s["title"] for s in stuecke] == ["Werbung: 198927", "B - Zwei"], stuecke   # die Angabe kam 1,5 s nach dem Spot
+    assert abs(stuecke[0]["end_ms"] / 1000 - 3.0) < 0.2
+    assert client.get(f"/api/schnitt/info", params={"art": "sitzung", "kennung": ergebnis["session_id"]}).json()["werbestellen"]
+    sitzung = client.get(f"/api/recording/sessions/{ergebnis['session_id']}").json()
+    assert sitzung["status"] == "completed"

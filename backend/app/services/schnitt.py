@@ -60,6 +60,13 @@ def _schritt_anlegen(schluessel: str, was: str, daten: dict) -> int:
                             (schluessel, was, json.dumps(daten))).lastrowid
 
 
+def zeiten_unveraendert(schluessel: str) -> bool:
+    """Hat kein Schritt die Zeiten im Ton verschoben (nur Schnitte ohne Verwerfen, die das ausdrücklich vermerken)?"""
+    with db_session() as conn:
+        zeilen = conn.execute("SELECT daten FROM schnitt_schritte WHERE gegenstand = ?", (schluessel,)).fetchall()
+    return all(json.loads(z[0]).get("zeiten_bleiben") is True for z in zeilen)
+
+
 def _letzter(schluessel: str) -> tuple[int, str, dict] | None:
     with db_session() as conn:
         z = conn.execute("SELECT id, was, daten FROM schnitt_schritte WHERE gegenstand = ? ORDER BY id DESC LIMIT 1",
@@ -99,8 +106,9 @@ class Gegenstand(ABC):
     async def wellenform_lesen(self, start: int, ende: int) -> bytes: ...
 
     @abstractmethod
-    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str) -> int:
-        """Geschnittene Stücke an ihren Platz und den Schritt anlegen; liefert die Zahl."""
+    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str, zeiten_bleiben: bool = False) -> int:
+        """Geschnittene Stücke an ihren Platz und den Schritt anlegen; liefert die Zahl. `zeiten_bleiben`: nichts
+        verworfen, jede Stelle im Ton bleibt, wo sie war (Werbestellen gelten weiter)."""
 
     @abstractmethod
     async def bearbeiten(self, was: str, bearbeitung: Bearbeitung, fortschritt: Fortschritt) -> int: ...
@@ -114,8 +122,9 @@ class Gegenstand(ABC):
     def _titel(self) -> list[dict] | None:
         return None
 
-    async def schneiden(self, wahl: list[StueckWahl], fortschritt: Fortschritt) -> int:
-        """An den Grenzen der Stücke teilen, verworfene weglassen, Namen übernehmen."""
+    async def schneiden(self, wahl: list[StueckWahl], fortschritt: Fortschritt, was: str | None = None) -> int:
+        """An den Grenzen der Stücke teilen, verworfene weglassen, Namen übernehmen. `was`: Name des Schritts (sonst
+        "Geschnitten in N Stücke")."""
         behalten = [w for w in wahl if w.behalten]
         if not behalten:
             raise AufnahmeFehler("Kein Stück zum Behalten gewählt")
@@ -147,8 +156,8 @@ class Gegenstand(ABC):
                 stelle = s.end_ms
             fortschritt(3, 3, "Ablegen")
             weg = len(stuecke) - len(uebrig)
-            was = f"Geschnitten in {len(uebrig)} {'Stück' if len(uebrig) == 1 else 'Stücke'}" + (f", {weg} verworfen" if weg else "")
-            return await self._stuecke_uebernehmen(uebrig, was)
+            was = was or (f"Geschnitten in {len(uebrig)} {'Stück' if len(uebrig) == 1 else 'Stücke'}" + (f", {weg} verworfen" if weg else ""))
+            return await self._stuecke_uebernehmen(uebrig, was, zeiten_bleiben=weg == 0)
         finally:
             shutil.rmtree(ziel_dir, ignore_errors=True)
 
@@ -198,8 +207,9 @@ class SitzungGegenstand(Gegenstand):
 
     def _werbestellen(self, fertig: list[dict]) -> list[dict]:
         """Werbestellen der Aufnahme (RAD-33, aus den Sendedaten beim Aufnehmen). Ihre Zeiten gelten für den Ton, wie
-        er aufgenommen wurde: nach dem ersten Schritt nicht mehr, dann gibt es keine (Rückgängig bringt sie zurück)."""
-        if fertig:
+        er aufgenommen wurde: nach einem Schritt, der etwas verworfen hat, nicht mehr, dann gibt es keine (Rückgängig
+        bringt sie zurück). Ein Schnitt ohne Verwerfen (etwa der Feinschnitt nach dem Aufnehmen) lässt sie gelten."""
+        if not zeiten_unveraendert(self.schluessel):
             return []
         return [{"von": w.von, "bis": w.bis, "text": w.text}
                 for w in werbestellen.stellen(werbestellen.Bezug.aufnahme(self.kennung))]
@@ -246,7 +256,7 @@ class SitzungGegenstand(Gegenstand):
     def _titel(self) -> list[dict] | None:
         return None                 # Namen kommen aus der Wahl des Schnitts (dort vorbelegt mit den Titeln)
 
-    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str) -> int:
+    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str, zeiten_bleiben: bool = False) -> int:
         sitzung = self._sitzung()
         alte = aufnahmen.segmente(self.kennung)
         archiv = await self._archivieren(alte)
@@ -259,7 +269,7 @@ class SitzungGegenstand(Gegenstand):
                          "duration_ms": stueck.dauer_ms, "file_path": pfad, "file_size": eintrag.groesse})
         self._segmente_setzen(neue)
         _schritt_anlegen(self.schluessel, was, {"archiv": archiv, "vorher": self._zeilen(alte),
-                                                "neu": [z["file_path"] for z in neue]})
+                                                "neu": [z["file_path"] for z in neue], "zeiten_bleiben": zeiten_bleiben})
         await aufnahmen._veraendert(sitzung)
         await self._alte_schritte_raeumen()
         return len(neue)
@@ -373,7 +383,7 @@ class DateiGegenstand(Gegenstand):
         await self._alte_schritte_raeumen()
         return len(neu)
 
-    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str) -> int:
+    async def _stuecke_uebernehmen(self, stuecke: list[Stueck], was: str, zeiten_bleiben: bool = False) -> int:
         stamm = PurePosixPath(self.kennung).stem
         # eigener Name, sonst nummeriert nach dem Original (der vorgeschlagene Name ist der des Originals selbst)
         eigen = lambda t: bool(t) and not t.startswith("Teil ") and t != stamm

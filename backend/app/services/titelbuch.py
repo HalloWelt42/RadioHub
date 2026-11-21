@@ -27,6 +27,10 @@ class Titelbuch:
     def __init__(self, sperrliste: list[dict] | None = None, bei_wechsel: Optional[BeiWechsel] = None,
                  datei: Optional[Path] = None, metaint: int = 0):
         self.entries: list[dict] = []
+        #: jeder Wechsel der Sendedaten, auch zu einem leeren Titel (Einspieler, RAD-45): Sekunde, Titel, gesperrt;
+        #: für den Feinschnitt, der Einschübe ohne Titel als eigene Stücke braucht. Teilt nichts und zeigt nichts.
+        self.wechsel: list[tuple[float, str, bool]] = []
+        self._letzter_roh: Optional[str] = None
         self._sperrliste = sperrliste or []
         self._bei_wechsel = bei_wechsel
         self._datei = datei
@@ -42,6 +46,9 @@ class Titelbuch:
     async def angabe(self, a: Angabe) -> None:
         self._ton_bytes = a.ton_bytes
         titel = titel_aus(a.roh)
+        if "StreamTitle=" in a.roh and titel != self._letzter_roh:
+            self._letzter_roh = titel
+            self.wechsel.append((a.sekunde, titel, bool(titel) and self._gesperrt(titel)))
         if not titel or titel == self._letzter:
             return
         self._letzter = titel

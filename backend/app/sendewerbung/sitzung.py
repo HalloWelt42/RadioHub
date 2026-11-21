@@ -53,9 +53,13 @@ class Werbestelle(BaseModel):
 
 
 class Sitzungswerbung:
-    def __init__(self, r: Optional[Regeln] = None, bei_ende: Optional[Callable[[Werbestelle], None]] = None):
+    def __init__(self, r: Optional[Regeln] = None, bei_ende: Optional[Callable[[Werbestelle], None]] = None,
+                 stillen_hoechstens: Optional[int] = STILLEN_HOECHSTENS):
         """`bei_ende`: wird einmal je Stelle gerufen, sobald ihr Ende feststeht (etwa um den Spot zu zählen): mit der
-        Stille daran, oder wenn der Ton das Fenster der Stille hinter dem Ende hat und keine kam."""
+        Stille daran, oder wenn der Ton das Fenster der Stille hinter dem Ende hat und keine kam.
+        `stillen_hoechstens`: so viele Stillen bleiben gemerkt; None: alle (eine Aufnahme braucht sie für den
+        Feinschnitt, der rollende Puffer nur die jüngsten)."""
+        self._stillen_hoechstens = stillen_hoechstens
         self._regeln = r or regeln()
         self._bei_ende = bei_ende
         self._wartet: list[Werbestelle] = []
@@ -111,21 +115,19 @@ class Sitzungswerbung:
             self._wartet.remove(s)
             self._bei_ende(s)
 
-    def stille_zeile(self, zeile: str, versatz: float = 0.0, anlauf_s: float = 0.0) -> None:
-        """Eine Zeile von ffmpeg (silencedetect): silence_start und silence_end ergeben eine Stille. `versatz`: wo im Ton
-        der ffmpeg begann, der die Zeile schreibt (eine Aufnahme startet je Stück einen neuen). `anlauf_s`: Stille, die
-        so früh nach dem Start dieses ffmpeg beginnt, zählt nicht: mitten im Strom angesetzt, liefert der Decoder erst
-        leere Rahmen (MP3 ohne Bit-Reservoir), die keine Stille im Ton sind."""
+    def stille_zeile(self, zeile: str) -> None:
+        """Eine Zeile von ffmpeg (silencedetect): silence_start und silence_end ergeben eine Stille. Der ffmpeg prüft
+        den ganzen Ton von Anfang an (Zeitversatz, Stillenwächter der Aufnahme), seine Zeiten sind die des Tons."""
         if (t := STILLE_BEGINN.search(zeile)):
-            beginn = float(t.group(1))
-            self._stille_beginn = None if beginn < anlauf_s else versatz + beginn
+            self._stille_beginn = float(t.group(1))
         elif (t := STILLE_ENDE.search(zeile)) and self._stille_beginn is not None:
-            self.stille(self._stille_beginn, versatz + float(t.group(1)))
+            self.stille(self._stille_beginn, float(t.group(1)))
             self._stille_beginn = None
 
     def stille(self, von: float, bis: float) -> None:
         self._stillen.append((max(0.0, von), bis))
-        del self._stillen[:-STILLEN_HOECHSTENS]
+        if self._stillen_hoechstens is not None:
+            del self._stillen[:-self._stillen_hoechstens]
         for s in self.stellen[-20:]:
             self._an_stille(s)
         self._melden(bis)
@@ -147,6 +149,11 @@ class Sitzungswerbung:
         abstand = lambda st: 0.0 if st[0] <= t <= st[1] else min(abs(st[0] - t), abs(st[1] - t))
         kandidaten = [st for st in self._stillen if abstand(st) <= fenster]
         return min(kandidaten, key=abstand) if kandidaten else None
+
+    @property
+    def stillen(self) -> list[tuple[float, float]]:
+        """Die gemerkten Stillen (von, bis) in Sekunden des Tons."""
+        return list(self._stillen)
 
     def im_fenster(self, ab: float) -> list[Werbestelle]:
         """Die Stellen, die noch im Puffer liegen (enden nach `ab` oder laufen noch)."""

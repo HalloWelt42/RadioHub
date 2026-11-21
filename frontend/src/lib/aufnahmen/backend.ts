@@ -10,7 +10,8 @@ export interface Anfrager {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Rohdaten des Backends
 type Roh = Record<string, any>;
 
-const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", completed: "fertig", stalled: "abgebrochen", interrupted: "unterbrochen" };
+// feinschnitt (RAD-45): nach dem Stopp werden die Stücke noch genau geschnitten; bis dahin bleibt die Wiedergabe gesperrt
+const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", feinschnitt: "laeuft", completed: "fertig", stalled: "abgebrochen", interrupted: "unterbrochen" };
 
 function luecken(roh: unknown): number {
   try {
