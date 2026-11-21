@@ -1,0 +1,15 @@
+/* Werbung im Radio (Entwurf RAD-33): nur, was über Kanzel, Senderliste, Einstellungen und die Werbung in Podcasts
+   (podcast-werbung.css) hinausgeht. Bernstein = Werbung. */
+.rw-kanzel { grid-template-columns: minmax(0, 1fr) auto; align-items: start; justify-items: stretch; }
+.rw-kanzel > .rh-modul { inline-size: auto; }
+.rw-kanzel > .rh-m-anzeige { min-inline-size: 0; }
+.rw-kanzel > .rp-band { grid-column: 1 / -1; justify-self: start; }
+@container (max-width: 760px) { .rw-kanzel { grid-template-columns: minmax(0, 1fr); } }
+.rp-flaeche { container-type: inline-size; }
+/* Anzeige in Werbung: bernstein wie Fehler rot und Fern blau */
+.rh-display[data-ton="werbung"] { --farbe: var(--led-bernstein); }
+.rw-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+.rw-spots .rp-stellen li { grid-template-columns: auto calc(var(--klein) * 5) minmax(0, 1fr); }
+.rw-t-spieler .ak-glas span { color: var(--led-bernstein); }
+/* Telefon ohne Suche und Chips: die Liste bekommt die freie Höhe */
+.rh-telefon > .t-app.rw-t-app { grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; }
