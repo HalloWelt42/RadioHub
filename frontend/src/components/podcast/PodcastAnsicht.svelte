@@ -49,7 +49,10 @@
   const schluessel = $derived(JSON.stringify([ansicht.abos, ansicht.wahl, ansicht.sortierung, ansicht.suche, ansicht.verzeichnis]));
   $effect(() => {
     void schluessel;
-    untrack(() => { if (!ansicht.verzeichnis) void liste.laden(zuAbfrage(ansicht), ansicht.suche); });
+    untrack(() => {
+      gewaehlt = -1;
+      if (!ansicht.verzeichnis) void liste.laden(zuAbfrage(ansicht), ansicht.suche);
+    });
   });
 
   function aendern(arbeit: (a: Podcastansicht) => Podcastansicht) {
@@ -71,6 +74,8 @@
   // Fokus der Kanzel (RAD-19) auch für Folgen: ist er an, klappt die Liste die laufende Folge auf und rollt hin, beim
   // Öffnen und bei jedem Wechsel; dazwischen rollt man frei
   let listeEl = $state<HTMLElement>();
+  /** mit der Tastatur gewählte Folge (Stelle in der Liste), wie in der Senderliste */
+  let gewaehlt = $state(-1);
   let gefolgt: number | null = null;
   $effect(() => {
     const id = spielend;
@@ -87,6 +92,29 @@
   async function hinrollen(id: number) {
     await tick();
     listeEl?.querySelector<HTMLElement>(`[data-folge="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+  // Tastatur in der Folgenliste (RAD-17), wie in der Senderliste: Pfeil hoch und runter wählen, Eingabe oder Leertaste
+  // hören, Escape schließt die Details. Nur wenn die Liste selbst den Fokus hat, sonst gelten die Tasten der Wiedergabe.
+  $effect(() => {
+    void liste.folgen.length;
+    untrack(() => { if (gewaehlt >= liste.folgen.length) gewaehlt = liste.folgen.length - 1; });
+  });
+  function taste(ev: KeyboardEvent) {
+    const folgen = liste.folgen;
+    if (!folgen.length || ansicht.verzeichnis || (ev.target as HTMLElement) !== listeEl) return;
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+      gewaehlt = ev.key === "ArrowDown" ? Math.min(gewaehlt + 1, folgen.length - 1) : Math.max(gewaehlt - 1, 0);
+      void tick().then(() => listeEl?.querySelector(".rh-folge.fokus")?.scrollIntoView({ block: "nearest" }));
+    } else if ((ev.key === "Enter" || ev.key === " ") && gewaehlt >= 0) {
+      void spielen(folgen[gewaehlt]);
+    } else if (ev.key === "Escape" && ansicht.offen !== null) {
+      aendern((a) => ({ ...a, offen: null }));
+    } else {
+      return;
+    }
+    ev.preventDefault();
+    ev.stopPropagation();
   }
 
   function meldung(symbol: string, name: string, text: string, rueckgaengig?: () => Promise<void>) {
@@ -205,7 +233,8 @@
                      onaendern={aendern} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
                      onabonnieren={() => aendern((a) => ({ ...a, verzeichnis: true, offen: null }))}
                      oneinstellungen={() => actions.navigateTo("/einstellungen/podcasts")} />
-    <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl}>
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+    <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl} tabindex="0" onkeydown={taste}>
       {#if ansicht.verzeichnis}
         <Verzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onabonnieren={abonnieren}
                      onzu={() => aendern((a) => ({ ...a, verzeichnis: false }))} />
@@ -239,8 +268,8 @@
           <div class="rh-ohne-treffer"><i class="fa-solid fa-filter-circle-xmark"></i><b>{t("podcastAnsicht.keineTreffer")}</b><span>{t("podcastAnsicht.keineTrefferHilfe")}</span>
             <button class="knopf" type="button" onclick={() => aendern((a) => ({ ...a, abos: [], wahl: "alle", suche: "", offen: null }))}>{t("podcastAnsicht.zuruecksetzen")}</button></div>
         {:else}
-          {#each liste.folgen as f (f.id)}
-            <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id}
+          {#each liste.folgen as f, i (f.id)}
+            <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id} fokus={gewaehlt === i}
                         onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} kannSpeichern={kann.speichern}
                         dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
                         onloeschen={() => speichern(f, false)}

@@ -10,12 +10,14 @@
   import Langtext from "../radio/Langtext.svelte";
   import Werbeteil from "./Werbeteil.svelte";
 
-  let { folge, abo, spielt, offen, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo,
+  let { folge, abo, spielt, offen, fokus = false, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo,
         onanhoeren, onwerbung }: {
     folge: Folge;
     abo: Abo | undefined;
     spielt: boolean;
     offen: boolean;
+    /** mit der Tastatur gewählt (Rahmen wie in der Senderliste) */
+    fokus?: boolean;
     kannSpeichern: boolean;
     /** Adresse zum Herunterladen aufs Gerät, leer ohne */
     dateiAdresse: string;
@@ -58,7 +60,7 @@
   }
 </script>
 
-<article class="rh-sender rh-folge" class:spielt class:gewaehlt={offen && !spielt} class:offen class:gehoert data-folge={folge.id}>
+<article class="rh-sender rh-folge" class:spielt class:gewaehlt={offen && !spielt} class:offen class:gehoert class:fokus data-folge={folge.id}>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onspielen}>
     <span class="led"><ak-led farbe={spielt ? "blau" : "gelb"} zustand={spielt || offen ? "an" : "aus"} groesse="klein"></ak-led></span>
