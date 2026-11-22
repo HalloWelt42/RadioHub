@@ -83,9 +83,6 @@
 
   const sterne = $derived(Math.max(0, ...eintrag.bewertungen.map(sterneVon)));
   const strom = $derived(steckbrief ? (steckbrief.eigeneAdresse || steckbrief.adresse) : "");
-  /** Einträge der eigenen Einschätzung (Sterne zählen als einer); ab sechs rollt die Liste in sich */
-  const anzahlEinschaetzung = $derived((sterne > 0 ? 1 : 0) + (werbemarke ? 1 : 0) + MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)).length
-    + (steckbrief?.widerspruch && faehig.werbung ? 1 : 0) + (faehig.kategorien ? kategorien.filter((k) => eintrag.kategorien.includes(k.id)).length : 0));
 
   async function tun(arbeit: () => Promise<void>) {
     if (arbeitet) return;
@@ -202,7 +199,7 @@
     </dl>
   </section>
 
-  <section class="rh-tafel-detail" aria-label={t("radio.eigeneBewertung")}>
+  <section class="rh-tafel-detail rh-tafel-fuellt" aria-label={t("radio.eigeneBewertung")}>
     <div class="rh-einschaetzung">
       <!-- "Eigene Filter" mit dem Plus immer oben, auf der Linie der ersten Steckbriefzeile (Nutzer 22.11.2026, RAD-59) -->
       <div class="rh-einschaetzung-kopf">
@@ -241,7 +238,7 @@
       </span>
       </div>
       <!-- die Auswahl als Liste gleich großer Einträge, die bei vielen in sich rollt wie die Werbeliste (RAD-59) -->
-      <div class="rh-einschaetzung-liste" class:rh-liste-rollt={anzahlEinschaetzung > 5}>
+      <div class="rh-einschaetzung-liste">
       {#if sterne}<span class="chip wahl an rh-chip-klein rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
       {#if werbemarke}
         <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.werbemarkeHilfe")} onclick={werbemarkeEntfernen}>
@@ -266,7 +263,13 @@
   <!-- Werbung rechts außen, schmal und kurz (RAD-59) -->
   {#if faehig.werbung}
     <section class="rh-tafel-detail" aria-label={t("radio.werbungTitel")}>
-      {#if werbung?.spots}<span class="rh-still rh-werbung-zahlen" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
+      <!-- Kopf: links die Anzahl, rechts außen der Schalter über der Liste der Werbenden (RAD-59) -->
+      <div class="rh-werbung-kopf">
+        {#if werbung?.spots}<span class="rh-still" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
+        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringen")}
+          hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
+          onwechsel={werbungSchalten} />{/if}
+      </div>
       {#if gruppen.length}
         <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
           {#each werbendeListe.zeigen as g (g.name || g.kennung)}
@@ -289,11 +292,6 @@
       {:else if werbung}
         <span class="rh-still">{t("radio.werbungKeineBekannt")}</span>
       {/if}
-      <div class="rh-zeile-dicht">
-        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringen")}
-          hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
-          onwechsel={werbungSchalten} />{/if}
-      </div>
     </section>
   {/if}
 </div>
