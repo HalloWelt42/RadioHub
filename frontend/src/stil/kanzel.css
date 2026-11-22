@@ -178,7 +178,8 @@
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-modul > .ak-etikett { display: none; }
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-laut { margin-top: 0; }
 /* in Reihen ragt nichts über die Kanzel: oben so viel Luft wie seitlich, darin hat auch die Urheberzeile Platz (RAD-86) */
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { padding-top: calc(var(--rh-rand) + 2px); }
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { padding-top: calc(var(--rh-rand) + 2px); padding-bottom: var(--rh-rand);
+  row-gap: var(--rh-rand); }   /* zwischen Display, Zeit und Tasten derselbe ruhige Abstand wie am Rand (RAD-86) */
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-urheber { top: calc((var(--rh-rand) + 2px - 1.2em) / 2); line-height: 1.2; }
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-m-laut { justify-content: center; }
 /* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
