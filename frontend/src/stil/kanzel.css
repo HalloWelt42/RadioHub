@@ -30,6 +30,9 @@
   grid-template-columns: minmax(var(--rh-anzeige-breite), 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
+/* ohne Modulköpfe außer LAUTSTÄRKE, die im Gehäuse steht (Nutzer 22.11.2026, RAD-72): die Module bekommen den Platz */
+.rh-kanzel-voll .rh-modul > .ak-etikett { display: none; }
+.rh-kanzel-voll .rh-m-steuerung { grid-template-rows: minmax(0, 1fr); grid-template-areas: "tasten dreh"; row-gap: 0; }
 .rh-m-anzeige { grid-area: anzeige; }
 /* so breit wie die Segmente, nie wie die Spulzeile darunter (deren Bahn passt sich an): sonst bliebe der Anzeige in der
    einen Zeile zu wenig Platz */
