@@ -106,9 +106,10 @@
 .rh-aktiv-chips .chip button, .t-chips .chip button { inline-size: 32px; block-size: 32px; border-radius: var(--r1); display: grid; place-items: center; color: var(--text-3); }
 .rh-aktiv-chips .chip button:hover { color: var(--gefahr); background-color: var(--gefahr-weich); }
 .rh-leer-chips { color: var(--text-3); font-size: var(--klein); }
-.rh-werkzeug .rh-alle-zurueck { block-size: var(--rh-taste-klein); }
-.rh-hinweis { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-block-size: var(--rh-taste-klein); padding: 4px 12px; border-radius: var(--r2);
-  font-size: var(--klein); color: var(--text-2); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+/* Hinweis ist kein Knopf: flach ohne Kappe, nur der Verweis darin ist bedienbar; alle Knöpfe der Werkzeugleiste haben
+   eine Höhe (--rh-taste), gesperrt liegen sie versenkt (RAD-59) */
+.rh-hinweis { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-block-size: var(--rh-taste); padding: 4px 4px;
+  font-size: var(--klein); color: var(--text-2); }
 .rh-hinweis b { color: var(--text); font-family: var(--schrift-zahl); }
 .rh-hinweis a { margin-left: auto; color: var(--akzent); font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
 .rh-hinweis a:hover { text-decoration: underline; }
@@ -173,6 +174,9 @@
 .rh-varianten-knopf .rh-zahl { display: inline-block; min-inline-size: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
 .rh-varianten-pfeil { font-size: .8em; color: var(--text-3); transition: transform var(--schnell); }
 .rh-varianten-knopf.aktiv .rh-varianten-pfeil { transform: rotate(180deg); }
+/* Aufklapper der Zeile verhalten sich gleich (RAD-59): offen bleibt die Kappe erhaben (versenkt heißt gesperrt), der Pfeil
+   dreht sich nach oben und trägt die Akzentfarbe */
+.rh-varianten-knopf.aktiv .rh-varianten-pfeil, .rh-aktionen .rund[aria-expanded="true"] i { color: var(--akzent); }
 .rh-varianten-knopf-schmal, .rh-auge-schmal { display: none; }
 .rh-varianten-knopf-schmal { min-block-size: 36px; }
 .rh-platz { display: block; }
@@ -295,7 +299,6 @@
 .rh-sender.rh-ausgeblendet .rh-sender-kern > :not(.rh-aktionen):not(.stimmen), .tf-sender.rh-ausgeblendet > :not(.tf-aktionen) { opacity: .55; }
 .rh-ausgeblendet-marke { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
 /* Varianten aufgeklappt: der Knopf bleibt eingedrückt wie beim Drücken im HiFi-Stil (RAD-28) */
-.rh-sender .rh-varianten-knopf.aktiv { transform: translateY(1px); background-image: none; box-shadow: var(--hifi-mulde, var(--rh-mulde)); }
 
 /* Werbung aus den Sendedaten (RAD-33, Entwurf radio-werbung.html): Marke an Sendern, die Werbung ankündigen */
 .rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--led-bernstein); font-weight: 600; }
