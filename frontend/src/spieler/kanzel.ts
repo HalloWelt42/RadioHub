@@ -27,6 +27,8 @@ export interface HlsStand {
   max_segments?: number;
   /** RAD-33: Werbestellen im Puffer, Sekunden des Tons wie die Segmente (bis null: läuft noch) */
   werbestellen?: { von: number; bis: number | null }[];
+  /** Ton unverändert vom Sender (RAD-92); false: umgewandelt, auch wenn Original gewählt war */
+  original?: boolean;
 }
 
 /** Ausschnitt aus appState und dem Tonausgang, den die Kanzel liest */
@@ -517,7 +519,11 @@ export function bitrateLage(s: Stand): BitrateLage {
 }
 
 /** Stellungen der Drehwahl als Raster des Appkerns ("|"-getrennt) */
-export const bitrateRaster = (t: Uebersetzer): string => [t("kanzel.bitrateWieGesendetName"), ...BITRATEN.map(String)].join("|");
+/** Wahl der Bitrate (RAD-92): Original (unverändert), voll (umgewandelt in der Bitrate des Senders) oder eine Stufe */
+export type Bitratenwahl = "original" | "voll" | number;
+
+export const bitrateRaster = (t: Uebersetzer): string =>
+  [t("kanzel.bitrateOriginalName"), t("kanzel.bitrateVollName"), ...BITRATEN.map(String)].join("|");
 
 /** Tempo einer Folge (RAD-17, Entwurf podcasts.html): Drehwahl an der Stelle der Bitrate, solange eine Folge spielt */
 export const TEMPI = [0.75, 1, 1.25, 1.5, 1.75, 2] as const;
@@ -529,19 +535,26 @@ export function tempoStellung(tempo: number): number {
 export const tempoAusStellung = (stellung: number): number => TEMPI[Math.min(TEMPI.length - 1, Math.max(0, Math.round(stellung)))];
 
 /** Stellung der Drehwahl für eine Vorgabe (0: wie gesendet) und zurück */
-export function bitrateStellung(vorgabe: number | null): number {
-  const i = vorgabe === null ? -1 : BITRATEN.indexOf(vorgabe as (typeof BITRATEN)[number]);
-  return i < 0 ? 0 : i + 1;
+export function bitrateStellung(wahl: Bitratenwahl): number {
+  if (wahl === "original") return 0;
+  if (wahl === "voll") return 1;
+  const i = BITRATEN.indexOf(wahl as (typeof BITRATEN)[number]);
+  return i < 0 ? 1 : i + 2;
 }
-export function bitrateAusStellung(stellung: number): number | null {
-  return stellung >= 1 && stellung <= BITRATEN.length ? BITRATEN[stellung - 1] : null;
+export function bitrateAusStellung(stellung: number): Bitratenwahl {
+  if (stellung <= 0) return "original";
+  if (stellung === 1) return "voll";
+  return BITRATEN[Math.min(BITRATEN.length, stellung - 1) - 1];
 }
 
 /** Leuchtschrift im Glas: welche Bitrate der Zeitversatz nimmt (nur Zustand, keine Bedienung) */
-export function bitrateText(s: Stand, vorgabe: number | null, wechselt: boolean, t: Uebersetzer): string | null {
+export function bitrateText(s: Stand, vorgabe: Bitratenwahl, wechselt: boolean, t: Uebersetzer): string | null {
   const lage = bitrateLage(s);
   if (lage === "aus" || lage === "gesperrt") return null;
   if (wechselt) return t("kanzel.pufferWechselt");
   if (lage === "fest") return t("kanzel.pufferBitrate", { wert: t("kanzel.kbit", { n: 128 }) });
-  return t("kanzel.pufferBitrate", { wert: vorgabe !== null ? t("kanzel.kbit", { n: vorgabe }) : t("kanzel.bitrateWieGesendet") });
+  // Original gewählt, das Format des Senders aber nicht übernehmbar: der Puffer wandelt um (RAD-92)
+  if (vorgabe === "original") return t("kanzel.pufferBitrate", { wert: t(s.hlsStatus?.original === false ? "kanzel.bitrateOriginalUmgewandelt" : "kanzel.bitrateOriginal") });
+  if (vorgabe === "voll") return t("kanzel.pufferBitrate", { wert: t("kanzel.bitrateVoll") });
+  return t("kanzel.pufferBitrate", { wert: t("kanzel.kbit", { n: vorgabe }) });
 }

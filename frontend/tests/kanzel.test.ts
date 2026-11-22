@@ -232,15 +232,18 @@ describe("Bitrate des Zeitversatzes", () => {
     expect(bitrateLage(stand({ isPlaying: true, playerMode: "hls", currentEpisode: { title: "F" } }))).toBe("fest");
     expect(bitrateLage(spielt())).toBe("aus");
   });
-  it("Drehwahl: erste Stellung wie gesendet, dann die Stufen", () => {
-    expect(bitrateRaster(t)).toBe("Original|32|48|64|96|128|192|256|320");
-    expect(bitrateStellung(null)).toBe(0);
-    expect(bitrateStellung(128)).toBe(5);
-    expect(bitrateStellung(100)).toBe(0);
-    expect([0, 1, 5, 8, 9].map(bitrateAusStellung)).toEqual([null, 32, 128, 320, null]);
+  it("Drehwahl (RAD-92): erste Stellung Original, zweite voll umgewandelt, dann die Stufen", () => {
+    expect(bitrateRaster(t)).toBe("Original|Voll|32|48|64|96|128|192|256|320");
+    expect(bitrateStellung("original")).toBe(0);
+    expect(bitrateStellung("voll")).toBe(1);
+    expect(bitrateStellung(128)).toBe(6);
+    expect(bitrateStellung(100)).toBe(1);
+    expect([0, 1, 2, 6, 9, 10].map(bitrateAusStellung)).toEqual(["original", "voll", 32, 128, 320, 320]);
   });
   it("im Glas nur der Zustand als Leuchtschrift", () => {
-    expect(bitrateText(zv(), null, false, t)).toBe("PUFFER WIE GESENDET");
+    expect(bitrateText(zv(), "original", false, t)).toBe("PUFFER ORIGINAL");
+    expect(bitrateText(zv({ hlsStatus: { ...HLS, original: false } }), "original", false, t)).toBe("PUFFER UMGEWANDELT");
+    expect(bitrateText(zv(), "voll", false, t)).toBe("PUFFER VOLL");
     expect(bitrateText(zv(), 64, false, t)).toBe("PUFFER 64 kbit/s");
     expect(bitrateText(zv(), 64, true, t)).toBe("PUFFER WECHSELT ...");
     expect(bitrateText(spielt(), 64, false, t)).toBeNull();

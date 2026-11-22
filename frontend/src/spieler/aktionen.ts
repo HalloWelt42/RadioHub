@@ -8,6 +8,8 @@ import { naechsteReihenfolge } from "./kanzel";
 import { tonelement } from "./tonelement";
 import { puffer } from "./puffer.svelte";
 import { blaetternInAufnahme, springtTitel } from "./kanzel";
+import { bitratenwahlLesen, bitratenwahlSetzen } from "../lib/bitratenwahl.js";
+import type { Bitratenwahl } from "./kanzel";
 
 /** Die Taste Spielen (und die Leertaste), streng nach einer Regel (Nutzer 20.11.2026): sie bleibt Spielen und beendet
  *  nie; beendet wird nur über Stopp. Gestoppt startet sie die Quelle, beim Spielen hält sie an, in der Pause geht es
@@ -107,21 +109,14 @@ export function modusWechseln(): string {
 }
 
 // ─── Bitrate des Zeitversatzes: Vorgabe des Nutzers, dauerhaft im Browser ───
-const BITRATE_SCHLUESSEL = "radiohub_bitrate_override";
-
-export function bitrateLesen(): number | null {
-  try {
-    const wert = JSON.parse(localStorage.getItem(BITRATE_SCHLUESSEL) || "null");
-    return typeof wert === "number" ? wert : null;
-  } catch {
-    return null;
-  }
+/** gemerkte Wahl der Bitrate des Zeitversatzes (RAD-92, lib/bitratenwahl.js) */
+export function bitrateLesen(): Bitratenwahl {
+  return bitratenwahlLesen();
 }
 
 /** Neue Bitrate merken; läuft der Zeitversatz, startet er mit ihr neu (höchstens 15 Sekunden, bis er wieder steht) */
-export async function bitrateSetzen(wert: number | null): Promise<void> {
-  if (wert !== null) localStorage.setItem(BITRATE_SCHLUESSEL, JSON.stringify(wert));
-  else localStorage.removeItem(BITRATE_SCHLUESSEL);
+export async function bitrateSetzen(wert: Bitratenwahl): Promise<void> {
+  bitratenwahlSetzen(wert);
   if (app.playerMode !== "hls" || !app.currentStation) return;
   await engine.restartHLS();
   for (let i = 0; i < 30 && !app.hlsActive; i++) await new Promise((r) => setTimeout(r, 500));

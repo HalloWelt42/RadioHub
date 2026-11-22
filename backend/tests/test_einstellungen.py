@@ -162,7 +162,7 @@ async def test_ort_wird_gemeinsam_uebernommen_und_eine_regel_bricht_den_uebertra
 def test_rad11_regeln_und_felder_ueber_die_schnittstelle(client):
     felder = {f["name"]: f for f in client.get("/api/v1/einstellungen").json()}
     assert felder["language"]["art"] == "auswahl" and felder["language"]["beschriftungen"]["de"] == "Deutsch"
-    assert felder["hls_puffer_minuten"]["kleinste"] == 10 and felder["hls_puffer_minuten"]["einheit"] == "min"
+    assert felder["hls_puffer_minuten"]["kleinste"] == 15 and felder["hls_puffer_minuten"]["einheit"] == "min"
     assert felder["hls_sample_rate"]["art"] == "auswahl" and felder["service_fyyd_search_url"]["titel"] == "Podcast-Verzeichnis, deutsch"
     assert {f["gruppe"] for f in felder.values() if f["name"] in einstellungen.CONFIG_FELDER} <= {
         "Allgemein", "Radio", "Wiedergabe", "Aufnahmen", "Podcasts", "Wecker und Zeitansage", "Ablage", "Dienste"}

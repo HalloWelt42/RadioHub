@@ -13,7 +13,7 @@ schluessel_orte:
   - "Pi: `{{wurzel}}/data/kellerwolke.schluessel`, Modus 0600: der App-Schlüssel von vor RAD-6; gilt nur noch, solange die .env keinen festen hat"
   - "Pi: `{{wurzel}}/zertifikate/`, Blattzertifikat mit Schlüssel aus der Hausstelle (vom Ausrollen)"
 einrichten: einrichten.sh
-stand: 9ff31bd
+stand: b3e5c62
 ---
 
 # RadioHub
@@ -127,6 +127,13 @@ großen Spieler und öffnet ein Blatt von unten. Holen übernimmt die Wiedergabe
 derselben Stelle, ein Sender live), Dorthin gibt die eigene ab, hier hält sie an; eine laufende Aufnahme läuft weiter.
 Den eigenen Namen in der Liste antippen benennt das Gerät um (gilt für alle Fenster dieses Browsers). Was gemeldet und
 übergeben wird, steht in `backend/app/geraete.py` und `frontend/src/spieler/geraete.svelte.ts`.
+Ton des Zeitversatzes (RAD-92): Der Drehregler Bitrate (am Telefon die Auswahl im Kasten Zeitversatz) hat als erste
+Stufe Original: der Ton des Senders geht unverändert in den Puffer, ohne Neukodieren und ohne Angleichen der Lautheit
+(MP3 und AAC; andere Formate wandelt der Puffer um und zeigt UMGEWANDELT). Voll wandelt in der Bitrate des Senders um,
+mit Angleichen der Lautheit, danach folgen feste Stufen. Spielt ein Gerät das Original nicht ab, stellt es selbst auf
+Voll. Die Wahl gilt je Browser (radiohub_bitrate_override). Am Pi liegen die Stücke im Arbeitsspeicher (tmpfs /puffer,
+Größe über RADIOHUB_PUFFER_RAM, Vorgabe 1200m; Ort als Einstellung hls_puffer_ordner). Die Länge des Puffers
+stellt man in den Einstellungen unter Wiedergabe ein, von 15 Minuten bis 8 Stunden in Schritten von 15 Minuten.
 Ruhig hören (RAD-84): Ein direkter Strom (Original in PRO, jeder Sender in Basic) läuft über einen eigenen Vorrat im
 Browser (`lib/stromhalter.js`): gespielt wird nach etwa 6 Sekunden Vorlauf, läuft er leer, füllt er still auf, statt zu
 stottern, und reißt die Verbindung ab, verbindet er neu und hängt an, während der Vorrat weiterspielt (nach sechs

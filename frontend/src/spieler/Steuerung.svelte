@@ -83,7 +83,7 @@
         oninput={(e: Event) => actions.setPodcastSpeed(tempoAusStellung((e.currentTarget as Drehregler).wert ?? 1))}></ak-dreh>
     {:else if kann.zeitversatz}
     <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.bitrateName")} hilfe={t("kanzel.bitrateHilfe")} raster={bitrateRaster(t)} vorgabe="0"
-        role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== null ? 'gelb' : 'gruen'})"
+        role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== 'original' ? 'gelb' : 'gruen'})"
         oninput={gedreht} onchange={() => bitrate.anwenden()}></ak-dreh>
     {/if}
 </section>

@@ -35,6 +35,7 @@ class HLSStartRequest(BaseModel):
     max_minutes: int | None = None          # leer: Länge des Puffers aus den Einstellungen (RAD-11)
     override_bitrate: int = 0
     is_podcast: bool = False
+    original: bool = False                  # Ton unverändert übernehmen, wenn das Format es erlaubt (RAD-92)
 
 
 # === Buffer Control ===
@@ -69,7 +70,8 @@ async def start_hls_buffer(request: HLSStartRequest):
         max_bitrate=max_bitrate,
         sample_rate=sample_rate,
         override_bitrate=request.override_bitrate,
-        is_podcast=request.is_podcast
+        is_podcast=request.is_podcast,
+        original=request.original
     )
     
     if result.get("status") == "error":

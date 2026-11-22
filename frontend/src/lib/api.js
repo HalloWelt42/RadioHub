@@ -3,6 +3,7 @@
  * Kommunikation mit Backend; jede Anfrage trägt die Sitzung (lib/sitzung.ts), eine abgewiesene beendet sie
  */
 import { antwortPruefen, kopf } from './sitzung';
+import { bitratenwahlAnfrage } from './bitratenwahl.js';
 
 // API Base URL - relativ für Vite-Proxy, überschreibbar für Docker/Produktion
 const API_BASE = window.RADIOHUB_API_URL || '';
@@ -443,7 +444,7 @@ class RadioHubAPI {
 
   // === HLS Timeshift Buffer ===
   async startHLS(station) {
-    const overrideBitrate = JSON.parse(localStorage.getItem('radiohub_bitrate_override') || '0');
+    // Bitrate aus der einen Wahl (RAD-92); die Länge des Puffers aus den Einstellungen (keine feste Länge hier)
     return this.fetch('/api/hls/start', {
       method: 'POST',
       body: JSON.stringify({
@@ -451,8 +452,7 @@ class RadioHubAPI {
         station_name: station.name,
         stream_url: station.url_resolved || station.url,
         bitrate: station.bitrate || 128,
-        max_minutes: 120,
-        override_bitrate: overrideBitrate || 0
+        ...bitratenwahlAnfrage()
       })
     });
   }

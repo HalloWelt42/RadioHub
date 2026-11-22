@@ -15,7 +15,9 @@
   import { live } from '../../spieler/aktionen';
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
-  import { Geraeteliste } from 'appkern-oberflaeche';
+  import { Auswahl, Geraeteliste } from 'appkern-oberflaeche';
+  import { Bitrate } from '../../spieler/bitrate.svelte';
+  import { BITRATEN } from '../../spieler/kanzel';
   import { faehigkeiten } from '../../lib/playerEngine.js';
   import { geraete, geraeteTexte, geraeteZeile } from '../../spieler/geraete.svelte';
 
@@ -42,6 +44,13 @@
   /** Geräte als Blatt von unten (RAD-18) */
   let geraeteOffen = $state(false);
   const kann = faehigkeiten();
+  /** Ton des Zeitversatzes (RAD-92): Original, voll umgewandelt oder eine feste Stufe */
+  const bitrate = new Bitrate();
+  const tonOptionen = [
+    { wert: 'original', titel: t('kanzel.bitrateOriginalName'), hinweis: t('telefon.tonOriginalHinweis') },
+    { wert: 'voll', titel: t('kanzel.bitrateVollName'), hinweis: t('telefon.tonVollHinweis') },
+    ...BITRATEN.map((n) => ({ wert: n, titel: t('kanzel.kbit', { n }) })),
+  ];
   const pStelle = $derived(puffer.stelle ?? puffer.ende);
   const pTitel = $derived(puffer.laufend);
   const pName = (a) => puffer.benennen(a);
@@ -131,7 +140,12 @@
       {#if puffer.aktiv}
         <!-- Zeitversatz mit Titeln und Werbung (RAD-46, Entwurf puffer.html Zustand 6) -->
         <div class="tf-versatz">
-          <span class="tf-etikett">{t('puffer.zeitversatz')}</span>
+          <div class="tf-versatz-kopf">
+            <span class="tf-etikett">{t('puffer.zeitversatz')}</span>
+            <!-- Ton des Zeitversatzes auch am Telefon wählbar (RAD-92): manches Telefon spielt das Original nicht -->
+            <Auswahl wert={bitrate.vorgabe} optionen={tonOptionen} symbol="fa-wave-square" titel={t('kanzel.bitrateName')}
+                     onwahl={(w) => { bitrate.vormerken(w); void bitrate.anwenden(); }} />
+          </div>
           <PufferBalken stelle={pStelle} links={t('puffer.vorLive', { zeit: formatTimeShort(puffer.hinter) })}
             mitte={t('puffer.laengeVonMax', { laenge: formatTimeShort(puffer.ende - puffer.anfang), max: formatTimeShort(puffer.groesste) })} />
           <div class="tf-versatz-titel">
@@ -182,6 +196,7 @@
 
 <style>
   .tf-versatz { display: grid; gap: 8px; margin: 12px 0 4px; padding: 10px 12px; border-radius: 14px; background: var(--t-flaeche); }
+  .tf-versatz-kopf { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .tf-etikett { font-size: var(--marke); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t-text-2); }
   .tf-versatz-titel { display: grid; text-align: center; }
   .tf-versatz-titel b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

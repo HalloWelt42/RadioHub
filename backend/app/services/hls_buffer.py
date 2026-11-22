@@ -48,6 +48,11 @@ class StreamInfo:
     channels: int = 2
     
     
+#: Formate, die ffmpeg unverändert in die Stücke (MPEG-TS) übernehmen kann; alles andere wird umgewandelt (RAD-92).
+#: Namen wie im Kopf des Stromlesers (FORMATE) und bei ffprobe (codec_name)
+KOPIERBAR = frozenset({"mp3", "aac"})
+
+
 @dataclass
 class HLSSession:
     """Aktive HLS Buffer Session"""
@@ -66,6 +71,7 @@ class HLSSession:
     sample_rate: int = 44100       # Sample Rate
     input_codec: str = "unknown"   # Erkannter Input-Codec
     is_podcast: bool = False       # Podcast-Modus: alle Segmente behalten, kein ICY
+    original: bool = False         # Ton unverändert übernommen (keine Neukodierung, kein Angleichen, RAD-92)
     is_active: bool = True
     error: Optional[str] = None
 
@@ -79,8 +85,11 @@ class HLSBufferService:
     Mit adaptiver Bitrate basierend auf Input-Stream.
     """
     
-    def __init__(self, buffer_dir: str = "/tmp/radiohub-hls"):
-        self.buffer_dir = Path(buffer_dir)
+    def __init__(self, buffer_dir: str | None = None):
+        # Ort der Stücke: fest übergeben (Prüfungen) oder aus der Einstellung hls_puffer_ordner, am Pi ein Bereich im
+        # Arbeitsspeicher (compose.pi.yml, RAD-92); gelesen beim Start jedes Puffers
+        self._fester_ordner = Path(buffer_dir) if buffer_dir else None
+        self.buffer_dir = self._fester_ordner or Path("/tmp/radiohub-hls")
         self.session: Optional[HLSSession] = None
         self._ffmpeg_process: Optional[asyncio.subprocess.Process] = None
         self._monitor_task: Optional[asyncio.Task] = None
@@ -93,6 +102,9 @@ class HLSBufferService:
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
+        if self._fester_ordner is None:
+            from .. import einstellungen
+            self.buffer_dir = Path(einstellungen.stand().hls_puffer_ordner)
         if self.buffer_dir.exists():
             shutil.rmtree(self.buffer_dir)
         self.buffer_dir.mkdir(parents=True, exist_ok=True)
@@ -214,20 +226,26 @@ class HLSBufferService:
         else:
             cmd += ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", stream_url]
 
+        # Original (RAD-92): der Ton geht unverändert in die Stücke, ohne Dekodieren, Angleichen und Neukodieren
         # Podcast: Kein loudnorm (buffert gesamten Stream, blockiert Output)
         #          + -vn: Embedded Cover/Chapter-Images ignorieren (blockieren sonst libx264)
-        # Radio: loudnorm fuer konsistente Lautstaerke bei Live-Streams
-        if self.session.is_podcast:
-            cmd += ["-vn"]
+        # Radio umgewandelt: loudnorm fuer konsistente Lautstaerke bei Live-Streams
+        if self.session.original:
+            cmd += ["-vn", "-c:a", "copy"]
         else:
-            cmd += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"]
+            if self.session.is_podcast:
+                cmd += ["-vn"]
+            else:
+                cmd += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"]
+            cmd += [
+                # Audio Encoding (adaptive Bitrate!)
+                "-c:a", "aac",
+                "-b:a", f"{self.session.output_bitrate}k",
+                "-ac", "2",  # Stereo
+                "-ar", str(self.session.sample_rate),
+            ]
 
         cmd += [
-            # Audio Encoding (adaptive Bitrate!)
-            "-c:a", "aac",
-            "-b:a", f"{self.session.output_bitrate}k",
-            "-ac", "2",  # Stereo
-            "-ar", str(self.session.sample_rate),
             # HLS Output
             "-f", "hls",
             "-hls_time", str(self.session.segment_duration),
@@ -249,7 +267,8 @@ class HLSBufferService:
         max_bitrate: int = 320,
         sample_rate: int = 44100,
         override_bitrate: int = 0,
-        is_podcast: bool = False
+        is_podcast: bool = False,
+        original: bool = False
     ) -> dict:
         """
         Startet HLS Buffering für einen Stream.
@@ -263,7 +282,9 @@ class HLSBufferService:
             min_bitrate: Minimum Bitrate (User-Einstellung)
             max_bitrate: Maximum Bitrate (User-Einstellung)
             sample_rate: Sample Rate in Hz
-            
+            original: den Ton des Senders unverändert übernehmen, wenn sein Format es erlaubt (KOPIERBAR); sonst
+                wird wie bei "voll" umgewandelt (RAD-92)
+
         Returns:
             Status-Dictionary
         """
@@ -320,7 +341,15 @@ class HLSBufferService:
             override_bitrate=override_bitrate
         )
         
-        logger.info(f"Bitrate: Input {input_bitrate} kbps → Output {output_bitrate} kbps (Range: {min_bitrate}-{max_bitrate})")
+        # Original (RAD-92): unverändert übernehmen spart Rechenzeit am Pi und eine zweite verlustbehaftete Umwandlung
+        unveraendert = original and not is_podcast and stream_info.codec in KOPIERBAR
+        if unveraendert:
+            output_bitrate = input_bitrate
+            logger.info(f"Ton unverändert: {stream_info.codec} {input_bitrate} kbps")
+        else:
+            if original:
+                logger.info(f"Original nicht möglich ({stream_info.codec}): Umwandlung wie bei voll")
+            logger.info(f"Bitrate: Input {input_bitrate} kbps → Output {output_bitrate} kbps (Range: {min_bitrate}-{max_bitrate})")
         
         self.session = HLSSession(
             session_id=session_id,
@@ -336,7 +365,8 @@ class HLSBufferService:
             max_bitrate=max_bitrate,
             sample_rate=sample_rate,
             input_codec=stream_info.codec,
-            is_podcast=is_podcast
+            is_podcast=is_podcast,
+            original=unveraendert
         )
         
         # Buffer-Verzeichnis vorbereiten
@@ -577,6 +607,7 @@ class HLSBufferService:
             "input_codec": self.session.input_codec,
             "input_bitrate": self.session.input_bitrate,
             "output_bitrate": self.session.output_bitrate,
+            "original": self.session.original,
             "min_bitrate": self.session.min_bitrate,
             "max_bitrate": self.session.max_bitrate,
             "sample_rate": self.session.sample_rate,

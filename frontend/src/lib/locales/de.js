@@ -17,6 +17,8 @@ export default {
 
   // === Telefonansicht ===
   telefon: {
+    tonOriginalHinweis: 'unverändert vom Sender, beste Qualität',
+    tonVollHinweis: 'umgewandelt, wenn dieses Telefon das Original nicht abspielt',
     radio: 'Radio',
     podcasts: 'Podcasts',
     wecker: 'Wecker',
@@ -327,9 +329,12 @@ export default {
     tempoName: 'Tempo',
     tempoHilfe: 'Tempo der Folge',
     bitrateName: 'Bitrate',
-    bitrateWieGesendetName: 'Original',
-    bitrateHilfe: 'Bitrate des Zeitversatzes: wie gesendet oder eine feste Stufe; wirkt nur im Zeitversatz',
-    bitrateWieGesendet: 'WIE GESENDET',
+    bitrateOriginalName: 'Original',
+    bitrateVollName: 'Voll',
+    bitrateHilfe: 'Ton des Zeitversatzes: Original (unverändert vom Sender), Voll (umgewandelt in der Bitrate des Senders) oder eine feste Stufe; wirkt nur im Zeitversatz',
+    bitrateOriginal: 'ORIGINAL',
+    bitrateOriginalUmgewandelt: 'UMGEWANDELT',
+    bitrateVoll: 'VOLL',
     vor30Hilfe: '30 Sekunden vor',
     sekunden30: '30',
     zurueck30Hilfe: '30 Sekunden zurück',

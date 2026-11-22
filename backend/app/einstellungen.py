@@ -109,9 +109,14 @@ class AppEinstellungen(Grundeinstellungen):
     hls_sample_rate: Abtastrate = Field(44100, title="Abtastrate", json_schema_extra={**WIEDERGABE, "beschriftungen": {
         "22050": "22.050 Hz", "32000": "32.000 Hz", "44100": "44.100 Hz", "48000": "48.000 Hz"}},
                                         description="Abtastrate des Puffers.")
-    hls_puffer_minuten: int = Field(120, ge=10, le=240, title="Länge des Puffers",
-                                    json_schema_extra={**WIEDERGABE, "einheit": "min", "schritt": 10},
-                                    description="So weit lässt sich ein laufender Sender zurückspulen.")
+    hls_puffer_minuten: int = Field(120, ge=15, le=480, title="Länge des Puffers",
+                                    json_schema_extra={**WIEDERGABE, "einheit": "min", "schritt": 15},
+                                    description="So weit lässt sich ein laufender Sender zurückspulen, in Schritten von "
+                                                "15 Minuten bis 8 Stunden (RAD-92).")
+    hls_puffer_ordner: str = Field("/tmp/radiohub-hls", min_length=1, max_length=300, title="Ordner der Puffer-Stücke",
+                                   json_schema_extra=WIEDERGABE,
+                                   description="Wo der Zeitversatz seine Stücke ablegt (jede Sekunde eins); am Pi ein "
+                                               "Bereich im Arbeitsspeicher (RADIOHUB_HLS_PUFFER_ORDNER, RAD-92).")
     podcast_auto_refresh: bool = Field(True, title="Abos von selbst abrufen", json_schema_extra=PODCASTS,
                                        description="Ruft die Feeds aller Abos regelmäßig ab.")
     podcast_refresh_interval: int = Field(21600, ge=60, le=7 * 86400, title="Abstand des Abrufs",

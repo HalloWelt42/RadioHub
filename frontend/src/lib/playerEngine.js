@@ -21,6 +21,7 @@ import Hls from 'hls.js';
 import { api } from './api.js';
 import { ueberBackend } from './wiedergabeweg.js';
 import { stromHalten } from './stromhalter.js';
+import { bitratenwahlLesen, bitratenwahlSetzen } from './bitratenwahl.js';
 import { sendewerbung, startwahl } from './radio/sendewerbung';
 
 // === Interne State-Variablen (nicht reaktiv) ===
@@ -1450,6 +1451,13 @@ async function _waitForHLSSegments(gen) {
   // HLS-Segmente nicht rechtzeitig bereit
 }
 
+/** Fehler von hls.js, die heißen: dieses Gerät kann den Codec des unveränderten Tons nicht (RAD-92) */
+const _CODEC_FEHLER = new Set(['manifestIncompatibleCodecsError', 'bufferAddCodecError', 'bufferIncompatibleCodecsError']);
+
+function _originalNichtAbspielbar(data) {
+  return _CODEC_FEHLER.has(data.details) && _appState?.hlsStatus?.original === true && bitratenwahlLesen() === 'original';
+}
+
 function _switchToHLS(gen, startSekunde = null) {
   if (_generation !== gen) return;
   if (!_audioEl || !Hls.isSupported()) return;
@@ -1489,6 +1497,14 @@ function _switchToHLS(gen, startSekunde = null) {
 
   _hlsInstance.on(Hls.Events.ERROR, (event, data) => {
     if (_generation !== gen) return;
+
+    // RAD-92: kann dieses Gerät den unveränderten Ton des Senders nicht abspielen, nimmt es die Umwandlung (voll)
+    if (_originalNichtAbspielbar(data)) {
+      bitratenwahlSetzen('voll');
+      _showPlayerError('Original wird hier nicht abgespielt: Zeitversatz umgewandelt (voll)');
+      void restartHLS();
+      return;
+    }
 
     if (data.fatal) {
       console.error('HLS Fatal Error:', data.type, data.details);

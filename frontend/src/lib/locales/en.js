@@ -17,6 +17,8 @@ export default {
 
   // === Phone view ===
   telefon: {
+    tonOriginalHinweis: 'unchanged from the station, best quality',
+    tonVollHinweis: 'converted, if this phone cannot play the original',
     radio: 'Radio',
     podcasts: 'Podcasts',
     wecker: 'Alarm',
@@ -327,9 +329,12 @@ export default {
     tempoName: 'Speed',
     tempoHilfe: 'Playback speed of the episode',
     bitrateName: 'Bitrate',
-    bitrateWieGesendetName: 'Original',
-    bitrateHilfe: 'Bitrate of the timeshift: as broadcast or a fixed step; only in timeshift',
-    bitrateWieGesendet: 'AS BROADCAST',
+    bitrateOriginalName: 'Original',
+    bitrateVollName: 'Full',
+    bitrateHilfe: 'Sound of the timeshift: original (unchanged from the station), full (converted at the station bitrate) or a fixed step; only in timeshift',
+    bitrateOriginal: 'ORIGINAL',
+    bitrateOriginalUmgewandelt: 'CONVERTED',
+    bitrateVoll: 'FULL',
     vor30Hilfe: '30 seconds forward',
     sekunden30: '30',
     zurueck30Hilfe: '30 seconds back',

@@ -35,11 +35,16 @@ services:
       # OSMLocal heißt im Netz haus osmlocal (Alias in seiner Compose-Datei auf dem Pi)
       RADIOHUB_ORTSSUCHE_ADRESSE: http://osmlocal:8120
       TZ: Europe/Berlin
+      # Stücke des Zeitversatzes im Arbeitsspeicher statt auf dem Datenträger (RAD-92): jede Sekunde ein Stück, bis
+      # zu 8 h; die Größe des Bereichs über RADIOHUB_PUFFER_RAM in .env (Vorgabe für 8 h bei 320 kbit/s)
+      RADIOHUB_HLS_PUFFER_ORDNER: /puffer/hls
     volumes:
       - ./data:/data
       # Sicherungen der Datenbanken nach der Regel des Appkerns: regelmäßig von der App, vor dem Neustart vom Ausrollen
       - ./sicherungen:/sicherungen
       - ./zertifikate:/zertifikate:ro
+    tmpfs:
+      - /puffer:size=${RADIOHUB_PUFFER_RAM:-1200m},uid=1000,gid=1000,mode=0750
     healthcheck:
       # Python statt curl: curl ist im Abbild nicht enthalten
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
