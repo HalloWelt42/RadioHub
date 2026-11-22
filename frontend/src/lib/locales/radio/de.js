@@ -121,7 +121,7 @@ export default {
 
   // Details
   steckbrief: 'Steckbrief',
-  laeuft: 'Läuft',
+  senderinfo: 'Senderinfo',
   titel: 'Titel',
   titelKopieren: 'Titel kopieren',
   homepage: 'Homepage',

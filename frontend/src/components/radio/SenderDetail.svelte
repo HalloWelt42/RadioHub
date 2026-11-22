@@ -1,6 +1,6 @@
 <script lang="ts">
   // Details eines aufgeklappten Senders nach Entwurf A (steckbrief-kompakt.html, RAD-35): drei schmale Spalten.
-  // Steckbrief dicht (Läuft, Stream mit Kopieren und eigener Adresse, Codec, Homepage, Sprachen, Ort;
+  // Steckbrief dicht (Stream mit Kopieren und eigener Adresse, Senderinfo, Codec, Homepage, Sprachen, Ort;
   // Genres und Varianten stehen schon in der Zeile); Werbung aus den
   // Sendedaten nach Werbenden zusammengefasst (die häufigsten drei, der Rest auf Klick) mit Schalter und Werbeverdacht;
   // Einschätzung zeigt nur Gewähltes (abwählbar), alles Übrige liegt in der Tafel hinter dem Plus. Erklärungen stehen
@@ -187,7 +187,7 @@
           {/if}
         </dd>
       {/if}
-      <dt>{t("radio.laeuft")}</dt>
+      <dt>{t("radio.senderinfo")}</dt>
       <dd class="rh-laeuft">{#if spielt && appState.streamTitle}<span>{appState.streamTitle}</span><button class="rund rh-mini" type="button" title={t("radio.titelKopieren")}
           aria-label={t("radio.titelKopieren")} onclick={() => kopiere(appState.streamTitle ?? "", t("radio.titel"))}><i class="fa-regular fa-copy"></i></button>{/if}</dd>
       <dt>{t("radio.codec")}</dt>

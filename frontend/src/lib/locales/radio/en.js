@@ -121,7 +121,7 @@ export default {
 
   // Details
   steckbrief: 'Profile',
-  laeuft: 'Playing',
+  senderinfo: 'Station info',
   titel: 'Title',
   titelKopieren: 'Copy title',
   homepage: 'Homepage',
