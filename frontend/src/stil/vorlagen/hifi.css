@@ -53,8 +53,3 @@
   --rh-blatt-schatten: 0 -12px 34px rgb(0 0 0 / .5);
   --rh-spieler-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -8px 18px -8px rgb(0 0 0 / .5);
 }
-
-/* hell liegt der Grund der Seite auf Bürstung statt Körnung, wie der body der Vorlage (RAD-70) */
-:root[data-vorlage="hifi"][data-theme="hell"], :root[data-vorlage="hifi"]:not([data-theme]) {
-  --rh-grund-bild: radial-gradient(ellipse 90% 60% at 50% -12%, var(--hifi-grund-licht), transparent 72%), var(--hifi-buerste);
-}

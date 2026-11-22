@@ -1,6 +1,6 @@
 # Appkern mit den Schnittstellen für FastAPI (Gerüst, Einstellungen, Anmeldung, Protokoll, Sicherung), gebunden an
 # einen Commit: eine Adresse, die sich nie ändert, nähme Docker sonst aus einer alten Schicht (tools/appkern.sh hebt ihn)
-appkern[web] @ https://github.com/HalloWelt42/appkern/archive/5b62ce8fd47fcba7aa0ff289c329fc576b8d4967.tar.gz
+appkern[web] @ https://github.com/HalloWelt42/appkern/archive/72b2718ca3a476a5c3efa515dcecbe98e8e1093b.tar.gz
 uvicorn[standard]>=0.30
 httpx==0.27.2
 # Zertifikate für den Stromleser (https zum Sender), dieselben wie bei httpx
