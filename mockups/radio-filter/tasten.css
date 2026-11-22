@@ -94,8 +94,16 @@
 /* ═══ Auswahl (22.11.) ═══ Klavierlack dunkel, Elfenbein hell, je fünf Töne nebeneinander */
 .tv-hinweis { flex-basis: 100%; max-inline-size: 1180px; margin: 0; color: var(--text-2); }
 .tw-toene { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 14px; }
-.tv-elfenbein.tw-tafel { --k-schatten: inset 0 1px 0 rgb(255 255 255 / .8), 0 3px 0 var(--tw-sockel), 0 4px 6px rgb(40 25 5 / .4), 0 0 0 1px rgb(60 40 10 / .3);
-  --k-gedrueckt: inset 0 1px 0 rgb(255 255 255 / .8), 0 1px 0 var(--tw-sockel), 0 2px 3px rgb(40 25 5 / .35), 0 0 0 1px rgb(60 40 10 / .3); }
+/* Elfenbein räumlich wie der Klavierlack: Licht von oben über die gewölbte Kappe, Flanken abgeschattet, Lichtkante oben
+   und dunklere Kante unten innen, darunter ein Sockel und ein weicher Schlagschatten; gedrückt sinkt die Kappe auf den
+   Sockel. */
+.tv-elfenbein.tw-tafel { --k-grund: #e6dcc6;
+  --k-bild: linear-gradient(90deg, rgb(70 45 15 / .1), rgb(70 45 15 / 0) 22%, rgb(70 45 15 / 0) 78%, rgb(70 45 15 / .12)),
+    linear-gradient(180deg, #fffbf2 0%, #f1e8d5 30%, #e2d6bc 68%, #cdbd9c 100%);
+  --k-schatten: inset 0 1px 1px rgb(255 255 255 / .95), inset 0 -3px 4px rgb(90 60 20 / .28), 0 0 0 1px rgb(60 40 10 / .5),
+    0 3px 0 #a28e6a, 0 4px 3px rgb(40 25 5 / .4), 0 9px 14px rgb(40 25 5 / .32);
+  --k-gedrueckt: inset 0 1px 1px rgb(255 255 255 / .7), inset 0 2px 5px rgb(90 60 20 / .35), 0 0 0 1px rgb(60 40 10 / .5),
+    0 1px 0 #a28e6a, 0 2px 2px rgb(40 25 5 / .35), 0 4px 6px rgb(40 25 5 / .25); }
 
 /* Glimmen: Tastenlicht flach in voller Farbe, ohne Glanzpunkt und Verlauf (Nutzer 22.11.2026: "keine
    glanzeffekte auf LEDs das ist unnatürlich, lieber leichtes glimmen"); aus nur ein dunkler Hauch der Farbe */
@@ -103,8 +111,8 @@
 .lf-glimmen ak-led.rh-tastenlicht .ak-led-licht::after { background: var(--farbe);
   box-shadow: 0 0 4px color-mix(in srgb, var(--farbe) 75%, transparent), 0 0 10px color-mix(in srgb, var(--farbe) 35%, transparent); }
 
-/* ═══ Gewählt (22.11.) ═══ feste Symbolfarben je Taste (wechseln in keinem Zustand); Licht: Stopp gelb, Fokus,
-   Moduswechsel und Reihenfolge blau, Zurück und Vor bernstein. Auf Elfenbein hat der Lichtschlitz einen feinen dunklen
+/* ═══ Gewählt (22.11.) ═══ feste Symbolfarben je Taste (wechseln in keinem Zustand); Licht: Stopp, Zurück und Vor bernstein,
+   Fokus, Moduswechsel und Reihenfolge blau. Auf Elfenbein hat der Lichtschlitz einen feinen dunklen
    Rahmen, damit er sich von der hellen Kappe abhebt. */
 .tv-elfenbein.lf-glimmen ak-led.rh-tastenlicht .ak-led-licht { box-shadow: 0 0 0 1px #1d160d; }
 .tw-tafel.tv-lack { --tw-weiss: #e9edf2; --tw-gruen: #1f9e4a; --tw-rot: #c8202a; --tw-bernstein: #e9edf2; }
