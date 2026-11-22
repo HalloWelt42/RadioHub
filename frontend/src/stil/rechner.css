@@ -11,7 +11,7 @@
 .rh-kopf { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "marke nav rechts"; align-items: center; gap: 8px 16px;
   padding: calc(10px + env(safe-area-inset-top)) var(--rh-rand) 0; }
 .rh-kopf .rh-marke { grid-area: marke; justify-self: start; padding-bottom: 12px; }
-.rh-kopf .rh-nav { grid-area: nav; align-self: end; justify-self: center; margin-bottom: calc(-1 * var(--rh-ueberstand)); }
+.rh-kopf .rh-nav { grid-area: nav; align-self: end; justify-self: center; margin-bottom: calc(-1 * var(--rh-ueberstand)); translate: 0 -10px; }   /* 10 Pixel höher (RAD-71) */
 /* über den klebenden Teilen der alten Bereiche (bis z-index 100), unter ihren Überlagerungen (ab 1000) */
 .rh-kopf { z-index: 200; }
 .rh-kopf-rechts { grid-area: rechts; justify-self: end; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; min-width: 0; }

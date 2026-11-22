@@ -4,6 +4,7 @@
   // zeigt sie erst mit der Übergabe (Etappe 4). Sie liest den Zustand aus appState und dem Tonausgang, die Zuordnung zur
   // Anzeige steht in kanzel.ts, die Aktionen in aktionen.ts; die Wiedergabe selbst bleibt in lib/playerEngine.js.
   import { app } from "./app";
+  import { kanzelmasse } from "./kanzelmasse";
   import { t } from "../lib/i18n.svelte.js";
   import Tonausgang from "./Tonausgang.svelte";
   import Anzeige from "./Anzeige.svelte";
@@ -79,7 +80,7 @@
   const hoerbar = $derived(app.isPlaying && !app.isPaused && (anzeige.zustand !== "laedt" && anzeige.zustand !== "fehler"));
 </script>
 
-<footer class="rh-kanzel" data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
+<footer class="rh-kanzel" use:kanzelmasse data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
   <Tonausgang {wiedergabe} />
   <div class="rh-kanzel-voll" use:kanzelReihen>
     <Anzeige {anzeige} hinweis={bitrateHinweis} aufnahme={app.isRecording} />

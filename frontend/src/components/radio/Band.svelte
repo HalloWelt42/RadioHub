@@ -41,7 +41,7 @@
       {@const v = inhalt.verweis}
       <a class="knopf still" href={v.pfad} onclick={(e) => { e.preventDefault(); inhalt = null; actions.navigateTo(v.pfad); }}>{v.text}</a>
     {/if}
-    <button class="rund" type="button" aria-label={t("radio.schliessen")} title={t("radio.schliessen")} onclick={() => (inhalt = null)}>
+    <button class="rund rh-band-zu" type="button" aria-label={t("radio.schliessen")} title={t("radio.schliessen")} onclick={() => (inhalt = null)}>
       <i class="fa-solid fa-xmark"></i></button>
   </div>
 {/if}

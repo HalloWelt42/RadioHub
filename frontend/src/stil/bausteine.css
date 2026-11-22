@@ -10,7 +10,7 @@ html, body { height: 100%; overflow: hidden; }
 .rh-still { color: var(--text-3); font-size: var(--klein); }
 
 /* ═══ Kopf: Schriftzug, Navigation, Status, Darstellung ═══ */
-.rh-kopf { position: relative; z-index: 5; background-color: var(--leiste); background-image: var(--rh-leiste-bild); box-shadow: var(--rh-kante), var(--rh-schatten); }
+.rh-kopf { position: relative; z-index: 5; background-color: var(--leiste); background-image: var(--rh-leiste-bild); box-shadow: var(--rh-kante), var(--rh-kopf-schatten); }
 .rh-marke { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-decoration: none; }
 .rh-marke-zeile { display: flex; align-items: center; gap: 10px; }
 .rh-logo { font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 7px); letter-spacing: .07em; line-height: 1.05; color: var(--rh-logo);
@@ -91,4 +91,21 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-band span { min-width: 0; }
 @keyframes rh-ein { from { opacity: 0; translate: 0 10px; } }
 
-@media (prefers-reduced-motion: reduce) { .rh-herz i, .rh-band { animation: none; } }
+/* Mit Kanzel (RAD-74, Vorschlag C "Lasche"): die Meldung liegt hinter der Kanzel und fährt als Lasche über der Lautstärke
+   aus ihrem Hintergrund nach oben, im Material der Kanzel, oben gerundet. Das Gehäuse der Lautstärke verdeckt ihren
+   unteren Teil, der Inhalt steht darüber mittig untereinander: die erste fette Angabe als Kopfzeile im Stil der
+   Modulköpfe, darunter der Text, dann die Knöpfe. Maße der Kanzel aus spieler/kanzelmasse.ts. */
+:root[data-kanzel] .rh-band { z-index: 3; bottom: var(--rh-kanzel-oben, 150px); left: calc(var(--rh-laut-links, 40vw) - 150px);
+  right: calc(100vw - var(--rh-laut-rechts, 60vw) - 150px); inline-size: auto; max-inline-size: none; margin: 0; display: grid;
+  justify-items: center; text-align: center; gap: 10px; padding: 14px 20px calc(var(--rh-laut-ueberstand, 0px) + 14px);
+  border-radius: var(--r3) var(--r3) 0 0; background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild);
+  color: var(--rh-geraet-tinte); box-shadow: 0 0 0 1px var(--rand-stark), 0 0 24px rgb(0 0 0 / .45);
+  animation: rh-ausfahren .46s cubic-bezier(.2, .8, .2, 1) both; }
+:root[data-kanzel] .rh-band > span > b:first-child { display: block; margin-bottom: 6px; font-size: var(--marke); font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ak-tinte-2); }
+:root[data-kanzel] .rh-band:has(> span > b:first-child) > i { display: none; }   /* die Kopfzeile sagt, worum es geht */
+:root[data-kanzel] .rh-band { padding-inline: 48px; }   /* Platz für das X oben rechts */
+:root[data-kanzel] .rh-band > .rh-band-zu { position: absolute; top: 8px; right: 8px; inline-size: 32px; block-size: 32px; min-block-size: 0; }
+@keyframes rh-ausfahren { from { translate: 0 100%; } }
+
+@media (prefers-reduced-motion: reduce) { .rh-herz i, .rh-band, :root[data-kanzel] .rh-band { animation: none; } }
