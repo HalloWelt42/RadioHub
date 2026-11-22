@@ -125,6 +125,8 @@ export default {
     schlummertBis: 'Snoozing until',
     laeuft: 'playing',
     pausiert: 'paused',
+    bildschirm: 'Screen',
+    ansageOffen: 'open',
     zeitansage: 'Time announcement',
     ansageAbstand: 'Every how many minutes',
     minuten: '{n} minutes',

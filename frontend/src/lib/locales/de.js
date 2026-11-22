@@ -125,6 +125,8 @@ export default {
     astroHinweis: 'Tag von {auf} bis {unter}, der goldene Bogen; der helle Punkt ist der Wecker',
     laeuft: 'läuft',
     pausiert: 'pausiert',
+    bildschirm: 'Bildschirm',
+    ansageOffen: 'offen',
     zeitansage: 'Zeitansage',
     ansageAbstand: 'Alle wie viele Minuten',
     minuten: '{n} Minuten',
