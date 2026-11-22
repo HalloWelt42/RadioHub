@@ -50,7 +50,7 @@
         use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiZeigen: zeigen }}></ak-taster>
       <ak-taster art="glas" symbol="fa-stop" farbe="weiss" licht="weiss" modus="tasten"
         use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: mitKlang(stoppen), beiZeigen: zeigen }}></ak-taster>
-      <ak-taster art="glas" symbol="fa-play" farbe="blau" licht="blau"
+      <ak-taster art="glas" symbol="fa-play" farbe="gruen" licht="gruen"
         use:taste={{ an: tasten.spielen.an, licht: tasten.spielen.licht, lichtFarbe: tasten.spielen.farbe, gesperrt: tasten.spielen.gesperrt, hilfe: tasten.spielen.hilfe,
                      symbol: tasten.spielen.symbol, beiDruck: mitKlang(tasten.spielen.neuVerbinden ? quelleStarten : spielenOderPause), beiZeigen: zeigen }}></ak-taster>
       {#if kann.aufnahme}

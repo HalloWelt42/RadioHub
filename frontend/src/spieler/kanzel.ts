@@ -308,7 +308,7 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
       // oder pausiert (atmet); beendet wird nur über Stopp (Nutzer 20.11.2026)
       an: laeuft,
       licht: laeuft && zustandVon(s) !== "laedt" ? "an" : laeuft ? "blinkt" : s.isPaused ? "atmet" : "aus",
-      farbe: "blau",
+      farbe: "gruen",                // Abspielen leuchtet grün (Nutzer 22.11.2026, RAD-57)
       gesperrt: !quelleDa,
       symbol: "fa-play",
       neuVerbinden: false,
