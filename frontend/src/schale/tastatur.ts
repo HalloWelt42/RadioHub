@@ -5,7 +5,7 @@
 // Die Belegung steht als Tabelle (TASTEN); dieselbe Tabelle zeigt die Seite Einstellungen > Allgemein > Tastatur
 // (RAD-11), damit Beschreibung und Verhalten nie auseinanderlaufen.
 import { actions, appState } from "../lib/store.svelte.js";
-import { spielenOderPause } from "../spieler/aktionen";
+import { spielenOderPause, vor, zurueck } from "../spieler/aktionen";
 
 /** Lautstärke nach Stumm wieder an */
 export const LAUT_NACH_STUMM = 70;
@@ -33,8 +33,8 @@ export const TASTEN: readonly Taste[] = [
     tun: () => actions.setVolume(Math.min(100, appState.volume + SCHRITT_LAUTSTAERKE)) },
   { tasten: ["ArrowDown"], name: "leiser", gruppe: "wiedergabe", gesperrtBeiAufnahme: false, nurOhneStrg: false,
     tun: () => actions.setVolume(Math.max(0, appState.volume - SCHRITT_LAUTSTAERKE)) },
-  { tasten: ["ArrowLeft"], name: "zurueck", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: () => actions.navigatePrev() },
-  { tasten: ["ArrowRight"], name: "weiter", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: () => actions.navigateNext() },
+  { tasten: ["ArrowLeft"], name: "zurueck", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: zurueck },
+  { tasten: ["ArrowRight"], name: "weiter", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: vor },
 ];
 
 export function tasteDerApp(e: KeyboardEvent, bereiche: readonly string[]): void {

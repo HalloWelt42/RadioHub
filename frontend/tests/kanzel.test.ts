@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { t as uebersetzen } from "../src/lib/i18n.js";
 import { kannBlaettern,
   bitrateAusStellung, bitrateLage, bitrateRaster, bitrateStellung, bitrateText, kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive,
-  pufferZeile, zeitversatzStand, zustandVon, type Stand,
+  pufferZeile, springtTitel, zeitversatzStand, zustandVon, type Stand,
 } from "../src/spieler/kanzel";
 import { MEHR_HOECHSTENS, statuszeile, stellenFuer } from "../src/spieler/rasterbreite";
 
@@ -140,6 +140,21 @@ describe("Steuerung", () => {
   });
 });
 
+describe("Vor und Zurück (RAD-60)", () => {
+  it("springen im Zeitversatz hinter live durch die Titel, sonst wechseln sie den Sender", () => {
+    expect(springtTitel(spielt({ playerMode: "hls", isLive: false, hlsStatus: HLS }))).toBe(true);
+    expect(springtTitel(spielt({ playerMode: "hls", isLive: true, hlsStatus: HLS }))).toBe(false);
+    expect(springtTitel(spielt({ playerMode: "direct" }))).toBe(false);
+  });
+  it("sagen in der Hilfe kurz Titel, lang Sender und sind im Zeitversatz nie gesperrt", () => {
+    const z = kanzelTasten(spielt({ playerMode: "hls", isLive: false, hlsStatus: HLS, stations: [] }), t);
+    expect(z.vor.gesperrt).toBe(false);
+    expect(z.vor.hilfe).toContain("Nächster Titel");
+    expect(kanzelTasten(spielt({ playerMode: "hls", isLive: false, hlsStatus: HLS, stations: [SENDER, { ...SENDER, uuid: "b", name: "Zweiter" }] }), t).vor.hilfe)
+      .toContain("lang drücken: Zweiter");
+  });
+});
+
 describe("Spulzeilen", () => {
   it("Zeitversatz: Puffer von höchstens, Schritt je Segment im Versatz", () => {
     const z = zeitversatzStand(spielt({ playerMode: "hls", isLive: false, hlsStatus: { ...HLS, buffered_seconds: 900 } }), t);
@@ -149,10 +164,8 @@ describe("Spulzeilen", () => {
     expect(zeitversatzStand(spielt({ playerMode: "hls", isRecording: true, hlsStatus: HLS }), t).gesperrt).toBe(false);
     expect(sekundenHinterLive(HLS, 1900)).toBe(0);
   });
-  it("Zeile im Zeitversatz wie im Entwurf: Abstand immer, auch 0:00 (RAD-54), ohne Aufnahmehinweis (RAD-61)", () => {
-    const p = { hinter: 570, gepuffert: 4790, max: 7200, titel: 19 };
-    expect(pufferZeile(p, t)).toBe("9:30 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
-    expect(pufferZeile({ ...p, hinter: 0 }, t)).toBe("0:00 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
+  it("Zeile im Zeitversatz: Länge von höchstens und Titel, ohne Abstand und Aufnahmehinweis (RAD-54, RAD-61)", () => {
+    expect(pufferZeile({ gepuffert: 4790, max: 7200, titel: 19 }, t)).toBe("1:19:50 von 2:00:00 · 19 Titel");
   });
   it("Position: Füllung nach der Lage, gesperrt ohne Dauer", () => {
     expect(positionStand(stand({ zeit: 754, dauer: 2700, lage: 27.9 }), t)).toMatchObject({ fuellung: 27.9, bahn: 100, text: "12:34 von 45:00", gesperrt: false });

@@ -52,7 +52,9 @@ vi.mock("../src/lib/store.svelte.js", () => ({
     navigatePrev: () => zustand.aufrufe.push("zurueck"), navigateNext: () => zustand.aufrufe.push("weiter"),
   },
 }));
-vi.mock("../src/spieler/aktionen", () => ({ spielenOderPause: () => zustand.aufrufe.push("spielen") }));
+// Pfeile laufen über Vor und Zurück der Kanzel (RAD-60: im Zeitversatz durch die Titel, sonst der Sender)
+vi.mock("../src/spieler/aktionen", () => ({ spielenOderPause: () => zustand.aufrufe.push("spielen"),
+  zurueck: () => zustand.aufrufe.push("zurueck"), vor: () => zustand.aufrufe.push("weiter") }));
 
 describe("Tastatur aus einer Tabelle", () => {
   const taste = (key: string, extra: Partial<KeyboardEvent> = {}) =>

@@ -12,7 +12,7 @@
   import type { Drehregler } from "appkern-oberflaeche/instrumente";
   import { t } from "../lib/i18n.svelte.js";
   import * as sfx from "../lib/uiSounds.js";
-  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, zurueck, andereVariante } from "./aktionen";
+  import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, vorSender, zurueck, zurueckSender, andereVariante } from "./aktionen";
   import { fokusSchalten } from "./fokus.svelte";
   import { bitrateAusStellung, bitrateRaster, bitrateStellung, tempoAusStellung, tempoRaster, tempoStellung, type BitrateLage, type Tasten } from "./kanzel";
   import { app } from "./app";
@@ -47,7 +47,7 @@
   <div class="rh-steuerung">
     <div class="rh-transport ak-tastenreihe">
       <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" licht="bernstein" modus="tasten"
-        use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiZeigen: zeigen }}></ak-taster>
+        use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiLang: zurueckSender, beiZeigen: zeigen }}></ak-taster>
       <ak-taster art="glas" symbol="fa-stop" farbe="weiss" licht="weiss" modus="tasten"
         use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: mitKlang(stoppen), beiZeigen: zeigen }}></ak-taster>
       <ak-taster art="glas" symbol="fa-play" farbe="gruen" licht="gruen"
@@ -60,7 +60,7 @@
       {/if}
       <ak-taster art="glas" symbol="fa-forward-step" farbe="weiss" licht="bernstein" modus="tasten"
         use:taste={{ licht: tasten.vor.licht, gesperrt: tasten.vor.gesperrt, hilfe: tasten.vor.hilfe, symbol: "fa-forward-step", gespiegelt: tasten.vor.gespiegelt,
-                     beiDruck: vor, beiZeigen: zeigen }}></ak-taster>
+                     beiDruck: vor, beiLang: vorSender, beiZeigen: zeigen }}></ak-taster>
     </div>
     <div class="rh-betrieb ak-tastenreihe">
       <!-- Fokus auf den laufenden Sender ein oder aus (auch in Basic, RAD-19); dieselbe Größe wie alle Tasten der Reihe -->

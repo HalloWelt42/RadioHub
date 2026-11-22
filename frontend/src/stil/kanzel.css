@@ -66,15 +66,21 @@
 .rh-zeit-uhr { --ak-zelle: clamp(calc(var(--gross) * 8.4), 8.4cqi, calc(var(--gross) * 11)); --ak-zeichen-max: 48px; }
 .rh-puffer-zeile { contain: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
 .rh-puffer-zeile .knopf { block-size: 34px; padding: 0 7px; gap: 5px; font-size: var(--marke); }
-.rh-puffer-rechts { display: flex; gap: 6px; }
+/* Kopf von Quelle und Zeit (RAD-60): links Puffer, rechts Live, fest und gleich breit; die Segmentanzeige dazwischen ist
+   so breit wie ihre Segmente und bestimmt damit die Breite des Moduls, die Spulzeile darunter richtet sich danach.
+   Ohne Spulzeile (Basic) steht die Anzeige allein. */
+.rh-zeit-kopf { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: center; }
+.rh-zeit-spulbar .rh-zeit-kopf { grid-template-columns: auto minmax(0, 1fr) auto; }
+.rh-zeit-kopf > .knopf { block-size: 34px; padding: 0 7px; gap: 5px; font-size: var(--marke); }
+.rh-zeit .rh-spaltenknopf { min-inline-size: calc(var(--marke) * 5.2); justify-content: center; }   /* so breit wie "Puffer" */
 .rh-puffer { display: grid; gap: 2px; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); text-align: center; min-width: 0; }
 .rh-puffer > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* PRO mit Spulzeile (Zeitversatz, Folgen): die Angabe unter der Bahn immer ganz lesbar (Nutzer 20.11.2026, RAD-13).
-   Fest reserviert für die längste Form im Zeitversatz (RAD-54, Entwurf Zustand 1): "1:59:59 hinter live · 1:59:59 von
-   2:00:00 · 99 Titel" (36,4ch, englisch 37,3ch). So hat Quelle und Zeit in
+   Fest reserviert für die längste Form im Zeitversatz (RAD-54, RAD-61): "1:59:59 von 2:00:00 · 99 Titel" (21,7ch,
+   englisch 22,0ch). So hat Quelle und Zeit in
    jeder Lage dieselbe Breite und springt beim Hochzählen nie (RAD-51, RAD-52). Basic hat keine Spulzeile und bleibt schmal. */
 .rh-zeit-spulbar .rh-puffer-zeile { contain: none; grid-template-columns: auto minmax(min-content, 1fr) auto; }
-.rh-zeit-spulbar .rh-puffer > span:not([class]) { min-inline-size: 38ch; }
+.rh-zeit-spulbar .rh-puffer > span:not([class]) { min-inline-size: 22ch; }
 .rh-kanzel .balken { block-size: 8px; border-radius: var(--rh-pille); overflow: hidden; }
 .rh-kanzel .balken span { display: block; block-size: 100%; }
 /* Spulbahn: der Regler liegt über dem Balken, im Zeitversatz nur so breit wie der Puffer */
@@ -160,13 +166,3 @@
 .rh-balkentipp b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-balkentipp span { color: var(--text-3); font-family: var(--schrift-zahl); font-size: var(--marke); white-space: nowrap; }
 .rh-balkentipp.rechts { translate: calc(-100% + 16px) 0; }
-/* Titelzeile (RAD-46): Vorheriger Titel, der Titel an der Stelle, Nächster Titel, Großansicht. Ihre Breite hängt nie
-   am Inhalt (RAD-50, RAD-51): der Titel (oder "Noch kein Titel") bekommt nur den Platz, den die Zeile hat, und endet mit
-   Auslassungspunkten, ganz steht er in der Anzeige und im Hinweis; Stand und Länge darunter sind fest reserviert für die
-   längste Form "1:59:59 von 2:00:00 · läuft" (19,8ch in Barlow), so springt nichts, wenn die Zahlen wachsen oder ein Titel endet. */
-.rh-titelzeile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 6px; align-items: center; margin-top: 4px; }
-.rh-titelzeile .knopf { block-size: 34px; padding: 0 8px; gap: 6px; font-size: var(--marke); }
-.rh-titelzeile-jetzt { display: grid; min-inline-size: 0; text-align: center; line-height: 1.25; }
-.rh-titelzeile-jetzt b, .rh-titelzeile-jetzt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rh-titelzeile-jetzt > :not(.rh-zahl) { contain: inline-size; }
-.rh-titelzeile-jetzt .rh-zahl { min-inline-size: 20ch; font-size: var(--marke); color: var(--text-3); }

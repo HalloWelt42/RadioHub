@@ -6,6 +6,8 @@ import { app } from "./app";
 import * as engine from "../lib/playerEngine.js";
 import { naechsteReihenfolge } from "./kanzel";
 import { tonelement } from "./tonelement";
+import { puffer } from "./puffer.svelte";
+import { springtTitel } from "./kanzel";
 
 /** Die Taste Spielen (und die Leertaste), streng nach einer Regel (Nutzer 20.11.2026): sie bleibt Spielen und beendet
  *  nie; beendet wird nur über Stopp. Gestoppt startet sie die Quelle, beim Spielen hält sie an, in der Pause geht es
@@ -48,11 +50,25 @@ export function aufnehmen(): void {
   else actions.startRecording();
 }
 
+/** Zurück (RAD-60): hinter live im Zeitversatz an den Anfang des Titels, kurz nach dem Anfang zum vorherigen;
+ *  sonst der vorherige Sender (Folge, Aufnahme) */
 export function zurueck(): void {
+  if (springtTitel(app)) puffer.vorher();
+  else actions.navigatePrev();
+}
+
+/** Vor (RAD-60): hinter live im Zeitversatz zum nächsten Titel, nach dem letzten an live; sonst der nächste Sender */
+export function vor(): void {
+  if (!springtTitel(app)) actions.navigateNext();
+  else if (!puffer.weiter()) live();
+}
+
+/** lang gedrückt: immer der Sender (Folge, Aufnahme), auch im Zeitversatz */
+export function zurueckSender(): void {
   actions.navigatePrev();
 }
 
-export function vor(): void {
+export function vorSender(): void {
   actions.navigateNext();
 }
 

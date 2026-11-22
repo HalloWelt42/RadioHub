@@ -85,6 +85,11 @@ export function sekundenHinterLive(hls: HlsStand | null, segment: number | null)
 /** Zeitversatz des Senders (HLS, keine Folge): nur dann stehen 30 s zurück, Puffer und Live */
 export const hatZeitversatz = (s: Stand): boolean => s.playerMode === "hls" && !!s.currentStation && !s.currentEpisode;
 
+/** Vor und Zurück springen durch die Titel (RAD-60): im Zeitversatz hinter live; live, ohne Puffer, bei Folgen und
+ *  Aufnahmen wechseln sie wie bisher (lang gedrückt immer) */
+export const springtTitel = (s: Pick<Stand, "playerMode" | "currentStation" | "currentEpisode" | "isLive">): boolean =>
+  hatZeitversatz(s as Stand) && !s.isLive;
+
 /** Spulen über die Position: Folgen und Aufnahmen */
 export const hatPosition = (s: Stand): boolean => artVon(s) === "podcast" || artVon(s) === "aufnahme";
 
@@ -294,6 +299,12 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
     const richtung = schritt < 0 ? "prev" : "next";
     // eine Aufnahme hängt am Empfang ihres Senders (RAD-46): Blättern, Spielen und Moduswechsel bleiben frei
     let hilfe: string;
+    if (springtTitel(s)) {
+      const sender = blaettern ? nachbar(s, schritt) || t(`player.${richtung}Sender`) : null;
+      const titel = t(schritt < 0 ? "kanzel.titelZurueckKurz" : "kanzel.titelVorKurz");
+      hilfe = mitTaste(sender ? t("kanzel.kurzLang", { kurz: titel, lang: sender }) : titel, schritt < 0 ? "←" : "→");
+      return { an: false, licht: "aus", gesperrt: false, hilfe };
+    }
     if (!blaettern) hilfe = t(folge ? `player.keine${schritt < 0 ? "Prev" : "Next"}Episode` : aufnahme ? `player.keine${schritt < 0 ? "Prev" : "Next"}Titel` : `player.kein${schritt < 0 ? "Prev" : "Next"}`);
     else hilfe = mitTaste(nachbar(s, schritt) || t(folge ? `player.${richtung}Episode` : aufnahme ? `player.${richtung}Titel` : `player.${richtung}Sender`), schritt < 0 ? "←" : "→");
     return { an: false, licht: "aus", gesperrt: !blaettern, hilfe };
@@ -404,12 +415,10 @@ export function zeitversatzStand(s: Stand, t: Uebersetzer): Spulstand & { live: 
   };
 }
 
-/** Zeile unter dem Balken im Zeitversatz (RAD-54, Entwurf puffer.html Zustand 1): Abstand zu live (immer, auch 0:00,
- *  damit nichts ein- und ausblendet), Länge des Puffers von höchstens und die Zahl der Titel. Eine Aufnahme steht hier
- *  nicht (RAD-61): sie zeigen die rote Taste, die Uhr und der rote Teil des Balkens. */
-export function pufferZeile(p: { hinter: number; gepuffert: number; max: number; titel: number }, t: Uebersetzer): string {
-  return t("puffer.zeileVersatz", { hinter: formatTimeShort(Math.max(0, Math.round(p.hinter))), laenge: formatTimeShort(p.gepuffert),
-    max: formatTimeShort(p.max), titel: p.titel });
+/** Zeile unter dem Balken im Zeitversatz (RAD-54): Länge des Puffers von höchstens und die Zahl der Titel. Den Abstand
+ *  zu live zeigen Uhr und Anzeige, eine Aufnahme die rote Taste, die Uhr und der rote Teil des Balkens (RAD-61). */
+export function pufferZeile(p: { gepuffert: number; max: number; titel: number }, t: Uebersetzer): string {
+  return t("puffer.zeileVersatz", { laenge: formatTimeShort(p.gepuffert), max: formatTimeShort(p.max), titel: p.titel });
 }
 
 /** Werbestellen im Zeitversatz als Marken auf dem Balken (RAD-33): gleicher Maßstab wie die Füllung (Anteil des

@@ -22,7 +22,7 @@ export default {
   titel: 'Puffer: {sender}',
   kopfZeile: 'seit {seit} · {laenge} von {max} · {titel} Titel · Werbung {werbung}',
   // Zeile unter dem Balken der Kanzel und Zahlen am Telefon (RAD-54)
-  zeileVersatz: '{hinter} hinter live · {laenge} von {max} · {titel} Titel',
+  zeileVersatz: '{laenge} von {max} · {titel} Titel',
   zahlTitel: '{n} Titel',
   laengeVonMax: '{laenge} von {max}',
   schliessen: 'Zurück zum Radio',

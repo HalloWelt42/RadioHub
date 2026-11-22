@@ -40,6 +40,8 @@ class Puffer {
    *  Stelle fließend, gemessen pendelt der Abstand um eine Sekunde, obwohl er beim Hören gleich bleibt. Er gilt neu erst
    *  bei einer größeren Abweichung (Springen, Spulen, Stocken), so zählt keine Anzeige vor und zurück. */
   hinter = $state(0);
+  /** der erste Messwert einer Sitzung gilt sofort */
+  private hinterGemessen = false;
   private sitzung: string | null = null;
   private ladetakt: ReturnType<typeof setInterval> | undefined;
 
@@ -124,6 +126,7 @@ class Puffer {
     if (id === this.sitzung) return;
     this.sitzung = id;
     this.geladen = [];
+    this.hinterGemessen = false;
     clearInterval(this.ladetakt);
     this.ladetakt = undefined;
     if (id) {
@@ -143,7 +146,8 @@ class Puffer {
 
   private hinterMessen(neu: boolean): void {
     const roh = this.stelle === null || appState.isLive ? 0 : Math.max(0, this.ende - this.stelle);
-    if (neu || Math.abs(roh - this.hinter) >= HINTER_RUHE_S || roh === 0) this.hinter = Math.round(roh);
+    if (neu || !this.hinterGemessen || Math.abs(roh - this.hinter) >= HINTER_RUHE_S || roh === 0) this.hinter = Math.round(roh);
+    if (this.stelle !== null) this.hinterGemessen = true;
   }
 
   springen(sekunde: number): void {
@@ -157,9 +161,11 @@ class Puffer {
     if (ziel !== null) this.springen(ziel);
   }
 
-  weiter(): void {
+  /** zum nächsten Titel; false, wenn keiner mehr kommt (die Stelle liegt im laufenden) */
+  weiter(): boolean {
     const ziel = this.stelle === null ? null : naechster(this.abschnitte, this.stelle);
     if (ziel !== null) this.springen(ziel);
+    return ziel !== null;
   }
 
   /** Aufnahme ab dem Anfang eines Abschnitts (Sekunden des Puffers), läuft bis Stopp; ohne `von` am Anfang des

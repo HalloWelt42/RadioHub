@@ -66,7 +66,7 @@
         <div class="rh-puffer-zeile">
           <button class="knopf" type="button" title="30 Sekunden zurück"><i class="fa-solid fa-rotate-left"></i>30 s</button>
           <div class="rh-puffer pz-puffer" title="Zeitversatz: Striche sind Titelgrenzen, violett ist Werbung">${balken({ stelle, aufnahme, tipp })}
-            <span>${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel</span></div>
+            <span>${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel</span></div>
           <button class="knopf" type="button" title="Zurück zu live"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-tower-broadcast"></i>Live</button></div>
         ${titelzeile(stelle)}</div></section>`;
   const band = (inhalt) => `<div class="rh-band rp-band pz-band" role="status">${inhalt}</div>`;
@@ -218,8 +218,8 @@
   const tBereich = (el) => { const v = A.find((a) => a.titel.startsWith("Seal")), b = A.find((a) => a.titel.startsWith("Fettes")); tPuffer(el, { bereich: [v.von, b.bis] }); };
 
   // 9 und 10 (RAD-60): die ganze Kanzel ohne Titelzeile. Der Titel steht in der Matrixanzeige; Vor und Zurück der
-  // Steuerung springen im Zeitversatz kurz gedrückt durch die Titel, lang gedrückt wechseln sie den Sender; Puffer sitzt
-  // über Live neben der kürzeren Segmentanzeige.
+  // Steuerung springen im Zeitversatz kurz gedrückt durch die Titel, lang gedrückt wechseln sie den Sender; Puffer links,
+  // Live rechts neben der Segmentanzeige, die so breit ist wie ihre Segmente.
   const laut = `<section class="rh-modul rh-m-laut"><div class="ak-geraet rh-laut" data-bauform="inspektor">
       <span class="ak-schraube lo" style="--dreh:12deg"></span><span class="ak-schraube ro" style="--dreh:58deg"></span><span class="ak-etikett">Lautstärke</span>
       <div class="rh-laut-reihe"><span class="rh-vu"><ak-pegel richtung="senkrecht" kanaele="1" segmente="12" skala="" beschriftung="Pegel links"></ak-pegel>L</span>
@@ -237,17 +237,17 @@
           <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" led="blau" hilfe="Fokus: die Liste folgt dem laufenden Sender" an></ak-taster>
           <ak-taster art="glas" symbol="fa-wave-square" farbe="weiss" led="weiss" hilfe="Bitrate"></ak-taster></div></div></div></section>`;
   const quelle60 = ({ text, farbe, uhrtext, stelle, aufnahme: rec = null }) => {
-    const zeile = `${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel`;
+    const zeile = `${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel`;
     return `<section class="rh-modul rh-m-zeit pz60-zeit" aria-label="Quelle und Zeit"><span class="ak-etikett">Quelle und Zeit</span>
       <div class="pz60-raster">
+        <button class="knopf pz60-spalte" type="button" title="Großansicht des Puffers: alle Titel, Aufnahme ab hier, Bereich sichern"><i class="fa-solid fa-list-ul"></i>Puffer</button>
         <div class="ak-glas rh-zeit-glas pz60-glas">
           <ak-segmente art="14" stellen="7" farbe="${farbe}" text="${text}" hilfe="Quelle der Wiedergabe"></ak-segmente>
           <ak-segmente art="7" stellen="7" farbe="${rec ? "rot" : "gruen"}" text="${uhrtext}" hilfe="${rec ? "Länge der Aufnahme" : "Abstand zu live"}"></ak-segmente></div>
-        <button class="knopf pz60-puffer" type="button" title="Großansicht des Puffers: alle Titel, Aufnahme ab hier, Bereich sichern"><i class="fa-solid fa-list-ul"></i>Puffer</button>
+        <button class="knopf pz60-spalte" type="button" title="Zurück zu live"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-tower-broadcast"></i>Live</button>
         <button class="knopf" type="button" title="30 Sekunden zurück"><i class="fa-solid fa-rotate-left"></i>30</button>
         <div class="rh-puffer pz-puffer" title="Zeitversatz: Striche sind Titelgrenzen, violett ist Werbung">${balken({ stelle, aufnahme: rec })}<span>${zeile}</span></div>
         <button class="knopf" type="button" title="30 Sekunden vor"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-rotate-right"></i>30</button>
-        <button class="knopf" type="button" title="Zurück zu live"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-tower-broadcast"></i>Live</button>
       </div></section>`;
   };
   function ohneTitelzeile(el) {

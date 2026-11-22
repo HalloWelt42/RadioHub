@@ -19,7 +19,7 @@ export default {
   einschub: 'Insert',
   titel: 'Buffer: {sender}',
   kopfZeile: 'since {seit} · {laenge} of {max} · {titel} tracks · ads {werbung}',
-  zeileVersatz: '{hinter} behind live · {laenge} of {max} · {titel} tracks',
+  zeileVersatz: '{laenge} of {max} · {titel} tracks',
   zahlTitel: '{n} tracks',
   laengeVonMax: '{laenge} of {max}',
   schliessen: 'Back to radio',

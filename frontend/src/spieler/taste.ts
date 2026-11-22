@@ -20,9 +20,14 @@ export interface TastenStand {
   gespiegelt?: boolean;
   /** Bedienung der Taste (Klick oder Tastatur auf ihrem Knopf; gesperrt kommt nichts an) */
   beiDruck?: () => void;
+  /** langes Drücken (Zeiger mindestens LANG_MS auf der Taste, RAD-60); dann kommt beiDruck nicht mehr */
+  beiLang?: () => void;
   /** Zeiger über der Taste */
   beiZeigen?: () => void;
 }
+
+/** so lange hält man eine Taste für "lang gedrückt" */
+export const LANG_MS = 600;
 
 export const taste: Action<Taster, TastenStand> = (el, anfang) => {
   let stand = anfang;
@@ -46,10 +51,25 @@ export const taste: Action<Taster, TastenStand> = (el, anfang) => {
   }
 
   const zustandZurueck = () => { if (stand.an !== undefined) setzen(); };
-  const druck = () => { if (!stand.gesperrt) stand.beiDruck?.(); };
+  // langes Drücken: nach LANG_MS gilt beiLang, der Klick beim Loslassen zählt dann nicht mehr
+  let uhr: ReturnType<typeof setTimeout> | undefined;
+  let langErledigt = false;
+  const halten = () => {
+    langErledigt = false;
+    clearTimeout(uhr);
+    if (!stand.beiLang || stand.gesperrt) return;
+    uhr = setTimeout(() => { langErledigt = true; stand.beiLang?.(); }, LANG_MS);
+  };
+  const loslassen = () => clearTimeout(uhr);
+  const druck = () => {
+    if (langErledigt) { langErledigt = false; return; }
+    if (!stand.gesperrt) stand.beiDruck?.();
+  };
   const zeigen = () => stand.beiZeigen?.();
   const knopf = el.querySelector<HTMLButtonElement>(".ak-taster-knopf");
   el.addEventListener("input", zustandZurueck);
+  knopf?.addEventListener("pointerdown", halten);
+  for (const art of ["pointerup", "pointerleave", "pointercancel"]) knopf?.addEventListener(art, loslassen);
   knopf?.addEventListener("click", druck);
   knopf?.addEventListener("mouseenter", zeigen);
   setzen();
@@ -61,6 +81,9 @@ export const taste: Action<Taster, TastenStand> = (el, anfang) => {
     },
     destroy() {
       el.removeEventListener("input", zustandZurueck);
+      clearTimeout(uhr);
+      knopf?.removeEventListener("pointerdown", halten);
+      for (const art of ["pointerup", "pointerleave", "pointercancel"]) knopf?.removeEventListener(art, loslassen);
       knopf?.removeEventListener("click", druck);
       knopf?.removeEventListener("mouseenter", zeigen);
     },
