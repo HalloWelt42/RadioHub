@@ -38,8 +38,7 @@
 /* Schnellwahl: kleines Gerät; Favoriten als Flachtaster (Leuchtstreifen in der Taste), Stimmen als Drehwahl, Bitrate als Leuchtbalken */
 /* Schrauben (14 Pixel, 10 vom Rand) liegen frei: unten Platz unter der Skala, oben steht der Kopf zwischen ihnen
    (Nutzer 20.11.2026: "schrauben verdecken die schrift") */
-.rh-schnellwahl { display: grid; gap: 6px; padding: 7px 14px 28px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet);
-  --ak-front-licht: none; }   /* gleichmäßige Fläche von oben bis unten, ohne Lichtschein oben (RAD-70) */
+.rh-schnellwahl { display: grid; gap: 6px; padding: 7px 14px 28px; --ak-zelle-min: 64px; border-radius: var(--rh-ecke-geraet); }
 /* ohne Kopf (Filterblatt am Telefon) beginnt der Inhalt unter den oberen Schrauben */
 .rh-schnellwahl:not(:has(> .rh-schnellwahl-kopf)) { padding-top: 26px; }
 .rh-schnellwahl-oben { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; justify-items: center; }
