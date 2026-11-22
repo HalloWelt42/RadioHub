@@ -100,6 +100,7 @@
 @media (max-width: 420px) { .tp-suche .tp-treffer-wort { display: none; } .tp-suche .t-treffer { padding-right: 2px; } }
 
 /* Schriftzug im Kopf am Telefon (RAD-90): klein, ohne Herz */
-.mobil .t-kopf h1.t-logo { display: flex; align-items: baseline; gap: 8px; }
+.mobil .t-kopf h1.t-logo { display: flex; align-items: baseline; gap: 8px; flex: 0 1 auto; }
+.mobil .t-kopf .t-herz { flex: none; margin-inline-end: auto; font-size: var(--gross); }
 .t-logo .rh-logo { font-size: calc(var(--gross) + 3px); }
 .t-logo :is(.rh-pro, .rh-basic) { font-size: calc(var(--gross) - 1px); }

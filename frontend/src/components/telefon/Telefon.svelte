@@ -17,6 +17,7 @@
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import { anhaengen, tonelement } from '../../spieler/tonelement';
   import TelefonRadio from './TelefonRadio.svelte';
+  import { SPENDENSEITE } from '../../lib/ausgabe';
   import TelefonPodcasts from './podcasts/TelefonPodcasts.svelte';
   import TelefonAufnahmen from './TelefonAufnahmen.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
@@ -140,6 +141,10 @@
         <span class="rh-logo" aria-hidden="true">{#each 'RadioHub'.split('') as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i}>{zeichen}</span>{/each}</span>
         <span class={angebot.backend ? 'rh-pro' : 'rh-basic'} aria-hidden="true">{angebot.backend ? 'PRO' : 'BASIC'}</span>
       </h1>
+      {#if angebot.backend}
+        <!-- in PRO das Herz direkt zur Spendenseite (RAD-91) -->
+        <a class="rh-herz t-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t('app.unterstuetzenTitle')} aria-label={t('app.unterstuetzenTitle')}><i class="fa-solid fa-heart"></i></a>
+      {/if}
       <span class="t-aktionen">
         {#if angebot.wecker}
         <button class="rund" class:aktiv={appState.activeTab === 'wecker'}
