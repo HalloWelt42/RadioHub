@@ -96,7 +96,7 @@
   <section>
     <label class="tf-schalter">
       <span>{t('telefon.wachHalten')}</span>
-      <input name="wach-halten" type="checkbox" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
+      <input name="wach-halten" type="checkbox" role="switch" checked={wach.gewuenscht} disabled={!wach.unterstuetzt}
         onchange={(e) => wachHaltenSetzen(e.currentTarget.checked)} />
     </label>
     <p class="tf-klein">{wach.unterstuetzt ? t(angebot.wecker ? 'telefon.wachHaltenHinweis' : 'telefon.wachHaltenHinweisOhneWecker') : t('telefon.wachNichtMoeglich')}</p>
@@ -106,7 +106,7 @@
   <section>
     <label class="tf-schalter">
       <span>{t('telefon.zeitansage')}</span>
-      <input name="zeitansage" type="checkbox" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
+      <input name="zeitansage" type="checkbox" role="switch" checked={zeit.an} onchange={(e) => zeitansageSchalten(e.currentTarget.checked)} />
     </label>
     <p class="tf-klein">{t('telefon.zeitansageHinweis')}</p>
     {#if zeit.an}
@@ -220,7 +220,7 @@
   .tf-pro { display: grid; justify-items: start; gap: 6px; }
   .darstellung { display: grid; gap: 14px; }
   .tf-schalter { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 17px; }
-  .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); flex: none; }
+  .tf-schalter input { flex: none; }   /* Kippschalter des Appkerns (role=switch, RAD-90) */
   .tf-klein { margin: 6px 0 0; font-size: 15px; color: var(--t-text-2); overflow-wrap: anywhere; }
   .tf-wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tf-wahl.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); }

@@ -98,3 +98,8 @@
 .tp-blatt .rueckfrage { margin-top: 6px; }
 /* schmale Telefone: das Zählwerk ohne Wort, damit das Suchfeld Platz behält (das Wort steht im Hinweis) */
 @media (max-width: 420px) { .tp-suche .tp-treffer-wort { display: none; } .tp-suche .t-treffer { padding-right: 2px; } }
+
+/* Schriftzug im Kopf am Telefon (RAD-90): klein, ohne Herz */
+.mobil .t-kopf h1.t-logo { display: flex; align-items: baseline; gap: 8px; }
+.t-logo .rh-logo { font-size: calc(var(--gross) + 3px); }
+.t-logo :is(.rh-pro, .rh-basic) { font-size: calc(var(--gross) - 1px); }

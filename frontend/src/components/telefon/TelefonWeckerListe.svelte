@@ -171,7 +171,7 @@
             </span>
           </button>
           <span class="tf-schalter">
-            <input name="wecker-aktiv-{w.id}" type="checkbox" checked={w.aktiv} onchange={() => umschalten(w)} aria-label="{t('telefon.aktiv')} {w.zeit}" /></span>
+            <input name="wecker-aktiv-{w.id}" type="checkbox" role="switch" checked={w.aktiv} onchange={() => umschalten(w)} aria-label="{t('telefon.aktiv')} {w.zeit}" /></span>
         </li>
       {/each}
     </ul>
@@ -193,7 +193,6 @@
   .tage-text { font-size: 15px; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tf-schalter { padding: 0; }
-  .tf-schalter input { width: 28px; height: 28px; accent-color: var(--t-akzent); }
   .form { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
   .beschriftung { margin-top: 8px; font-size: 15px; color: var(--t-text-2); }
   .tf-zeit { display: flex; align-items: center; gap: 8px; font-size: 28px; }

@@ -6,9 +6,8 @@
   // Backend der Knopf Geräte (Übergabe, RAD-18).
   import { abmelden, ohneAnmeldung, Rueckfrage, sitzung } from "appkern-oberflaeche";
   import { darstellung, darstellungSetzen, schriftAmRand, schriftSchritt } from "../lib/darstellung.svelte";
-  import { availableLanguages, currentLanguage, onLanguageChange, t } from "../lib/i18n.svelte.js";
-  import { server } from "../lib/einstellungen";
-  import { actions } from "../lib/store.svelte.js";
+  import { t } from "../lib/i18n.svelte.js";
+  import { SPRACHEN, spracheDanach as danach, spracheJetzt as jetzt, spracheWaehlen } from "../lib/sprache.svelte";
   import Flagge from "./Flagge.svelte";
   import GeraeteKnopf from "./GeraeteKnopf.svelte";
   import { faehigkeiten } from "../lib/playerEngine.js";
@@ -21,21 +20,8 @@
   const THEMEN = [["hell", "fa-sun"], ["dunkel", "fa-moon"], ["system", "fa-display"]] as const;
   const themaJetzt = $derived(Math.max(0, THEMEN.findIndex(([thema]) => thema === darstellung.thema)));
   const themaDanach = $derived(THEMEN[(themaJetzt + 1) % THEMEN.length][0]);
-  const SPRACHEN = availableLanguages.filter((s: { vollstaendig?: boolean }) => s.vollstaendig) as { code: string; label: string }[];
-
-  let sprache = $state<string>(currentLanguage());
-  $effect(() => onLanguageChange((code: string) => (sprache = code)));
-  const spracheJetzt = $derived(SPRACHEN.find((s) => s.code === sprache) ?? SPRACHEN[0]);
-  const spracheDanach = $derived(SPRACHEN[(SPRACHEN.indexOf(spracheJetzt) + 1) % SPRACHEN.length]);
-
-  async function spracheWaehlen(code: string) {
-    if (code === sprache) return;
-    try {
-      await server.sofortSpeichern("language", code);
-    } catch (f) {
-      actions.showToast((f as Error).message || t("common.fehler"), "error");
-    }
-  }
+  const spracheJetzt = $derived(jetzt());
+  const spracheDanach = $derived(danach());
 
   // Konto: Abmelden (Passwort) sofort, ein gekoppeltes Gerät erst nach Rückfrage trennen
   const konto = $derived(sitzung.konto);

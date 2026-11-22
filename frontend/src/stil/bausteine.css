@@ -82,6 +82,7 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 @media (prefers-reduced-motion: reduce) { .rh-geraete-knopf.blinkt > :is(i, .rh-geraete-zahl) { animation: none; } }
 .rh-geraete-feld { position: absolute; inset-block-start: calc(100% + 8px); inset-inline-end: 0; z-index: 60; }
 .rh-flagge { inline-size: calc(var(--gross) * 1.35); block-size: calc(var(--gross) * .8); border-radius: 3px; box-shadow: 0 0 0 1px var(--rh-flaggen-rand); }
+.rh-sprachwahl { display: inline-flex; align-items: center; gap: 10px; }   /* Flagge und Name der Sprache (RAD-90) */
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }
 /* Symbol und Text in Segmenten der eigenen Ansichten mit Abstand (RAD-37: in den Einstellungen klebten sie aneinander;

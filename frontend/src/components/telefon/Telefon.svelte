@@ -135,7 +135,11 @@
     <TelefonWecker {steuerung} audio={audioEl} />
   {:else}
     <div class="t-kopf mit-aktionen" data-rahmen="kopf">
-      <h1>{titel}</h1>
+      <!-- Schriftzug klein statt des Bereichs (RAD-90, Wahl A): ohne Herz, mit PRO oder BASIC; den Bereich zeigt die Leiste unten -->
+      <h1 class="t-logo" aria-label="RadioHub {angebot.backend ? 'PRO' : 'Basic'}: {titel}">
+        <span class="rh-logo" aria-hidden="true">{#each 'RadioHub'.split('') as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i}>{zeichen}</span>{/each}</span>
+        <span class={angebot.backend ? 'rh-pro' : 'rh-basic'} aria-hidden="true">{angebot.backend ? 'PRO' : 'BASIC'}</span>
+      </h1>
       <span class="t-aktionen">
         {#if angebot.wecker}
         <button class="rund" class:aktiv={appState.activeTab === 'wecker'}
