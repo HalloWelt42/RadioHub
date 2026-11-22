@@ -140,7 +140,7 @@
 
 .rh-sender { margin-bottom: 8px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--rh-schatten-klein);
   transition: box-shadow var(--schnell), opacity var(--ruhig); }
-.rh-sender-kern { position: relative; padding: 10px 10px 10px 14px; cursor: pointer; }
+.rh-sender-kern { position: relative; padding: 10px 14px; cursor: pointer; }   /* rechts so weit vom Rand wie links (RAD-59) */
 .rh-sender:hover { box-shadow: var(--rh-kante), var(--rh-schatten-hover); }
 .rh-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 40%, transparent); }
 .rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
@@ -163,16 +163,18 @@
 .rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 6px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
 .rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: calc(var(--klein) * 9.4) 44px 44px 44px; gap: 4px; align-items: start; }
-.rh-aktionen .rund { inline-size: 44px; block-size: 44px; font-size: 17px; }
+.rh-aktionen .rund { inline-size: 44px; block-size: 44px; }
+/* alle Symbole der Zeilenknöpfe gleich groß, auch Ebenen und Pfeil am Varianten-Knopf (RAD-59) */
+.rh-aktionen :is(.rund, .rh-varianten-knopf) i { font-size: var(--gross); }
 .rund.favorit { color: var(--rh-favorit); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-favorit) 60%, transparent); }
 .rh-aktionen .rund i { transition: transform var(--schnell); }
 .rh-aktionen .rund[aria-expanded="true"] i { transform: rotate(180deg); }
-.rh-varianten-knopf { block-size: 44px; justify-content: center; font-size: var(--klein); padding: 0 8px; white-space: nowrap; }
+.rh-varianten-knopf { block-size: 44px; justify-content: center; font-size: var(--klein); padding: 0 8px; white-space: nowrap; border-width: 0; }   /* gebaut wie die runden Knöpfe daneben, ohne Rand (RAD-59) */
 .rh-varianten-knopf .rh-zahl { color: var(--akzent); font-weight: 600; }
 /* 0 bis 99 auf demselben Platz (zwei Ziffern, rechtsbündig), damit alle Knöpfe gleich breit sind; rechts der Pfeil zum
    Aufklappen, offen nach oben gedreht (RAD-59) */
 .rh-varianten-knopf .rh-zahl { display: inline-block; min-inline-size: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
-.rh-varianten-pfeil { font-size: .8em; color: var(--text-3); transition: transform var(--schnell); }
+.rh-varianten-pfeil { color: var(--text-3); transition: transform var(--schnell); }
 .rh-varianten-knopf.aktiv .rh-varianten-pfeil { transform: rotate(180deg); }
 /* Aufklapper der Zeile verhalten sich gleich (RAD-59): offen bleibt die Kappe erhaben (versenkt heißt gesperrt), der Pfeil
    dreht sich nach oben und trägt die Akzentfarbe */
