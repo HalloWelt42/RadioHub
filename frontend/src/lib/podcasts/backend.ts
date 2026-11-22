@@ -38,10 +38,16 @@ export class BackendPodcastquelle implements Podcastquelle {
     return `${this.api.baseUrl}/api/podcasts/episodes/${id}/image`;
   }
 
+  /** Cover eines Abos für eine Folge ohne eigenes Bild; leer, wenn das Abo bekanntlich keins hat (RAD-85: dann fragt
+   *  die Oberfläche nichts an und zeigt das Kürzel, statt einen Fehler in der Konsole zu erzeugen) */
+  private coverVon(aboId: number): string {
+    return this.rohAbos.get(aboId)?.hat_bild === false ? "" : this.aboBild(aboId);
+  }
+
   private abo(r: Roh): Abo {
     this.rohAbos.set(r.id, r);
     return {
-      id: r.id, titel: text(r.title), autor: text(r.author), beschreibung: text(r.description), bild: this.aboBild(r.id),
+      id: r.id, titel: text(r.title), autor: text(r.author), beschreibung: text(r.description), bild: r.hat_bild === false ? "" : this.aboBild(r.id),
       feed: text(r.feed_url), autoLaden: !!r.auto_download, angeheftet: !!r.angeheftet,
       sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", ordnerId: r.ordner_id || null, aktualisiert: text(r.last_updated),
       folgen: zahl(r.episode_count), gespeichert: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
@@ -57,7 +63,7 @@ export class BackendPodcastquelle implements Podcastquelle {
       id: r.id, aboId: r.podcast_id, titel: text(r.title), beschreibung: text(r.description), dauer: zahl(r.duration),
       datum: text(r.published_at), stelle: zahl(r.resume_position), gehoert: !!r.is_played, gespeichert: !!r.is_downloaded,
       ablagePfad: r.is_downloaded ? text(r.local_path) : "",
-      groesse: zahl(r.file_size), werbung: { anzahl: zahl(r.werbung_anzahl), dauer: zahl(r.werbung_dauer) }, bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.aboBild(r.podcast_id),
+      groesse: zahl(r.file_size), werbung: { anzahl: zahl(r.werbung_anzahl), dauer: zahl(r.werbung_dauer) }, bild: r.image_url || r.local_image_path ? this.folgenBild(r.id) : this.coverVon(r.podcast_id),
       ...(r.podcast_title ? { aboTitel: text(r.podcast_title) } : {}),
     };
   }

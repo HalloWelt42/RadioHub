@@ -179,3 +179,12 @@ def test_suche_mit_abo_wahl_und_filter(client):
     assert ids(q="hugging", podcast_ids=str(abo_bits), filter_status="unplayed") == [bits]
     assert ids(q="macs", podcast_ids=str(abo_bits), filter_status="downloaded") == []
     assert client.get("/api/podcasts/episodes/all", params={"q": "h"}).status_code == 422
+
+
+def test_abo_nennt_ob_ein_cover_da_ist(monkeypatch, tmp_path):
+    """RAD-85: ohne Cover im Zwischenspeicher meldet das Abo hat_bild False, die Oberfläche fragt dann kein Bild an"""
+    from pathlib import Path
+    from app.services.podcast import podcast_service
+    monkeypatch.setattr(podcast_service, "get_image_path", lambda pid, episode_id=None: Path(tmp_path / "cover.jpg") if pid == 1 else None)
+    assert podcast_service._mit_bildangabe({"id": 1})["hat_bild"] is True
+    assert podcast_service._mit_bildangabe({"id": 2})["hat_bild"] is False

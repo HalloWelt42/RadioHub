@@ -240,7 +240,13 @@ class PodcastService:
                 (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
                  WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
                 FROM podcast_subscriptions ps ORDER BY ps.angeheftet DESC, ps.sort_order, ps.title''')
-            return [dict(row) for row in c.fetchall()]
+            return [self._mit_bildangabe(dict(row)) for row in c.fetchall()]
+
+    def _mit_bildangabe(self, abo: dict) -> dict:
+        """hat_bild: das Cover liegt im Zwischenspeicher (RAD-85). Ohne es fragt die Oberfläche kein Bild an und zeigt das
+        Kürzel; neu geladen wird es beim nächsten Aktualisieren des Abos."""
+        abo["hat_bild"] = self.get_image_path(abo["id"]) is not None
+        return abo
 
     async def get_subscription(self, podcast_id: int) -> Optional[dict]:
         with db_session() as conn:
@@ -254,7 +260,7 @@ class PodcastService:
                  WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
                 FROM podcast_subscriptions ps WHERE ps.id = ?''', (podcast_id,))
             row = c.fetchone()
-            return dict(row) if row else None
+            return self._mit_bildangabe(dict(row)) if row else None
 
     async def reorder_subscriptions(self, ordered_ids: List[int]) -> bool:
         """Reihenfolge der Podcast-Abos speichern"""
