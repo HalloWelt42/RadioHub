@@ -78,11 +78,16 @@ def suche_zerlegen(suche: str) -> tuple[str, list[str]]:
     return " ".join(w for w in woerter if w not in aus), [w[1:] for w in aus]
 
 
+# Eine Wahl in diesen Gruppen hebt die Bündelung auf (jede passende Variante erscheint); ihre Zahlen zählen darum
+# ungebündelt, sonst änderte sich die Zahl am Wert beim Klick (RAD-73)
+_OHNE_BUENDELUNG = frozenset({"codecs", "qualitaet"})
+
+
 def bedingungen(q: StationQuery, ohne: str | None = None) -> Bedingungen:
     """WHERE-Teile der Abfrage; `ohne` lässt den Filter einer Facettengruppe weg (für deren Zahlen)."""
     b = Bedingungen()
     b.dazu("i.sichtbar = 1")
-    if buendeln(q):
+    if buendeln(q) and ohne not in _OHNE_BUENDELUNG:
         b.dazu("i.vertreter = 1")
     if q.nur_erreichbar:
         b.dazu("(i.erreichbar = 1 OR i.favorit = 1)")       # Favoriten bleiben sichtbar

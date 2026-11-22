@@ -127,6 +127,9 @@ def test_varianten_gebuendelt_mit_bester_vorn(radio):
     assert [e["uuid"] for e in radio.get(f"/api/radio/sender/{schwach}/varianten").json()] == [gut, schwach]
     # nach Codec gefiltert zeigt die Liste jede passende Variante
     assert [e["uuid"] for e in _abfrage(radio, codecs=["MP3"])["eintraege"]] == [schwach]
+    # die Zahl am Codec ist vor und nach der Wahl dieselbe (RAD-73): gezählt wird, was die Wahl zeigen wird
+    codec_zahl = lambda e: {f["wert"]: f["anzahl"] for f in e["facetten"]["codecs"]}
+    assert codec_zahl(_abfrage(radio)) == codec_zahl(_abfrage(radio, codecs=["MP3"])) == {"AAC": 1, "MP3": 1}
     # ein Favorit ist Vertreter seiner Gruppe
     _favorit(schwach)
     _aufbereiten(radio)
