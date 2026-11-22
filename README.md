@@ -12,7 +12,7 @@ Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage, in zwei Au
 ## Funktionen
 
 - **Radio:** über 50.000 Sender, nachts abgeglichen; Sprachen, Genres, Qualität und Dubletten aufbereitet
-- **Filtern:** Schnellfilter in der Seitenleiste, Suche mit Minus (`jazz -werbung`), Minus an jedem Sender
+- **Filtern:** Schnellfilter in der Seitenleiste, Suche mit Minus (`jazz -werbung`), Ausblenden mit dem Auge an jedem Sender
 - **Ausschlussregeln:** wirken auch auf neue Sender; erst Vorschau, dann anlegen
 - **Abspielleiste:** Punktmatrix, Zeitversatz, Lautstärke, Steuerung in einer Tastenreihe
 - **Aufnahmen und Podcasts:** mitschneiden und schneiden, Abos mit Folgen
