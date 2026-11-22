@@ -32,9 +32,10 @@ export class StatischeQuelle implements Senderquelle {
   readonly faehig: Faehigkeiten = { abgleich: false, eigeneAdresse: false, messen: false, kategorien: false,
                                     werbung: false, datei: true };
 
-  /** ohne Logos: keine Anfragen an fremde Server beim Blättern (Nutzer 20.11.2026); die Zeile zeigt das Kürzel */
-  logoAdresse(): string | null {
-    return null;
+  /** das Logo direkt vom Server des Senders (nur https, schon beim Erzeugen der Liste geprüft; RAD-105, Nutzer
+   *  22.11.2026); ohne Logo oder wenn es nicht lädt das Kürzel */
+  logoAdresse(_uuid: string, logo: string): string | null {
+    return logo || null;
   }
   private readonly laden: () => Promise<unknown>;
   private readonly speicher: Speicher;

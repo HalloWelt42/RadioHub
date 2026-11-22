@@ -2,7 +2,7 @@
 
 `sender.json` ist die statische Senderliste der Webversion (RAD-4). Sie enthält nur Sender, die direkt im Browser
 über https spielen: Stream-Adresse (aufgelöst, sonst die eingetragene) über https, bei der letzten Prüfung des
-Verzeichnisses erreichbar, ohne Fehler im Zertifikat. Logos stehen nicht drin: die Webversion zeigt Kürzel und lädt beim Blättern nichts von fremden Servern.
+Verzeichnisses erreichbar, ohne Fehler im Zertifikat. Logos stehen drin, wenn sie über https erreichbar sind (RAD-105); die Webversion lädt sie direkt vom Server des Senders und zeigt ohne Logo das Kürzel.
 
 ## Herkunft und Lizenz
 

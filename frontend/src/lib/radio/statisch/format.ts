@@ -5,11 +5,11 @@
 import type { Qualitaet, Sortierung } from "../typen";
 import { faltung, suchform, vergleichen } from "./text";
 
-export const FORMAT = 2;   // 2: ohne Spalte logo (Webversion ohne Logos)
+export const FORMAT = 3;   // 3: wieder mit Spalte logo (nur https, RAD-105); 2 war ohne
 
 /** Spalten einer Zeile in dieser Reihenfolge (wie SPALTEN im Werkzeug) */
 export const SPALTEN = [
-  "uuid", "name", "adresse", "adresse_aufgeloest", "homepage", "land", "land_name", "region", "bundesland",
+  "uuid", "name", "adresse", "adresse_aufgeloest", "logo", "homepage", "land", "land_name", "region", "bundesland",
   "sprachen", "spracheintraege", "genres", "tags", "codec", "kbps", "qualitaet", "stimmen", "hls", "gruppe",
 ] as const;
 
@@ -43,6 +43,7 @@ export interface Senderbestand {
   readonly nameKlein: string[];
   readonly adresse: string[];
   readonly adresseAufgeloest: string[];
+  readonly logo: string[];
   readonly homepage: string[];
   readonly land: string[];
   readonly landName: string[];
@@ -162,7 +163,7 @@ export function bestandLesen(roh: unknown): Senderbestand {
   const n = zeilen.length;
   const b = {
     kopf, anzahl: n, uuid: [] as string[], name: [] as string[], nameKlein: [] as string[], adresse: [] as string[],
-    adresseAufgeloest: [] as string[], homepage: [] as string[], land: [] as string[],
+    adresseAufgeloest: [] as string[], logo: [] as string[], homepage: [] as string[], land: [] as string[],
     landName: [] as string[], region: [] as string[], bundesland: [] as string[], sprachen: [] as number[][],
     eintraege: [] as number[][], genres: [] as number[][], tags: [] as number[][], codec: [] as string[],
     kbps: new Int32Array(n), qualitaet: [] as Qualitaet[], qualitaetRang: new Int8Array(n), stimmen: new Int32Array(n),
@@ -170,7 +171,7 @@ export function bestandLesen(roh: unknown): Senderbestand {
   };
   zeilen.forEach((z, i) => {
     if (!Array.isArray(z) || z.length !== SPALTEN.length) throw new Formatfehler(`Zeile ${i} hat nicht ${SPALTEN.length} Spalten`);
-    const [uuid, name, adresse, aufgeloest, homepage, land, landName, region, bundesland, sprachen, eintraege, genres,
+    const [uuid, name, adresse, aufgeloest, logo, homepage, land, landName, region, bundesland, sprachen, eintraege, genres,
       tags, codec, kbps, qualitaet, stimmen, hls, gruppe] = z;
     const kennung = text(uuid, "uuid");
     if (!kennung || b.nachUuid.has(kennung)) throw new Formatfehler(`uuid in Zeile ${i} leer oder doppelt`);
@@ -181,6 +182,7 @@ export function bestandLesen(roh: unknown): Senderbestand {
     b.adresse.push(text(adresse, "adresse"));
     // leer heißt: wie adresse
     b.adresseAufgeloest.push(text(aufgeloest, "adresse_aufgeloest") || b.adresse[i]);
+    b.logo.push(text(logo, "logo"));
     b.homepage.push(text(homepage, "homepage"));
     b.land.push(wort(kopf, "land", land));
     b.landName.push(wort(kopf, "land_name", landName));

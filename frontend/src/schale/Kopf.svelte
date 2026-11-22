@@ -8,7 +8,7 @@
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
   import KopfBedienung from "./KopfBedienung.svelte";
-  import { PRO_QUELLCODE, SPENDENSEITE, UNTERSTUETZEN, type Ausgabe } from "../lib/ausgabe";
+  import { PRO_QUELLCODE, SPENDENSEITE, type Ausgabe } from "../lib/ausgabe";
 
   type Bereich = "radio" | "recordings" | "podcasts" | "settings";
   let { bereiche = ["radio", "recordings", "podcasts", "settings"], ausgabe = "pro" }: {
@@ -48,11 +48,10 @@
   <div class="rh-marke">
     <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" aria-label="RadioHub" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}><!--
         Buchstaben einzeln für den Glanzlauf (RAD-71) -->{#each "RadioHub".split("") as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i} aria-hidden="true">{zeichen}</span>{/each}</a>
-      {#if backend}<!-- das Herz führt direkt zur Spendenseite, ohne Übersicht (RAD-91) -->
-        <a class="rh-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
-        <span class="rh-pro" title={t("schale.proTitel")}>PRO</span>
-      {:else}<a class="rh-herz" href={UNTERSTUETZEN} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
-        <a class="rh-basic" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.basicVerweis")} aria-label={t("schale.basicVerweis")}>BASIC</a>{/if}</span>
+      <!-- das Herz führt in beiden Ausgaben direkt zur Spendenseite, ohne Übersicht (RAD-91, RAD-106) -->
+      <a class="rh-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
+      {#if backend}<span class="rh-pro" title={t("schale.proTitel")}>PRO</span>
+      {:else}<a class="rh-basic" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.basicVerweis")} aria-label={t("schale.basicVerweis")}>BASIC</a>{/if}</span>
     <span class="rh-unterzeile">{t("app.digitalAudioSystem")}</span>
   </div>
   <nav class="rh-nav" aria-label={t("schale.bereiche")}><div class="rh-nav-schiene">

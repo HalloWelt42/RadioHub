@@ -147,10 +147,8 @@
           <span class="rh-logo" aria-hidden="true">{#each 'RadioHub'.split('') as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i}>{zeichen}</span>{/each}</span>
           <span class={angebot.backend ? 'rh-pro' : 'rh-basic'} aria-hidden="true">{angebot.backend ? 'PRO' : 'BASIC'}</span>
         </h1>
-        {#if angebot.backend}
-          <!-- in PRO das Herz direkt zur Spendenseite (RAD-91) -->
-          <a class="rh-herz t-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t('app.unterstuetzenTitle')} aria-label={t('app.unterstuetzenTitle')}><i class="fa-solid fa-heart"></i></a>
-        {/if}
+        <!-- das Herz direkt zur Spendenseite, in PRO und Basic (RAD-91, RAD-106) -->
+        <a class="rh-herz t-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t('app.unterstuetzenTitle')} aria-label={t('app.unterstuetzenTitle')}><i class="fa-solid fa-heart"></i></a>
       </div>
       <span class="t-aktionen">
         {#if angebot.wecker}

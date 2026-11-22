@@ -210,7 +210,7 @@ export function facetten(b: Senderbestand, s: Sicht, q: Abfrage, d: Durchgang, l
 export function eintrag(b: Senderbestand, s: Sicht, i: number): SenderEintrag {
   const w = b.kopf.woerter;
   return {
-    uuid: b.uuid[i], name: b.name[i], logo: "", homepage: b.homepage[i], land: b.land[i], land_name: b.landName[i],
+    uuid: b.uuid[i], name: b.name[i], logo: b.logo[i], homepage: b.homepage[i], land: b.land[i], land_name: b.landName[i],
     region: b.region[i], bundesland: b.bundesland[i],
     sprachen: b.sprachen[i].map((n) => ({ schluessel: w.sprache[n], name: sprachname(b.kopf, w.sprache[n]) })),
     genres: b.genres[i].map((n) => w.genre[n]), codec: b.codec[i], kbps: b.kbps[i] || null, kbps_gemessen: false,
@@ -222,7 +222,7 @@ export function eintrag(b: Senderbestand, s: Sicht, i: number): SenderEintrag {
 }
 
 export function kurz(b: Senderbestand, i: number): SenderKurz {
-  return { uuid: b.uuid[i], name: b.name[i], land: b.land[i], stimmen: b.stimmen[i], logo: "" };
+  return { uuid: b.uuid[i], name: b.name[i], land: b.land[i], stimmen: b.stimmen[i], logo: b.logo[i] };
 }
 
 /** die ersten `grenze` nach Stimmen (absteigend, dann uuid) */
