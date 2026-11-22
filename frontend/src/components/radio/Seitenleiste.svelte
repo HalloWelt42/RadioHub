@@ -109,7 +109,7 @@
     </section>
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("radio.codecUndBitrate")}</h3></div>
-      <div class="rh-chips-wahl">
+      <div class="rh-chips-wahl rh-chips-zwei">
         {#each facetten?.codecs ?? [] as f (f.wert)}
           {@const an = filter.codecs.includes(f.wert)}
           <button type="button" class="chip wahl" class:an aria-pressed={an}
