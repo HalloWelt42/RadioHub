@@ -64,7 +64,7 @@
     <a class="knopf" href="/einstellungen/radio/ausgeblendet" title={t("radio.einst.einzelnHilfe")}
        onclick={(e) => { e.preventDefault(); actions.navigateTo("/einstellungen/radio/ausgeblendet"); }}><i class="fa-solid fa-eye"></i>{t("radio.einst.einzelnFreigeben")}</a>
   {:else}
-    <button class="knopf" type="button" onclick={fragen} disabled={fragt}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("radio.entfernen")}</button>
+    <button class="knopf rh-regel-weg" type="button" onclick={fragen} disabled={fragt}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("radio.entfernen")}</button>
   {/if}
   {#if fragt}
     <Rueckfrage frage={t("radio.einst.entfernenFrage")} {hinweis} knopf={t("radio.einst.endgueltigEntfernen")}
