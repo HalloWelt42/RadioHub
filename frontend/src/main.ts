@@ -8,6 +8,8 @@ import "appkern-oberflaeche/stil.css";
 import "appkern-oberflaeche/instrumente.css";
 import "appkern-oberflaeche/vorlagen-alle-breiten.css";
 import "appkern-oberflaeche/instrumente";
+import "@fontsource/orbitron/500.css";
+import "@fontsource/orbitron/700.css";
 import "@fontsource/orbitron/900.css";
 import "./stil/radio-marken.css";
 import "./stil/vorlagen/grund.css";
@@ -20,6 +22,7 @@ import "./stil/kanzel.css";
 import "./stil/rechner.css";
 import "./stil/podcasts.css";
 import "./stil/aufnahmen.css";
+import "./stil/schrift.css";
 // Alte Bereiche bis zu ihrem Neubau (Etappen 3 und 6): ihre Variablen aus den Marken, dann ihr bisheriges CSS
 import "./styles/bruecke.css";
 import "./styles/hifi-base.css";

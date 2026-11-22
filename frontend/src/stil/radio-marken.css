@@ -22,6 +22,11 @@
      (data-vorlage) behalten ihre; gleich breite Ziffern gelten überall, auch in Barlow im Fließtext. */
   --schrift-zahl: "Barlow", system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
+  /* Orbitron für Köpfe und ruhige Zahlen (RAD-78, Wahl D). Orbitron hat keine gleich breiten Ziffern: laufende Zahlen
+     (Zeiten, Restzeiten, Puffer) bleiben in --schrift-zahl, Orbitron nur für Zahlen, die stehen. Orbitron läuft breiter,
+     darum kleiner gesetzt (--orbitron-mass) und mit weniger Sperrung. */
+  --schrift-orbitron: "Orbitron", system-ui, sans-serif;
+  --orbitron-mass: .86;
 }
 
 /* ═══ Farben der Marke RadioHub ═══ in jeder Vorlage gleich */

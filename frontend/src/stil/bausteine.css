@@ -123,3 +123,4 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 @keyframes rh-ausfahren { from { translate: 0 100%; } }
 
 @media (prefers-reduced-motion: reduce) { .rh-herz i, .rh-band, :root[data-kanzel] .rh-band { animation: none; } }
+
