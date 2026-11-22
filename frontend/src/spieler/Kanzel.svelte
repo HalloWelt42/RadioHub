@@ -18,7 +18,7 @@
   import { werbungLaeuft } from "./werbehinweis.svelte";
   import { modusWechseln } from "./aktionen";
   import { faehigkeiten } from "../lib/playerEngine.js";
-  import { kanzelReihen } from "./kanzelreihen";
+  import { kanzelForm } from "./kanzelform";
 
   /** was der Weg der Wiedergabe kann (fest für die Sitzung: volle App oder Webversion) */
   const weg = faehigkeiten();
@@ -83,7 +83,7 @@
 <footer class="rh-kanzel" use:kanzelmasse data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
   <span class="rh-urheber">© HalloWelt42</span>
   <Tonausgang {wiedergabe} />
-  <div class="rh-kanzel-voll" use:kanzelReihen>
+  <div class="rh-kanzel-voll" use:kanzelForm>
     <Anzeige {anzeige} hinweis={bitrateHinweis} aufnahme={app.isRecording} />
     <QuelleZeit {anzeige} {stand} {wiedergabe} />
     <Lautstaerke {hoerbar} />

@@ -1,6 +1,6 @@
 // Maße der Kanzel für Meldungen (RAD-74): wie hoch die Kanzel vom unteren Fensterrand reicht (--rh-kanzel-oben), wo das
 // Gehäuse der Lautstärke steht (--rh-laut-links, --rh-laut-rechts, vom linken Fensterrand) und wie weit es über die
-// Kanzel ragt (--rh-laut-ueberstand, 0 in zwei oder drei Reihen). Meldungen fahren als Lasche über der Lautstärke hinter
+// Kanzel ragt (--rh-laut-ueberstand, 0 in allen Formen außer der einen Reihe). Meldungen fahren als Lasche über der Lautstärke hinter
 // der Kanzel hervor; data-kanzel am Wurzelelement sagt, dass es die Kanzel gibt. Eine Quelle, am Wurzelelement.
 // Dazu, wie weit der Schriftzug des Urhebers vom rechten Rand der Kanzel steht: links neben dem Drehregler (RAD-86).
 // Die Lasche selbst (--rh-band-links, --rh-band-rechts) steht über der Lautstärke, aber nie starr: fehlt rechts Platz

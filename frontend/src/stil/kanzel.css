@@ -2,7 +2,7 @@
    Drehregler zwischen zwei Pegeln, Steuerung als Tastenreihe mit Tastenlicht. Übernommen aus dem abgenommenen Entwurf
    (mockups/radio-filter/radio-bausteine.css, Abschnitt Spielerkanzel, RAD-3; Bild bilder/kanzel-1920-dunkel-tasten.png),
    ohne Hausempfang (kommt mit der Übergabe, Etappe 4): die Kanzel schließt wie die Webversion des Entwurfs mit der
-   Steuerung. Eine Zeile wie im Entwurf, solange alles nebeneinander passt (kanzelreihen.ts misst den Bedarf, PRO braucht
+   Steuerung. Eine Zeile wie im Entwurf, solange alles nebeneinander passt (kanzelform.ts misst den Bedarf, PRO braucht
    mehr als Basic; Nutzer 20.11.2026); Quelle und Zeit nur so breit wie ihre Segmente, damit die Anzeige Platz behält. Schmaler zwei Zeilen
    neben dem Gehäuse: oben die Anzeige über die ganze Breite, darunter Quelle
    und Zeit links, die Tastenreihe rechts (Nutzer 20.11.2026: "diese anordnung ist nicht akzeptabel" zur alten
@@ -27,7 +27,7 @@
 /* --rh-anzeige-breite: in der einen Reihe ist die Anzeige mindestens so breit, dass sie bündig mit der linken Spalte der
    Seite endet (Schnellfilter, Nutzer 22.11.2026, RAD-60: "es muss mit der linken seite passen"), und sie ist das
    einzige Element, das mitwächst ("im grunde das einzige flexible element"); Quelle und Zeit, Lautstärke und Steuerung
-   bleiben so breit wie ihr Inhalt. kanzelreihen.ts misst die Anzeige in ihrer Mindestbreite. Die Punktmatrix behält
+   bleiben so breit wie ihr Inhalt. kanzelform.ts misst die Anzeige in ihrer Mindestbreite. Die Punktmatrix behält
    mindestens 10 Stellen (rasterbreite.ts) und läuft bei längeren Namen. */
 .rh-kanzel-voll { --rh-anzeige-breite: calc(var(--rh-filter-breite) - var(--rh-rand)); display: grid; gap: 8px 14px;
   padding: 8px var(--rh-rand) 10px; align-items: stretch;
@@ -169,28 +169,56 @@
 .rh-bitrate-wahl .ak-dreh-name { order: -3; min-block-size: 1.2em; visibility: hidden; }   /* Platz oben, der Name steht im Kopf */
 .rh-bitrate-wahl .ak-dreh-wert { min-block-size: 1.2em; }
 
-/* Messen (kanzelreihen.ts, nur innerhalb eines Bildaufbaus): die eine Reihe mit Modulen in natürlicher Breite */
+/* Messen (kanzelform.ts, nur innerhalb eines Bildaufbaus): die eine Reihe mit Modulen in natürlicher Breite */
 .rh-kanzel-voll[data-messen] { grid-template-columns: var(--rh-anzeige-breite) max-content max-content max-content; }
 
-/* Zwei Reihen (data-reihen, kanzelreihen.ts) */
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; align-items: center; }
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-modul > .ak-etikett { display: none; }
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-laut { margin-top: 0; }
-/* in Reihen ragt nichts über die Kanzel: oben so viel Luft wie seitlich, darin hat auch die Urheberzeile Platz (RAD-86) */
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { padding-top: calc(var(--rh-rand) + 2px); padding-bottom: var(--rh-rand);
+/* Formen unterhalb der einen Reihe (data-form, kanzelform.ts): zwei, schmal, eng */
+.rh-kanzel-voll:is([data-form="zwei"], [data-form="schmal"], [data-form="eng"]) { align-items: center;
+  padding-top: calc(var(--rh-rand) + 2px); padding-bottom: var(--rh-rand);   /* nichts ragt über die Kanzel: oben so viel Luft wie seitlich, darin hat auch die Urheberzeile Platz (RAD-86) */
   row-gap: var(--rh-rand); }   /* zwischen Display, Zeit und Tasten derselbe ruhige Abstand wie am Rand (RAD-86) */
-.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-m-laut { justify-content: center; }
-/* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
-.rh-kanzel-voll[data-reihen="2"] .rh-steuerung { justify-content: flex-end; }
+.rh-kanzel-voll:is([data-form="zwei"], [data-form="schmal"], [data-form="eng"]) .rh-laut { margin-top: 0; }
+.rh-kanzel-voll:is([data-form="zwei"], [data-form="schmal"], [data-form="eng"]) .rh-m-laut { justify-content: center; }
 
-/* Drei Reihen (schmale Kanzel, große Schriftstufen): neben Quelle und Zeit bliebe der Tastenreihe zu wenig Platz; sie
-   bekommt eine eigene Zeile über die ganze Breite, der Transport links, das Seltene und die Drehwahl rechts */
-.rh-kanzel-voll[data-reihen="3"] { grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "anzeige laut" "zeit laut" "steuerung steuerung"; }
-.rh-kanzel-voll[data-reihen="3"] .rh-m-zeit { justify-self: start; }
-.rh-kanzel-voll[data-reihen="3"] .rh-steuerung { justify-content: flex-start; }
-.rh-kanzel-voll[data-reihen="3"] .rh-betrieb { margin-left: auto; }
+/* Zwei Reihen neben dem Gehäuse: oben die Anzeige, darunter Quelle und Zeit links, die Tastenreihe bündig mit dem
+   rechten Rand der Anzeige */
+.rh-kanzel-voll[data-form="zwei"] { grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; }
+.rh-kanzel-voll[data-form="zwei"] .rh-steuerung { justify-content: flex-end; }
+
+/* Schmal und eng: die Steuerung gibt ihre Teile an das Raster der Kanzel ab, damit Tasten und Gehäuse in festen Spalten
+   stehen. Früher bekam die Tastenreihe hier eine eigene Reihe, mit viel Leerraum und getrennt von ihrem Gegenstück
+   (RAD-114, Nutzer 22.11.2026: "aktuell sehr chaotisch"; Wahl Entwurf A "aber mit kleineren lautstärkeregler inkl
+   seinem feld, optimiert alles"). */
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) :is(.rh-m-steuerung, .rh-steuerung) { display: contents; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-transport { grid-area: transport; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-betrieb { grid-area: betrieb; justify-self: start; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-bitrate-wahl { grid-area: dreh; justify-self: end; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-m-zeit { justify-self: start; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-m-laut { align-self: stretch; }
+/* das kleinere Gehäuse: so breit wie das Seltene mit der Drehwahl darunter, aber nie schmaler als Regler und Pegel
+   (Basic: nur zwei Tasten darunter), so hoch wie seine Reihen */
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-laut { inline-size: auto; min-inline-size: calc(var(--gross) * 10); block-size: 100%; align-content: center; padding: 5px 12px 4px; gap: 0; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-laut-reihe { gap: 14px; }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-laut ak-dreh { --ak-zelle: calc(var(--gross) * 4); }
+.rh-kanzel-voll:is([data-form="schmal"], [data-form="eng"]) .rh-laut ak-pegel { --pegel-h: 48px; --pegel-b: 12px; }
+
+/* Schmal (neben Quelle und Zeit passen Tasten und Gehäuse nicht nebeneinander): weiter zwei Reihen. Oben die Anzeige
+   und das kleinere Gehäuse, gleich hoch wie sie; darunter Quelle und Zeit unter dem Anfang der Anzeige, der Transport
+   mittig, das Seltene und die Drehwahl unter dem Gehäuse, das genau so breit ist wie sie. */
+.rh-kanzel-voll[data-form="schmal"] { grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "anzeige anzeige laut laut" "zeit transport betrieb dreh"; }
+.rh-kanzel-voll[data-form="schmal"] .rh-transport { justify-self: center; }
+.rh-kanzel-voll[data-form="schmal"] .rh-m-anzeige { align-self: stretch; }
+
+/* Eng (sehr schmales Fenster, große Schriftstufen: auch Quelle und Zeit passen nicht mehr neben die Tasten): drei
+   Reihen in denselben Spalten. Links Anzeige, Quelle und Zeit, der Transport darunter am selben linken Rand; rechts das
+   kleinere Gehäuse über die Höhe von Anzeige und Zeit, darunter das Seltene und die Drehwahl. Alle Tasten in einer Reihe. */
+.rh-kanzel-voll[data-form="eng"] { grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "anzeige laut laut" "zeit laut laut" "transport betrieb dreh"; }
+.rh-kanzel-voll[data-form="eng"] .rh-transport { justify-self: start; }
+/* die Tastenreihe steht allein: ohne die freie Zeile über der Drehwahl, oben bündig, damit sie nicht absackt */
+.rh-kanzel-voll[data-form="eng"] .rh-bitrate-wahl .ak-dreh-name { display: none; }
+.rh-kanzel-voll[data-form="eng"] :is(.rh-transport, .rh-betrieb, .rh-bitrate-wahl) { align-self: start; }
 
 @media (prefers-reduced-motion: reduce) { .rh-spulbahn.sucht .balken { animation: none; } }
 /* Werbestellen der laufenden Folge auf der Spulbahn (RAD-32): bernstein heißt Werbung */
