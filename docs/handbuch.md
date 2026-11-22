@@ -23,7 +23,8 @@ stand: 9ff31bd
 RadioHub ist das Radio des Hauses, Fassung {{fassung}}: tausende Sender aus dem Senderverzeichnis (jede Nacht
 abgeglichen, Sprachen, Genres, Qualität und Varianten aufbereitet) mit Suche, Schnellfiltern,
 Ausschlussregeln, die auch für neue Sender gelten (mit Grund je ausgeblendetem Sender) und Favoriten, Zeitversatz (zurückspulen im laufenden Sender), Aufnahmen von Hand oder nach Zeitplan mit
-Schnitt in der Wellenform, Podcast-Abos zum Hören und Herunterladen. Am Telefon gibt es eine eigene Ansicht und quer
+Schnitt in der Wellenform, Podcast-Abos zum Hören und Herunterladen. Am Telefon gibt es eine eigene Ansicht (der
+große Spieler liegt auf einem Farbschein aus dem Logo, die Bedienung darauf aus Glas) und quer
 gelegt die Weckeransicht für den Nachttisch mit Wecker, Sonnenband und Zeitansage. Aufnahmen und heruntergeladene
 Folgen liegen in der [[Kellerwolke]]; RadioHub hält lokal nur die Datenbank und Zwischenstände.
 

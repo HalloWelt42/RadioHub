@@ -2,7 +2,8 @@
   /**
    * Spielerleiste über der Fußleiste (Bild, Titel, Wiedergabe/Pause); antippen öffnet den Spieler als Vollbild:
    * bei Folgen Position, Spulen, 15 s zurück und 30 s vor; beim Radio voriger und nächster Sender und Stopp. Der große
-   * Knopf hält nur an und setzt fort, beendet wird nur über Stopp (Nutzer 20.11.2026, wie an der Kanzel).
+   * Knopf hält nur an und setzt fort, beendet wird nur über Stopp (Nutzer 20.11.2026, wie an der Kanzel). Hinter dem
+   * Vollbild liegt das Logo weichgezeichnet als Farbschein, die Bedienflächen darauf sind aus Glas (RAD-56).
    */
   import { appState } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
@@ -58,13 +59,15 @@
 
 {#if offen && info}
   <div class="vollbild" role="dialog" aria-modal="true" aria-label={info.title}>
+    <!-- Farbschein aus dem Logo über die ganze Fläche, Bedienflächen als Glas darauf (RAD-56, Wahl A) -->
+    <div class="tf-schein" class:ohne={!bildSrc} aria-hidden="true" style:background-image={bildSrc ? `url("${bildSrc}")` : null}></div>
     <div class="vollbild-kopf">
       <button class="kopf-knopf" onclick={() => (offen = false)} aria-label={t('telefon.spielerSchliessen')}>
         <i class="fa-solid fa-chevron-down"></i>
       </button>
     </div>
     <div class="buehne">
-      <Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={240} />
+      <span class="tf-cover"><Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px)" /></span>
       <h2>{info.title}</h2>
       <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
     </div>
@@ -182,14 +185,15 @@
     color: var(--t-akzent-text);
     font-size: 20px;
   }
-  .tf-rund.mittel { width: 64px; height: 64px; background: var(--t-flaeche-2); color: var(--t-text); font-size: 24px; }
-  .tf-rund.tf-gross { width: 84px; height: 84px; font-size: 32px; }
+  .tf-rund.mittel { width: clamp(52px, 17vw, 64px); height: clamp(52px, 17vw, 64px); background: var(--t-flaeche-2); color: var(--t-text); font-size: 24px; }
+  .tf-rund.tf-gross { width: clamp(68px, 22vw, 84px); height: clamp(68px, 22vw, 84px); font-size: 32px; }
   .tf-zahl { position: absolute; left: 0; right: 0; bottom: 6px; font-size: 15px; font-weight: 700; }
 
   .vollbild {
     position: fixed;
     inset: 0;
     z-index: 20;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     padding: var(--rahmen-sicher-oben) var(--rahmen-rand) 24px;
@@ -198,13 +202,26 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+  .vollbild > :not(.tf-schein) { position: relative; z-index: 1; }
+  /* Farbschein: das Logo stark weichgezeichnet und gesättigt über die ganze Fläche, darüber der Grund halb deckend,
+     damit Schrift in hell und dunkel lesbar bleibt; ohne Logo ein Schein aus dem Akzent */
+  .tf-schein { position: fixed; inset: -20%; z-index: 0; pointer-events: none; background-size: cover; background-position: center;
+    filter: blur(60px) saturate(1.8); transform: translateZ(0); }
+  .tf-schein.ohne { background-image: radial-gradient(circle at 50% 30%, var(--t-akzent), transparent 70%); }
+  .tf-schein::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--t-grund) 55%, transparent); }
+  /* Glas auf dem Schein */
+  .vollbild :is(.tf-versatz, .tf-zur-liste, .tf-rund.mittel) {
+    background: color-mix(in srgb, var(--t-grund) 45%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .vollbild .tf-versatz-knoepfe button:not(.tf-primaer) { background: color-mix(in srgb, var(--t-grund) 35%, transparent); }
+  .tf-cover { display: grid; }
+  .tf-cover :global(.tf-bild) { border-radius: 22px; box-shadow: 0 18px 40px -12px rgb(0 0 0 / .55); }
   .vollbild-kopf { display: flex; }
   .kopf-knopf { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
   .buehne { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 0; text-align: center; }
-  .buehne h2 { margin: 16px 0 0; font-size: 22px; font-weight: 700; overflow-wrap: anywhere; }
+  .buehne h2 { margin: 16px 0 0; font-size: 24px; font-weight: 700; overflow-wrap: anywhere; }
   .buehne .zusatz { white-space: normal; }
   .position { margin: 16px 0 4px; }
   .position input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .zeiten { display: flex; justify-content: space-between; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
-  .knoepfe { display: flex; align-items: center; justify-content: center; gap: 28px; margin: 16px 0 8px; }
+  .knoepfe { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 16px 0 8px; }
 </style>

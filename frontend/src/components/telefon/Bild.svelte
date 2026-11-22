@@ -1,11 +1,11 @@
 <script>
-  /** Quadratisches Bild mit Ersatzsymbol, wenn es fehlt oder nicht lädt. */
+  /** Quadratisches Bild mit Ersatzsymbol, wenn es fehlt oder nicht lädt; Größe in Pixeln oder als CSS-Länge. */
   let { src = null, symbol = 'fa-music', groesse = 48 } = $props();
   let kaputt = $state(false);
   $effect(() => { src; kaputt = false; });
 </script>
 
-<span class="tf-bild" style="--g: {groesse}px">
+<span class="tf-bild" style="--g: {typeof groesse === 'number' ? `${groesse}px` : groesse}">
   {#if src && !kaputt}
     <img {src} alt="" loading="lazy" onerror={() => (kaputt = true)}
       onload={(e) => { if (e.currentTarget.naturalWidth < 4) kaputt = true; }} />
