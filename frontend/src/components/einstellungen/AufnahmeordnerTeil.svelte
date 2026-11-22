@@ -84,7 +84,7 @@
           <button class="rund" type="button" title={t("einstellungen.ordner.umbenennen")} aria-label="{o.name}: {t('einstellungen.ordner.umbenennen')}"
                   onclick={() => { neuerName = o.name; bearbeitet = o.id; }}><i class="fa-solid fa-pen"></i></button>
           <button class="rund" type="button" title={t("einstellungen.ordner.loeschen")} aria-label="{o.name}: {t('einstellungen.ordner.loeschen')}"
-                  onclick={() => (fragt = o.id)}><i class="fa-solid fa-trash"></i></button></span>
+                  onclick={() => (fragt = o.id)}><i class="fa-solid fa-trash-can rh-loeschen"></i></button></span>
         {#if fragt === o.id}
           {#if o.session_count}
             <p class="hinweis-band rh-e-gesperrt"><i class="fa-solid fa-lock"></i><span>{t("einstellungen.ordner.voll", { name: o.name, n: o.session_count })}</span>

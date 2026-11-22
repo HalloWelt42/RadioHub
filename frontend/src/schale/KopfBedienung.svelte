@@ -1,6 +1,6 @@
 <script lang="ts">
   // Bedienung rechts im Kopf (Nutzer 22.11.2026, RAD-71): ohne Tafel, alles mit einem Klick. Ein Knopf für das Thema
-  // schaltet reihum Hell, Dunkel, System und zeigt das geltende Symbol; Schrift kleiner und größer, die Sprache (vollständig übersetzte) und Abmelden. Alles sind
+  // schaltet reihum Hell, Dunkel, System und zeigt das geltende Symbol; Schrift kleiner und größer, die Sprache als Flagge (ein Klick schaltet zur nächsten vollständig übersetzten) und Abmelden. Alles sind
   // gewöhnliche Knöpfe (rund); das gewählte Thema und die gewählte Sprache tragen die Akzentfarbe. Die Vorlage wählt man
   // in den Einstellungen unter Darstellung. Die Sprache gilt für alle Geräte und wird sofort gespeichert.
   import { abmelden, ohneAnmeldung, Rueckfrage, sitzung } from "appkern-oberflaeche";
@@ -8,6 +8,7 @@
   import { availableLanguages, currentLanguage, onLanguageChange, t } from "../lib/i18n.svelte.js";
   import { server } from "../lib/einstellungen";
   import { actions } from "../lib/store.svelte.js";
+  import Flagge from "./Flagge.svelte";
 
   let { konto: mitKonto }: {
     /** PRO mit Anmeldung: Abmelden oder Gerät trennen */
@@ -21,6 +22,8 @@
 
   let sprache = $state<string>(currentLanguage());
   $effect(() => onLanguageChange((code: string) => (sprache = code)));
+  const spracheJetzt = $derived(SPRACHEN.find((s) => s.code === sprache) ?? SPRACHEN[0]);
+  const spracheDanach = $derived(SPRACHEN[(SPRACHEN.indexOf(spracheJetzt) + 1) % SPRACHEN.length]);
 
   async function spracheWaehlen(code: string) {
     if (code === sprache) return;
@@ -59,12 +62,9 @@
             onclick={() => schriftSchritt(1)}><i class="fa-solid fa-plus"></i></button>
   </div>
   {#if SPRACHEN.length > 1}
-    <div class="rh-kopf-gruppe" role="group" aria-label={t("schale.sprache")}>
-      {#each SPRACHEN as s (s.code)}
-        <button class="rund rh-sprachknopf" class:gewaehlt={sprache === s.code} type="button" aria-pressed={sprache === s.code}
-                title={s.label} aria-label={s.label} onclick={() => void spracheWaehlen(s.code)}>{s.code.toUpperCase()}</button>
-      {/each}
-    </div>
+    <button class="rund" type="button" title={t("schale.spracheWechsel", { jetzt: spracheJetzt.label, danach: spracheDanach.label })}
+            aria-label={t("schale.spracheWechsel", { jetzt: spracheJetzt.label, danach: spracheDanach.label })}
+            onclick={() => void spracheWaehlen(spracheDanach.code)}><Flagge sprache={spracheJetzt.code} /></button>
   {/if}
   {#if mitKonto && !ohneAnmeldung()}
     {#if geraet}

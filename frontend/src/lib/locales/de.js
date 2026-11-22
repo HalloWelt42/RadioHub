@@ -392,6 +392,7 @@ export default {
     fassung: 'Version',
     abmelden: 'Abmelden',
     sprache: 'Sprache',
+    spracheWechsel: 'Sprache {jetzt}, Klick: {danach}',
     abmeldenVon: 'Abmelden ({name})',
     trennenVon: 'Dieses Gerät trennen ({name})',
     trennen: 'Trennen',

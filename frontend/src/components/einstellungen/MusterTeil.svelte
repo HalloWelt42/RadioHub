@@ -46,7 +46,7 @@
           <span>{m.match_type === "exact" ? t("einstellungen.muster.genauHilfe") : t("einstellungen.muster.enthaeltHilfe")} · {eigen ? t("einstellungen.muster.eigenes") : t("einstellungen.muster.eingebaut")}</span></span>
         <span class="rh-regel-zahl"></span>
         {#if eigen}
-          <button class="knopf gefahr" type="button" onclick={() => (fragt = m.id)}><i class="fa-solid fa-trash"></i>{t("einstellungen.entfernen")}</button>
+          <button class="knopf" type="button" onclick={() => (fragt = m.id)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("einstellungen.entfernen")}</button>
         {:else}
           <span class="rh-geltung fest" title={t("einstellungen.muster.eingebautHilfe")}><i class="fa-solid fa-lock"></i>{t("einstellungen.muster.eingebaut")}</span>
         {/if}

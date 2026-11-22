@@ -392,6 +392,7 @@ export default {
     fassung: 'Version',
     abmelden: 'Sign out',
     sprache: 'Language',
+    spracheWechsel: 'Language {jetzt}, click: {danach}',
     abmeldenVon: 'Sign out ({name})',
     trennenVon: 'Disconnect this device ({name})',
     trennen: 'Unpair',

@@ -60,7 +60,7 @@
     {#if kannSpeichern}<button class="knopf" type="button" disabled={auftrag.laeuft} onclick={onallespeichern}><i class="fa-solid fa-cloud-arrow-up"></i>{t("podcastAnsicht.alleSpeichern")}</button>{/if}
     <button class="knopf" type="button" aria-pressed={abo.angeheftet} title={abo.angeheftet ? t("podcastAnsicht.loesenHilfe") : t("podcastAnsicht.anheftenHilfe")} onclick={onanheften}>
       <i class="fa-solid fa-thumbtack" class:rh-angeheftet={abo.angeheftet}></i>{abo.angeheftet ? t("podcastAnsicht.loesen") : t("podcastAnsicht.anheften")}</button>
-    <button class="knopf" type="button" onclick={onabbestellen}><i class="fa-solid fa-trash-can"></i>{t("podcastAnsicht.abbestellen")}</button>
+    <button class="knopf" type="button" onclick={onabbestellen}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("podcastAnsicht.abbestellen")}</button>
   </div>
   {#if speichertHier}
     <div class="rh-auftrag">

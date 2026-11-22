@@ -91,7 +91,7 @@
                 <button class="rh-nadel" type="button" title={t("aufnahmenAnsicht.umbenennen")} aria-label="{t('aufnahmenAnsicht.umbenennen')}: {o.name}"
                         onclick={(e) => { e.stopPropagation(); name = o.name; bearbeitet = o.id; }}><i class="fa-solid fa-pen"></i></button>
                 <button class="rh-nadel" type="button" title={t("aufnahmenAnsicht.ordnerLoeschen")} aria-label="{t('aufnahmenAnsicht.ordnerLoeschen')}: {o.name}"
-                        onclick={(e) => { e.stopPropagation(); fragt = o.id; }}><i class="fa-solid fa-trash-can"></i></button></span>
+                        onclick={(e) => { e.stopPropagation(); fragt = o.id; }}><i class="fa-solid fa-trash-can rh-loeschen"></i></button></span>
             </div>
             {#if fragt === o.id}
               {#if o.anzahl}

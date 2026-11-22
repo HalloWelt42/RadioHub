@@ -39,7 +39,7 @@
               onwechsel={(an) => onwerbung({ ueberspringen: an })} />
     <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
               onwechsel={(an) => onwerbung({ pruefen: an })} />
-    <button class="knopf gefahr" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can"></i>{t("podcastAnsicht.abbestellen")}</button>
+    <button class="knopf" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("podcastAnsicht.abbestellen")}</button>
   </div>
   {#if fragt}
     <div class="tp-frage"><Rueckfrage frage={t("podcastAnsicht.telefon.abbestellenFrage", { name: abo.titel })} hinweis={t("podcastAnsicht.telefon.abbestellenHinweis")}

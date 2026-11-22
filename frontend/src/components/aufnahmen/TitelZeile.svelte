@@ -51,7 +51,7 @@
       {#if kannVerwalten}
         <button class="rund" class:an={gesperrt} type="button" aria-pressed={gesperrt} title={gesperrt ? t("aufnahmenAnsicht.entsperren") : t("aufnahmenAnsicht.sperren")}
                 aria-label={gesperrt ? t("aufnahmenAnsicht.entsperren") : t("aufnahmenAnsicht.sperren")} onclick={onsperren}><i class="fa-solid {gesperrt ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-        <button class="rund" type="button" title={t("aufnahmenAnsicht.loeschen")} aria-label={t("aufnahmenAnsicht.loeschen")} onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can"></i></button>
+        <button class="rund" type="button" title={t("aufnahmenAnsicht.loeschen")} aria-label={t("aufnahmenAnsicht.loeschen")} onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can rh-loeschen"></i></button>
       {/if}
       {/if}
     </div>

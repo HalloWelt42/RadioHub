@@ -59,7 +59,7 @@
     {#if kannVerwalten}
       <Auswahl wert={a.ordnerId === null ? "" : String(a.ordnerId)} optionen={ordnerWahl} symbol="fa-folder-tree" titel={t("aufnahmenAnsicht.verschieben")}
                onwahl={(w: string) => onverschieben(w ? Number(w) : null)} />
-      <button class="knopf gefahr" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can"></i>{t("aufnahmenAnsicht.loeschen")}</button>
+      <button class="knopf" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("aufnahmenAnsicht.loeschen")}</button>
     {/if}
   </div>
   {#if fragt}

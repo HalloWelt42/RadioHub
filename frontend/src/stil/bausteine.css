@@ -57,8 +57,7 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-kopf-bedienung { display: flex; align-items: center; gap: 14px; }
 .rh-kopf-gruppe { display: flex; gap: 4px; }
 .rh-kopf-bedienung .rund { inline-size: var(--rh-taste-klein); block-size: var(--rh-taste-klein); }
-.rh-kopf-bedienung .rund.gewaehlt { color: var(--akzent); }
-.rh-sprachknopf { font-family: var(--schrift-zahl); font-size: var(--klein); letter-spacing: .04em; }
+.rh-flagge { inline-size: calc(var(--gross) * 1.35); block-size: calc(var(--gross) * .8); border-radius: 3px; box-shadow: 0 0 0 1px var(--rh-flaggen-rand); }
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }
 /* Symbol und Text in Segmenten der eigenen Ansichten mit Abstand (RAD-37: in den Einstellungen klebten sie aneinander;
@@ -83,6 +82,9 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-band > i { color: var(--led-bernstein); }
 .rh-band.gut > i { color: var(--gut); }
 .rh-band.fehler > i { color: var(--gefahr); }
+/* Löschen sieht überall gleich aus (RAD-70): ein gewöhnlicher Knopf, nur die Mülltonne in der Gefahrfarbe; gesperrt tritt sie zurück */
+.rh-loeschen { color: var(--gefahr); }
+:disabled > .rh-loeschen { color: inherit; }
 /* Hinweis zur Werbung (RAD-32, RAD-33): auf schmalen Geräten ohne die Angaben in Klammern (Entwurf radio-werbung, 7 und 8) */
 @media (max-width: 560px) { .rh-werbehinweis .rh-werbe-mehr { display: none; } }
 .rh-aufnahmehinweis > i { color: var(--led-rot); }

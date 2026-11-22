@@ -206,7 +206,7 @@
   .rh-e-wert ak-schieber { inline-size: 100%; }
 }
 .rh-regeln.rh-feste .rh-regel > .rh-regel-aktion { grid-area: schalter; justify-self: stretch; justify-content: center; }
-.rh-regeln.rh-feste .rh-regel > .knopf.gefahr, .rh-regeln.rh-feste .rh-regel > .rh-e-zeilenknoepfe, .rh-regeln.rh-feste .rh-regel > .rh-geltung { grid-area: weg; justify-self: end; }
+.rh-regeln.rh-feste .rh-regel > .knopf, .rh-regeln.rh-feste .rh-regel > .rh-e-zeilenknoepfe, .rh-regeln.rh-feste .rh-regel > .rh-geltung { grid-area: weg; justify-self: end; }
 .rh-regel > .rueckfrage, .rh-regel > .rh-e-gesperrt { grid-column: 1 / -1; margin: 6px 0 0; }
 .rh-regel-text .rh-ordner-eingabe input { inline-size: 100%; }
 .rh-tasten { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 20)), 1fr)); gap: 18px 28px; }

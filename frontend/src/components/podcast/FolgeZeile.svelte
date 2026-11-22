@@ -109,7 +109,7 @@
         <button class="knopf" type="button" onclick={ongehoert}><i class="fa-solid {gehoert ? 'fa-rotate-left' : 'fa-check'}"></i>
           {gehoert ? t("podcastAnsicht.alsUngehoert") : t("podcastAnsicht.alsGehoert")}</button>
         {#if kannSpeichern}
-          <button class="knopf" type="button" onclick={speicherKnopf}><i class="fa-solid {folge.gespeichert ? 'fa-trash-can' : 'fa-cloud-arrow-up'}"></i>
+          <button class="knopf" type="button" onclick={speicherKnopf}><i class="fa-solid {folge.gespeichert ? 'fa-trash-can rh-loeschen' : 'fa-cloud-arrow-up'}"></i>
             {folge.gespeichert ? t("podcastAnsicht.speicherLoeschen", { mb }) : t("podcastAnsicht.speichern")}</button>
         {/if}
         {#if dateiAdresse}

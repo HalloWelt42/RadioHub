@@ -62,7 +62,7 @@
           <span>{n ? `${n} ${t("einstellungen.kategorien.sender")}` : t("einstellungen.kategorien.leer")}</span></span>
         <span class="rh-regel-zahl"><b>{n}</b>{t("einstellungen.kategorien.sender")}</span>
         <button class="knopf rh-regel-aktion" type="button" onclick={() => { neuerName = k.name; bearbeitet = k.id; }}><i class="fa-solid fa-pen"></i>{t("einstellungen.kategorien.umbenennen")}</button>
-        <button class="knopf gefahr" type="button" onclick={() => (fragt = k.id)}><i class="fa-solid fa-trash"></i>{t("einstellungen.kategorien.loeschen")}</button>
+        <button class="knopf" type="button" onclick={() => (fragt = k.id)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("einstellungen.kategorien.loeschen")}</button>
         {#if fragt === k.id}
           <Rueckfrage frage={n ? t("einstellungen.kategorien.loeschenFrage", { name: k.name, n }) : t("einstellungen.kategorien.loeschenLeer", { name: k.name })}
                       knopf={t("einstellungen.kategorien.loeschen")} onabbrechen={() => (fragt = null)} onja={() => void loeschen(k)} />

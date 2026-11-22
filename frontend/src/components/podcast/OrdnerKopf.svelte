@@ -80,7 +80,7 @@
     <button class="rh-nadel" type="button" aria-label="{t('podcastAnsicht.ordnerUmbenennen')}: {ordner.name}" title={t("podcastAnsicht.ordnerUmbenennen")}
             onclick={bearbeiten}><i class="fa-solid fa-pen"></i></button>
     <button class="rh-nadel" type="button" aria-label="{t('podcastAnsicht.ordnerAufloesen')}: {ordner.name}" title={t("podcastAnsicht.ordnerAufloesen")}
-            onclick={(e) => { e.stopPropagation(); fragt = true; }}><i class="fa-solid fa-trash-can"></i></button>
+            onclick={(e) => { e.stopPropagation(); fragt = true; }}><i class="fa-solid fa-trash-can rh-loeschen"></i></button>
   </span>
 </div>
 {#if fragt}
