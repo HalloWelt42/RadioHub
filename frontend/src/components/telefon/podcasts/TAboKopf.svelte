@@ -7,7 +7,7 @@
   import type { Abo, Podcastsortierung } from "../../../lib/podcasts";
   import AboBild from "../../podcast/AboBild.svelte";
   import Langtext from "../../radio/Langtext.svelte";
-  import Schalter from "../../radio/Schalter.svelte";
+  import Schalter from "../../bausteine/Schalter.svelte";
 
   let { abo, sortierung, arbeitet, kannSpeichern, onaktualisieren, onauto, onabbestellen, onsortieren, onwerbung }: {
     abo: Abo;

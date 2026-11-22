@@ -152,10 +152,7 @@ export default {
     podcast: 'PODCAST',
     setup: 'EINSTELLUNGEN',
     dark: 'DUNKEL',
-    light: 'HELL',
-    online: 'ONLINE',
-    offline: 'OFFLINE',
-    ablage: 'ABLAGE'
+    light: 'HELL'
   },
 
   // === Player ===
@@ -374,10 +371,6 @@ export default {
     aufnahmen: 'Aufnahmen',
     podcasts: 'Podcasts',
     einstellungen: 'Einstellungen',
-    dienstDa: 'Dienst erreichbar',
-    dienstWeg: 'Dienst nicht erreichbar',
-    ablageDa: 'Ablage verbunden',
-    ablageWeg: 'Ablage nicht verbunden',
     darstellung: 'Darstellung',
     darstellungTitel: 'Darstellung: Stil, Modus und Schrift',
     vorlage: 'Stil',

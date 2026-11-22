@@ -14,7 +14,7 @@
   import type { Bewertung, SenderEintrag } from "../../lib/radio/typen";
   import { haeufigste, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief } from "../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../lib/radio/werbende.svelte";
-  import Schalter from "./Schalter.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
 
   let { eintrag, kategorien, spielt, onaendern, onneustart }: {
     eintrag: SenderEintrag;
@@ -266,7 +266,7 @@
       <!-- Kopf: links die Anzahl, rechts außen der Schalter über der Liste der Werbenden (RAD-59) -->
       <div class="rh-werbung-kopf">
         {#if werbung?.spots}<span class="rh-still" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
-        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" symbol="fa-ban" text={t("radio.werbungKurz")} name={t("radio.werbungUeberspringen")}
+        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" symbol="fa-ban" text={t("radio.werbungKurz")}
           hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
           onwechsel={werbungSchalten} />{/if}
       </div>

@@ -12,7 +12,7 @@
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import type { ScanStand, Verdaechtiger, WerbeEinstellungen, WerbeStand } from "../../../lib/radio/werbeerkennung";
   import Band from "../Band.svelte";
-  import Schalter from "../Schalter.svelte";
+  import Schalter from "../../bausteine/Schalter.svelte";
   import { haeufigste, sendewerbung } from "../../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../../lib/radio/werbende.svelte";
 
@@ -117,7 +117,7 @@
       <div class="rh-karte-kopf"><h2><i class="fa-solid fa-rectangle-ad"></i>{t("radio.einst.sendedaten")}</h2></div>
       <p class="hinweis-band"><i class="fa-solid fa-circle-info"></i><span>{t("radio.einst.sendedatenHinweis")}</span></p>
       <div class="rh-schalter-zeile"><span><b>{t("radio.einst.werbungUeberspringen")}</b><span>{t("radio.einst.werbungUeberspringenHilfe")}</span></span>
-        <button class="schalter" class:an={alleAn} type="button" aria-pressed={alleAn} aria-label={t("radio.einst.werbungUeberspringen")} onclick={() => alleSchalten(!alleAn)}></button></div>
+        <Schalter an={alleAn} text={alleAn ? t("einstellungen.an") : t("einstellungen.aus")} farbe="bernstein" hilfe={t("radio.einst.werbungUeberspringen")} onwechsel={alleSchalten} /></div>
       <div class="rh-schalter-zeile"><span><b>{t("radio.einst.senderMitWerbung")}</b>
           <span>{werbendeListe.length ? t(ausgenommen ? "radio.einst.senderMitWerbungZahlAus" : "radio.einst.senderMitWerbungZahl", { n: zahl(werbendeListe.length), s: zahl(spotsZusammen), a: zahl(ausgenommen) }) : t("radio.einst.senderMitWerbungKeine")}</span></span>
         {#if werbendeListe.length}<button class="knopf" type="button" aria-expanded={listeOffen} onclick={() => (listeOffen = !listeOffen)}>
@@ -194,12 +194,12 @@
     <div class="karte rh-karte">
       <div class="rh-karte-kopf"><h2><i class="fa-solid fa-sliders"></i>{t("radio.einst.erkennung")}</h2></div>
       <div class="rh-schalter-zeile"><span><b>{t("radio.einst.werbeerkennung")}</b><span>{t("radio.einst.werbeerkennungHilfe")}</span></span>
-        <button class="schalter" class:an={einst.an} type="button" aria-pressed={einst.an} aria-label={t("radio.einst.werbeerkennung")} onclick={() => aendern({ an: !einst?.an })}></button></div>
+        <Schalter an={einst.an} text={einst.an ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={t("radio.einst.werbeerkennung")} onwechsel={(an) => aendern({ an })} /></div>
       {#if einst.an}
         <div class="rh-schalter-zeile"><span><b>{t("radio.einst.adresspruefung")}</b><span>{t("radio.einst.adresspruefungHilfe")}</span></span>
-          <button class="schalter" class:an={art("url_check")} type="button" aria-pressed={art("url_check")} aria-label={t("radio.einst.adresspruefung")} onclick={() => artUmschalten("url_check")}></button></div>
+          <Schalter an={art("url_check")} text={art("url_check") ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={t("radio.einst.adresspruefung")} onwechsel={() => artUmschalten("url_check")} /></div>
         <div class="rh-schalter-zeile"><span><b>{t("radio.einst.serverpruefung")}</b><span>{t("radio.einst.serverpruefungHilfe")}</span></span>
-          <button class="schalter" class:an={art("header_check")} type="button" aria-pressed={art("header_check")} aria-label={t("radio.einst.serverpruefung")} onclick={() => artUmschalten("header_check")}></button></div>
+          <Schalter an={art("header_check")} text={art("header_check") ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={t("radio.einst.serverpruefung")} onwechsel={() => artUmschalten("header_check")} /></div>
         <div class="rh-schalter-zeile"><span><b>{t("radio.einst.schwelle")}</b><span>{t("radio.einst.schwelleHilfe")}</span></span><span></span>
           <ak-schieber bind:this={schwelle} art="leuchte" leuchte="bernstein" name={t("radio.einst.schwelle")} hilfe={t("radio.einst.schwelleHilfe")}
                        raster={SCHWELLEN.map((s) => `${Math.round(s * 100)} %`).join("|")} wert={Math.max(0, SCHWELLEN.findIndex((s) => s >= einst!.schwelle - 0.001))}

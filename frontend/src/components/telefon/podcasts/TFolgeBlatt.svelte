@@ -7,7 +7,7 @@
   import { datumKurz, megabyte, minuten, standVon, stelleText, textAus } from "../../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../../lib/podcasts";
   import Langtext from "../../radio/Langtext.svelte";
-  import Schalter from "../../radio/Schalter.svelte";
+  import Schalter from "../../bausteine/Schalter.svelte";
   import Werbeteil from "../../podcast/Werbeteil.svelte";
 
   let { folge: f, abo, spielt, kannSpeichern, dateiAdresse, onhoeren, onvorn, onspeichern, onloeschen, ongehoert, onzu, onanhoeren, onwerbung }: {

@@ -5,6 +5,7 @@
   // gesperrte stehen ausgegraut mit Grund da. "Vorgabe" fragt vorher und nennt, was verloren geht.
   import { Auswahl, Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
+  import Schalter from "../bausteine/Schalter.svelte";
   import { server, type Wahlwert, type Zeile } from "../../lib/einstellungen";
 
   let { zeile, onwert }: { zeile: Zeile; onwert: (wert: unknown) => void } = $props();
@@ -90,11 +91,7 @@
   </div>
   <div class="rh-e-wert">
     {#if zeile.art === "schalter"}
-      {#key zeile.wert}
-        <ak-taster art="flach" beschriftung={zeile.wert ? t("einstellungen.an") : t("einstellungen.aus")} farbe="gruen" an={zeile.wert ? true : undefined}
-                   hilfe={zeile.titel}
-                   oninput={(e: Event) => onwert(!!(e.currentTarget as HTMLElement & { an?: boolean }).an)}></ak-taster>
-      {/key}
+      <Schalter an={!!zeile.wert} text={zeile.wert ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={zeile.titel} onwechsel={onwert} />
     {:else if zeile.art === "zahl"}
       <ak-schieber bind:this={schieber} art="balken" leuchte="gruen" segmente="8" name={zeile.titel} min={zeile.kleinste} max={zeile.groesste}
                    schritt={zeile.schritt ?? 1} einheit={zeile.einheit} wert={zeile.wert as number} gesperrt={gesperrt || undefined}

@@ -111,6 +111,7 @@
 .rh-hinweis { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-block-size: var(--rh-taste); padding: 4px 4px;
   font-size: var(--klein); color: var(--text-2); }
 .rh-hinweis b { color: var(--text); font-family: var(--schrift-zahl); }
+.rh-neu-laden { inline-size: var(--rh-taste); block-size: var(--rh-taste); }   /* nur Symbol, so hoch wie das Suchfeld (RAD-70) */
 .rh-hinweis a { margin-left: auto; color: var(--akzent); font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
 .rh-hinweis a:hover { text-decoration: underline; }
 
@@ -118,7 +119,7 @@
 .rh-liste { container: liste / inline-size; font-size: var(--gross); }
 /* --rh-varianten: Zelle des Varianten-Knopfs, so breit wie sein längster Inhalt ("99 Varianten" mit Pfeil, ohne
    Stapelzeichen: 123 Pixel bei Kleinschrift 15), damit er nie unter den Stern ragt (RAD-59) */
-.rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 8.3); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: start;
+.rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 8.3); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: center;   /* alle Teile der Zeile mittig (RAD-70) */
   grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
   grid-template-areas: "logo name genres guete stimmen aktionen"; }
 /* Spaltenkopf klebt einen Pixel über der Oberkante der Liste: beginnt die Liste auf einem halben Pixel, rundet die
@@ -152,7 +153,7 @@
 .rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
 .rh-sender.offen { background-color: var(--karte); }
 .rh-sender .rh-logo-bild { grid-area: logo; }
-.rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
+.rh-sender .name { grid-area: name; min-width: 0; }
 /* eine Zeile, lange Namen enden mit ...; der volle Name steht im Hinweis (Nutzer 22.11.2026, RAD-59) */
 .rh-sender .name b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: var(--gross);
   line-height: 1.3; }
@@ -161,7 +162,7 @@
 .rh-titel i { color: var(--led-blau); margin-right: 6px; }
 /* Genres in höchstens zwei Zeilen (zeilenbegrenzung.ts): voll, so weit Platz ist; das letzte Label nimmt den Rest auf,
    füllt seine Zeile und kürzt sich mit ... (RAD-59) */
-.rh-sender .genres { grid-area: genres; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; min-width: 0; }
+.rh-sender .genres { grid-area: genres; display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .rh-genre { font-size: var(--marke); padding: 1px 8px; border-radius: var(--r1); color: var(--text-2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); white-space: nowrap; }
 .rh-sender .genres .rh-genre { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; }
 .rh-sender .genres .rh-genre-rest { flex: 1 1 0; min-inline-size: 3.5em; }
@@ -170,7 +171,7 @@
 .rh-sender .guete-zelle span { grid-area: format; color: var(--text-3); font-family: var(--schrift-zahl); white-space: nowrap; line-height: 1.3; }
 .rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; align-self: center; gap: 10px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
-.rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: var(--rh-varianten) 44px 44px 44px; gap: 4px; align-items: start; }
+.rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: var(--rh-varianten) 44px 44px 44px; gap: 4px; align-items: center; }
 .rh-aktionen .rh-varianten-knopf { inline-size: 100%; min-inline-size: 0; }
 .rh-aktionen .rund { inline-size: 44px; block-size: 44px; }
 /* alle Symbole der Zeilenknöpfe gleich groß, auch Ebenen und Pfeil am Varianten-Knopf (RAD-59) */
@@ -331,7 +332,7 @@
 /* Kopf der Werbung: links die Anzahl, rechts außen der Schalter, auf der Linie der ersten Steckbriefzeile (RAD-59) */
 .rh-werbung-kopf { display: flex; gap: 6px 12px; align-items: start; justify-content: space-between; font-size: var(--klein); }
 .rh-werbung-kopf > .rh-still { display: flex; align-items: center; min-block-size: 28px; white-space: nowrap; }   /* Anzahl auf der Kopflinie, der Schalter mit Licht reicht tiefer */
-.rh-werbung-kopf .rh-schalter { margin-left: auto; padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
+.rh-werbung-kopf .rh-schalter { margin-left: auto; }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
 .rh-werbende { display: grid; gap: 0; }
 /* kompakte Zeilen ohne Kasten (RAD-59); Fläche nur beim Überfahren und aufgeklappt */

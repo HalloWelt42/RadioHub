@@ -11,7 +11,7 @@
   import type { Fortschritt } from "../../lib/ereignisstrom";
   import { tonelement } from "../../spieler/tonelement";
   import { werbesprung } from "../../spieler/werbesprung.svelte";
-  import Schalter from "../radio/Schalter.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
 
   let { folge, abo, spielt, schmal = false, onanhoeren, ongeaendert }: {
     folge: Folge;

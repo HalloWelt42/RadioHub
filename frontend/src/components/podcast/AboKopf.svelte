@@ -2,7 +2,7 @@
   // Kopf eines gewählten Abos über der Liste (Entwurf podcasts.html): Bild, Titel, Autor, Beschreibung, Zahlen; der
   // Schalter "Neue speichern" (flacher Taster wie "Nur Favoriten"), Aktualisieren, Alle speichern, Anheften,
   // Abbestellen; darunter der Fortschritt von "Alle speichern" (in der Kellerwolke).
-  import Schalter from "../radio/Schalter.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
   import { t } from "../../lib/i18n.svelte.js";
   import { dauerText, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Speicherauftrag } from "../../lib/podcasts";
@@ -49,8 +49,7 @@
     </div>
   </div>
   {#if kannSpeichern}
-    <ak-taster art="flach" beschriftung={t("podcastAnsicht.neueSpeichern")} farbe="gruen" an={abo.autoLaden || undefined} hilfe={t("podcastAnsicht.neueSpeichernHilfe")}
-               oninput={(e: Event) => onauto(!!(e.currentTarget as HTMLElement & { an?: boolean }).an)}></ak-taster>
+    <Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />
   {/if}
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>

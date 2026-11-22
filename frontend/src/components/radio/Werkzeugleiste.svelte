@@ -57,9 +57,9 @@
       <span class="rh-breit">{sichtbar === null ? "" : t("radio.vonSichtbaren", { n: zahl(sichtbar) })}</span>
     </div>
     <Suchfeld wert={filter.suche} onsuche={(s) => onaendern((f) => ({ ...f, suche: s }))} />
-    <button class="knopf rh-neu-laden" type="button" title={t("radio.neuLadenHilfe")} aria-label={t("radio.neuLaden")} disabled={laedt}
-            onclick={() => { onneuladen(); }}>
-      <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("radio.neuLaden")}</span></button>
+    <!-- nur das Symbol; was er tut, sagt der Hinweis (RAD-70) -->
+    <button class="rund rh-neu-laden" type="button" title={t("radio.neuErfassen")} aria-label={t("radio.neuErfassen")} disabled={laedt}
+            onclick={() => { onneuladen(); }}><i class="fa-solid fa-rotate" class:fa-spin={laedt}></i></button>
   </div>
   <div class="rh-werkzeug-zeile">
     <div class="rh-aktiv-chips" aria-label={t("radio.aktiveFilter")}>

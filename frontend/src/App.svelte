@@ -22,8 +22,6 @@
   import { radiowerbungStarten } from "./spieler/radiowerbung.svelte";
   import { pufferStarten } from "./spieler/puffer.svelte";
 
-  let online = $state<boolean | null>(null);
-  let ablage = $state<{ verbunden: boolean; meldung?: string } | null>(null);   // Stand der Ablage (Kellerwolke)
 
   // Adresse und Bereich (Zurück und Vor im Browser; alte #-Adressen und die Wurzel leitet der Router um)
   $effect(() => {
@@ -35,16 +33,9 @@
     appState.routeSegments = anfang.segments;
   });
 
-  // Dienst erreichbar, Einstellungen des Radios, Stand der Ablage
+  // Dienst erreichbar, dann die Einstellungen des Radios; ist er nicht erreichbar, sagt es eine Meldung
   $effect(() => {
-    api.health().then(() => {
-      online = true;
-      actions.initConfig();
-      api.getAblage().then((a: { verbunden: boolean; meldung?: string }) => (ablage = a)).catch(() => (ablage = null));
-    }).catch(() => {
-      actions.showToast(t("toast.backendOffline"), "error");
-      online = false;
-    });
+    api.health().then(() => actions.initConfig()).catch(() => actions.showToast(t("toast.backendOffline"), "error"));
   });
 
   // Werbung in Folgen überspringen (RAD-32), am Rechner und am Telefon, nur in PRO
@@ -78,7 +69,7 @@
   <Telefon />
 {:else}
   <div class="rh-app">
-    <Kopf {online} {ablage} bereiche={[...BEREICHE]} />
+    <Kopf bereiche={[...BEREICHE]} />
     <main class="rh-mitte">
       {#if appState.activeTab === "radio" || appState.activeTab === "wecker"}
         <RadioAnsicht />

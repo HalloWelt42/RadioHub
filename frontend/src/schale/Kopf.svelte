@@ -1,9 +1,9 @@
 <script lang="ts">
   // Kopf am Rechner wie im Entwurf (mockups/radio-filter/rechner.html): Schriftzug RadioHub mit Herz (führt zum
-  // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, Status (Dienst und Ablage) und die Tafel
+  // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, und die Tafel
   // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Neben dem
   // Herz das Zeichen der Ausgabe (Nutzer 20.11.2026): PRO in Gold; die Basic-Webversion (RAD-4) zeigt BASIC in Silber,
-  // das selbst zum Quellcode der PRO führt, dazu nur Radio und Einstellungen, ohne Status und Konto; das Herz führt dort
+  // das selbst zum Quellcode der PRO führt, dazu nur Radio und Einstellungen, ohne Konto; das Herz führt dort
   // zum Unterstützen.
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
@@ -12,12 +12,10 @@
   import { PRO_QUELLCODE, UNTERSTUETZEN, type Ausgabe } from "../lib/ausgabe";
 
   type Bereich = "radio" | "recordings" | "podcasts" | "settings";
-  let { online, ablage, bereiche = ["radio", "recordings", "podcasts", "settings"], ausgabe = "pro" }: {
-    online?: boolean | null;
-    ablage?: { verbunden: boolean; meldung?: string } | null;
+  let { bereiche = ["radio", "recordings", "podcasts", "settings"], ausgabe = "pro" }: {
     /** angebotene Bereiche in der Navigation */
     bereiche?: Bereich[];
-    /** PRO mit Backend (Status von Dienst und Ablage, Konto), Basic als Webversion ohne */
+    /** PRO mit Backend (Konto), Basic als Webversion ohne */
     ausgabe?: Ausgabe;
   } = $props();
   const backend = $derived(ausgabe === "pro");
@@ -87,17 +85,6 @@
     {/each}
   </div></nav>
   <div class="rh-kopf-rechts">
-    {#if backend}
-    <div class="rh-status">
-      <!-- Zustand als Wort ohne Leuchte (RAD-64); eine Störung steht rot -->
-      <span class="rh-status-wort" class:weg={online === false} class:still={online === null}
-            title={online === false ? t("schale.dienstWeg") : t("schale.dienstDa")}>{online === false ? t("nav.offline") : t("nav.online")}</span>
-      {#if ablage}
-        <span class="rh-status-wort" class:weg={!ablage.verbunden}
-              title={ablage.verbunden ? t("schale.ablageDa") : (ablage.meldung || t("schale.ablageWeg"))}>{t("nav.ablage")}</span>
-      {/if}
-    </div>
-    {/if}
     <div class="rh-darstellung">
       <button class="knopf" type="button" bind:this={darstellungsKnopf} aria-controls="tafel-darstellung" aria-expanded={offen}
               title={t("schale.darstellungTitel")} onclick={() => (offen = !offen)}><i class="fa-solid fa-circle-half-stroke"></i><span>{t("schale.darstellung")}</span></button>

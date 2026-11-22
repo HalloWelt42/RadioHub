@@ -3,6 +3,7 @@
   // Favoriten, Schalter, Entfernen. Entfernen fragt erst mit der Folgenvorschau (so viele Sender werden wieder sichtbar,
   // Beispiele) über die Rückfrage der Schale (Vorgabe 9).
   import { Rueckfrage } from "appkern-oberflaeche";
+  import Schalter from "../../bausteine/Schalter.svelte";
   import { t } from "../../../lib/i18n.svelte.js";
   import { actions } from "../../../lib/store.svelte.js";
   import { senderquelle } from "../../../lib/radio";
@@ -55,10 +56,9 @@
   <span class="rh-regel-art" title={t(`radio.einst.art.${regel.art}`)}><i class="fa-solid {REGEL_SYMBOL[regel.art]}"></i></span>
   <span class="rh-regel-text"><b>{regel.titel}</b><span>{t(`radio.einst.art.${regel.art}`)}: {regel.erklaerung}{#if neu}{` · ${t("radio.einst.geradeAngelegt")}`}{/if}</span></span>
   <span class="rh-regel-zahl"><b>{zahl(regel.betroffen)}</b>{t("radio.einst.senderFavoriten", { n: zahl(regel.favoriten) })}</span>
-  <button class="schalter" class:an={regel.an} type="button" aria-pressed={regel.an}
-          aria-label={regel.an ? t("radio.einst.ausschalten") : t("radio.einst.einschalten")}
-          title={regel.an ? t("radio.einst.ausschaltenHilfe", { n: zahl(regel.nur_diese) }) : t("radio.einst.einschalten")}
-          onclick={() => onschalten(regel)}></button>
+  <Schalter an={regel.an} text={regel.an ? t("einstellungen.an") : t("einstellungen.aus")}
+            hilfe={regel.an ? t("radio.einst.ausschaltenHilfe", { n: zahl(regel.nur_diese) }) : t("radio.einst.einschalten")}
+            onwechsel={() => onschalten(regel)} />
   {#if regel.art === "einzeln"}
     <!-- einzeln ausgeblendete Sender sind keine Regel zum Entfernen: freigegeben wird je Sender (RAD-28) -->
     <a class="knopf" href="/einstellungen/radio/ausgeblendet" title={t("radio.einst.einzelnHilfe")}

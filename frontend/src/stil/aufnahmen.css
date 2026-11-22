@@ -81,7 +81,6 @@
 .rh-knopfgruppe { display: inline-flex; gap: 6px; align-items: center; }
 .rh-knopfgruppe output { min-inline-size: 4.5em; text-align: center; font-size: var(--klein); }
 .rh-schnitt-kopfzeit { min-inline-size: 4em; font-size: var(--klein); }
-.rh-schalter { gap: 8px; }
 /* die Auswahl so hoch wie die Knöpfe daneben (Schnitt, Kopf einer Aufnahme) */
 .rh-schnitt .auswahl-knopf, .rh-a-kopf .auswahl-knopf { block-size: var(--knopf-hoehe); }
 .rh-schnitt-hilfe { margin-left: auto; }

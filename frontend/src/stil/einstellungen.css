@@ -69,9 +69,7 @@
 .rh-regel-text span { display: block; font-size: var(--klein); color: var(--text-3); }
 .rh-regel-zahl { grid-area: zahl; text-align: right; font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-regel-zahl b { display: block; font-family: var(--schrift-zahl); font-size: var(--gross); color: var(--text); }
-.rh-regel .schalter { grid-area: schalter; inline-size: 52px; block-size: 28px; }
-.rh-regel .schalter::after { inline-size: 22px; block-size: 22px; }
-.rh-regel .schalter.an::after { left: 27px; }
+.rh-regel .rh-schalter { grid-area: schalter; }
 .rh-regel > .knopf { grid-area: weg; block-size: 44px; }
 .rh-regel .rueckfrage { grid-column: 1 / -1; margin: 6px 0 0; }
 .rh-regel .rueckfrage .aktionen .knopf { block-size: 40px; }
@@ -138,9 +136,6 @@
 .rh-schalter-zeile:first-of-type { box-shadow: none; }
 .rh-schalter-zeile b { display: block; font-weight: 600; }
 .rh-schalter-zeile span { display: block; font-size: var(--klein); color: var(--text-3); }
-.rh-schalter-zeile .schalter { inline-size: 52px; block-size: 28px; }
-.rh-schalter-zeile .schalter::after { inline-size: 22px; block-size: 22px; }
-.rh-schalter-zeile .schalter.an::after { left: 27px; }
 .rh-schalter-zeile ak-schieber { --ak-zelle: 100%; grid-column: 1 / -1; }
 .rh-auftrag { display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--r2); background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
 .rh-auftrag .balken { block-size: 8px; }

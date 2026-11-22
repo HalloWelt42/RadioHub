@@ -10,7 +10,7 @@
   import { dauer as dauerText, zeit } from "../../lib/aufnahmen/anzeige";
   import { Arbeitsplatz, schnittquelle, type Fortschritt, type Schnittgegenstand, type Schnittinfo } from "../../lib/schnitt";
   import Wellenform from "./Wellenform.svelte";
-  import Schalter from "../radio/Schalter.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
 
   let { gegenstand, bereich = null, onschliessen, ongeaendert }: {
     gegenstand: Schnittgegenstand;
