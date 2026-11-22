@@ -20,7 +20,7 @@
 /* Maß und Symbol wie die Kanzel (--rh-taste, Symbol in Grundschrift), Farbe des Symbols aus der Tastenfarbe gemischt */
 :is([class*="tv-"]) ak-taster[art="glas"] .ak-taster-knopf,
 :is([class*="tv-"]) ak-taster[art="glas"][an] .ak-taster-knopf {
-  inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: 17px; border-radius: var(--k-ecke, var(--r2));
+  inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); border-radius: var(--k-ecke, var(--r2));
   background-color: var(--k-grund); background-image: var(--k-bild, none); box-shadow: var(--k-schatten);
   color: color-mix(in srgb, var(--farbe, var(--led-weiss)) var(--k-farbanteil, 45%), var(--k-symbol)); opacity: 1; }
 :is([class*="tv-"]) ak-taster.gedrueckt .ak-taster-knopf { box-shadow: var(--k-gedrueckt, var(--k-schatten)); transform: translateY(1px) scale(.985); }
