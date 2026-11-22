@@ -235,8 +235,8 @@
                     kategorieName={(id) => kategorien.find((k) => String(k.id) === id)?.name ?? id} {filterOffen} laedt={liste.laedt}
                     onaendern={aendern} onfilter={() => (filterOffen = true)}
                     onneuladen={() => { void liste.laden(zuAbfrage(filter)); void bedienung.bestandLaden(); }} />
-    <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
-    <div class="rh-liste" bind:this={listeEl} tabindex="0" role="list" aria-label={t("radio.senderliste")} onkeydown={taste}>
+    <!-- Spaltenkopf fest über der rollenden Liste, nicht klebend in ihr: so zittert er beim Rollen nie (RAD-16) -->
+    <div class="rh-liste-rahmen">
       {#snippet sortspalte(s: Sortierung, titel: string)}
         <SortSpalte {titel} hilfe={t(`radio.sortierungHinweis.${s}`)} aktiv={filter.sortierung === s} absteigend={s !== "name"}
                     onwahl={() => aendern((f) => ({ ...f, sortierung: s }))} />
@@ -245,6 +245,8 @@
         <span>{@render sortspalte("name", t("radio.sender"))}</span><span class="rh-ohne-sort">{t("radio.genres")}</span>
         <span>{@render sortspalte("bitrate", t("radio.sortierung.bitrate"))}</span>
         <span class="rechts">{@render sortspalte("stimmen", t("radio.stimmen"))}</span><span class="rh-ohne-sort"></span></div>
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+    <div class="rh-liste" bind:this={listeEl} tabindex="0" role="list" aria-label={t("radio.senderliste")} onkeydown={taste}>
       {#if !liste.geladen}
         <div class="rh-ohne-treffer"><i class="fa-solid fa-spinner fa-spin"></i><b>{t("radio.laedt")}</b></div>
       {:else if liste.fehler && !liste.eintraege.length}
@@ -263,6 +265,7 @@
         <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()}
                    einheit={t("radio.geladen")} />
       {/if}
+    </div>
     </div>
     {/if}
   </main>

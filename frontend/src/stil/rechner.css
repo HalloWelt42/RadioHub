@@ -51,6 +51,12 @@
 .rh-werkzeug-zeile .rh-hinweis { flex: 0 1 auto; }
 .rh-filter-auf { display: none; }
 .rh-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 var(--rh-rand) 64px; }
+/* Radio (RAD-16): der Spaltenkopf steht fest über der rollenden Liste; beide halten denselben Platz für eine Rollleiste
+   frei, damit die Spalten über den Zeilen stehen */
+.rh-liste-rahmen { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); container: liste / inline-size; font-size: var(--gross); }
+.rh-liste-rahmen > .rh-liste { scrollbar-gutter: stable; }
+.rh-liste-rahmen > .rh-spalten { position: static; margin: 0 0 8px; padding: 10px calc(var(--rh-rand) + 14px) 8px; background: none;
+  overflow: hidden; scrollbar-gutter: stable; }
 
 /* Seitenleiste als einschiebbare Tafel; der Knopf Filter steht in der Werkzeugleiste, Schließen im festen Kopf der Tafel */
 .rh-schleier { display: none; }

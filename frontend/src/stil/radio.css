@@ -304,7 +304,7 @@
 /* Trefferzähler wächst mit der Breite des Fensters (Raster- und Segmentanzeigen wachsen mit, RAD-8) */
 .rh-werkzeug .rh-zaehler ak-segmente { --ak-zelle: clamp(calc(var(--gross) * 7.5), 9vw, calc(var(--gross) * 11)); }
 /* Hinrollen zu einer Zeile: nicht unter den klebenden Spaltenkopf */
-.rh-sender { scroll-margin-top: calc(var(--marke) * 1.5 + 30px); }
+.rh-sender { scroll-margin-top: 8px; }   /* der Spaltenkopf steht über der Liste, nicht in ihr (RAD-16) */
 /* Mindestbitrate in der Gruppe Codec (RAD-28) */
 .rh-bitratewahl { display: block; margin: 12px 4px 0; }
 /* Ausgeblendet, aber als Favorit sichtbar (RAD-28): gedämpft und markiert, das Auge blendet wieder ein */
