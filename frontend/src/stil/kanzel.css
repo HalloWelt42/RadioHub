@@ -109,7 +109,8 @@
 
 /* ═══ Lautstärke ═══ Gehäuse ragt über die Kanzel in die Liste (nur in der einzeiligen Anordnung) */
 .rh-laut { inline-size: calc(var(--gross) * 11.5); margin-top: calc(-1 * var(--rh-kanzel-ueberstand)); padding: 10px 14px 8px; display: grid; justify-items: center; gap: 2px;
-  border-radius: calc(var(--rh-ecke-geraet) + 2px) calc(var(--rh-ecke-geraet) + 2px) var(--r3) var(--r3); }
+  border-radius: calc(var(--rh-ecke-geraet) + 2px) calc(var(--rh-ecke-geraet) + 2px) var(--r3) var(--r3);
+  box-shadow: var(--ak-kante), var(--rh-schatten-nach-oben); }   /* Schatten nach oben auf den Inhalt wie die Kanzel (RAD-72) */
 .rh-laut .ak-etikett { font-weight: 600; letter-spacing: .14em; }
 .rh-laut .ak-dreh-name { display: none; }
 .rh-laut-reihe { display: grid; grid-template-columns: auto auto auto; gap: 10px; align-items: center; }

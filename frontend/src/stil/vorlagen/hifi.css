@@ -28,9 +28,10 @@
   --rh-geraet-kante: var(--hifi-kante-geraet);
   --rh-geraet-schatten: var(--hifi-schatten-geraet);
   --rh-geraet-schatten-klein: var(--hifi-kante-geraet), 0 2px 6px rgb(0 0 0 / calc(.35 * var(--hifi-tiefe)));
-  /* Kanzel wirft ihren Schatten leicht nach oben auf den Inhalt: Tiefe wie beim Kopf, nur gespiegelt (RAD-72) */
-  --rh-kanzel-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -1px 0 rgb(0 0 0 / .55),
-    0 -3px 6px rgb(0 0 0 / calc(.4 * var(--hifi-tiefe))), 0 -10px 24px rgb(0 0 0 / calc(.45 * var(--hifi-tiefe)));
+  /* Kanzel und das Gehäuse der Lautstärke werfen ihren Schatten leicht nach oben auf den Inhalt: Tiefe wie beim Kopf, nur
+     gespiegelt (RAD-72) */
+  --rh-schatten-nach-oben: 0 -3px 6px rgb(0 0 0 / calc(.4 * var(--hifi-tiefe))), 0 -10px 24px rgb(0 0 0 / calc(.45 * var(--hifi-tiefe)));
+  --rh-kanzel-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -1px 0 rgb(0 0 0 / .55), var(--rh-schatten-nach-oben);
   --rh-tafel-dunkel: rgb(0 0 0 / calc(.10 + .1 * var(--hifi-tiefe)));
   --rh-zeile-auf-geraet: rgb(255 255 255 / calc(.04 * var(--hifi-glanz)));
 
