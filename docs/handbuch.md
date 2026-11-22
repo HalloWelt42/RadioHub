@@ -120,6 +120,11 @@ eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, de
 größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
 der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
 Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
+Ruhig hören (RAD-84): Ein direkter Strom (Original in PRO, jeder Sender in Basic) läuft über einen eigenen Vorrat im
+Browser (`lib/stromhalter.js`): gespielt wird nach etwa 6 Sekunden Vorlauf, läuft er leer, füllt er still auf, statt zu
+stottern, und reißt die Verbindung ab, verbindet er neu und hängt an, während der Vorrat weiterspielt (nach sechs
+Versuchen gibt er auf). Sender ohne CORS spielt das Tonelement wie bisher direkt, mit demselben Neuverbinden. Live im
+Zeitversatz heißt 8 Sekunden hinter der Kante des Puffers (`LIVE_ABSTAND_S` in `lib/playerEngine.js`).
 Puffer und Aufnahme hängen am selben Empfang des Senders (RAD-46): eine Verbindung, Titel, Werbestellen, Stille und
 Pegel, dazu ein Mitschnitt des Stroms über die Länge des Puffers im Arbeitsordner (`{{wurzel}}/data/cache`, bei
 192 kbit/s und 2 h etwa 190 MB; beim Start geräumt). Läuft der Zeitversatz, beginnt eine Aufnahme am Anfang des

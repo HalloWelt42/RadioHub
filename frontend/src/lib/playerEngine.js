@@ -20,6 +20,7 @@
 import Hls from 'hls.js';
 import { api } from './api.js';
 import { ueberBackend } from './wiedergabeweg.js';
+import { stromHalten } from './stromhalter.js';
 import { sendewerbung, startwahl } from './radio/sendewerbung';
 
 // === Interne State-Variablen (nicht reaktiv) ===
@@ -38,6 +39,17 @@ let _userModeOverride = false;
 let _podcastPositionInterval = null;
 let _errorTimer = null;
 let _reconnectAttempts = 0;
+/** hält den direkten Live-Strom mit eigenem Vorrat und verbindet bei Abriss neu (RAD-84) */
+let _halter = null;
+/** "Live" im Zeitversatz heißt so viele Sekunden hinter der Kante des Puffers (RAD-84): die Stücke sind 1 s lang, dicht
+ *  an der Kante (bisher 0,3 bis 3 s) reichte schon kurzes Zögern im Netz für Aussetzer. Eine Stelle für alle Wege. */
+const LIVE_ABSTAND_S = 8;
+
+/** Zeit im Tonelement für "live" im Zeitversatz */
+function _liveZeit() {
+  const s = _audioEl.seekable;
+  return Math.max(s.start(0), s.end(s.length - 1) - LIVE_ABSTAND_S);
+}
 /** RAD-33: den Spot beim Verbinden doch hören (die Wiedergabe beginnt dann am Anfang des Puffers) */
 let _vorabHoeren = false;
 const _MAX_RECONNECT = 3;
@@ -182,16 +194,7 @@ export async function playStation(station) {
   }
 
 
-  _audioEl.src = _weg.stromAdresse(station);
-  _audioEl.load();
-
-  try {
-    await _audioEl.play();
-  } catch (e) {
-    // Autoplay-Restriction: nicht fatal, User kann manuell Play drücken
-    console.warn('Autoplay blocked:', e.message);
-  }
-  if (_generation !== gen) return;
+  _direktStarten(station);
 
   // --- Phase 6: HLS-Buffer im Hintergrund starten (nur mit Zeitversatz im Weg) ---
   if (_weg.zeitversatz) _startHLSBackground(station, gen);
@@ -383,6 +386,8 @@ export function pause() {
   if (!_audioEl || !_appState?.isPlaying || _appState.isPaused) return;
   _audioEl.pause();
   _appState.isPaused = true;
+  // ein direkter Strom geht nach der Pause ab live weiter (resume): solange nicht weiterladen (RAD-84)
+  if (_appState.playerMode === 'direct') _halterBeenden();
   // Podcast: Position sofort speichern
   if (_appState.playerMode === 'podcast') {
     _savePodcastPosition();
@@ -534,8 +539,7 @@ export function seek(position) {
 
     if (_audioEl.seekable.length > 0) {
       if (targetSeg >= lastSeg - 1) {
-        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
-        _audioEl.currentTime = seekEnd - 0.3;
+        _audioEl.currentTime = _liveZeit();
       } else {
         const seekStart = _audioEl.seekable.start(0);
         const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
@@ -581,8 +585,7 @@ export function skip(seconds) {
       const segRange = lastSeg - firstSeg;
 
       if (targetSeg >= lastSeg - 1) {
-        const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
-        _audioEl.currentTime = seekEnd - 0.3;
+        _audioEl.currentTime = _liveZeit();
         _appState.isLive = true;
       } else {
         const seekStart = _audioEl.seekable.start(0);
@@ -610,8 +613,7 @@ export function skip(seconds) {
 export function goLive() {
   if (!_audioEl || _appState?.playerMode !== 'hls') return;
   if (_audioEl.seekable.length > 0) {
-    const seekEnd = _audioEl.seekable.end(_audioEl.seekable.length - 1);
-    _audioEl.currentTime = seekEnd - 0.5;
+    _audioEl.currentTime = _liveZeit();
     _appState.isLive = true;
     const hs = _appState.hlsStatus;
     if (hs && hs.last_segment != null) {
@@ -697,9 +699,7 @@ function _switchToDirect() {
   _destroyHLS();
 
   // auch hier über den Durchleiter: unter HTTPS lädt der Browser keinen http-Strom, und die Adresse kennt das Backend
-  _audioEl.src = _weg.stromAdresse(_appState.currentStation);
-  _audioEl.load();
-  _audioEl.play().catch(e => console.error('Direct play error:', e));
+  _direktStarten(_appState.currentStation);
 
   _appState.playerMode = 'direct';
   _appState.isLive = true;
@@ -1194,6 +1194,8 @@ export function handleError(event) {
   const error = event?.target?.error;
   if (!error || !_appState) return;
   if (error.code === 4) return; // Transienter Fehler bei Source-Wechsel
+  // abgerissener Live-Strom: der Stromhalter verbindet selbst neu und meldet erst, wenn er aufgibt (RAD-84)
+  if (error.code === 2 && _halter && _appState.playerMode === 'direct') return;
 
   const messages = {
     1: 'Medienladen abgebrochen',
@@ -1355,7 +1357,8 @@ export function tonZuPuffer(zeit, fragmente = _fragmente()) {
 export function springeZuPuffer(sekunde) {
   const zeit = pufferZuTon(sekunde);
   if (zeit === null || !_audioEl) return false;
-  _audioEl.currentTime = zeit;
+  // nie dichter an die Kante als "live" (RAD-84)
+  _audioEl.currentTime = _audioEl.seekable.length ? Math.min(zeit, _liveZeit()) : zeit;
   const hs = _appState.hlsStatus;
   const segment = Math.floor(sekunde / (hs?.segment_duration || 1));
   _appState.isLive = hs?.last_segment != null && segment >= hs.last_segment - 1;
@@ -1451,6 +1454,7 @@ function _switchToHLS(gen, startSekunde = null) {
   if (_generation !== gen) return;
   if (!_audioEl || !Hls.isSupported()) return;
 
+  _halterBeenden();
   _destroyHLS();
 
   // RAD-33: mit `startSekunde` beginnt die Wiedergabe an dieser Stelle des Puffers (nach dem Spot beim Verbinden)
@@ -1460,12 +1464,17 @@ function _switchToHLS(gen, startSekunde = null) {
     enableWorker: true,
     lowLatencyMode: false,
     backBufferLength: 90,
+    liveSyncDuration: LIVE_ABSTAND_S,   // Start und Live mit Vorrat statt 3 Stücken hinter der Kante (RAD-84)
     autoStartLoad: startSekunde === null
   });
   if (startSekunde !== null) {
     _hlsInstance.once(Hls.Events.LEVEL_LOADED, (event, data) => {
       if (_generation !== gen) return;
-      const zeit = pufferZuTon(startSekunde, data.details?.fragments ?? []);
+      const fragmente = data.details?.fragments ?? [];
+      const roh = pufferZuTon(startSekunde, fragmente);
+      const letztes = fragmente[fragmente.length - 1];
+      // nie dichter an die Kante als "live" (RAD-84)
+      const zeit = roh === null || !letztes ? roh : Math.max(fragmente[0].start, Math.min(roh, letztes.start + letztes.duration - LIVE_ABSTAND_S));
       _hlsInstance?.startLoad(zeit ?? -1);
       if (zeit !== null) _audioEl.currentTime = zeit;
     });
@@ -1565,9 +1574,21 @@ function _switchToHLSPodcast(gen, episode) {
 
 function _playDirectFallback(gen) {
   if (_generation !== gen || !_audioEl || !_appState?.currentStation) return;
-  _audioEl.src = _weg.stromAdresse(_appState.currentStation);
-  _audioEl.load();
-  _audioEl.play().catch(e => console.error('Fallback play error:', e));
+  _direktStarten(_appState.currentStation);
+}
+
+/** Den direkten Live-Strom eines Senders starten: über den Stromhalter mit Vorlauf und Neuverbinden (RAD-84) */
+function _direktStarten(station) {
+  _halterBeenden();
+  _halter = stromHalten(_audioEl, _weg.stromAdresse(station), {
+    darfSpielen: () => !_appState?.isPaused,
+    beiAufgabe: (grund) => _showPlayerError(grund),
+  });
+}
+
+function _halterBeenden() {
+  _halter?.beenden();
+  _halter = null;
 }
 
 // ============================================================
@@ -1583,6 +1604,7 @@ function _playDirectFallback(gen) {
  * den alten Stream nicht korrekt lösen.
  */
 function _silenceAudio() {
+  _halterBeenden();
   if (!_audioEl) return;
   _audioEl.pause();
   _audioEl.srcObject = null;      // MediaSource-Referenz lösen

@@ -110,6 +110,10 @@ function createMockAudioElement() {
     pause: vi.fn(),
     load: vi.fn(),
     removeAttribute: vi.fn(),
+    // Ereignisse für den Stromhalter (RAD-84)
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    buffered: { length: 0, start: () => 0, end: () => 0 },
   };
 }
 
@@ -364,7 +368,7 @@ describe('PlayerEngine', () => {
       expect(api.stopHLS).toHaveBeenCalled();
     });
 
-    it('TC-B4: goLive springt zur Live-Kante', async () => {
+    it('TC-B4: goLive springt nach live, mit Vorrat hinter der Kante (RAD-84)', async () => {
       state.playerMode = 'hls';
       state.hlsStatus = { first_segment: 0, last_segment: 300, segment_duration: 1 };
       audioEl.seekable = {
@@ -375,7 +379,7 @@ describe('PlayerEngine', () => {
 
       engine.goLive();
 
-      expect(audioEl.currentTime).toBeCloseTo(299.5, 1);
+      expect(audioEl.currentTime).toBeCloseTo(292, 1);
       expect(state.isLive).toBe(true);
       expect(state.currentSegment).toBe(300);
     });
