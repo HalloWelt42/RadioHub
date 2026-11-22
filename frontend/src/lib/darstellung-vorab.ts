@@ -12,6 +12,8 @@ export interface DarstellungsWerte {
   frueher: string;
   themen: readonly string[];
   stufen: readonly string[];
+  /** angebotene Vorlagen des Appkerns (RAD-98: HiFi und Klassisch), in dieser Reihenfolge */
+  vorlagen: readonly string[];
   vorgabe: { thema: string; schrift: string; vorlage: string };
 }
 
@@ -27,11 +29,13 @@ export const DARSTELLUNG: DarstellungsWerte = {
   themen: ["hell", "dunkel", "system"],
   // ab mittel: Grundschrift 17, klein 15 Pixel (Hausregel große Schrift); sehr-gross aus den Marken des Appkerns
   stufen: ["mittel", "gross", "sehr-gross"],
+  // nur diese Vorlagen bietet RadioHub an (Nutzer 22.11.2026, RAD-98); eine früher gewählte andere gilt als die Vorgabe
+  vorlagen: ["hifi", "klassisch"],
   vorgabe: { thema: "system", schrift: "mittel", vorlage: "hifi" },
 };
 
 /** Liest die Wahl dieses Geräts (mit `wahl` statt dessen eine neue), merkt sie und setzt die Merkmale am Wurzelelement.
- *  Die Vorlage prüft erst lib/darstellung.svelte.ts gegen die Liste des Appkerns (klassisch ist sein Grunddesign). */
+ *  Eine nicht angebotene Vorlage gilt als die Vorgabe (klassisch ist das Grunddesign des Appkerns, ohne Merkmal). */
 export function darstellungVorab(w: DarstellungsWerte, wahl?: Partial<DarstellungsStand>): DarstellungsStand {
   const lesen = (k: string): string | null => {
     try {
@@ -64,6 +68,10 @@ export function darstellungVorab(w: DarstellungsWerte, wahl?: Partial<Darstellun
   }
   if (!w.themen.includes(stand.thema)) stand.thema = w.vorgabe.thema;
   if (!w.stufen.includes(stand.schrift)) stand.schrift = w.vorgabe.schrift;
+  if (!w.vorlagen.includes(stand.vorlage)) {
+    stand.vorlage = w.vorgabe.vorlage;
+    merken(w.schluessel.vorlage, stand.vorlage);      // auch der Appkern liest diesen Schlüssel
+  }
   const dunkel = stand.thema === "dunkel" || (stand.thema === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   const wurzel = document.documentElement;
   wurzel.dataset.theme = dunkel ? "dunkel" : "hell";

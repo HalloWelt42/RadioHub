@@ -2,8 +2,8 @@
   // Darstellung dieses Geräts: Vorlage (alle Vorlagen des Appkerns, HiFi als Vorgabe), Thema (Hell, Dunkel, System) und
   // Schrift in Stufen; gilt sofort und bleibt im Browser. Inhalt der Tafel im Kopf (Rechner) und der Einstellungen am
   // Telefon; Aufbau wie im Entwurf (mockups/radio-filter, Tafel Darstellung).
-  import { Auswahl, VORLAGEN } from "appkern-oberflaeche";
-  import { darstellung, darstellungSetzen, schriftAmRand, schriftSchritt } from "../lib/darstellung.svelte";
+  import { Auswahl } from "appkern-oberflaeche";
+  import { ANGEBOTENE_VORLAGEN, darstellung, darstellungSetzen, schriftAmRand, schriftSchritt } from "../lib/darstellung.svelte";
   import { t } from "../lib/i18n.svelte.js";
   import { SPRACHEN, spracheDanach, spracheJetzt, spracheWaehlen } from "../lib/sprache.svelte";
   import Flagge from "./Flagge.svelte";
@@ -12,8 +12,8 @@
   const naechste = $derived(spracheDanach());
 
   const THEMEN = [["hell", "fa-sun"], ["dunkel", "fa-moon"], ["system", "fa-display"]] as const;
-  const vorlagen = VORLAGEN.map((v) => ({ wert: v.id, titel: v.name, hinweis: v.text }));
-  const symbol = $derived(VORLAGEN.find((v) => v.id === darstellung.vorlage)?.symbol ?? "fa-swatchbook");
+  const vorlagen = ANGEBOTENE_VORLAGEN.map((v) => ({ wert: v.id, titel: v.name, hinweis: v.text }));
+  const symbol = $derived(ANGEBOTENE_VORLAGEN.find((v) => v.id === darstellung.vorlage)?.symbol ?? "fa-swatchbook");
 </script>
 
 {#if SPRACHEN.length > 1}

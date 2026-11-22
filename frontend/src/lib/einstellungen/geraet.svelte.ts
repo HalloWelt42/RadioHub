@@ -1,9 +1,8 @@
 // Einstellungen nur dieses Geräts als Zeilen (RAD-11): Darstellung, Entwickleransicht, Bildschirm wach halten und die
 // Zeitansage. Gespeichert wird weiter dort, wo die Werte schon leben (lib/darstellung, lib/telefon/zeitansage,
 // lib/telefon/wachHalten, appState.devMode); hier steht nur, wie sie als Zeile aussehen und welcher Setter gilt.
-import { VORLAGEN } from "appkern-oberflaeche";
 import { DARSTELLUNG } from "../darstellung-vorab";
-import { darstellung, darstellungSetzen } from "../darstellung.svelte";
+import { ANGEBOTENE_VORLAGEN, darstellung, darstellungSetzen } from "../darstellung.svelte";
 import { t } from "../i18n.svelte.js";
 import { geraetesprache, geraetespracheSetzen, SPRACHANGEBOT } from "../sprache";
 import { actions, appState } from "../store.svelte.js";
@@ -35,7 +34,7 @@ export const GERAET: Record<string, Geraetewert> = {
   },
   vorlage: {
     zeile: () => geraetezeile("vorlage", "auswahl", darstellung.vorlage,
-      { optionen: VORLAGEN.map((v) => ({ wert: v.id, titel: v.name, hinweis: v.text, symbol: v.symbol })) }),
+      { optionen: ANGEBOTENE_VORLAGEN.map((v) => ({ wert: v.id, titel: v.name, hinweis: v.text, symbol: v.symbol })) }),
     setzen: (w) => darstellungSetzen({ vorlage: String(w) }),
   },
   thema: {
