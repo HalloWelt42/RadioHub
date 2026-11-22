@@ -116,9 +116,9 @@
 
 /* ═══ Senderliste ═══ Spaltenkopf und Zeilen teilen ein Raster; Spalten je Breite der Liste (Behälterabfrage in em) */
 .rh-liste { container: liste / inline-size; font-size: var(--gross); }
-/* --rh-varianten: Zelle des Varianten-Knopfs, so breit wie sein längster Inhalt ("99 Varianten" mit Ebenen und Pfeil),
-   damit er nie unter den Stern ragt (RAD-59) */
-.rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 10.6); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: start;
+/* --rh-varianten: Zelle des Varianten-Knopfs, so breit wie sein längster Inhalt ("99 Varianten" mit Pfeil, ohne
+   Stapelzeichen: 123 Pixel bei Kleinschrift 15), damit er nie unter den Stern ragt (RAD-59) */
+.rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 8.3); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: start;
   grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
   grid-template-areas: "logo name genres guete stimmen aktionen"; }
 /* Spaltenkopf klebt einen Pixel über der Oberkante der Liste: beginnt die Liste auf einem halben Pixel, rundet die
@@ -145,6 +145,8 @@
 .rh-sender { margin-bottom: 8px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--rh-schatten-klein);
   transition: box-shadow var(--schnell), opacity var(--ruhig); }
 .rh-sender-kern { position: relative; padding: 10px 14px; cursor: pointer; }   /* rechts so weit vom Rand wie links (RAD-59) */
+/* dünne Zierlinie unter dem Kopf, sobald darunter Inhalt folgt (Varianten oder Steckbrief), mit dem Rand der Zeile (RAD-59) */
+.rh-sender-kern:not(:last-child)::after { content: ""; position: absolute; inset: auto 14px 0; block-size: 1px; background-color: var(--rand-stark); pointer-events: none; }
 .rh-sender:hover { box-shadow: var(--rh-kante), var(--rh-schatten-hover); }
 .rh-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 40%, transparent); }
 .rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
@@ -163,10 +165,10 @@
 .rh-genre { font-size: var(--marke); padding: 1px 8px; border-radius: var(--r1); color: var(--text-2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); white-space: nowrap; }
 .rh-sender .genres .rh-genre { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; }
 .rh-sender .genres .rh-genre-rest { flex: 1 1 0; min-inline-size: 3.5em; }
-.rh-sender .guete-zelle { grid-area: guete; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "licht format"; gap: 0 8px; align-items: center; padding-top: 6px; font-size: var(--klein); }   /* gleichauf mit den Stimmen */   /* ohne Wort wie mittel, Codec und Bitrate reichen (RAD-59) */
+.rh-sender .guete-zelle { grid-area: guete; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "licht format"; gap: 0 8px; align-items: center; align-self: center; font-size: var(--klein); }   /* ohne Wort wie mittel, Codec und Bitrate reichen; mittig in der Zeile wie die Stimmen (RAD-59) */
 .rh-sender .guete-zelle .rh-guete { grid-area: licht; }
 .rh-sender .guete-zelle span { grid-area: format; color: var(--text-3); font-family: var(--schrift-zahl); white-space: nowrap; line-height: 1.3; }
-.rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 6px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
+.rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; align-self: center; gap: 10px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
 .rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: var(--rh-varianten) 44px 44px 44px; gap: 4px; align-items: start; }
 .rh-aktionen .rh-varianten-knopf { inline-size: 100%; min-inline-size: 0; }
@@ -200,8 +202,7 @@
   .rh-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rh-spalten > .rh-ohne-sort { display: none; }
   .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
-  .rh-sender .stimmen { align-self: end; padding-top: 0; }
-  .rh-sender .guete-zelle { padding-top: 0; }
+  .rh-sender .stimmen { align-self: end; }
   .rh-aktionen { grid-template-columns: 44px 44px 44px; }
   .rh-aktionen .rh-varianten-zelle { display: none; }
   .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
@@ -224,7 +225,7 @@
 /* Varianten (Dubletten als Gruppe, beste vorn) */
 /* Varianten teilen ein Raster (subgrid): Güte, Stimmen und Hören stehen in allen Zeilen bündig untereinander, die
    Stimmen rechtsbündig (Nutzer 20.11.2026: "anordnung unsauber") */
-.rh-varianten { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 0 12px 12px 50px; }
+.rh-varianten { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 12px 12px 12px 50px; }   /* oben Luft unter der Zierlinie */
 .rh-variante { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; padding: 8px 10px; border-radius: var(--r2);
   background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
 .rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
@@ -233,7 +234,7 @@
 .rh-variante .stimmen-v { justify-self: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Details eines aufgeklappten Senders: Steckbrief, Titelverlauf hinter Glas, ähnliche Sender, eigene Bewertung */
-.rh-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 17)), 1fr)); gap: 14px; padding: 4px 14px 14px; }
+.rh-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--gross) * 17)), 1fr)); gap: 14px; padding: 12px 14px 14px; }
 .rh-tafel-detail { min-width: 0; display: grid; gap: 8px; align-content: start; }
 .rh-tafel-detail h4 { margin: 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
 .rh-werte { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: var(--klein); }
