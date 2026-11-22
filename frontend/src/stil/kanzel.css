@@ -62,11 +62,15 @@
 /* ═══ Quelle und Zeit ═══ 14 Segmente für die Quelle, 7 für die Zeit; darunter Zeitversatz oder Position */
 .rh-zeit { flex: 1; display: grid; gap: 6px; align-content: center; }
 .rh-zeit-glas { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
-.rh-zeit-glas .ak-segmente-glas { padding: 6px 8px; }
+/* Rand im Segmentglas 8px je Seite; die Ziffernhöhe rechnet mit genau diesem Rand (der Appkern zieht für seinen Rand
+   von 18px je Seite 38px ab, mit unserem Rand blieben so 22px rechts leer, RAD-62) */
+.rh-zeit-glas .ak-segmente-glas { padding: 6px 8px;
+  --zeichen-h: min(calc((100cqi - 16px) / var(--stellen) / var(--seitenverhaeltnis)), var(--ak-zeichen-max, 84px)); }
 /* Quelle und Zeit wachsen mit der Breite der Kanzel (cqi: Hundertstel ihrer Breite, nie vom eigenen Inhalt), mit
-   Grenzen in Grundschriften: nie kleiner als im Entwurf, nie größer, als die Zeile trägt */
-.rh-zeit-quelle { --ak-zelle: clamp(calc(var(--gross) * 6.6), 6.6cqi, calc(var(--gross) * 8.6)); --ak-zeichen-max: 40px; }
-.rh-zeit-uhr { --ak-zelle: clamp(calc(var(--gross) * 8.4), 8.4cqi, calc(var(--gross) * 11)); --ak-zeichen-max: 48px; }
+   Grenzen in Grundschriften: nie kleiner als im Entwurf, nie größer, als die Zeile trägt. Je 22px weniger als die
+   Zelle der Ziffern samt Appkern-Rand: gleiche Ziffernhöhe wie zuvor, ohne Leerraum neben den Ziffern (RAD-62). */
+.rh-zeit-quelle { --ak-zelle: calc(clamp(calc(var(--gross) * 6.6), 6.6cqi, calc(var(--gross) * 8.6)) - 22px); --ak-zeichen-max: 40px; }
+.rh-zeit-uhr { --ak-zelle: calc(clamp(calc(var(--gross) * 8.4), 8.4cqi, calc(var(--gross) * 11)) - 22px); --ak-zeichen-max: 48px; }
 .rh-puffer-zeile { contain: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
 .rh-puffer-zeile .knopf { block-size: 34px; padding: 0 7px; gap: 5px; font-size: var(--marke); }
 /* Kopf von Quelle und Zeit (RAD-60): links Puffer, rechts Live, fest und gleich breit; die Segmentanzeige dazwischen ist
