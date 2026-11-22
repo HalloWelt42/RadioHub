@@ -1599,13 +1599,10 @@ function _silenceAudio() {
  */
 function _destroyHLS() {
   if (_hlsInstance) {
-    // Audio-Element VOR destroy() vom Blob-URL lösen,
-    // damit kein Error Code 4 feuert wenn MediaSource wegfällt
-    if (_audioEl) {
-      _audioEl.pause();
-      _audioEl.removeAttribute('src');
-      _audioEl.srcObject = null;
-    }
+    // RAD-81: die Quelle löst hls.js beim Abbau selbst (src entfernen und load(), das bricht ein noch laufendes Laden
+    // der Blob-Adresse ab). Nimmt man src vorher selbst weg, überspringt hls.js diesen Schritt, gibt die Blob-Adresse
+    // frei, und der Browser lädt sie trotzdem noch: net::ERR_FILE_NOT_FOUND in der Konsole.
+    _audioEl?.pause();
     _hlsInstance.destroy(); // Ruft intern detachMedia() auf
     _hlsInstance = null;
   }
