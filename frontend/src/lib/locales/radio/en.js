@@ -162,7 +162,6 @@ export default {
   werbungZahlenHilfe: '{m} × ads with {s} spots from {w} advertisers, from the stream data: advertiser, ID and length as the station states them',
   werbungOhneName: 'Spot {k}',
   werbungKeineBekannt: 'no announced ads known',
-  werbeverdacht: 'Check: {stand}',
   abwaehlen: 'Deselect',
   einschaetzungAendern: 'Change assessment',
   bewertungTitel: 'Rating',
@@ -175,10 +174,6 @@ export default {
   werbungMal: '{n} ×',
   werbungBeimVerbinden: 'on connect',
   werbungImProgramm: 'during the programme',
-  werbung: {
-    keine: 'No suspicion', verdacht: 'Suspicion (weak)', mittel: 'Suspicion medium', hoch: 'Suspicion high',
-    eigene: 'Own decision: hide', gesperrt: 'Own decision: hide', erlaubt: 'Own decision: no advertising',
-  },
   sichtbarkeit: 'Visible',
   ausnahme: 'as an exception despite: {gruende}',
   keinWerbeverdacht: 'No ad suspicion',

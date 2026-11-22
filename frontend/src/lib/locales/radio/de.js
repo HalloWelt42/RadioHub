@@ -162,7 +162,6 @@ export default {
   werbungZahlenHilfe: '{m} × Werbung mit {s} Spots von {w} Werbenden, aus den Sendedaten: Werbender, Kennung und Länge, wie der Sender sie angibt',
   werbungOhneName: 'Spot {k}',
   werbungKeineBekannt: 'keine angekündigte Werbung bekannt',
-  werbeverdacht: 'Prüfung: {stand}',
   abwaehlen: 'Abwählen',
   einschaetzungAendern: 'Einschätzung ändern',
   bewertungTitel: 'Bewertung',
@@ -175,10 +174,6 @@ export default {
   werbungMal: '{n} ×',
   werbungBeimVerbinden: 'beim Verbinden',
   werbungImProgramm: 'im Programm',
-  werbung: {
-    keine: 'Kein Verdacht', verdacht: 'Verdacht (schwach)', mittel: 'Verdacht mittel', hoch: 'Verdacht hoch',
-    eigene: 'Eigene Entscheidung: ausblenden', gesperrt: 'Eigene Entscheidung: ausblenden', erlaubt: 'Eigene Entscheidung: keine Werbung',
-  },
   sichtbarkeit: 'Sichtbar',
   ausnahme: 'als Ausnahme trotz: {gruende}',
   keinWerbeverdacht: 'Kein Werbeverdacht',

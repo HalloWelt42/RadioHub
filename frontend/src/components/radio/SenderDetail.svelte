@@ -152,13 +152,6 @@
       if (spielt) onneustart({ ...eintrag, ...teil });
     });
   }
-
-  function werbeText(): string {
-    const w = eintrag.werbung;
-    if (w.entscheidung === "gesperrt") return t("radio.werbung.gesperrt");
-    if (w.entscheidung === "erlaubt") return t("radio.werbung.erlaubt");
-    return t(`radio.werbung.${w.stufe}`);
-  }
 </script>
 
 <svelte:window onclick={tafelAussen} onkeydown={(e) => { if (e.key === "Escape" && tafel) { e.stopPropagation(); tafel = false; } }} />
@@ -314,7 +307,6 @@
         {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringen")}
           hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
           onwechsel={werbungSchalten} />{/if}
-        <span class="rh-still">{t("radio.werbeverdacht", { stand: werbeText() })}</span>
       </div>
     </section>
   {/if}
