@@ -54,13 +54,13 @@
     <i class="fa-solid fa-chevron-down rh-varianten-pfeil" aria-hidden="true"></i></button>
 {/snippet}
 
-{#snippet minusKnopf(klasse: string)}
+{#snippet augeKnopf(klasse: string)}
   {#if ausgeblendet}
     <button class="rund {klasse}" type="button" title={t("radio.einblendenHilfe")} aria-label={t("radio.einblendenVon", { name: e.name })}
             onclick={(ev) => halt(ev, oneinblenden)}><i class="fa-solid fa-eye"></i></button>
   {:else}
     <button class="rund {klasse}" type="button" title={t("radio.ausblendenHilfe")} aria-label={t("radio.ausblendenVon", { name: e.name })}
-            onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-minus"></i></button>
+            onclick={(ev) => halt(ev, onausblenden)}><i class="fa-solid fa-eye-slash"></i></button>
   {/if}
 {/snippet}
 
@@ -80,7 +80,7 @@
       {#if genresBis !== null}<span class="rh-genre rh-genre-rest">{e.genres.slice(genresBis - 1).join(", ")}</span>{/if}</div>
     <div class="guete-zelle" title={qualitaetName(e.qualitaet)}><Guete stufe={e.qualitaet} /><span>{format(e)}</span></div>
     <div class="stimmen">
-      {@render minusKnopf("rh-auge-schmal")}
+      {@render augeKnopf("rh-auge-schmal")}
       <span title={t("radio.stimmenHilfeZeile")}><i class="fa-solid fa-thumbs-up"></i>{zahl(e.stimmen)}</span>
     </div>
     <div class="rh-aktionen">
@@ -88,7 +88,7 @@
       <button class="rund" class:favorit={e.favorit} type="button" aria-pressed={e.favorit} aria-label={t("radio.favorit")}
               title={e.favorit ? t("radio.ausFavoriten") : t("radio.zuFavoriten")} onclick={(ev) => halt(ev, onfavorit)}>
         <i class="fa-{e.favorit ? 'solid' : 'regular'} fa-star"></i></button>
-      <span class="auge-zelle">{@render minusKnopf("")}</span>
+      <span class="auge-zelle">{@render augeKnopf("")}</span>
       <button class="rund" type="button" aria-expanded={offen} title={t("radio.details")} aria-label={t("radio.detailsZu", { name: e.name })}
               onclick={(ev) => halt(ev, ondetails)}><i class="fa-solid fa-chevron-down"></i></button>
     </div>

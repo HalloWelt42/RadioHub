@@ -1,6 +1,6 @@
 <script lang="ts">
   // Details eines aufgeklappten Senders nach Entwurf A (steckbrief-kompakt.html, RAD-35): drei schmale Spalten.
-  // Steckbrief dicht (Läuft, Stream mit Kopieren und eigener Adresse, Codec, Homepage, Sprachen, Ort, Prüfung;
+  // Steckbrief dicht (Läuft, Stream mit Kopieren und eigener Adresse, Codec, Homepage, Sprachen, Ort;
   // Genres und Varianten stehen schon in der Zeile); Werbung aus den
   // Sendedaten nach Werbenden zusammengefasst (die häufigsten drei, der Rest auf Klick) mit Schalter und Werbeverdacht;
   // Einschätzung zeigt nur Gewähltes (abwählbar), alles Übrige liegt in der Tafel hinter dem Plus. Erklärungen stehen
@@ -199,8 +199,6 @@
       <dd>{eintrag.sprachen.length ? eintrag.sprachen.map((s) => s.name).join(", ") : t("radio.keineAngabe")}</dd>
       <dt>{t("radio.ort")}</dt>
       <dd>{[eintrag.bundesland, landName(eintrag.land, eintrag.land_name)].filter(Boolean).join(", ") || t("radio.keineAngabe")}</dd>
-      <dt>{t("radio.geprueft")}</dt>
-      <dd>{#if eintrag.verschwunden}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.verschwundenKurz")}{:else if eintrag.erreichbar}<i class="fa-solid fa-check rh-gut"></i>{t("radio.erreichbarKurz")}{:else}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.nichtErreichbarKurz")}{/if}</dd>
     </dl>
   </section>
 

@@ -327,8 +327,6 @@
 .rh-strom-dicht code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--schrift-code); font-size: var(--klein); }
 .rund.rh-mini { inline-size: 28px; block-size: 28px; min-block-size: 0; flex: none; }
 .rh-info { margin-left: 6px; color: var(--text-3); font-size: .85em; cursor: help; text-transform: none; }
-.rh-gut { color: var(--gut); margin-right: 5px; }
-.rh-schlecht { color: var(--led-rot); margin-right: 5px; }
 .rh-zeile-dicht { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--klein); }
 .rh-zeile-dicht .rh-schalter { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */

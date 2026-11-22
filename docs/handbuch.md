@@ -39,7 +39,7 @@ Beliebtheit, darunter Länder, Genres, Qualität, Codec und Bitrate mit der Mind
 mit Zahlen; lange Gruppen zeigen die häufigsten sechs und "Alle zeigen"); unter 1100 Pixeln
 fährt die Leiste über den Knopf Filter ein. Alle Schnellfilter, Suche und Sortierung stehen in der Adresse
 (`/radio?land=DE&genre=Rock&sort=name`, ein aufgeklappter Sender als `/radio/<Kennung>?...`), Neuladen und Lesezeichen
-behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Der Minus-Knopf blendet einen einzelnen Sender aus
+behalten sie; frühere Adressen `/radio/search/<Suche>` gelten weiter. Der Knopf mit dem durchgestrichenen Auge blendet einen einzelnen Sender aus
 und bietet Rückgängig, nichts anderes startet. Am Telefon dieselben Filter als Blatt von unten. Dauerhafte Ausschlüsse
 nur unter Einstellungen > Radio: Ausschlussregeln (erst Vorschau, dann anlegen, danach Rückgängig; Entfernen nennt
 vorher die Folgen), Ausgeblendete Sender (Grund je Sender, Freigeben), Länder der Seitenleiste (blendet nichts aus),

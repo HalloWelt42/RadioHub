@@ -130,13 +130,13 @@
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}
           </div>
           <span class="tf-aktionen">
-            <!-- Minus blendet den Sender sofort aus (Rückgängig im Band); blieb er als Favorit sichtbar, blendet das Auge ihn wieder ein -->
+            <!-- Das durchgestrichene Auge blendet den Sender sofort aus (Rückgängig im Band); blieb er als Favorit sichtbar, blendet das Auge ihn wieder ein -->
             {#if einzelnAusgeblendet(e)}
               <button class="rund" type="button" aria-label={t("radio.einblendenVon", { name: e.name })} title={t("radio.einblendenHilfe")}
                       onclick={(ev) => { ev.stopPropagation(); void bedienung.einblenden(e); }}><i class="fa-solid fa-eye"></i></button>
             {:else}
               <button class="rund" type="button" aria-label={t("radio.ausblendenVon", { name: e.name })} title={t("radio.ausblendenHilfe")}
-                      onclick={(ev) => { ev.stopPropagation(); void bedienung.ausblenden(e); }}><i class="fa-solid fa-minus"></i></button>
+                      onclick={(ev) => { ev.stopPropagation(); void bedienung.ausblenden(e); }}><i class="fa-solid fa-eye-slash"></i></button>
             {/if}
             <button class="rund" class:favorit={e.favorit} type="button" aria-pressed={e.favorit} aria-label={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")}
                     title={e.favorit ? t("telefon.favoritAus") : t("telefon.favoritAn")} onclick={(ev) => { ev.stopPropagation(); void bedienung.favorit(e); }}>
