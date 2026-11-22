@@ -43,27 +43,27 @@
       <div class="tv-paar">${inhalt}</div></div>`;
 
   // Gewählt (Nutzer 22.11.): Klavierlack Schwarz im dunklen, Elfenbein im hellen Thema. Jede Taste hat eine feste
-  // Symbolfarbe, die in keinem Zustand wechselt; den Zustand zeigt nur das Tastenlicht. Stopp leuchtet reinweiß,
-  // Fokus, Moduswechsel und Reihenfolge weißblau; Abspielen und Aufnahme tragen satte, dunklere Symbolfarben.
+  // Symbolfarbe, die in keinem Zustand wechselt; den Zustand zeigt nur das Tastenlicht. Stopp leuchtet gelb, Fokus,
+  // Moduswechsel und Reihenfolge blau; Abspielen und Aufnahme tragen satte, dunklere Symbolfarben.
   const steuerungGewaehlt = () => `<div class="tv-reihe">
       <div class="tv-gruppe">
         ${taste("fa-backward-step", "weiss", "bernstein", "Zurück", { rolle: "blatt" })}
-        ${taste("fa-stop", "weiss", "reinweiss", "Stopp", { rolle: "stopp" })}
+        ${taste("fa-stop", "weiss", "gelb", "Stopp", { rolle: "stopp" })}
         ${taste("fa-play", "gruen", "gruen", "Abspielen", { an: true, rolle: "spielen" })}
         ${taste("fa-circle", "rot", "rot", "Aufnahme", { rolle: "aufnahme" })}
         ${taste("fa-forward-step", "weiss", "bernstein", "Vor", { rolle: "blatt" })}
       </div>
       <div class="tv-gruppe">
-        ${taste("fa-location-crosshairs", "weiss", "eisblau", "Fokus", { an: true, rolle: "betrieb" })}
-        ${taste("fa-wave-square", "weiss", "eisblau", "Original oder Zeitversatz", { an: true, rolle: "betrieb" })}
-        ${taste("fa-arrow-right", "weiss", "eisblau", "Reihenfolge", { rolle: "betrieb" })}
+        ${taste("fa-location-crosshairs", "weiss", "blau", "Fokus", { an: true, rolle: "betrieb" })}
+        ${taste("fa-wave-square", "weiss", "blau", "Original oder Zeitversatz", { an: true, rolle: "betrieb" })}
+        ${taste("fa-arrow-right", "weiss", "blau", "Reihenfolge", { rolle: "betrieb" })}
       </div></div>`;
   const zustaendeGewaehlt = () => `<div class="tv-zustaende">
       <figure>${taste("fa-circle", "rot", "rot", "Aufnahme, aus", { rolle: "aufnahme" })}<figcaption>Aufnahme aus</figcaption></figure>
       <figure>${taste("fa-circle", "rot", "rot", "Aufnahme, an", { an: true, rolle: "aufnahme" })}<figcaption>Aufnahme an</figcaption></figure>
-      <figure>${taste("fa-stop", "weiss", "reinweiss", "Stopp, gedrückt", { an: true, gedrueckt: true, rolle: "stopp" })}<figcaption>Stopp gedrückt</figcaption></figure>
+      <figure>${taste("fa-stop", "weiss", "gelb", "Stopp, gedrückt", { an: true, gedrueckt: true, rolle: "stopp" })}<figcaption>Stopp gedrückt</figcaption></figure>
       <figure>${taste("fa-play", "gruen", "gruen", "Abspielen, aus", { rolle: "spielen" })}<figcaption>Abspielen aus</figcaption></figure>
-      <figure>${taste("fa-location-crosshairs", "weiss", "eisblau", "Fokus, aus", { rolle: "betrieb" })}<figcaption>Fokus aus</figcaption></figure>
+      <figure>${taste("fa-location-crosshairs", "weiss", "blau", "Fokus, aus", { rolle: "betrieb" })}<figcaption>Fokus aus</figcaption></figure>
       <figure>${taste("fa-forward-step", "weiss", "bernstein", "Vor, gesperrt", { gesperrt: true, rolle: "blatt" })}<figcaption>gesperrt</figcaption></figure>
     </div>`;
   const gewaehlt = (thema, name) => `<div class="tv-tafel tw-tafel ${thema === "dunkel" ? "tv-lack" : "tv-elfenbein"} lf-glimmen" data-theme="${thema}">
