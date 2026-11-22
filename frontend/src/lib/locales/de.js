@@ -378,6 +378,7 @@ export default {
     thema_hell: 'Hell',
     thema_dunkel: 'Dunkel',
     thema_system: 'System',
+    themaWechsel: 'Modus {jetzt}, Klick: {danach}',
     schrift: 'Schrift',
     kleiner: 'Schrift kleiner',
     groesser: 'Schrift größer',

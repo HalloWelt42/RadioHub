@@ -378,6 +378,7 @@ export default {
     thema_hell: 'Light',
     thema_dunkel: 'Dark',
     thema_system: 'System',
+    themaWechsel: 'Mode {jetzt}, click: {danach}',
     schrift: 'Text size',
     kleiner: 'Smaller text',
     groesser: 'Larger text',
