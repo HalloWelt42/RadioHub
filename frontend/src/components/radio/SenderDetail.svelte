@@ -64,6 +64,8 @@
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);
   let anker = $state<HTMLElement>();
+  /** Größengruppe eines Knopfs in der Auswahltafel: lange Namen belegen zwei Zellen des Rasters (RAD-59) */
+  const breit = (text: string, mitSymbol = false) => text.length + (mitSymbol ? 2 : 0) > 11;
   /** die Tafel ganz zeigen: die Liste rollt beim Öffnen so weit, dass sie nicht hinter der Kanzel verschwindet (RAD-59) */
   const ganzZeigen = (tafelEl: HTMLElement) => { requestAnimationFrame(() => tafelEl.scrollIntoView({ block: "nearest", behavior: "smooth" })); };
   function tafelAussen(e: MouseEvent) {
@@ -255,21 +257,21 @@
                 <button type="button" class="rh-stern" class:an={i <= sterne} aria-label={t("radio.sterneSetzen", { n: i })} aria-pressed={i <= sterne}
                         title={bewertungName(`sterne:${i}`)} onclick={() => sternSetzen(i)}><i class="fa-solid fa-star"></i></button>
               {/each}</span></div>
-            <div class="rh-tafel-zeile"><span class="ak-etikett">{t("radio.markierungenTitel")}</span><span class="rh-bewerten">
+            <div class="rh-tafel-zeile"><span class="ak-etikett">{t("radio.markierungenTitel")}</span><span class="rh-bewerten rh-raster">
               {#each MARKIERUNGEN as b (b)}
                 {@const an = eintrag.bewertungen.includes(b)}
-                <button type="button" class="chip wahl rh-chip-klein" class:an aria-pressed={an} onclick={() => markieren(b)}>
+                <button type="button" class="chip wahl rh-chip-klein" class:an class:breit={breit(bewertungName(b), b === "werbung")} aria-pressed={an} onclick={() => markieren(b)}>
                   {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}</button>
               {/each}
               {#if steckbrief && faehig.werbung}
-                <button type="button" class="chip wahl rh-chip-klein" class:an={steckbrief.widerspruch} aria-pressed={steckbrief.widerspruch}
+                <button type="button" class="chip wahl rh-chip-klein" class:an={steckbrief.widerspruch} class:breit={breit(t("radio.keinWerbeverdacht"), true)} aria-pressed={steckbrief.widerspruch}
                         title={t("radio.keinWerbeverdachtHilfe")} onclick={widersprechen}><i class="fa-solid fa-ban"></i>{t("radio.keinWerbeverdacht")}</button>
               {/if}</span></div>
             {#if faehig.kategorien}
-              <div class="rh-tafel-zeile"><span class="ak-etikett">{t("radio.kategorienTitel")}</span><span class="rh-bewerten">
+              <div class="rh-tafel-zeile"><span class="ak-etikett">{t("radio.kategorienTitel")}</span><span class="rh-bewerten rh-raster">
                 {#each kategorien as k (k.id)}
                   {@const an = eintrag.kategorien.includes(k.id)}
-                  <button type="button" class="chip wahl rh-chip-klein" class:an aria-pressed={an} onclick={() => kategorie(k.id)}>{k.name}</button>
+                  <button type="button" class="chip wahl rh-chip-klein" class:an class:breit={breit(k.name)} aria-pressed={an} onclick={() => kategorie(k.id)}>{k.name}</button>
                 {:else}
                   <span class="rh-still">{t("radio.keineKategorien")}</span>
                 {/each}</span></div>
