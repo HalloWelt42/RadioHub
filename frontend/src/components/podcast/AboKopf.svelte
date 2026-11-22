@@ -65,7 +65,6 @@
   </div>
   {#if speichertHier}
     <div class="rh-auftrag">
-      <ak-led farbe="gruen" zustand={auftrag.angehalten ? "an" : "blinkt"} groesse="klein"></ak-led>
       <span>{t("podcastAnsicht.speichereVon", { fertig: auftrag.fertig, gesamt: auftrag.gesamt })}{#if auftrag.fehler}, {t("podcastAnsicht.speichernFehler", { n: auftrag.fehler })}{/if}</span>
       <div class="balken"><span style:width="{Math.round((auftrag.fertig / Math.max(1, auftrag.gesamt)) * 100)}%"></span></div>
       {#if auftrag.angehalten}

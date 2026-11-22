@@ -6,7 +6,7 @@
 .rh-folgen-wahl .rh-a-quelle { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .rh-a-quelle button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
 .rh-aufnahmen .rh-filter { grid-template-rows: auto minmax(0, 1fr) auto; }
-.rh-aordner { display: grid; grid-template-columns: 14px 20px minmax(0, 1fr) auto; gap: 8px; align-items: center; inline-size: 100%; text-align: left; cursor: pointer; }
+.rh-aordner { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: center; inline-size: 100%; text-align: left; cursor: pointer; }
 .rh-aordner .rh-ordner-symbol, .rh-alle-abos .rh-ordner-symbol { color: var(--akzent); }
 .rh-alle-abos:has(.rh-ordner-symbol) { grid-template-columns: 20px minmax(0, 1fr) auto; }
 .rh-aordner:hover .rh-nadel, .rh-aordner:focus-within .rh-nadel { opacity: 1; }
@@ -24,13 +24,13 @@
 
 /* Liste: Aufnahme, Titelzahl (oder Startzeit, Art), Länge, Größe, Aktionen */
 .rh-a-spalten, .rh-aufnahme .rh-sender-kern { --rh-aktionen: calc(44px * 3 + 8px);
-  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 6) calc(var(--klein) * 6) calc(var(--klein) * 7) var(--rh-aktionen);
-  grid-template-areas: "led logo name titel laenge groesse aktionen"; }
+  grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 6) calc(var(--klein) * 6) calc(var(--klein) * 7) var(--rh-aktionen);
+  grid-template-areas: "logo name titel laenge groesse aktionen"; }
 .rh-a-titel .rh-sender-kern { --rh-aktionen: calc(44px * 5 + 16px); }
 /* Feinschnitt nach dem Aufnehmen (RAD-45): kurzer Hinweis über den Stücken */
 .rh-a-feinschnitt { display: flex; gap: 8px; align-items: center; margin: 0; padding: 4px 12px; }
 .rh-a-spalten { display: grid; }
-.rh-a-spalten > span:first-child { grid-column: led / name; display: flex; gap: 14px; }
+.rh-a-spalten > span:first-child { grid-column: logo / name; display: flex; gap: 14px; }
 .rh-a-spalten > span:nth-child(2) { grid-area: titel; }
 .rh-a-spalten > span:nth-child(3) { grid-area: laenge; }
 .rh-a-spalten > span:nth-child(4) { grid-area: groesse; }
@@ -111,13 +111,12 @@
   background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .rh-schnitt-block { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .rh-schnitt-ziel { flex-basis: 100%; margin: 0; display: flex; gap: 8px; align-items: baseline; font-size: var(--klein); }
-.rh-schnitt .rh-auftrag { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
+.rh-schnitt .rh-auftrag { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 
 @container liste (max-width: 52em) {
   .rh-a-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rh-a-spalten > .rh-ohne-sort { display: none; }
   .rh-aufnahme .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "titel laenge groesse"; gap: 8px 12px; padding: 10px; }
-  .rh-aufnahme .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-stueck-spalten { display: none; }
   .rh-stueck { grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) calc(var(--gross) * 7) 44px; }
   .rh-stueck > .rh-zahl { display: none; }
@@ -135,4 +134,3 @@
 .tf-a-kopf b { display: block; font-weight: 600; overflow-wrap: anywhere; }
 .tf-a-kopf .rh-still { font-size: var(--klein); }
 .tf-aufnahmen .tf-sender .rh-a-nr { grid-area: auto; inline-size: calc(var(--gross) * 2.4); block-size: calc(var(--gross) * 2.4); }
-.tf-aufnahmen .rh-a-warn ak-led { margin-right: 2px; }

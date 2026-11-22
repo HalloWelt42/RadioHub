@@ -38,8 +38,6 @@
 
   const mehrere = $derived(e.varianten > 1);
   const ausgeblendet = $derived(einzelnAusgeblendet(e));
-  const led = $derived(spielt && aufnahme ? { farbe: "rot", zustand: "blinkt" } as const
-    : spielt ? { farbe: "blau", zustand: "an" } as const : { farbe: "gelb", zustand: offen ? "an" : "aus" } as const);
 
   function halt(ev: Event, arbeit: () => void) {
     ev.stopPropagation();
@@ -66,7 +64,6 @@
 <article class="rh-sender" class:rh-ausgeblendet={ausgeblendet} class:spielt class:aufnahme={spielt && aufnahme} class:gewaehlt={!spielt && offen} class:offen class:fokus data-uuid={e.uuid}>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={() => onspielen(e)}>
-    <span class="led"><ak-led farbe={led.farbe} zustand={led.zustand} groesse="klein" hilfe={spielt ? t("radio.spielt") : offen ? t("radio.gewaehlt") : t("radio.bereit")}></ak-led></span>
     <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
     <div class="name"><b title={e.name}>{e.name}</b>
       <div class="meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<span>{ort(e)}</span>

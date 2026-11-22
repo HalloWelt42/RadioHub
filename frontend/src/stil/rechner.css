@@ -24,7 +24,7 @@
   .rh-kopf .rh-marke, .rh-kopf-rechts { padding-bottom: 0; }
 }
 @media (max-width: 700px) {
-  .rh-unterzeile, .rh-status ak-led .ak-led-text, .rh-darstellung .knopf span { display: none; }
+  .rh-unterzeile, .rh-darstellung .knopf span { display: none; }
   .rh-kopf .rh-nav { justify-self: stretch; }
   .rh-nav-schiene { justify-content: space-between; }
   .rh-nav-knopf { padding: 0 12px; }

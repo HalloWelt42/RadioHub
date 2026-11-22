@@ -75,7 +75,7 @@ export default {
     seite: 'Open donation page', adresse: 'Address', kopieren: 'Copy', kopiert: 'Address copied',
   },
   ordner: {
-    titel: 'Recording folders', hilfe: 'new recordings go to the folder with the light', stamm: 'No folder',
+    titel: 'Recording folders', hilfe: 'new recordings go to the folder marked "Recording here"', stamm: 'No folder',
     stammHilfe: 'no folder of its own, directly under recordings', aufnahmen: 'Recordings', ordner: 'Folder',
     hierhin: 'Record here', nimmtAuf: 'Recording here', landetHier: 'new recordings go here',
     umbenennen: 'Rename', loeschen: 'Delete', anlegen: 'Create', neu: 'New folder, e.g. Radio plays',

@@ -131,7 +131,7 @@
             <Logo uuid={a.senderUuid} name={a.sender} logo="" />
             <div><b>{a.sender}</b>
               <div class="tf-meta"><span>{datum(a.beginn)}</span><span>{ordnerName(a.ordnerId)}</span>
-                {#if a.status === "laeuft"}<span class="rh-a-warn"><ak-led farbe="rot" zustand="blinkt" groesse="klein"></ak-led>{t("aufnahmenAnsicht.nimmtAuf")}</span>
+                {#if a.status === "laeuft"}<span class="rh-a-warn">{t("aufnahmenAnsicht.nimmtAuf")}</span>
                 {:else if a.status !== "fertig"}<span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>{t(`aufnahmenAnsicht.${a.status}`)}</span>{/if}</div>
               <div class="t-titel"><i class="fa-solid fa-list"></i>{t("aufnahmenAnsicht.telefon.titel", { n: a.titelzahl })} · {zeit(a.dauer)}</div></div>
             <span class="tf-aktionen">{#if a.status !== "laeuft"}<button class="rund" type="button" aria-label={t("aufnahmenAnsicht.hoeren")} title={t("aufnahmenAnsicht.hoeren")}

@@ -126,7 +126,6 @@
         <div class="rh-a-liste" class:rh-liste-rollt={gezeigt.rollt} role="list">
           {#each gezeigt.zeigen as s (s.uuid)}
             <div class="rh-a-zeile" role="listitem">
-              <ak-led farbe="bernstein" zustand={s.ueberspringen ? "an" : "aus"} groesse="klein"></ak-led>
               <span class="name"><b>{s.name || s.uuid}</b></span>
               <span class="grund"><i class="fa-solid fa-rectangle-ad"></i><span>{t("radio.einst.spotsZuletzt", { n: zahl(s.spots), wann: wann(s.zuletzt) })}</span></span>
               <span class="stimmen"></span>
@@ -177,7 +176,6 @@
       <div class="rh-a-liste" role="list" style="margin-top:12px">
         {#each verdaechtige.slice(0, 100) as v (v.uuid)}
           <div class="rh-a-zeile" role="listitem">
-            <ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led>
             <span class="name"><b>{v.name}</b></span>
             <span class="grund"><i class="fa-solid fa-rectangle-ad"></i><span>{t("radio.einst.verdachtProzent", { n: Math.round(v.confidence * 100) })}</span></span>
             <span class="stimmen"></span>

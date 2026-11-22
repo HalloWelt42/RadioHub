@@ -25,7 +25,6 @@
 <article class="rh-sender rh-aufnahme" class:spielt class:laeuft>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onwaehlen}>
-    <span class="led"><ak-led farbe={laeuft ? "rot" : spielt ? "blau" : warn ? "bernstein" : "gelb"} zustand={laeuft ? "blinkt" : spielt || warn ? "an" : "aus"} groesse="klein"></ak-led></span>
     <Logo uuid={a.senderUuid} name={a.sender} logo="" />
     <div class="name"><b>{a.sender}</b>
       <div class="meta"><span>{datum(a.beginn)}</span><span>{ordner}</span>

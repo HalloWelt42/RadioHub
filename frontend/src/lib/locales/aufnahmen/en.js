@@ -5,7 +5,7 @@ export default {
   ohneOrdner: 'No folder', ziel: 'New recordings go here', istZiel: 'New recordings land here', umbenennen: 'Rename',
   ordnerLoeschen: 'Delete folder', ordnerLoeschenFrage: 'Delete folder "{name}"? It is empty.',
   ordnerVoll: '"{name}" holds {n} recordings and can only be deleted once it is empty.', verstanden: 'Got it',
-  zielHinweis: 'Red light: new recordings land there.', zielLeiste: 'New recordings land in {name}',
+  zielLeiste: 'New recordings land in {name}',
   dateien: 'Files', frei: 'GB free',
   suche: 'Search station or title', wolkeSuche: 'Search files in this folder', aktualisieren: 'Refresh',
   alleFilter: 'All recordings', alleDateien: 'All audio files in this folder', chipOrdner: 'Folder', chipAufnahme: 'Recording', chipSuche: 'Search',

@@ -44,7 +44,7 @@
     <div class="rh-abo-zahlen">
       <span><b>{a.titelzahl}</b>{t("aufnahmenAnsicht.titelzahl")}</span><span><b>{dauer(a.dauer)}</b>{t("aufnahmenAnsicht.lang")}</span>
       <span><b>{groesse(a.groesse)}</b></span>{#if a.codec}<span><b>{a.codec}{a.bitrate ? ` ${a.bitrate}` : ""}</b>{a.bitrate ? "kbit/s" : ""}</span>{/if}
-      <span class="rh-a-guete"><ak-led farbe={guete[0]} zustand="an" groesse="klein"></ak-led>{guete[1]}</span>
+      <span class="rh-a-guete">{guete[1]}</span>
     </div>
   </div>
   <div class="rh-detail-knoepfe rh-abo-knoepfe">

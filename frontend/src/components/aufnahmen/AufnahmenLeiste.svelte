@@ -68,7 +68,6 @@
           <button type="button" onclick={() => { name = ""; legtAn = true; }}>{t("aufnahmenAnsicht.ordnerAnlegen")}</button></div>
         <div class="rh-facetten rh-abos">
           <button class="rh-facette rh-alle-abos" class:an={ansicht.ordner === ""} type="button" aria-pressed={ansicht.ordner === ""} onclick={() => onordner("")}>
-            <ak-led farbe="gelb" zustand={ansicht.ordner === "" ? "an" : "aus"} groesse="klein"></ak-led>
             <span class="rh-abo-name">{t("aufnahmenAnsicht.alleAufnahmen")}</span><span class="rh-zahl">{gesamt ?? ""}</span></button>
           {#if legtAn}
             <span class="rh-ordner-eingabe rh-ordner-neu"><i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
@@ -79,7 +78,6 @@
             <div class="rh-facette rh-aordner" class:an={ansicht.ordner === String(o.id)} role="button" tabindex="0" aria-pressed={ansicht.ordner === String(o.id)}
                  onclick={() => { if (bearbeitet !== o.id) onordner(String(o.id)); }}
                  onkeydown={(e) => { if (bearbeitet !== o.id && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onordner(String(o.id)); } }}>
-              <ak-led farbe="rot" zustand={o.ziel ? "an" : "aus"} groesse="klein" hilfe={o.ziel ? t("aufnahmenAnsicht.istZiel") : ""}></ak-led>
               <i class="fa-solid fa-folder rh-ordner-symbol" aria-hidden="true"></i>
               {#if bearbeitet === o.id}
                 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -107,14 +105,12 @@
           {/each}
           <div class="rh-facette rh-aordner" class:an={ansicht.ordner === "ohne"} role="button" tabindex="0" aria-pressed={ansicht.ordner === "ohne"}
                onclick={() => onordner("ohne")} onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onordner("ohne"); } }}>
-            <ak-led farbe="rot" zustand={zielOrdner ? "aus" : "an"} groesse="klein" hilfe={zielOrdner ? "" : t("aufnahmenAnsicht.istZiel")}></ak-led>
             <i class="fa-solid fa-house rh-ordner-symbol" aria-hidden="true"></i><span class="rh-abo-name">{t("aufnahmenAnsicht.ohneOrdner")}</span>
             <span class="rh-abo-ende"><span class="rh-zahl">{ohneOrdner ?? ""}</span>
               <button class="rh-nadel" class:an={!zielOrdner} type="button" aria-pressed={!zielOrdner} title={!zielOrdner ? t("aufnahmenAnsicht.istZiel") : t("aufnahmenAnsicht.ziel")}
                       aria-label="{t('aufnahmenAnsicht.ziel')}: {t('aufnahmenAnsicht.ohneOrdner')}" onclick={(e) => { e.stopPropagation(); onziel(null); }}><i class="fa-solid fa-circle-dot"></i></button></span>
           </div>
         </div>
-        <p class="rh-still rh-abos-hinweis"><i class="fa-solid fa-circle-dot"></i>{t("aufnahmenAnsicht.zielHinweis")}</p>
       </section>
     {:else}
       <section class="rh-gruppe">

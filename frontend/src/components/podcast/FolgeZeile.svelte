@@ -63,7 +63,6 @@
 <article class="rh-sender rh-folge" class:spielt class:gewaehlt={offen && !spielt} class:offen class:gehoert class:fokus data-folge={folge.id}>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onspielen}>
-    <span class="led"><ak-led farbe={spielt ? "blau" : "gelb"} zustand={spielt || offen ? "an" : "aus"} groesse="klein"></ak-led></span>
     <AboBild abo={{ titel: aboTitel, bild: folge.bild }} />
     <div class="name"><b>{folge.titel}</b>
       <div class="meta"><span>{aboTitel}</span><span>{datum}</span>
@@ -72,7 +71,7 @@
           <i class="fa-solid fa-forward"></i>{t("podcastAnsicht.werbung.marke", { n: folge.werbung.anzahl, zeit: stelleText(folge.werbung.dauer) })}</span>{/if}</div></div>
     <div class="stand-zelle">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
-      {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>
+      {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
       {:else}<span class="rh-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
     </div>
     <div class="laenge">{folge.dauer ? t("podcastAnsicht.minuten", { n: minuten(folge.dauer) }) : ""}</div>

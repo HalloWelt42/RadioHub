@@ -40,7 +40,6 @@
     {#each liste as m (m.id)}
       {@const eigen = m.source === "user"}
       <div class="rh-regel">
-        <ak-led farbe="gelb" zustand="an" groesse="klein"></ak-led>
         <span class="rh-regel-art" title={m.match_type === "exact" ? t("einstellungen.muster.genauHilfe") : t("einstellungen.muster.enthaeltHilfe")}>
           <i class="fa-solid {m.match_type === 'exact' ? 'fa-equals' : 'fa-magnifying-glass'}"></i></span>
         <span class="rh-regel-text"><b>{m.pattern}</b>

@@ -64,7 +64,7 @@
       {#if wolke}
         <i class="fa-solid fa-scissors"></i><span>{t("aufnahmenAnsicht.wolkeNeben")}</span>
       {:else}
-        <ak-led farbe="rot" zustand={nimmtAuf ? "blinkt" : "an"} groesse="klein"></ak-led><span>{t("aufnahmenAnsicht.zielLeiste", { name: "" })}<b>{ziel}</b></span>
+        <span>{t("aufnahmenAnsicht.zielLeiste", { name: "" })}<b>{ziel}</b></span>
       {/if}
     </p>
   </div>

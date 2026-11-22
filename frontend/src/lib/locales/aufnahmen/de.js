@@ -5,7 +5,7 @@ export default {
   ohneOrdner: 'Ohne Ordner', ziel: 'Neue Aufnahmen hierhin', istZiel: 'Hier landen neue Aufnahmen', umbenennen: 'Umbenennen',
   ordnerLoeschen: 'Ordner löschen', ordnerLoeschenFrage: 'Ordner "{name}" löschen? Er ist leer.',
   ordnerVoll: '"{name}" enthält {n} Aufnahmen und lässt sich erst löschen, wenn er leer ist.', verstanden: 'Verstanden',
-  zielHinweis: 'Rotes Licht: dort landen neue Aufnahmen.', zielLeiste: 'Neue Aufnahmen landen in {name}',
+  zielLeiste: 'Neue Aufnahmen landen in {name}',
   dateien: 'Dateien', frei: 'GB frei',
   suche: 'Sender oder Titel suchen', wolkeSuche: 'Dateien in diesem Ordner suchen', aktualisieren: 'Aktualisieren',
   alleFilter: 'Alle Aufnahmen', alleDateien: 'Alle Audiodateien dieses Ordners', chipOrdner: 'Ordner', chipAufnahme: 'Aufnahme', chipSuche: 'Suche',

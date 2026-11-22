@@ -73,11 +73,9 @@
       {@const hoert = bei(liste, stelle)?.von === a.von}
       {@const imBer = gewaehlt.some((g) => g.von === a.von)}
       <li class="tp-zeile {a.art}" class:hoert class:gewaehlt={imBer}>
-        <button class="tp-kern" type="button" onclick={() => antippen(a)} aria-expanded={!bereichAn ? offen === a.von : undefined}>
+        <button class="tp-kern" class:mit-wahl={bereichAn} type="button" onclick={() => antippen(a)} aria-expanded={!bereichAn ? offen === a.von : undefined}>
           {#if bereichAn}
             <i class="tp-wahl {imBer ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}" class:aus={a.art === "werbung" || a.laufend}></i>
-          {:else}
-            <ak-led farbe={a.laufend ? "rot" : hoert ? "blau" : "gelb"} zustand={a.laufend ? "atmet" : hoert ? "an" : "aus"} groesse="klein"></ak-led>
           {/if}
           <span class="tp-text"><b>{#if a.art === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{name(a)}</b>
             <span class="tp-meta"><span>{puffer.uhr(a.von)}</span><span>{formatTimeShort(a.bis - a.von)}</span>{#if a.laufend}<span class="tp-laeuft">{t("puffer.laeuft")}</span>{/if}</span></span>
@@ -116,9 +114,10 @@
   .tp-zeile.hoert { background: color-mix(in srgb, var(--led-blau) 16%, var(--t-flaeche)); }
   .tp-zeile.gewaehlt { box-shadow: inset 0 0 0 2px var(--led-rot); }
   .tp-zeile.werbung b { color: var(--violett); }
-  .tp-kern { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; padding: 0; border: none; background: transparent;
+  .tp-kern { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; padding: 0; border: none; background: transparent;
     color: inherit; font: inherit; text-align: left; }
-  .tp-kern > ak-led, .tp-wahl { margin-top: .3em; justify-self: center; }
+  .tp-kern.mit-wahl { grid-template-columns: 24px minmax(0, 1fr); }
+  .tp-wahl { margin-top: .3em; justify-self: center; }
   .tp-wahl { font-size: calc(var(--gross) * 1.15); color: var(--t-text-2); }
   .tp-wahl.aus { opacity: .35; }
   .tp-zeile.gewaehlt .tp-wahl { color: var(--led-rot); }

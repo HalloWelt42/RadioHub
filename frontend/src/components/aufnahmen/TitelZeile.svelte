@@ -36,7 +36,6 @@
 <article class="rh-sender rh-aufnahme rh-a-titel" class:spielt class:laeuft>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={() => { if (!imGange) onhoeren(); }}>
-    <span class="led"><ak-led farbe={laeuft ? "rot" : "blau"} zustand={laeuft ? "blinkt" : spielt ? "an" : "aus"} groesse="klein"></ak-led></span>
     <span class="rh-a-nr">{String(x.nr).padStart(2, "0")}</span>
     <div class="name"><b>{x.titel}</b>
       {#if gesperrt}<div class="meta"><span class="rh-geltung fest" title={t("aufnahmenAnsicht.gesperrtHilfe")}>{t("aufnahmenAnsicht.gesperrt")}</span></div>{/if}</div>

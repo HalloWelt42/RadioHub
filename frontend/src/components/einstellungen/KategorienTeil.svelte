@@ -53,7 +53,6 @@
     {#each liste as k (k.id)}
       {@const n = k.station_count ?? 0}
       <div class="rh-regel">
-        <ak-led farbe="gelb" zustand={n ? "an" : "aus"} groesse="klein"></ak-led>
         <span class="rh-regel-art"><i class="fa-solid fa-folder"></i></span>
         <span class="rh-regel-text">
           {#if bearbeitet === k.id}

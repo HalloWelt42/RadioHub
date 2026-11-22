@@ -108,7 +108,7 @@
   </div>
   <div class="tf-liste">
     {#if bedienung.bestand?.ausgeblendet}
-      <p class="rh-hinweis t-hinweis"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led><span><b>{zahl(bedienung.bestand.ausgeblendet)}</b> {t("radio.telefon.durchRegelnAus")}</span></p>
+      <p class="rh-hinweis t-hinweis"><span><b>{zahl(bedienung.bestand.ausgeblendet)}</b> {t("radio.telefon.durchRegelnAus")}</span></p>
     {/if}
     {#if !liste.geladen}
       <p class="tf-hinweis">{t("telefon.laden")}</p>

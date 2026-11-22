@@ -46,7 +46,7 @@
       {#if f.gespeichert && f.groesse}<span>{t("podcastAnsicht.telefon.mbWolke", { mb: megabyte(f.groesse) })}</span>{/if}</div>
     <div class="tp-stand-zeile">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
-      {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>
+      {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
       {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
     </div>
     {#if f.beschreibung}<Langtext text={textAus(f.beschreibung)} klasse="tp-text" />{/if}

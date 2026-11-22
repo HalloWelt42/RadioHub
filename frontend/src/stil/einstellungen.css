@@ -59,11 +59,10 @@
 .rh-karte-kopf h2 i { color: var(--akzent); }
 .rh-karte .hinweis-band { margin: 0 0 14px; }
 
-.rh-regel { display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) auto auto auto; grid-template-areas: "led art text zahl schalter weg"; gap: 4px 14px; align-items: center;
+.rh-regel { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto auto; grid-template-areas: "art text zahl schalter weg"; gap: 4px 14px; align-items: center;
   padding: 10px 12px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .rh-regel.aus { opacity: .72; }
 .rh-regel.neu { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
-.rh-regel > ak-led { grid-area: led; }
 .rh-regel-art { grid-area: art; inline-size: 44px; block-size: 44px; border-radius: var(--r2); display: grid; place-items: center; color: var(--akzent); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
 .rh-regel-text { grid-area: text; min-width: 0; }
 .rh-regel-text b { display: block; font-weight: 600; overflow-wrap: anywhere; }
@@ -79,7 +78,7 @@
 /* nach der Breite der Karte statt des Fensters: neben den Bereichen der Einstellungen ist sie schon bei 900 Pixeln schmal */
 .rh-karte { container: karte / inline-size; }
 @container karte (max-width: 46em) {
-  .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" "zahl zahl schalter weg"; }
+  .rh-regel { grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "art text text" "zahl schalter weg"; }
   .rh-regel-zahl { text-align: left; }
   .rh-regel-zahl b { display: inline; margin-right: 6px; }
 }
@@ -103,11 +102,11 @@
 
 .rh-vorschau { display: grid; gap: 12px; padding: 18px 20px; border-radius: var(--rh-ecke-geraet); }
 .rh-vorschau .ak-geraet-kopf { margin: 0; padding: 0 16px; }
+.rh-vorschau-stand { margin-left: auto; font-size: var(--marke); letter-spacing: .04em; color: var(--ak-tinte-2); }   /* Stand der Vorschau als Wort (RAD-64: ohne runde Leuchte) */
 .rh-vorschau-zahl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
 .rh-vorschau-zahl ak-segmente { --ak-zelle: calc(var(--gross) * 10); --ak-zeichen-max: 46px; }
 .rh-vorschau-zahl span { font-size: var(--gross); color: var(--ak-tinte); line-height: 1.35; }
 .rh-vorschau-fav { display: flex; gap: 10px; align-items: start; font-size: var(--klein); color: var(--ak-tinte); min-block-size: 24px; }
-.rh-vorschau-fav ak-led { margin-top: 4px; }
 .rh-vorschau-beispiele { font-size: var(--klein); color: var(--ak-tinte-2); display: grid; gap: 2px; }
 .rh-vorschau-beispiele b { color: var(--ak-tinte); font-weight: 600; }
 .rh-vorschau-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -206,7 +205,7 @@
   .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) calc(var(--klein) * 6) var(--aktion) var(--weg); }
 }
 @media (max-width: 760px) {
-  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" ". . zahl zahl" "schalter schalter schalter weg"; }
+  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "art text text" ". zahl zahl" "schalter schalter weg"; }
   .rh-e-zeile { grid-template-columns: minmax(0, 1fr); }
   .rh-e-wert { justify-content: flex-start; }
   .rh-e-wert ak-schieber { inline-size: 100%; }

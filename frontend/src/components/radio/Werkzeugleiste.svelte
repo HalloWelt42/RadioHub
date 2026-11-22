@@ -74,7 +74,6 @@
     </div>
     {#if ausgeblendet}
       <p class="rh-hinweis" title={t("radio.hinweisHilfe")}>
-        <ak-led farbe="bernstein" zustand="an" groesse="klein" hilfe={t("radio.durchRegeln")}></ak-led>
         <span><b>{zahl(ausgeblendet)}</b> <span class="rh-breit">{t("radio.senderDurchRegeln")}</span> {t("radio.ausgeblendet")}</span>
         <a href="/einstellungen/radio/regeln" onclick={zuDenRegeln}>{t("radio.regelnAnsehen")}<i class="fa-solid fa-arrow-right"></i></a>
       </p>

@@ -154,7 +154,7 @@
         <div class="rh-pg-zoom" role="group" aria-label={t("puffer.zoom")}>
           {#each ZOOMS as z (z)}
             <button class="knopf" class:aktiv={zoom === z} type="button" aria-pressed={zoom === z} onclick={() => { zoom = z; mitte = null; sfx.click(); }}>
-              <ak-led farbe="gelb" zustand={zoom === z ? "an" : "aus"} groesse="klein"></ak-led>{z === "alles" ? t("puffer.zoomAlles") : t("puffer.zoomMin", { n: z })}</button>
+              {z === "alles" ? t("puffer.zoomAlles") : t("puffer.zoomMin", { n: z })}</button>
           {/each}
         </div>
         <span class="rh-still">{t("puffer.zeitleisteHilfe")}</span>
@@ -187,13 +187,12 @@
       <p class="rh-pg-hinweis"><i class="fa-solid fa-circle-info"></i><span>{t("puffer.jungHinweis")}</span></p>
     {/if}
 
-    <div class="rh-pg-spalten" aria-hidden="true"><span></span><span>{t("puffer.ab")}</span><span>{t("puffer.spalteTitel")}</span><span>{t("puffer.laenge")}</span><span></span></div>
+    <div class="rh-pg-spalten" aria-hidden="true"><span>{t("puffer.ab")}</span><span>{t("puffer.spalteTitel")}</span><span>{t("puffer.laenge")}</span><span></span></div>
     <ol class="rh-pg-liste">
       {#each [...liste].reverse() as a (a.von)}
         {@const hoert = bei(liste, stelle)?.von === a.von}
         {@const imBer = gewaehlt.some((g) => g.von === a.von)}
         <li class="rh-pg-zeile {a.art}" class:hoert class:gewaehlt={imBer}>
-          <span class="led"><ak-led farbe={a.laufend ? "rot" : hoert ? "blau" : "gelb"} zustand={a.laufend ? "atmet" : hoert ? "an" : "aus"} groesse="klein"></ak-led></span>
           <span class="rh-zahl rh-pg-ab">{uhr(a.von)}</span>
           <span class="rh-pg-name">{#if a.art === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}<b title={a.titel}>{name(a)}</b>{#if a.laufend}<span class="rh-pg-laeuft">{t("puffer.laeuft")}</span>{/if}</span>
           <span class="rh-zahl rh-pg-laenge">{formatTimeShort(a.bis - a.von)}</span>

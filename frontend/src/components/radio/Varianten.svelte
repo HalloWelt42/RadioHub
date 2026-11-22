@@ -28,7 +28,6 @@
   {:else}
     {#each liste as v, i (v.uuid)}
       <div class="rh-variante" role="listitem">
-        <ak-led farbe={spielt === v.uuid ? "blau" : i === 0 ? "gruen" : "gelb"} zustand={spielt === v.uuid || i === 0 ? "an" : "aus"} groesse="klein"></ak-led>
         <span><b>{v.kbps ? `${v.codec} ${zahl(v.kbps)} kbit/s` : format(v)}</b> · {v.hls ? t("radio.hls") : v.name}{#if i === 0}{" "}<span class="stand-pille fertig">{t("radio.besteVariante")}</span>{/if}</span>
         <span class="rh-guete-text"><Guete stufe={v.qualitaet} /></span>
         <span class="stimmen-v rh-zahl"><i class="fa-solid fa-thumbs-up"></i> {zahl(v.stimmen)}</span>

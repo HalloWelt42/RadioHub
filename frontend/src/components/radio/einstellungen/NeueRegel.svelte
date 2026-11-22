@@ -162,10 +162,7 @@
   <div class="ak-geraet rh-vorschau" data-bauform="inspektor" aria-live="polite">
     <span class="ak-schraube lo" style="--dreh:30deg"></span><span class="ak-schraube ro" style="--dreh:-12deg"></span>
     <div class="ak-geraet-kopf"><b>{t("radio.einst.vorschau")}</b>
-      {#key `${bereit}${favoriten}${v?.gleiche_regel}`}
-        <ak-led farbe={v?.gleiche_regel || favoriten ? "bernstein" : bereit ? "gruen" : "gelb"} zustand={bereit || v?.gleiche_regel ? "an" : "aus"}
-                text={v?.gleiche_regel ? t("radio.einst.gibtEs") : favoriten ? t("radio.einst.pruefen") : t("radio.einst.bereit")} hilfe={t("radio.einst.vorschau")}></ak-led>
-      {/key}
+      <span class="rh-vorschau-stand">{v?.gleiche_regel ? t("radio.einst.gibtEs") : favoriten ? t("radio.einst.pruefen") : t("radio.einst.bereit")}</span>
     </div>
     <div class="rh-vorschau-zahl"><ak-segmente art="7" stellen="6" farbe="bernstein" text={zahlText}></ak-segmente>
       <span>
@@ -175,13 +172,13 @@
         {:else}{t("radio.einst.vorschauLeer")}{/if}
       </span></div>
     {#if v?.gleiche_regel}
-      <div class="rh-vorschau-fav"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led><span>{t("radio.einst.gleicheRegel")}</span></div>
+      <div class="rh-vorschau-fav"><span>{t("radio.einst.gleicheRegel")}</span></div>
     {:else if bereit}
       <div class="rh-vorschau-fav">
         {#if favoriten}
-          <ak-led farbe="bernstein" zustand="atmet" groesse="klein"></ak-led><span><b>{t("radio.einst.nFavoriten", { n: favoriten })}</b> {t("radio.einst.favoritenBetroffen")}{#if v?.favoriten_namen.length}{` (${v.favoriten_namen.slice(0, 4).map((n) => n.trim()).join(", ")})`}{/if}</span>
+          <span><b>{t("radio.einst.nFavoriten", { n: favoriten })}</b> {t("radio.einst.favoritenBetroffen")}{#if v?.favoriten_namen.length}{` (${v.favoriten_namen.slice(0, 4).map((n) => n.trim()).join(", ")})`}{/if}</span>
         {:else}
-          <ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led><span>{t("radio.einst.davon")} <b>{t("radio.einst.nFavoriten", { n: 0 })}</b></span>
+          <span>{t("radio.einst.davon")} <b>{t("radio.einst.nFavoriten", { n: 0 })}</b></span>
         {/if}
       </div>
     {/if}

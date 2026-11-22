@@ -202,7 +202,7 @@
               <AboBild abo={a} />
               <div><b>{a.titel}</b>{#if a.autor}<div class="tf-meta"><span>{a.autor}</span></div>{/if}
                 <div class="tf-meta">
-                  {#if a.ungehoert}<span class="tp-ungehoert"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.telefon.ungehoertZahl", { n: a.ungehoert })}</span>
+                  {#if a.ungehoert}<span class="tp-ungehoert">{t("podcastAnsicht.telefon.ungehoertZahl", { n: a.ungehoert })}</span>
                   {:else}<span>{t("podcastAnsicht.telefon.alleGehoert")}</span>{/if}
                   {#if kann.speichern}<span title={t("podcastAnsicht.telefon.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i> {t("podcastAnsicht.telefon.gespeichertVon", { n: a.gespeichert, von: a.folgen })}</span>{/if}
                   {#if a.autoLaden}<span class="tp-auto"><i class="fa-solid fa-bolt"></i>{t("podcastAnsicht.telefon.neueSpeichernAn")}</span>{/if}

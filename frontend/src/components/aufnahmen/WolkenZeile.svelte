@@ -18,7 +18,6 @@
 <article class="rh-sender rh-aufnahme" class:spielt>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onhoeren}>
-    <span class="led"><ak-led farbe="blau" zustand={spielt ? "an" : "aus"} groesse="klein"></ak-led></span>
     <span class="rh-a-dateisymbol"><i class="fa-solid fa-file-audio"></i></span>
     <div class="name"><b>{datei.name}</b>
       <div class="meta"><span>{ordner}</span>{#if datei.geaendert}<span>{new Date(datei.geaendert).toLocaleDateString("de-DE")}</span>{/if}</div></div>

@@ -146,7 +146,6 @@
        ondragover={(e) => ueberAbo(e, a)} ondrop={ablegen}>
     <span class="rh-griff" draggable="true" title={t("podcastAnsicht.ziehenHilfe")} aria-hidden="true"
           ondragstart={(e) => ziehen(e, { art: "abo", abo: a })} ondragend={ende}><i class="fa-solid fa-grip-vertical"></i></span>
-    <ak-led farbe="gelb" zustand={an ? "an" : "aus"} groesse="klein"></ak-led>
     <AboBild abo={a} klein />
     <span class="rh-abo-name">{a.titel}{#if a.autoLaden} <i class="fa-solid fa-cloud-arrow-down rh-auto" title={t("podcastAnsicht.autoHilfe")}></i>{/if}</span>
     <span class="rh-abo-ende">
@@ -185,7 +184,6 @@
       {#if abos.length}
         <div class="rh-facetten rh-abos">
           <button class="rh-facette rh-alle-abos" class:an={!gewaehlt.length} type="button" aria-pressed={!gewaehlt.length} onclick={() => onabos([])}>
-            <ak-led farbe="gelb" zustand={gewaehlt.length ? "aus" : "an"} groesse="klein"></ak-led>
             <span class="rh-abo-name">{t("podcastAnsicht.alleAbos")}</span><span class="rh-zahl" title={t("podcastAnsicht.ungehoert")}>{alleUngehoert || ""}</span>
           </button>
           {#if legtAn}

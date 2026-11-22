@@ -62,7 +62,6 @@
 <Karte titel={t("einstellungen.ordner.titel")} symbol="fa-folder-tree" still={t("einstellungen.ordner.hilfe")}>
   <div class="rh-regeln rh-feste" style="--aktion: calc(var(--gross) * 11); --weg: 94px">
     <div class="rh-regel" class:aus={!!aktiv}>
-      <ak-led farbe="rot" zustand={aktiv ? "aus" : "an"} groesse="klein"></ak-led>
       <span class="rh-regel-art"><i class="fa-solid fa-house"></i></span>
       <span class="rh-regel-text"><b>{t("einstellungen.ordner.stamm")}</b><span>{t("einstellungen.ordner.stammHilfe")}</span></span>
       <span class="rh-regel-zahl"></span>
@@ -71,7 +70,6 @@
     </div>
     {#each liste as o (o.id)}
       <div class="rh-regel" class:aus={!o.is_active}>
-        <ak-led farbe="rot" zustand={o.is_active ? "an" : "aus"} groesse="klein"></ak-led>
         <span class="rh-regel-art"><i class="fa-solid fa-folder"></i></span>
         <span class="rh-regel-text">
           {#if bearbeitet === o.id}

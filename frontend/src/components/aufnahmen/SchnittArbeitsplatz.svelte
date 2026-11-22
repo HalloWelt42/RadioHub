@@ -280,7 +280,7 @@
                   onabbrechen={() => (fragt = false)} onja={schneiden} />
     {/if}
     {#if auftrag}
-      <div class="rh-auftrag" role="status"><ak-led farbe="gruen" zustand="blinkt" groesse="klein"></ak-led>
+      <div class="rh-auftrag" role="status">
         <span>{auftrag.was}{auftrag.f ? `: ${auftrag.f.text}` : ""}</span>
         <div class="balken"><span style:width="{auftrag.f ? Math.round((auftrag.f.schritt / Math.max(1, auftrag.f.gesamt)) * 100) : 5}%"></span></div>
         <span class="rh-zahl">{auftrag.f ? `${auftrag.f.schritt}/${auftrag.f.gesamt}` : ""}</span></div>

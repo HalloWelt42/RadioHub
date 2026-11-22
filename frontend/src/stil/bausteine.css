@@ -55,7 +55,9 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 
 .rh-status { display: inline-flex; align-items: center; gap: 12px; min-block-size: var(--rh-taste-klein); padding: 0 12px; border-radius: var(--r2); background-color: var(--ak-glas);
   box-shadow: var(--ak-glas-tiefe); --ak-tinte: var(--ak-glas-tinte); --ak-tinte-2: color-mix(in srgb, var(--ak-glas-tinte) 70%, transparent); }
-.rh-status ak-led .ak-led-text { font-family: var(--schrift-zahl); }
+.rh-status-wort { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .04em; white-space: nowrap; color: var(--ak-tinte); }
+.rh-status-wort.still { color: var(--ak-tinte-2); }
+.rh-status-wort.weg { color: var(--led-rot); }
 .rh-darstellung { position: relative; }
 .rh-darstellung > .knopf { block-size: var(--rh-taste-klein); }
 .rh-tafel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; inline-size: min(340px, calc(100vw - 24px)); padding: 14px; display: grid; gap: 14px;

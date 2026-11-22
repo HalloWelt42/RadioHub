@@ -116,8 +116,8 @@
 /* ═══ Senderliste ═══ Spaltenkopf und Zeilen teilen ein Raster; Spalten je Breite der Liste (Behälterabfrage in em) */
 .rh-liste { container: liste / inline-size; font-size: var(--gross); }
 .rh-spalten, .rh-sender-kern { --rh-aktionen: calc(var(--klein) * 9.4 + 144px); display: grid; gap: 0 14px; align-items: start;
-  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
-  grid-template-areas: "led logo name genres guete stimmen aktionen"; }
+  grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+  grid-template-areas: "logo name genres guete stimmen aktionen"; }
 .rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
   font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); box-shadow: 0 1px 0 var(--rand); }
 .rh-spalten .rechts { text-align: right; }
@@ -131,7 +131,7 @@
 .rh-sortspalte.aktiv { color: var(--text); }
 .rh-sortspalte.aktiv i { opacity: 1; color: var(--akzent); }
 .rh-sortspalte:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; border-radius: 4px; }
-.rh-spalten > span:first-child { grid-column: led / name; }
+.rh-spalten > span:first-child { grid-column: logo / name; }
 .rh-spalten > span:nth-child(2) { grid-area: genres; }
 .rh-spalten > span:nth-child(3) { grid-area: guete; }
 .rh-spalten > span:nth-child(4) { grid-area: stimmen; }
@@ -144,7 +144,6 @@
 .rh-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 40%, transparent); }
 .rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
 .rh-sender.offen { background-color: var(--karte); }
-.rh-sender .led { grid-area: led; padding-top: 16px; }
 .rh-sender .rh-logo-bild { grid-area: logo; }
 .rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
 /* höchstens zwei Zeilen; der volle Name steht im Hinweis und im Steckbrief (Nutzer 20.11.2026 zu einem Namen über 15
@@ -174,8 +173,8 @@
 .rh-platz { display: block; }
 
 @container liste (max-width: 62em) {
-  .rh-spalten, .rh-sender-kern { grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
-    grid-template-areas: "led logo name guete stimmen aktionen" "led logo genres guete stimmen aktionen"; }
+  .rh-spalten, .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+    grid-template-areas: "logo name guete stimmen aktionen" "logo genres guete stimmen aktionen"; }
   .rh-spalten > span:nth-child(2) { display: none; }
   .rh-sender .genres { padding-top: 6px; }
 }
@@ -183,7 +182,6 @@
   .rh-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rh-spalten > .rh-ohne-sort { display: none; }
   .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
-  .rh-sender .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-sender .guete-zelle { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "licht stufe format"; padding-top: 0; }
   .rh-sender .stimmen { align-self: end; padding-top: 0; }
   .rh-aktionen { grid-template-columns: 44px 44px 44px; }
@@ -208,7 +206,7 @@
 /* Varianten (Dubletten als Gruppe, beste vorn) */
 /* Varianten teilen ein Raster (subgrid): Güte, Stimmen und Hören stehen in allen Zeilen bündig untereinander, die
    Stimmen rechtsbündig (Nutzer 20.11.2026: "anordnung unsauber") */
-.rh-varianten { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 0 12px 12px 50px; }
+.rh-varianten { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 0 12px 12px 50px; }
 .rh-variante { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; padding: 8px 10px; border-radius: var(--r2);
   background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
 .rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
@@ -393,11 +391,10 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
   box-shadow: var(--rh-kante); font-size: var(--klein); }
 .rh-pg-hinweis > i { color: var(--akzent); }
 
-.rh-pg-spalten, .rh-pg-zeile { display: grid; grid-template-columns: 28px calc(var(--klein) * 4) minmax(0, 1fr) calc(var(--klein) * 4) auto; gap: 10px; align-items: center; }
+.rh-pg-spalten, .rh-pg-zeile { display: grid; grid-template-columns: calc(var(--klein) * 4) minmax(0, 1fr) calc(var(--klein) * 4) auto; gap: 10px; align-items: center; }
 .rh-pg-spalten { padding: 0 10px; font-size: var(--marke); color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
 .rh-pg-liste { min-height: 0; margin: 0; padding: 0 2px 4px; list-style: none; display: grid; gap: 6px; align-content: start; overflow-y: auto; overflow-x: clip; }
 .rh-pg-zeile { padding: 6px 10px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
-.rh-pg-zeile .led { display: grid; place-items: center; }
 .rh-pg-ab, .rh-pg-laenge { font-size: var(--klein); color: var(--text-2); }
 .rh-pg-laenge { text-align: right; }
 .rh-pg-name { display: flex; gap: 8px; align-items: center; min-inline-size: 0; }
@@ -412,8 +409,8 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-pg-wahl[aria-pressed="true"] i { color: var(--led-rot); }
 @container puffer (max-width: 640px) {
   .rh-pg-spalten { display: none; }
-  .rh-pg-zeile { grid-template-columns: 28px minmax(0, 1fr) auto; grid-template-areas: "led name aktionen" "led ab aktionen"; }
-  .rh-pg-zeile .led { grid-area: led; } .rh-pg-name { grid-area: name; } .rh-pg-aktionen { grid-area: aktionen; }
+  .rh-pg-zeile { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name aktionen" "ab aktionen"; }
+  .rh-pg-name { grid-area: name; } .rh-pg-aktionen { grid-area: aktionen; }
   .rh-pg-ab { grid-area: ab; } .rh-pg-laenge { display: none; }
 }
 .rh-pg-fuss { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 14px; font-size: var(--klein);

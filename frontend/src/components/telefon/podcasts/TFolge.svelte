@@ -34,7 +34,7 @@
       {#if f.werbung.anzahl}<span class="rh-werbemarke-text"><i class="fa-solid fa-forward"></i>{t("podcastAnsicht.werbung.marke", { n: f.werbung.anzahl, zeit: stelleText(f.werbung.dauer) })}</span>{/if}</div>
     <div class="tp-stand-zeile">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
-      {:else if stand.art === "neu"}<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>{t("podcastAnsicht.neu")}</span>
+      {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
       {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
     </div>
   </div>

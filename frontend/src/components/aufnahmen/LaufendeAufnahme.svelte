@@ -20,7 +20,7 @@
 <section class="rh-abo-kopf rh-a-kopf rh-a-laeuft">
   <Logo uuid={a.senderUuid} name={a.sender} logo="" />
   <div class="rh-abo-text">
-    <h2><ak-led farbe="rot" zustand="blinkt" groesse="klein"></ak-led>{t("aufnahmenAnsicht.laeuft", { sender: a.sender })}</h2>
+    <h2>{t("aufnahmenAnsicht.laeuft", { sender: a.sender })}</h2>
     <p class="rh-still">{t("aufnahmenAnsicht.laeuftSeit", { zeit: new Date(a.beginn).toLocaleTimeString("de-DE") })} ·
       {appState.recordingVorlaufS >= 60 ? t("aufnahmenAnsicht.rueckblick", { n: Math.round(appState.recordingVorlaufS / 60) }) : t("aufnahmenAnsicht.direkt")} ·
       {t("aufnahmenAnsicht.nach", { name: ziel })}

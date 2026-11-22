@@ -90,12 +90,12 @@
   <div class="rh-kopf-rechts">
     {#if backend}
     <div class="rh-status">
-      <!-- die Leuchte schreibt ihren Text einmal; ändert er sich, entsteht sie neu -->
-      {#key online}<ak-led farbe={online === false ? "rot" : "gruen"} zustand={online === null ? "aus" : "an"} text={online === false ? t("nav.offline") : t("nav.online")}
-              hilfe={online === false ? t("schale.dienstWeg") : t("schale.dienstDa")}></ak-led>{/key}
+      <!-- Zustand als Wort ohne Leuchte (RAD-64); eine Störung steht rot -->
+      <span class="rh-status-wort" class:weg={online === false} class:still={online === null}
+            title={online === false ? t("schale.dienstWeg") : t("schale.dienstDa")}>{online === false ? t("nav.offline") : t("nav.online")}</span>
       {#if ablage}
-        <ak-led farbe={ablage.verbunden ? "gruen" : "rot"} zustand="an" text={t("nav.ablage")}
-                hilfe={ablage.verbunden ? t("schale.ablageDa") : (ablage.meldung || t("schale.ablageWeg"))}></ak-led>
+        <span class="rh-status-wort" class:weg={!ablage.verbunden}
+              title={ablage.verbunden ? t("schale.ablageDa") : (ablage.meldung || t("schale.ablageWeg"))}>{t("nav.ablage")}</span>
       {/if}
     </div>
     {/if}

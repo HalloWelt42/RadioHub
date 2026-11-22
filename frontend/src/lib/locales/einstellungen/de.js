@@ -75,7 +75,7 @@ export default {
     seite: 'Spendenseite öffnen', adresse: 'Adresse', kopieren: 'Kopieren', kopiert: 'Adresse kopiert',
   },
   ordner: {
-    titel: 'Aufnahmeordner', hilfe: 'neue Aufnahmen landen im Ordner mit Licht', stamm: 'Ohne Ordner',
+    titel: 'Aufnahmeordner', hilfe: 'neue Aufnahmen landen im Ordner mit "Nimmt auf"', stamm: 'Ohne Ordner',
     stammHilfe: 'direkt unter Aufnahmen, in keinem eigenen Ordner', aufnahmen: 'Aufnahmen', ordner: 'Ordner',
     hierhin: 'Hierhin aufnehmen', nimmtAuf: 'Nimmt auf', landetHier: 'neue Aufnahmen landen hier',
     umbenennen: 'Umbenennen', loeschen: 'Löschen', anlegen: 'Anlegen', neu: 'Neuer Ordner, etwa Hörspiele',
