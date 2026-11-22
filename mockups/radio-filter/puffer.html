@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Puffer und Aufnahme</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/schriften/orbitron/900.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="telefon.css">
+  <link rel="stylesheet" href="podcasts.css">
+  <link rel="stylesheet" href="aufnahmen.css?v=rad32">
+  <link rel="stylesheet" href="rechner.css">
+  <link rel="stylesheet" href="podcast-werbung.css">
+  <link rel="stylesheet" href="radio-werbung.css">
+  <link rel="stylesheet" href="puffer.css">
+</head>
+<body>
+<div class="rh-buehne-seite">
+  <div class="rh-entwurf">
+    <span class="pille">Entwurf RAD-46: Puffer und Aufnahme</span>
+    <a href="index.html"><i class="fa-solid fa-table-cells-large"></i>Übersicht</a>
+    <a href="rechner.html"><i class="fa-solid fa-display"></i>Radio</a><a href="telefon.html"><i class="fa-solid fa-mobile-screen"></i>Telefon</a>
+    <a href="radio-werbung.html"><i class="fa-solid fa-rectangle-ad"></i>Werbung im Radio</a>
+  </div>
+  <div class="rh-buehne-rollt">
+    <div class="rh-buehne-kopf">
+      <h1>Puffer und Aufnahme</h1>
+      <p>Der Zeitversatz kennt seine Titel: Striche an jeder Titelgrenze, Werbung violett wie auf der Spulbahn. Unter dem Balken steht der Titel, den du hörst, mit Vorheriger und Nächster Titel und dem Knopf zur Großansicht. Die Großansicht zeigt den ganzen Puffer als Zeitleiste mit Zoom und die Titel als Liste: hinspringen, Aufnahme ab hier, einen Bereich als fertige Aufnahme sichern. Eine Aufnahme beginnt am Anfang des laufenden Titels und läuft weiter, auch wenn das Radio ausgeht. Daten: 90s90s Hits in der Nacht vom 22. November, 1 Stunde 20 Minuten Puffer mit 20 Titeln und Werbung beim Verbinden.</p>
+    </div>
+    <div class="rh-buehne">
+      <div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">1</span><span>Zeitversatz</span><span>Titelgrenzen und Werbung im Balken, Titel beim Überfahren</span></p><div class="rp-flaeche" data-zustand="versatz"></div></div>
+      <div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">2</span><span>Aufnahme</span><span>beginnt am Anfang des laufenden Titels, rot im Balken</span></p><div class="rp-flaeche" data-zustand="aufnahme"></div></div>
+      <div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">3</span><span>Großansicht</span><span>Zeitleiste mit Zoom, Titel als Liste</span></p><div class="rp-flaeche" data-zustand="gross"></div></div>
+      <div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">4</span><span>Bereich sichern</span><span>drei Titel gewählt</span></p><div class="rp-flaeche" data-zustand="bereich"></div></div>
+      <div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">5</span><span>Junger Puffer</span><span>gerade verbunden, Werbung beim Verbinden</span></p><div class="rp-flaeche" data-zustand="jung"></div></div>
+      <div class="rh-rahmen-block "><p class="rh-rahmen-titel"><span class="pille">6</span><span>Telefon: Spieler</span><span>Balken mit Marken, Titel</span></p><div class="rh-telefon" data-zustand="t-spieler"></div></div>
+      <div class="rh-rahmen-block "><p class="rh-rahmen-titel"><span class="pille">7</span><span>Telefon: Puffer</span><span>Liste, ein Titel angetippt</span></p><div class="rh-telefon" data-zustand="t-liste"></div></div>
+      <div class="rh-rahmen-block "><p class="rh-rahmen-titel"><span class="pille">8</span><span>Telefon: Bereich</span><span>drei Titel gewählt</span></p><div class="rh-telefon" data-zustand="t-bereich"></div></div>
+    </div>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+<script src="daten.js"></script>
+<script src="radio.js"></script>
+<script src="puffer.js"></script>
+</body>
+</html>
