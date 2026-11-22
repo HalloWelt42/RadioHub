@@ -56,4 +56,4 @@ mockups/
 docs/umbau/
 
 # Zwischenaufnahmen des README-Bilds (tools/readme-bild.mjs), ins Repo kommt nur .github/bilder/geraete.png
-tools/readme-bild/aufnahmen/
+docs/readme-bild/aufnahmen/

@@ -1,5 +1,5 @@
 // README-Bild (.github/bilder/geraete.png, RAD-110): Rechner, Telefon und Uhr mit RadioHub in gezeichneten Geräten
-// (tools/readme-bild/buehne.html, Vorlage aus TubeVault und Wetterwarte). Die Bildschirme sind Aufnahmen mit frischem
+// (docs/readme-bild/buehne.html, Vorlage aus TubeVault und Wetterwarte). Die Bildschirme sind Aufnahmen mit frischem
 // Browserprofil, nie aus dem Betrieb:
 //   Rechner: RadioHub PRO aus dem Probebetrieb (Kopie der Daten, Anmeldung zum Schein), das Radio hell, ein Sender spielt
 //   Telefon: RadioHub Basic, dunkel, großer Spieler mit einer Folge von morfCast + chill (nur dieses Probe-Abo)
@@ -26,7 +26,7 @@ const NUR = argumente.nur ?? ("nur-buehne" in argumente ? "buehne" : "alles");
 const MIT = (teil) => NUR === "alles" || NUR === teil;
 /** das beworbene Abo (Nutzer 22.11.2026) */
 const PODCAST = { feed: "https://anchor.fm/s/11972ae38/podcast/rss", titel: "morfCast + chill" };
-const ORDNER = join(WURZEL, "tools/readme-bild/aufnahmen");   // nicht im Repo (.gitignore), nur das fertige Bild
+const ORDNER = join(WURZEL, "docs/readme-bild/aufnahmen");   // nicht im Repo (.gitignore), nur das fertige Bild
 const STAND = join(ORDNER, "stand.json");
 const ZIEL = join(WURZEL, ".github/bilder/geraete.png");
 
@@ -115,7 +115,7 @@ if (MIT("telefon")) {
 // 3. Bühne: Geräte zeichnen, Aufnahmen einsetzen, freigestellt aufnehmen
 await geraet(2400, 1400, 1, false);
 await rufe("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
-const buehne = pathToFileURL(join(WURZEL, "tools/readme-bild/buehne.html")).href + "?" + new URLSearchParams(stand);
+const buehne = pathToFileURL(join(WURZEL, "docs/readme-bild/buehne.html")).href + "?" + new URLSearchParams(stand);
 await rufe("Page.navigate", { url: buehne });
 await bisDa(`document.fonts.status === "loaded" && [...document.images].every((b) => b.complete)`, "Bühne", 800);
 await aufnehmen(ZIEL);
