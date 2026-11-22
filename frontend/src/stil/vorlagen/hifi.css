@@ -62,6 +62,7 @@
   --rh-leuchte-hell: #cfe8ff;
   --ak-glas: var(--rh-glas-hell);
   --rh-anzeige: var(--rh-leuchte-hell);
+  --hifi-ankreuz-leuchte: var(--rh-glas-hell); /* angekreuzt marineblau statt Gelb auf heller Mulde (RAD-82) */
   --ak-glas-tiefe: inset 0 2px 6px rgb(0 0 0 / .35), 0 0 0 1px rgb(0 0 0 / .25);
 }
 :root[data-vorlage="hifi"][data-theme="hell"] ak-segmente, :root[data-vorlage="hifi"]:not([data-theme]) ak-segmente {

@@ -53,17 +53,6 @@
 .rh-facette { display: grid; grid-template-columns: 22px auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px; border-radius: var(--r2); cursor: pointer; }
 .rh-facette:hover { background-color: var(--flaeche-2); }
 .rh-facette input { margin-top: 2px; }
-/* Ankreuzfeld als eingelassene Leuchte: Aufbau hier, Aussehen nur aus den Marken der Vorlage */
-.rh-facette input[type="checkbox"] {
-  appearance: none; -webkit-appearance: none; margin: 2px 0 0; inline-size: 22px; block-size: 22px; display: inline-grid;
-  place-items: center; cursor: pointer; border-radius: var(--r1); background-color: var(--mulde); box-shadow: var(--rh-mulde);
-}
-.rh-facette input[type="checkbox"]::after {
-  content: ""; inline-size: 10px; block-size: 10px; border-radius: inherit; opacity: 0; background: var(--akzent-flaeche);
-  box-shadow: 0 0 calc(10px * var(--ak-leuchten, 0)) var(--akzent-flaeche); transition: opacity var(--schnell, 0.15s);
-}
-.rh-facette input[type="checkbox"]:checked::after { opacity: 1; }
-.rh-facette input[type="checkbox"]:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 .rh-facette > span:nth-child(3) { overflow-wrap: anywhere; line-height: 1.4; }
 .rh-facette .rh-zahl { font-size: var(--klein); color: var(--text-3); padding-top: 2px; }
 .rh-facette:has(input:checked) > span:nth-child(3) { color: var(--text); font-weight: 600; }
