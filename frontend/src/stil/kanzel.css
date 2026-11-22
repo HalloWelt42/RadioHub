@@ -38,7 +38,8 @@
 .rh-m-steuerung { grid-area: steuerung; }
 
 /* ═══ Anzeige ═══ Statuszeile, Punktmatrix (läuft über ihr Merkmal lauf), Titelzeile */
-.rh-display { flex: 1; display: grid; gap: 3px; align-content: center; padding: 6px 12px 8px; --farbe: var(--rh-anzeige); min-width: 0; }
+/* die drei Zeilen verteilen sich über die Höhe, oben und unten ein schmaler Rand (RAD-72); seitlich wie bisher */
+.rh-display { flex: 1; display: grid; gap: 3px; align-content: space-between; padding: 9px 12px; --farbe: var(--rh-anzeige); min-width: 0; }
 /* Beide Punktmatrizen füllen ihr Glas: Zeichenhöhe aus der ganzen Breite (ohne den Rand des Appkerns), höchstens etwas
    über der gewünschten Höhe; die Stellen rundet rasterbreite.ts ab (MEHR_HOECHSTENS 1,25) */
 .rh-display ak-segmente { --farbe: var(--rh-anzeige); --ak-zeichen-max: calc(var(--rh-matrix-zeichen, 24px) * 1.25); }
