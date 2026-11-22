@@ -7,7 +7,7 @@
   import Spulzeile from "./Spulzeile.svelte";
   import { werbemarken } from "./werbehinweis.svelte";
   import { live, spulen } from "./aktionen";
-  import { lageZuSekunde, positionStand, pufferAufnahme, pufferMarken, pufferProzent, pufferSekunde, pufferStriche, sekundeZuLage, SPUL_RUHE,
+  import { lageZuSekunde, positionStand, pufferAufnahme, pufferZeile, pufferMarken, pufferProzent, pufferSekunde, pufferStriche, sekundeZuLage, SPUL_RUHE,
     zeitversatzStand, type Anzeige, type Stand } from "./kanzel";
   import Titelzeile from "./Titelzeile.svelte";
   import { puffer } from "./puffer.svelte";
@@ -34,6 +34,10 @@
   const striche = $derived(imVersatz ? pufferStriche(stand, puffer.abschnitte) : []);
   const aufnahme = $derived(imVersatz && stand.isRecording && (app.recordingStationUuid ?? null) === (stand.currentStation?.uuid ?? null)
     ? pufferAufnahme(stand, stand.recordingElapsed) : null);
+  // Angabe unter dem Balken wie im Entwurf: hinter live, Länge von höchstens, Titel; rot der Beginn einer Aufnahme
+  const versatzZeile = $derived(imVersatz && versatz ? { ...versatz, text: pufferZeile({ hinter: puffer.hinter,
+    gepuffert: puffer.ende - puffer.anfang, max: puffer.groesste, titel: puffer.titelZahl, aufnahme: aufnahme !== null }, t) } : versatz);
+  const aufnahmeAb = $derived(aufnahme ? t("puffer.aufnahmeAbUhr", { uhr: puffer.uhr(puffer.ende - stand.recordingElapsed) }) : null);
   function tipp(prozent: number) {
     const t0 = pufferSekunde(stand, prozent);
     const a = t0 === null ? null : bei(puffer.abschnitte, t0);
@@ -60,7 +64,7 @@
       <ak-segmente class="rh-zeit-uhr" art="7" stellen="7" farbe="gruen" text={anzeige.zeit} hilfe={t("kanzel.zeitHilfe")}></ak-segmente>
     </div>
     {#if versatz}
-      <Spulzeile stand={versatz} {wiedergabe} hilfe={t("kanzel.pufferHilfe", { max: versatz.max })} marken={imVersatz ? pufferMarken(stand) : []}
+      <Spulzeile stand={versatzZeile ?? versatz} zusatz={aufnahmeAb} {wiedergabe} hilfe={t("kanzel.pufferHilfe", { max: versatz.max })} marken={imVersatz ? pufferMarken(stand) : []}
                  {striche} {aufnahme} tipp={imVersatz ? tipp : undefined} einrasten={imVersatz ? einrasten : undefined}>
         {#snippet links()}
           <button class="knopf" type="button" title={t("kanzel.zurueck30Hilfe")} aria-label={t("kanzel.zurueck30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt}

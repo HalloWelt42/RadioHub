@@ -404,6 +404,15 @@ export function zeitversatzStand(s: Stand, t: Uebersetzer): Spulstand & { live: 
   };
 }
 
+/** Zeile unter dem Balken im Zeitversatz (RAD-54, Entwurf puffer.html Zustände 1 und 2): Abstand zu live (immer, auch
+ *  0:00, damit nichts ein- und ausblendet), Länge des Puffers von höchstens und die Zahl der Titel. Läuft eine Aufnahme,
+ *  steht statt des Abstands hinten rot ihr Beginn (die Ansicht hängt ihn an); den Abstand zeigt dann die Uhr darüber. */
+export function pufferZeile(p: { hinter: number; gepuffert: number; max: number; titel: number; aufnahme: boolean }, t: Uebersetzer): string {
+  const werte = { laenge: formatTimeShort(p.gepuffert), max: formatTimeShort(p.max), titel: p.titel };
+  return p.aufnahme ? t("puffer.zeileAufnahme", werte)
+    : t("puffer.zeileVersatz", { ...werte, hinter: formatTimeShort(Math.max(0, Math.round(p.hinter))) });
+}
+
 /** Werbestellen im Zeitversatz als Marken auf dem Balken (RAD-33): gleicher Maßstab wie die Füllung (Anteil des
  *  größten Puffers), links beginnt der älteste Ton im Puffer; eine laufende Stelle reicht bis zur Live-Kante */
 export function pufferMarken(s: Stand): { von: number; breite: number }[] {

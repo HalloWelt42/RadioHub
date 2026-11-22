@@ -6,11 +6,16 @@ import { untrack } from "svelte";
 import { appState } from "../lib/store.svelte.js";
 import * as engine from "../lib/playerEngine.js";
 import { netz, type Anfrage } from "../lib/radio/netz";
+import { formatTimeShort } from "../lib/formatters.js";
 import { bei, naechster, vorheriger, type Abschnitt } from "../lib/radio/abschnitte";
 import { anhaengen, tonelement } from "./tonelement";
+import { t } from "../lib/i18n.svelte.js";
 
 /** so oft kommen die Abschnitte neu (ein neuer Titel, das wachsende laufende Stück) */
 const LADEN_MS = 8000;
+/** so weit darf der gemessene Abstand zu live vom gezeigten abweichen, bevor er neu gilt (Sekunden): mehr als ein
+ *  Schritt der Live-Kante (der Stand kommt alle 2 s), weniger als der kleinste Sprung beim Spulen */
+const HINTER_RUHE_S = 3;
 
 interface Pufferstatus {
   session_id?: string;
@@ -31,8 +36,12 @@ class Puffer {
   private geladen = $state<Abschnitt[]>([]);
   /** Sekunde des Puffers, die man hört; null ohne Zeitversatz */
   stelle = $state<number | null>(null);
+  /** Abstand der Stelle zu live in ganzen Sekunden, beruhigt (RAD-54): die Live-Kante wächst in ganzen Stücken, die
+   *  Stelle fließend, gemessen pendelt der Abstand um eine Sekunde, obwohl er beim Hören gleich bleibt. Er gilt neu erst
+   *  bei einer größeren Abweichung (Springen, Spulen, Stocken), so zählt keine Anzeige vor und zurück. */
+  hinter = $state(0);
   private sitzung: string | null = null;
-  private uhr: ReturnType<typeof setInterval> | undefined;
+  private ladetakt: ReturnType<typeof setInterval> | undefined;
 
   constructor(private readonly a: Anfrage = netz()) {}
 
@@ -71,6 +80,30 @@ class Puffer {
     return this.geladen.map((a) => (a.laufend && ende > a.bis ? { ...a, bis: ende } : a));
   }
 
+  /** Zahl der Titel im Puffer (ohne Werbung und Einschübe) */
+  get titelZahl(): number {
+    return this.geladen.filter((a) => a.art === "titel").length;
+  }
+
+  /** Uhrzeit, zu der Sekunde 0 des Puffers gesendet wurde: die Sitzung heißt nach ihrem Beginn ("JJJJMMTT_HHMMSS") */
+  get beginn(): number | null {
+    const m = /^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/.exec(String(this.status?.session_id ?? ""));
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() : null;
+  }
+
+  /** Uhrzeit einer Sekunde des Puffers (Stunde und Minute); ohne bekannten Beginn der Abstand zu live */
+  uhr(sekunde: number): string {
+    const b = this.beginn;
+    return b === null ? `-${formatTimeShort(Math.max(0, this.ende - sekunde))}`
+      : new Date(b + sekunde * 1000).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  /** Name eines Abschnitts in allen Ansichten: Titel, Werbung (am Anfang: beim Verbinden) oder Einschub */
+  benennen(a: Abschnitt): string {
+    if (a.art === "werbung") return a.von <= this.anfang + 1 ? t("puffer.werbungBeimVerbinden") : t("puffer.werbung");
+    return a.art === "einschub" ? t("puffer.einschub") : a.titel;
+  }
+
   get laufend(): Abschnitt | null {
     return this.stelle === null ? null : bei(this.abschnitte, this.stelle);
   }
@@ -91,11 +124,11 @@ class Puffer {
     if (id === this.sitzung) return;
     this.sitzung = id;
     this.geladen = [];
-    clearInterval(this.uhr);
-    this.uhr = undefined;
+    clearInterval(this.ladetakt);
+    this.ladetakt = undefined;
     if (id) {
       void this.laden();
-      this.uhr = setInterval(() => void this.laden(), LADEN_MS);
+      this.ladetakt = setInterval(() => void this.laden(), LADEN_MS);
     }
   }
 
@@ -105,10 +138,18 @@ class Puffer {
       return;
     }
     this.stelle = appState.isLive ? this.ende : (engine.tonZuPuffer(ton.currentTime) ?? this.ende);
+    this.hinterMessen(false);
+  }
+
+  private hinterMessen(neu: boolean): void {
+    const roh = this.stelle === null || appState.isLive ? 0 : Math.max(0, this.ende - this.stelle);
+    if (neu || Math.abs(roh - this.hinter) >= HINTER_RUHE_S || roh === 0) this.hinter = Math.round(roh);
   }
 
   springen(sekunde: number): void {
-    if (engine.springeZuPuffer(sekunde)) this.stelle = sekunde;
+    if (!engine.springeZuPuffer(sekunde)) return;
+    this.stelle = sekunde;
+    this.hinterMessen(true);
   }
 
   vorher(): void {

@@ -14,7 +14,7 @@
   const stelle = $derived(puffer.stelle);
   const kannZurueck = $derived(stelle !== null && vorheriger(puffer.abschnitte, stelle) !== null);
   const kannVor = $derived(stelle !== null && naechster(puffer.abschnitte, stelle) !== null);
-  const name = (x: NonNullable<typeof a>) => (x.art === "werbung" ? t("puffer.werbung") : x.art === "einschub" ? t("puffer.einschub") : x.titel);
+  const name = (x: NonNullable<typeof a>) => puffer.benennen(x);
 </script>
 
 <div class="rh-titelzeile">

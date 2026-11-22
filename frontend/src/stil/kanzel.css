@@ -69,11 +69,13 @@
 .rh-puffer-rechts { display: flex; gap: 6px; }
 .rh-puffer { display: grid; gap: 2px; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--ak-tinte-2); text-align: center; min-width: 0; }
 .rh-puffer > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* PRO mit Spulzeile (Zeitversatz, Folgen): Stand und Länge unter der Bahn immer ganz lesbar (Nutzer 20.11.2026, RAD-13).
-   Fest reserviert für die längste Form "1:59:59 von 2:00:00" (15,2ch in Barlow, RAD-52); so bestimmt die Zeile die
-   Breite von Quelle und Zeit mit, ohne beim Hochzählen zu springen. Basic hat keine Spulzeile und bleibt schmal. */
+.rh-puffer .rh-rot { color: var(--led-rot); }
+/* PRO mit Spulzeile (Zeitversatz, Folgen): die Angabe unter der Bahn immer ganz lesbar (Nutzer 20.11.2026, RAD-13).
+   Fest reserviert für die längere der beiden Formen im Zeitversatz (RAD-54, Entwurf Zustände 1 und 2): "1:59:59 hinter
+   live · 1:59:59 von 2:00:00 · 99 Titel" (36,4ch) oder "... · Aufnahme ab 23:59" (37,4ch, englisch 39,5ch). So hat Quelle und Zeit in
+   jeder Lage dieselbe Breite und springt beim Hochzählen nie (RAD-51, RAD-52). Basic hat keine Spulzeile und bleibt schmal. */
 .rh-zeit-spulbar .rh-puffer-zeile { contain: none; grid-template-columns: auto minmax(min-content, 1fr) auto; }
-.rh-zeit-spulbar .rh-puffer > span { min-inline-size: 16ch; }
+.rh-zeit-spulbar .rh-puffer > span:not([class]) { min-inline-size: 40ch; }
 .rh-kanzel .balken { block-size: 8px; border-radius: var(--rh-pille); overflow: hidden; }
 .rh-kanzel .balken span { display: block; block-size: 100%; }
 /* Spulbahn: der Regler liegt über dem Balken, im Zeitversatz nur so breit wie der Puffer */

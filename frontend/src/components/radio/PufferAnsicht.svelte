@@ -31,24 +31,18 @@
   const anfang = $derived(puffer.anfang);
   const ende = $derived(puffer.ende);
   const stelle = $derived(puffer.stelle ?? ende);
-  const breite = $derived(zoom === "alles" ? ende - anfang : zoom * 60);
+  /** junger Puffer (Entwurf Zustand 5): nur der Ausschnitt über alles, ohne Übersicht, Zoom und Titelsprünge */
+  const jung = $derived(ende - anfang < JUNG_S);
+  const breite = $derived(zoom === "alles" || jung ? ende - anfang : zoom * 60);
   const sicht = $derived(fenster(mitte ?? stelle, breite, anfang, ende));
   const imAusschnitt = $derived(liste.filter((a) => a.bis > sicht[0] && a.von < sicht[1]));
   const werbungSumme = $derived(liste.filter((a) => a.art === "werbung").reduce((s, a) => s + a.bis - a.von, 0));
-  const titelZahl = $derived(liste.filter((a) => a.art === "titel").length);
   const bereich = $derived(wahl ? bereichAus(wahl.a, wahl.b) : null);
   const gewaehlt = $derived(bereich ? imBereich(liste, bereich.von, bereich.bis) : []);
   const aufnahme = $derived(!!appState.isRecording);
 
-  // Uhrzeit einer Sekunde des Puffers: Stück 0 beginnt mit der Sitzung (session_id "JJJJMMTT_HHMMSS")
-  const beginn = $derived.by(() => {
-    const m = /^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/.exec(String((appState.hlsStatus as { session_id?: string } | null)?.session_id ?? ""));
-    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() : null;
-  });
-  const uhr = (s: number) => beginn === null ? `-${formatTimeShort(Math.max(0, ende - s))}`
-    : new Date(beginn + s * 1000).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
-  const name = (a: Abschnitt) => (a.art === "werbung" ? (a.von <= anfang + 1 ? t("puffer.werbungBeimVerbinden") : t("puffer.werbung"))
-    : a.art === "einschub" ? t("puffer.einschub") : a.titel);
+  const uhr = (s: number) => puffer.uhr(s);
+  const name = (a: Abschnitt) => puffer.benennen(a);
   const p = (s: number) => prozent(s, sicht[0], sicht[1]);
   const skala = $derived.by(() => {
     const schritt = breite > 3600 ? 900 : breite > 1200 ? 300 : 60, werte: number[] = [];
@@ -109,12 +103,12 @@
     return von + ((x - r.left) / Math.max(1, r.width)) * (bis - von);
   };
   function rad(e: WheelEvent): void {
-    if (zoom === "alles") return;
+    if (zoom === "alles" || jung) return;
     e.preventDefault();
     mitte = Math.min(ende, Math.max(anfang, (mitte ?? stelle) + Math.sign(e.deltaY || e.deltaX) * breite * 0.1));
   }
   function ziehenStart(e: PointerEvent): void {
-    if (zoom === "alles") return;
+    if (zoom === "alles" || jung) return;
     zug = { x: e.clientX, mitte: mitte ?? stelle };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
@@ -140,12 +134,14 @@
     <div class="rh-pg-kopf">
       <Logo uuid={sender.uuid} name={sender.name} logo={sender.favicon ?? ""} />
       <div class="rh-pg-titel"><h2>{t("puffer.titel", { sender: sender.name })}</h2>
-        <span class="rh-still">{t("puffer.kopfZeile", { laenge: formatTimeShort(ende - anfang), max: formatTimeShort(puffer.groesste), titel: titelZahl, werbung: formatTimeShort(werbungSumme) })}</span></div>
+        <span class="rh-still">{t("puffer.kopfZeile", { seit: uhr(anfang), laenge: formatTimeShort(ende - anfang), max: formatTimeShort(puffer.groesste), titel: puffer.titelZahl, werbung: formatTimeShort(werbungSumme) })}</span></div>
       <div class="rh-pg-knoepfe">
+        {#if !jung}
         <button class="knopf" type="button" title={t("puffer.titelZurueckHilfe")} disabled={vorheriger(liste, stelle) === null}
           onclick={() => { puffer.vorher(); sfx.click(); }}><i class="fa-solid fa-backward-step"></i>{t("puffer.titelZurueck")}</button>
         <button class="knopf" type="button" title={t("puffer.titelVorHilfe")} disabled={naechster(liste, stelle) === null}
           onclick={() => { puffer.weiter(); sfx.click(); }}>{t("puffer.titelVor")}<i class="fa-solid fa-forward-step"></i></button>
+        {/if}
         <button class="knopf" type="button" title={appState.isLive ? t("player.bereitsLive") : t("player.goLive")} disabled={!!appState.isLive}
           onclick={() => { live(); mitte = null; sfx.click(); }}><i class="fa-solid fa-tower-broadcast"></i>{t("kanzel.live")}</button>
         <button class="rund" type="button" aria-label={t("puffer.schliessen")} title={t("puffer.schliessen")} onclick={schliessen}><i class="fa-solid fa-xmark"></i></button>
@@ -153,6 +149,7 @@
     </div>
 
     <div class="rh-pg-leiste">
+      {#if !jung}
       <div class="rh-pg-leiste-kopf"><span class="ak-etikett">{t("puffer.zeitleiste")}</span>
         <div class="rh-pg-zoom" role="group" aria-label={t("puffer.zoom")}>
           {#each ZOOMS as z (z)}
@@ -170,8 +167,9 @@
         {#if bereich}<i class="rh-pg-bereich" style:left="{prozent(bereich.von, anfang, ende)}%" style:width="{prozent(bereich.bis, anfang, ende) - prozent(bereich.von, anfang, ende)}%"></i>{/if}
         {#if zoom !== "alles"}<i class="rh-pg-fenster" style:left="{prozent(sicht[0], anfang, ende)}%" style:width="{prozent(sicht[1], anfang, ende) - prozent(sicht[0], anfang, ende)}%"></i>{/if}
       </div>
+      {/if}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="rh-pg-ausschnitt" bind:this={ausschnitt} class:ziehbar={zoom !== "alles"} aria-label={t("puffer.ausschnitt")}
+      <div class="rh-pg-ausschnitt" bind:this={ausschnitt} class:ziehbar={zoom !== "alles" && !jung} aria-label={t("puffer.ausschnitt")}
            onwheel={rad} onpointerdown={ziehenStart} onpointermove={ziehen} onpointerup={() => (zug = null)} onpointercancel={() => (zug = null)} ondblclick={doppelklick}>
         {#each imAusschnitt as a, i (a.von)}
           {@const l = p(a.von)}
@@ -182,10 +180,10 @@
         <i class="rh-pg-kopfstrich" style:left="{p(stelle)}%"></i>
         {#if sicht[1] >= ende - 1}<span class="rh-pg-live">{t("puffer.live")}</span>{/if}
       </div>
-      <div class="rh-pg-skala">{#each skala as s (s)}<span style:left="{p(s)}%">{uhr(s)}</span>{/each}</div>
+      {#if !jung}<div class="rh-pg-skala">{#each skala as s (s)}<span style:left="{p(s)}%">{uhr(s)}</span>{/each}</div>{/if}
     </div>
 
-    {#if ende - anfang < JUNG_S}
+    {#if jung}
       <p class="rh-pg-hinweis"><i class="fa-solid fa-circle-info"></i><span>{t("puffer.jungHinweis")}</span></p>
     {/if}
 

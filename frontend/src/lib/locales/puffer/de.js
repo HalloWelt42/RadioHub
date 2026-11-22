@@ -20,7 +20,13 @@ export default {
   einschub: 'Einschub',
   // Großansicht
   titel: 'Puffer: {sender}',
-  kopfZeile: '{laenge} von {max} · {titel} Titel · Werbung {werbung}',
+  kopfZeile: 'seit {seit} · {laenge} von {max} · {titel} Titel · Werbung {werbung}',
+  // Zeile unter dem Balken der Kanzel und Zahlen am Telefon (RAD-54)
+  zeileVersatz: '{hinter} hinter live · {laenge} von {max} · {titel} Titel',
+  zeileAufnahme: '{laenge} von {max} · {titel} Titel',
+  aufnahmeAbUhr: 'Aufnahme ab {uhr}',
+  zahlTitel: '{n} Titel',
+  laengeVonMax: '{laenge} von {max}',
   schliessen: 'Zurück zum Radio',
   zeitleiste: 'Zeitleiste',
   zoom: 'Zoom',

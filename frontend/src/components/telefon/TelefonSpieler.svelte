@@ -26,7 +26,7 @@
   let pufferOffen = $state(false);
   const pStelle = $derived(puffer.stelle ?? puffer.ende);
   const pTitel = $derived(puffer.laufend);
-  const pName = (a) => (a.art === 'werbung' ? t('puffer.werbung') : a.art === 'einschub' ? t('puffer.einschub') : a.titel);
+  const pName = (a) => puffer.benennen(a);
 
   function uhr(s) {
     if (!Number.isFinite(s) || s < 0) s = 0;
@@ -107,7 +107,8 @@
         <!-- Zeitversatz mit Titeln und Werbung (RAD-46, Entwurf puffer.html Zustand 6) -->
         <div class="tf-versatz">
           <span class="tf-etikett">{t('puffer.zeitversatz')}</span>
-          <PufferBalken stelle={pStelle} />
+          <PufferBalken stelle={pStelle} links={t('puffer.vorLive', { zeit: formatTimeShort(puffer.hinter) })}
+            mitte={t('puffer.laengeVonMax', { laenge: formatTimeShort(puffer.ende - puffer.anfang), max: formatTimeShort(puffer.groesste) })} />
           <div class="tf-versatz-titel">
             {#if pTitel}<b>{pName(pTitel)}</b><span>{t('puffer.vonLaenge', { a: formatTimeShort(Math.max(0, pStelle - pTitel.von)), b: formatTimeShort(pTitel.bis - pTitel.von) })}</span>
             {:else}<span>{t('puffer.ohneTitel')}</span>{/if}

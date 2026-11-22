@@ -1,12 +1,12 @@
 <script lang="ts">
   // Balken des Puffers am Telefon (RAD-46): vom ältesten Ton bis live, gelb bis zur Stelle, die man hört, Titelgrenzen
-  // als Striche, Werbung violett, ein gewählter Bereich rot umrandet; darunter Abstand zu live, Länge und "live".
+  // als Striche, Werbung violett, ein gewählter Bereich rot umrandet; darunter zwei Angaben der Ansicht und "live", in
+  // drei festen Spalten: keine Angabe verschiebt eine andere, wenn sie wächst (RAD-54, Entwurf Zustände 6 bis 8).
   import { t } from "../../lib/i18n.svelte.js";
-  import { formatTimeShort } from "../../lib/formatters.js";
   import { prozent } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
 
-  let { stelle, bereich = null }: { stelle: number; bereich?: { von: number; bis: number } | null } = $props();
+  let { stelle, bereich = null, links, mitte }: { stelle: number; bereich?: { von: number; bis: number } | null; links: string; mitte: string } = $props();
 
   const p = (s: number) => prozent(s, puffer.anfang, puffer.ende);
 </script>
@@ -19,8 +19,8 @@
     {#if bereich}<i class="pb-bereich" style:left="{p(bereich.von)}%" style:width="{p(bereich.bis) - p(bereich.von)}%"></i>{/if}
   </div>
   <div class="pb-zahlen">
-    <span>{puffer.ende - stelle > 1 ? t("puffer.vorLive", { zeit: formatTimeShort(puffer.ende - stelle) }) : ""}</span>
-    <span>{formatTimeShort(puffer.ende - puffer.anfang)}</span>
+    <span>{links}</span>
+    <span>{mitte}</span>
     <span>{t("puffer.live")}</span>
   </div>
 </div>
@@ -35,5 +35,7 @@
   .pb-striche i { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--t-grund);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 65%, transparent); }
   .pb-bereich { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; box-shadow: 0 0 0 2px var(--led-rot); pointer-events: none; }
-  .pb-zahlen { display: flex; justify-content: space-between; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .pb-zahlen { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .pb-zahlen > span { white-space: nowrap; }
+  .pb-zahlen > span:last-child { text-align: right; }
 </style>

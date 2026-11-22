@@ -20,8 +20,7 @@
   const stelle = $derived(puffer.stelle ?? puffer.ende);
   const bereich = $derived(wahl ? bereichAus(wahl.a, wahl.b) : null);
   const gewaehlt = $derived(bereich ? imBereich(liste, bereich.von, bereich.bis) : []);
-  const name = (a: Abschnitt) => (a.art === "werbung" ? t("puffer.werbung") : a.art === "einschub" ? t("puffer.einschub") : a.titel);
-  const vorLive = (s: number) => t("puffer.vorLive", { zeit: formatTimeShort(Math.max(0, puffer.ende - s)) });
+  const name = (a: Abschnitt) => puffer.benennen(a);
 
   function antippen(a: Abschnitt): void {
     if (!bereichAn) { offen = offen === a.von ? null : a.von; return; }
@@ -68,7 +67,7 @@
     <span class="tp-titel">{t("puffer.puffer")} · {formatTimeShort(puffer.ende - puffer.anfang)}</span>
     <span></span>
   </div>
-  <div class="tp-oben"><PufferBalken {stelle} {bereich} /></div>
+  <div class="tp-oben"><PufferBalken {stelle} {bereich} links={puffer.uhr(puffer.anfang)} mitte={t("puffer.zahlTitel", { n: puffer.titelZahl })} /></div>
   <ol class="tp-liste">
     {#each [...liste].reverse() as a (a.von)}
       {@const hoert = bei(liste, stelle)?.von === a.von}
@@ -81,7 +80,7 @@
             <ak-led farbe={a.laufend ? "rot" : hoert ? "blau" : "gelb"} zustand={a.laufend ? "atmet" : hoert ? "an" : "aus"} groesse="klein"></ak-led>
           {/if}
           <span class="tp-text"><b>{#if a.art === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{name(a)}</b>
-            <span class="tp-meta"><span>{vorLive(a.von)}</span><span>{formatTimeShort(a.bis - a.von)}</span>{#if a.laufend}<span class="tp-laeuft">{t("puffer.laeuft")}</span>{/if}</span></span>
+            <span class="tp-meta"><span>{puffer.uhr(a.von)}</span><span>{formatTimeShort(a.bis - a.von)}</span>{#if a.laufend}<span class="tp-laeuft">{t("puffer.laeuft")}</span>{/if}</span></span>
         </button>
         {#if !bereichAn && offen === a.von}
           <div class="tp-tat">

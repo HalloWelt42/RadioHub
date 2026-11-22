@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { t as uebersetzen } from "../src/lib/i18n.js";
 import { kannBlaettern,
   bitrateAusStellung, bitrateLage, bitrateRaster, bitrateStellung, bitrateText, kanzelAnzeige, kanzelTasten, naechsteReihenfolge, nachbar, positionStand, sekundenHinterLive,
-  zeitversatzStand, zustandVon, type Stand,
+  pufferZeile, zeitversatzStand, zustandVon, type Stand,
 } from "../src/spieler/kanzel";
 import { MEHR_HOECHSTENS, statuszeile, stellenFuer } from "../src/spieler/rasterbreite";
 
@@ -148,6 +148,12 @@ describe("Spulzeilen", () => {
     // eine Aufnahme hängt am Empfang, nicht am Zeitversatz (RAD-46): Spulen bleibt frei
     expect(zeitversatzStand(spielt({ playerMode: "hls", isRecording: true, hlsStatus: HLS }), t).gesperrt).toBe(false);
     expect(sekundenHinterLive(HLS, 1900)).toBe(0);
+  });
+  it("Zeile im Zeitversatz wie im Entwurf: Abstand immer (auch 0:00), mit Aufnahme ohne Abstand (RAD-54)", () => {
+    const p = { hinter: 570, gepuffert: 4790, max: 7200, titel: 19, aufnahme: false };
+    expect(pufferZeile(p, t)).toBe("9:30 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
+    expect(pufferZeile({ ...p, hinter: 0 }, t)).toBe("0:00 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
+    expect(pufferZeile({ ...p, aufnahme: true }, t)).toBe("1:19:50 von 2:00:00 · 19 Titel");
   });
   it("Position: Füllung nach der Lage, gesperrt ohne Dauer", () => {
     expect(positionStand(stand({ zeit: 754, dauer: 2700, lage: 27.9 }), t)).toMatchObject({ fuellung: 27.9, bahn: 100, text: "12:34 von 45:00", gesperrt: false });
