@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@fontsource/orbitron": "^5.2.8",
-    "appkern-oberflaeche": "github:HalloWelt42/appkern#5db06d8a35eff1dc02aee7ffe522e4beaba62912",
+    "appkern-oberflaeche": "github:HalloWelt42/appkern#d688a3027316fef8f2710d3944da7e3e8132ef4b",
     "hls.js": "^1.5.0"
   },
   "devDependencies": {
