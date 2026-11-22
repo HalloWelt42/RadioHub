@@ -1,4 +1,4 @@
-/* Tasten und LEDs (Entwurf RAD-58): nur, was über Kanzel und Bausteine hinausgeht. Jede Fassung setzt dieselben Marken
+/* Tasten (Entwurf RAD-58): nur, was über Kanzel und Bausteine hinausgeht. Jede Fassung setzt dieselben Marken
    (--k-*), die Regeln darunter lesen nur diese Marken; so bleiben Maß der Taste (--rh-taste), Lage des Symbols und das
    Tastenlicht (Schlitz oben, radio-bausteine.css) in allen Fassungen gleich. Die Kappe leuchtet nie, auch nicht an. */
 
@@ -91,43 +91,26 @@
   --k-gesperrt-schatten: inset 0 0 0 1px rgb(255 255 255 / .06), inset 0 2px 6px rgb(0 0 0 / .4); }
 .tv-rauch[data-theme="hell"] { --k-grund: rgb(70 78 90 / .55); }
 
-/* ═══ Runde LEDs ═══ je Farbe aus und an, mittel und klein; die Form setzt nur Fassung und Licht, die Größe bleibt */
-.lf-raster { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 14px 6px; inline-size: 100%; }
-.lf-farbe { display: grid; justify-items: center; gap: 8px; margin: 0; min-inline-size: 0; }
-.lf-farbe figcaption { white-space: nowrap; }
-@container (max-width: 520px) { .lf-raster { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.lf-paar { display: flex; gap: 12px; align-items: center; }
-.lf-paar ak-led { --d: 14px; }
-.lf-paar.klein ak-led { --d: 8px; }
-.lf-farbe figcaption { font-size: var(--marke); color: var(--rh-geraet-tinte-2); }
-.lf-zeilen { grid-column: 1 / -1; justify-self: center; display: grid; gap: 6px; inline-size: min(100%, 360px); }
-.lf-zeile { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px;
-  background-color: var(--rh-tafel-dunkel); font-size: var(--klein); }
-.lf-zeile ak-led { justify-self: center; }
+/* ═══ Auswahl (22.11.) ═══ Klavierlack dunkel, Elfenbein hell, je fünf Töne nebeneinander */
+.tv-hinweis { flex-basis: 100%; max-inline-size: 1180px; margin: 0; color: var(--text-2); }
+.tw-toene { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 14px; }
+.tv-elfenbein.tw-tafel { --k-schatten: inset 0 1px 0 rgb(255 255 255 / .8), 0 3px 0 var(--tw-sockel), 0 4px 6px rgb(40 25 5 / .4), 0 0 0 1px rgb(60 40 10 / .3);
+  --k-gedrueckt: inset 0 1px 0 rgb(255 255 255 / .8), 0 1px 0 var(--tw-sockel), 0 2px 3px rgb(40 25 5 / .35), 0 0 0 1px rgb(60 40 10 / .3); }
 
-/* 2 Versenkt: ohne Fassung in ein dunkles Loch der Fläche eingelassen, das Licht sitzt tiefer */
-.lf-versenkt .ak-led-licht { box-shadow: inset 0 calc(var(--d) * .12) calc(var(--d) * .2) rgb(0 0 0 / .85), 0 0 0 calc(var(--d) * .16) rgb(0 0 0 / .55),
-  0 0 0 calc(var(--d) * .24) rgb(255 255 255 / .08); }
-.lf-versenkt .ak-led-licht::after { inset: calc(var(--d) * .12); }
+/* Glimmen: Tastenlicht flach in voller Farbe, ohne Glanzpunkt und Verlauf (Nutzer 22.11.2026: "keine
+   glanzeffekte auf LEDs das ist unnatürlich, lieber leichtes glimmen"); aus nur ein dunkler Hauch der Farbe */
+.lf-glimmen ak-led.rh-tastenlicht .ak-led-licht { background: color-mix(in srgb, var(--farbe) 16%, #0c0e11); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .4); }
+.lf-glimmen ak-led.rh-tastenlicht .ak-led-licht::after { background: var(--farbe);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--farbe) 75%, transparent), 0 0 10px color-mix(in srgb, var(--farbe) 35%, transparent); }
 
-/* 3 Breiter Chromring: kräftige Fassung mit Fase (zweifarbiger Ring), Licht unverändert */
-.lf-chrom .ak-led-licht { box-shadow: 0 0 0 calc(var(--d) * .2) #d3d8de, 0 0 0 calc(var(--d) * .3) #7d848c, 0 0 0 calc(var(--d) * .36) rgb(0 0 0 / .5),
-  0 calc(var(--d) * .2) calc(var(--d) * .3) calc(var(--d) * .3) rgb(0 0 0 / .35); }
-
-/* 4 Leuchtring: das Licht ist ein Ring um eine dunkle Mitte */
-.lf-ring .ak-led-licht { background: radial-gradient(circle, var(--ak-glas) 0 34%, color-mix(in srgb, var(--farbe) 22%, var(--ak-glas)) 38% 100%);
-  box-shadow: 0 0 0 max(1px, calc(var(--d) * .1)) rgb(0 0 0 / .6); }
-.lf-ring .ak-led-licht::after { background: radial-gradient(circle, transparent 0 34%, var(--farbe) 40% 78%, color-mix(in srgb, var(--farbe) 78%, var(--ak-licht-grund, #000)) 100%); }
-
-/* 5 Quadratisch: Bauteil-LED, gerundete Ecken */
-.lf-smd .ak-led-licht, .lf-smd .ak-led-licht::after { border-radius: 24%; }
-.lf-smd .ak-led-licht { box-shadow: 0 0 0 max(1px, calc(var(--d) * .1)) #1b1e22, 0 0 0 max(2px, calc(var(--d) * .2)) rgb(255 255 255 / .08); }
-
-/* 6 Streulinse: matte Linse ohne Fassung, das Licht verteilt sich weich bis zum Rand */
-.lf-linse .ak-led-licht { background: color-mix(in srgb, var(--farbe) 16%, var(--ak-glas)); box-shadow: 0 0 0 1px rgb(0 0 0 / .45); }
-.lf-linse .ak-led-licht::after { background: radial-gradient(circle, var(--farbe) 0 38%, color-mix(in srgb, var(--farbe) 70%, var(--ak-glas)) 100%);
-  box-shadow: 0 0 calc(var(--d) * 1.4) color-mix(in srgb, var(--farbe) 60%, transparent); }
-
-/* 7 Flach: nur eine Farbfläche, ohne Fassung und ohne Tiefe */
-.lf-flach .ak-led-licht { background: color-mix(in srgb, var(--farbe) 20%, var(--ak-glas)); box-shadow: none; }
-.lf-flach .ak-led-licht::after { background: var(--farbe); box-shadow: 0 0 calc(var(--d) * .7) color-mix(in srgb, var(--farbe) 55%, transparent); }
+/* ═══ Gewählt (22.11.) ═══ feste Symbolfarben je Taste (wechseln in keinem Zustand), eigene Lichtfarben für Stopp
+   (reinweiß) und Betrieb (weißblau). Die Lichtfarben kommen als Marken --led-*, weil der Taster sein Licht über das
+   Merkmal led="<farbe>" färbt. */
+:root { --led-reinweiss: #f4f7fb; --led-eisblau: #b9d6ff; }
+.tw-tafel.tv-lack { --tw-weiss: #e9edf2; --tw-gruen: #1f9e4a; --tw-rot: #c8202a; --tw-bernstein: #e9edf2; }
+.tw-tafel.tv-elfenbein { --tw-weiss: #4f4030; --tw-gruen: #17763a; --tw-rot: #a5161e; --tw-bernstein: #4f4030; }
+/* ak-taster[art] und der Zustand im Wähler: gewichtiger als die allgemeine Regel der Fassungen oben, in jedem Zustand gleich */
+.tw-tafel ak-taster[art="glas"]:is(.tw-blatt, .tw-stopp, .tw-betrieb) .ak-taster-knopf { color: var(--tw-weiss); }
+.tw-tafel ak-taster[art="glas"].tw-spielen .ak-taster-knopf { color: var(--tw-gruen); }
+.tw-tafel ak-taster[art="glas"].tw-aufnahme .ak-taster-knopf { color: var(--tw-rot); }
+.tw-tafel ak-taster[art="glas"][gesperrt] .ak-taster-knopf { color: var(--k-gesperrt-symbol); }

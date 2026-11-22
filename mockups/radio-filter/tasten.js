@@ -1,8 +1,7 @@
-// Tasten und LEDs (Entwurf RAD-58). Tasten: jede Fassung mit der ganzen Steuerung der Kanzel (Zurück, Stopp,
+// Tasten (Entwurf RAD-58): jede Fassung mit der ganzen Steuerung der Kanzel (Zurück, Stopp,
 // Abspielen, Aufnahme, Vor, Fokus, Moduswechsel, Reihenfolge) und den Zuständen aus, an, gedrückt, gesperrt, dunkel und
 // hell nebeneinander. Das Tastenlicht (Schlitz oben in der Kappe), die Größe und die Lage der Symbole sind in allen
 // Fassungen gleich; die Fassung setzt nur Material, Plastizität und Farbe (tasten.css, Klasse tv-<name>).
-// LEDs: jede Form (Klasse lf-<name>) in jeder Farbe, aus und an, atmend und blinkend, klein (Listen) und mittel.
 (() => {
   "use strict";
   const TASTEN = [
@@ -14,20 +13,12 @@
     { id: "fase", name: "Anthrazit mit Fase", text: "Dunkles Metall mit breiter, gefräster Fase rundum, kantig. Technisch, kräftige Plastizität." },
     { id: "rauch", name: "Rauchglas", text: "Durchscheinendes dunkles Acryl mit Tiefe nach unten, helle Kante oben. Leicht, modern." },
   ];
-  const LEDS = [
-    { id: "heute", name: "Heute", text: "Flache Kuppel in schmaler Metallfassung." },
-    { id: "versenkt", name: "Versenkt", text: "Ohne Fassung, in ein dunkles Loch der Fläche eingelassen; das Licht sitzt tiefer." },
-    { id: "chrom", name: "Breiter Chromring", text: "Kräftige, polierte Fassung mit Fase, wie Kontrollleuchten an Messgeräten." },
-    { id: "ring", name: "Leuchtring", text: "Das Licht ist ein Ring um eine dunkle Mitte." },
-    { id: "smd", name: "Quadratisch", text: "Kleines Quadrat mit gerundeten Ecken, wie eine Bauteil-LED auf der Platine." },
-    { id: "linse", name: "Streulinse", text: "Matte Linse, das Licht verteilt sich weich bis zum Rand, ohne Fassung." },
-    { id: "flach", name: "Flach", text: "Nur eine Farbfläche, ohne Fassung und ohne Tiefe; am ruhigsten." },
-  ];
-  const FARBEN = [["rot", "Rot"], ["bernstein", "Bernstein"], ["gelb", "Gelb"], ["gruen", "Grün"], ["blau", "Blau"], ["violett", "Violett"], ["weiss", "Weiß"]];
 
-  // eine Taste der Steuerung; an, gedrückt und gesperrt als Zustand
-  const taste = (symbol, farbe, led, hilfe, { an = false, gedrueckt = false, gesperrt = false } = {}) =>
-    `<ak-taster art="glas" symbol="${symbol}" farbe="${farbe}" led="${led}" modus="tasten" hilfe="${hilfe}"${an ? " an" : ""}${gesperrt ? " gesperrt" : ""}${gedrueckt ? ' class="gedrueckt"' : ""}></ak-taster>`;
+  // eine Taste der Steuerung; an, gedrückt und gesperrt als Zustand; rolle setzt in der Auswahl Symbol- und Lichtfarbe
+  const taste = (symbol, farbe, led, hilfe, { an = false, gedrueckt = false, gesperrt = false, rolle = "" } = {}) => {
+    const klassen = [gedrueckt ? "gedrueckt" : "", rolle ? `tw-${rolle}` : ""].filter(Boolean).join(" ");
+    return `<ak-taster art="glas" symbol="${symbol}" farbe="${farbe}" led="${led}" modus="tasten" hilfe="${hilfe}"${an ? " an" : ""}${gesperrt ? " gesperrt" : ""}${klassen ? ` class="${klassen}"` : ""}></ak-taster>`;
+  };
   const steuerung = () => `<div class="tv-reihe">
       <div class="tv-gruppe">
         ${taste("fa-backward-step", "weiss", "bernstein", "Zurück")}
@@ -51,21 +42,40 @@
   const block = (nr, v, inhalt) => `<div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">${nr}</span><span>${v.name}</span><span>${v.text}</span></p>
       <div class="tv-paar">${inhalt}</div></div>`;
 
-  // LEDs: je Farbe aus und an (mittel), darunter klein; am Ende atmend und blinkend
-  const led = (farbe, zustand, groesse = "") => `<ak-led farbe="${farbe}" zustand="${zustand}"${groesse ? ` groesse="${groesse}"` : ""}></ak-led>`;
-  const ledTafel = () => `<div class="lf-raster">
-      ${FARBEN.map(([f, n]) => `<figure class="lf-farbe"><div class="lf-paar">${led(f, "aus")}${led(f, "an")}</div><div class="lf-paar klein">${led(f, "aus", "klein")}${led(f, "an", "klein")}</div><figcaption>${n}</figcaption></figure>`).join("")}
-      <figure class="lf-farbe"><div class="lf-paar">${led("gruen", "atmet")}${led("rot", "blinkt")}</div><div class="lf-paar klein">${led("gruen", "atmet", "klein")}${led("rot", "blinkt", "klein")}</div><figcaption>atmet, blinkt</figcaption></figure>
-      <div class="lf-zeilen">${["Prince Ital Joe - United", "Werbung", "Ace of Base - Wheel of Fortune"].map((t, i) =>
-        `<div class="lf-zeile">${led(i === 0 ? "rot" : i === 1 ? "gelb" : "blau", i === 0 ? "atmet" : i === 1 ? "aus" : "an", "klein")}<span>${t}</span></div>`).join("")}</div>
+  // Gewählt (Nutzer 22.11.): Klavierlack Schwarz im dunklen, Elfenbein im hellen Thema. Jede Taste hat eine feste
+  // Symbolfarbe, die in keinem Zustand wechselt; den Zustand zeigt nur das Tastenlicht. Stopp leuchtet reinweiß,
+  // Fokus, Moduswechsel und Reihenfolge weißblau; Abspielen und Aufnahme tragen satte, dunklere Symbolfarben.
+  const steuerungGewaehlt = () => `<div class="tv-reihe">
+      <div class="tv-gruppe">
+        ${taste("fa-backward-step", "weiss", "bernstein", "Zurück", { rolle: "blatt" })}
+        ${taste("fa-stop", "weiss", "reinweiss", "Stopp", { rolle: "stopp" })}
+        ${taste("fa-play", "gruen", "gruen", "Abspielen", { an: true, rolle: "spielen" })}
+        ${taste("fa-circle", "rot", "rot", "Aufnahme", { rolle: "aufnahme" })}
+        ${taste("fa-forward-step", "weiss", "bernstein", "Vor", { rolle: "blatt" })}
+      </div>
+      <div class="tv-gruppe">
+        ${taste("fa-location-crosshairs", "weiss", "eisblau", "Fokus", { an: true, rolle: "betrieb" })}
+        ${taste("fa-wave-square", "weiss", "eisblau", "Original oder Zeitversatz", { an: true, rolle: "betrieb" })}
+        ${taste("fa-arrow-right", "weiss", "eisblau", "Reihenfolge", { rolle: "betrieb" })}
+      </div></div>`;
+  const zustaendeGewaehlt = () => `<div class="tv-zustaende">
+      <figure>${taste("fa-circle", "rot", "rot", "Aufnahme, aus", { rolle: "aufnahme" })}<figcaption>Aufnahme aus</figcaption></figure>
+      <figure>${taste("fa-circle", "rot", "rot", "Aufnahme, an", { an: true, rolle: "aufnahme" })}<figcaption>Aufnahme an</figcaption></figure>
+      <figure>${taste("fa-stop", "weiss", "reinweiss", "Stopp, gedrückt", { an: true, gedrueckt: true, rolle: "stopp" })}<figcaption>Stopp gedrückt</figcaption></figure>
+      <figure>${taste("fa-play", "gruen", "gruen", "Abspielen, aus", { rolle: "spielen" })}<figcaption>Abspielen aus</figcaption></figure>
+      <figure>${taste("fa-location-crosshairs", "weiss", "eisblau", "Fokus, aus", { rolle: "betrieb" })}<figcaption>Fokus aus</figcaption></figure>
+      <figure>${taste("fa-forward-step", "weiss", "bernstein", "Vor, gesperrt", { gesperrt: true, rolle: "blatt" })}<figcaption>gesperrt</figcaption></figure>
     </div>`;
+  const gewaehlt = (thema, name) => `<div class="tv-tafel tw-tafel ${thema === "dunkel" ? "tv-lack" : "tv-elfenbein"} lf-glimmen" data-theme="${thema}">
+      <span class="ak-etikett">${name}</span>${steuerungGewaehlt()}${zustaendeGewaehlt()}</div>`;
+  const wahl = document.querySelector("[data-wahl]");
+  wahl.innerHTML = `<div class="rh-rahmen-block rp-breit"><p class="rh-rahmen-titel"><span class="pille">Gewählt</span><span>Klavierlack Schwarz und Elfenbein</span>
+      <span>Dunkel Klavierlack, hell Elfenbein; feste Symbolfarben, Licht nur im Schlitz</span></p>
+      <div class="tw-toene">${gewaehlt("dunkel", "Dunkel · Klavierlack Schwarz")}${gewaehlt("hell", "Hell · Elfenbein")}</div></div>`;
 
   const tasten = document.querySelector("[data-tasten]");
   tasten.innerHTML = TASTEN.map((v, i) => block(String.fromCharCode(65 + i), v,
     ["dunkel", "hell"].map((th) => tafel(`tv-${v.id}`, th, steuerung() + zustaende())).join(""))).join("");
-  const leds = document.querySelector("[data-leds]");
-  leds.innerHTML = LEDS.map((v, i) => block(String(i + 1), v,
-    ["dunkel", "hell"].map((th) => tafel(`lf-${v.id}`, th, ledTafel())).join(""))).join("");
 
   customElements.whenDefined("ak-taster").then(() => {
     window.RH?.tastenlicht?.(document);
