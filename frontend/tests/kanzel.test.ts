@@ -258,3 +258,14 @@ describe("Vor und Zurück (RAD-28)", () => {
     expect(kannBlaettern(spielt({ stations: [SENDER] }))).toBe(false);
   });
 });
+
+describe("Lasche der Meldungen (RAD-113)", () => {
+  it("steht mittig über der Lautstärke, rückt bei wenig Platz rechts ins Fenster, nie abgeschnitten", async () => {
+    const { laschenLage } = await import("../src/spieler/kanzelmasse");
+    expect(laschenLage(800, 1000, 1600)).toEqual({ links: 650, rechts: 450 });
+    // Lautstärke ganz rechts im schmalen Fenster: gleich breit (500), nach links gerückt, 12 Rand rechts
+    expect(laschenLage(700, 900, 1000)).toEqual({ links: 488, rechts: 12 });
+    // Fenster schmaler als die Lasche: von Rand zu Rand
+    expect(laschenLage(200, 400, 450)).toEqual({ links: 12, rechts: 12 });
+  });
+});

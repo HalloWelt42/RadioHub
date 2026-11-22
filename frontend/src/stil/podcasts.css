@@ -74,7 +74,9 @@
 .rh-folgen-spalten > span:nth-child(4) { grid-area: aktionen; }
 .rh-folge .stand-zelle { grid-area: stand; padding-top: 6px; font-size: var(--klein); }
 .rh-folge .laenge { grid-area: laenge; padding-top: 6px; text-align: right; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
-.rh-folgen-aktionen { grid-template-columns: repeat(auto-fill, 44px); justify-content: end; }
+/* Knöpfe einer Folge immer in einer Reihe (RAD-112): vorher repeat(auto-fill) in einer Spalte, die sich nach dem Inhalt
+   richtet, im schmalen Fenster also eine einzige Spur, und die Knöpfe standen untereinander */
+.rh-aktionen.rh-folgen-aktionen { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 44px; justify-content: end; }
 .rh-folgen-aktionen a.rund { display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; color: inherit; }
 .rh-folge-frage { padding: 0 14px 12px; }
 .rh-folgen-aktionen .rund.an { color: var(--gut); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--gut) 55%, transparent); }

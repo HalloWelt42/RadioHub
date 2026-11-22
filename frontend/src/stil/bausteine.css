@@ -133,8 +133,8 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
    aus ihrem Hintergrund nach oben, im Material der Kanzel, oben gerundet. Das Gehäuse der Lautstärke verdeckt ihren
    unteren Teil, der Inhalt steht darüber mittig untereinander: die erste fette Angabe als Kopfzeile im Stil der
    Modulköpfe, darunter der Text, dann die Knöpfe. Maße der Kanzel aus spieler/kanzelmasse.ts. */
-:root[data-kanzel] .rh-band { z-index: 3; bottom: var(--rh-kanzel-oben, 150px); left: calc(var(--rh-laut-links, 40vw) - 150px);
-  right: calc(100vw - var(--rh-laut-rechts, 60vw) - 150px); inline-size: auto; max-inline-size: none; margin: 0; display: grid;
+:root[data-kanzel] .rh-band { z-index: 3; bottom: var(--rh-kanzel-oben, 150px); left: var(--rh-band-links, 12px);
+  right: var(--rh-band-rechts, 12px); inline-size: auto; max-inline-size: none; margin: 0; display: grid;
   justify-items: center; text-align: center; gap: 10px; padding: 14px 20px calc(var(--rh-laut-ueberstand, 0px) + 14px);
   border-radius: var(--r3) var(--r3) 0 0; background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild);
   color: var(--rh-geraet-tinte); box-shadow: 0 0 0 1px var(--rand-stark), 0 0 24px rgb(0 0 0 / .45);
