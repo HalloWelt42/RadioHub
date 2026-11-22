@@ -18,6 +18,7 @@
   /* Geräte: ruhige Leiste statt Metall */
   --rh-geraet: var(--leiste);
   --rh-geraet-bild: none;
+  --rh-seitenleiste-bild: none;
   --rh-geraet-tinte: var(--text);
   --rh-geraet-tinte-2: var(--text-2);
   --rh-kappe: color-mix(in srgb, var(--led-weiss) 22%, var(--ak-glas)); /* Kappe der Kopftasten (die Steuerung trägt --rh-taste-*, radio-marken.css) */

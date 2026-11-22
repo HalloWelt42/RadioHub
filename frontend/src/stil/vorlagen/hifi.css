@@ -19,6 +19,7 @@
   /* Geräte: gebürstetes Aluminium mit Licht von oben */
   --rh-geraet: var(--hifi-metall-front);
   --rh-geraet-bild: var(--hifi-licht-oben), var(--hifi-buerste);
+  --rh-seitenleiste-bild: var(--hifi-koernung);   /* Seitenleiste gleichmäßig gekörnt, ohne Verlauf (RAD-70) */
   --rh-geraet-tinte: var(--hifi-metall-tinte);
   --rh-geraet-tinte-2: var(--hifi-metall-tinte-2);
   --rh-geraet-kante: var(--hifi-kante-geraet);

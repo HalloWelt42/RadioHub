@@ -8,7 +8,7 @@
 .auswahl-liste button .rh-zahl { color: var(--text-3); margin-left: 6px; }
 
 /* ═══ Schnellfilter ═══ Seitenleiste, Gruppen, Facetten, Chips, Schnellwahl-Gerät */
-.rh-filter { background-color: var(--leiste); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
+.rh-filter { background-color: var(--leiste); background-image: var(--rh-seitenleiste-bild); }   /* ohne Trennlinie (RAD-70) */
 /* Kopf im Gerät der Schnellwahl, eine flache Zeile zwischen den oberen Schrauben (Nutzer 20.11.2026: "für den teil
    müssen wir uns was kompakteres ausdenken"): der Titel klein wie die Etiketten im Gerät, Zurücksetzen mit der Zahl der
    aktiven Filter als Leuchtziffer, in der Tafel dazu Schließen */
@@ -23,7 +23,6 @@
 .rh-leuchtzahl { font-family: var(--schrift-zahl); font-weight: 700; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--led-bernstein) 18%, var(--ak-glas)); }
 .rh-leuchtzahl.an { color: var(--led-bernstein); text-shadow: 0 0 calc(8px * var(--ak-leuchten)) var(--led-bernstein); }
 .rh-gruppe { padding: 16px 0 6px; }
-.rh-gruppe + .rh-gruppe { box-shadow: 0 -1px 0 var(--rand); }
 .rh-gruppe-kopf { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
 .rh-gruppe-kopf h3 { margin: 0; flex: 1; min-width: 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-gruppe-kopf a, .rh-gruppe-kopf button { font-size: var(--klein); color: var(--akzent); text-decoration: none; border: 0; background: none; cursor: pointer; padding: 0; }

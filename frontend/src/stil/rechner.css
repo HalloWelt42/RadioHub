@@ -40,8 +40,7 @@
   margin-top: calc(-1 * var(--rh-ueberstand)); padding-top: var(--rh-ueberstand); z-index: 3; }
 .rh-filter-zu { display: none; }
 .rh-filter-rollt { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 0 14px 24px; }
-.rh-filter-oben { padding: 10px 12px 8px; min-width: 0; box-shadow: 0 1px 0 var(--rand);
-  background-color: var(--ak-front); background-image: var(--ak-front-bild); }   /* Hintergrund der Schnellfilter im Material der Box (RAD-70) */
+.rh-filter-oben { padding: 10px 12px 8px; min-width: 0; }
 .rh-filter-rollt > .rh-gruppe:first-child { margin-top: 4px; }
 
 .rh-haupt { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); position: relative; }
