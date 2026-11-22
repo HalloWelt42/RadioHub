@@ -54,3 +54,6 @@ mockups/radio-filter/app-stil/
 # Pläne und Entwürfe gehören nicht ins Repo, sie bleiben lokal (RAD-75)
 mockups/
 docs/umbau/
+
+# Zwischenaufnahmen des README-Bilds (tools/readme-bild.mjs), ins Repo kommt nur .github/bilder/geraete.png
+tools/readme-bild/aufnahmen/

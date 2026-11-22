@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Präsentation - Geräte</title>
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/barlow/400.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/barlow/600.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/barlow/700.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/orbitron/700.css">
+<link rel="stylesheet" href="../../frontend/node_modules/appkern-oberflaeche/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!--
+  README-Bild (RAD-110): Notebook (zwei Drittel), davor versetzt Telefon und Uhr, ohne fremde Logos. Vorlage aus
+  TubeVault und Wetterwarte. Die Bildschirme sind Aufnahmen (tools/readme-bild.mjs legt sie nach aufnahmen/, nicht
+  im Repo): am Rechner RadioHub PRO, das Radio hell, am Telefon Basic dunkel, der große Spieler mit einer Folge von
+  morfCast + chill; die Uhr zeigt dieselbe Folge (Angaben als Adresszusatz aus der Aufnahme). ?grund=dunkel: auf
+  dunklem Grund, sonst freigestellt. Gerendert mit 2400 x 1400 Punkten nach .github/bilder/geraete.png.
+-->
+<style>
+  :root { --akzent: #ffb31a; --schrift: "Barlow", system-ui, sans-serif; --anzeige: "Orbitron", "Barlow", sans-serif; }
+  html, body { margin: 0; width: 2400px; height: 1400px; overflow: hidden; background: transparent; font-family: var(--schrift); }
+  body.dunkel { background: radial-gradient(1400px 900px at 45% 40%, #23262c 0%, #121418 55%, #0a0b0d 100%); }
+  .buehne { position: relative; width: 2400px; height: 1400px; }
+  /* Weicher Schatten auf dem Boden unter allen Geräten */
+  .boden { position: absolute; left: 140px; top: 1110px; width: 2060px; height: 120px; border-radius: 50%;
+           background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0)); filter: blur(6px); }
+
+  /* Notebook */
+  .notebook { position: absolute; left: 70px; top: 70px; width: 1820px; }
+  .deckel { position: relative; margin: 0 auto; width: 1572px; padding: 4px; border-radius: 34px 34px 14px 14px;
+            background: linear-gradient(160deg, #d4d8dd, #8f959d 45%, #c3c8ce);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35), 0 12px 24px rgba(0, 0, 0, 0.25); }
+  .deckel-innen { position: relative; padding: 20px 20px 22px; border-radius: 30px 30px 10px 10px; background: #0a0c0f; }
+  .kamera { position: absolute; top: 7px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #3a4a5a, #050607); }
+  .notebook .bild { width: 1524px; height: 952px; overflow: hidden; border-radius: 6px; background: #eceef1; }
+  .notebook .bild img { display: block; width: 1524px; height: 952px; }
+  .unterteil { position: relative; width: 1820px; height: 30px; margin-top: -2px; border-radius: 3px 3px 26px 26px / 3px 3px 16px 16px;
+               background: linear-gradient(180deg, #eef0f3 0%, #c7ccd2 35%, #9aa0a8 75%, #6c727a 100%);
+               box-shadow: 0 30px 50px rgba(0, 0, 0, 0.35); }
+  .mulde { position: absolute; top: 0; left: 50%; width: 260px; height: 12px; margin-left: -130px; border-radius: 0 0 12px 12px;
+           background: linear-gradient(180deg, #8e949c, #b7bcc2); }
+
+  /* Telefon: die Aufnahme füllt den ganzen Bildschirm, die Statusleiste liegt darüber (sicherer Rand in der App) */
+  /* außen 410 breit: 14 Rahmen links und rechts um den Bildschirm von 382 (vorher 410 innen, rechts ein schwarzer Spalt) */
+  .handy { position: absolute; left: 1500px; top: 330px; box-sizing: border-box; width: 410px; padding: 14px; border-radius: 66px;
+           background: linear-gradient(150deg, #a8adb4, #5d636b 40%, #8f959c 70%, #4a4f56);
+           box-shadow: 0 50px 90px rgba(0, 0, 0, 0.45), 0 14px 28px rgba(0, 0, 0, 0.3); }
+  .handy-innen { position: relative; border-radius: 54px; background: #000; overflow: hidden; }
+  .handy .bild { position: relative; width: 382px; height: 873px; overflow: hidden; border-radius: 52px; background: #111317; }
+  .handy .bild img { position: absolute; top: 0; left: 0; width: 382px; }
+  .statusleiste { position: absolute; left: 0; right: 0; top: 0; height: 47px; display: flex; align-items: center; justify-content: space-between;
+                  padding: 6px 30px 0 40px; color: #fff; font-weight: 600; font-size: 17px; z-index: 2; }
+  .statusleiste .rechts { display: flex; gap: 6px; font-size: 14px; }
+  .insel { position: absolute; top: 12px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; z-index: 3; }
+  .knopf-seite { position: absolute; width: 5px; border-radius: 3px; background: linear-gradient(90deg, #6d737b, #a3a8af); }
+
+  /* Uhr */
+  .uhr { position: absolute; left: 1835px; top: 790px; width: 318px; height: 382px; }
+  /* die Bänder hinter dem Telefon, nur das Gehäuse der Uhr davor (sonst verdeckt das Band den Rahmen des Telefons) */
+  .band { position: absolute; z-index: -1; left: 58px; width: 202px; height: 330px; border-radius: 26px;
+          background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 9px, rgba(0, 0, 0, 0.12) 9px 11px),
+                      linear-gradient(90deg, #a8640a, #e09a1f 30%, #f2ae2c 50%, #e09a1f 70%, #a8640a); }
+  .band.oben { top: -280px; -webkit-mask-image: linear-gradient(to top, #000 55%, transparent 100%); }
+  .band.unten { top: 330px; -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); }
+  .gehaeuse { position: absolute; inset: 0; padding: 20px; border-radius: 70px / 76px;
+              background: linear-gradient(145deg, #e3e5e8, #a4a9af 40%, #d0d3d7 62%, #858a91);
+              box-shadow: 0 40px 70px rgba(0, 0, 0, 0.5), 0 10px 22px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.35); }
+  .glas { position: relative; width: 100%; height: 100%; border-radius: 52px / 58px; background: #000; overflow: hidden;
+          box-shadow: inset 0 0 0 6px #050505; }
+  .krone { position: absolute; right: -20px; top: 92px; width: 26px; height: 74px; border-radius: 8px;
+           background: repeating-linear-gradient(0deg, #9aa0a7 0 3px, #c9cdd2 3px 6px); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15); }
+  .krone::after { content: ''; position: absolute; left: 8px; top: 25px; width: 10px; height: 24px; border-radius: 3px; background: var(--akzent); }
+  .schutz { position: absolute; right: -12px; top: 70px; width: 14px; height: 120px; border-radius: 0 14px 14px 0;
+            background: linear-gradient(90deg, #8a8f96, #c8ccd1); }
+  .seitentaste { position: absolute; right: -10px; top: 220px; width: 12px; height: 70px; border-radius: 0 8px 8px 0;
+                 background: linear-gradient(90deg, #8a8f96, #c4c8cd); }
+  .aktionstaste { position: absolute; left: -11px; top: 100px; width: 13px; height: 70px; border-radius: 8px 0 0 8px; background: var(--akzent); }
+
+  /* Wiedergabe auf der Uhr: dunkel, dieselbe Folge wie am Telefon */
+  .wiedergabe { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 22px 22px 18px; color: #fff; }
+  .wiedergabe .oben { display: flex; justify-content: space-between; align-items: baseline; font-size: 17px; font-weight: 600; }
+  .wiedergabe .app { color: var(--akzent); font-family: var(--anzeige); font-size: 15px; letter-spacing: 0.04em; }
+  .wiedergabe .kopf { display: flex; gap: 12px; align-items: center; margin-top: 14px; }
+  .wiedergabe .kopf img { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; flex: none; background: #1c1f24; }
+  .wiedergabe .titel { font-size: 21px; font-weight: 700; line-height: 1.12; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .wiedergabe .wer { font-size: 17px; color: #a3a9b0; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wiedergabe .spur { position: relative; height: 4px; margin-top: 10px; border-radius: 2px; background: #2a2d33; }
+  .wiedergabe .spur b { position: absolute; left: 0; top: 0; bottom: 0; width: 24%; border-radius: 2px; background: var(--akzent); }
+  .wiedergabe .tasten { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; justify-items: center; margin-top: 14px; }
+  .wiedergabe .tasten i { font-size: 26px; }
+  .wiedergabe .tasten .zahl { position: relative; display: grid; place-items: center; }
+  .wiedergabe .tasten .zahl small { position: absolute; font-size: 9px; font-weight: 700; margin-top: 2px; }
+  .wiedergabe .mitte { width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center; background: var(--akzent); color: #1a1205;
+                       box-shadow: 0 0 18px rgba(255, 179, 26, 0.35); }
+  .wiedergabe .mitte i { font-size: 28px; }
+  .wiedergabe .unten { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; margin-top: auto; }
+  .wiedergabe .unten span { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #1c1f24; color: #c9d1d8; font-size: 17px; }
+  .lautring { position: absolute; right: 8px; top: 70px; width: 6px; height: 120px; border-radius: 3px; background: #24272c; }
+  .lautring b { position: absolute; left: 0; right: 0; bottom: 0; height: 64%; border-radius: 3px; background: var(--akzent); }
+</style>
+</head>
+<body>
+<div class="buehne">
+  <span class="boden"></span>
+  <div class="notebook">
+    <div class="deckel"><div class="deckel-innen">
+      <span class="kamera"></span>
+      <div class="bild"><img src="aufnahmen/rechner.png" alt=""></div>
+    </div></div>
+    <div class="unterteil"><span class="mulde"></span></div>
+  </div>
+
+  <div class="handy">
+    <span class="knopf-seite" style="left:-4px; top:170px; height:34px"></span>
+    <span class="knopf-seite" style="left:-4px; top:230px; height:64px"></span>
+    <span class="knopf-seite" style="left:-4px; top:306px; height:64px"></span>
+    <span class="knopf-seite" style="right:-4px; top:250px; height:100px"></span>
+    <div class="handy-innen">
+      <div class="bild">
+        <img src="aufnahmen/telefon.png" alt="">
+        <div class="statusleiste"><span data-zeit>20:15</span><span class="rechts"><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-three-quarters"></i></span></div>
+        <span class="insel"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="uhr">
+    <div class="band oben"></div>
+    <div class="band unten"></div>
+    <span class="schutz"></span>
+    <span class="krone"></span>
+    <span class="seitentaste"></span>
+    <span class="aktionstaste"></span>
+    <div class="gehaeuse"><div class="glas">
+      <div class="wiedergabe">
+        <div class="oben"><span class="app">RadioHub</span><span data-zeit>20:15</span></div>
+        <div class="kopf"><img data-bild alt=""><div class="titel" data-titel>Folge</div></div>
+        <div class="wer" data-podcast>morfCast + chill</div>
+        <div class="spur"><b></b></div>
+        <div class="tasten">
+          <span class="zahl"><i class="fa-solid fa-rotate-left"></i><small>15</small></span>
+          <span class="mitte"><i class="fa-solid fa-pause"></i></span>
+          <span class="zahl"><i class="fa-solid fa-rotate-right"></i><small>30</small></span>
+        </div>
+        <div class="unten">
+          <span><i class="fa-solid fa-display"></i></span>
+          <span><i class="fa-solid fa-volume-high"></i></span>
+          <span><i class="fa-solid fa-ellipsis"></i></span>
+        </div>
+      </div>
+      <span class="lautring"><b></b></span>
+    </div></div>
+  </div>
+</div>
+
+<script>
+  // Angaben der Telefonaufnahme (tools/readme-bild.mjs): Titel, Podcast, Bild und Uhrzeit, damit alle Geräte dasselbe zeigen
+  const q = new URLSearchParams(location.search);
+  if (q.get('grund') === 'dunkel') document.body.classList.add('dunkel');
+  for (const el of document.querySelectorAll('[data-zeit]')) if (q.get('zeit')) el.textContent = q.get('zeit');
+  if (q.get('titel')) document.querySelector('[data-titel]').textContent = q.get('titel');
+  if (q.get('podcast')) document.querySelector('[data-podcast]').textContent = q.get('podcast');
+  const bild = document.querySelector('[data-bild]');
+  if (q.get('bild')) bild.src = q.get('bild'); else bild.remove();
+</script>
+</body>
+</html>

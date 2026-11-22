@@ -4,10 +4,10 @@ Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage, in zwei Au
 
 - **RadioHub PRO**: die volle Version mit Frontend und Backend, gedacht für einen Raspberry Pi im Heimnetz. Dieses
   Repo ist ihr Quellcode.
-- **RadioHub Basic**: nur das Radio, ohne Backend, direkt im Browser:
+- **RadioHub Basic**: Radio und Podcasts ohne Backend, direkt im Browser:
   [hallowelt42.github.io/RadioHub](https://hallowelt42.github.io/RadioHub/)
 
-![RadioHub PRO am Rechner](media/radio-dunkel.png)
+![RadioHub am Rechner, Telefon und Uhr](.github/bilder/geraete.png)
 
 ## Funktionen
 
@@ -15,7 +15,7 @@ Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage, in zwei Au
 - **Filtern:** Schnellfilter in der Seitenleiste, Suche mit Minus (`jazz -werbung`), Ausblenden mit dem Auge an jedem Sender
 - **Ausschlussregeln:** wirken auch auf neue Sender; erst Vorschau, dann anlegen
 - **Abspielleiste:** Punktmatrix, Zeitversatz, Lautstärke, Steuerung in einer Tastenreihe
-- **Aufnahmen und Podcasts:** mitschneiden und schneiden, Abos mit Folgen
+- **Aufnahmen und Podcasts:** mitschneiden und schneiden, Abos mit Folgen, als Datei sichern und übernehmen (OPML)
 - **Telefon:** eigene Oberfläche, quer als Wecker für den Nachttisch
 - **Darstellung:** HiFi oder Klassisch, hell, dunkel oder nach dem System, Schrift bis sehr groß, 20 Sprachen
 
@@ -28,9 +28,10 @@ Internetradio, Podcasts und Aufnahmen in der Optik einer HiFi-Anlage, in zwei Au
 
 ## RadioHub Basic
 
-Dieselbe Bedienung wie in PRO für das Radio; Favoriten, Regeln und Sperren bleiben im Browser und lassen sich als Datei
-sichern. Ohne Zeitversatz, Aufnahmen, Podcasts und Senderlogos. Beim Blättern lädt die Seite nichts von fremden
-Servern; erst beim Abspielen holt der Browser den Strom beim Sender.
+Dieselbe Bedienung wie in PRO für Radio und Podcasts, alles im Browser: Favoriten, Regeln und Sperren lassen sich als
+Datei sichern, Abos als OPML-Datei. Podcasts sucht Basic direkt in den Verzeichnissen und liest die Feeds selbst; es
+bietet nur an, was der Browser lesen kann (manche Server erlauben das nicht, die gehen nur in PRO). Senderlogos und
+Bilder kommen direkt von den Servern der Sender und Podcasts. Ohne Zeitversatz, Aufnahmen und Werbeerkennung.
 
 ![RadioHub Basic](media/webversion.png)
 
