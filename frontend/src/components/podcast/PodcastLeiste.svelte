@@ -12,7 +12,7 @@
   import AboBild from "./AboBild.svelte";
   import OrdnerKopf from "./OrdnerKopf.svelte";
 
-  let { abos, ordner, gewaehlt, wahl, offen, onwahl, onabos, onordnen, onanheften, onabonnieren, onzu,
+  let { abos, ordner, gewaehlt, wahl, offen, uebernimmt, onwahl, onabos, onordnen, onanheften, onabonnieren, onsichern, onuebernehmen, onzu,
         onordnerneu, onordneraendern, onordnerloeschen, onordnerordnen, onzuordnen }: {
     abos: Abo[];
     ordner: Ordner[];
@@ -24,6 +24,10 @@
     onordnen: (ids: number[]) => void;
     onanheften: (id: number, an: boolean) => void;
     onabonnieren: () => void;
+    /** Abos als Datei sichern und aus einer Datei übernehmen (RAD-102); `uebernimmt` ist der Stand dabei */
+    uebernimmt: { fertig: number; von: number } | null;
+    onsichern: () => void;
+    onuebernehmen: () => void;
     onzu: () => void;
     onordnerneu: (name: string) => void;
     onordneraendern: (id: string, teil: Partial<Pick<Ordner, "name" | "offen">>) => void;
@@ -180,7 +184,11 @@
     <section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>{t("podcastAnsicht.abos")}</h3>
         {#if abos.length}<button type="button" title={t("podcastAnsicht.ordnerAnlegenHilfe")} onclick={() => (legtAn = true)}>{t("podcastAnsicht.ordnerAnlegen")}</button>{/if}
-        <a href="/podcasts?verzeichnis=1" title={t("podcastAnsicht.abonnierenHilfe")} onclick={(e) => { e.preventDefault(); onabonnieren(); }}>{t("podcastAnsicht.abonnieren")}</a></div>
+        <a href="/podcasts?verzeichnis=1" title={t("podcastAnsicht.abonnierenHilfe")} onclick={(e) => { e.preventDefault(); onabonnieren(); }}>{t("podcastAnsicht.abonnieren")}</a>
+        <!-- Abos sichern und übernehmen (RAD-102, Wahl A) -->
+        {#if abos.length}<button type="button" title={t("podcastAnsicht.austausch.sichernHilfe")} onclick={onsichern}>{t("podcastAnsicht.austausch.sichernKurz")}</button>{/if}
+        <button type="button" title={t("podcastAnsicht.austausch.uebernehmenHilfe")} disabled={!!uebernimmt} onclick={onuebernehmen}>{uebernimmt
+          ? t("podcastAnsicht.austausch.laeuft", uebernimmt) : t("podcastAnsicht.austausch.uebernehmenKurz")}</button></div>
       {#if abos.length}
         <div class="rh-facetten rh-abos">
           <button class="rh-facette rh-alle-abos" class:an={!gewaehlt.length} type="button" aria-pressed={!gewaehlt.length} onclick={() => onabos([])}>

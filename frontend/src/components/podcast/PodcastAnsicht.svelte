@@ -7,7 +7,7 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
-  import { aboliste, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Aktualisierungsstand, type Folge,
+  import { aboaustausch, aboliste, dateiWaehlen, uebernahmeText, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Aktualisierungsstand, type Folge,
     type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
@@ -138,6 +138,16 @@
     band = { symbol, name, text, rueckgaengig, verweis };
   }
 
+  /** Abos aus einer Datei übernehmen (RAD-102): Datei wählen, nacheinander abonnieren, Ergebnis im Band */
+  async function uebernehmen() {
+    const text = await dateiWaehlen();
+    if (text === null) return;
+    await sicher(async () => {
+      const e = await aboaustausch.uebernehmen(text);
+      meldung("fa-file-import", t("podcastAnsicht.austausch.ergebnis"), uebernahmeText(e));
+    });
+  }
+
   /** ein Abo öffnen (aus dem Verzeichnis oder dem Band nach dem Abonnieren, RAD-104) */
   const aboOeffnen = (id: number) => aendern((a) => ({ ...a, abos: [id], verzeichnis: false, offen: null, suche: "" }));
 
@@ -232,6 +242,7 @@
 
 <div class="rh-radio rh-podcasts">
   <PodcastLeiste abos={aboliste.abos} ordner={aboliste.ordner} gewaehlt={ansicht.abos} wahl={ansicht.wahl} offen={leisteOffen}
+                 uebernimmt={aboaustausch.stand} onsichern={() => aboaustausch.sichern()} onuebernehmen={() => void uebernehmen()}
                  onwahl={(w) => aendern((a) => ({ ...a, wahl: w, offen: null }))}
                  onabos={(ids) => aendern((a) => ({ ...a, abos: ids, offen: null, verzeichnis: false }))}
                  onordnen={(ids) => void sicher(() => aboliste.ordnen(ids))}

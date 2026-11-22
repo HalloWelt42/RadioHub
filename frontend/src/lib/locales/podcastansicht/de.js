@@ -127,6 +127,15 @@ export default {
   feed_abruf: 'Dieser Podcast lässt sich im Browser nicht abrufen: sein Server erlaubt es nicht oder ist gerade nicht erreichbar ({detail}). In RadioHub PRO läuft er über den eigenen Server.',
   feed_antwort: 'Der Server dieses Podcasts antwortet mit Fehler {detail}. Später noch einmal aktualisieren.',
   feed_inhalt: 'Der Feed dieses Podcasts ist nicht lesbar ({detail}).',
+  // Abos sichern und übernehmen (RAD-102)
+  austausch: {
+    sichern: 'Abos sichern', uebernehmen: 'Abos übernehmen', sichernKurz: 'Sichern', uebernehmenKurz: 'Übernehmen',
+    sichernHilfe: 'Alle Abos als Datei (OPML) auf dieses Gerät laden',
+    uebernehmenHilfe: 'Abos aus einer Datei (OPML) einer anderen App oder eines anderen Geräts übernehmen',
+    erklaerung: 'Sichern lädt eine Datei mit allen Abos (OPML, das übliche Format der Podcast-Apps); Übernehmen liest so eine Datei und abonniert, was fehlt.',
+    laeuft: 'übernimmt {fertig} von {von} ...', ergebnis: 'Abos übernommen',
+    neu: '{n} neu abonniert', schonDa: '{n} schon da', fehler: '{n} nicht abonnierbar', keineFeeds: 'In der Datei stehen keine Feeds',
+  },
   // Telefon (RAD-14)
   telefon: {
     wahl: 'Was zeigen', neu: 'Neu', ungehoert: 'Ungehört', gespeichert: 'Gespeichert', abos: 'Abos',

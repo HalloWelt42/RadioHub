@@ -176,3 +176,6 @@
 /* "abonniert" im Verzeichnis öffnet das Abo (RAD-104): sieht aus wie die Marke, ist ein Knopf */
 button.rh-abo-oeffnen { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 button.rh-abo-oeffnen:hover { color: var(--text); }
+/* Kopf der Abos in der Leiste: mit Sichern und Übernehmen (RAD-102) brechen die Verweise unter den Titel um */
+.rh-podcast-leiste .rh-gruppe-kopf { flex-wrap: wrap; row-gap: 4px; }
+.rh-podcast-leiste .rh-gruppe-kopf button:disabled { opacity: .6; cursor: default; text-decoration: none; }

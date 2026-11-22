@@ -122,6 +122,15 @@ export default {
   feed_abruf: 'This podcast cannot be fetched in the browser: its server does not allow it or is not reachable right now ({detail}). RadioHub PRO plays it through its own server.',
   feed_antwort: 'The server of this podcast answers with error {detail}. Refresh again later.',
   feed_inhalt: 'The feed of this podcast is not readable ({detail}).',
+  // Save and import subscriptions (RAD-102)
+  austausch: {
+    sichern: 'Save subscriptions', uebernehmen: 'Import subscriptions', sichernKurz: 'Save', uebernehmenKurz: 'Import',
+    sichernHilfe: 'Download all subscriptions as a file (OPML) to this device',
+    uebernehmenHilfe: 'Import subscriptions from a file (OPML) of another app or device',
+    erklaerung: 'Save downloads a file with all subscriptions (OPML, the common format of podcast apps); Import reads such a file and subscribes to what is missing.',
+    laeuft: 'importing {fertig} of {von} ...', ergebnis: 'Subscriptions imported',
+    neu: '{n} newly subscribed', schonDa: '{n} already there', fehler: '{n} could not be subscribed', keineFeeds: 'The file contains no feeds',
+  },
   // Phone (RAD-14)
   telefon: {
     wahl: 'What to show', neu: 'New', ungehoert: 'Unplayed', gespeichert: 'Saved', abos: 'Subscriptions',

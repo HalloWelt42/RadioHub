@@ -6,6 +6,8 @@ import { dauerAus, feedLesen } from "../src/lib/podcasts/browser/feed";
 import { BrowserPodcastquelle, FeedGesperrt } from "../src/lib/podcasts/browser/browser-quelle";
 import { kennung, PODCAST_SCHLUESSEL } from "../src/lib/podcasts/browser/ablage";
 import { feedsAus, opmlAus } from "../src/lib/podcasts/opml";
+import { Aboliste } from "../src/lib/podcasts/abos.svelte";
+import { Aboaustausch, uebernahmeText } from "../src/lib/podcasts/austausch.svelte";
 import { fluechtigerSpeicher } from "../src/lib/radio/statisch/speicher";
 
 const FEED = "https://beispiel.test/feed.xml";
@@ -181,5 +183,22 @@ describe("Browserquelle", () => {
     const { q } = quelle({ [FEED]: XML });
     const abo = await q.abonnieren(http);
     expect(abo.folgen).toBe(2);
+  });
+});
+
+describe("Abos sichern und übernehmen (RAD-102)", () => {
+  it("sichert alle Abos und übernimmt nur, was fehlt; Fehler zählen mit Grund", async () => {
+    const zweit = "https://zwei.test/feed.xml", gesperrt = "https://gesperrt.test/feed.xml";
+    const { q } = quelle({ [FEED]: XML, [zweit]: XML.replace("Probe-Podcast", "Zweiter"), [gesperrt]: "gesperrt" });
+    const liste = new Aboliste(q);
+    await liste.abonnieren(FEED);
+    const austausch = new Aboaustausch(liste, parser);
+    expect(feedsAus(austausch.text(), new DOMParser())).toEqual([FEED]);
+    const datei = opmlAus([{ titel: "a", feed: FEED }, { titel: "b", feed: zweit }, { titel: "c", feed: gesperrt }]);
+    const e = await austausch.uebernehmen(datei);
+    expect({ gesamt: e.gesamt, schonDa: e.schonDa, neu: e.neu, fehler: e.fehler.map((f) => f.feed) }).toEqual({ gesamt: 3, schonDa: 1, neu: 1, fehler: [gesperrt] });
+    expect(liste.abos.map((a) => a.titel)).toEqual(["Probe-Podcast", "Zweiter"]);
+    expect(austausch.stand).toBeNull();
+    expect(uebernahmeText(e)).toBeTypeOf("string");
   });
 });

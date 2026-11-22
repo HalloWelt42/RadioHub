@@ -17,6 +17,7 @@
   import { formatTimeShort } from '../../lib/formatters.js';
   import { lack } from '../../lib/radio/anzeige';
   import { einzelnAusgeblendet } from '../../lib/radio/bedienung.svelte';
+  import { podcastquelle } from '../../lib/podcasts';
   import { rasterStellen, STATUS_JE_SCHRIFT } from '../../spieler/rasterbreite';
   import { Auswahl, Geraeteliste } from 'appkern-oberflaeche';
   import { Bitrate } from '../../spieler/bitrate.svelte';
@@ -54,6 +55,10 @@
     steuerung.naechster();
     void bedienung.ausblenden(e);
   }
+  /** Herunterladen der laufenden Folge, nur hier im großen Spieler (RAD-102, Wahl B); in Basic die Datei des Feeds,
+   *  die der Browser dann selbst öffnet (fremder Server) */
+  const dateiAdresse = $derived(folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
+    ? podcastquelle.dateiAdresse(appState.currentEpisode.id) : '');
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
@@ -126,6 +131,13 @@
       {:else}
         <h2>{info.title}</h2>
         <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
+      {/if}
+      {#if dateiAdresse}
+        <!-- Herunterladen unter dem Titel, rund wie die Tasten (RAD-102, Wahl B) -->
+        <div class="tf-sender-aktionen">
+          <a class="rund tf-rund" href={dateiAdresse} download target="_blank" rel="noopener"
+             aria-label={t('podcastAnsicht.herunterladenHilfe')} title={t('podcastAnsicht.herunterladenHilfe')}><i class="fa-solid fa-download"></i></a>
+        </div>
       {/if}
       {#if eintrag}
         <!-- Auge und Stern wie in der Zeile der Liste, rund wie die Tasten (RAD-94); während einer Aufnahme bleibt der Sender -->

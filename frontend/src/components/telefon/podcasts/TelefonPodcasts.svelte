@@ -10,7 +10,7 @@
   import { appPfad } from "../../../lib/router.js";
   import { zahl } from "../../../lib/radio/anzeige";
   import { Suchverlauf } from "../../../lib/radio/suchverlauf";
-  import { aboliste, Folgenliste, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
+  import { aboaustausch, aboliste, dateiWaehlen, Folgenliste, podcastquelle, uebernahmeText, podcastzustand, werbequelle, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
     type Podcastsortierung } from "../../../lib/podcasts";
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import AboBild from "../../podcast/AboBild.svelte";
@@ -77,6 +77,16 @@
     } catch (f) {
       actions.showToast((f as Error).message || t("common.fehler"), "error");
     }
+  }
+
+  /** Abos aus einer Datei übernehmen (RAD-102): Datei wählen, nacheinander abonnieren, Ergebnis im Band */
+  async function uebernehmen() {
+    const text = await dateiWaehlen();
+    if (text === null) return;
+    await sicher(async () => {
+      const e = await aboaustausch.uebernehmen(text);
+      band = { symbol: "fa-file-import", name: t("podcastAnsicht.austausch.ergebnis"), text: uebernahmeText(e) };
+    });
   }
 
   async function hoeren(f: Folge, vonVorn = false) {
@@ -217,6 +227,17 @@
         {:else}
           <p class="tf-hinweis">{aboliste.geladen ? t("podcastAnsicht.telefon.keineAbos") : t("podcastAnsicht.laedt")}</p>
         {/each}
+        {#if aboliste.geladen}
+          <!-- Abos sichern und übernehmen unter der Liste, gleich breit (RAD-102, Wahl A) -->
+          <div class="tp-abo-aktionen tp-austausch">
+            <button class="knopf" type="button" disabled={!aboliste.abos.length} title={t("podcastAnsicht.austausch.sichernHilfe")}
+                    onclick={() => aboaustausch.sichern()}><i class="fa-solid fa-file-export"></i>{t("podcastAnsicht.austausch.sichern")}</button>
+            <button class="knopf" type="button" disabled={!!aboaustausch.stand} title={t("podcastAnsicht.austausch.uebernehmenHilfe")} onclick={() => void uebernehmen()}>
+              <i class="fa-solid {aboaustausch.stand ? 'fa-spinner fa-spin' : 'fa-file-import'}"></i>{aboaustausch.stand
+                ? t("podcastAnsicht.austausch.laeuft", aboaustausch.stand) : t("podcastAnsicht.austausch.uebernehmen")}</button>
+          </div>
+          <p class="tf-hinweis">{t("podcastAnsicht.austausch.erklaerung")}</p>
+        {/if}
       {:else}
         {@render folgenliste(true)}
       {/if}
