@@ -50,3 +50,7 @@ zertifikate/
 
 # Stil der App für Entwürfe (tools/entwurf-stil.sh)
 mockups/radio-filter/app-stil/
+
+# Pläne und Entwürfe gehören nicht ins Repo, sie bleiben lokal (RAD-75)
+mockups/
+docs/umbau/

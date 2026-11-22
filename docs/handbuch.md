@@ -32,7 +32,7 @@ Erreichbar über HTTPS am eigenen Vorschaltdienst auf Port {{port:ziel/vorne}} d
 HTTPS um. Die App (Backend auf dem Gerüst des [[Appkern]], liefert die Oberfläche selbst aus) ist nur im eigenen Netz
 der Container erreichbar. Angemeldet wird mit dem Konto der [[Kellerwolke]], dem der App-Schlüssel gehört; Telefone
 koppelt man einmal mit einem Code aus der Kellerwolke. Architektur und harte Regeln stehen in `docs/ARCHITEKTUR.md`,
-der Plan der Überarbeitung in `docs/umbau/PLAN.md`.
+der Plan der Überarbeitung liegt nur lokal in `docs/umbau/PLAN.md` (Pläne und Entwürfe gehören nicht ins Repo).
 
 Radio bedienen: am Rechner stehen links die Schnellfilter (oben fest das Gerät mit Nur Favoriten, Erreichbare und
 Beliebtheit, darunter Länder, Genres, Qualität, Codec und Bitrate mit der Mindestbitrate, eigene Bewertung und Kategorien
@@ -127,7 +127,7 @@ anderer Sender beenden sie nicht. `GET /api/hls/abschnitte` nennt Titel, Werbung
 nach der Regel des Feinschnitts), `POST /api/hls/aufnahme` mit `von_s` und `bis_s` (Sekunden des Puffers) nimmt ab
 einer Stelle auf oder sichert einen Bereich als fertige Aufnahme. Stille und Pegel kosten auf dem Pi unter 1 % eines
 Kerns (gemessen 22.11.2026).
-Bedienung (Entwurf `mockups/radio-filter/puffer.html`): der Balken des Zeitversatzes zeigt Titelgrenzen als Striche,
+Bedienung (lokaler Entwurf `puffer.html`): der Balken des Zeitversatzes zeigt Titelgrenzen als Striche,
 Werbung violett und eine laufende Aufnahme rot; beim Überfahren steht der Titel darüber, Loslassen nahe einer Grenze
 rastet ein. Darunter steht "Länge von höchstens · Titel". Den Titel zeigt die Matrixanzeige; Vor und Zurück der Steuerung
 (und die Pfeiltasten) springen hinter live durch die Titel (Werbung wird übersprungen, nach dem letzten an live), lang

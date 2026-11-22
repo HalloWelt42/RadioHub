@@ -251,7 +251,7 @@ docker compose up -d vorne
 ## Wecker und Weckeransicht
 
 Telefon quer gelegt zeigt die Weckeransicht für den Nachttisch, in zwei Layouts (Entwürfe B und D in
-`mockups/querformat.html`), umschaltbar durch Wischen nach links oder rechts:
+lokaler Entwurf `querformat.html`), umschaltbar durch Wischen nach links oder rechts:
 
 - Uhr mit Sonnenband: große Uhr, darunter 24 Stunden (Tag hell, Nacht dunkel, Strich für jetzt, Auf- und
   Untergang), rechts Sender, Wecker und die drei Knöpfe (Wiedergabe, Ansage an/aus, Nachtschaltung)

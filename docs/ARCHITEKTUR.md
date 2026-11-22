@@ -5,7 +5,8 @@ Teil 3a: Backend der Filterung mit Senderdaten-Baustein und Senderquelle; Teil 3
 Schnittstelle Senderquelle).
 Dieses Dokument beschreibt Aufbau, Schichten und harte Regeln von RadioHub. Die Regeln stehen maschinenlesbar in
 `architektur/regeln.toml`; der Git-Haken und das Ausrollen setzen sie durch. Entscheidungen und Etappen der
-Überarbeitung stehen in `docs/umbau/PLAN.md`, der Befund davor in `docs/umbau/BEFUND.md`.
+Überarbeitung stehen lokal in `docs/umbau/PLAN.md`, der Befund davor in `docs/umbau/BEFUND.md` (Pläne und Entwürfe
+liegen nicht im Repo).
 
 ## Leitgedanken
 
@@ -118,7 +119,7 @@ Gestaltung in Schichten (Entscheidung 24): die Marken, Schale, Instrumente und V
 (`appkern-oberflaeche/stil.css`, `instrumente.css`, `vorlagen-alle-breiten.css`: jede Vorlage auch am Telefon), darauf
 die Marken des Radios (`stil/radio-marken.css`, je Vorlage `stil/vorlagen/<name>.css`, `grund.css` für jede Vorlage ohne
 eigene), Bausteine (`stil/bausteine.css`, `stil/radio.css`, `stil/einstellungen.css`, `stil/telefon.css`, aus dem abgenommenen
-Entwurf `mockups/radio-filter`, die Kanzel in `stil/kanzel.css`) und Anordnung (`stil/rechner.css`). Die Kanzel liegt
+lokalen Entwurf `mockups/radio-filter`, die Kanzel in `stil/kanzel.css`) und Anordnung (`stil/rechner.css`). Die Kanzel liegt
 nicht im `zoom` der alten Bereiche; sie wächst über die Marken der Schriftstufen, ihre Rasteranzeigen mit der Breite.
 Ein neues Thema braucht eine Marken-Datei
 unter `stil/vorlagen/`. Die Darstellung (Vorlage, Thema Hell/Dunkel/System, Schriftstufe Normal/Groß/Sehr groß) gilt je
