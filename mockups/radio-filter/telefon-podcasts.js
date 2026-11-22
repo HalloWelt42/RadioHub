@@ -21,7 +21,7 @@
       ${kopf}
       <div class="t-liste">${inhalt}</div>
       <div class="t-spieler" role="button" aria-label="Spieler öffnen">
-        <div class="ak-glas"><b><ak-led farbe="blau" zustand="an" groesse="klein"></ak-led>Warum der Himmel nachts dunkel ist</b><span>Sternstunde Physik · 12:40 von 48:00</span></div>
+        <div class="ak-glas"><b>Warum der Himmel nachts dunkel ist</b><span>Sternstunde Physik · 12:40 von 48:00</span></div>
         <ak-taster art="glas" symbol="fa-pause" farbe="blau" led="blau" hilfe="Anhalten" an></ak-taster>
         <button class="rund" type="button" aria-label="Spieler öffnen" title="Spieler öffnen"><i class="fa-solid fa-chevron-up"></i></button>
       </div>
@@ -40,7 +40,7 @@
 
   function stand(f) {
     if (gehoert(f)) return `<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>gehört</span>`;
-    if (!f.stand) return `<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>neu</span>`;
+    if (!f.stand) return `<span class="rh-stand neu">neu</span>`;
     return `<span class="rh-stand tp-stand"><span class="balken"><span style="width:${Math.round(f.stand / f.laenge * 100)}%"></span></span>noch ${f.laenge - f.stand} min</span>`;
   }
 
@@ -69,11 +69,11 @@
     const ORDNER = [["Wissen", ["sterne", "zahlen"]], ["Ohne Ordner", ["morgen", "werkstatt", "kueche", "hoerspiel"]]];
     const zeile = (a) => `<div class="t-zeile tp-abo">${R.logo(a)}
       <div><b>${esc(a.name)}</b><div class="t-meta"><span>${esc(a.autor)}</span></div>
-        <div class="t-meta">${ungehoert(a) ? `<span class="tp-ungehoert"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>${ungehoert(a)} ungehört</span>` : `<span>alles gehört</span>`}
+        <div class="t-meta">${ungehoert(a) ? `<span class="tp-ungehoert">${ungehoert(a)} ungehört</span>` : `<span>alles gehört</span>`}
           <span><i class="fa-solid fa-cloud"></i> ${gespeichert(a)}/${folgen(a)}</span>${a.auto ? `<span class="tp-auto" title="Speichert neue Folgen von selbst"><i class="fa-solid fa-bolt"></i>neue speichern</span>` : ""}</div></div>
       <button class="rund" type="button" aria-label="Öffnen" title="Öffnen"><i class="fa-solid fa-chevron-right"></i></button></div>`;
     const inhalt = ORDNER.map(([n, ids]) => `<p class="tp-ordner"><i class="fa-solid ${n === "Ohne Ordner" ? "fa-inbox" : "fa-folder"}"></i>${n}</p>${ids.map((id) => zeile(abo(id))).join("")}`).join("");
-    el.innerHTML = rahmen(kopfStart("abos"), inhalt + `<p class="tf-hinweis"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led> Nächste Aktualisierung in 2 h 14 min</p>`);
+    el.innerHTML = rahmen(kopfStart("abos"), inhalt + `<p class="tf-hinweis">Nächste Aktualisierung in 2 h 14 min</p>`);
   }
 
   // 3: ein Abo mit Kopf und Folgen
@@ -86,7 +86,7 @@
         <div class="t-meta"><span><b>${folgen(a)}</b> Folgen</span><span><b>${ungehoert(a)}</b> ungehört</span><span><i class="fa-solid fa-cloud"></i> <b>${gespeichert(a)}/${folgen(a)}</b> gespeichert</span></div></div>
       <div class="tp-knoepfe">
         <button class="knopf" type="button"><i class="fa-solid fa-rotate"></i>Aktualisieren</button>
-        <button class="knopf rh-schalter" type="button" aria-pressed="${a.auto}"><ak-led farbe="gruen" zustand="${a.auto ? "an" : "aus"}" groesse="klein"></ak-led>Neue speichern</button>
+        <button class="knopf rh-schalter" type="button" aria-pressed="${a.auto}"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="${a.auto ? "an" : "aus"}"></ak-led>Neue speichern</button>
         <button class="knopf gefahr" type="button"><i class="fa-solid fa-trash-can"></i>Abbestellen</button>
       </div></section>
       <div class="t-chips tp-sort"><span class="rh-still">Sortierung</span>${["Neueste", "Älteste", "Kürzeste"].map((n, i) => `<button type="button" class="chip wahl${i === 0 ? " an" : ""}">${n}</button>`).join("")}</div>`;
@@ -112,10 +112,10 @@
             : `<div class="tp-aktionen">
               <button class="knopf primaer" type="button"><i class="fa-solid ${weiter ? "fa-forward" : "fa-play"}"></i>${weiter ? `Weiter ab ${f.stand}:00` : "Hören"}</button>
               ${weiter ? `<button class="knopf" type="button"><i class="fa-solid fa-backward-step"></i>Von vorn</button>` : ""}
-              ${f.gemerkt ? `<button class="knopf rh-schalter" type="button" aria-pressed="true"><ak-led farbe="blau" zustand="an" groesse="klein"></ak-led>Gespeichert</button>`
-                : `<button class="knopf rh-schalter" type="button" aria-pressed="false"><ak-led farbe="blau" zustand="aus" groesse="klein"></ak-led>Speichern</button>`}
+              ${f.gemerkt ? `<button class="knopf rh-schalter" type="button" aria-pressed="true"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="an"></ak-led>Gespeichert</button>`
+                : `<button class="knopf rh-schalter" type="button" aria-pressed="false"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="aus"></ak-led>Speichern</button>`}
               <button class="knopf" type="button"><i class="fa-solid fa-download"></i>Herunterladen</button>
-              <button class="knopf rh-schalter" type="button" aria-pressed="${gehoert(f)}"><ak-led farbe="gruen" zustand="${gehoert(f) ? "an" : "aus"}" groesse="klein"></ak-led>Gehört</button>
+              <button class="knopf rh-schalter" type="button" aria-pressed="${gehoert(f)}"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="${gehoert(f) ? "an" : "aus"}"></ak-led>Gehört</button>
             </div>`}
         </div>
       </div>`;

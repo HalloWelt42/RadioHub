@@ -72,11 +72,11 @@
 .rh-regel .rueckfrage { grid-column: 1 / -1; }
 /* Listen aus Regelzeilen mit festen Spalten, damit Zahl, Aktion und Entfernen über alle Zeilen fluchten */
 @media (min-width: 761px) {
-  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) calc(var(--klein) * 6) var(--aktion) var(--weg); }
+  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 44px minmax(0, 1fr) calc(var(--klein) * 6) var(--aktion) var(--weg); }
 }
 .rh-regeln.rh-feste .rh-regel > .rh-regel-aktion { grid-area: schalter; justify-self: stretch; justify-content: center; }
 @media (max-width: 760px) {
-  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" ". . zahl zahl" "schalter schalter schalter weg"; }
+  .rh-regeln.rh-feste .rh-regel { grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "art text text" ". zahl zahl" "schalter schalter weg"; }
 }
 .rh-regeln.rh-feste .rh-regel > .knopf.gefahr, .rh-regeln.rh-feste .rh-regel > .rh-e-zeilenknoepfe, .rh-regeln.rh-feste .rh-regel > .rh-geltung { grid-area: weg; justify-self: end; }
 .rh-bausteine { gap: 12px; }

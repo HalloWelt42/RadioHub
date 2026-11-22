@@ -62,7 +62,7 @@
         <button class="knopf" type="button" data-aktion="alle-merken" ${z.merkt ? "disabled" : ""}><i class="fa-solid fa-download"></i>Alle merken</button>
         <button class="knopf" type="button" data-aktion="abbestellen"><i class="fa-solid fa-trash-can"></i>Abbestellen</button>
       </div>
-      ${z.merkt ? `<div class="rh-auftrag"><ak-led farbe="gruen" zustand="blinkt" groesse="klein"></ak-led><span>Merke ${z.merkt.fertig} von ${z.merkt.gesamt} Folgen</span>
+      ${z.merkt ? `<div class="rh-auftrag"><span>Merke ${z.merkt.fertig} von ${z.merkt.gesamt} Folgen</span>
         <div class="balken"><span style="width:${Math.round(z.merkt.fertig / z.merkt.gesamt * 100)}%"></span></div>
         <button class="knopf" type="button" data-aktion="merken-halt"><i class="fa-solid fa-pause"></i>Anhalten</button><button class="rund" type="button" data-aktion="merken-ab" aria-label="Abbrechen" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>` : ""}
     </section>`;
@@ -71,7 +71,7 @@
   // ─── Liste der Folgen ───
   function stand(f) {
     if (gehoert(f)) return `<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>gehört</span>`;
-    if (!f.stand) return `<span class="rh-stand neu"><ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led>neu</span>`;
+    if (!f.stand) return `<span class="rh-stand neu">neu</span>`;
     return `<span class="rh-stand"><span class="balken"><span style="width:${Math.round(f.stand / f.laenge * 100)}%"></span></span>noch ${f.laenge - f.stand} min</span>`;
   }
   function detail(f) {
@@ -90,7 +90,6 @@
     const spielt = z.spielt === f.id, offen = z.offen.has(f.id), a = abo(f.abo);
     return `<article class="rh-sender rh-folge${spielt ? " spielt" : offen ? " gewaehlt" : ""}${offen ? " offen" : ""}${gehoert(f) ? " gehoert" : ""}" data-id="${f.id}">
       <div class="rh-sender-kern" data-aktion="spielen">
-        <span class="led"><ak-led farbe="${spielt ? "blau" : "gelb"}" zustand="${spielt || offen ? "an" : "aus"}" groesse="klein" hilfe="${spielt ? "spielt" : offen ? "gewählt" : "bereit"}"></ak-led></span>
         ${R.logo(a)}
         <div class="name"><b>${R.esc(f.titel)}</b><div class="meta"><span>${R.esc(a.name)}</span><span>${datum(f.datum)}</span>${f.gemerkt ? `<span class="rh-gemerkt" title="Im Gerät gemerkt, auch ohne Netz"><i class="fa-solid fa-circle-down"></i>gemerkt</span>` : ""}</div></div>
         <div class="stand-zelle">${stand(f)}</div>

@@ -44,9 +44,9 @@
   }
 
   // Anzeige der Kanzel (wie radio-werbung.js)
-  const anzeige = ({ art, led, titel, ton = "" }) => `<section class="rh-modul rh-m-anzeige" aria-label="Anzeige"><span class="ak-etikett">Anzeige</span>
+  const anzeige = ({ art, titel, ton = "" }) => `<section class="rh-modul rh-m-anzeige" aria-label="Anzeige"><span class="ak-etikett">Anzeige</span>
       <div class="ak-glas rh-display"${ton ? ` data-ton="${ton}"` : ""}>
-        <div class="rh-display-zeile"><ak-led farbe="${led[0]}" zustand="${led[1]}" groesse="klein"></ak-led><span>${art}</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
+        <div class="rh-display-zeile"><span>${art}</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
         <ak-segmente art="punkt" stellen="16" lauf="280" farbe="gruen" text="${esc(S.name.toUpperCase())}" hilfe="Sender"></ak-segmente>
         <div class="rh-display-titel">${esc(titel)}</div>
       </div></section>`;
@@ -75,7 +75,7 @@
   function versatz(el) {
     const stelle = JETZT - 570;
     el.innerHTML = `<div class="rp-kanzel rw-kanzel">
-      ${anzeige({ art: "9:30 HINTER LIVE", led: ["bernstein", "an"], titel: bei(stelle).titel })}
+      ${anzeige({ art: "9:30 HINTER LIVE", titel: bei(stelle).titel })}
       ${quelle({ text: "VERSATZ", farbe: "bernstein", uhrtext: "-09:30", stelle, tipp: A.find((a) => a.titel.startsWith("Destiny")) })}
     </div>`;
   }
@@ -84,7 +84,7 @@
   function aufnahme(el) {
     const u = A[A.length - 1];
     el.innerHTML = `<div class="rp-kanzel rw-kanzel">
-      ${anzeige({ art: "LIVE · AUFNAHME", led: ["rot", "atmet"], titel: u.titel })}
+      ${anzeige({ art: "LIVE · AUFNAHME", titel: u.titel })}
       ${quelle({ text: "LIVE", farbe: "blau", uhrtext: "03:24", stelle: JETZT, aufnahme: u.von })}
       ${band(`<i class="fa-solid fa-circle pz-rot"></i><span><b>Aufnahme ab dem Anfang von "${esc(u.titel)}"</b>: 3:24 kamen aus dem Puffer. Sie läuft weiter, auch wenn du das Radio ausschaltest oder den Sender wechselst.</span>
         <button class="knopf" type="button" title="Großansicht: anderen Beginn wählen"><i class="fa-solid fa-list-ul"></i>Beginn ändern</button>
@@ -100,7 +100,7 @@
     const skala = []; for (let t = Math.ceil(von / 300) * 300; t <= bis; t += 300) skala.push(t);
     return `<div class="pz-leiste-gross">
       <div class="pz-leiste-kopf"><span class="ak-etikett">Zeitleiste</span>
-        <div class="rh-segmente" role="group" aria-label="Zoom">${ZOOM.map(([w, n]) => `<button class="knopf${w === zoom ? " aktiv" : ""}" type="button" aria-pressed="${w === zoom}"><ak-led farbe="gelb" zustand="${w === zoom ? "an" : "aus"}" groesse="klein"></ak-led>${n}</button>`).join("")}</div>
+        <div class="rh-segmente" role="group" aria-label="Zoom">${ZOOM.map(([w, n]) => `<button class="knopf${w === zoom ? " aktiv" : ""}" type="button" aria-pressed="${w === zoom}">${n}</button>`).join("")}</div>
         <span class="rh-still">Rad oder Ziehen verschiebt, Doppelklick springt hin</span></div>
       <div class="pz-uebersicht">${balken({ stelle, bereich, klasse: "pz-schmal" })}
         <i class="pz-fenster" style="left:${pz(von)}%;width:${pz(bis) - pz(von)}%" title="Ausschnitt"></i></div>
@@ -117,7 +117,6 @@
   const zeile = (a, { stelle, bereich, offen }) => {
     const hoert = stelle >= a.von && stelle < a.bis, gewaehlt = bereich && a.von >= bereich[0] - 1 && a.bis <= bereich[1] + 1;
     return `<li class="pz-zeile ${a.art}${hoert ? " hoert" : ""}${gewaehlt ? " gewaehlt" : ""}${offen === a.nr ? " offen" : ""}">
-      <span class="led"><ak-led farbe="${a.laufend ? "rot" : hoert ? "blau" : "gelb"}" zustand="${a.laufend ? "atmet" : hoert ? "an" : "aus"}" groesse="klein"></ak-led></span>
       <span class="rh-zahl pz-ab">${uhr(a.von)}</span>
       <span class="pz-name">${a.art === "werbung" ? `<i class="fa-solid fa-rectangle-ad"></i>` : ""}<b>${esc(a.titel)}</b>${a.laufend ? `<span class="pz-marke-live">läuft</span>` : ""}</span>
       <span class="rh-zahl pz-laenge">${zeit(a.bis - a.von)}</span>
@@ -138,7 +137,7 @@
           <button class="knopf" type="button" title="Zurück zu live"><i class="fa-solid fa-tower-broadcast"></i>Live</button>
           <button class="rund" type="button" aria-label="Schließen" title="Zurück zum Radio"><i class="fa-solid fa-xmark"></i></button></div></div>
       ${zeitleiste({ stelle, fenster, bereich, zoom })}
-      <div class="pz-liste-kopf"><span></span><span>ab</span><span>Titel</span><span>Länge</span><span></span></div>
+      <div class="pz-liste-kopf"><span>ab</span><span>Titel</span><span>Länge</span><span></span></div>
       <ol class="pz-liste">${[...liste].reverse().map((a) => zeile(a, { stelle, bereich })).join("")}</ol>
       ${fuss}
     </div>`;
@@ -179,7 +178,7 @@
     el.innerHTML = `<div class="t-gross pz-t-gross">${status}
       <div class="t-gross-kopf"><button class="rund" type="button" aria-label="Spieler verkleinern"><i class="fa-solid fa-chevron-down"></i></button><span class="ak-etikett">Radio</span><span></span></div>
       <div class="t-gross-rollt">
-        <div class="ak-glas rh-display"><div class="rh-display-zeile"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led><span>9:30 HINTER LIVE</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
+        <div class="ak-glas rh-display"><div class="rh-display-zeile"><span>9:30 HINTER LIVE</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
           <ak-segmente art="punkt" stellen="14" lauf="300" farbe="gruen" text="${esc(S.name.toUpperCase())}"></ak-segmente><div class="rh-display-titel">${esc(a.titel)}</div></div>
         <div class="t-transport">
           <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" led="bernstein" modus="tasten" hilfe="Vorheriger Sender"></ak-taster>
@@ -201,7 +200,7 @@
   const tZeile = (a, { stelle, bereich = null, offen = null }) => {
     const hoert = stelle >= a.von && stelle < a.bis, gewaehlt = bereich && a.von >= bereich[0] - 1 && a.bis <= bereich[1] + 1;
     return `<li class="pz-t-zeile ${a.art}${hoert ? " hoert" : ""}${gewaehlt ? " gewaehlt" : ""}${offen === a.nr ? " offen" : ""}">
-      <div class="pz-t-kern">${bereich ? `<i class="${gewaehlt ? "fa-solid fa-square-check" : "fa-regular fa-square"} pz-t-wahl"></i>` : `<ak-led farbe="${a.laufend ? "rot" : hoert ? "blau" : "gelb"}" zustand="${a.laufend ? "atmet" : hoert ? "an" : "aus"}" groesse="klein"></ak-led>`}
+      <div class="pz-t-kern">${bereich ? `<i class="${gewaehlt ? "fa-solid fa-square-check" : "fa-regular fa-square"} pz-t-wahl"></i>` : ""}
         <div><b>${a.art === "werbung" ? `<i class="fa-solid fa-rectangle-ad"></i>` : ""}${esc(a.titel)}</b><div class="t-meta"><span class="rh-zahl">${uhr(a.von)}</span><span class="rh-zahl">${zeit(a.bis - a.von)}</span>${a.laufend ? `<span class="pz-marke-live">läuft</span>` : ""}</div></div></div>
       ${offen === a.nr ? `<div class="pz-t-tat"><button class="knopf" type="button"><i class="fa-solid fa-play"></i>Hören</button><button class="knopf pz-rec-knopf" type="button" title="Aufnahme ab dem Anfang dieses Titels, läuft bis Stopp"><i class="fa-solid fa-circle"></i>Aufnehmen</button><button class="knopf" type="button"><i class="fa-solid fa-square-check"></i>Bereich</button></div>` : ""}</li>`;
   };
@@ -253,14 +252,14 @@
   function ohneTitelzeile(el) {
     const stelle = JETZT - 570, a = bei(stelle);
     el.innerHTML = `<div class="pz60-kanzel">
-      ${anzeige({ art: "9:30 HINTER LIVE", led: ["bernstein", "an"], titel: a.titel })}
+      ${anzeige({ art: "9:30 HINTER LIVE", titel: a.titel })}
       ${quelle60({ text: "VERSATZ", farbe: "bernstein", uhrtext: "-09:30", stelle })}
       ${laut}${steuerung({ titel: true, tipp: "Nächster Titel: Destiny's Child - Say My Name" })}</div>`;
   }
   function ohneTitelzeileAufnahme(el) {
     const u = A[A.length - 1];
     el.innerHTML = `<div class="pz60-kanzel">
-      ${anzeige({ art: "LIVE · AUFNAHME", led: ["rot", "atmet"], titel: u.titel })}
+      ${anzeige({ art: "LIVE · AUFNAHME", titel: u.titel })}
       ${quelle60({ text: "LIVE", farbe: "blau", uhrtext: "03:24", stelle: JETZT, aufnahme: u.von })}
       ${laut}${steuerung({ titel: false, aufnahme: true })}</div>`;
   }

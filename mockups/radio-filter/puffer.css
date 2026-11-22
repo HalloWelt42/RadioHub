@@ -73,12 +73,11 @@
 .pz-skala { position: relative; block-size: 1.4em; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--text-3); }
 .pz-skala span { position: absolute; translate: -50% 0; }
 
-/* Liste: neuester Titel oben; die Zeile, die man hört, blau, die laufende mit roter Leuchte, Werbung violett */
-.pz-liste-kopf, .pz-zeile { display: grid; grid-template-columns: 28px calc(var(--klein) * 4) minmax(0, 1fr) calc(var(--klein) * 4) auto; gap: 10px; align-items: center; }
+/* Liste: neuester Titel oben; die Zeile, die man hört, blau, die laufende mit der Marke "läuft", Werbung violett */
+.pz-liste-kopf, .pz-zeile { display: grid; grid-template-columns: calc(var(--klein) * 4) minmax(0, 1fr) calc(var(--klein) * 4) auto; gap: 10px; align-items: center; }
 .pz-liste-kopf { padding: 0 10px; font-size: var(--marke); color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
 .pz-liste { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-block-size: 560px; overflow-y: auto; overflow-x: clip; }
 .pz-zeile { padding: 6px 10px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
-.pz-zeile .led { display: grid; place-items: center; }
 .pz-ab, .pz-laenge { font-size: var(--klein); color: var(--text-2); }
 .pz-laenge { text-align: right; }
 .pz-name { display: flex; gap: 8px; align-items: center; min-inline-size: 0; }
@@ -94,8 +93,8 @@
 .pz-wahl[aria-pressed="true"] i { color: var(--led-rot); }
 @container liste (max-width: 640px) {
   .pz-liste-kopf { display: none; }
-  .pz-zeile { grid-template-columns: 28px minmax(0, 1fr) auto; grid-template-areas: "led name aktionen" "led ab aktionen"; }
-  .pz-zeile .led { grid-area: led; } .pz-name { grid-area: name; } .pz-aktionen { grid-area: aktionen; }
+  .pz-zeile { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name aktionen" "ab aktionen"; }
+  .pz-name { grid-area: name; } .pz-aktionen { grid-area: aktionen; }
   .pz-ab { grid-area: ab; } .pz-laenge { display: none; }
 }
 .pz-fuss { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 14px;
@@ -119,8 +118,9 @@
 .pz-t-oben { padding: 4px var(--rh-rand) 8px; }
 .pz-t-liste { grid-row: 5; min-block-size: 0; margin: 0; padding: 0 var(--rh-rand) 12px; list-style: none; display: grid; gap: 6px; align-content: start; overflow-y: auto; overflow-x: clip; }
 .pz-t-zeile { display: grid; gap: 8px; padding: 8px 10px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
-.pz-t-kern { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; }
-.pz-t-kern > ak-led, .pz-t-wahl { margin-top: .3em; justify-self: center; }
+.pz-t-kern { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; }
+.pz-t-kern:has(> .pz-t-wahl) { grid-template-columns: 24px minmax(0, 1fr); }
+.pz-t-wahl { margin-top: .3em; justify-self: center; }
 .pz-t-kern b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pz-t-kern b i { color: var(--violett); margin-right: 6px; }
 .pz-t-zeile.werbung b { color: var(--violett); }

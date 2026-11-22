@@ -16,13 +16,12 @@
   // Werbestellen im Puffer (Minuten zurück): der Zeitversatz zeigt sie in der Spulzeile
   const PUFFER = 30, STELLEN = [{ von: 3.2, bis: 3.6 }, { von: 11.0, bis: 12.4 }, { von: 21.5, bis: 22.1 }];
 
-  const schalter = (an, text, hilfe = "") => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${esc(hilfe)}">
-      <ak-led farbe="bernstein" zustand="${an ? "an" : "aus"}" groesse="klein"></ak-led>${text}</button>`;
+  const schalter = (an, text, hilfe = "") => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${esc(hilfe)}"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="${an ? "an" : "aus"}"></ak-led>${text}</button>`;
 
   // Anzeige und Quelle/Zeit der Kanzel; `ton` färbt die Anzeige (werbung: bernstein)
-  const anzeige = ({ art, led, titel, ton = "werbung", lauf = S.name }) => `<section class="rh-modul rh-m-anzeige" aria-label="Anzeige"><span class="ak-etikett">Anzeige</span>
+  const anzeige = ({ art, titel, ton = "werbung", lauf = S.name }) => `<section class="rh-modul rh-m-anzeige" aria-label="Anzeige"><span class="ak-etikett">Anzeige</span>
       <div class="ak-glas rh-display" data-ton="${ton}">
-        <div class="rh-display-zeile"><ak-led farbe="${led[0]}" zustand="${led[1]}" groesse="klein"></ak-led><span>${art}</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
+        <div class="rh-display-zeile"><span>${art}</span><span class="rh-display-format">${R.guete(S.guete)}<span>${R.bitrate(S)}</span></span></div>
         <ak-segmente art="punkt" stellen="16" lauf="280" farbe="gruen" text="${esc(lauf.toUpperCase())}" hilfe="Sender"></ak-segmente>
         <div class="rh-display-titel">${titel}</div>
       </div></section>`;
@@ -49,7 +48,7 @@
   // 1: Spot beim Verbinden: nicht spielen, die Wiedergabe beginnt nach ihm
   function verbinden(el) {
     el.innerHTML = `<div class="rp-kanzel rw-kanzel">
-      ${anzeige({ art: "WERBUNG BEIM VERBINDEN", led: ["bernstein", "atmet"], titel: "Wiedergabe beginnt nach dem Spot, noch 0:12" })}
+      ${anzeige({ art: "WERBUNG BEIM VERBINDEN", titel: "Wiedergabe beginnt nach dem Spot, noch 0:12" })}
       ${quelle({ text: "WERBUNG", farbe: "bernstein", uhr: "-00:00:12", puffer: { gefuellt: 0.05, stellen: [{ von: 0, bis: 0.25 }] } })}
       ${band(`<i class="fa-solid fa-rectangle-ad"></i><span><b>Werbung beim Verbinden</b> (0:15, moebelhaus-am-see.de): RadioHub spielt sie nicht, noch <b class="rh-zahl">0:12</b></span>
         <button class="knopf" type="button" title="Den Spot doch hören"><i class="fa-solid fa-volume-high"></i>Trotzdem hören</button>`)}
@@ -59,7 +58,7 @@
   // 2: Zeitversatz: übersprungen
   function versatz(el) {
     el.innerHTML = `<div class="rp-kanzel rw-kanzel">
-      ${anzeige({ art: "4:12 HINTER LIVE", led: ["bernstein", "an"], titel: "Neonwelle: Herz aus Glas", ton: "" })}
+      ${anzeige({ art: "4:12 HINTER LIVE", titel: "Neonwelle: Herz aus Glas", ton: "" })}
       ${quelle({ text: "VERSATZ", farbe: "bernstein", uhr: "-00:04:12", puffer: { versatz: 4.2 } })}
       ${band(`<i class="fa-solid fa-forward"></i><span><b>Werbung übersprungen</b> (0:20, werkzeugladen.de)</span>
         <button class="knopf" type="button"><i class="fa-solid fa-rotate-left"></i>Zurück und anhören</button>
@@ -70,7 +69,7 @@
   // 3: Live: der Puffer reicht nicht zum Springen; stumm bis zum Ende, Ton an auf Wunsch
   function stumm(el) {
     el.innerHTML = `<div class="rp-kanzel rw-kanzel">
-      ${anzeige({ art: "WERBUNG, STUMM", led: ["bernstein", "atmet"], titel: "Werbung läuft, stumm noch 0:14" })}
+      ${anzeige({ art: "WERBUNG, STUMM", titel: "Werbung läuft, stumm noch 0:14" })}
       ${quelle({ text: "LIVE", farbe: "blau", uhr: "00:42:17", puffer: { stellen: [...STELLEN, { von: 29.85, bis: 30 }] } })}
       ${band(`<i class="fa-solid fa-volume-xmark"></i><span><b>Werbung läuft</b> (werkzeugladen.de): stumm noch <b class="rh-zahl">0:14</b>, dann wieder mit Ton</span>
         <button class="knopf" type="button" title="Den Spot doch hören"><i class="fa-solid fa-volume-high"></i>Ton an</button>`)}
@@ -81,7 +80,7 @@
   const marke = (n) => `<span class="rp-marke" title="Kündigt Werbung in den Sendedaten an, ${n} Spots bekannt; wird übersprungen"><i class="fa-solid fa-rectangle-ad"></i>Werbung</span>`;
   function zeile(s, mitMarke, spielt = false) {
     return `<article class="rh-sender${spielt ? " spielt" : ""}"><div class="rh-sender-kern">
-      <span class="led"><ak-led farbe="${spielt ? "blau" : "gelb"}" zustand="${spielt ? "an" : "aus"}" groesse="klein"></ak-led></span>${R.logo(s)}
+      ${R.logo(s)}
       <div class="name"><b>${esc(s.name)}</b><div class="meta"><span class="rh-kennung">${s.land}</span><span>${esc(s.ort)}</span>${mitMarke ? marke(18) : ""}</div></div>
       <div class="genres">${s.genres.map((g) => `<span class="rh-genre">${g}</span>`).join("")}</div>
       <div class="guete-zelle">${R.guete(s.guete)}<b>${D.GUETE[s.guete].name}</b><span>${s.codec} ${R.zahl(s.kbps)}</span></div>
@@ -136,7 +135,7 @@
       ${spieler}
       <nav class="t-reiter" aria-label="Bereiche"><span class="aktiv"><i class="fa-solid fa-radio"></i>Radio</span><span><i class="fa-solid fa-circle-dot"></i>Aufnahmen</span><span><i class="fa-solid fa-podcast"></i>Podcasts</span><span><i class="fa-solid fa-ellipsis"></i>Mehr</span></nav>
       ${zusatz}</div>`;
-  const spieler = (zeile2, symbol) => `<div class="t-spieler rw-t-spieler"><div class="ak-glas"><b><ak-led farbe="bernstein" zustand="atmet" groesse="klein"></ak-led>${esc(S.name)}</b><span>${zeile2}</span></div>
+  const spieler = (zeile2, symbol) => `<div class="t-spieler rw-t-spieler"><div class="ak-glas"><b>${esc(S.name)}</b><span>${zeile2}</span></div>
       <ak-taster art="glas" symbol="${symbol}" farbe="blau" led="blau" hilfe="Anhalten" an></ak-taster>
       <button class="rund" type="button" aria-label="Spieler öffnen"><i class="fa-solid fa-chevron-up"></i></button></div>`;
   function telefonVerbinden(el) {

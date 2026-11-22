@@ -41,7 +41,7 @@
   const STROM = "http://mp3channels.webradio.rockantenne.de/rockantenne";
 
   // ─── Kopf der Zeile: wie in der App (Probe, 0.16), Logo ohne Bild ───
-  const kern = `<div class="rh-sender-kern"><span class="led"><ak-led farbe="gelb" zustand="an" groesse="klein" hilfe="gewählt"></ak-led></span>
+  const kern = `<div class="rh-sender-kern">
     <span aria-hidden="true" class="rh-logo-bild" style="--lack: var(--rh-lack-9);">RA</span>
     <div class="name"><b title="Rock Antenne">Rock Antenne</b><div class="meta"><span class="rh-kennung">DE</span><span>Deutschland</span>
       <span class="rh-titel"><i class="fa-solid fa-volume-high"></i>Golden Earring - Radar love</span>
@@ -54,7 +54,7 @@
       <span class="auge-zelle"><button type="button" class="rund" aria-label="Ausblenden"><i class="fa-solid fa-minus"></i></button></span>
       <button class="rund" type="button" aria-expanded="true" aria-label="Details"><i class="fa-solid fa-chevron-down"></i></button></div></div>`;
   const eintrag = (detail) => `<article class="rh-sender spielt offen">${kern}${detail}</article>`;
-  const schalter = (an, text, hilfe) => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${hilfe}"><ak-led farbe="bernstein" zustand="${an ? "an" : "aus"}" groesse="klein"></ak-led>${text}</button>`;
+  const schalter = (an, text, hilfe) => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${hilfe}"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="${an ? "an" : "aus"}"></ak-led>${text}</button>`;
   const info = (text) => `<i class="fa-solid fa-circle-info sk-info" title="${text}" aria-label="${text}"></i>`;
 
   // ─── 0: heute (Aufbau der App, mit 18 Spots) ───

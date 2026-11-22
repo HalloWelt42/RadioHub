@@ -160,7 +160,6 @@
   function varianten(s) {
     const liste = [...s.varianten].sort((a, b) => RANG[b.guete] - RANG[a.guete] || b.kbps - a.kbps);
     return `<div class="rh-varianten" role="list" aria-label="Varianten von ${R.esc(s.name)}">${liste.map((v, i) => `<div class="rh-variante" role="listitem">
-      <ak-led farbe="${i === 0 ? "gruen" : "gelb"}" zustand="${i === 0 ? "an" : "aus"}" groesse="klein"></ak-led>
       <span><b>${v.codec} ${R.zahl(v.kbps)} kbit/s</b> · ${v.art}${i === 0 ? ` <span class="stand-pille fertig">beste Variante</span>` : ""}</span>
       <span class="rh-guete-text">${R.guete(v.guete)}</span><span class="stimmen-v rh-zahl"><i class="fa-solid fa-thumbs-up"></i> ${R.zahl(v.stimmen)}</span>
       <button class="knopf" type="button" data-aktion="spielen" data-id="${s.id}"><i class="fa-solid fa-play"></i>Hören</button></div>`).join("")}</div>`;
@@ -170,7 +169,6 @@
     const varKnopf = n ? `<button class="knopf rh-varianten-knopf" type="button" data-aktion="varianten" aria-expanded="${z.varianten.has(s.id)}" title="Gleicher Sender in ${n} Varianten, beste vorn"><i class="fa-solid fa-layer-group"></i><span><span class="rh-zahl">${n}</span> Varianten</span></button>` : "";
     return `<article class="rh-sender${spielt ? " spielt" : offen ? " gewaehlt" : ""}${offen ? " offen" : ""}" data-id="${s.id}">
       <div class="rh-sender-kern" data-aktion="spielen" data-id="${s.id}">
-        <span class="led"><ak-led farbe="${spielt ? "blau" : "gelb"}" zustand="${spielt || offen ? "an" : "aus"}" groesse="klein" text="" hilfe="${spielt ? "spielt" : offen ? "gewählt" : "bereit"}"></ak-led></span>
         ${R.logo(s)}
         <div class="name"><b>${R.esc(s.name)}</b><div class="meta"><span class="rh-kennung">${s.land}</span><span>${R.esc(s.ort)}</span>${faehig.has("titel") ? `<span class="rh-titel"><i class="fa-solid ${spielt ? "fa-volume-high" : "fa-music"}"></i>${R.esc(s.titel)}</span>` : ""}
           ${n ? varKnopf.replace("rh-varianten-knopf", "rh-varianten-knopf rh-varianten-knopf-schmal") : ""}
@@ -250,9 +248,9 @@
   }
 
   // ─── Abspielleiste: Sender und Zustände ───
-  const K = { kanzel: $("#kanzel"), display: $("#display"), sender: $("#d-sender"), titel: $("#d-titel"), art: $("#d-art"), format: $("#d-format"), dled: $("#d-led"),
+  const K = { kanzel: $("#kanzel"), display: $("#display"), sender: $("#d-sender"), titel: $("#d-titel"), art: $("#d-art"), format: $("#d-format"),
     quelle: $("#q-text"), qaktion: $("#q-aktion"), zeit: $("#zeit"), pufferText: $("#puffer-text"), puffer: $("#puffer"), live: $("#knopf-live"), zurueck30: $("#knopf-30"),
-    play: $("#t-play"), rec: $("#t-rec"), prev: $("#t-prev"), next: $("#t-next"), stop: $("#t-stop"), haus: $("#haus-geraet"), hausLed: $("#haus-led"), holen: $("#haus-holen"),
+    play: $("#t-play"), rec: $("#t-rec"), prev: $("#t-prev"), next: $("#t-next"), stop: $("#t-stop"), haus: $("#haus-geraet"), holen: $("#haus-holen"),
     hausText: $("#haus-text"), kSender: $("#k-sender"), kTitel: $("#k-titel"), kPlay: $("#k-play"), navLed: $("#nav-led-aufnahme"), pegel: $$(".rh-laut ak-pegel"), fernBand: $("#fern-hinweis") };
   function spielen(s) {
     z.spielt = s.id;
@@ -262,14 +260,14 @@
     zustandSetzen(zustandIndex === 6 ? 6 : 2);
   }
   const ZUSTAENDE = [
-    { id: "laedt", name: "lädt", quelle: ["LÄDT", "gelb"], led: ["gelb", "blinkt"], art: "VERBINDET", titel: "Verbinde mit dem Sender", zeit: "--:--:--", puffer: 0, play: "fa-play" },
-    { id: "puffert", name: "puffert", quelle: ["PUFFER", "gelb"], led: ["gelb", "atmet"], art: "PUFFERT 64 %", titel: "Puffert, gleich geht es weiter", zeit: "00:00:00", puffer: 4, play: "fa-pause" },
-    { id: "live", name: "spielt live", quelle: ["LIVE", "blau"], led: ["blau", "an"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause" },
-    { id: "versatz", name: "zeitversetzt", quelle: ["VERSATZ", "bernstein"], led: ["bernstein", "an"], art: "4:12 HINTER LIVE", titel: null, zeit: "-00:04:12", puffer: 42, play: "fa-pause" },
-    { id: "aufnahme", name: "Aufnahme läuft", quelle: ["REC", "rot"], led: ["rot", "blinkt"], art: "AUFNAHME 00:12:48", titel: null, zeit: "00:12:48", puffer: 42, play: "fa-pause", rec: true },
-    { id: "fehler", name: "Fehler", quelle: ["FEHLER", "rot"], led: ["rot", "an"], art: "VERBINDUNG VERLOREN", titel: "Neuer Versuch in 5 s", zeit: "--:--:--", puffer: 42, play: "fa-rotate-right", ton: "fehler" },
-    { id: "fern", name: "anderes Gerät spielt", quelle: ["FERN", "blau"], led: ["blau", "atmet"], art: "SPIELT AUF TELEFON", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause", ton: "fern" },
-    { id: "web", name: "Webversion", quelle: ["LIVE", "blau"], led: ["blau", "an"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 0, play: "fa-pause" },
+    { id: "laedt", name: "lädt", quelle: ["LÄDT", "gelb"], art: "VERBINDET", titel: "Verbinde mit dem Sender", zeit: "--:--:--", puffer: 0, play: "fa-play" },
+    { id: "puffert", name: "puffert", quelle: ["PUFFER", "gelb"], art: "PUFFERT 64 %", titel: "Puffert, gleich geht es weiter", zeit: "00:00:00", puffer: 4, play: "fa-pause" },
+    { id: "live", name: "spielt live", quelle: ["LIVE", "blau"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause" },
+    { id: "versatz", name: "zeitversetzt", quelle: ["VERSATZ", "bernstein"], art: "4:12 HINTER LIVE", titel: null, zeit: "-00:04:12", puffer: 42, play: "fa-pause" },
+    { id: "aufnahme", name: "Aufnahme läuft", quelle: ["REC", "rot"], art: "AUFNAHME 00:12:48", titel: null, zeit: "00:12:48", puffer: 42, play: "fa-pause", rec: true },
+    { id: "fehler", name: "Fehler", quelle: ["FEHLER", "rot"], art: "VERBINDUNG VERLOREN", titel: "Neuer Versuch in 5 s", zeit: "--:--:--", puffer: 42, play: "fa-rotate-right", ton: "fehler" },
+    { id: "fern", name: "anderes Gerät spielt", quelle: ["FERN", "blau"], art: "SPIELT AUF TELEFON", titel: null, zeit: "00:42:17", puffer: 42, play: "fa-pause", ton: "fern" },
+    { id: "web", name: "Webversion", quelle: ["LIVE", "blau"], art: "LIVE", titel: null, zeit: "00:42:17", puffer: 0, play: "fa-pause" },
   ];
 
   // Fähigkeiten: Teile erscheinen nur, wenn die Ausgabe sie kann (keine toten Knöpfe). Die Webversion (Pages, ohne
@@ -291,7 +289,6 @@
     ausgabeSetzen(st.id === "web" ? "web" : "voll");
     K.display.dataset.ton = st.ton || "";
     K.art.textContent = st.art;
-    K.dled.setAttribute("farbe", st.led[0]); K.dled.setAttribute("zustand", st.led[1]);
     K.titel.textContent = st.titel ?? s.titel;
     K.kTitel.textContent = st.titel ?? (st.id === "fern" ? `spielt auf Telefon: ${s.titel}` : s.titel);
     K.quelle.setAttribute("text", st.quelle[0]); K.quelle.style.setProperty("--farbe", `var(--led-${st.quelle[1]})`);
@@ -306,13 +303,12 @@
     for (const t of [K.prev, K.next]) { t.toggleAttribute("gesperrt", !!st.rec); t.querySelector("ak-led")?.setAttribute("zustand", st.rec ? "an" : "aus"); t.title = st.rec ? "Kein Senderwechsel während der Aufnahme" : t.dataset.hilfe; }
     // Im Glas nur Anzeige (RAD-8): Neu verbinden ist die Spielen-Taste im Fehlerfall, die Bitrate eine Leiste der Steuerung
     K.qaktion.innerHTML = st.id === "laedt" || st.id === "puffert" ? `<div class="balken"><span style="width:${st.id === "laedt" ? 18 : 64}%"></span></div>`
-      : st.rec ? `<span title="Kein Senderwechsel während der Aufnahme"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led> WECHSEL GESPERRT</span>`
+      : st.rec ? `<span title="Kein Senderwechsel während der Aufnahme">WECHSEL GESPERRT</span>`
       : ["live", "versatz"].includes(st.id) ? "PUFFER WIE GESENDET" : "";
     K.play.title = st.id === "fehler" ? "Die Quelle sofort neu laden" : "Hören oder anhalten";
     const fern = st.id === "fern";
     K.haus.textContent = fern ? "Telefon" : "Rechner im Arbeitszimmer";
     K.hausText.textContent = fern ? "Spielt auf" : "Spielt hier:";
-    K.hausLed.setAttribute("zustand", fern ? "atmet" : "an");
     K.holen.disabled = !fern; K.holen.classList.toggle("primaer", fern);
     K.fernBand.hidden = !fern;
     K.pegel.forEach((p) => (fern || ["laedt", "fehler"].includes(st.id) ? p.setAttribute("wert", "-60") : p.removeAttribute("wert")));

@@ -44,7 +44,7 @@
       <a class="rh-nav-knopf" href="regeln.html" aria-current="page"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="an" groesse="klein"></ak-led><i class="fa-solid fa-sliders"></i><span>Einstellungen</span></a>
     </div></nav>
     <div class="rh-kopf-rechts">
-      <div class="rh-status"><ak-led farbe="gruen" zustand="an" text="Online" hilfe="Dienst erreichbar"></ak-led><ak-led farbe="gruen" zustand="an" text="Ablage" hilfe="Ablage verbunden"></ak-led></div>
+      <div class="rh-status"><span class="ak-etikett rh-status-text" title="Dienst erreichbar">Online</span><span class="ak-etikett rh-status-text" title="Ablage verbunden">Ablage</span></div>
       <div class="rh-darstellung">
         <button class="knopf" type="button" data-darstellung-knopf aria-controls="tafel-darstellung" aria-expanded="false" title="Darstellung: Thema und Schrift"><i class="fa-solid fa-circle-half-stroke"></i><span>Darstellung</span></button>
         <div class="rh-tafel" id="tafel-darstellung" role="dialog" aria-label="Darstellung" hidden>
@@ -113,7 +113,7 @@
               </div>
               <div class="ak-geraet rh-vorschau" data-bauform="inspektor" id="vorschau" aria-live="polite">
                 <span class="ak-schraube lo" style="--dreh:30deg"></span><span class="ak-schraube ro" style="--dreh:-12deg"></span>
-                <div class="ak-geraet-kopf"><b>Vorschau</b><ak-led id="v-led" farbe="gelb" zustand="aus" text="Bereit" hilfe="Vorschau"></ak-led></div>
+                <div class="ak-geraet-kopf"><b>Vorschau</b><span class="ak-etikett" id="v-stand">Bereit</span></div>
                 <div class="rh-vorschau-zahl"><ak-segmente id="v-zahl" art="7" stellen="6" farbe="bernstein" text="-----"></ak-segmente><span id="v-text">Wähle eine Art und tippe; die Folgen stehen hier, bevor etwas geschieht.</span></div>
                 <div class="rh-vorschau-fav" id="v-fav"></div>
                 <div class="rh-vorschau-beispiele" id="v-beispiele"></div>

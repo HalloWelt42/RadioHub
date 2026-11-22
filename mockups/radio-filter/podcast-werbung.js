@@ -26,8 +26,7 @@
       ${STELLEN.map((x) => `<span class="rp-werbung" style="left:${(x.von / DAUER) * 100}%;width:${Math.max(0.8, ((x.bis - x.von) / DAUER) * 100)}%" title="Werbung ${zeit(x.von)} bis ${zeit(x.bis)}"></span>`).join("")}
       <span class="rp-kopf" style="left:${(STELLE / DAUER) * 100}%"></span></div>`;
 
-  const schalter = (an, text, farbe = "bernstein", hilfe = "") => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${hilfe}">
-      <ak-led farbe="${farbe}" zustand="${an ? "an" : "aus"}" groesse="klein"></ak-led>${text}</button>`;
+  const schalter = (an, text, hilfe = "") => `<button class="knopf rh-schalter" type="button" aria-pressed="${an}" title="${hilfe}"><ak-led class="rh-tastenlicht" farbe="gruen" zustand="${an ? "an" : "aus"}"></ak-led>${text}</button>`;
 
   // 1: Abspielleiste (Modul Wiedergabe) beim Hören; eine Stelle wurde eben übersprungen
   function kanzel(el) {
@@ -65,7 +64,7 @@
     const a = abo(F.abo);
     el.innerHTML = `<div class="rp-rechner"><article class="rh-sender rh-folge spielt offen">
       <div class="rh-sender-kern">
-        <span class="led"><ak-led farbe="blau" zustand="an" groesse="klein"></ak-led></span>${R.logo(a)}
+        ${R.logo(a)}
         <div class="name"><b>${esc(F.titel)}</b><div class="meta"><span>${esc(a.name)}</span><span>18. Nov.</span>
           <span class="rp-marke" title="${STELLEN.length} Werbestellen, ${zeit(summe)}, werden übersprungen"><i class="fa-solid fa-forward"></i>${STELLEN.length} × Werbung, ${zeit(summe)}</span></div></div>
         <div class="stand-zelle"><span class="rh-stand"><span class="balken"><span style="width:48%"></span></span>noch 25 min</span></div>
@@ -81,12 +80,12 @@
         <section class="rp-werbeteil"><div class="rp-kopf-zeile"><h3><i class="fa-solid fa-rectangle-ad"></i>Werbung in dieser Folge</h3>
             <span class="rh-still">${STELLEN.length} Stellen, zusammen ${zeit(summe)}; die Datei bleibt vollständig</span></div>
           ${leiste("gross")}
-          ${sucht ? `<div class="rh-auftrag"><ak-led farbe="gruen" zustand="blinkt" groesse="klein"></ak-led><span>Werbung suchen: Transkript lesen</span>
+          ${sucht ? `<div class="rh-auftrag"><span>Werbung suchen: Transkript lesen</span>
               <div class="balken"><span style="width:60%"></span></div><span class="rh-zahl">2/3</span><button class="knopf" type="button">Abbrechen</button></div>
             <p class="rh-still rp-schritte"><i class="fa-solid fa-check"></i>Kapitel im Feed: 1 Stelle · <i class="fa-solid fa-check"></i>Vergleich zweier Fassungen: 1 Stelle · <i class="fa-solid fa-spinner fa-spin"></i>Transkript ...</p>`
             : stellenListe()}
           <div class="rh-detail-knoepfe">
-            ${schalter(true, "Überspringen", "bernstein", "Werbestellen beim Hören überspringen (gilt für dieses Abo)")}
+            ${schalter(true, "Überspringen", "Werbestellen beim Hören überspringen (gilt für dieses Abo)")}
             <button class="knopf" type="button" ${sucht ? "disabled" : ""}><i class="fa-solid fa-magnifying-glass"></i>Werbung suchen</button>
             <button class="knopf" type="button" title="Am Abspielkopf beginnen, im Schnitt genau setzen"><i class="fa-solid fa-plus"></i>Stelle markieren</button>
             <button class="knopf" type="button" title="Neue Datei ohne die Werbestellen daneben; das Original bleibt"><i class="fa-solid fa-scissors"></i>Ohne Werbung speichern</button>
@@ -105,9 +104,9 @@
           <span class="rp-marke"><i class="fa-solid fa-rectangle-ad"></i><b>2</b> Folgen mit Werbung, zusammen 4 min</span></div></div>
       <div class="rh-detail-knoepfe rh-abo-knoepfe">
         <button class="knopf" type="button"><i class="fa-solid fa-rotate"></i>Aktualisieren</button>
-        ${schalter(true, "Neue speichern", "gruen")}
-        ${schalter(true, "Werbung überspringen", "bernstein", "Erkannte Werbestellen in allen Folgen dieses Abos überspringen")}
-        ${schalter(true, "Neue Folgen prüfen", "bernstein", "Neue Folgen nach dem Speichern von selbst auf Werbung durchsuchen")}
+        ${schalter(true, "Neue speichern")}
+        ${schalter(true, "Werbung überspringen", "Erkannte Werbestellen in allen Folgen dieses Abos überspringen")}
+        ${schalter(true, "Neue Folgen prüfen", "Neue Folgen nach dem Speichern von selbst auf Werbung durchsuchen")}
         <button class="knopf" type="button"><i class="fa-solid fa-thumbtack"></i>Oben anheften</button>
         <button class="knopf gefahr" type="button"><i class="fa-solid fa-trash-can"></i>Abbestellen</button>
       </div></section></div>`;
@@ -123,7 +122,7 @@
           <span class="rh-a-nr">${String(i + 1).padStart(2, "0")}</span>
           <label class="suche rh-stueck-name"><input type="text" value="${name}" aria-label="Name"></label>
           <span class="rh-zahl">${zeit(von)}</span><span class="rh-zahl">${zeit(bis)}</span><span class="rh-zahl rechts">${zeit(bis - von)}</span>
-          ${art === "werbung" ? schalter(true, "Werbung", "bernstein", "Als Werbung markiert: beim Hören übersprungen, beim Schneiden ohne Werbung weggelassen") : schalter(true, "Behalten", "gruen")}
+          ${art === "werbung" ? schalter(true, "Werbung", "Als Werbung markiert: beim Hören übersprungen, beim Schneiden ohne Werbung weggelassen") : schalter(true, "Behalten")}
           <button class="rund" type="button" aria-label="Hören"><i class="fa-solid fa-play"></i></button></div>`).join("")}
       </div>
       <div class="rh-schnitt-aktionen">
@@ -140,7 +139,7 @@
       <div class="t-luft" aria-hidden="true"></div>
       ${inhalt}
       <div class="t-spieler" role="button" aria-label="Spieler öffnen">
-        <div class="ak-glas"><b><ak-led farbe="blau" zustand="an" groesse="klein"></ak-led>${esc(F.titel)}</b><span>Sternstunde Physik · 23:07 von 48:00</span></div>
+        <div class="ak-glas"><b>${esc(F.titel)}</b><span>Sternstunde Physik · 23:07 von 48:00</span></div>
         <ak-taster art="glas" symbol="fa-pause" farbe="blau" led="blau" hilfe="Anhalten" an></ak-taster>
         <button class="rund" type="button" aria-label="Spieler öffnen"><i class="fa-solid fa-chevron-up"></i></button>
       </div>
@@ -158,7 +157,7 @@
         <div class="t-blatt-rollt">
           <div class="t-meta"><span>Sternstunde Physik</span><span>18. Nov.</span><span>48 min</span></div>
           <div class="tp-aktionen"><button class="knopf primaer" type="button"><i class="fa-solid fa-forward"></i>Weiter ab 23:07</button>
-            ${schalter(true, "Überspringen", "bernstein")}</div>
+            ${schalter(true, "Überspringen")}</div>
           <h3 class="rp-blatt-titel"><i class="fa-solid fa-rectangle-ad"></i>Werbung: 3 Stellen, ${zeit(summe)}</h3>
           ${leiste("gross")}
           ${stellenListe(true)}

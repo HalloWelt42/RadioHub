@@ -13,7 +13,7 @@
       ${kopf}
       <div class="t-liste">${inhalt}</div>
       <div class="t-spieler" role="button" aria-label="Spieler öffnen">
-        <div class="ak-glas"><b><ak-led farbe="blau" zustand="an" groesse="klein"></ak-led>Jazzkeller FM</b><span>Blaue Stunde am Hafen · 3:12 von 6:52</span></div>
+        <div class="ak-glas"><b>Jazzkeller FM</b><span>Blaue Stunde am Hafen · 3:12 von 6:52</span></div>
         <ak-taster art="glas" symbol="fa-pause" farbe="blau" led="blau" hilfe="Anhalten" an></ak-taster>
         <button class="rund" type="button" aria-label="Spieler öffnen" title="Spieler öffnen"><i class="fa-solid fa-chevron-up"></i></button>
       </div>

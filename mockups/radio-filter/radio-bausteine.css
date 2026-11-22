@@ -58,7 +58,7 @@ button { font: inherit; }
 
 .rh-status { display: inline-flex; align-items: center; gap: 12px; min-block-size: var(--rh-taste-klein); padding: 0 12px; border-radius: var(--r2); background-color: var(--ak-glas);
   box-shadow: var(--ak-glas-tiefe); --ak-tinte: var(--ak-glas-tinte); --ak-tinte-2: color-mix(in srgb, var(--ak-glas-tinte) 70%, transparent); }
-.rh-status ak-led .ak-led-text { font-family: var(--schrift-zahl); }
+.rh-status-text { font-family: var(--schrift-zahl); color: var(--ak-tinte); white-space: nowrap; }
 .rh-demo { block-size: var(--rh-taste-klein); gap: 8px; color: var(--warn); background-color: var(--warn-weich); }
 .rh-darstellung { position: relative; }
 .rh-darstellung > .knopf { block-size: var(--rh-taste-klein); }
@@ -73,7 +73,7 @@ button { font: inherit; }
 
 /* ═══ Tastenlicht ═══ jede Taste mit Leuchte: Lichtschlitz in der oberen Kante, innerhalb der Taste; Hervorhebung nur
    über Licht und Farbe, alle Tasten einer Reihe gleich hoch (radio.js setzt die Leuchte in die Taste) */
-.ak-taster-knopf:has(> ak-led.rh-tastenlicht) { position: relative; }
+.ak-taster-knopf:has(> ak-led.rh-tastenlicht), .rh-schalter:has(> ak-led.rh-tastenlicht) { position: relative; }   /* Schalter tragen das Tastenlicht wie Tasten (RAD-64) */
 ak-led.rh-tastenlicht { position: absolute; top: 5px; left: 50%; translate: -50% 0; z-index: 2; gap: 0; pointer-events: none; }
 .rh-nav-knopf > ak-led.rh-tastenlicht { top: 4px; }
 ak-led.rh-tastenlicht .ak-led-licht { inline-size: 16px; block-size: 4px; border-radius: 2px; background: color-mix(in srgb, var(--farbe) 14%, var(--rh-licht-aus));
@@ -171,12 +171,12 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 /* ═══ Senderliste ═══ Spaltenkopf und Zeilen teilen ein Raster; Spalten je Breite der Liste (Behälterabfrage in em) */
 .rh-liste { container: liste / inline-size; font-size: var(--gross); }
 .rh-spalten, .rh-sender-kern { --rh-aktionen: calc(var(--klein) * 9.4 + 144px); display: grid; gap: 0 14px; align-items: start;
-  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
-  grid-template-areas: "led logo name genres guete stimmen aktionen"; }
+  grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+  grid-template-areas: "logo name genres guete stimmen aktionen"; }
 .rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
   font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); box-shadow: 0 1px 0 var(--rand); }
 .rh-spalten .rechts { text-align: right; }
-.rh-spalten > span:first-child { grid-column: led / name; }
+.rh-spalten > span:first-child { grid-column: logo / name; }
 .rh-spalten > span:nth-child(2) { grid-area: genres; }
 .rh-spalten > span:nth-child(3) { grid-area: guete; }
 .rh-spalten > span:nth-child(4) { grid-area: stimmen; }
@@ -189,7 +189,6 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-sender.spielt { box-shadow: 0 0 0 2px var(--led-blau), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--led-blau) 40%, transparent); }
 .rh-sender.gewaehlt { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
 .rh-sender.offen { background-color: var(--karte); }
-.rh-sender .led { grid-area: led; padding-top: 16px; }
 .rh-sender .rh-logo-bild { grid-area: logo; }
 .rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
 .rh-sender .name b { display: block; font-weight: 600; font-size: var(--gross); line-height: 1.3; overflow-wrap: anywhere; }
@@ -216,22 +215,21 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-platz { display: block; }
 
 @container liste (max-width: 62em) {
-  .rh-spalten, .rh-sender-kern { grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
-    grid-template-areas: "led logo name guete stimmen aktionen" "led logo genres guete stimmen aktionen"; }
+  .rh-spalten, .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
+    grid-template-areas: "logo name guete stimmen aktionen" "logo genres guete stimmen aktionen"; }
   .rh-spalten > span:nth-child(2) { display: none; }
   .rh-sender .genres { padding-top: 6px; }
 }
 @container liste (max-width: 44em) {
   .rh-spalten { display: none; }
   .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
-  .rh-sender .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-sender .guete-zelle { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "licht stufe format"; padding-top: 0; }
   .rh-sender .stimmen { align-self: end; padding-top: 0; }
   .rh-aktionen { grid-template-columns: 44px 44px 44px; }
   .rh-aktionen .rh-varianten-zelle { display: none; }
   .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
   .rh-varianten { padding-left: 10px; }
-  .rh-variante { grid-template-columns: 14px minmax(0, 1fr) auto; }
+  .rh-variante { grid-template-columns: minmax(0, 1fr) auto; }
   .rh-variante .rh-guete-text, .rh-variante .stimmen-v { display: none; }
 }
 @container liste (max-width: 26em) {
@@ -247,8 +245,8 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-logo-bild.klein { --s: calc(var(--gross) * 2.2); }
 
 /* Varianten (Dubletten als Gruppe, beste vorn) */
-.rh-varianten { display: grid; gap: 6px; padding: 0 12px 12px 50px; }
-.rh-variante { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto auto auto; gap: 6px 14px; align-items: center; padding: 8px 10px; border-radius: var(--r2);
+.rh-varianten { display: grid; gap: 6px; padding: 0 12px 12px 14px; }
+.rh-variante { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px 14px; align-items: center; padding: 8px 10px; border-radius: var(--r2);
   background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
 .rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
 .rh-variante .stand-pille { font-size: var(--marke); }
@@ -359,10 +357,9 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-haus { position: relative; flex: 1; display: grid; gap: 6px; align-content: center; padding: 6px 10px; border-radius: var(--r3); background-color: var(--rh-tafel-dunkel); box-shadow: var(--rh-mulde); min-width: 0; }
 .rh-haus .auswahl { position: static; }
 .rh-haus .auswahl-liste { top: auto; bottom: calc(100% + 6px); left: 0; right: 0; min-width: 0; }
-.rh-haus .auswahl-liste button { display: grid; grid-template-columns: auto 20px minmax(0, 1fr); gap: 10px; align-items: center; white-space: normal; }
+.rh-haus .auswahl-liste button { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: center; white-space: normal; }
 .rh-haus .auswahl-liste button:disabled { opacity: .55; cursor: default; }
-.rh-haus-wo { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 10px; align-items: start; }
-.rh-haus-wo ak-led { grid-row: 1 / span 2; margin-top: 6px; }
+.rh-haus-wo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 10px; align-items: start; }
 .rh-haus-wo span { font-size: var(--marke); color: var(--rh-geraet-tinte-2); }
 .rh-haus-wo b { font-weight: 600; font-size: var(--klein); overflow-wrap: anywhere; line-height: 1.3; }
 .rh-haus-knoepfe { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -417,11 +414,10 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-karte-kopf h2 i { color: var(--akzent); }
 .rh-karte .hinweis-band { margin: 0 0 14px; }
 
-.rh-regel { display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) auto auto auto; grid-template-areas: "led art text zahl schalter weg"; gap: 4px 14px; align-items: center;
+.rh-regel { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto auto; grid-template-areas: "art text zahl schalter weg"; gap: 4px 14px; align-items: center;
   padding: 10px 12px; border-radius: var(--rh-ecke-zeile); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .rh-regel.aus { opacity: .72; }
 .rh-regel.neu { box-shadow: 0 0 0 2px var(--led-gelb), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-gelb) 30%, transparent); }
-.rh-regel > ak-led { grid-area: led; }
 .rh-regel-art { grid-area: art; inline-size: 44px; block-size: 44px; border-radius: var(--r2); display: grid; place-items: center; color: var(--akzent); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
 .rh-regel-text { grid-area: text; min-width: 0; }
 .rh-regel-text b { display: block; font-weight: 600; overflow-wrap: anywhere; }
@@ -435,7 +431,7 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-regel .rueckfrage { grid-column: 1 / -1; margin: 6px 0 0; }
 .rh-regel .rueckfrage .aktionen .knopf { block-size: 40px; }
 @media (max-width: 760px) {
-  .rh-regel { grid-template-columns: 14px 44px minmax(0, 1fr) auto; grid-template-areas: "led art text text" "zahl zahl schalter weg"; }
+  .rh-regel { grid-template-columns: 44px minmax(0, 1fr) auto auto; grid-template-areas: "art text text text" "zahl zahl schalter weg"; }
   .rh-regel-zahl { text-align: left; }
   .rh-regel-zahl b { display: inline; margin-right: 6px; }
 }
@@ -463,7 +459,6 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-vorschau-zahl ak-segmente { --ak-zelle: calc(var(--gross) * 10); --ak-zeichen-max: 46px; }
 .rh-vorschau-zahl span { font-size: var(--gross); color: var(--ak-tinte); line-height: 1.35; }
 .rh-vorschau-fav { display: flex; gap: 10px; align-items: start; font-size: var(--klein); color: var(--ak-tinte); min-block-size: 24px; }
-.rh-vorschau-fav ak-led { margin-top: 4px; }
 .rh-vorschau-beispiele { font-size: var(--klein); color: var(--ak-tinte-2); display: grid; gap: 2px; }
 .rh-vorschau-beispiele b { color: var(--ak-tinte); font-weight: 600; }
 .rh-vorschau-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -564,7 +559,7 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .t-versatz .knopf { block-size: 44px; }
 .t-geraete { display: grid; gap: 6px; padding: 10px; border-radius: var(--r3); background-color: var(--rh-tafel-dunkel); box-shadow: var(--rh-mulde); }
 .t-geraete .ak-etikett { font-weight: 600; }
-.t-geraet { display: grid; grid-template-columns: auto 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-block-size: 50px; padding: 4px 6px 4px 10px; border-radius: var(--r2);
+.t-geraet { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-block-size: 50px; padding: 4px 6px 4px 10px; border-radius: var(--r2);
   color: var(--ak-tinte); background-color: var(--rh-zeile-auf-geraet); box-shadow: var(--rh-glanz-kante); }
 .t-geraet b { font-weight: 600; font-size: var(--klein); display: block; }
 .t-geraet span span { display: block; font-size: var(--marke); color: var(--ak-tinte-2); }
@@ -578,10 +573,8 @@ ak-taster[gesperrt] .ak-taster-knopf { opacity: .45; cursor: not-allowed; }
 .rh-ue-schau .ak-geraet-kopf { margin: 0; padding: 0 16px; justify-content: space-between; }
 .rh-ue-matrix { padding: 10px 14px; }
 .rh-ue-matrix ak-segmente { --ak-zeichen-max: 34px; }
-.rh-ue-leds { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14em), 1fr)); gap: 8px 16px; font-size: var(--klein); }
-.rh-ue-leds li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; }
-.rh-ue-leds li ak-led { margin-top: 4px; }
-.rh-ue-leds b { color: var(--ak-tinte); }
+.rh-ue-lichtsprache { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14em), 1fr)); gap: 8px 16px; font-size: var(--klein); }
+.rh-ue-lichtsprache b { color: var(--ak-tinte); }
 .rh-ue-darstellung h3 { margin: 6px 0 0; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-ue-darstellung .segment { display: flex; }
 .rh-ue-darstellung .segment button { flex: 1; min-block-size: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }

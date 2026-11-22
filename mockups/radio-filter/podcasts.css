@@ -25,7 +25,7 @@
 .rh-abo-text { grid-area: text; min-width: 0; }
 .rh-abo-kopf ak-taster { grid-area: schalter; }
 .rh-abo-knoepfe { grid-area: knoepfe; }
-.rh-auftrag { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px;
+.rh-auftrag { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px;
   border-radius: var(--r2); background-color: var(--flaeche); box-shadow: var(--rh-kante); font-size: var(--klein); }
 .rh-auftrag .balken, .rh-stand .balken { block-size: 6px; border-radius: 3px; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); overflow: hidden; }
 .rh-auftrag .balken > span, .rh-stand .balken > span { display: block; block-size: 100%; background-color: var(--led-gruen); }
@@ -34,8 +34,8 @@
 
 /* Folgen: dasselbe Zeilenraster wie die Sender, mit Stand und Länge statt Genres, Qualität und Stimmen */
 .rh-folgen-spalten, .rh-folge .rh-sender-kern { --rh-aktionen: calc(44px * 3 + 8px);
-  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 10) calc(var(--klein) * 5) var(--rh-aktionen);
-  grid-template-areas: "led logo name stand laenge aktionen"; }
+  grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 10) calc(var(--klein) * 5) var(--rh-aktionen);
+  grid-template-areas: "logo name stand laenge aktionen"; }
 .rh-folgen-spalten > span:nth-child(2) { grid-area: stand; }
 .rh-folgen-spalten > span:nth-child(3) { grid-area: laenge; }
 .rh-folgen-spalten > span:nth-child(4) { grid-area: aktionen; }
@@ -57,7 +57,6 @@
 @container liste (max-width: 52em) {
   .rh-folgen-spalten { display: none; }
   .rh-folge .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "stand stand laenge"; gap: 8px 12px; padding: 10px; }
-  .rh-folge .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-folge .stand-zelle, .rh-folge .laenge { padding-top: 0; }
 }
 

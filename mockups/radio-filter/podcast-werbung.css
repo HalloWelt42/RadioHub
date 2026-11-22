@@ -33,7 +33,7 @@
 .rp-schritte i { color: var(--led-gruen); }
 .rp-werbung-stueck { box-shadow: 0 0 0 1px color-mix(in srgb, var(--led-bernstein) 60%, transparent); }
 .rp-werbung-stueck .rh-stueck-name input { color: var(--led-bernstein); }
-.rh-schalter { gap: 8px; }
+
 /* Telefon: die Liste der Stellen schmaler (ohne Spalte Zeit, die steht über der Herkunft) */
 .rh-telefon .rp-stellen li { grid-template-columns: auto minmax(0, 1fr) auto; }
 .rh-telefon .rp-stellen .rp-zeit { grid-column: 2; }

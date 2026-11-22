@@ -38,14 +38,14 @@
   }
 
   function gross(s, fern) {
-    const geraete = [["blau", fern ? "atmet" : "an", "fa-mobile-screen", "Telefon", "dieses Gerät", fern ? "Holen" : ""], ["blau", fern ? "an" : "aus", "fa-desktop", "Rechner im Arbeitszimmer", fern ? "spielt gerade" : "bereit", fern ? "" : "Abspielen"],
-      ["gruen", "an", "fa-microchip", "Pi in der Küche", "bereit", "Abspielen"], ["rot", "aus", "fa-tv", "Wohnzimmer", "nicht erreichbar", ""]];
+    const geraete = [[true, "fa-mobile-screen", "Telefon", "dieses Gerät", fern ? "Holen" : ""], [true, "fa-desktop", "Rechner im Arbeitszimmer", fern ? "spielt gerade" : "bereit", fern ? "" : "Abspielen"],
+      [true, "fa-microchip", "Pi in der Küche", "bereit", "Abspielen"], [false, "fa-tv", "Wohnzimmer", "nicht erreichbar", ""]];
     return `<div class="t-gross" role="dialog" aria-label="Spieler" hidden>
       <div class="t-status"><span>9:41</span><span class="insel"></span><span><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-three-quarters"></i></span></div><div class="t-luft"></div>
       <div class="t-gross-kopf"><button class="rund" type="button" data-t="klein" aria-label="Spieler verkleinern" title="Verkleinern"><i class="fa-solid fa-chevron-down"></i></button><span class="ak-etikett">Radio</span><span></span></div>
       <div class="t-gross-rollt">
         <div class="ak-glas rh-display"${fern ? ` data-ton="fern"` : ""}>
-          <div class="rh-display-zeile"><ak-led farbe="blau" zustand="${fern ? "atmet" : "an"}" groesse="klein"></ak-led><span>${fern ? "SPIELT AUF RECHNER" : "LIVE"}</span><span class="rh-display-format">${R.guete(s.guete)}<span>${R.bitrate(s)}</span></span></div>
+          <div class="rh-display-zeile"><span>${fern ? "SPIELT AUF RECHNER" : "LIVE"}</span><span class="rh-display-format">${R.guete(s.guete)}<span>${R.bitrate(s)}</span></span></div>
           <ak-segmente art="punkt" stellen="14" lauf="300" farbe="${fern ? "blau" : "gruen"}" text="${R.esc(s.name.toUpperCase())}"></ak-segmente>
           <div class="rh-display-titel">${R.esc(s.titel)}</div>
         </div>
@@ -63,7 +63,7 @@
         <div class="t-versatz"><ak-schieber art="leuchte" leuchte="bernstein" segmente="30" name="Zeitversatz" hilfe="Zurückspulen im Puffer, höchstens 30 Minuten" min="-30" max="0" schritt="0.5" wert="0" einheit="min" grenzen="-30 min|live"></ak-schieber>
           <button class="knopf" type="button" disabled title="Schon live"><i class="fa-solid fa-tower-broadcast"></i>Live</button></div>
         <div class="t-geraete"><span class="ak-etikett">Hausempfang: abspielen auf</span>
-          ${geraete.map(([f, z, sym, n, st, k]) => `<div class="t-geraet${f === "rot" ? " aus" : ""}"><ak-led farbe="${f}" zustand="${z}" groesse="klein"></ak-led><i class="fa-solid ${sym}"></i><span><b>${n}</b><span>${st}</span></span>${k ? `<button class="knopf${k === "Holen" ? " primaer" : ""}" type="button" data-t="${k === "Holen" ? "holen" : "geben"}">${k === "Holen" ? `<i class="fa-solid fa-hand-holding"></i>` : `<i class="fa-solid fa-tower-broadcast"></i>`}${k}</button>` : "<span></span>"}</div>`).join("")}
+          ${geraete.map(([erreichbar, sym, n, st, k]) => `<div class="t-geraet${erreichbar ? "" : " aus"}"><i class="fa-solid ${sym}"></i><span><b>${n}</b><span>${st}</span></span>${k ? `<button class="knopf${k === "Holen" ? " primaer" : ""}" type="button" data-t="${k === "Holen" ? "holen" : "geben"}">${k === "Holen" ? `<i class="fa-solid fa-hand-holding"></i>` : `<i class="fa-solid fa-tower-broadcast"></i>`}${k}</button>` : "<span></span>"}</div>`).join("")}
         </div>
       </div>
     </div>`;
@@ -75,18 +75,18 @@
       <div class="t-status"><span>9:41</span><span class="insel"></span><span><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-three-quarters"></i></span></div>
       <div class="t-luft" aria-hidden="true"></div>
       <div class="t-kopf"><span class="rh-logo">RadioHub</span><button class="rh-herz" type="button" aria-label="Unterstützen" title="Unterstützen"><i class="fa-solid fa-heart"></i></button>
-        <div class="t-kopf-rechts"><span class="t-haus-mini" title="${fern ? "Hausempfang: spielt auf dem Rechner im Arbeitszimmer" : "Hausempfang: spielt auf diesem Telefon"}"><ak-led farbe="blau" zustand="${fern ? "atmet" : "an"}" groesse="klein"></ak-led><i class="fa-solid ${fern ? "fa-desktop" : "fa-mobile-screen"}"></i></span>
+        <div class="t-kopf-rechts"><span class="t-haus-mini" title="${fern ? "Hausempfang: spielt auf dem Rechner im Arbeitszimmer" : "Hausempfang: spielt auf diesem Telefon"}"><i class="fa-solid ${fern ? "fa-desktop" : "fa-mobile-screen"}"></i></span>
           <button class="rund" type="button" title="Darstellung" aria-label="Darstellung" data-t="darstellung"><i class="fa-solid fa-circle-half-stroke"></i></button></div></div>
       <div class="t-suche"><label class="suche" role="search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Sender suchen" aria-label="Sender suchen"></label>
         <button class="knopf" type="button" data-t="filter"><i class="fa-solid fa-sliders"></i>Filter<span class="pille">2</span></button></div>
       <div class="t-chips"><span class="t-treffer" title="Treffer gesamt"><ak-segmente art="7" stellen="5" farbe="gruen" text="2.493"></ak-segmente>Treffer</span>
         <span class="chip">Deutschland<button type="button" aria-label="Filter entfernen"><i class="fa-solid fa-xmark"></i></button></span><span class="chip">Stimmen ab 10<button type="button" aria-label="Filter entfernen"><i class="fa-solid fa-xmark"></i></button></span></div>
       <div class="t-liste">
-        <p class="rh-hinweis t-hinweis"><ak-led farbe="bernstein" zustand="an" groesse="klein"></ak-led><span><b>8.249</b> durch Regeln aus</span><a href="regeln.html">Regeln<i class="fa-solid fa-arrow-right"></i></a></p>
+        <p class="rh-hinweis t-hinweis"><span><b>8.249</b> durch Regeln aus</span><a href="regeln.html">Regeln<i class="fa-solid fa-arrow-right"></i></a></p>
         ${liste.map((x) => zeile(x, x.id === s.id)).join("")}
       </div>
       <div class="t-spieler" data-t="gross" role="button" aria-label="Spieler öffnen">
-        <div class="ak-glas${fern ? " fern" : ""}"><b><ak-led farbe="blau" zustand="${fern ? "atmet" : "an"}" groesse="klein"></ak-led>${fern ? "Spielt auf Rechner" : R.esc(s.name)}</b><span>${fern ? `${R.esc(s.name)}: ${R.esc(s.titel)}` : R.esc(s.titel)}</span></div>
+        <div class="ak-glas${fern ? " fern" : ""}"><b>${fern ? "Spielt auf Rechner" : R.esc(s.name)}</b><span>${fern ? `${R.esc(s.name)}: ${R.esc(s.titel)}` : R.esc(s.titel)}</span></div>
         <ak-taster art="glas" symbol="fa-pause" farbe="blau" led="blau" hilfe="${fern ? "Am Rechner anhalten" : "Anhalten"}" an></ak-taster>
         ${fern ? `<button class="knopf primaer" type="button" data-t="holen" title="Ton auf dieses Telefon holen"><i class="fa-solid fa-hand-holding"></i>Holen</button>` : `<button class="rund" type="button" data-t="gross" aria-label="Spieler öffnen" title="Spieler öffnen"><i class="fa-solid fa-chevron-up"></i></button>`}
       </div>

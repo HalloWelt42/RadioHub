@@ -152,7 +152,7 @@
           ${["BTC", "DOGE", "ETH"].map((c) => `<button class="knopf" type="button"><i class="fa-solid fa-qrcode"></i>${c}</button>`).join("")}</div></div>`;
       case "kategorien":
         return `<div class="karte rh-karte"><div class="rh-karte-kopf"><h2><i class="fa-solid fa-folder"></i>Kategorien</h2><span class="rh-still">eigene Sammlungen von Sendern; in der Seitenleiste wählbar</span></div>
-          <div class="rh-regeln rh-feste" style="--aktion: calc(var(--gross) * 8.5); --weg: calc(var(--gross) * 7)">${kategorien.map((k) => `<div class="rh-regel" data-id="${k.id}"><ak-led farbe="gelb" zustand="${k.sender ? "an" : "aus"}" groesse="klein"></ak-led>
+          <div class="rh-regeln rh-feste" style="--aktion: calc(var(--gross) * 8.5); --weg: calc(var(--gross) * 7)">${kategorien.map((k) => `<div class="rh-regel" data-id="${k.id}">
             <span class="rh-regel-art"><i class="fa-solid fa-folder"></i></span><span class="rh-regel-text"><b>${esc(k.name)}</b><span>${k.sender ? `${k.sender} Sender` : "noch leer"}</span></span>
             <span class="rh-regel-zahl"><b>${k.sender}</b>Sender</span>
             <button class="knopf rh-regel-aktion" type="button" title="Umbenennen"><i class="fa-solid fa-pen"></i>Umbenennen</button>
@@ -161,12 +161,12 @@
           <div class="rh-e-neu-zeile"><label class="suche rh-e-eingabe"><i class="fa-solid fa-folder-plus"></i><input type="text" placeholder="Neue Kategorie, etwa Abends" aria-label="Neue Kategorie"></label><button class="knopf primaer" type="button"><i class="fa-solid fa-plus"></i>Anlegen</button></div></div>`;
       case "aufnahmeordner": {
         const aktiv = ordner.find((o) => o.aktiv);
-        return `<div class="karte rh-karte"><div class="rh-karte-kopf"><h2><i class="fa-solid fa-folder-tree"></i>Aufnahmeordner</h2><span class="rh-still">neue Aufnahmen landen im Ordner mit Licht</span></div>
+        return `<div class="karte rh-karte"><div class="rh-karte-kopf"><h2><i class="fa-solid fa-folder-tree"></i>Aufnahmeordner</h2><span class="rh-still">neue Aufnahmen landen im gewählten Ordner</span></div>
           <div class="rh-regeln rh-feste" style="--aktion: calc(var(--gross) * 11); --weg: 94px">
-            <div class="rh-regel${aktiv ? " aus" : ""}"><ak-led farbe="rot" zustand="${aktiv ? "aus" : "an"}" groesse="klein"></ak-led><span class="rh-regel-art"><i class="fa-solid fa-house"></i></span>
+            <div class="rh-regel${aktiv ? " aus" : ""}"><span class="rh-regel-art"><i class="fa-solid fa-house"></i></span>
               <span class="rh-regel-text"><b>Stammordner</b><span>ohne eigenen Ordner, direkt unter Aufnahmen</span></span><span class="rh-regel-zahl"><b>${E.STAMM_AUFNAHMEN}</b>Aufnahmen</span>
               <button class="knopf rh-regel-aktion" type="button" data-aktiv="0"${aktiv ? "" : " disabled"}><i class="fa-solid fa-circle-dot"></i>${aktiv ? "Hierhin aufnehmen" : "Nimmt auf"}</button></div>
-            ${ordner.map((o) => `<div class="rh-regel${o.aktiv ? "" : " aus"}" data-id="${o.id}"><ak-led farbe="rot" zustand="${o.aktiv ? "an" : "aus"}" groesse="klein"></ak-led><span class="rh-regel-art"><i class="fa-solid fa-folder"></i></span>
+            ${ordner.map((o) => `<div class="rh-regel${o.aktiv ? "" : " aus"}" data-id="${o.id}"><span class="rh-regel-art"><i class="fa-solid fa-folder"></i></span>
               <span class="rh-regel-text"><b>${esc(o.name)}</b><span>${o.aktiv ? "neue Aufnahmen landen hier" : "Ordner"}</span></span><span class="rh-regel-zahl"><b>${o.aufnahmen}</b>Aufnahmen</span>
               <button class="knopf rh-regel-aktion" type="button" data-aktiv="${o.id}"${o.aktiv ? " disabled" : ""}><i class="fa-solid fa-circle-dot"></i>${o.aktiv ? "Nimmt auf" : "Hierhin aufnehmen"}</button>
               <span class="rh-e-zeilenknoepfe"><button class="rund" type="button" title="Umbenennen" aria-label="${esc(o.name)} umbenennen"><i class="fa-solid fa-pen"></i></button><button class="rund" type="button" title="Löschen" aria-label="${esc(o.name)} löschen" data-fragen="ordner" data-id="${o.id}"><i class="fa-solid fa-trash"></i></button></span>
@@ -176,7 +176,7 @@
       }
       case "muster":
         return `<div class="karte rh-karte"><div class="rh-karte-kopf"><h2><i class="fa-solid fa-ban"></i>Titel ignorieren</h2><span class="rh-still">diese Titel im Strom teilen eine Aufnahme nicht in Stücke</span></div>
-          <div class="rh-regeln rh-feste" style="--aktion: 0px; --weg: calc(var(--gross) * 8)">${muster.map((m) => `<div class="rh-regel" data-id="${m.id}"><ak-led farbe="gelb" zustand="an" groesse="klein"></ak-led><span class="rh-regel-art" title="${m.art === "exakt" ? "Genau dieser Titel" : "Titel enthält"}"><i class="fa-solid ${m.art === "exakt" ? "fa-equals" : "fa-magnifying-glass"}"></i></span>
+          <div class="rh-regeln rh-feste" style="--aktion: 0px; --weg: calc(var(--gross) * 8)">${muster.map((m) => `<div class="rh-regel" data-id="${m.id}"><span class="rh-regel-art" title="${m.art === "exakt" ? "Genau dieser Titel" : "Titel enthält"}"><i class="fa-solid ${m.art === "exakt" ? "fa-equals" : "fa-magnifying-glass"}"></i></span>
             <span class="rh-regel-text"><b>${esc(m.muster)}</b><span>${m.art === "exakt" ? "genau dieser Titel" : "Titel enthält"}${m.eingebaut ? " · eingebaut" : " · eigenes Muster"}</span></span>
             <span class="rh-regel-zahl"><b>${m.treffer}</b>Treffer</span>
             ${m.eingebaut ? `<span class="rh-geltung fest" title="Eingebaute Muster bleiben; man kann sie nicht löschen"><i class="fa-solid fa-lock"></i>Eingebaut</span>`

@@ -42,7 +42,6 @@
     $("#regeln").innerHTML = regeln.map((r) => {
       const a = D.REGEL_ARTEN[r.art];
       return `<div class="rh-regel${r.an ? "" : " aus"}${r.neu ? " neu" : ""}" data-id="${r.id}">
-        <ak-led farbe="${r.an ? "gruen" : "gelb"}" zustand="${r.an ? "an" : "aus"}" groesse="klein" hilfe="${r.an ? "aktiv" : "aus"}"></ak-led>
         <span class="rh-regel-art" title="${a.name}"><i class="fa-solid ${a.symbol}"></i></span>
         <span class="rh-regel-text"><b>${R.esc(text(r))}</b><span>${a.name}: ${a.erklaerung}${r.neu ? " · gerade angelegt" : ""}</span></span>
         <span class="rh-regel-zahl"><b>${R.zahl(r.betroffen)}</b>Sender${r.favoriten ? `, ${r.favoriten} Favoriten` : ", 0 Favoriten"}</span>
@@ -124,19 +123,19 @@
     vorschau();
   }
   function vorschau() {
-    const led = $("#v-led"), zahlEl = $("#v-zahl");
+    const stand = $("#v-stand"), zahlEl = $("#v-zahl");
     $("#v-anlegen").disabled = !entwurf; $("#v-verwerfen").disabled = !entwurf;
     if (!entwurf) {
-      zahlEl.setAttribute("text", "-----"); led.setAttribute("zustand", "aus"); led.setAttribute("text", "Bereit");
+      zahlEl.setAttribute("text", "-----"); stand.textContent = "Bereit";
       $("#v-text").textContent = "Wähle eine Art und tippe; die Folgen stehen hier, bevor etwas geschieht.";
       $("#v-fav").innerHTML = ""; $("#v-beispiele").innerHTML = ""; return;
     }
     zahlEl.setAttribute("text", R.zahl(entwurf.betroffen));
-    led.setAttribute("farbe", entwurf.favoriten ? "bernstein" : "gruen"); led.setAttribute("zustand", "an"); led.setAttribute("text", entwurf.favoriten ? "Prüfen" : "Bereit");
+    stand.textContent = entwurf.favoriten ? "Prüfen" : "Bereit";
     $("#v-text").innerHTML = `Sender würden ausgeblendet: <b>${R.esc(text({ ...entwurf }))}</b>`;
     $("#v-fav").innerHTML = entwurf.favoriten
-      ? `<ak-led farbe="bernstein" zustand="atmet" groesse="klein"></ak-led><span><b>${entwurf.favoriten} Favoriten</b> wären betroffen. Favoriten bleiben sichtbar, sie stehen dann als Ausnahme in der Liste.</span>`
-      : `<ak-led farbe="gruen" zustand="an" groesse="klein"></ak-led><span>davon <b>0 Favoriten</b></span>`;
+      ? `<span><b>${entwurf.favoriten} Favoriten</b> wären betroffen. Favoriten bleiben sichtbar, sie stehen dann als Ausnahme in der Liste.</span>`
+      : `<span>davon <b>0 Favoriten</b></span>`;
     // erfundene, neutrale Beispielnamen passend zur Art und Sprache der Regel
     const BEISPIELE = {
       zh: ["Huanghe Musikfunk", "Radio Changjiang 101,3", "Jinling Klassik"], yue: ["Radio Zhujiang 96,2", "Lingnan Welle", "Kanton Abendfunk"],

@@ -29,7 +29,6 @@
     if (z.quelle === "wolke") { wolkenleiste(); return; }
     const zahl = (id) => z.sitzungen.filter((s) => (id === null ? !s.ordner : s.ordner === id)).length;
     const zeile = (id, name, symbol, n, o) => `<div class="rh-facette rh-aordner${z.ordner === id ? " an" : ""}" role="button" tabindex="0" data-ordner="${id}">
-      ${o ? `<ak-led farbe="rot" zustand="${o.ziel ? "an" : "aus"}" groesse="klein" hilfe="${o.ziel ? "neue Aufnahmen landen hier" : "kein Aufnahmeziel"}"></ak-led>` : `<span></span>`}
       <i class="fa-solid ${symbol} rh-ordner-symbol"></i><span class="rh-abo-name">${esc(name)}</span>
       <span class="rh-abo-ende"><span class="rh-zahl">${n}</span>
       ${o ? `<button class="rh-nadel${o.ziel ? " an" : ""}" type="button" data-aktion="ziel" data-id="${o.id}" title="${o.ziel ? "Ist das Aufnahmeziel" : "Neue Aufnahmen hierhin"}" aria-label="Aufnahmeziel: ${esc(name)}"><i class="fa-solid fa-circle-dot"></i></button>
@@ -40,12 +39,12 @@
     $("#leiste").innerHTML = `<section class="rh-gruppe">
       <div class="rh-gruppe-kopf"><h3>Ordner</h3><button type="button" title="Neuen Ordner anlegen">Ordner anlegen</button></div>
       <div class="rh-facetten rh-abos">
-        <button class="rh-facette rh-alle-abos${z.ordner === "" ? " an" : ""}" type="button" data-ordner=""><ak-led farbe="gelb" zustand="${z.ordner === "" ? "an" : "aus"}" groesse="klein"></ak-led>
+        <button class="rh-facette rh-alle-abos${z.ordner === "" ? " an" : ""}" type="button" data-ordner="">
           <span class="rh-abo-name">Alle Aufnahmen</span><span class="rh-zahl">${z.sitzungen.length}</span></button>
         ${z.ordnerListe.map((o) => zeile(o.id, o.name, "fa-folder", zahl(o.id), o)).join("")}
         ${zeile("ohne", "Ohne Ordner", "fa-house", zahl(null), null)}
       </div>
-      <p class="rh-still rh-abos-hinweis"><i class="fa-solid fa-circle-dot"></i>Rotes Licht: dort landen neue Aufnahmen. Aufnahmen per Ziehen in einen Ordner.</p>
+      <p class="rh-still rh-abos-hinweis"><i class="fa-solid fa-grip-vertical"></i>Aufnahmen per Ziehen in einen Ordner.</p>
     </section>`;
     $("#leiste-fuss").innerHTML = `<span><b>${R.zahl(A.DATEIEN)}</b> Dateien</span><span><b>${String(z.sitzungen.reduce((s, x) => s + x.mb, 0).toFixed(0))}</b> MB</span><span><b>${A.FREI_GB}</b> GB frei</span>`;
   }
@@ -57,9 +56,9 @@
       <nav class="rh-wolke-pfad" aria-label="Pfad"><button type="button" data-pfad=""><i class="fa-solid fa-cloud"></i>Wurzel</button>
         ${teile.map((t, i) => `<i class="fa-solid fa-chevron-right"></i><button type="button" data-pfad="${esc(teile.slice(0, i + 1).join("/"))}"${i === teile.length - 1 ? ' aria-current="page"' : ""}>${esc(t)}</button>`).join("")}</nav>
       <div class="rh-facetten rh-abos">
-        ${z.pfad ? `<div class="rh-facette rh-aordner" role="button" tabindex="0" data-pfad="${esc(teile.slice(0, -1).join("/"))}"><span></span><i class="fa-solid fa-turn-up rh-ordner-symbol"></i><span class="rh-abo-name">Eine Ebene höher</span><span></span></div>` : ""}
+        ${z.pfad ? `<div class="rh-facette rh-aordner" role="button" tabindex="0" data-pfad="${esc(teile.slice(0, -1).join("/"))}"><i class="fa-solid fa-turn-up rh-ordner-symbol"></i><span class="rh-abo-name">Eine Ebene höher</span><span></span></div>` : ""}
         ${ort.ordner.map((o) => { const p = z.pfad ? `${z.pfad}/${o}` : o; const n = A.WOLKE[p]?.dateien.length; return `<div class="rh-facette rh-aordner" role="button" tabindex="0" data-pfad="${esc(p)}">
-          <span></span><i class="fa-solid fa-folder rh-ordner-symbol"></i><span class="rh-abo-name">${esc(o)}</span><span class="rh-zahl">${n ?? ""}</span></div>`; }).join("")}
+          <i class="fa-solid fa-folder rh-ordner-symbol"></i><span class="rh-abo-name">${esc(o)}</span><span class="rh-zahl">${n ?? ""}</span></div>`; }).join("")}
       </div>
       <p class="rh-still rh-abos-hinweis"><i class="fa-solid fa-circle-info"></i>Gezeigt werden nur Audiodateien. Schnitt legt das Ergebnis als neue Datei daneben, das Original bleibt.</p>
     </section>`;
@@ -101,7 +100,7 @@
       || `<span class="rh-leer-chips">${wolke ? "Alle Audiodateien dieses Ordners" : "Alle Aufnahmen"}</span>`;
     const zz = ziel();
     $("#ziel-hinweis").innerHTML = wolke ? `<i class="fa-solid fa-scissors"></i><span>Schneiden legt <b>eine neue Datei daneben</b>, das Original bleibt</span>`
-      : `<ak-led farbe="rot" zustand="${z.laeuft ? "blinkt" : "an"}" groesse="klein"></ak-led><span>Neue Aufnahmen landen in <b>${esc(zz ? zz.name : "Ohne Ordner")}</b></span>`;
+      : `<span>Neue Aufnahmen landen in <b>${esc(zz ? zz.name : "Ohne Ordner")}</b></span>`;
   }
   $("#aktiv-chips").addEventListener("click", (e) => {
     const k = e.target.closest("button[data-art]"); if (!k) return;
@@ -118,7 +117,7 @@
       const L = A.LAEUFT;
       el.innerHTML = `<section class="rh-abo-kopf rh-a-kopf rh-a-laeuft">
         <span class="rh-logo-bild gross" style="--lack:${R.lack(L.sender)}" aria-hidden="true">${esc(R.kuerzel(L.sender))}</span>
-        <div class="rh-abo-text"><h2><ak-led farbe="rot" zustand="blinkt" groesse="klein"></ak-led>Aufnahme läuft: ${esc(L.sender)}</h2>
+        <div class="rh-abo-text"><h2>Aufnahme läuft: ${esc(L.sender)}</h2>
           <p class="rh-still">seit ${L.start} · aus dem Puffer mit ${L.rueckblick} min Rückblick · ${L.codec} ${L.kbit} kbit/s · nach ${esc(ziel()?.name ?? "Ohne Ordner")}</p>
           <ol class="rh-live-titel">${L.titel.map(([t, x, gesperrt]) => `<li class="${gesperrt ? "gesperrt" : ""}"><span class="rh-zahl">${t}</span>${esc(x)}${gesperrt ? `<span class="rh-geltung fest" title="Muster der Sperrliste: teilt die Aufnahme nicht">gesperrt</span>` : ""}</li>`).join("")}</ol></div>
         <div class="ak-geraet rh-a-uhr" data-bauform="inspektor"><span class="ak-schraube lo" style="--dreh:20deg"></span><span class="ak-schraube ro" style="--dreh:-30deg"></span>
@@ -135,7 +134,7 @@
       <span class="rh-logo-bild gross" style="--lack:${R.lack(s.sender)}" aria-hidden="true">${esc(R.kuerzel(s.sender))}</span>
       <div class="rh-abo-text"><h2>${esc(s.sender)}</h2><p class="rh-still">${datum(s.datum)} · ${s.art === "puffer" ? "aus dem Puffer" : "direkt"} · ${esc(ordnerName(s.ordner))}</p>
         <div class="rh-abo-zahlen"><span><b>${s.titel.length}</b> ${s.titel.length === 1 ? "Titel" : "Titel"}</span><span><b>${dauer(s.dauer)}</b> lang</span><span><b>${mb(s.mb)}</b></span><span><b>${s.codec} ${s.kbit}</b> kbit/s</span>
-          <span class="rh-a-guete ${s.abgebrochen ? "rot" : s.luecken ? "gelb" : "gruen"}"><ak-led farbe="${s.abgebrochen ? "rot" : s.luecken ? "gelb" : "gruen"}" zustand="an" groesse="klein"></ak-led>${s.abgebrochen ? "abgebrochen" : s.luecken ? `${s.luecken} Lücken` : "ohne Lücken"}</span></div></div>
+          <span class="rh-a-guete ${s.abgebrochen ? "rot" : s.luecken ? "gelb" : "gruen"}">${s.abgebrochen ? "abgebrochen" : s.luecken ? `${s.luecken} Lücken` : "ohne Lücken"}</span></div></div>
       <div class="rh-detail-knoepfe rh-abo-knoepfe">
         <button class="knopf primaer" type="button" data-aktion="hoeren"><i class="fa-solid fa-play"></i>Hören</button>
         <button class="knopf" type="button" data-aktion="schneiden"><i class="fa-solid fa-scissors"></i>Schneiden</button>
@@ -165,14 +164,12 @@
         <span>${sortspalte("sender", "Aufnahme", false)}${sortspalte("datum", "Datum", true)}</span><span class="rh-ohne-sort">Titel</span>
         <span class="rechts">${sortspalte("dauer", "Länge", true)}</span><span class="rechts">${sortspalte("mb", "Größe", true)}</span><span class="rh-ohne-sort"></span></div>
       ${z.laeuft ? `<article class="rh-sender rh-aufnahme laeuft"><div class="rh-sender-kern" data-aktion="live">
-        <span class="led"><ak-led farbe="rot" zustand="blinkt" groesse="klein" hilfe="nimmt auf"></ak-led></span>
         <span class="rh-logo-bild" style="--lack:${R.lack(A.LAEUFT.sender)}">${esc(R.kuerzel(A.LAEUFT.sender))}</span>
         <div class="name"><b>${esc(A.LAEUFT.sender)}</b><div class="meta"><span>läuft seit ${A.LAEUFT.start}</span><span>${esc(ziel()?.name ?? "Ohne Ordner")}</span></div></div>
         <div class="rh-a-titelzahl">${A.LAEUFT.titel.length}</div><div class="laenge">${zeit(A.LAEUFT.sekunden)}</div><div class="laenge">-</div>
         <div class="rh-aktionen rh-a-aktionen"><button class="rund" type="button" data-aktion="stopp" title="Aufnahme beenden" aria-label="Aufnahme beenden"><i class="fa-solid fa-stop"></i></button></div></div></article>` : ""}
       ${liste.map((s) => `<article class="rh-sender rh-aufnahme${z.spielt === s.id ? " spielt" : ""}" data-id="${s.id}">
         <div class="rh-sender-kern" data-aktion="waehlen">
-          <span class="led"><ak-led farbe="${z.spielt === s.id ? "blau" : s.abgebrochen ? "bernstein" : "gelb"}" zustand="${z.spielt === s.id || s.abgebrochen ? "an" : "aus"}" groesse="klein" hilfe="${z.spielt === s.id ? "spielt" : s.abgebrochen ? "abgebrochen" : "bereit"}"></ak-led></span>
           <span class="rh-logo-bild" style="--lack:${R.lack(s.sender)}">${esc(R.kuerzel(s.sender))}</span>
           <div class="name"><b>${esc(s.sender)}</b><div class="meta"><span>${datum(s.datum)}</span><span>${esc(ordnerName(s.ordner))}</span>${s.abgebrochen ? `<span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>abgebrochen</span>` : ""}</div></div>
           <div class="rh-a-titelzahl">${s.titel.length}</div><div class="laenge">${zeit(s.dauer)}</div><div class="laenge">${mb(s.mb)}</div>
@@ -187,7 +184,6 @@
     return `<div class="rh-spalten rh-a-spalten" aria-hidden="true"><span>Titel</span><span class="rh-ohne-sort">ab</span><span class="rechts">Länge</span><span class="rechts">Größe</span><span></span></div>
       ${s.titel.map((t) => { const spielt = z.spielt === s.id && t.nr === 2; return `<article class="rh-sender rh-aufnahme rh-a-titel${spielt ? " spielt" : ""}" data-nr="${t.nr}">
         <div class="rh-sender-kern" data-aktion="hoeren">
-          <span class="led"><ak-led farbe="blau" zustand="${spielt ? "an" : "aus"}" groesse="klein"></ak-led></span>
           <span class="rh-a-nr">${String(t.nr).padStart(2, "0")}</span>
           <div class="name"><b>${esc(t.titel)}</b>${t.titel === "Werbung" ? `<div class="meta"><span class="rh-geltung fest">gesperrt</span></div>` : ""}</div>
           <div class="rh-a-titelzahl rh-zahl">${zeit(t.start)}</div><div class="laenge">${zeit(t.dauer)}</div><div class="laenge">${mb(t.mb)}</div>
@@ -207,7 +203,6 @@
     return `<div class="rh-spalten rh-a-spalten" role="group" aria-label="Sortierung"><span>${sortspalte("sender", "Datei", false)}${sortspalte("datum", "Datum", true)}</span><span class="rh-ohne-sort">Art</span>
         <span class="rechts">${sortspalte("dauer", "Länge", true)}</span><span class="rechts">${sortspalte("mb", "Größe", true)}</span><span></span></div>
       ${ort.dateien.map(([n, sek, groesse, tag], i) => `<article class="rh-sender rh-aufnahme" data-datei="${i}"><div class="rh-sender-kern" data-aktion="hoeren">
-        <span class="led"><ak-led farbe="gelb" zustand="aus" groesse="klein"></ak-led></span>
         <span class="rh-a-dateisymbol"><i class="fa-solid fa-file-audio"></i></span>
         <div class="name"><b>${esc(n)}</b><div class="meta"><span>${esc(z.pfad)}</span><span>${new Date(tag).toLocaleDateString("de-DE")}</span></div></div>
         <div class="rh-a-titelzahl">${n.split(".").pop().toUpperCase()}</div><div class="laenge">${zeit(sek)}</div><div class="laenge">${mb(groesse)}</div>
@@ -313,7 +308,7 @@
           <button class="knopf" type="button" data-s="umwandeln"><i class="fa-solid fa-arrows-rotate"></i>Umwandeln</button></div>
       </div>
       ${s.frage ? rueckfrage(`${behalten.length} ${behalten.length === 1 ? "Stück" : "Stücke"} behalten und ${st.length - behalten.length} verwerfen? Das ${ziel}. Rückgängig geht danach über die Schritte.`, "Schneiden", "schnitt", "", "fa-scissors") : ""}
-      ${s.auftrag ? `<div class="rh-auftrag"><ak-led farbe="gruen" zustand="blinkt" groesse="klein"></ak-led><span>${esc(s.auftrag.was)}: ${s.auftrag.text}</span>
+      ${s.auftrag ? `<div class="rh-auftrag"><span>${esc(s.auftrag.was)}: ${s.auftrag.text}</span>
         <div class="balken"><span style="width:${s.auftrag.anteil}%"></span></div><span class="rh-zahl">${s.auftrag.anteil} %</span><button class="rund" type="button" aria-label="Abbrechen" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>` : ""}
     </section>`;
   }
@@ -427,7 +422,6 @@
     $("#d-sender").setAttribute("text", (live ? L.sender : s.sender).toUpperCase()); $("#d-titel").textContent = titel;
     $("#q-text").setAttribute("text", live ? "LIVE" : "AUFNAHME");
     $("#zeit").setAttribute("text", live ? zeit(L.sekunden).padStart(8, "0") : "00:03:12");
-    $("#d-led").setAttribute("farbe", live ? "rot" : "blau");
   }
 
   function neu() {

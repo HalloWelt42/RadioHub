@@ -1,13 +1,13 @@
 /* Seite Aufnahmen und Schnitt (Entwurf RAD-17): nur, was über Radio und Podcasts hinausgeht. Zeilen, Facetten, Kopf
    eines gewählten Eintrags, Band, Werkzeugleiste und Kanzel kommen aus radio-bausteine.css, rechner.css, podcasts.css. */
 
-/* Seitenleiste: Quelle oben, Ordner mit Licht für das Aufnahmeziel, Kennzahlen unten fest */
+/* Seitenleiste: Quelle oben, Ordner mit Nadel für das Aufnahmeziel, Kennzahlen unten fest */
 #quelle { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #quelle button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
 .rh-filter { grid-template-rows: auto minmax(0, 1fr) auto; }
-.rh-aordner { display: grid; grid-template-columns: 14px 20px minmax(0, 1fr) auto; gap: 8px; align-items: center; inline-size: 100%; text-align: left; cursor: pointer; }
-.rh-aordner .rh-ordner-symbol, .rh-alle-abos .rh-ordner-symbol { color: var(--akzent); }
-.rh-alle-abos:has(.rh-ordner-symbol) { grid-template-columns: 20px minmax(0, 1fr) auto; }
+.rh-aordner { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: center; inline-size: 100%; text-align: left; cursor: pointer; }
+.rh-aordner .rh-ordner-symbol { color: var(--akzent); }
+.rh-alle-abos { grid-template-columns: minmax(0, 1fr) auto; text-align: left; }
 .rh-nadel { inline-size: 32px; block-size: 32px; display: grid; place-items: center; border: 0; border-radius: var(--r1); background: transparent; color: var(--text-3); cursor: pointer; opacity: 0; }
 .rh-aordner:hover .rh-nadel, .rh-aordner:focus-within .rh-nadel, .rh-nadel.an { opacity: 1; }
 .rh-nadel.an { color: var(--led-rot); }
@@ -22,11 +22,11 @@
 
 /* Liste: Aufnahme, Titelzahl (oder Startzeit, Art), Länge, Größe, Aktionen */
 .rh-a-spalten, .rh-aufnahme .rh-sender-kern { --rh-aktionen: calc(44px * 3 + 8px);
-  grid-template-columns: 22px calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 6) calc(var(--klein) * 6) calc(var(--klein) * 7) var(--rh-aktionen);
-  grid-template-areas: "led logo name titel laenge groesse aktionen"; }
+  grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) calc(var(--klein) * 6) calc(var(--klein) * 6) calc(var(--klein) * 7) var(--rh-aktionen);
+  grid-template-areas: "logo name titel laenge groesse aktionen"; }
 .rh-a-titel .rh-sender-kern { --rh-aktionen: calc(44px * 5 + 16px); }
 .rh-a-spalten { display: grid; }
-.rh-a-spalten > span:first-child { grid-column: led / name; display: flex; gap: 14px; }
+.rh-a-spalten > span:first-child { grid-column: logo / name; display: flex; gap: 14px; }
 .rh-a-spalten > span:nth-child(2) { grid-area: titel; }
 .rh-a-spalten > span:nth-child(3) { grid-area: laenge; }
 .rh-a-spalten > span:nth-child(4) { grid-area: groesse; }
@@ -100,13 +100,11 @@
   background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); }
 .rh-schnitt-block > .ak-etikett { flex-basis: 100%; }
 .rh-schnitt-block .rh-still { font-size: var(--klein); flex-basis: 100%; }
-.rh-schnitt .rh-auftrag { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
 
 @container liste (max-width: 52em) {
   .rh-a-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rh-a-spalten > .rh-ohne-sort { display: none; }
   .rh-aufnahme .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "titel laenge groesse"; gap: 8px 12px; padding: 10px; }
-  .rh-aufnahme .led { position: absolute; left: 4px; top: 4px; padding: 0; z-index: 1; }
   .rh-stueck-spalten { display: none; }
   .rh-stueck { grid-template-columns: calc(var(--gross) * 2.4) minmax(0, 1fr) auto 44px; }
   .rh-stueck > .rh-zahl { display: none; }
