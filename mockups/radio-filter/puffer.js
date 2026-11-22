@@ -66,7 +66,7 @@
         <div class="rh-puffer-zeile">
           <button class="knopf" type="button" title="30 Sekunden zurück"><i class="fa-solid fa-rotate-left"></i>30 s</button>
           <div class="rh-puffer pz-puffer" title="Zeitversatz: Striche sind Titelgrenzen, violett ist Werbung">${balken({ stelle, aufnahme, tipp })}
-            <span>${stelle < JETZT ? `${zeit(JETZT - stelle)} hinter live · ` : ""}${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel${aufnahme ? ` · <span class="pz-rot">Aufnahme ab ${uhr(aufnahme)}</span>` : ""}</span></div>
+            <span>${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel</span></div>
           <button class="knopf" type="button" title="Zurück zu live"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-tower-broadcast"></i>Live</button></div>
         ${titelzeile(stelle)}</div></section>`;
   const band = (inhalt) => `<div class="rh-band rp-band pz-band" role="status">${inhalt}</div>`;
@@ -237,8 +237,7 @@
           <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" led="blau" hilfe="Fokus: die Liste folgt dem laufenden Sender" an></ak-taster>
           <ak-taster art="glas" symbol="fa-wave-square" farbe="weiss" led="weiss" hilfe="Bitrate"></ak-taster></div></div></div></section>`;
   const quelle60 = ({ text, farbe, uhrtext, stelle, aufnahme: rec = null }) => {
-    const zeile = rec ? `${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel · <span class="pz-rot">Aufnahme ab ${uhr(rec)}</span>`
-      : `${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel`;
+    const zeile = `${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel`;
     return `<section class="rh-modul rh-m-zeit pz60-zeit" aria-label="Quelle und Zeit"><span class="ak-etikett">Quelle und Zeit</span>
       <div class="pz60-raster">
         <div class="ak-glas rh-zeit-glas pz60-glas">

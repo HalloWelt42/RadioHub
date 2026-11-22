@@ -8,10 +8,8 @@
   import type { Spulstand } from "./kanzel";
   import type { Wiedergabe } from "./wiedergabe.svelte";
 
-  let { stand, wiedergabe, hilfe, links, rechts, marken = [], striche = [], aufnahme = null, tipp, einrasten, zusatz = null }: {
+  let { stand, wiedergabe, hilfe, links, rechts, marken = [], striche = [], aufnahme = null, tipp, einrasten }: {
     stand: Spulstand;
-    /** rot hinter der Angabe, etwa "Aufnahme ab 02:24" (RAD-54) */
-    zusatz?: string | null;
     wiedergabe: Wiedergabe;
     hilfe: string;
     links: Snippet;
@@ -66,7 +64,7 @@
           <b>{hinweis.titel}</b><span>{hinweis.text}</span></span>
       {/if}
     </div>
-    <span>{stand.text}{#if zusatz} · <span class="rh-rot">{zusatz}</span>{/if}</span>
+    <span>{stand.text}</span>
   </div>
   {@render rechts()}
 </div>

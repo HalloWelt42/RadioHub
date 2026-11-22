@@ -149,11 +149,10 @@ describe("Spulzeilen", () => {
     expect(zeitversatzStand(spielt({ playerMode: "hls", isRecording: true, hlsStatus: HLS }), t).gesperrt).toBe(false);
     expect(sekundenHinterLive(HLS, 1900)).toBe(0);
   });
-  it("Zeile im Zeitversatz wie im Entwurf: Abstand immer (auch 0:00), mit Aufnahme ohne Abstand (RAD-54)", () => {
-    const p = { hinter: 570, gepuffert: 4790, max: 7200, titel: 19, aufnahme: false };
+  it("Zeile im Zeitversatz wie im Entwurf: Abstand immer, auch 0:00 (RAD-54), ohne Aufnahmehinweis (RAD-61)", () => {
+    const p = { hinter: 570, gepuffert: 4790, max: 7200, titel: 19 };
     expect(pufferZeile(p, t)).toBe("9:30 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
     expect(pufferZeile({ ...p, hinter: 0 }, t)).toBe("0:00 hinter live · 1:19:50 von 2:00:00 · 19 Titel");
-    expect(pufferZeile({ ...p, aufnahme: true }, t)).toBe("1:19:50 von 2:00:00 · 19 Titel");
   });
   it("Position: Füllung nach der Lage, gesperrt ohne Dauer", () => {
     expect(positionStand(stand({ zeit: 754, dauer: 2700, lage: 27.9 }), t)).toMatchObject({ fuellung: 27.9, bahn: 100, text: "12:34 von 45:00", gesperrt: false });

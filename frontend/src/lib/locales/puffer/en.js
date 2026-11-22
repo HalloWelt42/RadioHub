@@ -20,8 +20,6 @@ export default {
   titel: 'Buffer: {sender}',
   kopfZeile: 'since {seit} · {laenge} of {max} · {titel} tracks · ads {werbung}',
   zeileVersatz: '{hinter} behind live · {laenge} of {max} · {titel} tracks',
-  zeileAufnahme: '{laenge} of {max} · {titel} tracks',
-  aufnahmeAbUhr: 'Recording from {uhr}',
   zahlTitel: '{n} tracks',
   laengeVonMax: '{laenge} of {max}',
   schliessen: 'Back to radio',
