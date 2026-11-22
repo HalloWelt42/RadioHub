@@ -95,15 +95,15 @@
 .tv-hinweis { flex-basis: 100%; max-inline-size: 1180px; margin: 0; color: var(--text-2); }
 .tw-toene { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 14px; }
 /* Elfenbein räumlich wie der Klavierlack: Licht von oben über die gewölbte Kappe, Flanken abgeschattet, Lichtkante oben
-   und dunklere Kante unten innen, darunter ein Sockel und ein weicher Schlagschatten in neutralem Dunkel, nie im Ton
-   der Kappe (Nutzer 22.11.2026); gedrückt sinkt die Kappe auf den Sockel. */
+   und dunklere Kante unten innen, darunter ein weicher, gestaffelter Schlagschatten in neutralem Dunkel, nie im Ton
+   der Kappe (Nutzer 22.11.2026), nicht hart; gedrückt sinkt die Kappe und der Schatten wird kürzer. */
 .tv-elfenbein.tw-tafel { --k-grund: #e6dcc6;
   --k-bild: linear-gradient(90deg, rgb(70 45 15 / .1), rgb(70 45 15 / 0) 22%, rgb(70 45 15 / 0) 78%, rgb(70 45 15 / .12)),
     linear-gradient(180deg, #fffbf2 0%, #f1e8d5 30%, #e2d6bc 68%, #cdbd9c 100%);
-  --k-schatten: inset 0 1px 1px rgb(255 255 255 / .95), inset 0 -3px 4px rgb(90 60 20 / .28), 0 0 0 1px rgb(0 0 0 / .45),
-    0 3px 0 rgb(0 0 0 / .42), 0 4px 3px rgb(0 0 0 / .35), 0 9px 14px rgb(0 0 0 / .3);
-  --k-gedrueckt: inset 0 1px 1px rgb(255 255 255 / .7), inset 0 2px 5px rgb(90 60 20 / .35), 0 0 0 1px rgb(0 0 0 / .45),
-    0 1px 0 rgb(0 0 0 / .42), 0 2px 2px rgb(0 0 0 / .3), 0 4px 6px rgb(0 0 0 / .22); }
+  --k-schatten: inset 0 1px 1px rgb(255 255 255 / .95), inset 0 -3px 4px rgb(90 60 20 / .28), 0 0 0 1px rgb(0 0 0 / .22),
+    0 2px 2px rgb(0 0 0 / .2), 0 5px 8px rgb(0 0 0 / .16), 0 10px 18px rgb(0 0 0 / .12);
+  --k-gedrueckt: inset 0 1px 1px rgb(255 255 255 / .7), inset 0 2px 5px rgb(90 60 20 / .35), 0 0 0 1px rgb(0 0 0 / .22),
+    0 1px 1px rgb(0 0 0 / .18), 0 2px 4px rgb(0 0 0 / .14), 0 4px 8px rgb(0 0 0 / .1); }
 
 /* Glimmen: Tastenlicht flach in voller Farbe, ohne Glanzpunkt und Verlauf (Nutzer 22.11.2026: "keine
    glanzeffekte auf LEDs das ist unnatürlich, lieber leichtes glimmen"); aus nur ein dunkler Hauch der Farbe */
