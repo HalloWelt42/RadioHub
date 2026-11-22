@@ -11,7 +11,7 @@ export default {
     technik: 'Technical', zeitansage: 'Time announcement', ort: 'Location',
   },
   karte: {
-    sprache: 'Language and sounds', spracheGeraet: 'Language', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
+    sprache: 'Language', spracheGeraet: 'Language', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
     zeitversatz: 'Time shift', aufnahme: 'Recording', abruf: 'Fetching subscriptions', zeitansage: 'Time announcement', stimme: 'Voice',
     kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', helfer: 'Services in the home network', zugang: 'Access',
     abgleich: 'Nightly sync',

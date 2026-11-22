@@ -134,8 +134,6 @@ class AppEinstellungen(Grundeinstellungen):
     # --- RAD-11: bisher in der Tabelle config (Stand der Oberfläche), jetzt hier mit Grenzen und Prüfung ---
     language: Sprache = Field("de", title="Sprache", json_schema_extra={**ALLGEMEIN, "beschriftungen": SPRACHEN},
                               description="Sprache der Oberfläche, für alle Geräte.")
-    ui_click_sounds: bool = Field(True, title="Klicktöne", json_schema_extra=ALLGEMEIN,
-                                  description="Leise Töne beim Drücken von Tasten und Schaltern.")
     ad_detection_enabled: bool = Field(True, title="Werbeerkennung", json_schema_extra=RADIO,
                                        description="Prüft Sender auf reine Werbe- und Verkaufskanäle.")
     ad_detection_methods: list[Pruefart] = Field(default_factory=lambda: ["url_check", "header_check"], title="Verfahren",
@@ -181,7 +179,7 @@ CONFIG_FELDER: frozenset[str] = frozenset({
 # RAD-11: aus dem Stand der Oberfläche in die Einstellungen; eigener Übertrag (der erste ist auf bestehenden Rechnern
 # schon gelaufen), danach ebenfalls unter /api/config erreichbar
 CONFIG_FELDER_RAD11: frozenset[str] = frozenset({
-    "language", "ui_click_sounds", "ad_detection_enabled", "ad_detection_methods",
+    "language", "ad_detection_enabled", "ad_detection_methods",
     "ad_detection_threshold", "ort_name", "ort_breite", "ort_laenge",
 })
 UEBERTRAEGE: tuple[tuple[str, frozenset[str]], ...] = (

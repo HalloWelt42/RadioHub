@@ -8,9 +8,8 @@ window.RHEinstellungen = {
   BEREICHE: [
     { id: "allgemein", titel: "Allgemein", symbol: "fa-gear", reiter: [
       { id: "bedienung", titel: "Bedienung", symbol: "fa-hand-pointer", karten: [
-        { titel: "Sprache und Töne", symbol: "fa-language", zeilen: [
+        { titel: "Sprache", symbol: "fa-language", zeilen: [
           { name: "Sprache", erklaerung: "Sprache der Oberfläche.", geltung: "alle", art: "sprache", wert: "de" },
-          { name: "Klicktöne", erklaerung: "Leise Töne beim Drücken von Tasten und Schaltern.", geltung: "alle", art: "schalter", wert: true },
         ] },
         { titel: "Fehlersuche", symbol: "fa-stethoscope", zeilen: [
           { name: "Entwickleransicht", erklaerung: "Zeigt an Aufnahmen Güte und Lücken des Mitschnitts.", geltung: "geraet", art: "schalter", wert: false },

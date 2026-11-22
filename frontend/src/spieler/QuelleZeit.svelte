@@ -4,7 +4,6 @@
   // Sekunden vor; Puffer und Live stehen links und rechts der Segmentanzeige (RAD-60). Gilt keins von beiden, steht die Zeile des Zeitversatzes gesperrt da (sie verschwindet nie). Den Titel
   // zeigt die Matrixanzeige, durch die Titel springen Vor und Zurück der Steuerung (RAD-60).
   import { t } from "../lib/i18n.svelte.js";
-  import * as sfx from "../lib/uiSounds.js";
   import Spulzeile from "./Spulzeile.svelte";
   import { werbemarken } from "./werbehinweis.svelte";
   import { live, spulen } from "./aktionen";
@@ -62,8 +61,7 @@
          Zeitversatzes gesperrt, damit nichts rückt -->
     <div class="rh-zeit-kopf">
       {#if spulbar}
-        <button class="knopf rh-spaltenknopf" type="button" title={t("puffer.pufferHilfe")} aria-label={t("puffer.pufferHilfe")} disabled={!imVersatz}
-          onmouseenter={sfx.hover} onclick={() => { actions.navigateTo("/radio/puffer"); sfx.click(); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
+        <button class="knopf rh-spaltenknopf" type="button" title={t("puffer.pufferHilfe")} aria-label={t("puffer.pufferHilfe")} disabled={!imVersatz} onclick={() => { actions.navigateTo("/radio/puffer"); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
       {/if}
       <div class="ak-glas rh-zeit-glas">
         <ak-segmente class="rh-zeit-quelle" art="14" stellen="7" text={anzeige.quelle.text} hilfe={t("kanzel.quelleHilfe")}
@@ -72,30 +70,26 @@
       </div>
       {#if spulbar}
         <button class="knopf rh-spaltenknopf" type="button" title={versatz?.live ? t("player.bereitsLive") : t("player.goLive")}
-          disabled={!versatz || ruht || versatz.live} onmouseenter={sfx.hover} onclick={() => { live(); sfx.click(); }}><i class="fa-solid fa-tower-broadcast"></i>{t("kanzel.live")}</button>
+          disabled={!versatz || ruht || versatz.live} onclick={() => { live(); }}><i class="fa-solid fa-tower-broadcast"></i>{t("kanzel.live")}</button>
       {/if}
     </div>
     {#if versatz}
       <Spulzeile stand={versatzZeile ?? versatz} {wiedergabe} hilfe={t("kanzel.pufferHilfe", { max: versatz.max })} marken={imVersatz ? pufferMarken(stand) : []}
                  {striche} {aufnahme} tipp={imVersatz ? tipp : undefined} einrasten={imVersatz ? einrasten : undefined}>
         {#snippet links()}
-          <button class="knopf" type="button" title={t("kanzel.zurueck30Hilfe")} aria-label={t("kanzel.zurueck30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt}
-            onmouseenter={sfx.hover} onclick={() => { spulen(-30); sfx.click(); }}><i class="fa-solid fa-rotate-left"></i>{t("kanzel.sekunden30")}</button>
+          <button class="knopf" type="button" title={t("kanzel.zurueck30Hilfe")} aria-label={t("kanzel.zurueck30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt} onclick={() => { spulen(-30); }}><i class="fa-solid fa-rotate-left"></i>{t("kanzel.sekunden30")}</button>
         {/snippet}
         {#snippet rechts()}
-          <button class="knopf" type="button" title={t("kanzel.vor30Hilfe")} aria-label={t("kanzel.vor30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt || versatz.live}
-            onmouseenter={sfx.hover} onclick={() => { spulen(30); sfx.click(); }}><i class="fa-solid fa-rotate-right"></i>{t("kanzel.sekunden30")}</button>
+          <button class="knopf" type="button" title={t("kanzel.vor30Hilfe")} aria-label={t("kanzel.vor30Hilfe")} disabled={spulenGesperrt || versatz.gesperrt || versatz.live} onclick={() => { spulen(30); }}><i class="fa-solid fa-rotate-right"></i>{t("kanzel.sekunden30")}</button>
         {/snippet}
       </Spulzeile>
     {:else if position}
       <Spulzeile stand={position} {wiedergabe} hilfe={t("kanzel.positionHilfe")} marken={stand.currentEpisode ? werbemarken(wiedergabe.dauer) : []}>
         {#snippet links()}
-          <button class="knopf" type="button" title={t("player.skipBack")} aria-label={t("player.skipBack")} disabled={spulenGesperrt || position.gesperrt}
-            onmouseenter={sfx.hover} onclick={() => { spulen(-10); sfx.click(); }}><i class="fa-solid fa-rotate-left"></i>10 s</button>
+          <button class="knopf" type="button" title={t("player.skipBack")} aria-label={t("player.skipBack")} disabled={spulenGesperrt || position.gesperrt} onclick={() => { spulen(-10); }}><i class="fa-solid fa-rotate-left"></i>10 s</button>
         {/snippet}
         {#snippet rechts()}
-          <button class="knopf" type="button" title={t("player.skipForward")} aria-label={t("player.skipForward")} disabled={spulenGesperrt || position.gesperrt}
-            onmouseenter={sfx.hover} onclick={() => { spulen(10); sfx.click(); }}><i class="fa-solid fa-rotate-right"></i>10 s</button>
+          <button class="knopf" type="button" title={t("player.skipForward")} aria-label={t("player.skipForward")} disabled={spulenGesperrt || position.gesperrt} onclick={() => { spulen(10); }}><i class="fa-solid fa-rotate-right"></i>10 s</button>
         {/snippet}
       </Spulzeile>
     {/if}

@@ -4,7 +4,6 @@
   // als Chips, der Hinweis auf die durch Regeln ausgeblendeten Sender mit Sprung und Alle zurücksetzen.
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { bewertungName, landName, qualitaetName, zahl } from "../../lib/radio/anzeige";
   import { aktive, ohne, zurueckgesetzt, type Chip, type Schnellfilter } from "../../lib/radio/schnellfilter";
   import type { Qualitaet } from "../../lib/radio/typen";
@@ -59,7 +58,7 @@
     </div>
     <Suchfeld wert={filter.suche} onsuche={(s) => onaendern((f) => ({ ...f, suche: s }))} />
     <button class="knopf rh-neu-laden" type="button" title={t("radio.neuLadenHilfe")} aria-label={t("radio.neuLaden")} disabled={laedt}
-            onclick={() => { onneuladen(); sfx.click(); }}>
+            onclick={() => { onneuladen(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("radio.neuLaden")}</span></button>
   </div>
   <div class="rh-werkzeug-zeile">

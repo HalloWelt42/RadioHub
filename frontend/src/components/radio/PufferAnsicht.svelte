@@ -5,7 +5,6 @@
   // Aufnahme ab hier, in den Bereich nehmen; ein Bereich (Titel A bis B) wird als fertige Aufnahme gesichert.
   import { appState, actions } from "../../lib/store.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { formatTimeShort } from "../../lib/formatters.js";
   import { bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
@@ -51,17 +50,14 @@
   });
 
   function schliessen(): void {
-    sfx.click();
     onzu();
   }
 
   function hoeren(a: Abschnitt): void {
-    sfx.click();
     puffer.springen(a.von);
   }
 
   function waehlen(a: Abschnitt): void {
-    sfx.click();
     if (!wahl) wahl = { a, b: a };
     else if (wahl.a.von === a.von && wahl.b.von === a.von) wahl = null;
     else wahl = { a: wahl.a, b: a };
@@ -138,12 +134,12 @@
       <div class="rh-pg-knoepfe">
         {#if !jung}
         <button class="knopf" type="button" title={t("puffer.titelZurueckHilfe")} disabled={vorheriger(liste, stelle) === null}
-          onclick={() => { puffer.vorher(); sfx.click(); }}><i class="fa-solid fa-backward-step"></i>{t("puffer.titelZurueck")}</button>
+          onclick={() => { puffer.vorher(); }}><i class="fa-solid fa-backward-step"></i>{t("puffer.titelZurueck")}</button>
         <button class="knopf" type="button" title={t("puffer.titelVorHilfe")} disabled={naechster(liste, stelle) === null}
-          onclick={() => { puffer.weiter(); sfx.click(); }}>{t("puffer.titelVor")}<i class="fa-solid fa-forward-step"></i></button>
+          onclick={() => { puffer.weiter(); }}>{t("puffer.titelVor")}<i class="fa-solid fa-forward-step"></i></button>
         {/if}
         <button class="knopf" type="button" title={appState.isLive ? t("player.bereitsLive") : t("player.goLive")} disabled={!!appState.isLive}
-          onclick={() => { live(); mitte = null; sfx.click(); }}><i class="fa-solid fa-tower-broadcast"></i>{t("kanzel.live")}</button>
+          onclick={() => { live(); mitte = null; }}><i class="fa-solid fa-tower-broadcast"></i>{t("kanzel.live")}</button>
         <button class="rund" type="button" aria-label={t("puffer.schliessen")} title={t("puffer.schliessen")} onclick={schliessen}><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
@@ -153,7 +149,7 @@
       <div class="rh-pg-leiste-kopf"><span class="ak-etikett">{t("puffer.zeitleiste")}</span>
         <div class="rh-pg-zoom" role="group" aria-label={t("puffer.zoom")}>
           {#each ZOOMS as z (z)}
-            <button class="knopf" class:aktiv={zoom === z} type="button" aria-pressed={zoom === z} onclick={() => { zoom = z; mitte = null; sfx.click(); }}>
+            <button class="knopf" class:aktiv={zoom === z} type="button" aria-pressed={zoom === z} onclick={() => { zoom = z; mitte = null; }}>
               {z === "alles" ? t("puffer.zoomAlles") : t("puffer.zoomMin", { n: z })}</button>
           {/each}
         </div>

@@ -44,7 +44,7 @@
   const BEREICHE: Bereich[] = $derived([
     { id: "allgemein", symbol: "fa-gear", reiter: [
       ...(S ? [r("bedienung", "fa-hand-pointer", [
-        { karte: "sprache", symbol: "fa-language", felder: ["language", "ui_click_sounds"] },
+        { karte: "sprache", symbol: "fa-language", felder: ["language"] },
         { karte: "fehlersuche", symbol: "fa-stethoscope", felder: ["geraet:entwickleransicht"] }])]
         : [r("bedienung", "fa-hand-pointer", [{ karte: "spracheGeraet", symbol: "fa-language", felder: ["geraet:sprache"] }])]),
       r("tastatur", "fa-keyboard", [{ teil: TastaturTeil }]),

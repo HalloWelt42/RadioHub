@@ -7,7 +7,6 @@
   // und ohne Titel dunkel bleibt. Alle Matrizen haben so viele Stellen, wie ihre Breite trägt, füllen ihr Glas
   // (rasterbreite.ts) und laufen, wenn der Text länger ist; die große führt zur Quelle.
   import { t } from "../lib/i18n.svelte.js";
-  import * as sfx from "../lib/uiSounds.js";
   import { zurQuelle } from "./aktionen";
   import type { Anzeige } from "./kanzel";
   import { rasterStellen, statuszeile, STATUS_JE_SCHRIFT, ZEICHEN_JE_SCHRIFT } from "./rasterbreite";
@@ -37,7 +36,7 @@
     </div>
     <button class="rh-display-quelle" type="button" disabled={!anzeige.sender} title={anzeige.sender ? quelleHilfe : undefined}
       aria-label={anzeige.sender ? `${anzeige.sender}: ${quelleHilfe}` : t("kanzel.senderHilfe")}
-      onclick={() => { zurQuelle(); sfx.click(); }} use:rasterStellen={{ jeSchrift: ZEICHEN_JE_SCHRIFT, melden: (n) => (stellen = n) }}>
+      onclick={() => { zurQuelle(); }} use:rasterStellen={{ jeSchrift: ZEICHEN_JE_SCHRIFT, melden: (n) => (stellen = n) }}>
       <!-- der Appkern liest die Stellen beim Einhängen: neue Stellenzahl, neue Anzeige (nur wenn sich die Breite ändert) -->
       {#key stellen}<ak-segmente art="punkt" {stellen} lauf="280" farbe="gruen" text={anzeige.sender}></ak-segmente>{/key}
     </button>

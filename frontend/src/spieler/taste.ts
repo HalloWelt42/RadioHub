@@ -22,8 +22,6 @@ export interface TastenStand {
   beiDruck?: () => void;
   /** langes Drücken (Zeiger mindestens LANG_MS auf der Taste, RAD-60); dann kommt beiDruck nicht mehr */
   beiLang?: () => void;
-  /** Zeiger über der Taste */
-  beiZeigen?: () => void;
 }
 
 /** so lange hält man eine Taste für "lang gedrückt" */
@@ -65,13 +63,11 @@ export const taste: Action<Taster, TastenStand> = (el, anfang) => {
     if (langErledigt) { langErledigt = false; return; }
     if (!stand.gesperrt) stand.beiDruck?.();
   };
-  const zeigen = () => stand.beiZeigen?.();
   const knopf = el.querySelector<HTMLButtonElement>(".ak-taster-knopf");
   el.addEventListener("input", zustandZurueck);
   knopf?.addEventListener("pointerdown", halten);
   for (const art of ["pointerup", "pointerleave", "pointercancel"]) knopf?.addEventListener(art, loslassen);
   knopf?.addEventListener("click", druck);
-  knopf?.addEventListener("mouseenter", zeigen);
   setzen();
 
   return {
@@ -85,7 +81,6 @@ export const taste: Action<Taster, TastenStand> = (el, anfang) => {
       knopf?.removeEventListener("pointerdown", halten);
       for (const art of ["pointerup", "pointerleave", "pointercancel"]) knopf?.removeEventListener(art, loslassen);
       knopf?.removeEventListener("click", druck);
-      knopf?.removeEventListener("mouseenter", zeigen);
     },
   };
 };

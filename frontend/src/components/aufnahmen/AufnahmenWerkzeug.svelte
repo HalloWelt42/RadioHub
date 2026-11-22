@@ -7,7 +7,6 @@
   // Ordner (unter 1100 Pixeln), Zählwerk (Aufnahmen für die Auswahl oder Dateien des Ordners), Suche mit eigenem
   // Verlauf, Aktualisieren; darunter die aktiven Filter als Chips und der Hinweis, wohin neue Aufnahmen gehen.
   import { t } from "../../lib/i18n.svelte.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { zahl } from "../../lib/radio/anzeige";
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
   import Suchfeld from "../radio/Suchfeld.svelte";
@@ -48,7 +47,7 @@
                 hilfe={wolke ? t("aufnahmenAnsicht.wolkeSuche") : t("aufnahmenAnsicht.suche")} {onsuche} />
     {/key}
     <button class="knopf" type="button" title={t("aufnahmenAnsicht.aktualisierenHilfe")} aria-label={t("aufnahmenAnsicht.aktualisieren")} disabled={laedt}
-            onclick={() => { onaktualisieren(); sfx.click(); }}>
+            onclick={() => { onaktualisieren(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("aufnahmenAnsicht.aktualisieren")}</span></button>
   </div>
   <div class="rh-werkzeug-zeile">

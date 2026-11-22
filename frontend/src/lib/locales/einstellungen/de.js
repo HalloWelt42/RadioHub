@@ -11,7 +11,7 @@ export default {
     technik: 'Technik', zeitansage: 'Zeitansage', ort: 'Ort',
   },
   karte: {
-    sprache: 'Sprache und Töne', spracheGeraet: 'Sprache', fehlersuche: 'Fehlersuche', aussehen: 'Aussehen', bildschirm: 'Bildschirm',
+    sprache: 'Sprache', spracheGeraet: 'Sprache', fehlersuche: 'Fehlersuche', aussehen: 'Aussehen', bildschirm: 'Bildschirm',
     zeitversatz: 'Zeitversatz', aufnahme: 'Aufnahme', abruf: 'Abruf der Abos', zeitansage: 'Zeitansage', stimme: 'Stimme',
     kellerwolke: 'Kellerwolke', verzeichnisse: 'Verzeichnisse', helfer: 'Dienste im Heimnetz', zugang: 'Zugang',
     abgleich: 'Nächtlicher Abgleich',

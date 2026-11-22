@@ -111,9 +111,10 @@ def test_api_config_trennt_einstellungen_und_stand_der_oberflaeche(client):
 
 
 async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
-    """Der zweite Übertrag (RAD-11) holt Sprache, Klicktöne, Werbeerkennung und Ort aus der Tabelle, auch die doppelt
-    verpackten Verfahren und die Schwelle als Anteil. Der Rückblick der Puffer-Aufnahme ist seit RAD-46 keine
-    Einstellung mehr (die Aufnahme beginnt am laufenden Titel) und bleibt in der alten Tabelle."""
+    """Der zweite Übertrag (RAD-11) holt Sprache, Werbeerkennung und Ort aus der Tabelle, auch die doppelt verpackten
+    Verfahren und die Schwelle als Anteil. Der Rückblick der Puffer-Aufnahme ist seit RAD-46 keine Einstellung mehr (die
+    Aufnahme beginnt am laufenden Titel), die Klicktöne seit RAD-68 nicht (es gibt keine Klänge mehr); beide bleiben in
+    der alten Tabelle."""
     db_pfad = tmp_path / "radiohub.db"
     v = sqlite3.connect(db_pfad)
     v.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT)")
@@ -128,9 +129,9 @@ async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
         await e.starten()
         uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, UEBERTRAEGE[1][1])
         assert uebergangen == [] and "last_station_uuid" not in uebernommen
-        assert "hls_rec_lookback_minutes" not in uebernommen
+        assert "hls_rec_lookback_minutes" not in uebernommen and "ui_click_sounds" not in uebernommen
         st = e.stand
-        assert (st.language, st.ui_click_sounds) == ("en", False)
+        assert st.language == "en"
         assert st.ad_detection_methods == ["header_check"] and st.ad_detection_threshold == 90
         assert (st.ort_name, st.ort_breite, st.ort_laenge) == ("Hannover", 52.37, 9.74)
 

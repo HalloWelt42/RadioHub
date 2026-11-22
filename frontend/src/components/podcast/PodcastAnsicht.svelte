@@ -7,7 +7,6 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { aboliste, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Aktualisierungsstand, type Folge,
     type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
@@ -148,7 +147,6 @@
   }
 
   async function spielen(f: Folge, vonVorn = false) {
-    sfx.click();
     await sicher(async () => {
       const w = await podcastquelle.wiedergabe(f, liste.folgen);
       const folge = vonVorn ? { ...w.folge, resume_position: 0 } : w.folge;
@@ -187,7 +185,6 @@
   }
 
   function details(f: Folge) {
-    sfx.click();
     podcastzustand.folge(ansicht.offen === f.id ? null : f.id, f.aboId);
   }
 

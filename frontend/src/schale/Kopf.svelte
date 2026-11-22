@@ -7,7 +7,6 @@
   // zum Unterstützen.
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
-  import * as sfx from "../lib/uiSounds.js";
   import Darstellung from "./Darstellung.svelte";
   import Konto from "./Konto.svelte";
   import { PRO_QUELLCODE, UNTERSTUETZEN, type Ausgabe } from "../lib/ausgabe";
@@ -72,7 +71,7 @@
   <div class="rh-marke">
     <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}>RadioHub</a>
       {#if backend}<button class="rh-herz" type="button" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}
-              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); sfx.select(); }}><i class="fa-solid fa-heart"></i></button>
+              onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); }}><i class="fa-solid fa-heart"></i></button>
         <span class="rh-pro" title={t("schale.proTitel")}>PRO</span>
       {:else}<a class="rh-herz" href={UNTERSTUETZEN} target="_blank" rel="noopener" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}><i class="fa-solid fa-heart"></i></a>
         <a class="rh-basic" href={PRO_QUELLCODE} target="_blank" rel="noopener" title={t("schale.basicVerweis")} aria-label={t("schale.basicVerweis")}>BASIC</a>{/if}</span>
@@ -82,7 +81,7 @@
     {#each BEREICHE as b, i (b.id)}
       {@const l = licht(b.id)}
       <button class="rh-nav-knopf" type="button" aria-current={aktiv(b.id) ? "page" : undefined} title="{t(b.text)} ({i + 1})"
-              onclick={() => { actions.setTab(b.id); sfx.select(); }} onmouseenter={sfx.hoverSoft}>
+              onclick={() => { actions.setTab(b.id); }}>
         <ak-led art="schlitz" farbe={l.farbe} zustand={l.zustand}></ak-led><i class="fa-solid {b.symbol}"></i><span>{t(b.text)}</span>
       </button>
     {/each}

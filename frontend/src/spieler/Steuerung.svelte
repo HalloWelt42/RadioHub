@@ -11,7 +11,6 @@
   // sichtbar und ist gesperrt, wie in HiFiPlayer.
   import type { Drehregler } from "appkern-oberflaeche/instrumente";
   import { t } from "../lib/i18n.svelte.js";
-  import * as sfx from "../lib/uiSounds.js";
   import { aufnehmen, quelleStarten, reihenfolgeWeiter, spielenOderPause, stoppen, vor, vorSender, zurueck, zurueckSender, andereVariante } from "./aktionen";
   import { fokusSchalten } from "./fokus.svelte";
   import { bitrateAusStellung, bitrateRaster, bitrateStellung, tempoAusStellung, tempoRaster, tempoStellung, type BitrateLage, type Tasten } from "./kanzel";
@@ -31,10 +30,6 @@
     lage: BitrateLage;
   } = $props();
 
-  /** Bedienung mit Klang (Senderwechsel ohne, wie bisher) */
-  const mitKlang = (tun: () => void) => () => { tun(); sfx.click(); };
-  const zeigen = () => sfx.hover();
-
   const drehFrei = $derived(lage === "frei" && !bitrate.wechselt);
   const stellung = $derived(lage === "fest" ? bitrateStellung(128) : bitrateStellung(bitrate.vorgabe));
   function gedreht(e: Event) {
@@ -47,36 +42,36 @@
   <div class="rh-steuerung">
     <div class="rh-transport ak-tastenreihe">
       <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" licht="bernstein" modus="tasten"
-        use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiLang: zurueckSender, beiZeigen: zeigen }}></ak-taster>
+        use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiLang: zurueckSender }}></ak-taster>
       <ak-taster art="glas" symbol="fa-stop" farbe="weiss" licht="bernstein" modus="tasten"
-        use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: mitKlang(stoppen), beiZeigen: zeigen }}></ak-taster>
+        use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: stoppen }}></ak-taster>
       <ak-taster class="rh-t-gruen" art="glas" symbol="fa-play" farbe="gruen" licht="gruen"
         use:taste={{ an: tasten.spielen.an, licht: tasten.spielen.licht, lichtFarbe: tasten.spielen.farbe, gesperrt: tasten.spielen.gesperrt, hilfe: tasten.spielen.hilfe,
-                     symbol: tasten.spielen.symbol, beiDruck: mitKlang(tasten.spielen.neuVerbinden ? quelleStarten : spielenOderPause), beiZeigen: zeigen }}></ak-taster>
+                     symbol: tasten.spielen.symbol, beiDruck: tasten.spielen.neuVerbinden ? quelleStarten : spielenOderPause }}></ak-taster>
       {#if kann.aufnahme}
       <ak-taster class="rh-t-rot" art="glas" symbol="fa-circle" farbe="rot" licht="rot"
         use:taste={{ an: tasten.aufnahme.an, licht: tasten.aufnahme.licht, gesperrt: tasten.aufnahme.gesperrt, hilfe: tasten.aufnahme.hilfe,
-                     beiDruck: mitKlang(aufnehmen), beiZeigen: zeigen }}></ak-taster>
+                     beiDruck: aufnehmen }}></ak-taster>
       {/if}
       <ak-taster art="glas" symbol="fa-forward-step" farbe="weiss" licht="bernstein" modus="tasten"
         use:taste={{ licht: tasten.vor.licht, gesperrt: tasten.vor.gesperrt, hilfe: tasten.vor.hilfe, symbol: "fa-forward-step", gespiegelt: tasten.vor.gespiegelt,
-                     beiDruck: vor, beiLang: vorSender, beiZeigen: zeigen }}></ak-taster>
+                     beiDruck: vor, beiLang: vorSender }}></ak-taster>
     </div>
     <div class="rh-betrieb ak-tastenreihe">
       <!-- Fokus auf den laufenden Sender ein oder aus (auch in Basic, RAD-19); dieselbe Größe wie alle Tasten der Reihe -->
       <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" licht="blau"
           use:taste={{ an: false, licht: tasten.quelle.licht, lichtFarbe: tasten.quelle.varianten ? "rot" : "blau", gesperrt: tasten.quelle.gesperrt,
                        hilfe: tasten.quelle.hilfe, symbol: tasten.quelle.varianten ? "fa-layer-group" : "fa-location-crosshairs",
-                       beiDruck: mitKlang(tasten.quelle.varianten ? andereVariante : fokusSchalten), beiZeigen: zeigen }}></ak-taster>
+                       beiDruck: tasten.quelle.varianten ? andereVariante : fokusSchalten }}></ak-taster>
       {#if kann.zeitversatz}
       <ak-taster art="glas" symbol={tasten.modus.symbol} farbe="weiss" licht={tasten.modus.farbe}
           use:taste={{ an: false, licht: tasten.modus.licht, lichtFarbe: tasten.modus.farbe, gesperrt: tasten.modus.gesperrt, hilfe: tasten.modus.hilfe,
-                       symbol: tasten.modus.symbol, beiDruck: mitKlang(onmodus), beiZeigen: zeigen }}></ak-taster>
+                       symbol: tasten.modus.symbol, beiDruck: onmodus }}></ak-taster>
       {/if}
       {#if kann.folgen}
       <ak-taster art="glas" symbol={tasten.reihenfolge.symbol} farbe="weiss" licht={tasten.reihenfolge.farbe}
           use:taste={{ an: false, licht: tasten.reihenfolge.licht, lichtFarbe: tasten.reihenfolge.farbe, gesperrt: tasten.reihenfolge.gesperrt, hilfe: tasten.reihenfolge.hilfe,
-                       symbol: tasten.reihenfolge.symbol, beiDruck: mitKlang(reihenfolgeWeiter), beiZeigen: zeigen }}></ak-taster>
+                       symbol: tasten.reihenfolge.symbol, beiDruck: reihenfolgeWeiter }}></ak-taster>
       {/if}
     </div>
     {#if app.playerMode === "podcast"}

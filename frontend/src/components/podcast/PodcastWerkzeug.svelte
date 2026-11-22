@@ -3,7 +3,6 @@
   // Pixeln), Zählwerk der Folgen, Suche mit eigenem Verlauf, Sortierung, Aktualisieren, Abonnieren; darunter die aktiven Filter als
   // Chips und der Hinweis auf die nächste automatische Aktualisierung.
   import { t } from "../../lib/i18n.svelte.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { zahl } from "../../lib/radio/anzeige";
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
   import { type Abo, type Aktualisierungsstand, type Podcastansicht } from "../../lib/podcasts";
@@ -68,10 +67,10 @@
               beschriftung={t("podcastAnsicht.sucheHilfe")} hilfe={t("podcastAnsicht.sucheHilfe")}
               onsuche={(s) => onaendern((a) => ({ ...a, suche: s, offen: null }))} />
     <button class="knopf" type="button" title={t("podcastAnsicht.aktualisierenHilfe")} aria-label={t("podcastAnsicht.aktualisieren")} disabled={laedt}
-            onclick={() => { onaktualisieren(); sfx.click(); }}>
+            onclick={() => { onaktualisieren(); }}>
       <i class="fa-solid fa-rotate" class:fa-spin={laedt}></i><span class="rh-breit">{t("podcastAnsicht.aktualisieren")}</span></button>
     <button class="knopf" type="button" title={t("podcastAnsicht.abonnierenHilfe")} aria-label={t("podcastAnsicht.abonnieren")} aria-pressed={ansicht.verzeichnis}
-            onclick={() => { onabonnieren(); sfx.click(); }}>
+            onclick={() => { onabonnieren(); }}>
       <i class="fa-solid fa-plus"></i><span class="rh-breit">{t("podcastAnsicht.abonnieren")}</span></button>
   </div>
   <div class="rh-werkzeug-zeile">

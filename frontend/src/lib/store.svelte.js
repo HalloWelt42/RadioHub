@@ -108,7 +108,7 @@ export const actions = {
 
   async initConfig() {
     try {
-      // Sprache, Klicktöne, Rückblick der Puffer-Aufnahme: eine Stelle für Start und Speichern (RAD-11)
+      // Sprache und Rückblick der Puffer-Aufnahme: eine Stelle für Start und Speichern (RAD-11)
       const { wirkungen } = await import('./einstellungen/wirkung');
       wirkungen(await api.getConfig());
     } catch (e) {

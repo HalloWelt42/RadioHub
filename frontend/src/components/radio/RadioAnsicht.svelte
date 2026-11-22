@@ -9,7 +9,6 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
   import { zurueckgesetzt, zuAbfrage, type Schnellfilter } from "../../lib/radio/schnellfilter";
@@ -191,12 +190,10 @@
   }
 
   function spielen(e: SenderEintrag, zeile?: SenderEintrag) {
-    sfx.click();
     void bedienung.spielen(e, zeile);
   }
 
   function details(e: SenderEintrag) {
-    sfx.click();
     vonHier = filterzustand.offen === e.uuid ? null : e.uuid;
     filterzustand.oeffnen(vonHier);
   }

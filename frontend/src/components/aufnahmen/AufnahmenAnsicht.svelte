@@ -9,7 +9,6 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { api } from "../../lib/api.js";
   import { appPfad } from "../../lib/router.js";
-  import * as sfx from "../../lib/uiSounds.js";
   import { abwaerts, aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste,
     type Aufnahme, type Aufnahmeansicht, type Aufnahmesortierung, type Titel, type Wolkendatei, type Wolkenebene } from "../../lib/aufnahmen";
   import { dauer } from "../../lib/aufnahmen/anzeige";
@@ -205,7 +204,6 @@
     playUrl: quelle.wolkeTon(d.pfad), source: "recording" });
 
   function abspielen(reihe: Eintrag[], start: Eintrag) {
-    sfx.click();
     if (appState.isRecording) { actions.showToast(t("aufnahmenAnsicht.erstBeenden"), "error"); return; }
     if (jetzt?.path === start.path) { actions.stop(); return; }
     appState.recordingPlaylist = reihe;
