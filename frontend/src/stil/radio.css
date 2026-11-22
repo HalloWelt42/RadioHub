@@ -116,7 +116,9 @@
 
 /* ═══ Senderliste ═══ Spaltenkopf und Zeilen teilen ein Raster; Spalten je Breite der Liste (Behälterabfrage in em) */
 .rh-liste { container: liste / inline-size; font-size: var(--gross); }
-.rh-spalten, .rh-sender-kern { --rh-aktionen: calc(var(--klein) * 9.4 + 144px); display: grid; gap: 0 14px; align-items: start;
+/* --rh-varianten: Zelle des Varianten-Knopfs, so breit wie sein längster Inhalt ("99 Varianten" mit Ebenen und Pfeil),
+   damit er nie unter den Stern ragt (RAD-59) */
+.rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 10.6); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: start;
   grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
   grid-template-areas: "logo name genres guete stimmen aktionen"; }
 .rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
@@ -162,7 +164,8 @@
 .rh-sender .guete-zelle span { grid-area: format; color: var(--text-3); font-family: var(--schrift-zahl); white-space: nowrap; line-height: 1.3; }
 .rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 6px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
-.rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: calc(var(--klein) * 9.4) 44px 44px 44px; gap: 4px; align-items: start; }
+.rh-aktionen { grid-area: aktionen; display: grid; grid-template-columns: var(--rh-varianten) 44px 44px 44px; gap: 4px; align-items: start; }
+.rh-aktionen .rh-varianten-knopf { inline-size: 100%; min-inline-size: 0; }
 .rh-aktionen .rund { inline-size: 44px; block-size: 44px; }
 /* alle Symbole der Zeilenknöpfe gleich groß, auch Ebenen und Pfeil am Varianten-Knopf (RAD-59) */
 .rh-aktionen :is(.rund, .rh-varianten-knopf) i { font-size: var(--gross); }
