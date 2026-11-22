@@ -166,7 +166,7 @@
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.codecUndBitrate")}</h3></div>{@render chipwahl("codecs", liste.facetten?.codecs ?? [])}
         <BitrateWahl {filter} onaendern={aendern} /></section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.eigeneBewertung")}</h3></div>
-        {#if liste.facetten?.bewertungen.length}{@render chipwahl("bewertungen", liste.facetten.bewertungen)}{:else}<p class="rh-leer-facette">{t("radio.keineBewertungen")}</p>{/if}</section>
+        {#if liste.facetten?.bewertungen.length}{@render chipwahl("bewertungen", liste.facetten.bewertungen)}{:else}<p class="rh-leer-facette">{t("radio.keineBewertungenTelefon")}</p>{/if}</section>
       <section class="rh-gruppe"><div class="rh-gruppe-kopf"><h3>{t("radio.eigeneKategorien")}</h3></div>
         {#if liste.facetten?.kategorien.length}{@render chipwahl("kategorien", liste.facetten.kategorien)}{:else}<p class="rh-leer-facette">{t("radio.keineKategorien")}</p>{/if}</section>
     </div>

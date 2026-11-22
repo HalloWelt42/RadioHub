@@ -41,6 +41,7 @@ export default {
   eigeneFilter: 'Own filters',
   einschaetzungHinweis: 'only for me, used in filters and rules',
   keineBewertungen: 'No assessment yet; set stars and marks in the details of a station.',
+  keineBewertungenTelefon: 'No assessment yet; set stars and marks on a computer in the details of a station.',
   eigeneKategorien: 'Own categories',
   keineKategorien: 'No categories yet',
   verwalten: 'Manage',

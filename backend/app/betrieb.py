@@ -124,7 +124,8 @@ class Radiobetrieb(Begleiter):
         for baustein, felder in einstellungen.UEBERTRAEGE:
             if await db.zeile("SELECT stufe FROM appkern_schema WHERE baustein=?", (baustein,)):
                 continue
-            uebernommen, uebergangen = await uebergang.config_uebernehmen(self.geruest.einstellungen, DB_PATH, felder)
+            uebernommen, uebergangen = await uebergang.config_uebernehmen(self.geruest.einstellungen, DB_PATH, felder,
+                                                                          einstellungen.ZUSAMMEN)
             if uebernommen:
                 await self._eintragen("radio.uebertrag", f"Aus der Tabelle config in die Einstellungen: {', '.join(uebernommen)}")
             for grund in uebergangen:

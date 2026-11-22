@@ -41,6 +41,7 @@ export default {
   eigeneFilter: 'Eigene Filter',
   einschaetzungHinweis: 'nur für mich, wirkt in Filtern und Regeln',
   keineBewertungen: 'Noch keine Einschätzung; Sterne und Merkmale setzt du in den Details eines Senders.',
+  keineBewertungenTelefon: 'Noch keine Einschätzung; Sterne und Merkmale setzt du am Rechner in den Details eines Senders.',
   eigeneKategorien: 'Eigene Kategorien',
   keineKategorien: 'Noch keine Kategorien',
   verwalten: 'Verwalten',

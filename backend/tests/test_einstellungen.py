@@ -136,6 +136,29 @@ async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
         assert (st.ort_name, st.ort_breite, st.ort_laenge) == ("Hannover", 52.37, 9.74)
 
 
+async def test_ort_wird_gemeinsam_uebernommen_und_eine_regel_bricht_den_uebertrag_nicht_ab(tmp_path):
+    """RAD-90: Breite und Länge gehören zusammen (Regel). Der Übertrag setzt sie gemeinsam; fehlt die Länge, bleibt der
+    Ort bei der Vorgabe und die übrigen Felder kommen trotzdem an (vorher brach der ganze Start-Schritt ab)."""
+    for zeilen, ort_da in ((["52.37", "9.74"], True), (["52.37", None], False)):
+        db_pfad = tmp_path / f"radiohub-{ort_da}.db"
+        v = sqlite3.connect(db_pfad)
+        v.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT)")
+        werte = [("language", "\"en\""), ("ort_breite", zeilen[0])] + ([("ort_laenge", zeilen[1])] if zeilen[1] else [])
+        v.executemany("INSERT INTO config VALUES (?, ?)", werte)
+        v.commit()
+        v.close()
+        async with Datenbank(":memory:") as db:
+            e = Einstellungen(db, AppEinstellungen, umgebung_praefix=PRAEFIX, umgebung={})
+            e.regel(einstellungen.regeln_pruefen)
+            await e.starten()
+            uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, UEBERTRAEGE[1][1], einstellungen.ZUSAMMEN)
+            assert "language" in uebernommen and e.stand.language == "en"
+            if ort_da:
+                assert (e.stand.ort_breite, e.stand.ort_laenge) == (52.37, 9.74) and uebergangen == []
+            else:
+                assert e.stand.ort_breite is None and len(uebergangen) == 1 and "ort_breite" in uebergangen[0]
+
+
 def test_rad11_regeln_und_felder_ueber_die_schnittstelle(client):
     felder = {f["name"]: f for f in client.get("/api/v1/einstellungen").json()}
     assert felder["language"]["art"] == "auswahl" and felder["language"]["beschriftungen"]["de"] == "Deutsch"

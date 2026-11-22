@@ -187,6 +187,8 @@ UEBERTRAEGE: tuple[tuple[str, frozenset[str]], ...] = (
     ("radiohub_config_uebertrag_rad11", CONFIG_FELDER_RAD11),
 )
 CONFIG_FELDER = CONFIG_FELDER | CONFIG_FELDER_RAD11 | {"hls_puffer_minuten", "werbung_ueberspringen"}
+# Felder, die nur zusammen gesetzt werden dürfen (Regel in regeln_pruefen); der Übertrag setzt sie gemeinsam (RAD-90)
+ZUSAMMEN: tuple[frozenset[str], ...] = (frozenset({"ort_breite", "ort_laenge"}),)
 
 
 def regeln_pruefen(alt: AppEinstellungen, neu: AppEinstellungen) -> str | None:

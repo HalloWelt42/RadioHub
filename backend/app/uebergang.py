@@ -28,6 +28,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from appkern.einstellungen.dienst import Unzulaessig
+
 from . import ort
 
 log = logging.getLogger("radiohub.uebergang")
@@ -99,18 +101,36 @@ def alte_config_lesen(db_pfad: Path, felder: frozenset[str]) -> dict[str, object
         v.close()
 
 
-async def config_uebernehmen(einstellungen, db_pfad: Path, felder: frozenset[str]) -> tuple[list[str], list[str]]:
+def _gruppen(werte: dict[str, object], zusammen: tuple[frozenset[str], ...]) -> list[dict[str, object]]:
+    """Die Werte je Änderung: Felder einer Gruppe in `zusammen` gemeinsam (etwa Breite und Länge), sonst einzeln."""
+    gruppen: list[dict[str, object]] = []
+    erledigt: set[str] = set()
+    for name in sorted(werte):
+        if name in erledigt:
+            continue
+        gruppe = next((g for g in zusammen if name in g), frozenset({name}))
+        teil = {n: werte[n] for n in sorted(gruppe) if n in werte}
+        erledigt.update(teil)
+        gruppen.append(teil)
+    return gruppen
+
+
+async def config_uebernehmen(einstellungen, db_pfad: Path, felder: frozenset[str],
+                             zusammen: tuple[frozenset[str], ...] = ()) -> tuple[list[str], list[str]]:
     """Übernimmt die Werte aus der Tabelle config in `einstellungen` (appkern.einstellungen.Einstellungen), je Feld
-    einzeln: ein ungültiger Wert hält die übrigen nicht auf. Liefert (übernommen, übergangen mit Grund)."""
+    einzeln, Felder aus `zusammen` gemeinsam: ein ungültiger Wert hält die übrigen nicht auf, auch nicht eine
+    abgewiesene Regel über mehrere Felder (RAD-90). Liefert (übernommen, übergangen mit Grund)."""
     uebernommen: list[str] = []
     uebergangen: list[str] = []
-    for name, wert in sorted(alte_config_lesen(db_pfad, felder).items()):
-        if einstellungen.herkunft(name) in ("gespeichert", "fest"):
+    for teil in _gruppen(alte_config_lesen(db_pfad, felder), zusammen):
+        teil = {n: w for n, w in teil.items() if einstellungen.herkunft(n) not in ("gespeichert", "fest")}
+        if not teil:
             continue
+        namen = ", ".join(teil)
         try:
-            await einstellungen.aendern({name: wert})
-        except (ValidationError, ValueError) as f:
-            uebergangen.append(f"{name}: {f}".splitlines()[0])
+            await einstellungen.aendern(teil)
+        except (ValidationError, ValueError, Unzulaessig) as f:
+            uebergangen.append(f"{namen}: {f}".splitlines()[0])
             continue
-        uebernommen.append(name)
+        uebernommen.extend(teil)
     return uebernommen, uebergangen
