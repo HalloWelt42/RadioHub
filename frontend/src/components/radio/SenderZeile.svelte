@@ -1,6 +1,6 @@
 <script lang="ts">
   // Ein Sender der Liste am Rechner (Entwurf rechner.html): Leuchte (blau spielt, rot bei Aufnahme, gelb gewählt), Logo,
-  // Name mit Land und Ort (beim spielenden der laufende Titel), Genres, Qualitätsleiste, Stimmen, dann Varianten,
+  // Name mit Land und Ort (der laufende Titel steht nur in der Anzeige der Kanzel, RAD-59), Genres, Qualitätsleiste, Stimmen, dann Varianten,
   // Favorit, Auge und Details. Ein Klick auf die Zeile spielt; aufgeklappt folgen Varianten und Details.
   import { t } from "../../lib/i18n.svelte.js";
   import { format, ort, qualitaetName, zahl } from "../../lib/radio/anzeige";
@@ -11,14 +11,12 @@
   import SenderDetail from "./SenderDetail.svelte";
   import Varianten from "./Varianten.svelte";
   import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
-  import { werbende } from "../../lib/radio/werbende.svelte";
 
-  let { eintrag: e, spielt, aufnahme, titel, offen, fokus, variantenOffen, spielend, kategorien,
+  let { eintrag: e, spielt, aufnahme, offen, fokus, variantenOffen, spielend, kategorien,
         onspielen, ondetails, onvarianten, onfavorit, onausblenden, oneinblenden, onaendern }: {
     eintrag: SenderEintrag;
     spielt: boolean;
     aufnahme: boolean;
-    titel: string | null;
     offen: boolean;
     fokus: boolean;
     variantenOffen: boolean;
@@ -68,8 +66,6 @@
     <Logo uuid={e.uuid} name={e.name} logo={e.logo} />
     <div class="name"><b title={e.name}>{e.name}</b>
       <div class="meta">{#if e.land}<span class="rh-kennung">{e.land}</span>{/if}<span>{ort(e)}</span>
-        {#if spielt && titel}<span class="rh-titel"><i class="fa-solid fa-volume-high"></i>{titel}</span>{/if}
-        {#if werbende.von(e.uuid)}{@const w = werbende.von(e.uuid)}<span class="rh-werbemarke-text" title={t(w?.ueberspringen ? "radio.werbungMarkeHilfe" : "radio.werbungMarkeAusHilfe", { n: w?.spots ?? 0 })}><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungMarke")}</span>{/if}
         {#if ausgeblendet}<span class="rh-ausgeblendet-marke" title={t("radio.ausgeblendetFavoritHilfe")}><i class="fa-solid fa-eye-slash"></i>{t("radio.ausgeblendetFavorit")}</span>{/if}
         {#if mehrere}{@render variantenKnopf(true)}{/if}
       </div>

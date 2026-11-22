@@ -229,23 +229,8 @@
 
   <section class="rh-tafel-detail" aria-label={t("radio.eigeneBewertung")}>
     <div class="rh-einschaetzung">
-      <!-- die Auswahl als Liste gleich großer Einträge, die bei vielen in sich rollt wie die Werbeliste (RAD-59) -->
-      <div class="rh-einschaetzung-liste" class:rh-liste-rollt={anzahlEinschaetzung > 5}>
-      {#if sterne}<span class="chip wahl an rh-chip-klein rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
-      {#each MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)) as b (b)}
-        <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => markieren(b)}>
-          {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}<i class="fa-solid fa-xmark rh-weg"></i></button>
-      {/each}
-      {#if steckbrief?.widerspruch && faehig.werbung}
-        <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={widersprechen}><i class="fa-solid fa-ban"></i>{t("radio.keinWerbeverdacht")}<i class="fa-solid fa-xmark rh-weg"></i></button>
-      {/if}
-      {#if faehig.kategorien}
-        {#each kategorien.filter((k) => eintrag.kategorien.includes(k.id)) as k (k.id)}
-          <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => kategorie(k.id)}><i class="fa-solid fa-folder"></i>{k.name}<i class="fa-solid fa-xmark rh-weg"></i></button>
-        {/each}
-      {/if}
-      </div>
-      <div class="rh-einschaetzung-fuss">
+      <!-- "Eigene Filter" mit dem Plus immer oben, auf der Linie der ersten Steckbriefzeile (Nutzer 22.11.2026, RAD-59) -->
+      <div class="rh-einschaetzung-kopf">
       <span class="rh-still" title={t("radio.einschaetzungHinweis")}>{t("radio.eigeneFilter")}</span>
       <span class="rh-tafel-anker" bind:this={anker}>
         <button type="button" class="rund rh-mini" aria-expanded={tafel} aria-haspopup="dialog" title={t("radio.einschaetzungAendern")}
@@ -280,13 +265,29 @@
         {/if}
       </span>
       </div>
+      <!-- die Auswahl als Liste gleich großer Einträge, die bei vielen in sich rollt wie die Werbeliste (RAD-59) -->
+      <div class="rh-einschaetzung-liste" class:rh-liste-rollt={anzahlEinschaetzung > 5}>
+      {#if sterne}<span class="chip wahl an rh-chip-klein rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
+      {#each MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)) as b (b)}
+        <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => markieren(b)}>
+          {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}<i class="fa-solid fa-xmark rh-weg"></i></button>
+      {/each}
+      {#if steckbrief?.widerspruch && faehig.werbung}
+        <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={widersprechen}><i class="fa-solid fa-ban"></i>{t("radio.keinWerbeverdacht")}<i class="fa-solid fa-xmark rh-weg"></i></button>
+      {/if}
+      {#if faehig.kategorien}
+        {#each kategorien.filter((k) => eintrag.kategorien.includes(k.id)) as k (k.id)}
+          <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => kategorie(k.id)}><i class="fa-solid fa-folder"></i>{k.name}<i class="fa-solid fa-xmark rh-weg"></i></button>
+        {/each}
+      {/if}
+      </div>
     </div>
   </section>
 
   <!-- Werbung rechts außen, schmal und kurz (RAD-59) -->
   {#if faehig.werbung}
     <section class="rh-tafel-detail" aria-label={t("radio.werbungTitel")}>
-      {#if werbung?.spots}<span class="rh-still rh-werbung-zahlen" title={t("radio.werbungAusSendedaten")}>{t("radio.werbungZahlen", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}</span>{/if}
+      {#if werbung?.spots}<span class="rh-still rh-werbung-zahlen" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
       {#if gruppen.length}
         <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
           {#each werbendeListe.zeigen as g (g.name || g.kennung)}
@@ -310,7 +311,7 @@
         <span class="rh-still">{t("radio.werbungKeineBekannt")}</span>
       {/if}
       <div class="rh-zeile-dicht">
-        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringenKurz")}
+        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringen")}
           hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
           onwechsel={werbungSchalten} />{/if}
         <span class="rh-still">{t("radio.werbeverdacht", { stand: werbeText() })}</span>

@@ -335,12 +335,14 @@
 /* kompakte Zeilen ohne Kasten (RAD-59); Fläche nur beim Überfahren und aufgeklappt */
 .rh-werbender { border-radius: var(--r1); }
 .rh-werbender:hover, .rh-werbender[open] { background-color: var(--flaeche-2); }
-.rh-werbender summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 2px 6px; font-size: var(--klein); }
+.rh-werbender summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) 5ch 1.2em; gap: 8px; align-items: center; padding: 2px 6px; font-size: var(--klein); }
+/* Anzahl und Stecker auf festen Plätzen: gleiche Abstände mit und ohne Stecker (RAD-59) */
+.rh-werbender summary > .rh-zahl { justify-self: end; }
 .rh-werbender summary::-webkit-details-marker { display: none; }
 .rh-werbender summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-pfeil { color: var(--text-3); font-size: .8em; transition: transform .15s; }
 .rh-werbender[open] .rh-pfeil { transform: rotate(90deg); }
-.rh-verbinden { color: var(--led-bernstein); }
+.rh-verbinden { color: var(--text-3); justify-self: center; }   /* neutral wie graue Schrift (RAD-59) */
 .rh-werbender ul { margin: 0; padding: 2px 6px 6px 24px; list-style: none; display: grid; gap: 3px; font-size: var(--klein); }
 .rh-werbender li { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; gap: 2px 10px; }
 .rh-werbender li > .rh-still { grid-column: 2 / -1; }
@@ -355,7 +357,9 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-einschaetzung-liste:empty { display: none; }
 .rh-einschaetzung-liste > .chip { inline-size: 100%; justify-content: space-between; }
 .rh-einschaetzung-liste.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.25 + 8px); }   /* Eintrag plus Abstand */
-.rh-einschaetzung-fuss { display: flex; gap: 8px; align-items: center; }
+/* Kopf "Eigene Filter" mit Plus: so hoch wie eine Steckbriefzeile mit Mini-Knöpfen, Schrift auf derselben Linie (RAD-59) */
+.rh-einschaetzung-kopf { display: flex; gap: 8px; align-items: center; min-block-size: 28px; font-size: var(--klein); }
+.rh-werbung-zahlen { display: flex; align-items: center; min-block-size: 28px; }   /* "17 × Werbung" auf derselben Linie */
 .rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit, var(--led-gelb)); font-size: var(--klein); }
 .chip.rh-chip-klein { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 .chip .rh-weg { margin-left: 6px; opacity: .6; }
