@@ -48,13 +48,13 @@
     <div class="rh-transport ak-tastenreihe">
       <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" licht="bernstein" modus="tasten"
         use:taste={{ licht: tasten.zurueck.licht, gesperrt: tasten.zurueck.gesperrt, hilfe: tasten.zurueck.hilfe, beiDruck: zurueck, beiLang: zurueckSender, beiZeigen: zeigen }}></ak-taster>
-      <ak-taster art="glas" symbol="fa-stop" farbe="weiss" licht="weiss" modus="tasten"
+      <ak-taster art="glas" symbol="fa-stop" farbe="weiss" licht="bernstein" modus="tasten"
         use:taste={{ gesperrt: tasten.stopp.gesperrt, hilfe: tasten.stopp.hilfe, beiDruck: mitKlang(stoppen), beiZeigen: zeigen }}></ak-taster>
-      <ak-taster art="glas" symbol="fa-play" farbe="gruen" licht="gruen"
+      <ak-taster class="rh-t-gruen" art="glas" symbol="fa-play" farbe="gruen" licht="gruen"
         use:taste={{ an: tasten.spielen.an, licht: tasten.spielen.licht, lichtFarbe: tasten.spielen.farbe, gesperrt: tasten.spielen.gesperrt, hilfe: tasten.spielen.hilfe,
                      symbol: tasten.spielen.symbol, beiDruck: mitKlang(tasten.spielen.neuVerbinden ? quelleStarten : spielenOderPause), beiZeigen: zeigen }}></ak-taster>
       {#if kann.aufnahme}
-      <ak-taster art="glas" symbol="fa-circle" farbe="rot" licht="rot"
+      <ak-taster class="rh-t-rot" art="glas" symbol="fa-circle" farbe="rot" licht="rot"
         use:taste={{ an: tasten.aufnahme.an, licht: tasten.aufnahme.licht, gesperrt: tasten.aufnahme.gesperrt, hilfe: tasten.aufnahme.hilfe,
                      beiDruck: mitKlang(aufnehmen), beiZeigen: zeigen }}></ak-taster>
       {/if}

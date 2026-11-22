@@ -20,7 +20,7 @@
   --rh-geraet-bild: none;
   --rh-geraet-tinte: var(--text);
   --rh-geraet-tinte-2: var(--text-2);
-  --rh-kappe: color-mix(in srgb, var(--led-weiss) 22%, var(--ak-glas)); /* Kappe der Glastaster in der Steuerung, für alle gleich, leuchtet nie */
+  --rh-kappe: color-mix(in srgb, var(--led-weiss) 22%, var(--ak-glas)); /* Kappe der Kopftasten (die Steuerung trägt --rh-taste-*, radio-marken.css) */
   --rh-geraet-kante: 0 0 0 1px var(--rand);
   --rh-geraet-schatten: var(--schatten);
   --rh-geraet-schatten-klein: 0 0 0 1px var(--rand);

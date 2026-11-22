@@ -126,8 +126,8 @@ describe("Steuerung", () => {
   });
   it("Original oder Zeitversatz: immer da, nur wählbar, wenn der andere Modus geht", () => {
     expect(kanzelTasten(stand(), t).modus.gesperrt).toBe(true);
-    expect(kanzelTasten(spielt({ canPlayHLS: true }), t).modus).toMatchObject({ gesperrt: false, farbe: "gelb", symbol: "fa-wave-square" });
-    expect(kanzelTasten(spielt({ playerMode: "hls" }), t).modus).toMatchObject({ gesperrt: false, farbe: "gruen", symbol: "fa-arrows-rotate" });
+    expect(kanzelTasten(spielt({ canPlayHLS: true }), t).modus).toMatchObject({ gesperrt: false, farbe: "blau", symbol: "fa-wave-square" });
+    expect(kanzelTasten(spielt({ playerMode: "hls" }), t).modus).toMatchObject({ gesperrt: false, farbe: "blau", symbol: "fa-arrows-rotate" });
     expect(kanzelTasten(spielt({ playerMode: "hls", isRecording: true, canPlayDirect: true }), t).modus.gesperrt).toBe(false);
     expect(kanzelTasten(spielt({ playerMode: "hls" }), t, true).modus).toMatchObject({ gesperrt: true, licht: "atmet" });
   });

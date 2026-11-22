@@ -254,7 +254,7 @@ export interface Tasten {
 }
 
 const REIHENFOLGE: Record<string, { symbol: string; farbe: Leuchtfarbe; text: string }> = {
-  linear: { symbol: "fa-arrow-right", farbe: "weiss", text: "player.linear" },
+  linear: { symbol: "fa-arrow-right", farbe: "blau", text: "player.linear" },     // Betriebstasten leuchten blau (RAD-58)
   reverse: { symbol: "fa-arrow-left", farbe: "bernstein", text: "player.rueckwaerts" },
   loop: { symbol: "fa-repeat", farbe: "gruen", text: "player.endlosschleife" },
   shuffle: { symbol: "fa-shuffle", farbe: "gelb", text: "player.zufall" },
@@ -342,7 +342,7 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
   const modus: Tasten["modus"] = {
     an: false, licht: modusWechselt ? "atmet" : stromModus && art === "sender" ? "an" : "aus", gesperrt: !kann || modusWechselt,
     symbol: s.playerMode === "hls" ? "fa-arrows-rotate" : "fa-wave-square",
-    farbe: s.playerMode === "hls" ? "gruen" : "gelb",
+    farbe: "blau",                 // Betriebstaste: blau wie Fokus und Reihenfolge (RAD-58); den Modus sagt das Symbol
     hilfe: modusWechselt ? t("player.moduswechsel") : !kann ? t("player.moduswechselNicht")
       : s.playerMode === "hls" ? t("player.directMode") : t("player.hlsMode"),
   };

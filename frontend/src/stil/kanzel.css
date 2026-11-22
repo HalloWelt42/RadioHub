@@ -122,12 +122,24 @@
    in der Kappe (Nutzer 20.11.2026: "die tasten selber sollen nicht leuchten, nur deren gedachte LEDs"). */
 .rh-steuerung { flex: 1; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 18px; min-width: 0; }
 .rh-transport, .rh-betrieb { flex-wrap: nowrap; align-items: center; gap: 8px; --ak-tastenreihe-h: var(--rh-taste); }
-.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross); }
-.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf:not(:disabled) { background-color: var(--rh-kappe); }
-/* gesperrt: versenkt und matt aus dem Appkern; nur die Kappe an oder aus gleicht sich hier an */
-.rh-steuerung ak-taster[art="glas"][an] .ak-taster-knopf:not(:disabled) { background-color: var(--rh-kappe); color: color-mix(in srgb, var(--farbe, var(--led-rot)) 60%, var(--ak-licht-kern));
-  box-shadow: var(--ak-kappe-schatten), 0 0 0 1px var(--rand-stark); }
-.rh-steuerung .ak-taster-knopf:disabled { cursor: default; }
+/* Kappen nach den Marken --rh-taste-* (radio-marken.css, RAD-58): dunkel Klavierlack, hell Elfenbein; an oder aus
+   ändert weder Kappe noch Symbolfarbe, gedrückt sinkt die Kappe. Die Symbolfarbe hängt an der Taste (rh-t-gruen,
+   rh-t-rot, sonst --rh-taste-symbol). */
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf { inline-size: var(--rh-taste); block-size: var(--rh-taste); font-size: var(--gross);
+  border-radius: var(--rh-taste-ecke); }
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf:not(:disabled),
+.rh-steuerung ak-taster[art="glas"][an] .ak-taster-knopf:not(:disabled) {
+  background-color: var(--rh-taste-grund); background-image: var(--rh-taste-bild); box-shadow: var(--rh-taste-schatten); color: var(--rh-taste-symbol); }
+.rh-steuerung ak-taster[art="glas"].rh-t-gruen .ak-taster-knopf:not(:disabled) { color: var(--rh-taste-symbol-gruen); }
+.rh-steuerung ak-taster[art="glas"].rh-t-rot .ak-taster-knopf:not(:disabled) { color: var(--rh-taste-symbol-rot); }
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf:not(:disabled):active,
+.rh-steuerung ak-taster[art="glas"].gedrueckt .ak-taster-knopf:not(:disabled) { box-shadow: var(--rh-taste-gedrueckt); }
+.rh-steuerung ak-taster[art="glas"] .ak-taster-knopf:disabled { cursor: default; background-color: var(--rh-taste-gesperrt-grund); background-image: none;
+  box-shadow: var(--rh-taste-gesperrt-schatten); color: var(--rh-taste-gesperrt-symbol); }
+/* Tastenlicht flach in voller Farbe mit leichtem Glimmen nach außen, ohne Glanz und Verlauf (Nutzer 22.11.2026) */
+.rh-steuerung ak-led[art="schlitz"] .ak-led-licht { background: color-mix(in srgb, var(--farbe) 16%, #0c0e11); box-shadow: var(--rh-tastenlicht-rahmen); }
+.rh-steuerung ak-led[art="schlitz"] .ak-led-licht::after { background: var(--farbe);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--farbe) 75%, transparent), 0 0 10px color-mix(in srgb, var(--farbe) 35%, transparent); }
 .rh-gespiegelt { scale: -1 1; }
 /* Drehwahl der Bitrate: kleine Kappe, breite Zelle für den Wert darunter; Rastnamen zeigt der Appkern erst ab 150 Pixeln */
 /* Zelle so breit wie Knopf mit Skala und Beschriftung ("BITRATE", längster Wert "Original"), ohne Platz für Rastnamen

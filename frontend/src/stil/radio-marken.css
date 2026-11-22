@@ -60,6 +60,41 @@
   --rh-favorit: #9a6a00;
 }
 
+/* ═══ Tasten der Kanzel ═══ (RAD-58, Entwurf mockups/radio-filter/tasten.html, abgenommen 22.11.2026): dunkel
+   Klavierlack Schwarz, hell Elfenbein. Jede Taste hat eine feste Symbolfarbe, die in keinem Zustand wechselt; den Zustand
+   zeigt nur das Tastenlicht (flach mit Glimmen). Schatten neutral dunkel, nie im Ton der Kappe. */
+:root {
+  --rh-taste-grund: #0b0d10;
+  --rh-taste-bild: linear-gradient(180deg, rgb(255 255 255 / .16) 0%, rgb(255 255 255 / .05) 40%, rgb(255 255 255 / 0) 52%, rgb(255 255 255 / .03) 100%);
+  --rh-taste-ecke: 8px;
+  --rh-taste-schatten: inset 0 1px 0 rgb(255 255 255 / .22), 0 0 0 1px #000, 0 3px 6px rgb(0 0 0 / .55);
+  --rh-taste-gedrueckt: inset 0 1px 0 rgb(255 255 255 / .1), 0 0 0 1px #000, 0 1px 2px rgb(0 0 0 / .55), inset 0 3px 6px rgb(0 0 0 / .6);
+  --rh-taste-gesperrt-grund: #17191c;
+  --rh-taste-gesperrt-symbol: rgb(255 255 255 / .22);
+  --rh-taste-gesperrt-schatten: inset 0 2px 5px rgb(0 0 0 / .7), 0 0 0 1px rgb(0 0 0 / .6);
+  --rh-taste-symbol: #e9edf2;                  /* Zurück, Stopp, Vor und die Betriebstasten */
+  --rh-taste-symbol-gruen: #1f9e4a;            /* Abspielen: satt und dunkler */
+  --rh-taste-symbol-rot: #c8202a;              /* Aufnahme */
+  --rh-tastenlicht-rahmen: inset 0 0 0 1px rgb(0 0 0 / .4);
+}
+:root[data-theme="hell"] {
+  --rh-taste-grund: #e6dcc6;
+  --rh-taste-bild: linear-gradient(90deg, rgb(70 45 15 / .1), rgb(70 45 15 / 0) 22%, rgb(70 45 15 / 0) 78%, rgb(70 45 15 / .12)),
+    linear-gradient(180deg, #fffbf2 0%, #f1e8d5 30%, #e2d6bc 68%, #cdbd9c 100%);
+  --rh-taste-ecke: 5px;
+  --rh-taste-schatten: inset 0 1px 1px rgb(255 255 255 / .95), inset 0 -3px 4px rgb(90 60 20 / .28), 0 0 0 1px rgb(0 0 0 / .22),
+    0 2px 2px rgb(0 0 0 / .2), 0 5px 8px rgb(0 0 0 / .16), 0 10px 18px rgb(0 0 0 / .12);
+  --rh-taste-gedrueckt: inset 0 1px 1px rgb(255 255 255 / .7), inset 0 2px 5px rgb(90 60 20 / .35), 0 0 0 1px rgb(0 0 0 / .22),
+    0 1px 1px rgb(0 0 0 / .18), 0 2px 4px rgb(0 0 0 / .14), 0 4px 8px rgb(0 0 0 / .1);
+  --rh-taste-gesperrt-grund: #c9bea6;
+  --rh-taste-gesperrt-symbol: rgb(91 74 51 / .35);
+  --rh-taste-gesperrt-schatten: inset 0 2px 4px rgb(40 25 5 / .35), 0 0 0 1px rgb(60 40 10 / .25);
+  --rh-taste-symbol: #4f4030;
+  --rh-taste-symbol-gruen: #17763a;
+  --rh-taste-symbol-rot: #a5161e;
+  --rh-tastenlicht-rahmen: 0 0 0 1px #1d160d;  /* feiner dunkler Rahmen: das Licht hebt sich von der hellen Kappe ab */
+}
+
 /* ═══ Schriftstufe der alten Bereiche ═══ Radio, Aufnahmen, Podcasts, Einstellungen und die Telefonansichten
    tragen bis zu ihrem Neubau (Etappen 3, 4 und 6) feste Pixel; sie wachsen mit der Stufe als Ganzes (zoom in
    styles/bruecke.css), damit Texte, Knöpfe und Spalten im selben Verhältnis bleiben und nichts abschneidet. */
