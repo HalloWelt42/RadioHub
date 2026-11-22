@@ -49,6 +49,13 @@ export class Filterzustand {
     this.ort.neu(radioPfad(this.filter, uuid));
   }
 
+  /** Zurück in die Liste (aus der Großansicht des Puffers, RAD-55): `uuid` aufgeklappt, als neuer Eintrag im Verlauf,
+   *  auch wenn er schon offen war (die Adresse war eine andere) */
+  zeigen(uuid: string | null): void {
+    this.offen = uuid;
+    this.ort.neu(radioPfad(this.filter, uuid));
+  }
+
   /** Beim Öffnen der Ansicht: beim ersten Mal gilt die Adresse, danach der Zustand (Rückkehr über die Navigation) */
   ansicht(): void {
     if (this.gelesen) this.schreiben();

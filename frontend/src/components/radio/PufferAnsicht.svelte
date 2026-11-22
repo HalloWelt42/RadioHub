@@ -12,6 +12,9 @@
   import { live } from "../../spieler/aktionen";
   import Logo from "./Logo.svelte";
 
+  /** zurück zur Liste; wohin genau, weiß die Radio-Ansicht (RAD-55) */
+  let { onzu }: { onzu: () => void } = $props();
+
   type Zoom = "alles" | 30 | 10;
   const ZOOMS: Zoom[] = ["alles", 30, 10];
   /** unter dieser Länge gilt der Puffer als jung (Hinweis, dass es davor nichts gibt) */
@@ -55,7 +58,7 @@
 
   function schliessen(): void {
     sfx.click();
-    actions.navigateTo("/radio");
+    onzu();
   }
 
   function hoeren(a: Abschnitt): void {

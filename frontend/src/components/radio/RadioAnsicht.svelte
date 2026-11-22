@@ -97,9 +97,9 @@
     });
   });
 
-  // Zurück und Vor im Browser: Filter aus der Adresse
+  // Zurück und Vor im Browser: Filter aus der Adresse; die Großansicht des Puffers ändert die Liste nicht (RAD-55)
   onMount(() => {
-    const zurueck = () => { if (appPfad().startsWith("/radio")) filterzustand.ausAdresse(); };
+    const zurueck = () => { if (appPfad().startsWith("/radio") && !appPfad().startsWith(`/radio/${PUFFER}`)) filterzustand.ausAdresse(); };
     window.addEventListener("popstate", zurueck);
     void bedienung.bestandLaden();
     return () => window.removeEventListener("popstate", zurueck);
@@ -137,6 +137,18 @@
     if (anfrage.varianten && anfrage.id && !variantenOffen.includes(anfrage.id)) variantenOffen = [...variantenOffen, anfrage.id];
     untrack(() => { if (anfrage.id && anfrage.id === filterzustand.offen && gerollt === anfrage.id) void rollenZu(anfrage.id); });
   });
+
+  /** Zurück aus der Großansicht des Puffers (RAD-55): die Liste wie vorher, der laufende Sender aufgeklappt und im
+   *  Blick (ohne ihn der zuletzt offene); die Großansicht kennt den Weg nicht, sie sagt nur "zu" */
+  function pufferSchliessen(): void {
+    const ziel = (spielend ? bedienung.zeileFuer(spielend) : null) ?? filterzustand.offen;
+    vonHier = null;
+    if (ziel && ziel === filterzustand.offen) {
+      gerollt = ziel;
+      void rollenZu(ziel, false);
+    } else gerollt = null;                                   // ein anderer Sender: das Aufklappen oben rollt hin
+    filterzustand.zeigen(ziel);
+  }
 
   async function rollenZu(uuid: string, sanft = true) {
     await tick();
@@ -218,7 +230,7 @@
 
   <main class="rh-haupt">
     {#if pufferOffen}
-      <PufferAnsicht />
+      <PufferAnsicht onzu={pufferSchliessen} />
     {:else}
     <Werkzeugleiste {filter} gesamt={liste.gesamt} sichtbar={bedienung.bestand?.sichtbar ?? null} ausgeblendet={bedienung.bestand?.ausgeblendet ?? null}
                     kategorieName={(id) => kategorien.find((k) => String(k.id) === id)?.name ?? id} {filterOffen} laedt={liste.laedt}
