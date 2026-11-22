@@ -38,7 +38,9 @@
   }
 </script>
 
+<!-- Köpfe nebeneinander (RAD-72): STEUERUNG über den Tasten, der Name des Drehreglers über dem Regler, auf einer Linie -->
 <section class="rh-modul rh-m-steuerung" aria-label={t("kanzel.steuerung")}><span class="ak-etikett">{t("kanzel.steuerung")}</span>
+  {#if app.playerMode === "podcast" || kann.zeitversatz}<span class="ak-etikett rh-dreh-kopf">{t(app.playerMode === "podcast" ? "kanzel.tempoName" : "kanzel.bitrateName")}</span>{/if}
   <div class="rh-steuerung">
     <div class="rh-transport ak-tastenreihe">
       <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" licht="bernstein" modus="tasten"
@@ -74,6 +76,7 @@
                        symbol: tasten.reihenfolge.symbol, beiDruck: reihenfolgeWeiter }}></ak-taster>
       {/if}
     </div>
+  </div>
     {#if app.playerMode === "podcast"}
     <ak-dreh class="rh-bitrate-wahl" name={t("kanzel.tempoName")} hilfe={t("kanzel.tempoHilfe")} raster={tempoRaster()} vorgabe="1"
         role="slider" aria-valuenow={tempoStellung(app.podcastSpeed)} wert={tempoStellung(app.podcastSpeed)}
@@ -83,5 +86,4 @@
         role="slider" aria-valuenow={stellung} wert={stellung} aria-disabled={drehFrei ? "false" : "true"} tabindex={drehFrei ? 0 : -1} style:--ak-wert="var(--led-{lage === 'frei' && bitrate.vorgabe !== null ? 'gelb' : 'gruen'})"
         oninput={gedreht} onchange={() => bitrate.anwenden()}></ak-dreh>
     {/if}
-  </div>
 </section>

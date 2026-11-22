@@ -146,6 +146,18 @@
    (die zeigt der Drehregler erst ab 150 Pixeln): so endet die Kanzel rechts mit demselben Rand wie links (RAD-60) */
 .rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 4.4); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
 .rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
+/* Steuerung mit zwei Köpfen auf einer Linie (RAD-72): STEUERUNG über den Tasten, der Name des Drehreglers (BITRATE oder
+   TEMPO) über dem Regler. Am Regler bleibt oben eine Zeile frei und unten steht der Zustand, beide mit festem Platz: so
+   steht der Knopf mittig auf der Höhe der Tasten. */
+.rh-m-steuerung { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "kopf drehkopf" "tasten dreh";
+  column-gap: 18px; row-gap: 5px; align-items: center; }
+.rh-m-steuerung > .ak-etikett { grid-area: kopf; }
+.rh-m-steuerung > .rh-dreh-kopf { grid-area: drehkopf; }
+.rh-m-steuerung > .rh-steuerung { grid-area: tasten; }
+.rh-m-steuerung > .rh-bitrate-wahl { grid-area: dreh; }
+.rh-bitrate-wahl { display: flex; flex-direction: column; align-items: center; }
+.rh-bitrate-wahl .ak-dreh-name { order: -3; min-block-size: 1.2em; visibility: hidden; }   /* Platz oben, der Name steht im Kopf */
+.rh-bitrate-wahl .ak-dreh-wert { min-block-size: 1.2em; }
 
 /* Messen (kanzelreihen.ts, nur innerhalb eines Bildaufbaus): die eine Reihe mit Modulen in natürlicher Breite */
 .rh-kanzel-voll[data-messen] { grid-template-columns: var(--rh-anzeige-breite) max-content max-content max-content; }

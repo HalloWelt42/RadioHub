@@ -227,8 +227,10 @@
 /* Varianten teilen ein Raster (subgrid): Güte, Stimmen und Hören stehen in allen Zeilen bündig untereinander, die
    Stimmen rechtsbündig (Nutzer 20.11.2026: "anordnung unsauber") */
 .rh-varianten { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px 14px; padding: 12px 12px 12px 50px; }   /* oben Luft unter der Zierlinie */
-.rh-variante { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; padding: 8px 10px; border-radius: var(--r2);
-  background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
+/* Varianten ohne eigene Box auf neutralem Grund, eine Fläche nur beim Überfahren wie bei den Werbenden (RAD-70) */
+.rh-variante { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; padding: 6px 10px; border-radius: var(--r2);
+  font-size: var(--klein); }
+.rh-variante:hover { background-color: var(--flaeche-2); }
 .rh-variante b { font-weight: 600; font-family: var(--schrift-zahl); }
 .rh-variante .stand-pille { font-size: var(--marke); }
 .rh-variante .knopf { block-size: 40px; }
