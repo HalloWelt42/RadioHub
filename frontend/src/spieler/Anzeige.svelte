@@ -24,14 +24,14 @@
   let statusStellen = $state(40);
   let titelStellen = $state(40);
   const statusLinks = $derived([anzeige.art, anzeige.format].filter(Boolean).join("  "));
-  const statusRechts = $derived(anzeige.zustand === "aufnahme" ? t("kanzel.wechselGesperrt") : hinweis);
+  const statusRechts = $derived(hinweis);
   const status = $derived(statuszeile(statusLinks, statusRechts, statusStellen));
   const quelleHilfe = $derived(aufnahme ? t("player.zumSender") : t("player.zurQuelle"));
 </script>
 
 <section class="rh-modul rh-m-anzeige" aria-label={t("kanzel.anzeige")}><span class="ak-etikett">{t("kanzel.anzeige")}</span>
   <div class="ak-glas rh-display" data-ton={anzeige.ton}>
-    <div class="rh-display-zeile" title={anzeige.zustand === "aufnahme" ? t("kanzel.wechselGesperrtHilfe") : undefined}
+    <div class="rh-display-zeile"
       use:rasterStellen={{ jeSchrift: STATUS_JE_SCHRIFT, melden: (n) => (statusStellen = n) }}>
       {#key statusStellen}<ak-segmente art="punkt" stellen={statusStellen} lauf="200" farbe="gruen" text={status}></ak-segmente>{/key}
     </div>

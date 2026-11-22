@@ -127,6 +127,14 @@ anderer Sender beenden sie nicht. `GET /api/hls/abschnitte` nennt Titel, Werbung
 nach der Regel des Feinschnitts), `POST /api/hls/aufnahme` mit `von_s` und `bis_s` (Sekunden des Puffers) nimmt ab
 einer Stelle auf oder sichert einen Bereich als fertige Aufnahme. Stille und Pegel kosten auf dem Pi unter 1 % eines
 Kerns (gemessen 22.11.2026).
+Bedienung (Entwurf `mockups/radio-filter/puffer.html`): der Balken des Zeitversatzes zeigt Titelgrenzen als Striche,
+Werbung violett und eine laufende Aufnahme rot; beim Überfahren steht der Titel darüber, Loslassen nahe einer Grenze
+rastet ein. Darunter der Titel an der Stelle mit Vorheriger und Nächster Titel (Werbung wird übersprungen) und der Knopf
+Puffer zur Großansicht `/radio/puffer`: Zeitleiste mit Übersicht und Ausschnitt (Alles, 30 oder 10 Minuten; Rad oder
+Ziehen verschiebt, Doppelklick springt hin), darunter die Titel, neuester oben, je Titel hier hören, Aufnahme ab hier und
+in den Bereich nehmen; ein Bereich wird als fertige Aufnahme gesichert. Am Telefon im Spieler derselbe Balken mit den
+Knöpfen und die Puffer-Liste (antippen klappt Hören, Aufnehmen und Bereich auf). Eine Aufnahme beendet die Taste
+Aufnahme (sie leuchtet, solange sie läuft); Stopp beendet nur das Hören, Blättern und Moduswechsel bleiben frei.
 
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo

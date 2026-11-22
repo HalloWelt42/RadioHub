@@ -20,6 +20,7 @@
   import { starten as aktualisierungStarten } from "./lib/aktualisierung.svelte.js";
   import { werbesprungStarten } from "./spieler/werbesprung.svelte";
   import { radiowerbungStarten } from "./spieler/radiowerbung.svelte";
+  import { pufferStarten } from "./spieler/puffer.svelte";
 
   let online = $state<boolean | null>(null);
   let ablage = $state<{ verbunden: boolean; meldung?: string } | null>(null);   // Stand der Ablage (Kellerwolke)
@@ -49,6 +50,7 @@
   // Werbung in Folgen überspringen (RAD-32), am Rechner und am Telefon, nur in PRO
   werbesprungStarten();
   radiowerbungStarten();
+  pufferStarten();
 
   // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
   $effect(() => {

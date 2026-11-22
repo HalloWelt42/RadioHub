@@ -11,6 +11,8 @@
 #   nur_beim_verbinden   true: gilt nur für die erste Angabe einer Verbindung
 #   bestaetigen          "stille": die Stelle zählt erst, wenn an ihrem Ende (der nächsten Angabe) höchstens
 #                        fenster_s entfernt eine Stille liegt; sonst wird sie verworfen
+#   mindestens_s, hoechstens_s   mit bestaetigen "stille": kommt keine Angabe, endet die Stelle an der ersten Stille
+#                        zwischen mindestens_s und hoechstens_s nach ihrem Anfang; ohne Stille bis dahin wird sie verworfen
 #
 # In erkennen steht {sendername} für den Namen, den der Sender im Kopf schickt (icy-name).
 #
@@ -61,9 +63,12 @@ name = "vorlauf"
 # QuantumCast (80s80s, 90s90s, RADIO BOB, Radio 7, Rockland): beim Verbinden steht als erster Titel der Name des Stroms,
 # solange der für jeden Hörer eingespielte Vorlauf läuft (gemessen 22.11.2026: 20 bis 30 s, bei gleichzeitigen
 # Verbindungen verschieden oder gar keiner). Er endet mit einer digitalen Stille kurz vor dem ersten Titel. Kommt ohne
-# Vorlauf nur der Titel verspätet, fehlt die Stille, und das Lied bleibt ganz.
+# Vorlauf nur der Titel verspätet, fehlt die Stille, und das Lied bleibt ganz. Manchmal bleibt der Name minutenlang
+# stehen (22.11.2026: 258 s, bis zum zweiten Lied); dann endet der Vorlauf an seiner Stille, ohne auf den Titel zu warten.
 erkennen = "^StreamTitle='{sendername}';"
 kennung = "StreamTitle='([^']+)'"
 nur_beim_verbinden = true
 bestaetigen = "stille"
+mindestens_s = 5
+hoechstens_s = 60
 ende = "wechsel"

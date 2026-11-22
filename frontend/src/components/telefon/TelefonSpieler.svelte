@@ -8,6 +8,12 @@
   import { t } from '../../lib/i18n.svelte.js';
   import { beschreibung } from '../../lib/telefon/medien.js';
   import Bild from './Bild.svelte';
+  import PufferBalken from './PufferBalken.svelte';
+  import TelefonPuffer from './TelefonPuffer.svelte';
+  import { puffer } from '../../spieler/puffer.svelte';
+  import { live } from '../../spieler/aktionen';
+  import { naechster, vorheriger } from '../../lib/radio/abschnitte';
+  import { formatTimeShort } from '../../lib/formatters.js';
 
   let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung } = $props();
 
@@ -16,6 +22,11 @@
   const spielt = $derived(appState.isPlaying && !appState.isPaused);
   const bildSrc = $derived(info?.artwork?.[0]?.src || null);
   let ziehen = $state(null);
+  /** Puffer-Liste über dem Spieler (RAD-46) */
+  let pufferOffen = $state(false);
+  const pStelle = $derived(puffer.stelle ?? puffer.ende);
+  const pTitel = $derived(puffer.laufend);
+  const pName = (a) => (a.art === 'werbung' ? t('puffer.werbung') : a.art === 'einschub' ? t('puffer.einschub') : a.titel);
 
   function uhr(s) {
     if (!Number.isFinite(s) || s < 0) s = 0;
@@ -92,13 +103,46 @@
           <i class="fa-solid fa-forward-step"></i>
         </button>
       </div>
+      {#if puffer.aktiv}
+        <!-- Zeitversatz mit Titeln und Werbung (RAD-46, Entwurf puffer.html Zustand 6) -->
+        <div class="tf-versatz">
+          <span class="tf-etikett">{t('puffer.zeitversatz')}</span>
+          <PufferBalken stelle={pStelle} />
+          <div class="tf-versatz-titel">
+            {#if pTitel}<b>{pName(pTitel)}</b><span>{t('puffer.vonLaenge', { a: formatTimeShort(Math.max(0, pStelle - pTitel.von)), b: formatTimeShort(pTitel.bis - pTitel.von) })}</span>
+            {:else}<span>{t('puffer.ohneTitel')}</span>{/if}
+          </div>
+          <div class="tf-versatz-knoepfe">
+            <button type="button" aria-label={t('puffer.titelZurueckHilfe')} disabled={vorheriger(puffer.abschnitte, pStelle) === null} onclick={() => puffer.vorher()}>
+              <i class="fa-solid fa-backward-step"></i>{t('puffer.titelZurueck')}</button>
+            <button type="button" aria-label={t('puffer.titelVorHilfe')} disabled={naechster(puffer.abschnitte, pStelle) === null} onclick={() => puffer.weiter()}>
+              {t('puffer.titelVor')}<i class="fa-solid fa-forward-step"></i></button>
+            <button type="button" aria-label={t('player.goLive')} disabled={!!appState.isLive} onclick={live}><i class="fa-solid fa-tower-broadcast"></i>{t('kanzel.live')}</button>
+            <button type="button" class="tf-primaer" onclick={() => (pufferOffen = true)}><i class="fa-solid fa-list-ul"></i>{t('puffer.puffer')}</button>
+          </div>
+        </div>
+      {/if}
       <!-- den laufenden Sender in der Liste wiederfinden (Nutzer 20.11.2026) -->
       <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
     {/if}
   </div>
 {/if}
 
+{#if pufferOffen && offen}
+  <TelefonPuffer onzu={() => (pufferOffen = false)} />
+{/if}
+
 <style>
+  .tf-versatz { display: grid; gap: 8px; margin: 12px 0 4px; padding: 10px 12px; border-radius: 14px; background: var(--t-flaeche); }
+  .tf-etikett { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t-text-2); }
+  .tf-versatz-titel { display: grid; text-align: center; }
+  .tf-versatz-titel b { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tf-versatz-titel span { font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .tf-versatz-knoepfe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .tf-versatz-knoepfe button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 4px;
+    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: 15px; }
+  .tf-versatz-knoepfe button:disabled { opacity: .45; }
+  .tf-versatz-knoepfe .tf-primaer { background: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 700; }
   .tf-zur-liste { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; margin-top: 6px;
     border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; }
   .tf-leiste {

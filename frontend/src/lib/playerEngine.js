@@ -792,6 +792,7 @@ export async function startRecording() {
       _appState.isRecording = true;
       _appState.recordingType = 'direct';
       _appState.recordingSession = result.session_id;
+      _appState.recordingStationUuid = _appState.currentStation.uuid;
       _appState.recordingVorlaufS = result.vorlauf_s || 0;
       _recordingStartTime = Date.now() - (result.vorlauf_s || 0) * 1000;
       _appState.recordingElapsed = Math.floor(result.vorlauf_s || 0);
@@ -875,6 +876,7 @@ function _resetRecordingState() {
     _appState.isRecording = false;
     _appState.recordingType = 'none';
     _appState.recordingSession = null;
+    _appState.recordingStationUuid = null;
     _appState.recordingElapsed = 0;
     _appState.recordingVorlaufS = 0;
     _appState.recordingIcyCount = 0;
@@ -900,6 +902,7 @@ export async function checkAndRecoverRecordingState() {
     _appState.isRecording = true;
     _appState.recordingType = 'direct';
     _appState.recordingSession = activeStatus.session_id || null;
+    _appState.recordingStationUuid = activeStatus.station_uuid || null;
     _appState.recordingElapsed = Math.floor(activeStatus.duration || 0);
     _appState.recordingIcyCount = activeStatus.icy_count || 0;
     _appState.recordingIcyEntries = activeStatus.icy_entries || [];
@@ -967,12 +970,14 @@ async function _stopRecordingInternal() {
     _appState.isRecording = false;
     _appState.recordingType = 'none';
     _appState.recordingSession = null;
+    _appState.recordingStationUuid = null;
     _appState.recordingElapsed = 0;
     return result;
   } catch (e) {
     _appState.isRecording = false;
     _appState.recordingType = 'none';
     _appState.recordingSession = null;
+    _appState.recordingStationUuid = null;
     _appState.recordingElapsed = 0;
     return { success: false, error: e.message };
   }

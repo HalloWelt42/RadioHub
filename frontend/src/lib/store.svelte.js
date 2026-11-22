@@ -38,6 +38,7 @@ export const appState = $state({
   recordingType: 'none',    // 'none' | 'direct'
   recordingVorlaufS: 0,     // so viel Ton hatte die Aufnahme beim Start (aus dem Puffer, RAD-46)
   recordingSession: null,
+  recordingStationUuid: null,  // Sender der laufenden Aufnahme (sie läuft auch beim Senderwechsel weiter, RAD-46)
   recordingElapsed: 0,
   recordingIcyCount: 0,     // Anzahl erkannter Titelwechsel (live)
   recordingIcyEntries: [],  // [{title, t, ignored, raw_title}] live ICY-Einträge

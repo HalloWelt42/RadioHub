@@ -73,9 +73,6 @@ vi.mock('../src/lib/api.js', () => {
       startRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'rec1' })),
       stopRecording: vi.fn(() => Promise.resolve({ success: true, duration: 60 })),
       getRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
-      getHlsRecordingStatus: vi.fn(() => Promise.resolve({ recording: false })),
-      startHlsRecording: vi.fn(() => Promise.resolve({ success: true, session_id: 'hlsrec1' })),
-      stopHlsRecording: vi.fn(() => Promise.resolve({ success: true })),
       updateConfig: vi.fn(() => Promise.resolve({})),
     }
   };
@@ -669,9 +666,8 @@ describe('PlayerEngine', () => {
       expect(state.recordingElapsed).toBe(0);
     });
 
-    it('TC-R4: Senderwechsel bei laufender Aufnahme wird blockiert', async () => {
-      // Aktuelle Logik: Bei laufender Aufnahme wird der Senderwechsel
-      // verweigert und ein Fehler angezeigt (statt still zu stoppen).
+    it('TC-R4: Senderwechsel bei laufender Aufnahme: sie läuft weiter (RAD-46)', async () => {
+      // Die Aufnahme hängt am Empfang ihres Senders, nicht am Puffer: der neue Sender spielt, die Aufnahme bleibt
       await engine.playStation(STATION_A);
       state.currentStation = STATION_A;
       await engine.startRecording();
@@ -679,25 +675,25 @@ describe('PlayerEngine', () => {
 
       await engine.playStation(STATION_B);
 
-      // Aufnahme laeuft weiter, Senderwechsel wurde blockiert
       expect(state.isRecording).toBe(true);
-      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
-      // Station bleibt auf A, nicht B
-      expect(state.currentStation).toEqual(STATION_A);
+      expect(state.currentStation).toEqual(STATION_B);
+      expect(state.recordingStationUuid).toBe(STATION_A.uuid);
+      expect(api.stopRecording).not.toHaveBeenCalled();
     });
 
-    it('TC-R6: Bei aktivem HLS-Buffer wird HLS-REC statt Direct gestartet', async () => {
-      // Vorbedingung: HLS-Buffer ist aktiv (Auto-HLS nach Senderwechsel)
+    it('TC-R6: Bei laufendem Zeitversatz dieselbe Aufnahme; die Uhr beginnt beim Vorlauf aus dem Puffer (RAD-46)', async () => {
+      // der Server beginnt am Anfang des laufenden Titels und meldet, wie viel Ton schon darin ist
+      api.startRecording.mockResolvedValueOnce({ success: true, session_id: 'rec2', vorlauf_s: 204 });
       state.currentStation = STATION_A;
       state.hlsActive = true;
       state.playerMode = 'hls';
 
       await engine.startRecording();
 
-      // HLS-REC muss gestartet worden sein, nicht Direct
-      expect(api.startHlsRecording).toHaveBeenCalled();
-      expect(api.startRecording).not.toHaveBeenCalled();
-      expect(state.recordingType).toBe('hls-rec');
+      expect(api.startRecording).toHaveBeenCalled();
+      expect(state.recordingType).toBe('direct');
+      expect(state.recordingVorlaufS).toBe(204);
+      expect(state.recordingElapsed).toBe(204);
     });
 
     it('TC-R7: Ohne HLS-Buffer wird Direct-REC gestartet', async () => {
@@ -708,7 +704,6 @@ describe('PlayerEngine', () => {
       await engine.startRecording();
 
       expect(api.startRecording).toHaveBeenCalled();
-      expect(api.startHlsRecording).not.toHaveBeenCalled();
       expect(state.recordingType).toBe('direct');
     });
 
@@ -1030,16 +1025,14 @@ describe('PlayerEngine', () => {
     // aus vorherigen Tests durchsickern
     beforeEach(() => {
       api.getRecordingStatus.mockReset();
-      api.getHlsRecordingStatus.mockReset();
       api.getRecordingStatus.mockResolvedValue({ recording: false });
-      api.getHlsRecordingStatus.mockResolvedValue({ recording: false });
     });
 
-    it('TC-RSR1: HLS-REC im Backend aktiv -> State wird wiederhergestellt', async () => {
-      // Vorbedingung: Backend meldet aktive HLS-Aufnahme
-      api.getHlsRecordingStatus.mockResolvedValueOnce({
+    it('TC-RSR1: Aufnahme aus dem Zeitversatz im Backend aktiv -> State samt Sender wiederhergestellt', async () => {
+      api.getRecordingStatus.mockResolvedValueOnce({
         recording: true,
-        session_id: 'hlsrec_test_123',
+        session_id: 'rec_puffer_123',
+        station_uuid: STATION_A.uuid,
         duration: 120,
         icy_count: 3,
         icy_entries: ['Titel A', 'Titel B', 'Titel C'],
@@ -1047,10 +1040,10 @@ describe('PlayerEngine', () => {
 
       await engine.checkAndRecoverRecordingState();
 
-      // Alle Recording-State-Felder muessen gesetzt sein
       expect(state.isRecording).toBe(true);
-      expect(state.recordingType).toBe('hls-rec');
-      expect(state.recordingSession).toBe('hlsrec_test_123');
+      expect(state.recordingType).toBe('direct');
+      expect(state.recordingSession).toBe('rec_puffer_123');
+      expect(state.recordingStationUuid).toBe(STATION_A.uuid);
       expect(state.recordingElapsed).toBe(120);
       expect(state.recordingIcyCount).toBe(3);
       expect(state.recordingIcyEntries).toEqual(['Titel A', 'Titel B', 'Titel C']);
@@ -1089,10 +1082,10 @@ describe('PlayerEngine', () => {
       state.isRecording = true;
       state.recordingType = 'direct';
 
-      // Backend wuerde HLS-REC melden, aber Recovery soll abbrechen
-      api.getHlsRecordingStatus.mockResolvedValueOnce({
+      // Backend wuerde eine andere Aufnahme melden, aber Recovery soll abbrechen
+      api.getRecordingStatus.mockResolvedValueOnce({
         recording: true,
-        session_id: 'hlsrec_sollte_ignoriert_werden',
+        session_id: 'rec_sollte_ignoriert_werden',
         duration: 999,
       });
 
@@ -1101,34 +1094,12 @@ describe('PlayerEngine', () => {
       // State darf NICHT ueberschrieben werden
       expect(state.recordingType).toBe('direct');
       expect(api.getRecordingStatus).not.toHaveBeenCalled();
-      expect(api.getHlsRecordingStatus).not.toHaveBeenCalled();
-    });
-
-    it('TC-RSR5: HLS hat Vorrang vor Direct wenn beide aktiv', async () => {
-      // Seltener Fall: Beide Endpoints melden aktive Aufnahme
-      // HLS-REC soll Vorrang haben (wird zuerst geprueft)
-      api.getRecordingStatus.mockResolvedValue({
-        recording: true,
-        session_id: 'rec_direct',
-        duration: 30,
-      });
-      api.getHlsRecordingStatus.mockResolvedValue({
-        recording: true,
-        session_id: 'hlsrec_hls',
-        duration: 45,
-      });
-
-      await engine.checkAndRecoverRecordingState();
-
-      expect(state.recordingType).toBe('hls-rec');
-      expect(state.recordingSession).toBe('hlsrec_hls');
     });
 
     it('TC-RSR6: Backend-Fehler werden abgefangen, kein Crash', async () => {
       // Vorbedingung: Beide Endpoints werfen Fehler
       // catch() in der Funktion faengt sie ab -> recording: false
       api.getRecordingStatus.mockImplementation(() => { throw new Error('Netzwerkfehler'); });
-      api.getHlsRecordingStatus.mockImplementation(() => { throw new Error('Server down'); });
 
       // Darf keinen Error werfen
       await expect(engine.checkAndRecoverRecordingState()).resolves.not.toThrow();
@@ -1138,10 +1109,9 @@ describe('PlayerEngine', () => {
     });
 
     it('TC-RSR7: Timer-Interval wird bei Recovery gestartet', async () => {
-      api.getRecordingStatus.mockResolvedValue({ recording: false });
-      api.getHlsRecordingStatus.mockResolvedValue({
+      api.getRecordingStatus.mockResolvedValue({
         recording: true,
-        session_id: 'hlsrec_timer',
+        session_id: 'rec_timer',
         duration: 10,
       });
 
@@ -1158,29 +1128,24 @@ describe('PlayerEngine', () => {
   //  Aufnahme-Schutz: Blockade bei Podcast/Recording-Wechsel
   // ----------------------------------------------------------
 
-  describe('Aufnahme-Schutz bei Modus-Wechsel (ERR-006)', () => {
-    it('TC-RB1: Podcast-Wechsel bei laufender Aufnahme wird blockiert', async () => {
-      // Sender starten + Aufnahme beginnen
+  describe('Aufnahme läuft weiter (RAD-46, die Sperre aus ERR-006 entfällt)', () => {
+    // Früher trug der Puffer die Aufnahme, ein Wechsel hätte sie zerstört; jetzt hängt sie am Empfang ihres Senders
+    it('TC-RB1: Folge hören bei laufender Aufnahme', async () => {
       await engine.playStation(STATION_A);
       state.currentStation = STATION_A;
       await engine.startRecording();
-      expect(state.isRecording).toBe(true);
 
-      // Podcast abspielen versuchen -> muss blockiert werden
       await engine.playPodcast(PODCAST_EPISODE);
 
-      // Aufnahme läuft weiter
       expect(state.isRecording).toBe(true);
-      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
+      expect(state.toast?.message).not.toBe('Aufnahme läuft - erst stoppen');
     });
 
-    it('TC-RB2: Recording-Wiedergabe bei laufender Aufnahme wird blockiert', async () => {
+    it('TC-RB2: Aufnahme hören bei laufender Aufnahme', async () => {
       await engine.playStation(STATION_A);
       state.currentStation = STATION_A;
       await engine.startRecording();
-      expect(state.isRecording).toBe(true);
 
-      // Aufnahme-Wiedergabe versuchen -> muss blockiert werden
       await engine.playRecording({
         path: '/radio/test.mp3',
         name: 'Test',
@@ -1189,23 +1154,7 @@ describe('PlayerEngine', () => {
       });
 
       expect(state.isRecording).toBe(true);
-      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
-    });
-
-    it('TC-RB3: Fehlermeldung verschwindet nach 4 Sekunden (Toast)', async () => {
-      vi.useFakeTimers();
-      await engine.playStation(STATION_A);
-      state.currentStation = STATION_A;
-      await engine.startRecording();
-
-      await engine.playStation(STATION_B);
-      expect(state.toast?.message).toBe('Aufnahme läuft - erst stoppen');
-
-      // Nach 4s muss der Toast weg sein
-      vi.advanceTimersByTime(4000);
-      expect(state.toast).toBe(null);
-
-      vi.useRealTimers();
+      expect(state.toast?.message).not.toBe('Aufnahme läuft - erst stoppen');
     });
   });
 
@@ -1255,21 +1204,19 @@ describe('PlayerEngine', () => {
       await engine.stopRecording();
 
       expect(api.stopRecording).toHaveBeenCalled();
-      expect(api.stopHlsRecording).not.toHaveBeenCalled();
     });
 
-    it('TC-RS3: stopRecording ruft korrekten API-Endpoint auf (HLS)', async () => {
+    it('TC-RS3: auch eine Aufnahme aus dem Zeitversatz endet über denselben Endpunkt (RAD-46)', async () => {
       state.currentStation = STATION_A;
       state.hlsActive = true;
       state.playerMode = 'hls';
       await engine.startRecording();
-
-      // recordingType ist jetzt 'hls-rec'
-      expect(state.recordingType).toBe('hls-rec');
+      expect(state.recordingType).toBe('direct');
 
       await engine.stopRecording();
 
-      expect(api.stopHlsRecording).toHaveBeenCalled();
+      expect(api.stopRecording).toHaveBeenCalled();
+      expect(state.recordingStationUuid).toBe(null);
     });
   });
 });

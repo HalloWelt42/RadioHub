@@ -89,14 +89,14 @@ describe("Anzeige", () => {
 
 describe("Steuerung", () => {
   const liste = [{ uuid: "x", name: "Erster" }, SENDER, { uuid: "z", name: "Letzter" }];
-  it("Spielen bleibt Spielen in jedem Zustand, nur das Licht zeigt ihn; gesperrt ohne Quelle und während der Aufnahme", () => {
+  it("Spielen bleibt Spielen in jedem Zustand, nur das Licht zeigt ihn; gesperrt ohne Quelle, frei während einer Aufnahme (RAD-46)", () => {
     expect(kanzelTasten(stand(), t).spielen).toMatchObject({ gesperrt: true, symbol: "fa-play", licht: "aus" });
     expect(kanzelTasten(spielt(), t).spielen).toMatchObject({ symbol: "fa-play", licht: "an", gesperrt: false });
     expect(kanzelTasten(spielt({ playerMode: "hls" }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "an" });
     expect(kanzelTasten(spielt({ medium: "laedt" }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "blinkt" });
     expect(kanzelTasten(spielt({ isPaused: true }), t).spielen).toMatchObject({ symbol: "fa-play", licht: "atmet" });
-    expect(kanzelTasten(spielt({ isRecording: true }), t).spielen).toMatchObject({ symbol: "fa-play", gesperrt: true, licht: "an" });
-    // nur Stopp beendet: Stopp ist bedienbar, solange etwas spielt, pausiert oder aufnimmt
+    expect(kanzelTasten(spielt({ isRecording: true }), t).spielen).toMatchObject({ symbol: "fa-play", gesperrt: false, licht: "an" });
+    // Stopp beendet das Hören: bedienbar, solange etwas spielt oder pausiert; eine Aufnahme läuft weiter
     expect(kanzelTasten(spielt(), t).stopp.gesperrt).toBe(false);
     expect(kanzelTasten(spielt({ isPaused: true }), t).stopp.gesperrt).toBe(false);
     expect(kanzelTasten(stand(), t).stopp.gesperrt).toBe(true);
@@ -106,14 +106,16 @@ describe("Steuerung", () => {
       .toMatchObject({ neuVerbinden: true, symbol: "fa-play", farbe: "rot", gesperrt: false, hilfe: "Sofort neu verbinden" });
     expect(kanzelTasten(spielt(), t).spielen.neuVerbinden).toBe(false);
   });
-  it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, Wechsel gesperrt", () => {
+  it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, ein Druck beendet sie; Wechsel frei (RAD-46)", () => {
     expect(kanzelTasten(spielt(), t).aufnahme.gesperrt).toBe(false);
     expect(kanzelTasten(stand({ isPlaying: true, playerMode: "podcast", currentEpisode: { title: "F" } }), t).aufnahme.gesperrt).toBe(true);
     const rec = kanzelTasten(spielt({ isRecording: true, stations: liste }), t);
-    expect(rec.aufnahme).toMatchObject({ an: true, licht: "blinkt" });
-    expect(rec.zurueck).toMatchObject({ gesperrt: true, licht: "an" });
-    expect(rec.vor.gesperrt).toBe(true);
+    expect(rec.aufnahme).toMatchObject({ an: true, licht: "blinkt", gesperrt: false, hilfe: "Aufnahme beenden" });
+    expect(rec.zurueck).toMatchObject({ gesperrt: false, licht: "aus" });
+    expect(rec.vor.gesperrt).toBe(false);
     expect(rec.stopp.gesperrt).toBe(false);
+    // ohne Wiedergabe (Radio aus) läuft die Aufnahme weiter und bleibt über ihre Taste zu beenden
+    expect(kanzelTasten(stand({ isRecording: true }), t).aufnahme).toMatchObject({ an: true, gesperrt: false });
   });
   it("Zurück und Weiter nennen den Nachbarn, rundum wie der Store", () => {
     const k = kanzelTasten(spielt({ stations: liste }), t);
@@ -126,7 +128,7 @@ describe("Steuerung", () => {
     expect(kanzelTasten(stand(), t).modus.gesperrt).toBe(true);
     expect(kanzelTasten(spielt({ canPlayHLS: true }), t).modus).toMatchObject({ gesperrt: false, farbe: "gelb", symbol: "fa-wave-square" });
     expect(kanzelTasten(spielt({ playerMode: "hls" }), t).modus).toMatchObject({ gesperrt: false, farbe: "gruen", symbol: "fa-arrows-rotate" });
-    expect(kanzelTasten(spielt({ playerMode: "hls", isRecording: true }), t).modus.gesperrt).toBe(true);
+    expect(kanzelTasten(spielt({ playerMode: "hls", isRecording: true, canPlayDirect: true }), t).modus.gesperrt).toBe(false);
     expect(kanzelTasten(spielt({ playerMode: "hls" }), t, true).modus).toMatchObject({ gesperrt: true, licht: "atmet" });
   });
   it("Reihenfolge: immer da, nur bei Folgen und Aufnahmen, rundum; Weiter gespiegelt bei rückwärts", () => {
@@ -143,7 +145,8 @@ describe("Spulzeilen", () => {
     const z = zeitversatzStand(spielt({ playerMode: "hls", isLive: false, hlsStatus: { ...HLS, buffered_seconds: 900 } }), t);
     expect(z).toMatchObject({ fuellung: 50, bahn: 50, text: "15:00 von 30:00", gesperrt: false, live: false });
     expect(z.schritt).toBeCloseTo(100 / 1800);
-    expect(zeitversatzStand(spielt({ playerMode: "hls", isRecording: true, hlsStatus: HLS }), t).gesperrt).toBe(true);
+    // eine Aufnahme hängt am Empfang, nicht am Zeitversatz (RAD-46): Spulen bleibt frei
+    expect(zeitversatzStand(spielt({ playerMode: "hls", isRecording: true, hlsStatus: HLS }), t).gesperrt).toBe(false);
     expect(sekundenHinterLive(HLS, 1900)).toBe(0);
   });
   it("Position: Füllung nach der Lage, gesperrt ohne Dauer", () => {
@@ -196,9 +199,9 @@ describe("Punktmatrix wächst mit der Breite", () => {
 
 describe("Bitrate des Zeitversatzes", () => {
   const zv = (teil: Partial<Stand> = {}) => spielt({ playerMode: "hls", hlsActive: true, hlsStatus: HLS, streamQuality: { inputBitrate: 160 }, ...teil });
-  it("Lage: wählbar im Puffer, gesperrt bei Aufnahme, fest bei Folgen, sonst aus", () => {
+  it("Lage: wählbar im Puffer, auch bei Aufnahme (sie hängt nicht am Puffer, RAD-46), fest bei Folgen, sonst aus", () => {
     expect(bitrateLage(zv())).toBe("frei");
-    expect(bitrateLage(zv({ isRecording: true }))).toBe("gesperrt");
+    expect(bitrateLage(zv({ isRecording: true }))).toBe("frei");
     expect(bitrateLage(stand({ isPlaying: true, playerMode: "hls", currentEpisode: { title: "F" } }))).toBe("fest");
     expect(bitrateLage(spielt())).toBe("aus");
   });

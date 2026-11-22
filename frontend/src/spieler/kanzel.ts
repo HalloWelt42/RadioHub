@@ -282,7 +282,7 @@ export const kannBlaettern = (s: Stand): boolean =>
   (!!s.currentStation && s.stations.length > 1) || !!s.currentEpisode || (s.playerMode === "recording" && s.recordingPlaylist.length > 1);
 
 export const kannModusWechseln = (s: Stand): boolean =>
-  !s.isRecording && !s.currentEpisode && ((s.playerMode === "hls" && s.canPlayDirect) || (s.playerMode === "direct" && s.canPlayHLS === true));
+  !s.currentEpisode && ((s.playerMode === "hls" && s.canPlayDirect) || (s.playerMode === "direct" && s.canPlayHLS === true));
 
 export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fokusAn = false): Tasten {
   const art = artVon(s), rec = s.isRecording, laeuft = s.isPlaying && !s.isPaused;
@@ -292,11 +292,11 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
 
   const blatt = (schritt: -1 | 1): Taste => {
     const richtung = schritt < 0 ? "prev" : "next";
+    // eine Aufnahme hängt am Empfang ihres Senders (RAD-46): Blättern, Spielen und Moduswechsel bleiben frei
     let hilfe: string;
-    if (rec) hilfe = t("kanzel.wechselGesperrtHilfe");
-    else if (!blaettern) hilfe = t(folge ? `player.keine${schritt < 0 ? "Prev" : "Next"}Episode` : aufnahme ? `player.keine${schritt < 0 ? "Prev" : "Next"}Titel` : `player.kein${schritt < 0 ? "Prev" : "Next"}`);
+    if (!blaettern) hilfe = t(folge ? `player.keine${schritt < 0 ? "Prev" : "Next"}Episode` : aufnahme ? `player.keine${schritt < 0 ? "Prev" : "Next"}Titel` : `player.kein${schritt < 0 ? "Prev" : "Next"}`);
     else hilfe = mitTaste(nachbar(s, schritt) || t(folge ? `player.${richtung}Episode` : aufnahme ? `player.${richtung}Titel` : `player.${richtung}Sender`), schritt < 0 ? "←" : "→");
-    return { an: false, licht: rec ? "an" : "aus", gesperrt: rec || !blaettern, hilfe };
+    return { an: false, licht: "aus", gesperrt: !blaettern, hilfe };
   };
 
   const quelleDa = art !== "keine";
@@ -307,23 +307,23 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
       // bleibt Spielen (Symbol und Weg, aktionen.spielenOderPause): das Licht zeigt, ob es spielt (an), lädt (blinkt)
       // oder pausiert (atmet); beendet wird nur über Stopp (Nutzer 20.11.2026)
       an: laeuft,
-      licht: rec || (laeuft && zustandVon(s) !== "laedt") ? "an" : laeuft ? "blinkt" : s.isPaused ? "atmet" : "aus",
+      licht: laeuft && zustandVon(s) !== "laedt" ? "an" : laeuft ? "blinkt" : s.isPaused ? "atmet" : "aus",
       farbe: "blau",
-      gesperrt: rec || !quelleDa,
+      gesperrt: !quelleDa,
       symbol: "fa-play",
       neuVerbinden: false,
-      hilfe: rec ? t("player.recLaeuft")
-        : mitTaste(laeuft ? t("player.pause") : s.isPaused ? t(s.playerMode === "direct" ? "kanzel.weiterLive" : "kanzel.weiter") : t("player.play"), t("kanzel.leertaste")),
+      hilfe: mitTaste(laeuft ? t("player.pause") : s.isPaused ? t(s.playerMode === "direct" ? "kanzel.weiterLive" : "kanzel.weiter") : t("player.play"), t("kanzel.leertaste")),
     };
 
   const aufnahmeMoeglich = art === "sender" && s.isPlaying && !aufnahme;
+  // Aufnahme: leuchtet, solange sie läuft; ein Druck darauf beendet sie (Stopp beendet nur das Hören, RAD-46)
   const aufnehmen: Taste = {
-    an: rec, licht: rec ? "blinkt" : "aus", gesperrt: rec || !aufnahmeMoeglich,
-    hilfe: rec ? t("kanzel.wechselGesperrtHilfe") : aufnahme ? t("player.nichtBeiWiedergabe") : art !== "sender" ? t("player.keinSender")
+    an: rec, licht: rec ? "blinkt" : "aus", gesperrt: !rec && !aufnahmeMoeglich,
+    hilfe: rec ? t("kanzel.aufnahmeBeendenHilfe") : aufnahme ? t("player.nichtBeiWiedergabe") : art !== "sender" ? t("player.keinSender")
       : !s.isPlaying ? t("player.keinPlay") : t("player.recStart"),
   };
 
-  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused && !rec,
+  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused,
     hilfe: t(s.weg?.aufnahme === false ? "kanzel.stoppHilfeOhneAufnahme" : "kanzel.stoppHilfe") };
 
   const kann = kannModusWechseln(s);
@@ -332,7 +332,7 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
     an: false, licht: modusWechselt ? "atmet" : stromModus && art === "sender" ? "an" : "aus", gesperrt: !kann || modusWechselt,
     symbol: s.playerMode === "hls" ? "fa-arrows-rotate" : "fa-wave-square",
     farbe: s.playerMode === "hls" ? "gruen" : "gelb",
-    hilfe: rec ? t("player.recModuswechsel") : modusWechselt ? t("player.moduswechsel") : !kann ? t("player.moduswechselNicht")
+    hilfe: modusWechselt ? t("player.moduswechsel") : !kann ? t("player.moduswechselNicht")
       : s.playerMode === "hls" ? t("player.directMode") : t("player.hlsMode"),
   };
 
@@ -399,7 +399,7 @@ export function zeitversatzStand(s: Stand, t: Uebersetzer): Spulstand & { live: 
     text: t("kanzel.von", { a: formatTimeShort(gepuffert), b: formatTimeShort(max) }),
     max: formatTimeShort(max),
     schritt: bereich > 0 && !s.isLive ? 100 / bereich : 0.1,
-    gesperrt: s.isRecording || bereich <= 0,
+    gesperrt: bereich <= 0,      // eine Aufnahme hängt nicht am Zeitversatz (RAD-46): Spulen bleibt frei
     live: s.isLive,
   };
 }
@@ -417,6 +417,53 @@ export function pufferMarken(s: Stand): { von: number; breite: number }[] {
   }).filter((m) => m.breite > 0 && m.von < 100);
 }
 
+/** Maßstab des Balkens im Zeitversatz: links der älteste Ton im Puffer, die volle Breite ist der größte Puffer */
+function pufferMassstab(s: Stand): { anfang: number; groesste: number; ende: number } | null {
+  const hls = s.hlsStatus;
+  const dauer = hls?.segment_duration || 1, groesste = (hls?.max_segments || 0) * dauer;
+  if (!groesste || hls?.first_segment == null || hls?.last_segment == null) return null;
+  return { anfang: hls.first_segment * dauer, groesste, ende: (hls.last_segment + 1) * dauer };
+}
+
+/** Titelgrenzen im Zeitversatz als Striche (RAD-46): Anfang jedes Abschnitts außer dem ältesten, in Prozent */
+export function pufferStriche(s: Stand, abschnitte: { von: number }[]): number[] {
+  const m = pufferMassstab(s);
+  if (!m) return [];
+  return abschnitte.filter((a) => a.von > m.anfang + 0.5 && a.von < m.ende).map((a) => ((a.von - m.anfang) / m.groesste) * 100);
+}
+
+/** Teil des Balkens, der gerade aufgenommen wird (RAD-46): die letzten `sekunden` bis zur Live-Kante */
+export function pufferAufnahme(s: Stand, sekunden: number): { von: number; breite: number } | null {
+  const m = pufferMassstab(s);
+  if (!m || sekunden <= 0) return null;
+  const von = Math.max(m.anfang, m.ende - sekunden);
+  return { von: ((von - m.anfang) / m.groesste) * 100, breite: Math.max(0.4, ((m.ende - von) / m.groesste) * 100) };
+}
+
+/** Sekunde des Puffers an einer Stelle des Balkens (Prozent der Breite); null außerhalb des Gepufferten */
+export function pufferSekunde(s: Stand, prozent: number): number | null {
+  const m = pufferMassstab(s);
+  if (!m) return null;
+  const t = m.anfang + (prozent / 100) * m.groesste;
+  return t >= m.anfang && t <= m.ende ? t : null;
+}
+
+/** Prozent einer Sekunde des Puffers auf dem Balken */
+export function pufferProzent(s: Stand, sekunde: number): number {
+  const m = pufferMassstab(s);
+  return m ? ((sekunde - m.anfang) / m.groesste) * 100 : 0;
+}
+
+/** Lage des Reglers (0 bis 100 über das Gepufferte) zu einer Sekunde des Puffers und zurück */
+export function lageZuSekunde(s: Stand, lage: number): number | null {
+  const m = pufferMassstab(s);
+  return m ? m.anfang + (lage / 100) * (m.ende - m.anfang) : null;
+}
+export function sekundeZuLage(s: Stand, sekunde: number): number {
+  const m = pufferMassstab(s);
+  return m && m.ende > m.anfang ? ((sekunde - m.anfang) / (m.ende - m.anfang)) * 100 : 0;
+}
+
 /** Position einer Folge oder Aufnahme */
 export function positionStand(s: Stand, t: Uebersetzer): Spulstand {
   return {
@@ -424,7 +471,7 @@ export function positionStand(s: Stand, t: Uebersetzer): Spulstand {
     bahn: 100,
     text: t("kanzel.von", { a: formatTimeShort(s.zeit), b: formatTimeShort(s.dauer) }),
     schritt: 0.1,
-    gesperrt: s.isRecording || !(s.dauer > 0),
+    gesperrt: !(s.dauer > 0),
   };
 }
 
@@ -438,8 +485,7 @@ export type BitrateLage = "frei" | "gesperrt" | "fest" | "aus";
 
 export function bitrateLage(s: Stand): BitrateLage {
   if (s.currentEpisode && s.playerMode === "hls") return "fest";
-  if (hatZeitversatz(s) && s.hlsActive && !s.isRecording) return "frei";
-  if (hatZeitversatz(s) && s.isRecording) return "gesperrt";
+  if (hatZeitversatz(s) && s.hlsActive) return "frei";       // eine Aufnahme hängt nicht am Puffer (RAD-46)
   return "aus";
 }
 

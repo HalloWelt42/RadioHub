@@ -37,23 +37,23 @@ export function quelleStarten(): void {
   else if (app.currentRecording) engine.playRecording(app.currentRecording);
 }
 
-/** Stopp beendet Hören und Aufnahme */
+/** Stopp beendet das Hören; eine Aufnahme läuft weiter (RAD-46) */
 export function stoppen(): void {
   engine.stop();
 }
 
-/** Aufnahme starten; beenden nur über Stopp */
+/** Taste Aufnahme: starten, läuft sie schon, beenden */
 export function aufnehmen(): void {
-  if (app.isRecording) return;
-  actions.startRecording();
+  if (app.isRecording) actions.stopRecording();
+  else actions.startRecording();
 }
 
 export function zurueck(): void {
-  if (!app.isRecording) actions.navigatePrev();
+  actions.navigatePrev();
 }
 
 export function vor(): void {
-  if (!app.isRecording) actions.navigateNext();
+  actions.navigateNext();
 }
 
 export function spulen(sekunden: number): void {

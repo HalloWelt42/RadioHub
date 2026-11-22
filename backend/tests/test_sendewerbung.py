@@ -86,6 +86,33 @@ def test_vorlauf_ohne_stille_war_nur_ein_spaeter_titel():
     assert w.stellen == []
 
 
+def test_vorlauf_endet_an_seiner_stille_auch_ohne_titel():
+    """Echter Fall 90s90s 22.11.2026: der Name des Senders stand 258 s als Titel (bis zum zweiten Lied). Der Vorlauf
+    endet an seiner Stille, ohne auf die nächste Angabe zu warten; die spätere Angabe ist ein gewöhnlicher Wechsel."""
+    w = Sitzungswerbung()
+    w.sendername = NEUNZIGER
+    w.angabe(VORLAUF, 0.34)
+    w.stille(2.0, 2.05)                                           # zu früh: noch im Spot
+    (s,) = w.stellen
+    assert s.bis is None
+    w.stille(30.025, 30.072)
+    assert (s.bis, s.bis_aus) == (30.072, "stille")
+    w.angabe(CRUSH, 258.4)
+    assert w.stellen == [s] and s.bis == 30.072
+
+
+def test_vorlauf_ohne_stille_und_ohne_titel_faellt_nach_hoechstens_weg():
+    w = Sitzungswerbung()
+    w.sendername = NEUNZIGER
+    w.angabe(VORLAUF, 0.34)
+    w.ton_bis(50.0)
+    assert len(w.stellen) == 1
+    w.ton_bis(62.0)
+    assert w.stellen == [] and len(w.verworfen) == 1
+    w.angabe(CRUSH, 258.4)                                        # danach ein gewöhnlicher Titel
+    assert w.stellen == []
+
+
 def test_spot_beim_verbinden_mit_laenge_und_stille():
     w = Sitzungswerbung()
     w.angabe(FFH, 1.0)                                        # erste Angabe nach dem ersten Block: Spot ab 0

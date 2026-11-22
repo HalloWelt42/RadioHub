@@ -4,6 +4,7 @@
   // Adresse (/radio?land=DE ..., aufgeklappt /radio/<uuid>). Tastatur in der Liste: Pfeile wählen, Eingabe und
   // Leertaste spielen, Escape schließt die Details. Nach 90 Sekunden ohne Bedienung rollt die Liste zum spielenden Sender.
   import { onMount, tick, untrack } from "svelte";
+  import PufferAnsicht from "./PufferAnsicht.svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { appState } from "../../lib/store.svelte.js";
@@ -50,6 +51,10 @@
     });
   });
 
+  /** Großansicht des Zeitversatzes unter /radio/puffer (RAD-46) */
+  const PUFFER = "puffer";
+  const pufferOffen = $derived((appState.routeSegments as string[])[0] === PUFFER);
+
   // Adresse: beim ersten Mal gilt sie, danach folgt die Ansicht ihr (aufgeklappter Sender, Sprung von der Spielerleiste)
   let erstes = true;
   $effect(() => {
@@ -63,6 +68,7 @@
         return;
       }
       if (seg[0] === "search") return filterzustand.ausAdresse();
+      if (seg[0] === PUFFER) return;                          // Großansicht des Zeitversatzes (RAD-46): die Liste bleibt, wie sie war
       const uuid = seg[0] && UUID.test(seg[0]) ? seg[0] : null;
       if (uuid !== filterzustand.offen) filterzustand.offen = uuid;
       filterzustand.schreiben();
@@ -150,7 +156,7 @@
     const an = folgen.an;
     untrack(() => {
       if (!an) { gefolgt = null; return; }
-      if (!uuid || uuid === gefolgt) return;
+      if (!uuid || uuid === gefolgt || pufferOffen) return;   // die Großansicht des Puffers behält ihre Adresse
       gefolgt = uuid;
       vonHier = null;
       // eine Variante steht für die Zeile, aus der sie gespielt wurde (RAD-41: sonst sprang die Liste zu einem anderen Sender)
@@ -211,6 +217,9 @@
           onclick={() => (filterOffen = false)}></button>
 
   <main class="rh-haupt">
+    {#if pufferOffen}
+      <PufferAnsicht />
+    {:else}
     <Werkzeugleiste {filter} gesamt={liste.gesamt} sichtbar={bedienung.bestand?.sichtbar ?? null} ausgeblendet={bedienung.bestand?.ausgeblendet ?? null}
                     kategorieName={(id) => kategorien.find((k) => String(k.id) === id)?.name ?? id} {filterOffen} laedt={liste.laedt}
                     onaendern={aendern} onfilter={() => (filterOffen = true)}
@@ -244,6 +253,7 @@
                    einheit={t("radio.geladen")} />
       {/if}
     </div>
+    {/if}
   </main>
 </div>
 <Band bind:inhalt={bedienung.band} />

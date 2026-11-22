@@ -3,16 +3,35 @@
   // aus dem Entwurf; am Rechner und am Telefon dieselbe. Wie lange sie steht, regelt der Zustand (actions.showToast).
   // Ohne Meldung steht dort der Hinweis auf eine neue Version (RAD-20): neu laden nur auf Wunsch, oder später. Vor
   // beiden steht "Werbung übersprungen" mit Zurück (RAD-32), solange er gilt.
-  import { appState } from "../lib/store.svelte.js";
+  import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
   import { aktualisierung, neuLaden, spaeter } from "../lib/aktualisierung.svelte.js";
   import { werbehinweis } from "../spieler/werbehinweis.svelte";
+  import { puffer } from "../spieler/puffer.svelte";
+  import { bei } from "../lib/radio/abschnitte";
 
   const SYMBOL: Record<string, string> = {
     success: "fa-circle-check", error: "fa-circle-exclamation", warning: "fa-triangle-exclamation", info: "fa-circle-info",
   };
   const dauerKurz = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
   const meldung = $derived(appState.toast as { message: string; type?: string } | null);
+
+  // Nach dem Start einer Aufnahme aus dem Zeitversatz (RAD-46): ab welchem Titel und wie viel aus dem Puffer kam; steht,
+  // bis man es schließt, höchstens 20 Sekunden
+  const AUFNAHME_HINWEIS_MS = 20000;
+  let weg = $state<string | null>(null);
+  const aufnahmeHinweis = $derived.by(() => {
+    const sitzung = appState.recordingSession as string | null, vorlauf = appState.recordingVorlaufS as number;
+    if (!appState.isRecording || !sitzung || !(vorlauf > 0) || weg === sitzung) return null;
+    const a = bei(puffer.abschnitte, puffer.ende - (appState.recordingElapsed as number));
+    return { sitzung, vorlauf, titel: a?.titel ?? "" };
+  });
+  $effect(() => {
+    const s = aufnahmeHinweis?.sitzung;
+    if (!s) return;
+    const uhr = setTimeout(() => (weg = s), AUFNAHME_HINWEIS_MS);
+    return () => clearTimeout(uhr);
+  });
 </script>
 
 {#if werbehinweis.jetzt}
@@ -32,6 +51,13 @@
       <button class="knopf" type="button" onclick={w.anhoeren}><i class="fa-solid fa-rotate-left"></i>{t("schale.werbungAnhoeren")}</button>
       {#if w.schliessen}<button class="rund" type="button" aria-label={t("schale.schliessen")} title={t("schale.schliessen")} onclick={w.schliessen}><i class="fa-solid fa-xmark"></i></button>{/if}
     {/if}
+  </div>
+{:else if aufnahmeHinweis}
+  {@const h = aufnahmeHinweis}
+  <div class="rh-band rh-aufnahmehinweis" role="status" aria-live="polite">
+    <i class="fa-solid fa-circle"></i><span><b>{t("puffer.aufnahmeAb", { titel: h.titel })}</b>: {t("puffer.aufnahmeAbText", { vorlauf: dauerKurz(h.vorlauf) })}</span>
+    <button class="knopf" type="button" title={t("puffer.beginnAendernHilfe")} onclick={() => { weg = h.sitzung; actions.navigateTo("/radio/puffer"); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.beginnAendern")}</button>
+    <button class="rund" type="button" aria-label={t("schale.schliessen")} title={t("schale.schliessen")} onclick={() => (weg = h.sitzung)}><i class="fa-solid fa-xmark"></i></button>
   </div>
 {:else if meldung}
   <div class="rh-band" class:gut={meldung.type === "success"} class:fehler={meldung.type === "error"} role="status" aria-live="polite">

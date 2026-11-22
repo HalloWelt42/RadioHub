@@ -5,6 +5,7 @@ import radio from './radio/en.js';
 import podcastAnsicht from './podcastansicht/en.js';
 import einstellungen from './einstellungen/en.js';
 import aufnahmen from './aufnahmen/en.js';
+import puffer from './puffer/en.js';
 
 export default {
   // === Radio mit Senderfilterung (RAD-7) ===
@@ -12,6 +13,7 @@ export default {
   podcastAnsicht,
   einstellungen,
   aufnahmenAnsicht: aufnahmen,
+  puffer,
 
   // === Phone view ===
   telefon: {
@@ -338,7 +340,8 @@ export default {
     von: '{a} of {b}',
     pufferHilfe: 'Timeshift: always running, at most {max}; drag to jump into the buffer',
     positionHilfe: 'Position; drag or jump with the arrow keys',
-    stoppHilfe: 'Stop: ends listening and recording (S)',
+    stoppHilfe: 'Stop: ends listening; a recording keeps running (S)',
+    aufnahmeBeendenHilfe: 'Stop recording',
     stoppHilfeOhneAufnahme: 'Stop: ends listening (S)',
     fokusAn: 'Focus on: the list follows the playing station on every change; scroll freely in between. Tap to turn off',
     fokusAus: 'Focus off: scroll freely. Tap to jump to the playing station and follow it',

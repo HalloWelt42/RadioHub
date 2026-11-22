@@ -15,6 +15,8 @@ Stille, die ffmpeg mitmeldet; ohne Stille bleibt die Grenze der Angabe.
 - Ein Format mit bestaetigen "stille" (Vorlauf beim Verbinden, RAD-47): endet die Stelle laut Angabe, bleibt sie offen,
   bis höchstens `fenster_s` neben diesem Ende eine Stille gemeldet ist; dann endet sie dort. Hat der geprüfte Ton
   (`ton_bis`) das Fenster passiert ohne Stille, wird sie verworfen: dann war es kein Vorlauf, nur ein später Titel.
+  Bleibt die Angabe aus (der Name steht minutenlang), endet die Stelle an der ersten Stille zwischen mindestens_s und
+  hoechstens_s nach ihrem Anfang; kommt bis hoechstens_s keine, wird sie verworfen.
 
 Ohne Ein- und Ausgabe; ffmpeg und der Stromleser rufen nur `angabe` und `stille`."""
 
@@ -55,6 +57,8 @@ class Werbestelle(BaseModel):
     _bis_quelle: Optional[Herkunft] = PrivateAttr(None)
     #: endet erst mit einer Stille am Ende laut Angabe (bestaetigen "stille")
     _bestaetigen: bool = PrivateAttr(False)
+    _mindestens_s: Optional[float] = PrivateAttr(None)
+    _hoechstens_s: Optional[float] = PrivateAttr(None)
 
     @property
     def name(self) -> str:
@@ -115,6 +119,7 @@ class Sitzungswerbung:
         s = Werbestelle(von=von, von_aus=von_aus, format=w.format, kennung=w.kennung, werbender=w.werbender,
                         titel=w.titel, angekuendigt_ms=w.dauer_ms, beim_verbinden=w.beim_verbinden or von_aus == "verbinden")
         s._bestaetigen = w.bestaetigen == "stille"
+        s._mindestens_s, s._hoechstens_s = w.mindestens_s, w.hoechstens_s
         if von_aus != "verbinden":
             s._von_angabe = von
         if w.ende == "dauer" and w.dauer_ms:
@@ -143,9 +148,28 @@ class Sitzungswerbung:
                 self.stellen.remove(s)
                 self.verworfen.append(s)
 
+    def _ohne_angabe(self, jetzt: Optional[float] = None) -> None:
+        """Eine offene Stelle, die eine Stille braucht, ohne dass ihre Angabe endet: an der ersten Stille zwischen
+        mindestens_s und hoechstens_s nach ihrem Anfang endet sie; hat der geprüfte Ton `jetzt` hoechstens_s passiert,
+        wird sie verworfen."""
+        s = self._offen
+        if not s or not s._bestaetigen or s._hoechstens_s is None:
+            return
+        frueh, spaet = s.von + (s._mindestens_s or 0.0), s.von + s._hoechstens_s
+        stille = next((st for st in self._stillen if frueh <= st[1] <= spaet), None)
+        if stille:
+            self._offen = None
+            s.ende_setzen(stille[1], "stille")
+            self._geendet(s)
+        elif jetzt is not None and jetzt > spaet + self._regeln.grenze.fenster_s:
+            self._offen = None
+            self.stellen.remove(s)
+            self.verworfen.append(s)
+
     def ton_bis(self, sekunde: float) -> None:
         """Der FFmpeg, der die Stille meldet, hat den Ton bis `sekunde` geprüft (sein Takt, nicht der des Lesers: der
         liest beim Verbinden einen Schwall Ton weit voraus). Bis hier ist jede Stille gemeldet."""
+        self._ohne_angabe(sekunde)
         self._bestaetigen(sekunde)
         self._melden(sekunde)
 
@@ -176,6 +200,7 @@ class Sitzungswerbung:
             del self._stillen[:-self._stillen_hoechstens]
         for s in self.stellen[-20:]:
             self._an_stille(s)
+        self._ohne_angabe()
         self._bestaetigen()
         self._melden(bis)
 

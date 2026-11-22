@@ -35,6 +35,8 @@ class Format(BaseModel):
     ende: Ende = "wechsel"
     nur_beim_verbinden: bool = False
     bestaetigen: Optional[Bestaetigen] = None
+    mindestens_s: Optional[float] = None
+    hoechstens_s: Optional[float] = None
 
     def trifft(self, roh: str, sendername: str) -> bool:
         if SENDERNAME not in self.erkennen:
@@ -64,6 +66,9 @@ class Werbeangabe(BaseModel):
     beim_verbinden: bool = False
     ende: Ende
     bestaetigen: Optional[Bestaetigen] = None
+    #: mit bestaetigen "stille": Ende an der ersten Stille in diesem Abstand vom Anfang, ohne sie verworfen
+    mindestens_s: Optional[float] = None
+    hoechstens_s: Optional[float] = None
 
 
 @lru_cache(maxsize=1)
@@ -74,7 +79,8 @@ def regeln() -> Regeln:
                            werbender=ausdruck(f, "werbender"), titel=ausdruck(f, "titel"),
                            dauer_ms=ausdruck(f, "dauer_ms"), einfuegung=ausdruck(f, "einfuegung"),
                            verbinden=tuple(f.get("verbinden", ())), ende=f.get("ende", "wechsel"),
-                           nur_beim_verbinden=f.get("nur_beim_verbinden", False), bestaetigen=f.get("bestaetigen"))
+                           nur_beim_verbinden=f.get("nur_beim_verbinden", False), bestaetigen=f.get("bestaetigen"),
+                           mindestens_s=f.get("mindestens_s"), hoechstens_s=f.get("hoechstens_s"))
                     for f in daten["format"])
     return Regeln(grenze=Grenze(**daten["grenze"]), formate=formate)
 
@@ -93,7 +99,8 @@ def lesen(roh: str, sendername: str = "", erste: bool = False) -> Optional[Werbe
         return Werbeangabe(format=f.name, kennung=kennung, werbender=_gruppe(f.werbender, roh),
                            titel=_gruppe(f.titel, roh), dauer_ms=int(dauer) if dauer.isdigit() else None,
                            beim_verbinden=(bool(einfuegung) and einfuegung in f.verbinden) or f.nur_beim_verbinden,
-                           ende=f.ende if dauer.isdigit() else "wechsel", bestaetigen=f.bestaetigen)
+                           ende=f.ende if dauer.isdigit() else "wechsel", bestaetigen=f.bestaetigen,
+                           mindestens_s=f.mindestens_s, hoechstens_s=f.hoechstens_s)
     return None
 
 

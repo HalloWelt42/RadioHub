@@ -144,3 +144,24 @@
 .rh-kanzel .balken { position: relative; }
 /* Werbestellen auf der Spulbahn in Violett: hebt sich vom gelben Fortschritt ab (RAD-43, Wahl des Nutzers) */
 .rh-werbemarke { position: absolute; top: 0; bottom: 0; background-color: var(--violett); }
+
+/* ═══ Zeitversatz mit Marken (RAD-46, Entwurf puffer.html) ═══ Titelgrenzen als Striche über dem Balken (dunkler Kern
+   mit heller Kante: lesbar auf der gelben Füllung wie auf der leeren Bahn), eine laufende Aufnahme rot hinterlegt, beim
+   Überfahren der Titel an der Stelle. Violett bleibt Werbung (rh-werbemarke). */
+.rh-spulbahn { position: relative; }
+.rh-aufnahmemarke { position: absolute; top: 0; bottom: 0; background-color: color-mix(in srgb, var(--led-rot) 60%, transparent); }
+.rh-titelstriche { position: relative; align-self: center; block-size: 14px; pointer-events: none; }
+.rh-titelstriche i { position: absolute; top: 0; bottom: 0; inline-size: 2px; margin-left: -1px; border-radius: 1px; background-color: var(--hg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-1) 65%, transparent); }
+.rh-balkentipp { position: absolute; bottom: calc(100% + 6px); translate: -50% 0; z-index: 5; display: grid; gap: 2px; padding: 6px 10px;
+  inline-size: max-content; max-inline-size: 300px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-geraet-schatten-klein);
+  font-family: var(--schrift-text, inherit); font-size: var(--klein); color: var(--text-1); text-align: left; pointer-events: none; }
+.rh-balkentipp b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-balkentipp span { color: var(--text-3); font-family: var(--schrift-zahl); font-size: var(--marke); white-space: nowrap; }
+.rh-balkentipp.rechts { translate: calc(-100% + 16px) 0; }
+/* Titelzeile: Vorheriger Titel, der Titel an der Stelle, Nächster Titel, Großansicht */
+.rh-titelzeile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 6px; align-items: center; margin-top: 4px; }
+.rh-titelzeile .knopf { block-size: 34px; padding: 0 8px; gap: 6px; font-size: var(--marke); }
+.rh-titelzeile-jetzt { display: grid; min-inline-size: 0; text-align: center; line-height: 1.25; }
+.rh-titelzeile-jetzt b, .rh-titelzeile-jetzt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-titelzeile-jetzt .rh-zahl { font-size: var(--marke); color: var(--text-3); }
