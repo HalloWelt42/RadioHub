@@ -46,7 +46,8 @@
 
 <header class="rh-kopf">
   <div class="rh-marke">
-    <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}>RadioHub</a>
+    <span class="rh-marke-zeile"><a class="rh-logo" href="/radio" aria-label="RadioHub" onclick={(e) => { e.preventDefault(); actions.navigateTo("/radio"); }}><!--
+        Buchstaben einzeln für den Glanzlauf (RAD-71) -->{#each "RadioHub".split("") as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i} aria-hidden="true">{zeichen}</span>{/each}</a>
       {#if backend}<button class="rh-herz" type="button" title={t("app.unterstuetzenTitle")} aria-label={t("app.unterstuetzenTitle")}
               onclick={() => { actions.navigateTo("/einstellungen/allgemein/bedanken"); }}><i class="fa-solid fa-heart"></i></button>
         <span class="rh-pro" title={t("schale.proTitel")}>PRO</span>

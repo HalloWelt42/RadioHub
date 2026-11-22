@@ -15,6 +15,16 @@ html, body { height: 100%; overflow: hidden; }
 .rh-marke-zeile { display: flex; align-items: center; gap: 10px; }
 .rh-logo { font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 7px); letter-spacing: .07em; line-height: 1.05; color: var(--rh-logo);
   text-shadow: var(--rh-logo-schein); white-space: nowrap; text-decoration: none; }
+/* Glanzlauf über den Schriftzug (RAD-71, wie früher): alle 7 Sekunden leuchten die Buchstaben nacheinander kurz auf, als
+   führe eine helle Lichtquelle schnell darüber; nur im Dunkeln, bei reduzierter Bewegung nicht */
+.rh-logo-zeichen { display: inline-block; }
+:root[data-theme="dunkel"] .rh-logo-zeichen { animation: rh-logoglanz 7s ease-in-out infinite; animation-delay: calc(var(--i) * .15s); }
+@keyframes rh-logoglanz {
+  0%, 8.6%, 100% { text-shadow: var(--rh-logo-schein); }   /* sonst der gewohnte Schein des Schriftzugs */
+  3.4% { text-shadow: 0 0 8px color-mix(in srgb, var(--rh-logo) 90%, transparent), 0 0 20px color-mix(in srgb, var(--rh-logo) 50%, transparent),
+    0 0 40px color-mix(in srgb, var(--rh-logo) 30%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { :root[data-theme="dunkel"] .rh-logo-zeichen { animation: none; } }
 .rh-herz { text-decoration: none; display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer;
   color: var(--rh-herz); font-size: 19px; text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-herz) 75%, transparent), var(--rh-praegung); }
 .rh-herz i { animation: rh-pochen 2.2s ease-in-out infinite; }
