@@ -3,6 +3,10 @@
  * Spulen, beim Radio voriger und nächster Favorit.
  */
 import { api } from '../api.js';
+import { senderquelle } from '$ziel/quelle';
+
+/** App-Symbol als Ersatz am Sperrbildschirm, unter dem Pfad der Seite (Basic liegt unter /RadioHub/, RAD-90) */
+const APPBILD = `${import.meta.env.BASE_URL}icon-512.png`;
 
 const da = () => typeof navigator !== 'undefined' && 'mediaSession' in navigator;
 
@@ -10,18 +14,21 @@ function bild(src) {
   return src ? [{ src: new URL(src, location.href).href, sizes: '512x512' }] : [];
 }
 
-/** Beschreibung der laufenden Wiedergabe aus dem Zustand der App. */
+/** Beschreibung der laufenden Wiedergabe aus dem Zustand der App. `bild` ist das eigene Bild der Quelle (Logo des Senders
+ *  über die Senderquelle, in Basic keins; Bild der Folge) oder null, `artwork` dasselbe für den Sperrbildschirm, ohne
+ *  eigenes Bild das App-Symbol. */
 export function beschreibung(appState) {
   const ep = appState.currentEpisode;
   if (ep) {
+    const eigenes = ep.image_url || ep.podcast_image_url || ep.podcast?.image_url ? api.getEpisodeImageUrl(ep.id) : null;
     return { title: ep.title || '', artist: ep.podcast?.title || ep.podcast_title || '', album: 'RadioHub',
-             artwork: bild(ep.image_url || ep.podcast_image_url || ep.podcast?.image_url ? api.getEpisodeImageUrl(ep.id) : null),
-             folge: true };
+             bild: eigenes, artwork: bild(eigenes ?? APPBILD), folge: true };
   }
   const s = appState.currentStation;
   if (s) {
+    const logo = senderquelle.logoAdresse(s.uuid, s.favicon || '');
     return { title: appState.streamTitle || s.name || '', artist: appState.streamTitle ? s.name : '', album: 'RadioHub',
-             artwork: bild(s.favicon ? `/api/favicon/${s.uuid}` : '/icon-512.png'), folge: false };
+             bild: logo, artwork: bild(logo ?? APPBILD), folge: false };
   }
   return null;
 }

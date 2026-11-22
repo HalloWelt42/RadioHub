@@ -24,7 +24,18 @@
   const info = $derived(beschreibung(appState));
   const folge = $derived(!!appState.currentEpisode);
   const spielt = $derived(appState.isPlaying && !appState.isPaused);
-  const bildSrc = $derived(info?.artwork?.[0]?.src || null);
+  const bildSrc = $derived(info?.bild || null);
+  /** das Bild, sobald es wirklich geladen ist: nur dann trägt es den Farbschein, sonst der Schein aus dem Akzent (RAD-90) */
+  let scheinBild = $state(null);
+  $effect(() => {
+    const src = bildSrc;
+    scheinBild = null;
+    if (!src) return;
+    const probe = new Image();
+    probe.onload = () => { if (probe.naturalWidth >= 4) scheinBild = src; };
+    probe.src = src;
+    return () => { probe.onload = null; };
+  });
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
@@ -66,7 +77,7 @@
 {#if offen && info}
   <div class="vollbild" role="dialog" aria-modal="true" aria-label={info.title}>
     <!-- Farbschein aus dem Logo über die ganze Fläche, Bedienflächen als Glas darauf (RAD-56, Wahl A) -->
-    <div class="tf-schein" class:ohne={!bildSrc} aria-hidden="true" style:background-image={bildSrc ? `url("${bildSrc}")` : null}></div>
+    <div class="tf-schein" class:ohne={!scheinBild} aria-hidden="true" style:background-image={scheinBild ? `url("${scheinBild}")` : null}></div>
     <div class="vollbild-kopf">
       <button class="kopf-knopf" onclick={() => (offen = false)} aria-label={t('telefon.spielerSchliessen')}>
         <i class="fa-solid fa-chevron-down"></i>
@@ -237,9 +248,10 @@
   .tf-schein.ohne { background-image: radial-gradient(circle at 50% 30%, var(--t-akzent), transparent 70%); }
   .tf-schein::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--t-grund) 55%, transparent); }
   /* Glas auf dem Schein */
+  /* Glas aus der Fläche der Knöpfe, nicht aus dem Grund: auch auf flachem Schein bleiben Knöpfe Knöpfe (RAD-90) */
   .vollbild :is(.tf-versatz, .tf-zur-liste, .tf-rund.mittel) {
-    background: color-mix(in srgb, var(--t-grund) 45%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .vollbild .tf-versatz-knoepfe button:not(.tf-primaer) { background: color-mix(in srgb, var(--t-grund) 35%, transparent); }
+    background: color-mix(in srgb, var(--t-flaeche-2) 70%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .vollbild .tf-versatz-knoepfe button:not(.tf-primaer) { background: color-mix(in srgb, var(--t-flaeche-2) 60%, transparent); }
   .tf-cover { display: grid; }
   .tf-cover :global(.tf-bild) { border-radius: 22px; box-shadow: 0 18px 40px -12px rgb(0 0 0 / .55); }
   .vollbild-kopf { display: flex; }
