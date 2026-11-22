@@ -13,7 +13,7 @@
   import { bei } from "../lib/radio/abschnitte";
   import { formatTimeShort } from "../lib/formatters.js";
   import { app } from "./app";
-  import { actions } from "../lib/store.svelte.js";
+  import { pufferansicht } from "./pufferansicht.svelte";
   import { faehigkeiten } from "../lib/playerEngine.js";
 
   // ohne Zeitversatz und ohne Folgen (Webversion) gibt es nichts zu spulen: die Zeile entfällt dort
@@ -61,7 +61,7 @@
          Zeitversatzes gesperrt, damit nichts rückt -->
     <div class="rh-zeit-kopf">
       {#if spulbar}
-        <button class="knopf rh-spaltenknopf" type="button" title={t("puffer.pufferHilfe")} aria-label={t("puffer.pufferHilfe")} disabled={!imVersatz} onclick={() => { actions.navigateTo("/radio/puffer"); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
+        <button class="knopf rh-spaltenknopf" type="button" title={t("puffer.pufferHilfe")} aria-label={t("puffer.pufferHilfe")} disabled={!imVersatz} aria-pressed={pufferansicht.offen} onclick={() => pufferansicht.umschalten()}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
       {/if}
       <div class="ak-glas rh-zeit-glas">
         <ak-segmente class="rh-zeit-quelle" art="14" stellen="7" text={anzeige.quelle.text} hilfe={t("kanzel.quelleHilfe")}

@@ -3,6 +3,7 @@
   // und die Senderliste seitenweise. Kennt nur die Senderquelle; Schnellfilter, Suche und Sortierung stehen in der
   // Adresse (/radio?land=DE ..., aufgeklappt /radio/<uuid>). Tastatur in der Liste: Pfeile wählen, Eingabe und
   // Leertaste spielen, Escape schließt die Details. Nach 90 Sekunden ohne Bedienung rollt die Liste zum spielenden Sender.
+  import { pufferansicht } from "../../spieler/pufferansicht.svelte";
   import { onMount, tick, untrack } from "svelte";
   import PufferAnsicht from "./PufferAnsicht.svelte";
   import { Nachladen } from "appkern-oberflaeche";
@@ -50,9 +51,10 @@
     });
   });
 
-  /** Großansicht des Zeitversatzes unter /radio/puffer (RAD-46) */
+  /** Großansicht des Zeitversatzes unter /radio/puffer (RAD-46); schließen über die gemeinsame Stelle (RAD-69) */
   const PUFFER = "puffer";
-  const pufferOffen = $derived((appState.routeSegments as string[])[0] === PUFFER);
+  const pufferOffen = $derived(pufferansicht.offen);
+  $effect(() => pufferansicht.anmelden(pufferSchliessen));
 
   // Adresse: beim ersten Mal gilt sie, danach folgt die Ansicht ihr (aufgeklappter Sender, Sprung von der Spielerleiste)
   let erstes = true;

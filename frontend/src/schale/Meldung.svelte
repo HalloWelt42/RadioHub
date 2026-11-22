@@ -3,7 +3,8 @@
   // aus dem Entwurf; am Rechner und am Telefon dieselbe. Wie lange sie steht, regelt der Zustand (actions.showToast).
   // Ohne Meldung steht dort der Hinweis auf eine neue Version (RAD-20): neu laden nur auf Wunsch, oder später. Vor
   // beiden steht "Werbung übersprungen" mit Zurück (RAD-32), solange er gilt.
-  import { appState, actions } from "../lib/store.svelte.js";
+  import { appState } from "../lib/store.svelte.js";
+  import { pufferansicht } from "../spieler/pufferansicht.svelte";
   import { t } from "../lib/i18n.svelte.js";
   import { aktualisierung, neuLaden, spaeter } from "../lib/aktualisierung.svelte.js";
   import { werbehinweis } from "../spieler/werbehinweis.svelte";
@@ -56,7 +57,7 @@
   {@const h = aufnahmeHinweis}
   <div class="rh-band rh-aufnahmehinweis" role="status" aria-live="polite">
     <i class="fa-solid fa-circle"></i><span><b>{t("puffer.aufnahmeAb", { titel: h.titel })}</b>: {t("puffer.aufnahmeAbText", { vorlauf: dauerKurz(h.vorlauf) })}</span>
-    <button class="knopf" type="button" title={t("puffer.beginnAendernHilfe")} onclick={() => { weg = h.sitzung; actions.navigateTo("/radio/puffer"); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.beginnAendern")}</button>
+    <button class="knopf" type="button" title={t("puffer.beginnAendernHilfe")} onclick={() => { weg = h.sitzung; pufferansicht.oeffnen(); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.beginnAendern")}</button>
     <button class="rund" type="button" aria-label={t("schale.schliessen")} title={t("schale.schliessen")} onclick={() => (weg = h.sitzung)}><i class="fa-solid fa-xmark"></i></button>
   </div>
 {:else if meldung}
