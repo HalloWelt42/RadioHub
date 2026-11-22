@@ -296,7 +296,8 @@
 
 /* Aufgeklappter Sender dicht (RAD-35, Entwurf A in steckbrief-kompakt.html): drei schmale Spalten, Werte zweispaltig,
    Erklärungen als Tooltip am Info-Zeichen, Werbung nach Werbenden, Einschätzung nur mit Gewähltem und Tafel am Plus */
-.rh-detail-dicht { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, .9fr); }
+/* Steckbrief, Einschätzung, Werbung rechts außen und am schmalsten (RAD-59) */
+.rh-detail-dicht { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, .8fr); }
 .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
 @container liste (max-width: 820px) { .rh-detail-dicht, .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); } }
 .rh-werte-dicht { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; font-size: var(--klein); align-items: center; }
@@ -317,20 +318,23 @@
 .rh-zeile-dicht { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--klein); }
 .rh-zeile-dicht .rh-schalter { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
-.rh-werbende { display: grid; gap: 4px; }
-.rh-werbender { border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
-.rh-werbender summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 5px 10px; font-size: var(--klein); }
+.rh-werbende { display: grid; gap: 0; }
+/* kompakte Zeilen ohne Kasten (RAD-59); Fläche nur beim Überfahren und aufgeklappt */
+.rh-werbender { border-radius: var(--r1); }
+.rh-werbender:hover, .rh-werbender[open] { background-color: var(--flaeche-2); }
+.rh-werbender summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 2px 6px; font-size: var(--klein); }
 .rh-werbender summary::-webkit-details-marker { display: none; }
 .rh-werbender summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-pfeil { color: var(--text-3); font-size: .8em; transition: transform .15s; }
 .rh-werbender[open] .rh-pfeil { transform: rotate(90deg); }
 .rh-verbinden { color: var(--led-bernstein); }
-.rh-werbender ul { margin: 0; padding: 2px 10px 8px 30px; list-style: none; display: grid; gap: 3px; font-size: var(--klein); }
+.rh-werbender ul { margin: 0; padding: 2px 6px 6px 24px; list-style: none; display: grid; gap: 3px; font-size: var(--klein); }
 .rh-werbender li { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; gap: 2px 10px; }
 .rh-werbender li > .rh-still { grid-column: 2 / -1; }
 /* Werbelisten ab sechs Einträgen rollen in sich (fünf Zeilen hoch), lange zeigen nur die häufigsten (sendewerbung.ts) */
 .rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.5 + 14px); max-block-size: calc(var(--rh-zeile) * 5 + 16px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
+.rh-werbende.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.5 + 4px); }   /* kompakte Zeilen der Werbenden (RAD-59) */
 /* Einschätzung: nur Gewähltes (mit x zum Abwählen), alles Übrige in der Tafel am Plus */
 .rh-einschaetzung { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit, var(--led-gelb)); font-size: var(--klein); }

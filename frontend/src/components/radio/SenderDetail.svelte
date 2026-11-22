@@ -221,41 +221,6 @@
     </dl>
   </section>
 
-  {#if faehig.werbung}
-    <section class="rh-tafel-detail"><h4><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungTitel")}
-        {#if werbung?.spots}<span class="rh-h4-zahl">{t("radio.werbungZahlen", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}</span>{/if}
-        <i class="fa-solid fa-circle-info rh-info" title={t("radio.werbungAusSendedaten")}></i></h4>
-      {#if gruppen.length}
-        <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
-          {#each werbendeListe.zeigen as g (g.name || g.kennung)}
-            {@const spots = haeufigste(g.spots)}
-            <details class="rh-werbender">
-              <summary><i class="fa-solid fa-chevron-right rh-pfeil"></i><b title={werbendenName(g)}>{werbendenName(g)}</b>
-                <span class="rh-zahl">{t("radio.werbungMal", { n: zahl(g.mal) })}</span>
-                {#if g.beimVerbinden}<i class="fa-solid fa-plug rh-verbinden" title={t("radio.werbungBeimVerbinden")}></i>{:else}<span></span>{/if}</summary>
-              <ul class:rh-liste-rollt={spots.rollt}>
-                {#each spots.zeigen as s (s.format + s.kennung)}
-                  <li><span class="rh-zahl">{spotDauer(s.dauer_ms)}</span><span class="rh-kurz" title={s.titel}>{s.titel || s.kennung}</span><span class="rh-zahl">{t("radio.werbungMal", { n: zahl(s.anzahl) })}</span>
-                    <span class="rh-still">{t(s.beim_verbinden ? "radio.werbungBeimVerbinden" : "radio.werbungImProgramm")} · {wann(s.zuletzt)}</span></li>
-                {/each}
-                {#if spots.weggelassen}<li class="rh-still">{t("radio.listeHaeufigste", { n: zahl(spots.zeigen.length), von: zahl(g.spots.length) })}</li>{/if}
-              </ul>
-            </details>
-          {/each}
-        </div>
-        {#if werbendeListe.weggelassen}<span class="rh-still">{t("radio.listeHaeufigste", { n: zahl(werbendeListe.zeigen.length), von: zahl(gruppen.length) })}</span>{/if}
-      {:else if werbung}
-        <span class="rh-still">{t("radio.werbungKeineBekannt")}</span>
-      {/if}
-      <div class="rh-zeile-dicht">
-        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringenKurz")}
-          hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
-          onwechsel={werbungSchalten} />{/if}
-        <span class="rh-still">{t("radio.werbeverdacht", { stand: werbeText() })}</span>
-      </div>
-    </section>
-  {/if}
-
   <section class="rh-tafel-detail"><h4><i class="fa-solid fa-star"></i>{t("radio.eigeneBewertung")}<i class="fa-solid fa-circle-info rh-info" title={t("radio.einschaetzungHinweis")}></i></h4>
     <div class="rh-einschaetzung">
       {#if sterne}<span class="rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
@@ -306,4 +271,40 @@
       </span>
     </div>
   </section>
+
+  <!-- Werbung rechts außen, schmal und kurz (RAD-59) -->
+  {#if faehig.werbung}
+    <section class="rh-tafel-detail"><h4><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungTitel")}
+        {#if werbung?.spots}<span class="rh-h4-zahl">{t("radio.werbungZahlen", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}</span>{/if}
+        <i class="fa-solid fa-circle-info rh-info" title={t("radio.werbungAusSendedaten")}></i></h4>
+      {#if gruppen.length}
+        <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
+          {#each werbendeListe.zeigen as g (g.name || g.kennung)}
+            {@const spots = haeufigste(g.spots)}
+            <details class="rh-werbender">
+              <summary><i class="fa-solid fa-chevron-right rh-pfeil"></i><b title={werbendenName(g)}>{werbendenName(g)}</b>
+                <span class="rh-zahl">{t("radio.werbungMal", { n: zahl(g.mal) })}</span>
+                {#if g.beimVerbinden}<i class="fa-solid fa-plug rh-verbinden" title={t("radio.werbungBeimVerbinden")}></i>{:else}<span></span>{/if}</summary>
+              <ul class:rh-liste-rollt={spots.rollt}>
+                {#each spots.zeigen as s (s.format + s.kennung)}
+                  <li><span class="rh-zahl">{spotDauer(s.dauer_ms)}</span><span class="rh-kurz" title={s.titel}>{s.titel || s.kennung}</span><span class="rh-zahl">{t("radio.werbungMal", { n: zahl(s.anzahl) })}</span>
+                    <span class="rh-still">{t(s.beim_verbinden ? "radio.werbungBeimVerbinden" : "radio.werbungImProgramm")} · {wann(s.zuletzt)}</span></li>
+                {/each}
+                {#if spots.weggelassen}<li class="rh-still">{t("radio.listeHaeufigste", { n: zahl(spots.zeigen.length), von: zahl(g.spots.length) })}</li>{/if}
+              </ul>
+            </details>
+          {/each}
+        </div>
+        {#if werbendeListe.weggelassen}<span class="rh-still">{t("radio.listeHaeufigste", { n: zahl(werbendeListe.zeigen.length), von: zahl(gruppen.length) })}</span>{/if}
+      {:else if werbung}
+        <span class="rh-still">{t("radio.werbungKeineBekannt")}</span>
+      {/if}
+      <div class="rh-zeile-dicht">
+        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" text={t("radio.werbungUeberspringenKurz")}
+          hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
+          onwechsel={werbungSchalten} />{/if}
+        <span class="rh-still">{t("radio.werbeverdacht", { stand: werbeText() })}</span>
+      </div>
+    </section>
+  {/if}
 </div>
