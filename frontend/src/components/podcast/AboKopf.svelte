@@ -48,15 +48,18 @@
       {#if abo.werbungFolgen}<span class="rh-werbemarke-text"><i class="fa-solid fa-rectangle-ad"></i>{abo.werbungFolgen === 1 ? t("podcastAnsicht.werbung.aboZahlEins") : t("podcastAnsicht.werbung.aboZahl", { n: abo.werbungFolgen })}</span>{/if}
     </div>
   </div>
-  {#if kannSpeichern}
-    <Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />
-  {/if}
-  <div class="rh-detail-knoepfe rh-abo-knoepfe">
-    <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
+  <!-- die Schalter gleich breit rechts außen untereinander, die Knöpfe in einer Reihe darunter (Nutzer 22.11.2026, RAD-70) -->
+  <div class="rh-abo-schalter">
+    {#if kannSpeichern}
+      <Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />
+    {/if}
     <Schalter an={abo.werbungUeberspringen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboUeberspringen")} hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")}
               onwechsel={(an) => onwerbung({ ueberspringen: an })} />
     <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
               onwechsel={(an) => onwerbung({ pruefen: an })} />
+  </div>
+  <div class="rh-detail-knoepfe rh-abo-knoepfe">
+    <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
     {#if kannSpeichern}<button class="knopf" type="button" disabled={auftrag.laeuft} onclick={onallespeichern}><i class="fa-solid fa-cloud-arrow-up"></i>{t("podcastAnsicht.alleSpeichern")}</button>{/if}
     <button class="knopf" type="button" aria-pressed={abo.angeheftet} title={abo.angeheftet ? t("podcastAnsicht.loesenHilfe") : t("podcastAnsicht.anheftenHilfe")} onclick={onanheften}>
       <i class="fa-solid fa-thumbtack" class:rh-angeheftet={abo.angeheftet}></i>{abo.angeheftet ? t("podcastAnsicht.loesen") : t("podcastAnsicht.anheften")}</button>

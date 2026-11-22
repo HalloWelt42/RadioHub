@@ -55,7 +55,8 @@
 .rh-abo-zahlen b { color: var(--text); font-family: var(--schrift-zahl); margin-right: 4px; }
 .rh-abo-kopf .rh-logo-bild { grid-area: bild; }
 .rh-abo-text { grid-area: text; min-width: 0; }
-.rh-abo-kopf ak-taster { grid-area: schalter; }
+.rh-abo-schalter { grid-area: schalter; display: grid; gap: 6px; align-content: start; }   /* gleich breit untereinander (RAD-70) */
+.rh-abo-schalter ak-taster[art="flach"] .ak-taster-knopf { inline-size: 100%; }
 .rh-abo-knoepfe { grid-area: knoepfe; }
 .rh-auftrag { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px;
   border-radius: var(--r2); background-color: var(--flaeche); box-shadow: var(--rh-kante); font-size: var(--klein); }
@@ -110,6 +111,7 @@
 
 @media (max-width: 900px) {
   .rh-abo-kopf { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "bild text" "schalter schalter" "knoepfe knoepfe"; }
+  .rh-abo-schalter { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }   /* schmal: nebeneinander, gleich breit */
 }
 
 .rh-abo-kopf ak-taster { align-self: start; }
