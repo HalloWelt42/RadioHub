@@ -20,13 +20,14 @@
 
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
-/* --rh-anzeige-breite: in der einen Reihe endet die Anzeige bündig mit der linken Spalte der Seite (Schnellfilter,
-   Nutzer 22.11.2026, RAD-60: "es muss mit der linken seite passen"), statt den freien Platz als leeres Raster zu
-   nehmen; den Rest bekommt die Steuerung. kanzelreihen.ts misst die Anzeige in dieser Breite. Die Punktmatrix behält
+/* --rh-anzeige-breite: in der einen Reihe ist die Anzeige mindestens so breit, dass sie bündig mit der linken Spalte der
+   Seite endet (Schnellfilter, Nutzer 22.11.2026, RAD-60: "es muss mit der linken seite passen"), und sie ist das
+   einzige Element, das mitwächst ("im grunde das einzige flexible element"); Quelle und Zeit, Lautstärke und Steuerung
+   bleiben so breit wie ihr Inhalt. kanzelreihen.ts misst die Anzeige in ihrer Mindestbreite. Die Punktmatrix behält
    mindestens 10 Stellen (rasterbreite.ts) und läuft bei längeren Namen. */
 .rh-kanzel-voll { --rh-anzeige-breite: calc(var(--rh-filter-breite) - var(--rh-rand)); display: grid; gap: 8px 14px;
   padding: 8px var(--rh-rand) 10px; align-items: stretch;
-  grid-template-columns: var(--rh-anzeige-breite) auto auto minmax(max-content, 1fr); grid-template-areas: "anzeige zeit laut steuerung"; }
+  grid-template-columns: minmax(var(--rh-anzeige-breite), 1fr) auto auto auto; grid-template-areas: "anzeige zeit laut steuerung"; }
 .rh-modul { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .rh-modul > .ak-etikett { text-align: center; font-weight: 600; white-space: nowrap; }
 .rh-m-anzeige { grid-area: anzeige; }
@@ -125,7 +126,9 @@
 .rh-steuerung .ak-taster-knopf:disabled { cursor: default; }
 .rh-gespiegelt { scale: -1 1; }
 /* Drehwahl der Bitrate: kleine Kappe, breite Zelle für den Wert darunter; Rastnamen zeigt der Appkern erst ab 150 Pixeln */
-.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 7.6); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
+/* Zelle so breit wie Knopf mit Skala und Beschriftung ("BITRATE", längster Wert "Original"), ohne Platz für Rastnamen
+   (die zeigt der Drehregler erst ab 150 Pixeln): so endet die Kanzel rechts mit demselben Rand wie links (RAD-60) */
+.rh-bitrate-wahl { --ak-zelle: calc(var(--marke) * 4.4); --ak-d-max: calc(var(--gross) * 2.6); --ak-d-min: 36px; }
 .rh-bitrate-wahl .ak-dreh-name, .rh-bitrate-wahl .ak-dreh-wert { font-size: var(--marke); white-space: nowrap; }
 
 /* Messen (kanzelreihen.ts, nur innerhalb eines Bildaufbaus): die eine Reihe mit Modulen in natürlicher Breite */

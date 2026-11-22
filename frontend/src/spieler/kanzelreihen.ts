@@ -38,7 +38,7 @@ export function bedarf(el: HTMLElement): Bedarf {
   try {
     const stil = getComputedStyle(el);
     return {
-      anzeige: breite(el.querySelector(".rh-m-anzeige")),     // beim Messen so breit wie --rh-anzeige-breite (kanzel.css)
+      anzeige: breite(el.querySelector(".rh-m-anzeige")),     // beim Messen in ihrer Mindestbreite --rh-anzeige-breite (kanzel.css)
       zeit: breite(el.querySelector(".rh-m-zeit")),
       laut: breite(el.querySelector(".rh-m-laut")),
       steuerung: breite(el.querySelector(".rh-m-steuerung")),

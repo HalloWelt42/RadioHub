@@ -132,7 +132,8 @@ Werbung violett und eine laufende Aufnahme rot; beim Überfahren steht der Titel
 rastet ein. Darunter steht "Länge von höchstens · Titel". Den Titel zeigt die Matrixanzeige; Vor und Zurück der Steuerung
 (und die Pfeiltasten) springen hinter live durch die Titel (Werbung wird übersprungen, nach dem letzten an live), lang
 gedrückt wechseln sie den Sender (RAD-60). Neben der Segmentanzeige stehen links Puffer und rechts Live; die Anzeige der
-Kanzel endet bündig mit der linken Spalte der Seite. Puffer öffnet die Großansicht `/radio/puffer`: Zeitleiste mit Übersicht und Ausschnitt (Alles, 30 oder 10 Minuten; Rad oder
+Kanzel ist das einzige Element, das mitwächst, und mindestens so breit, dass sie bündig mit der linken Spalte der Seite
+endet; rechts endet die Kanzel mit demselben Rand wie links. Puffer öffnet die Großansicht `/radio/puffer`: Zeitleiste mit Übersicht und Ausschnitt (Alles, 30 oder 10 Minuten; Rad oder
 Ziehen verschiebt, Doppelklick springt hin), darunter die Titel, neuester oben, je Titel hier hören, Aufnahme ab hier und
 in den Bereich nehmen; ein Bereich wird als fertige Aufnahme gesichert. Am Telefon im Spieler derselbe Balken mit den
 Knöpfen und die Puffer-Liste (antippen klappt Hören, Aufnehmen und Bereich auf). Eine Aufnahme beendet die Taste
