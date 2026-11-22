@@ -4,7 +4,7 @@
 // tun muss (Favoriten im Zustand nachziehen), bekommt sie über `beiFavoriten` mit.
 import { netz, Netzfehler, type Anfrage } from "./netz";
 import {
-  ausEintrag, type Faehigkeiten, type Kategorie, type LandZahl, type Messwert, type Senderquelle, type Steckbrief, type TitelGuete,
+  ausEintrag, type Faehigkeiten, type Kategorie, type LandZahl, type Messwert, type Senderquelle, type Steckbrief,
   type Wiedergabesender,
 } from "./quelle";
 import {
@@ -32,7 +32,6 @@ interface Messung {
   bitrate?: number;
   codec?: string;
   icy?: boolean;
-  icy_quality?: "good" | "poor" | null;
 }
 
 export interface BackendOptionen {
@@ -44,7 +43,6 @@ export interface BackendOptionen {
 }
 
 const kodiert = encodeURIComponent;
-const GUETE: Record<string, TitelGuete> = { good: "genau", poor: "ungenau" };
 
 /** Warten, abbrechbar */
 function warten(ms: number, signal?: AbortSignal): Promise<void> {
@@ -64,7 +62,7 @@ async function ohneNichtDa(arbeit: Promise<unknown>): Promise<void> {
 }
 
 export class BackendQuelle implements Senderquelle {
-  readonly faehig: Faehigkeiten = { abgleich: true, eigeneAdresse: true, messen: true, kategorien: true, titelBewerten: true, werbung: true, datei: false };
+  readonly faehig: Faehigkeiten = { abgleich: true, eigeneAdresse: true, messen: true, kategorien: true, werbung: true, datei: false };
   private readonly a: Anfrage;
   private readonly beiFavoriten: () => void;
 
@@ -106,17 +104,13 @@ export class BackendQuelle implements Senderquelle {
   }
 
   async steckbrief(eintrag: SenderEintrag): Promise<Steckbrief> {
-    const [w, messung, widerspruch] = await Promise.all([
+    const [w, widerspruch] = await Promise.all([
       this.wiedergabe(eintrag),
-      this.a<{ bitrates?: Record<string, Messung> }>("/api/stations/bitrates", { methode: "POST", daten: { uuids: [eintrag.uuid] } })
-        .then((r) => r.bitrates?.[eintrag.uuid] ?? null).catch(() => null),
       this.werbungWiderspruch(eintrag.uuid).catch(() => false),
     ]);
     return {
       adresse: this.fuerWiedergabe.get(eintrag.uuid)?.url || w.url,
       eigeneAdresse: eintrag.eigene_adresse,
-      titel: messung ? !!messung.icy : null,
-      titelGuete: GUETE[messung?.icy_quality ?? ""] ?? null,
       widerspruch,
     };
   }
@@ -217,11 +211,6 @@ export class BackendQuelle implements Senderquelle {
     if (adresse && adresse.trim()) await this.a(weg, { methode: "PUT", daten: { custom_url: adresse.trim(), note: "" } });
     else await ohneNichtDa(this.a(weg, { methode: "DELETE" }));
     this.fuerWiedergabe.delete(uuid);
-  }
-
-  titelBewerten(uuid: string, guete: TitelGuete): Promise<void> {
-    const quality = guete === "genau" ? "good" : guete === "ungenau" ? "poor" : null;
-    return this.a<void>(`/api/stations/${kodiert(uuid)}/icy-quality`, { methode: "PUT", daten: { quality } });
   }
 
   // ----- Regeln ----------------------------------------------------------------------------------------------------

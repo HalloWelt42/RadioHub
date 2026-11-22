@@ -1,7 +1,7 @@
 <script lang="ts">
   // Details eines aufgeklappten Senders nach Entwurf A (steckbrief-kompakt.html, RAD-35): drei schmale Spalten.
-  // Steckbrief dicht (Läuft, Stream mit Kopieren und eigener Adresse, Codec, Homepage, Sprachen, Ort, Prüfung, Titel
-  // pünktlich oder ungenau, Grund der Sichtbarkeit; Genres und Varianten stehen schon in der Zeile); Werbung aus den
+  // Steckbrief dicht (Läuft, Stream mit Kopieren und eigener Adresse, Codec, Homepage, Sprachen, Ort, Prüfung;
+  // Genres und Varianten stehen schon in der Zeile); Werbung aus den
   // Sendedaten nach Werbenden zusammengefasst (die häufigsten drei, der Rest auf Klick) mit Schalter und Werbeverdacht;
   // Einschätzung zeigt nur Gewähltes (abwählbar), alles Übrige liegt in der Tafel hinter dem Plus. Erklärungen stehen
   // als Tooltip am Info-Zeichen. Jede Änderung geht über die Senderquelle und meldet die neuen Felder an die Liste.
@@ -10,7 +10,7 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { senderquelle } from "../../lib/radio";
   import { MARKIERUNGEN, bewertungName, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
-  import type { Kategorie, Steckbrief, TitelGuete } from "../../lib/radio/quelle";
+  import type { Kategorie, Steckbrief } from "../../lib/radio/quelle";
   import type { Bewertung, SenderEintrag } from "../../lib/radio/typen";
   import { haeufigste, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief } from "../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../lib/radio/werbende.svelte";
@@ -140,14 +140,6 @@
     });
   }
 
-  function titelGuete(g: TitelGuete) {
-    const neu = steckbrief?.titelGuete === g ? null : g;
-    void tun(async () => {
-      await senderquelle.titelBewerten(eintrag.uuid, neu);
-      if (steckbrief) steckbrief = { ...steckbrief, titelGuete: neu };
-    });
-  }
-
   function adresseSpeichern(neu: string | null) {
     const wert = neu?.trim() || null;
     const gleichVerzeichnis = !!wert && wert === steckbrief?.adresse;
@@ -209,17 +201,6 @@
       <dd>{[eintrag.bundesland, landName(eintrag.land, eintrag.land_name)].filter(Boolean).join(", ") || t("radio.keineAngabe")}</dd>
       <dt>{t("radio.geprueft")}</dt>
       <dd>{#if eintrag.verschwunden}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.verschwundenKurz")}{:else if eintrag.erreichbar}<i class="fa-solid fa-check rh-gut"></i>{t("radio.erreichbarKurz")}{:else}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.nichtErreichbarKurz")}{/if}</dd>
-      {#if faehig.titelBewerten}
-        <dt>{t("radio.titelKurz")}</dt>
-        <dd class="rh-titelinfo">{#if steckbrief?.titel}<span class="segment rh-segment-klein" role="group" aria-label={t("radio.titelImStrom")}>
-          <button type="button" class:aktiv={steckbrief.titelGuete === "genau"} aria-pressed={steckbrief.titelGuete === "genau"}
-                  title={t("radio.titelGenauHilfe")} onclick={() => titelGuete("genau")}>{t("radio.titelPuenktlich")}</button>
-          <button type="button" class:aktiv={steckbrief.titelGuete === "ungenau"} aria-pressed={steckbrief.titelGuete === "ungenau"}
-                  title={t("radio.titelUngenauHilfe")} onclick={() => titelGuete("ungenau")}>{t("radio.titelUngenauKurz")}</button>
-        </span>{/if}</dd>
-      {/if}
-      <dt>{t("radio.sichtbarkeit")}</dt>
-      <dd class="rh-ausnahme">{#if eintrag.ausnahme.length}<i class="fa-solid fa-star"></i>{t("radio.ausnahme", { gruende: eintrag.ausnahme.map((g) => g.titel).join("; ") })}{/if}</dd>
     </dl>
   </section>
 

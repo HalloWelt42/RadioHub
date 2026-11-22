@@ -17,8 +17,6 @@ export interface Faehigkeiten {
   messen: boolean;
   /** eigene Kategorien (verwalten in den Einstellungen) */
   kategorien: boolean;
-  /** Titelangaben im Strom bewerten (genaue oder ungenaue Schnitte für Aufnahmen) */
-  titelBewerten: boolean;
   /** Werbeerkennung: Werbeverdacht je Sender, Regelart Werbung, Widerspruch "kein Werbeverdacht" */
   werbung: boolean;
   /** eigene Angaben (Favoriten, Bewertungen, Regeln, Sperren, Freigaben, Länder) als Datei sichern und einspielen */
@@ -56,18 +54,12 @@ export function ausEintrag(e: SenderEintrag): Wiedergabesender {
            country: e.land_name, countrycode: e.land, tags: e.genres.join(","), codec: e.codec, bitrate: e.kbps ?? 0, homepage: e.homepage };
 }
 
-/** Titelangaben im Strom (ICY): gemessen, und wie genau sie Aufnahmen schneiden (eigene Bewertung). */
-export type TitelGuete = "genau" | "ungenau" | null;
-
 /** Was die Details eines Senders über die Zeile hinaus zeigen. */
 export interface Steckbrief {
   /** Stream-Adresse aus dem Verzeichnis (aufgelöst) */
   adresse: string;
   /** eigene Stream-Adresse, wenn gesetzt */
   eigeneAdresse: string | null;
-  /** Titelangaben im Strom erkannt (null: noch nicht gemessen) */
-  titel: boolean | null;
-  titelGuete: TitelGuete;
   /** eigener Widerspruch zur Werbeerkennung ("kein Werbeverdacht") */
   widerspruch: boolean;
 }
@@ -119,7 +111,6 @@ export interface Senderquelle {
   kategorieZuordnen(uuid: string, kategorie: number, an: boolean): Promise<void>;
   /** eigene Stream-Adresse setzen; null nimmt wieder die des Verzeichnisses */
   eigeneAdresse(uuid: string, adresse: string | null): Promise<void>;
-  titelBewerten(uuid: string, guete: TitelGuete): Promise<void>;
 
   // ----- Regeln ----------------------------------------------------------------------------------------------------
   regeln(): Promise<Regeluebersicht>;

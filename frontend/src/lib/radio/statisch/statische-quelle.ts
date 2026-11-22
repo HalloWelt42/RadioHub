@@ -29,7 +29,7 @@ export interface StatischeOptionen {
 const BEISPIELE = 5;
 
 export class StatischeQuelle implements Senderquelle {
-  readonly faehig: Faehigkeiten = { abgleich: false, eigeneAdresse: false, messen: false, kategorien: false, titelBewerten: false,
+  readonly faehig: Faehigkeiten = { abgleich: false, eigeneAdresse: false, messen: false, kategorien: false,
                                     werbung: false, datei: true };
 
   /** ohne Logos: keine Anfragen an fremde Server beim Blättern (Nutzer 20.11.2026); die Zeile zeigt das Kürzel */
@@ -153,7 +153,7 @@ export class StatischeQuelle implements Senderquelle {
   }
 
   async steckbrief(e: SenderEintrag): Promise<Steckbrief> {
-    return { adresse: e.adresse_aufgeloest || e.adresse, eigeneAdresse: null, titel: null, titelGuete: null, widerspruch: false };
+    return { adresse: e.adresse_aufgeloest || e.adresse, eigeneAdresse: null, widerspruch: false };
   }
 
   async wiedergabe(e: SenderEintrag): Promise<Wiedergabesender> {
@@ -200,10 +200,6 @@ export class StatischeQuelle implements Senderquelle {
 
   eigeneAdresse(): Promise<void> {
     return Promise.reject(new NichtVerfuegbar("eigene Stream-Adresse"));
-  }
-
-  titelBewerten(): Promise<void> {
-    return Promise.reject(new NichtVerfuegbar("Titelangaben bewerten"));
   }
 
   // ----- Regeln -----------------------------------------------------------------------------------------------------

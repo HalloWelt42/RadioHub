@@ -289,8 +289,6 @@
 .rh-laeuft { display: flex; gap: 8px; align-items: start; }
 .rh-laeuft span { min-width: 0; overflow-wrap: anywhere; }
 .rh-laeuft .rund { inline-size: 32px; block-size: 32px; flex: none; }
-.rh-ausnahme { color: var(--text-2); }
-.rh-ausnahme i { color: var(--led-gelb); margin-right: 6px; }
 .rh-leer-facette { margin: 0 0 4px 8px; font-size: var(--klein); color: var(--text-3); }
 /* Rückgängig-Band: Knöpfe wie im Entwurf */
 .rh-band .knopf { block-size: 40px; }
@@ -323,7 +321,6 @@
 .rh-werte-dicht dd { margin: 0; min-width: 0; font-weight: 700; }   /* Werte fett und hell, die Werbung daneben grau (RAD-59) */
 .rh-werte-dicht dd a { color: var(--akzent); }
 .rh-werte-dicht .rh-laeuft { align-items: center; min-block-size: 28px; }   /* so hoch wie mit Kopierknopf, auch leer (RAD-59) */
-.rh-werte-dicht .rh-titelinfo { min-block-size: calc(var(--klein) * 1.25 + 6px); }   /* so hoch wie die Wahl zuverlässig/ungenau */
 .rh-werte-dicht .rh-laeuft span, .rh-kurz { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-kurz { display: block; }
 .rh-strom-dicht { display: flex; gap: 4px; align-items: center; min-width: 0; }
@@ -332,7 +329,6 @@
 .rh-info { margin-left: 6px; color: var(--text-3); font-size: .85em; cursor: help; text-transform: none; }
 .rh-gut { color: var(--gut); margin-right: 5px; }
 .rh-schlecht { color: var(--led-rot); margin-right: 5px; }
-.rh-segment-klein button { padding: 2px 10px; min-block-size: 0; font-size: var(--klein); }
 .rh-zeile-dicht { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--klein); }
 .rh-zeile-dicht .rh-schalter { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
