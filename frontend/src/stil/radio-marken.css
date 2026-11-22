@@ -17,6 +17,11 @@
   --rh-pille: 999px;                           /* Rundung von Pillen (Navigation, Schienen) */
   --rh-filter-breite: calc(var(--gross) * 18); /* Seitenleiste der Schnellfilter wächst mit der Schrift */
   --rh-schrift-logo: "Orbitron", var(--schrift-zahl); /* Schriftzug RadioHub, wie in der heutigen App */
+  /* Zahlen in Barlow mit gleich breiten Ziffern (RAD-52): Chakra Petch kennt keine gleich breiten Ziffern ("1111" ist
+     ein Drittel schmaler als "8888"), jede hochzählende Zeit wackelte. Die Vorlagen mit eigener Zahlenschrift
+     (data-vorlage) behalten ihre; gleich breite Ziffern gelten überall, auch in Barlow im Fließtext. */
+  --schrift-zahl: "Barlow", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ═══ Farben der Marke RadioHub ═══ in jeder Vorlage gleich */
