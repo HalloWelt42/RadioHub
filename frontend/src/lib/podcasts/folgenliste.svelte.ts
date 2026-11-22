@@ -1,6 +1,7 @@
 // Folgen seitenweise (RAD-17), wie die Senderliste: die erste Seite mit Gesamtzahl, weitere über den Zeiger der vorigen
 // Antwort. Eine neue Abfrage bricht die laufende ab; eine verspätete Antwort ändert nichts. Mit Suchtext sucht sie im
-// Volltext der Folgen, sonst nach Abos, Filter und Sortierung.
+// Volltext der Folgen, sonst nach Abos, Filter und Sortierung. Wechselt die Wahl der Abos, steht bis zur Antwort nicht
+// mehr die alte Liste da, sondern "lädt" (RAD-107: ein neues Abo schien sonst leer zu bleiben).
 import type { Podcastquelle } from "./quelle";
 import type { Folge, Folgenabfrage } from "./typen";
 
@@ -22,6 +23,11 @@ export class Folgenliste {
 
   constructor(private readonly quelle: Podcastquelle, private readonly seite = SEITE) {}
 
+  /** die Wahl der Abos als Vergleichstext (leer: alle) */
+  private static abos(a: Folgenabfrage): string {
+    return [...(a.abos ?? [])].sort((x, y) => x - y).join(",");
+  }
+
   private holen(nach: string | null, signal: AbortSignal) {
     const a = { ...this.abfrage, anzahl: this.seite, nach };
     return this.suchtext ? this.quelle.folgenSuchen(this.suchtext, a, signal) : this.quelle.folgen(a, signal);
@@ -31,6 +37,12 @@ export class Folgenliste {
     const meiner = ++this.lauf;
     this.abbruch?.abort();
     const abbruch = (this.abbruch = new AbortController());
+    if (Folgenliste.abos(abfrage) !== Folgenliste.abos(this.abfrage)) {
+      this.folgen = [];
+      this.gesamt = null;
+      this.weiter = null;
+      this.geladen = false;
+    }
     this.abfrage = abfrage;
     this.suchtext = suchtext.trim();
     this.laedt = true;

@@ -104,8 +104,9 @@ export class BackendPodcastquelle implements Podcastquelle {
     await this.api.fetch("/api/podcasts/order", { method: "PUT", body: JSON.stringify({ ordered_ids: ids }) });
   }
 
-  async aktualisieren(id?: number): Promise<void> {
-    await this.api.fetch(id == null ? "/api/podcasts/refresh-all" : `/api/podcasts/${id}/refresh`, { method: "POST" });
+  async aktualisieren(id?: number): Promise<number> {
+    const r = await this.api.fetch(id == null ? "/api/podcasts/refresh-all" : `/api/podcasts/${id}/refresh`, { method: "POST" });
+    return zahl(r?.new_episodes);
   }
 
   async aktualisierungsstand(): Promise<Aktualisierungsstand> {

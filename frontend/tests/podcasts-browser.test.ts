@@ -43,7 +43,7 @@ function abruf(antworten: Record<string, string | "gesperrt">): typeof fetch {
 function quelle(antworten: Record<string, string | "gesperrt"> = { [FEED]: XML }, speicher = fluechtigerSpeicher()) {
   return {
     speicher,
-    q: new BrowserPodcastquelle({ speicher, abruf: abruf(antworten), parser, gesperrtText: () => "gesperrt",
+    q: new BrowserPodcastquelle({ speicher, abruf: abruf(antworten), parser, hinweis: (p) => `problem:${p.art}`,
                                   verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } }),
   };
 }
@@ -116,8 +116,30 @@ describe("Browserquelle", () => {
     const { q } = quelle({ [FEED]: "gesperrt" });
     const abo = await q.abonnieren(FEED);
     expect(abo).toMatchObject({ feed: FEED, folgen: 0 });
+    await expect(q.folgen({ abos: [abo.id] })).rejects.toThrow("problem:abruf");
     await expect(q.folgen({ abos: [abo.id] })).rejects.toBeInstanceOf(FeedGesperrt);
     expect((await q.folgen({})).folgen).toEqual([]);
+  });
+
+  it("nennt die Ursache: Fehler des Servers oder unlesbarer Inhalt", async () => {
+    const kaputt = "https://beispiel.test/kaputt.xml";
+    const fehlt = "https://beispiel.test/fehlt.xml";
+    const speicher = fluechtigerSpeicher();
+    const abruf = (async (adresse: string | URL | Request) =>
+      String(adresse) === kaputt ? new Response("<html/>", { status: 200 }) : new Response("weg", { status: 404 })) as typeof fetch;
+    const q = new BrowserPodcastquelle({ speicher, abruf, parser, hinweis: (p) => `${p.art}:${p.detail}`,
+                                         verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    const a = await q.abonnieren(kaputt);
+    const b = await q.abonnieren(fehlt);
+    await expect(q.folgen({ abos: [a.id] })).rejects.toThrow(/^inhalt:/);
+    await expect(q.folgen({ abos: [b.id] })).rejects.toThrow("antwort:404");
+  });
+
+  it("meldet einen vollen Speicher beim Abonnieren als Fehler, nicht als gesperrten Feed", async () => {
+    const speicher = { lesen: () => null, schreiben: () => { throw new Error("voll"); } };
+    const q = new BrowserPodcastquelle({ speicher, abruf: abruf({ [FEED]: XML }), parser, hinweis: () => "x",
+                                         verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    await expect(q.abonnieren(FEED)).rejects.toThrow("voll");
   });
 
   it("versucht einen http-Feed zuerst über https", async () => {

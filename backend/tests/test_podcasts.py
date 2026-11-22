@@ -103,6 +103,26 @@ async def test_erneutes_abonnieren_behaelt_folgen(monkeypatch):
             conn.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (erst["id"],))
 
 
+def test_abonnieren_liefert_das_abo_mit_zahlen(client, monkeypatch):
+    """RAD-107: nach dem Abonnieren nennt die Antwort die Folgen gleich (vorher stand dort 0 Folgen)."""
+    feed_url = "https://example.invalid/rad107-" + uuid.uuid4().hex + ".xml"
+    feed = {"title": "Zahlen", "author": "A", "description": "", "image_url": "", "categories": [],
+            "episodes": [{"guid": f"f{n}", "title": f"Folge {n}", "description": "", "audio_url": f"https://example.invalid/{n}.mp3"}
+                         for n in range(3)]}
+
+    async def lesen(url):
+        return feed
+
+    monkeypatch.setattr(podcast_service, "_parse_feed", lesen)
+    abo = client.post("/api/podcasts/subscribe", json={"feed_url": feed_url}).json()["podcast"]
+    try:
+        assert (abo["title"], abo["feed_url"], abo["episode_count"], abo["unplayed_count"]) == ("Zahlen", feed_url, 3, 3)
+        assert client.post(f"/api/podcasts/{abo['id']}/refresh").json()["new_episodes"] == 0
+    finally:
+        with db_session() as conn:
+            conn.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (abo["id"],))
+
+
 def test_abo_anheften_und_sortierung_merken(client):
     with db_session() as conn:
         ids = [conn.execute("INSERT INTO podcast_subscriptions (feed_url, title, sort_order) VALUES (?, ?, ?)",

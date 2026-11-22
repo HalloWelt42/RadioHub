@@ -120,7 +120,8 @@ async def subscribe(req: SubscribeRequest):
     result = await podcast_service.subscribe(req.feed_url)
     if not result:
         raise HTTPException(400, "Feed konnte nicht geparst werden")
-    return {"success": True, "podcast": result}
+    # das ganze Abo mit Zahlen (Folgen, ungehört): die Oberfläche zeigt es sofort an (RAD-107: vorher 0 Folgen)
+    return {"success": True, "podcast": await podcast_service.get_subscription(result["id"]) or result}
 
 
 @router.get("/refresh-status")

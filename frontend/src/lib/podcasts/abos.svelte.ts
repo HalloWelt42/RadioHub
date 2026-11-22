@@ -82,10 +82,11 @@ export class Aboliste {
     this.aendern(id, { autoLaden: an });
   }
 
-  /** nach neuen Folgen fragen (ein Abo oder alle), danach die Zahlen neu */
-  async aktualisieren(id?: number): Promise<void> {
-    await this.quelle.aktualisieren(id);
+  /** nach neuen Folgen fragen (ein Abo oder alle), danach die Zahlen neu; liefert die Zahl neuer Folgen */
+  async aktualisieren(id?: number): Promise<number> {
+    const neu = await this.quelle.aktualisieren(id);
     await this.laden();
+    return neu;
   }
 
   // ----- Ordner ----------------------------------------------------------------------------------------------------

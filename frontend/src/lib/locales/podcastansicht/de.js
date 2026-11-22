@@ -124,7 +124,9 @@ export default {
   nichtsGefundenHilfe: 'Ein anderes Wort oder die Adresse des Feeds.',
   bandAbonniert: 'abonniert, die Folgen kommen gleich',
   feedAbonnieren: 'Feed abonnieren',
-  feedGesperrt: 'Dieser Podcast lässt sich im Browser nicht abrufen, sein Server erlaubt es nicht. In RadioHub PRO läuft er über den eigenen Server.',
+  feed_abruf: 'Dieser Podcast lässt sich im Browser nicht abrufen: sein Server erlaubt es nicht oder ist gerade nicht erreichbar ({detail}). In RadioHub PRO läuft er über den eigenen Server.',
+  feed_antwort: 'Der Server dieses Podcasts antwortet mit Fehler {detail}. Später noch einmal aktualisieren.',
+  feed_inhalt: 'Der Feed dieses Podcasts ist nicht lesbar ({detail}).',
   // Telefon (RAD-14)
   telefon: {
     wahl: 'Was zeigen', neu: 'Neu', ungehoert: 'Ungehört', gespeichert: 'Gespeichert', abos: 'Abos',

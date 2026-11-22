@@ -108,6 +108,26 @@ describe("Folgenliste", () => {
     expect(liste.folgen.length).toBe(3);
   });
 
+  it("zeigt beim Wechsel der Abos bis zur Antwort nicht die alte Liste, sondern lädt (RAD-107)", async () => {
+    let freigeben: (() => void) | null = null;
+    const { quelle } = backend({
+      "/api/podcasts/episodes/all": { episodes: [folge(1)], total: 1 },
+      "/api/podcasts/5/episodes": () => new Promise((fertig) => { freigeben = () => fertig({ episodes: [folge(5)], total: 1 }); }),
+    });
+    const liste = new Folgenliste(quelle);
+    await liste.laden({ filter: "alle" });
+    expect([liste.geladen, liste.folgen.map((f) => f.id)]).toEqual([true, [1]]);
+    const laeuft = liste.laden({ abos: [5], filter: "alle" });
+    expect([liste.geladen, liste.folgen.length]).toEqual([false, 0]);
+    await new Promise((r) => setTimeout(r, 0));
+    freigeben!();
+    await laeuft;
+    expect([liste.geladen, liste.folgen.map((f) => f.id)]).toEqual([true, [5]]);
+    // gleiche Wahl, nur ein anderer Filter: die Liste bleibt stehen, bis die Antwort da ist
+    void liste.laden({ abos: [5], filter: "ungehoert" });
+    expect(liste.geladen).toBe(true);
+  });
+
   it("sucht mit Suchtext im Volltext, mit Abo-Wahl, Filter und Sortierung wie die Liste (RAD-44)", async () => {
     const { quelle, aufrufe } = backend({ "/api/podcasts/episodes/all": { episodes: [folge(9)], total: 1 } });
     const liste = new Folgenliste(quelle);

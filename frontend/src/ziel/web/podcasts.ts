@@ -14,7 +14,7 @@ const VERZEICHNIS = { weltweit: "https://itunes.apple.com/search", deutsch: "htt
 const ablage = { getItem: (k: string) => localStorage.getItem(k), setItem: (k: string, w: string) => localStorage.setItem(k, w) };
 
 const quelle = new BrowserPodcastquelle({ speicher: browserSpeicher(ablage), verzeichnis: VERZEICHNIS,
-                                          gesperrtText: () => t("podcastAnsicht.feedGesperrt") });
+                                          hinweis: (p) => t(`podcastAnsicht.feed_${p.art}`, { detail: p.detail }) });
 
 export const podcastquelle: Podcastquelle = quelle;
 export const werbequelle: Werbequelle = new OhneWerbequelle();

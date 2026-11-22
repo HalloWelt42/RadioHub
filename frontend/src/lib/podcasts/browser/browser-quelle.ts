@@ -15,8 +15,8 @@ import { verzeichnisSuchen, type Verzeichnisadressen } from "./verzeichnis";
 export interface BrowserPodcastOptionen {
   speicher: Speicher;
   verzeichnis: Verzeichnisadressen;
-  /** Text des Hinweises, wenn ein Feed den Abruf aus dem Browser nicht erlaubt */
-  gesperrtText: () => string;
+  /** Text des Hinweises, wenn ein Feed sich nicht lesen lässt (je nach Ursache) */
+  hinweis: (problem: Feedproblem) => string;
   abruf?: typeof fetch;
   parser?: () => DOMParser;
   /** so viele Feeds zugleich abrufen */
@@ -32,10 +32,29 @@ interface Eintrag extends FeedFolge {
   aboId: number;
 }
 
+/** warum ein Feed sich nicht lesen ließ: der Browser bekam keine Antwort (Server erlaubt den Abruf nicht oder ist nicht
+ *  erreichbar), der Server meldete einen Fehler, oder der Inhalt ist kein lesbarer Feed */
+export interface Feedproblem {
+  art: "abruf" | "antwort" | "inhalt";
+  detail: string;
+}
+
 interface Feedstand {
   folgen: Eintrag[];
-  /** der Server erlaubt den Abruf aus dem Browser nicht (oder der Feed ist nicht lesbar) */
-  gesperrt: boolean;
+  /** gesetzt, wenn der letzte Abruf scheiterte und keine Folgen da sind */
+  problem: Feedproblem | null;
+}
+
+class Antwortfehler extends Error {
+  constructor(readonly status: number) {
+    super(`HTTP ${status}`);
+  }
+}
+
+function problemAus(f: unknown): Feedproblem {
+  if (f instanceof Antwortfehler) return { art: "antwort", detail: String(f.status) };
+  if (f instanceof Feedfehler) return { art: "inhalt", detail: f.message };
+  return { art: "abruf", detail: f instanceof Error ? f.message : String(f) };
 }
 
 export class FeedGesperrt extends Quellfehler {
@@ -89,9 +108,11 @@ export class BrowserPodcastquelle implements Podcastquelle {
     let fehler: unknown = null;
     for (const adresse of versuche) {
       try {
-        const antwort = await this.abruf(adresse);
+        // immer frisch: ein Feed soll aktuell sein, und eine ältere Antwort im Zwischenspeicher ohne Freigabe (CORS)
+        // würde den Abruf sonst sperren (RAD-107)
+        const antwort = await this.abruf(adresse, { cache: "no-store" });
         if (antwort.ok) return await antwort.text();
-        fehler = new Feedfehler(`Feed antwortet ${antwort.status}`);
+        fehler = new Antwortfehler(antwort.status);
       } catch (f) {
         fehler = f;
       }
@@ -116,10 +137,21 @@ export class BrowserPodcastquelle implements Podcastquelle {
     if (laufend) return laufend;
     const abo = this.aboDaten(id);
     const arbeit = (async (): Promise<Feedstand> => {
+      let inhalt: Feedinhalt;
       try {
-        const inhalt = await this.lesen(abo.feed);
-        const stand = { folgen: this.eintraege(id, abo.feed, inhalt), gesperrt: false };
+        inhalt = await this.lesen(abo.feed);
+      } catch (f) {
+        const alt = this.feeds.get(id)?.folgen ?? [];
+        const stand = { folgen: alt, problem: alt.length ? null : problemAus(f) };
         this.feeds.set(id, stand);
+        return stand;
+      } finally {
+        this.laeuft.delete(id);
+      }
+      const stand: Feedstand = { folgen: this.eintraege(id, abo.feed, inhalt), problem: null };
+      this.feeds.set(id, stand);
+      // Angaben des Feeds nachziehen (Name, Bild); scheitert der Speicher, bleiben die Folgen trotzdem da
+      try {
         this.aendern((a) => {
           const x = a.abos.find((y) => y.id === id);
           if (!x) return;
@@ -130,14 +162,10 @@ export class BrowserPodcastquelle implements Podcastquelle {
           if (inhalt.beschreibung) x.beschreibung = inhalt.beschreibung;
           if (inhalt.bild) x.bild = inhalt.bild;
         });
-        return stand;
       } catch {
-        const stand = { folgen: this.feeds.get(id)?.folgen ?? [], gesperrt: !this.feeds.get(id)?.folgen.length };
-        this.feeds.set(id, stand);
-        return stand;
-      } finally {
-        this.laeuft.delete(id);
+        /* nur die Angaben des Abos bleiben die alten */
       }
+      return stand;
     })();
     this.laeuft.set(id, arbeit);
     return arbeit;
@@ -204,7 +232,8 @@ export class BrowserPodcastquelle implements Podcastquelle {
     const ids = a.abos?.length ? a.abos : this.ablage.abos.map((x) => x.id);
     await this.alleHolen(ids);
     // ein gewähltes Abo, dessen Feed nicht lesbar ist: Hinweis statt einer leeren Liste (über alle Abos fehlt es nur)
-    if (a.abos?.length === 1 && this.feeds.get(ids[0])?.gesperrt) throw new FeedGesperrt(this.o.gesperrtText());
+    const problem = a.abos?.length === 1 ? this.feeds.get(ids[0])?.problem : null;
+    if (problem) throw new FeedGesperrt(this.o.hinweis(problem));
     const text = suche.trim().toLocaleLowerCase();
     const richtung = a.absteigend === false ? 1 : -1;
     const ordnung = BrowserPodcastquelle.vergleich(a.sortierung ?? "datum");
@@ -262,8 +291,13 @@ export class BrowserPodcastquelle implements Podcastquelle {
     });
   }
 
-  async aktualisieren(id?: number): Promise<void> {
-    await this.alleHolen(id == null ? this.ablage.abos.map((a) => a.id) : [id], true);
+  async aktualisieren(id?: number): Promise<number> {
+    const ids = id == null ? this.ablage.abos.map((a) => a.id) : [id];
+    const vorher = new Set(ids.flatMap((x) => this.feeds.get(x)?.folgen.map((f) => f.id) ?? []));
+    // nur Abos, deren Folgen schon einmal da waren, zählen neue; ein bisher nicht lesbarer Feed bringt keine "neuen"
+    const bekannt = new Set(ids.filter((x) => this.feeds.get(x)?.folgen.length));
+    await this.alleHolen(ids, true);
+    return ids.filter((x) => bekannt.has(x)).flatMap((x) => this.feeds.get(x)?.folgen ?? []).filter((f) => !vorher.has(f.id)).length;
   }
 
   async aktualisierungsstand(): Promise<Aktualisierungsstand> {

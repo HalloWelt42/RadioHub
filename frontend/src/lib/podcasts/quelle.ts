@@ -36,8 +36,8 @@ export interface Podcastquelle {
   abbestellen(id: number): Promise<void>;
   /** neue Reihenfolge der Abos (alle Kennungen) */
   ordnen(ids: number[]): Promise<void>;
-  /** ein Abo oder ohne Kennung alle nach neuen Folgen fragen */
-  aktualisieren(id?: number): Promise<void>;
+  /** ein Abo oder ohne Kennung alle nach neuen Folgen fragen; liefert die Zahl wirklich neuer Folgen (RAD-107) */
+  aktualisieren(id?: number): Promise<number>;
   aktualisierungsstand(): Promise<Aktualisierungsstand>;
   autoLaden(id: number, an: boolean): Promise<void>;
   /** oben anheften oder lösen */

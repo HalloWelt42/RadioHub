@@ -193,11 +193,9 @@
 
   async function aktualisieren(id?: number) {
     aktualisiert = true;
-    const vorher = id ? (aboliste.abo(id)?.folgen ?? 0) : aboliste.abos.reduce((s, a) => s + a.folgen, 0);
     await sicher(async () => {
-      await aboliste.aktualisieren(id);
-      const nachher = id ? (aboliste.abo(id)?.folgen ?? 0) : aboliste.abos.reduce((s, a) => s + a.folgen, 0);
-      const neu = Math.max(0, nachher - vorher);
+      // die Quelle zählt die wirklich neuen Folgen (RAD-107: der Unterschied der Zahlen stimmte nach dem Abonnieren nicht)
+      const neu = await aboliste.aktualisieren(id);
       meldung("fa-rotate", id ? (aboliste.abo(id)?.titel ?? "") : "", neu ? t("podcastAnsicht.bandNeueFolgen", { n: neu }) : t("podcastAnsicht.bandKeineNeuen"));
       void liste.laden(zuAbfrage(ansicht), ansicht.suche);
       stand = await podcastquelle.aktualisierungsstand().catch(() => stand);

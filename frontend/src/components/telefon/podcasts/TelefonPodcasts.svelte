@@ -124,10 +124,9 @@
 
   async function aktualisieren(a: Abo) {
     arbeitet = true;
-    const vorher = a.folgen;
     await sicher(async () => {
-      await aboliste.aktualisieren(a.id);
-      const neu = Math.max(0, (aboliste.abo(a.id)?.folgen ?? vorher) - vorher);
+      // die Quelle zählt die wirklich neuen Folgen (RAD-107)
+      const neu = await aboliste.aktualisieren(a.id);
       band = { symbol: "fa-rotate", name: a.titel, text: neu ? t("podcastAnsicht.bandNeueFolgen", { n: neu }) : t("podcastAnsicht.bandKeineNeuen") };
       void liste.laden(zuAbfrage(ansicht), ansicht.suche);
     });
