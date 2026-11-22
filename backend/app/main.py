@@ -36,7 +36,6 @@ from .routers import ALLE
 from .services import rec_manager
 from .services.aufnahmen import AufnahmeFehler
 from .services.durchleiter import DurchleiterFehler
-from .services.hls_recorder import hls_recorder
 
 OBERFLAECHE = ort.WURZEL / "frontend" / "dist"
 LESEZUGANG = "/api"        # unter diesem Pfad gilt der Keks des Lesezugangs (Ton, Bilder, Ereignisströme)
@@ -107,7 +106,7 @@ def app_bauen(daten: Path, transport: httpx.AsyncBaseTransport | None = None) ->
         keine volle Prüfung) und ob gerade eine Aufnahme läuft (das Ausrollen wartet sie ab, nur ja oder nein)."""
         db = {"status": "error", "error": betrieb.datenbank_fehler} if betrieb.datenbank_fehler \
             else await asyncio.to_thread(datenbank_erreichbar)
-        aufnahme = bool(rec_manager.get_status().get("recording") or hls_recorder.get_status().get("recording"))
+        aufnahme = bool(rec_manager.get_status().get("recording"))
         return {"status": "healthy" if db["status"] == "healthy" else "degraded", "version": VERSION,
                 "database": db["status"], "aufnahme": aufnahme}
 

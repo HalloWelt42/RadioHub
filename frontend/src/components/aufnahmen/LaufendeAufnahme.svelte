@@ -22,7 +22,7 @@
   <div class="rh-abo-text">
     <h2><ak-led farbe="rot" zustand="blinkt" groesse="klein"></ak-led>{t("aufnahmenAnsicht.laeuft", { sender: a.sender })}</h2>
     <p class="rh-still">{t("aufnahmenAnsicht.laeuftSeit", { zeit: new Date(a.beginn).toLocaleTimeString("de-DE") })} ·
-      {appState.recordingType === "hls-rec" ? t("aufnahmenAnsicht.rueckblick", { n: appState.hlsRecLookbackMinutes }) : t("aufnahmenAnsicht.direkt")} ·
+      {appState.recordingVorlaufS >= 60 ? t("aufnahmenAnsicht.rueckblick", { n: Math.round(appState.recordingVorlaufS / 60) }) : t("aufnahmenAnsicht.direkt")} ·
       {t("aufnahmenAnsicht.nach", { name: ziel })}
       {#if appState.devMode && luecken} · <span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>{t("aufnahmenAnsicht.luecken", { n: luecken })}</span>{/if}</p>
     {#if titel.length}

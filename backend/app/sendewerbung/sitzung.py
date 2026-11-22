@@ -86,8 +86,6 @@ class Sitzungswerbung:
         self.verworfen: list[Werbestelle] = []
         #: Name des Senders aus dem Kopf des Stroms (icy-name); erst nach dem Verbinden bekannt
         self.sendername = ""
-        #: Stillen ab dieser Sekunde bleiben trotz `stillen_hoechstens` (solange eine Aufnahme aus dem Puffer läuft)
-        self.behalten_ab: Optional[float] = None
 
     def angabe(self, roh: str, sekunde: float) -> Optional[Werbestelle]:
         """Eine Angabe an ihrer Stelle im Ton; gibt die neu begonnene Stelle zurück, falls eine beginnt."""
@@ -174,10 +172,8 @@ class Sitzungswerbung:
 
     def stille(self, von: float, bis: float) -> None:
         self._stillen.append((max(0.0, von), bis))
-        if self._stillen_hoechstens is not None and (zuviel := len(self._stillen) - self._stillen_hoechstens) > 0:
-            if self.behalten_ab is not None:      # eine Aufnahme aus dem Puffer braucht die Stillen ab ihrem Beginn
-                zuviel = min(zuviel, sum(1 for st in self._stillen if st[1] < self.behalten_ab))
-            del self._stillen[:zuviel]
+        if self._stillen_hoechstens is not None:
+            del self._stillen[:-self._stillen_hoechstens]
         for s in self.stellen[-20:]:
             self._an_stille(s)
         self._bestaetigen()
@@ -208,6 +204,12 @@ class Sitzungswerbung:
         abstand = lambda st: 0.0 if st[0] <= t <= st[1] else min(abs(st[0] - t), abs(st[1] - t))
         kandidaten = [st for st in self._stillen if abstand(st) <= fenster]
         return min(kandidaten, key=abstand) if kandidaten else None
+
+    def vergessen_vor(self, sekunde: float) -> None:
+        """Stillen und abgeschlossene Stellen, die vor `sekunde` enden, vergessen (der Empfang hält nur, was noch im
+        Mitschnitt liegt)."""
+        self._stillen = [st for st in self._stillen if st[1] >= sekunde]
+        self.stellen = [s for s in self.stellen if s.bis is None or s.bis >= sekunde or s in self._unbestaetigt]
 
     @property
     def stillen(self) -> list[tuple[float, float]]:

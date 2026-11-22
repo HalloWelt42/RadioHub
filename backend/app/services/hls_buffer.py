@@ -9,7 +9,6 @@ Mit adaptiver Bitrate-Anpassung und ICY-Metadata-Tracking.
 """
 import logging
 import asyncio
-import re
 import shutil
 import json
 from collections import deque
@@ -18,16 +17,11 @@ from datetime import datetime
 from typing import Optional
 from dataclasses import dataclass, field
 
-from .stromleser import StromFehler, Stromleser, Wiedergabeliste
-from .titelbuch import Titelbuch
-from ..sendewerbung.sitzung import Sitzungswerbung
-from ..sendewerbung.angaben import regeln as werberegeln
+from .empfang import Abnehmer, Empfang, empfaenge
+from .stromleser import StromFehler, Wiedergabeliste
 from ..sendewerbung import spots as werbespots
 
 logger = logging.getLogger("radiohub.hls_buffer")
-
-#: ffmpeg beginnt ein Stück des Puffers ("Opening '.../segment_12.ts' for writing")
-STUECK_BEGINNT = re.compile(r"Opening '[^']*segment_(\d+)\.ts'")
 
 
 # Standard-Bitrate-Stufen (kbps)
@@ -90,11 +84,12 @@ class HLSBufferService:
         self.session: Optional[HLSSession] = None
         self._ffmpeg_process: Optional[asyncio.subprocess.Process] = None
         self._monitor_task: Optional[asyncio.Task] = None
-        # Radio: eine Verbindung für Ton und Sendedaten (RAD-33); der Ton geht über stdin an ffmpeg
-        self._stromleser: Optional[Stromleser] = None
-        self._strom_task: Optional[asyncio.Task] = None
-        self._titelbuch: Optional[Titelbuch] = None
-        self._werbung: Optional[Sitzungswerbung] = None
+        # Radio: der Puffer ist Abnehmer des Empfangs (RAD-46, eine Verbindung für Ton und Sendedaten); der Ton geht
+        # über stdin an ffmpeg. Stück N des Puffers beginnt bei N Sekunden ab seinem Beginn, das ist die Sekunde
+        # `_versatz_s` des Empfangs (der Empfang kann älter sein, etwa wenn eine Aufnahme schon lief)
+        self._empfang: Optional[Empfang] = None
+        self._abnehmer: Optional[Abnehmer] = None
+        self._versatz_s: float = 0.0
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
@@ -193,9 +188,9 @@ class HLSBufferService:
         # Auf Standard-Stufe snappen
         return snap_to_step(output)
         
-    def _build_ffmpeg_cmd(self, stream_url: str, aus_stromleser: bool = False, eingang_format: Optional[str] = None) -> list:
-        """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate. Mit `aus_stromleser` liest ffmpeg den Ton
-        über stdin (der Stromleser verbindet und verbindet neu), sonst selbst von der Adresse."""
+    def _build_ffmpeg_cmd(self, stream_url: str, aus_empfang: bool = False, eingang_format: Optional[str] = None) -> list:
+        """ffmpeg Kommando für HLS-Segmentierung mit adaptiver Bitrate. Mit `aus_empfang` liest ffmpeg den Ton
+        über stdin (der Empfang verbindet und verbindet neu), sonst selbst von der Adresse."""
         playlist = self.buffer_dir / "playlist.m3u8"
         segment_pattern = str(self.buffer_dir / "segment_%d.ts")
 
@@ -206,16 +201,15 @@ class HLSBufferService:
         else:
             hls_flags = "delete_segments+append_list+omit_endlist"
 
-        # Mit dem Stromleser meldet ffmpeg auch die Stille (silencedetect, Stufe info); sie gibt Werbestellen die
-        # genaue Grenze. -nostats: kein Fortschritt auf stderr
+        # -nostats: kein Fortschritt auf stderr; Stille und Pegel misst der Empfang (sein Stillenwächter)
         cmd = [
             "ffmpeg",
             "-hide_banner",
-            "-loglevel", "info" if aus_stromleser else "warning",
+            "-loglevel", "warning",
             "-nostats",
             "-y",  # Überschreiben ohne Nachfrage
         ]
-        if aus_stromleser:
+        if aus_empfang:
             cmd += (["-f", eingang_format] if eingang_format else []) + ["-i", "pipe:0"]
         else:
             cmd += ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", stream_url]
@@ -225,10 +219,6 @@ class HLSBufferService:
         # Radio: loudnorm fuer konsistente Lautstaerke bei Live-Streams
         if self.session.is_podcast:
             cmd += ["-vn"]
-        elif aus_stromleser:
-            g = werberegeln().grenze      # Stille vor loudnorm messen: dort ist digitale Stille noch still
-            cmd += ["-af", f"silencedetect=noise={g.stille_db}dB:duration={g.stille_mindestens_s},"
-                           "loudnorm=I=-16:TP=-1.5:LRA=11"]
         else:
             cmd += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"]
 
@@ -297,23 +287,20 @@ class HLSBufferService:
         mode_label = "Podcast" if is_podcast else "Radio"
         logger.info(f"HLS Buffer starten ({mode_label}): {station_name}")
         
-        # Radio: erst verbinden (Stromleser), später bekommt ffmpeg den Ton über stdin; eine Wiedergabeliste oder ein
-        # nicht lesbarer Kopf nimmt den bisherigen Weg (ffmpeg liest selbst, ohne Sendedaten)
+        # Radio: der Empfang des Senders (ein laufender, etwa von einer Aufnahme, oder ein neuer); ffmpeg bekommt den
+        # Ton über stdin. Eine Wiedergabeliste oder ein nicht lesbarer Kopf nimmt den bisherigen Weg (ffmpeg liest
+        # selbst, ohne Sendedaten)
         kopf = None
         if not is_podcast:
-            self._titelbuch = Titelbuch()
-            self._werbung = Sitzungswerbung(bei_ende=self._spot_zaehlen)
-            self._stromleser = Stromleser(stream_url, self._in_ffmpeg, self._angabe, bitrate=bitrate)
             try:
-                kopf = await self._stromleser.verbinden()
-                self._titelbuch.metaint = kopf.metaint
-                self._werbung.sendername = kopf.name
+                self._empfang = await empfaenge.holen(station_uuid, station_name, stream_url, bitrate, max_minutes * 60)
+                kopf = self._empfang.kopf
             except Wiedergabeliste as f:
                 logger.info(f"Wiedergabeliste ({f}): ffmpeg liest selbst, ohne Sendedaten")
-                self._stromleser = None
+                self._empfang = None
             except StromFehler as f:
-                logger.warning(f"Stromleser: {f}; ffmpeg liest selbst, ohne Sendedaten")
-                self._stromleser = None
+                logger.warning(f"Empfang: {f}; ffmpeg liest selbst, ohne Sendedaten")
+                self._empfang = None
 
         # Stream-Info: aus dem Kopf des Stromlesers, sonst ffprobe (das verbindet sich dafür eigens)
         if kopf and kopf.bitrate and kopf.format:
@@ -358,13 +345,13 @@ class HLSBufferService:
 
         # ffmpeg starten
         try:
-            cmd = self._build_ffmpeg_cmd(stream_url, aus_stromleser=self._stromleser is not None,
+            cmd = self._build_ffmpeg_cmd(stream_url, aus_empfang=self._empfang is not None,
                                          eingang_format=kopf.format if kopf else None)
             logger.info(f"ffmpeg: {' '.join(cmd[:8])}...")
 
             self._ffmpeg_process = await asyncio.create_subprocess_exec(
                 *cmd,
-                stdin=asyncio.subprocess.PIPE if self._stromleser else asyncio.subprocess.DEVNULL,
+                stdin=asyncio.subprocess.PIPE if self._empfang else asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.PIPE
             )
@@ -372,8 +359,10 @@ class HLSBufferService:
             # Monitor-Task starten
             self._monitor_task = asyncio.create_task(self._monitor_ffmpeg())
 
-            if self._stromleser:
-                self._strom_task = asyncio.create_task(self._strom_laufen())
+            if self._empfang:
+                self._abnehmer = Abnehmer("Zeitversatz", self._in_ffmpeg, None, self._ende_des_tons)
+                await self._empfang.anmelden(self._abnehmer)
+                self._versatz_s = self._empfang.sekunde(self._abnehmer.ab)
 
             return {
                 "status": "started",
@@ -402,62 +391,42 @@ class HLSBufferService:
         except Exception:
             return False
 
-    def _spot_zaehlen(self, stelle) -> None:
-        """Eine abgeschlossene Werbestelle zählt ihren Spot beim Sender (der Sender gilt damit als werbend)."""
-        try:
-            werbespots.merken(self.session.station_uuid if self.session else "", stelle)
-        except Exception as f:            # die Wiedergabe hängt nicht an der Zählung
-            logger.warning(f"Spot nicht gezählt: {f}")
-
-    async def _angabe(self, a) -> None:
-        """Eine Angabe der Sendedaten: Titel ins Titelbuch, Werbung in die Werbestellen der Sitzung."""
-        if self._titelbuch:
-            await self._titelbuch.angabe(a)
-        if self._werbung and (neu := self._werbung.angabe(a.roh, a.sekunde)):
-            logger.info(f"Werbung ab {neu.von:.2f} s: {neu.werbender or neu.kennung} ({neu.format})")
-
     async def _in_ffmpeg(self, daten: bytes) -> None:
-        """Ziel des Stromlesers: der Ton in ffmpeg (stdin); ist ffmpeg weg, hört der Leser auf."""
+        """Ton vom Empfang in ffmpeg (stdin); ist ffmpeg weg, meldet sich der Puffer ab."""
         eingang = self._ffmpeg_process.stdin if self._ffmpeg_process else None
         if eingang is None or eingang.is_closing():
-            if self._stromleser:
-                self._stromleser.stop()
+            self._abmelden_spaeter()
             return
         try:
             eingang.write(daten)
             await eingang.drain()
         except (BrokenPipeError, ConnectionResetError):
-            if self._stromleser:
-                self._stromleser.stop()
+            self._abmelden_spaeter()
 
-    async def _strom_laufen(self) -> None:
-        """Liest den Sender, bis er gestoppt wird oder wegbleibt; danach bekommt ffmpeg das Ende des Tons."""
-        leser = self._stromleser
-        try:
-            await leser.laufen()
-        finally:
-            prozess = self._ffmpeg_process
-            if prozess and prozess.stdin and not prozess.stdin.is_closing():
-                prozess.stdin.close()
+    def _abmelden_spaeter(self) -> None:
+        e, a = self._empfang, self._abnehmer
+        if e and a:
+            self._abnehmer = None
+            asyncio.create_task(e.abmelden(a))
+
+    async def _ende_des_tons(self) -> None:
+        """Der Sender bleibt weg: ffmpeg bekommt das Ende des Tons."""
+        prozess = self._ffmpeg_process
+        if prozess and prozess.stdin and not prozess.stdin.is_closing():
+            prozess.stdin.close()
 
     async def _strom_stoppen(self) -> None:
-        """Stoppt den Stromleser und hält die Titel fest."""
-        if self._stromleser:
-            self._stromleser.stop()
-        if self._strom_task and not self._strom_task.done():
-            self._strom_task.cancel()
-            try:
-                await self._strom_task
-            except asyncio.CancelledError:
-                pass
-        eintraege = self._titelbuch.entry_count if self._titelbuch else 0
+        """Vom Empfang abmelden; er endet, wenn keine Aufnahme mehr an ihm hängt."""
+        e, a = self._empfang, self._abnehmer
+        eintraege = e.titelbuch.entry_count if e else 0
         if eintraege and self.session and self.session.station_uuid:
             logger.info(f"Sendedaten gestoppt ({eintraege} Titelwechsel)")
             self._update_icy_flag(self.session.station_uuid)
-        self._stromleser = None
-        self._strom_task = None
-        self._titelbuch = None
-        self._werbung = None
+        self._empfang, self._abnehmer = None, None
+        if e and a:
+            await e.abmelden(a)
+        elif e and not e.hat_abnehmer:       # verbunden, aber nie angemeldet (Fehler beim Start)
+            await e.beenden()
 
     def _update_icy_flag(self, uuid: str):
         """Setzt icy=1 in detected_bitrates falls noch nicht gesetzt."""
@@ -474,14 +443,42 @@ class HLSBufferService:
         except Exception as e:
             logger.warning(f"ICY-Flag Update fehlgeschlagen: {e}")
 
-    def sendedaten(self) -> tuple[Optional[Titelbuch], Optional[Sitzungswerbung]]:
-        """Titelbuch und Werbestellen der laufenden Sitzung (Sekunden des Tons, Stück N beginnt bei N mal der Dauer
-        eines Stücks). Eine Aufnahme aus dem Puffer hält sie fest: sie bleiben, auch wenn der Puffer endet."""
-        return self._titelbuch, self._werbung
+    @property
+    def empfang(self) -> Optional[Empfang]:
+        """Der Empfang hinter dem Puffer (Radio mit Sendedaten), sonst None."""
+        return self._empfang
+
+    @property
+    def versatz_s(self) -> float:
+        """Sekunde des Empfangs, bei der Stück 0 des Puffers beginnt."""
+        return self._versatz_s
 
     def get_icy_entries(self) -> list[dict]:
-        """Titelwechsel der laufenden Sitzung, Stellen in Millisekunden des Tons (wie die Segmente)."""
-        return list(self._titelbuch.entries) if self._titelbuch else []
+        """Titelwechsel der laufenden Sitzung, Stellen in Millisekunden des Puffers (wie die Segmente)."""
+        if not self._empfang:
+            return []
+        v = int(self._versatz_s * 1000)
+        return [{**e, "t": e["t"] - v} for e in self._empfang.titelbuch.entries if e["t"] >= v]
+
+    def werbestellen(self, ab_s: float) -> list[dict]:
+        """Werbestellen im Puffer ab `ab_s` (Sekunden des Puffers)."""
+        if not self._empfang:
+            return []
+        v = self._versatz_s
+        return [{**w.model_dump(), "von": round(w.von - v, 3), "bis": None if w.bis is None else round(w.bis - v, 3)}
+                for w in self._empfang.werbung.im_fenster(ab_s + v)]
+
+    def abschnitte(self) -> list[dict]:
+        """Die Abschnitte des Puffers (Titel, Werbung, Einschübe) nach der Regel des Feinschnitts, Sekunden des
+        Puffers, das letzte läuft noch (RAD-46: Marken im Balken und Großansicht)."""
+        if not self._empfang or not self.session:
+            return []
+        info = self._get_segment_info()
+        anfang = (info["first"] or 0) * self.session.segment_duration
+        v = self._versatz_s
+        liste = self._empfang.stuecke(anfang + v)
+        return [{"von": round(max(anfang, s.von - v), 3), "bis": round(s.bis - v, 3), "titel": s.name, "art": s.art,
+                 "sicher": s.sicher, "laufend": i == len(liste) - 1} for i, s in enumerate(liste) if s.bis - v > anfang]
 
     async def _monitor_ffmpeg(self):
         """Überwacht ffmpeg Prozess im Hintergrund"""
@@ -492,15 +489,7 @@ class HLSBufferService:
             # stderr zeilenweise: Stille geht an die Werbestellen, die letzten Zeilen bleiben für eine Fehlermeldung
             letzte: deque[str] = deque(maxlen=12)
             while (zeile := await self._ffmpeg_process.stderr.readline()):
-                text = zeile.decode("utf-8", errors="ignore").rstrip()
-                if "silence_" in text:
-                    if self._werbung:
-                        self._werbung.stille_zeile(text)
-                elif self._werbung and (stueck := STUECK_BEGINNT.search(text)) and self.session:
-                    # ein neues Stück des Puffers: bis zu seinem Anfang hat ffmpeg den Ton geprüft
-                    self._werbung.ton_bis(int(stueck.group(1)) * self.session.segment_duration)
-                else:
-                    letzte.append(text)
+                letzte.append(zeile.decode("utf-8", errors="ignore").rstrip())
             return_code = await self._ffmpeg_process.wait()
 
             if self.session:
@@ -593,12 +582,11 @@ class HLSBufferService:
             "sample_rate": self.session.sample_rate,
             "error": self.session.error,
             # Aktueller ICY-Titel (letzter erkannter)
-            "icy_title": (self._titelbuch.entries[-1].get("title", "")
-                          if self._titelbuch and self._titelbuch.entries else None),
+            "icy_title": (self._empfang.titelbuch.entries[-1].get("title", "")
+                          if self._empfang and self._empfang.titelbuch.entries else None),
             # Werbestellen im Puffer (RAD-33), in Sekunden des Tons wie die Segmente, und ob sie hier gelten
             "werbung_ueberspringen": self._ueberspringt(),
-            "werbestellen": ([w.model_dump() for w in self._werbung.im_fenster(
-                (segments["first"] or 0) * self.session.segment_duration)] if self._werbung else []),
+            "werbestellen": self.werbestellen((segments["first"] or 0) * self.session.segment_duration),
         }
     
     def _get_segment_info(self) -> dict:

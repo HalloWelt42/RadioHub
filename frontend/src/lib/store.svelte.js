@@ -35,7 +35,8 @@ export const appState = $state({
 
   // Recording
   isRecording: false,
-  recordingType: 'none',    // 'none' | 'direct' | 'hls-rec'
+  recordingType: 'none',    // 'none' | 'direct'
+  recordingVorlaufS: 0,     // so viel Ton hatte die Aufnahme beim Start (aus dem Puffer, RAD-46)
   recordingSession: null,
   recordingElapsed: 0,
   recordingIcyCount: 0,     // Anzahl erkannter Titelwechsel (live)
@@ -74,7 +75,6 @@ export const appState = $state({
   streamTitle: null,   // Aktueller ICY-StreamTitle (Musiktitel)
 
   // HLS-REC Config
-  hlsRecLookbackMinutes: 5,  // Lookback in Minuten (1-120)
 
   // UI
   toast: null,

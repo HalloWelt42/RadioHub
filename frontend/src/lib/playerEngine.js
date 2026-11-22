@@ -116,13 +116,8 @@ export function isInitialized() {
 export async function playStation(station) {
   if (!_appState) return;
 
-  // --- Phase 0: Bei aktiver Aufnahme sofort blockieren ---
-  // MUSS vor HLS-Zerstoerung kommen, sonst wird HLS-REC im Backend
-  // durch den gestoppten HLS-Buffer unbrauchbar (ERR-006).
-  if (_appState.isRecording) {
-    _showPlayerError('Aufnahme läuft - erst stoppen');
-    return;
-  }
+  // Eine laufende Aufnahme hängt am Empfang ihres Senders, nicht am Puffer (RAD-46): sie läuft beim Senderwechsel
+  // weiter, der neue Sender bekommt einen eigenen Puffer.
 
   const gen = ++_generation;
   _reconnectAttempts = 0;
@@ -214,11 +209,6 @@ export async function playStation(station) {
  */
 export async function playPodcast(episode, podcast) {
   if (!_appState) return;
-
-  if (_appState.isRecording) {
-    _showPlayerError('Aufnahme läuft - erst stoppen');
-    return;
-  }
 
   const gen = ++_generation;
   _reconnectAttempts = 0;
@@ -331,11 +321,6 @@ export async function playPodcast(episode, podcast) {
  */
 export async function playRecording(recording, startTime = 0) {
   if (!_appState) return;
-
-  if (_appState.isRecording) {
-    _showPlayerError('Aufnahme läuft - erst stoppen');
-    return;
-  }
 
   const gen = ++_generation;
   _reconnectAttempts = 0;
@@ -464,10 +449,7 @@ export async function stop() {
     api.stopHLS().catch(e => console.error('HLS stop error:', e));
   }
 
-  // 4. Recording stoppen
-  if (_appState.isRecording) {
-    await _stopRecordingInternal();
-  }
+  // 4. Eine Aufnahme läuft weiter, bis sie beendet wird (RAD-46)
 
   // 4b. Podcast (direkt oder HLS): Position speichern + Intervall stoppen
   if (_appState.playerMode === 'podcast' || (_appState.playerMode === 'hls' && _appState.currentEpisode)) {
@@ -790,25 +772,14 @@ export async function restartHLS() {
 // ============================================================
 
 /**
- * Startet Aufnahme. Bei aktivem HLS-Buffer: HLS-REC mit Lookback, sonst Direct-REC.
- * Prüft hlsActive (tatsaechlicher HLS-Status), nicht playerMode.
+ * Startet Aufnahme. Läuft der Zeitversatz, beginnt sie am Anfang des laufenden Titels (das entscheidet der Server,
+ * RAD-46) und hat dann schon Ton: die Uhr beginnt bei `vorlauf_s`.
  */
 export async function startRecording() {
   if (!_appState?.currentStation) return { success: false };
   if (_recordingStarting) return { success: false };
   _recordingStarting = true;
 
-  try {
-    if (_appState.hlsActive) {
-      return await _startHlsRecording();
-    }
-    return await _startDirectRecording();
-  } finally {
-    _recordingStarting = false;
-  }
-}
-
-async function _startDirectRecording() {
   try {
     const result = await api.startRecording({
       station_uuid: _appState.currentStation.uuid,
@@ -821,8 +792,9 @@ async function _startDirectRecording() {
       _appState.isRecording = true;
       _appState.recordingType = 'direct';
       _appState.recordingSession = result.session_id;
-      _recordingStartTime = Date.now();
-      _appState.recordingElapsed = 0;
+      _appState.recordingVorlaufS = result.vorlauf_s || 0;
+      _recordingStartTime = Date.now() - (result.vorlauf_s || 0) * 1000;
+      _appState.recordingElapsed = Math.floor(result.vorlauf_s || 0);
       _recordingInterval = setInterval(() => {
         _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
       }, 1000);
@@ -830,32 +802,10 @@ async function _startDirectRecording() {
     }
     return result;
   } catch (e) {
-    console.error('Direct-REC start error:', e);
+    console.error('REC start error:', e);
     return { success: false, error: e.message };
-  }
-}
-
-async function _startHlsRecording() {
-  try {
-    // Lookback aus Config (Default 5 Minuten = 300s)
-    const lookbackMinutes = _appState.hlsRecLookbackMinutes || 5;
-    const result = await api.startHlsRecording(lookbackMinutes * 60);
-
-    if (result.success) {
-      _appState.isRecording = true;
-      _appState.recordingType = 'hls-rec';
-      _appState.recordingSession = result.session_id;
-      _recordingStartTime = Date.now();
-      _appState.recordingElapsed = 0;
-      _recordingInterval = setInterval(() => {
-        _appState.recordingElapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
-      }, 1000);
-      _startRecordingPoll();
-    }
-    return result;
-  } catch (e) {
-    console.error('HLS-REC start error:', e);
-    return { success: false, error: e.message };
+  } finally {
+    _recordingStarting = false;
   }
 }
 
@@ -872,16 +822,17 @@ function _startRecordingPoll() {
       return;
     }
     try {
-      const recType = _appState.recordingType;
-      const status = recType === 'hls-rec'
-        ? await api.getHlsRecordingStatus()
-        : await api.getRecordingStatus();
+      const status = await api.getRecordingStatus();
 
       if (!status?.recording) {
         // Backend sagt: keine Aufnahme. Frontend-State zurücksetzen.
         console.warn('Recording-Status-Poll: Backend hat keine aktive Aufnahme, setze State zurück');
         _resetRecordingState();
       } else {
+        // die Uhr nach dem Ton der Aufnahme (mit nachgespieltem Vorlauf, ohne Wartezeit vor Werbung)
+        if (typeof status.duration === 'number') {
+          _recordingStartTime = Date.now() - status.duration * 1000;
+        }
         // ICY-Daten und Events aus Status in State übernehmen
         _appState.recordingIcyCount = status.icy_count || 0;
         _appState.recordingIcyEntries = status.icy_entries || [];
@@ -925,6 +876,7 @@ function _resetRecordingState() {
     _appState.recordingType = 'none';
     _appState.recordingSession = null;
     _appState.recordingElapsed = 0;
+    _appState.recordingVorlaufS = 0;
     _appState.recordingIcyCount = 0;
     _appState.recordingIcyEntries = [];
     _appState.recordingEvents = [];
@@ -941,18 +893,12 @@ export async function checkAndRecoverRecordingState() {
   if (_appState.isRecording) return; // Bereits aktiv, nichts tun
 
   try {
-    const [directStatus, hlsStatus] = await Promise.all([
-      api.getRecordingStatus().catch(() => ({ recording: false })),
-      api.getHlsRecordingStatus().catch(() => ({ recording: false }))
-    ]);
-
-    const activeStatus = hlsStatus?.recording ? hlsStatus : directStatus?.recording ? directStatus : null;
+    const directStatus = await api.getRecordingStatus().catch(() => ({ recording: false }));
+    const activeStatus = directStatus?.recording ? directStatus : null;
     if (!activeStatus) return;
 
-    const recType = hlsStatus?.recording ? 'hls-rec' : 'direct';
-
     _appState.isRecording = true;
-    _appState.recordingType = recType;
+    _appState.recordingType = 'direct';
     _appState.recordingSession = activeStatus.session_id || null;
     _appState.recordingElapsed = Math.floor(activeStatus.duration || 0);
     _appState.recordingIcyCount = activeStatus.icy_count || 0;
@@ -992,7 +938,7 @@ export async function checkAndRecoverRecordingState() {
       };
     }
 
-    console.log('Recording State Recovery:', recType, 'aktiv, Session', activeStatus.session_id,
+    console.log('Recording State Recovery: aktiv, Session', activeStatus.session_id,
       'Station:', activeStatus.station_name);
   } catch (e) {
     // Fehler bei Recovery ignorieren -- normaler Betrieb ohne Aufnahme
@@ -1009,8 +955,6 @@ export async function stopRecording() {
 async function _stopRecordingInternal() {
   if (!_appState) return { success: false };
 
-  const recType = _appState.recordingType;
-
   if (_recordingInterval) {
     clearInterval(_recordingInterval);
     _recordingInterval = null;
@@ -1019,9 +963,7 @@ async function _stopRecordingInternal() {
   _recordingStartTime = null;
 
   try {
-    const result = recType === 'hls-rec'
-      ? await api.stopHlsRecording()
-      : await api.stopRecording();
+    const result = await api.stopRecording();
     _appState.isRecording = false;
     _appState.recordingType = 'none';
     _appState.recordingSession = null;

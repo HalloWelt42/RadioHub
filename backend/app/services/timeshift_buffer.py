@@ -395,8 +395,8 @@ class TimeshiftBufferManager:
     async def convert_to_recording(self) -> dict:
         """Startet eine Aufnahme des gepufferten Senders ab jetzt.
 
-        Den bisherigen Puffer vorne anzusetzen ging nie (die Aufnahme schreibt Stücke, die beim Abschluss in die
-        Ablage gehen); Aufnahmen mit Vorlauf macht HLS-REC (`/api/recording/hls-start` mit lookback_seconds).
+        Dieser ältere Puffer hat keinen Empfang; Aufnahmen ab dem Anfang des laufenden Titels macht der Zeitversatz
+        (RAD-46, empfang.py).
         """
         if not self.session:
             return {"success": False, "error": "Kein Buffer aktiv"}

@@ -32,7 +32,7 @@ from .config import DB_PATH, VERSION
 from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, timeshift_buffer
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
-from .services.hls_recorder import hls_recorder
+from .services.empfang import empfaenge, mitschnitte_raeumen
 from .services import zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
@@ -80,7 +80,7 @@ class Radiobetrieb(Begleiter):
         await self._senderbestand_pruefen()
         self._ablage_einrichten()
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
-        hls_recorder.startup()          # verwaiste HLS-Aufnahmen bereinigen
+        mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs
         seed_domain_blacklist()         # Werbedomains der Erkennung
         aufnahmen.aufraeumen()          # alte Arbeitskopien
         self._aufgaben = [asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
@@ -100,13 +100,12 @@ class Radiobetrieb(Begleiter):
             aufgabe.cancel()
         await asyncio.gather(*self._aufgaben, return_exceptions=True)
         self._aufgaben = []
-        if hls_recorder.active_session:
-            await hls_recorder.stop()
         if rec_manager.active_session:
             await rec_manager.stop()
         await buffer_manager.stop_buffering()
         await timeshift_buffer.stop_buffering()
         await hls_buffer.stop()
+        await empfaenge.alle_beenden()
         await podcast_service.close()
         await ablage_paket.ablage().schliessen()
         await database.schliessen()

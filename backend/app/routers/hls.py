@@ -107,6 +107,38 @@ async def get_hls_status():
 
 # === HLS Streaming ===
 
+@router.get("/abschnitte")
+async def puffer_abschnitte():
+    """Titel, Werbung und Einschübe im Puffer (RAD-46), Sekunden des Puffers wie die Segmente; das letzte läuft noch.
+    Grenzen nach der Regel des Feinschnitts (an der Pause, bei Überblendung am Pegeltal)."""
+    return {"versatz_s": hls_buffer.versatz_s, "abschnitte": hls_buffer.abschnitte()}
+
+
+class PufferAufnahme(BaseModel):
+    """Sekunden des Puffers; ohne `von_s` am Anfang des laufenden Titels, ohne `bis_s` bis zum Stopp."""
+    von_s: Optional[float] = None
+    bis_s: Optional[float] = None
+
+
+@router.post("/aufnahme")
+async def aufnahme_aus_dem_puffer(wunsch: PufferAufnahme):
+    """Aufnahme ab hier oder einen Bereich sichern (RAD-46): ein Abschnitt des Empfangs hinter dem Puffer, fertig
+    geschnitten wie jede Aufnahme. Ohne `bis_s` läuft sie weiter, auch wenn der Puffer endet."""
+    from ..services.recorder import rec_manager
+    sitzung, empfang = hls_buffer.session, hls_buffer.empfang
+    if not sitzung or not empfang:
+        raise HTTPException(409, "Kein Zeitversatz mit Sendedaten aktiv")
+    if wunsch.bis_s is not None and wunsch.von_s is not None and wunsch.bis_s <= wunsch.von_s:
+        raise HTTPException(422, "Das Ende liegt vor dem Anfang")
+    v = hls_buffer.versatz_s
+    ergebnis = await rec_manager.start(sitzung.station_uuid, sitzung.station_name, sitzung.stream_url,
+                                       sitzung.input_bitrate, von_s=None if wunsch.von_s is None else wunsch.von_s + v,
+                                       bis_s=None if wunsch.bis_s is None else wunsch.bis_s + v)
+    if not ergebnis.get("success"):
+        raise HTTPException(409, ergebnis.get("error", "Aufnahme nicht gestartet"))
+    return ergebnis
+
+
 @router.get("/playlist.m3u8")
 async def get_hls_playlist():
     """

@@ -101,7 +101,7 @@ async def go_live():
 
 @router.post("/to-recording")
 async def convert_to_recording():
-    """Startet eine Aufnahme des gepufferten Senders ab jetzt (mit Vorlauf: /api/recording/hls-start)."""
+    """Startet eine Aufnahme des gepufferten Senders ab jetzt (ab dem laufenden Titel: der Zeitversatz, RAD-46)."""
     result = await timeshift_buffer.convert_to_recording()
     if not result.get("success"):
         raise HTTPException(400, result.get("error", "Konvertierung fehlgeschlagen"))

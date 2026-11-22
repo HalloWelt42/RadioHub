@@ -231,50 +231,93 @@ async def test_aufnahme_speichert_werbestellen_aus_den_sendedaten(client, mp3, m
     assert client.post("/api/recording/sessions/gibt-es-nicht/feinschnitt").status_code == 404
 
 
-async def test_aufnahme_aus_dem_puffer_behaelt_sendedaten_wenn_der_puffer_endet(client, mp3, tmp_path, monkeypatch):
-    """RAD-48, echter Fall 90s90s 22.11.2026: Aufnahme aus dem Puffer, der Puffer endet vor dem Stopp (Radio aus).
-    Früher waren die Titel dann weg (0 Einträge, ein Stück "Teil 1"); jetzt hält die Aufnahme Titelbuch und
-    Werbestellen fest und schneidet wie eine Aufnahme vom Sender."""
-    from app.services import hls_recorder as hr
+
+# Titel an den Nähten des wiederholten Tons (0, 8, 16 s: dort liegt eine kurze Pause wie zwischen zwei Liedern);
+# die Angabe kommt nach dem Block, also bei 0,5 / 8,0 / 16,0 s
+DREI = {0: "StreamTitle='A - Eins';", 15: "StreamTitle='B - Zwei';", 31: "StreamTitle='C - Drei';"}
+
+
+async def _puffer_bis(puffer, sekunde: float) -> None:
+    for _ in range(200):
+        if puffer.empfang and puffer.empfang.jetzt_s >= sekunde:
+            return
+        await asyncio.sleep(0.05)
+    raise AssertionError(f"Puffer erreicht {sekunde} s nicht")
+
+
+async def test_aufnahme_bei_laufendem_puffer_beginnt_am_titel_und_ueberlebt_den_puffer(client, mp3, tmp_path, monkeypatch):
+    """RAD-46: läuft der Zeitversatz, beginnt die Aufnahme am Anfang des laufenden Titels (Ton bis jetzt aus dem
+    Mitschnitt nachgespielt) und läuft weiter, wenn das Radio ausgeht (Entscheidungen 1 und 2)."""
+    from app.services.aufnahmen import aufnahmen
+    from app.services.empfang import empfaenge
+    from app.services.hls_buffer import HLSBufferService
+    monkeypatch.setattr(recorder_modul, "MIN_SEGMENT_SECONDS", 0)
+    rec = recorder_modul.rec_manager
+    puffer = HLSBufferService(str(tmp_path / "hls"))
+    async with Sender(mp3 * 6, DREI, takt_s=0.1) as sender:
+        assert (await puffer.start("s1", "Probesender", sender.adresse(), bitrate=64))["status"] == "started"
+        await _puffer_bis(puffer, 11.0)                      # mitten in "B - Zwei"
+        ergebnis = await rec.start("s1", "Probesender", sender.adresse(), 64)
+        assert ergebnis["success"], ergebnis
+        assert 2.0 <= ergebnis["vorlauf_s"] <= 4.5           # ab etwa 8 s nachgespielt
+        assert abs(rec.active_session.versatz_s - 8.0) < 0.3
+        await puffer.stop()                                  # Radio aus: die Aufnahme läuft weiter
+        assert empfaenge.zu(sender.adresse()) is not None
+        for _ in range(200):
+            if rec.active_session and rec.active_session.ton_s >= 10.0:
+                break
+            await asyncio.sleep(0.05)
+        status = rec.get_status()
+        await rec.stop()
+        await rec.feinschnitt_abwarten()
+        assert sender.mit_sendedaten == 1                    # eine Verbindung für Puffer und Aufnahme
+        assert empfaenge.zu(sender.adresse()) is None        # ohne Abnehmer endet der Empfang
+    assert [e["title"] for e in status["icy_entries"]][:2] == ["B - Zwei", "C - Drei"]
+    stuecke = aufnahmen.segmente(ergebnis["session_id"])
+    assert [s["title"] for s in stuecke] == ["B - Zwei", "C - Drei"], stuecke
+    assert abs(stuecke[0]["end_ms"] / 1000 - 8.0) < 0.6      # B von 8 bis 16 s
+
+
+async def test_bereich_aus_dem_puffer_sichern(client, mp3, tmp_path, monkeypatch):
+    """RAD-46: ein Bereich des Puffers als fertige Aufnahme; sie endet von selbst an seinem Ende."""
     from app.services.aufnahmen import aufnahmen
     from app.services.hls_buffer import HLSBufferService
+    monkeypatch.setattr(recorder_modul, "MIN_SEGMENT_SECONDS", 0)
+    rec = recorder_modul.rec_manager
     puffer = HLSBufferService(str(tmp_path / "hls"))
-    monkeypatch.setattr(hr, "hls_buffer", puffer)
-    rec = hr.HLSRecorderService()
-    spot = WERBUNG.replace("15046", "3000")
-    async with Sender(mp3 * 3, {0: spot, 8: "StreamTitle='B - Zwei';"}, takt_s=0.1) as sender:
+    async with Sender(mp3 * 6, DREI, takt_s=0.1) as sender:
         assert (await puffer.start("s1", "Probesender", sender.adresse(), bitrate=64))["status"] == "started"
-        for _ in range(100):
-            if len(puffer.get_icy_entries()) >= 1 and len(list((tmp_path / "hls").glob("segment_*.ts"))) >= 6:
-                break
-            await asyncio.sleep(0.1)
-        ergebnis = await rec.start(lookback_seconds=60)
+        await _puffer_bis(puffer, 18.0)
+        abschnitte = puffer.abschnitte()
+        assert [a["titel"] for a in abschnitte] == ["A - Eins", "B - Zwei", "C - Drei"] and abschnitte[-1]["laufend"]
+        b = abschnitte[1]
+        v = puffer.versatz_s
+        ergebnis = await rec.start("s1", "Probesender", sender.adresse(), 64, von_s=b["von"] + v, bis_s=b["bis"] + v)
         assert ergebnis["success"], ergebnis
-        await asyncio.sleep(0.6)
-        await puffer.stop()                                  # der Puffer endet zuerst
-        for _ in range(100):
-            if not rec.active_session:
+        for _ in range(200):                                 # am Ende des Bereichs von selbst fertig und geschnitten
+            if rec.get_session(ergebnis["session_id"])["status"] == "completed":
                 break
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
+        assert not rec.active_session
         await rec.feinschnitt_abwarten()
-    kennung = ergebnis["session_id"]
-    stuecke = aufnahmen.segmente(kennung)
-    assert [s["title"] for s in stuecke] == ["Werbung: 198927", "B - Zwei"], stuecke
-    assert abs(stuecke[0]["end_ms"] / 1000 - 3.0) < 0.3
-    stellen = client.get(f"/api/recording/sessions/{kennung}/werbung").json()
-    assert len(stellen) == 1 and stellen[0]["text"] == "198927 (beim Verbinden)"
-    assert client.get(f"/api/recording/sessions/{kennung}").json()["status"] == "completed"
+        await puffer.stop()
+    stuecke = aufnahmen.segmente(ergebnis["session_id"])
+    assert [s["title"] for s in stuecke] == ["B - Zwei"], stuecke
+    assert abs(stuecke[0]["duration_ms"] / 1000 - (b["bis"] - b["von"])) < 0.6
 
 
-def test_analyse_aus_dem_puffer_auf_die_zeit_der_aufnahme():
-    from app.services.hls_recorder import analyse_aus_puffer, titel_ab
+def test_abschnitt_des_empfangs_auf_die_zeit_der_aufnahme(tmp_path):
     from app.sendewerbung.sitzung import Werbestelle
-    w = [(10.0, "A - Eins", False), (100.0, "B - Zwei", False), (250.0, "C - Drei", False)]
-    stellen = [Werbestelle(von=40.0, bis=60.0, von_aus="angabe", format="creative", kennung="1", werbender="otto.de"),
-               Werbestelle(von=180.0, bis=None, von_aus="angabe", format="creative", kennung="2")]
-    a = analyse_aus_puffer(50.0, 150.0, w, stellen, [(45.0, 51.0), (99.2, 99.9), (210.0, 211.0)])
-    assert a.wechsel == [(0.0, "A - Eins", False), (50.0, "B - Zwei", False)]   # der laufende Titel steht bei 0
+    from app.services.empfang import Empfang
+    e = Empfang("s1", "Probe", "http://127.0.0.1:9/strom", 64, 600, tmp_path / "m")
+    e.titelbuch.wechsel = [(10.0, "A - Eins", False), (100.0, "B - Zwei", False), (250.0, "C - Drei", False)]
+    e.werbung.stellen = [Werbestelle(von=40.0, bis=60.0, von_aus="angabe", format="creative", kennung="1", werbender="otto.de"),
+                         Werbestelle(von=180.0, bis=None, von_aus="angabe", format="creative", kennung="2")]
+    for v, b in [(45.0, 51.0), (99.2, 99.9), (210.0, 211.0)]:
+        e.werbung.stille(v, b)
+    e.pegel = [(49.0, -20.0), (60.0, -18.0), (201.0, -19.0)]
+    a = e.abschnitt(50.0, 150.0)
+    assert a.wechsel == [(0.0, "A - Eins", False), (50.0, "B - Zwei", False)]      # der laufende Titel steht bei 0
     assert a.stillen == [(0.0, 1.0), (49.2, 49.9)]
-    assert a.werbung == [(0.0, 10.0, "otto.de"), (130.0, 150.0, "2")]            # offen: bis zum Ende der Aufnahme
-    eintraege = [{"t": 10000, "title": "A - Eins", "raw_title": "A - Eins"}, {"t": 100000, "title": "B - Zwei"}]
-    assert [(e["t"], e["title"]) for e in titel_ab(eintraege, 50.0, 150.0)] == [(0, "A - Eins"), (50000, "B - Zwei")]
+    assert [(v, b, w.name) for v, b, w in a.werbung] == [(0.0, 10.0, "otto.de"), (130.0, 150.0, "2")]
+    assert a.pegel == [(10.0, -18.0)]

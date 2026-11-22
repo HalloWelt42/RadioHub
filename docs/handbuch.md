@@ -119,9 +119,14 @@ eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, de
 größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
 der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
 Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
-Läuft der Zeitversatz, nimmt die Aufnahme mit Rückblick aus dem Puffer auf (RAD-48): sie hält dessen Titel und
-Werbestellen fest, auch wenn der Puffer vor dem Stopp endet, rechnet ihre Zeiten nach den Stücken des Puffers und
-bekommt denselben Feinschnitt (ohne Pegeltal, der Puffer misst nur die Stille).
+Puffer und Aufnahme hängen am selben Empfang des Senders (RAD-46): eine Verbindung, Titel, Werbestellen, Stille und
+Pegel, dazu ein Mitschnitt des Stroms über die Länge des Puffers im Arbeitsordner (`{{wurzel}}/data/cache`, bei
+192 kbit/s und 2 h etwa 190 MB; beim Start geräumt). Läuft der Zeitversatz, beginnt eine Aufnahme am Anfang des
+laufenden Titels (läuft Werbung, nach ihr) und bekommt den Ton bis jetzt aus dem Mitschnitt; Radio aus oder ein
+anderer Sender beenden sie nicht. `GET /api/hls/abschnitte` nennt Titel, Werbung und Einschübe des Puffers (Grenzen
+nach der Regel des Feinschnitts), `POST /api/hls/aufnahme` mit `von_s` und `bis_s` (Sekunden des Puffers) nimmt ab
+einer Stelle auf oder sichert einen Bereich als fertige Aufnahme. Stille und Pegel kosten auf dem Pi unter 1 % eines
+Kerns (gemessen 22.11.2026).
 
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo
@@ -210,7 +215,7 @@ sohee wie in Basic, austauschbar gegen jede für RadioHub freigegebene Stimme);
 die Zertifikatsstelle (`RADIOHUB_CA_DATEI`) und die Ortssuche (OSMLocal im Netz `haus`) setzt `compose.pi.yml`. Die
 Namen von vor RAD-6 gelten weiter (`RADIOHUB_KELLERWOLKE_CA`, `RADIOHUB_KELLERWOLKE_SCHLUESSEL` als Pfad einer Datei,
 ohne Angabe `data/kellerwolke.schluessel`); Werte, die früher in der Tabelle `config` standen (Abruf der Podcasts,
-Bitraten, Adressen der Verzeichnisse; seit RAD-11 auch Sprache, Klicktöne, Rückblick, Werbeerkennung und Ort), übernimmt
+Bitraten, Adressen der Verzeichnisse; seit RAD-11 auch Sprache, Klicktöne, Werbeerkennung und Ort), übernimmt
 der erste Start einmal, je Übertrag. Der Abgleich mit dem Senderverzeichnis läuft
 jede Nacht zur "Uhrzeit des Abgleichs" (Einstellungen > Radio > Senderverzeichnis, `abgleich_uhrzeit`, Vorgabe 04:30, leer: nur auf Anstoß)
 als Auftrag mit Fortschritt; die Server stehen unter "Senderverzeichnis" (`service_radio_browser_servers`), der nächste

@@ -21,7 +21,6 @@ from ..ablage.wiedergabe import ausliefern
 from ..config import AUDIO_MIMETYPES, get_arbeit_dir
 from ..services.aufnahmen import aufnahmen
 from ..services.recorder import rec_manager
-from ..services.hls_recorder import hls_recorder
 from ..services import feinschnitt_lauf, werbestellen
 
 router = APIRouter(prefix="/api/recording", tags=["recording"])
@@ -249,36 +248,6 @@ async def download_zip_session(session_id: str, background_tasks: BackgroundTask
 
     background_tasks.add_task(_aufraeumen, str(ordner), str(zip_path))
     return FileResponse(path=zip_path, filename=zip_name, media_type="application/zip")
-
-
-# === HLS-REC Endpoints ===
-
-class HLSRecStartRequest(BaseModel):
-    lookback_seconds: int = 300  # Default 5 Minuten
-
-
-@router.post("/hls-start")
-async def start_hls_recording(req: HLSRecStartRequest):
-    """Startet HLS-REC (Aufnahme aus HLS-Buffer mit Lookback)"""
-    result = await hls_recorder.start(lookback_seconds=req.lookback_seconds)
-    if not result.get("success"):
-        raise HTTPException(400, result.get("error", "Fehler"))
-    return result
-
-
-@router.post("/hls-stop")
-async def stop_hls_recording():
-    """Stoppt HLS-REC"""
-    result = await hls_recorder.stop()
-    if not result.get("success"):
-        raise HTTPException(400, result.get("error", "Keine aktive HLS-Aufnahme"))
-    return result
-
-
-@router.get("/hls-status")
-async def hls_recording_status():
-    """Status der HLS-Aufnahme"""
-    return hls_recorder.get_status()
 
 
 # === ICY-Titel Ignorier-Liste ===

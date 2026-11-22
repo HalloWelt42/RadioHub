@@ -4,17 +4,18 @@ RadioHub v0.5.0 - Recorder Service (Live-Split)
 Stream-Aufnahme mit Live-Split bei ICY-Titelwechsel.
 
 Ablauf:
-1. Der Stromleser hält die eine Verbindung zum Sender (RAD-33) und gibt den Ton über stdin an FFmpeg, das ihn in
-   eine Einzeldatei schreibt; die Sendedaten derselben Verbindung führt das Titelbuch
+1. Der Empfang des Senders (RAD-46, empfang.py) hält die eine Verbindung (RAD-33); die Aufnahme ist sein Abnehmer und
+   gibt den Ton über stdin an FFmpeg, das ihn in eine Einzeldatei schreibt; die Sendedaten führt ihr Titelbuch, auf
+   ihre Zeit (ab ihrem Beginn). Läuft der Empfang schon (Zeitversatz), beginnt sie am Anfang des laufenden Titels und
+   bekommt den Ton bis jetzt aus dem Mitschnitt nachgespielt; endet der Zeitversatz, läuft sie weiter
 2. Titelwechsel -> Callback, zwischen zwei Blöcken des Tons, also genau an der Stelle
 3. Callback: Neuen FFmpeg starten, den Ton dorthin lenken, dem alten das Ende des Tons geben (EOF), Segment ablegen.
    Früher verband jeder neue FFmpeg sich selbst neu, und Sender mit Werbung beim Verbinden setzten vor jedes Stück
    einen Spot
 4. Stop: Letztes Segment finalisieren, kein Concat noetig
 5. Fallback ohne ICY: Ein Segment pro Session; ist der Sender eine Wiedergabeliste, liest FFmpeg selbst
-6. Werbung aus den Sendedaten (RAD-33): dieselben Angaben ergeben Werbestellen, die Grenze sitzt an der Stille, die
-   der Stillenwächter meldet (ein eigener FFmpeg über den ganzen Ton, stillenwaechter.py). Beim Abschluss kommen die
-   Stellen zur Aufnahme (Sekunden des ganzen Tons).
+6. Werbung aus den Sendedaten (RAD-33): Werbestellen, Stillen und Pegel führt der Empfang (sein Stillenwächter prüft
+   den ganzen Ton). Beim Abschluss kommt ihr Abschnitt zur Aufnahme (Sekunden ab ihrem Beginn).
 7. Feinschnitt nach dem Stopp (RAD-45): live wird grob beim Eintreffen der Angabe geteilt (die Stücke wachsen sichtbar);
    danach rücken die Grenzen ans Ende der Stille davor, Werbung wird ein Stück, Einschübe ohne Titel eigene Stücke
    (feinschnitt.py). Das ist ein Schritt des Schnitts, also mit Rückgängig. Solange er läuft, heißt die Aufnahme
@@ -39,9 +40,9 @@ from ..config import get_arbeit_dir, get_active_recording_folder
 from .aufnahmen import aufnahmen
 from .config_service import config_service
 from . import feinschnitt_lauf, werbestellen
-from ..sendewerbung.sitzung import Sitzungswerbung
-from .stromleser import StromFehler, Stromleser, Wiedergabeliste
-from .stillenwaechter import Stillenwaechter
+from ..sendewerbung.sitzung import Werbestelle
+from .empfang import Abnehmer, Empfang, empfaenge
+from .stromleser import StromFehler, Wiedergabeliste
 from .titelbuch import Titelbuch
 from .audio_utils import probe_duration
 
@@ -122,11 +123,14 @@ class RecordingSession:
         self.session_dir: Optional[Path] = None
         self.meta_file_path: Optional[Path] = None
         self.titelbuch: Optional[Titelbuch] = None
-        self.werbung: Optional[Sitzungswerbung] = None
-        self.stillen: Optional[Stillenwaechter] = None
-        self.pegel: list[tuple[float, float]] = []      # Momentanlautheit je 100 ms für den Feinschnitt
-        self.stromleser: Optional[Stromleser] = None   # None: FFmpeg liest selbst (Wiedergabeliste)
-        self.strom_task: Optional[asyncio.Task] = None
+        #: der Empfang des Senders; None: FFmpeg liest selbst (Wiedergabeliste, Kopf nicht lesbar)
+        self.empfang: Optional[Empfang] = None
+        self.abnehmer: Optional[Abnehmer] = None
+        #: wartet die Aufnahme auf das Ende laufender Werbung, bevor sie beginnt (dann wächst noch nichts)
+        self.wartet: bool = False
+        self.warte_task: Optional[asyncio.Task] = None
+        #: der Ton ist zu Ende (Ende des Abschnitts oder Sender weg): was FFmpeg dann meldet, ist kein Abbruch
+        self.ton_zu_ende: bool = False
         self.eingang_format: Optional[str] = None
         self.logger: Optional[SessionLogger] = None
         self.events: list[dict] = []  # Gap/Stall/Codec-Events
@@ -149,6 +153,18 @@ class RecordingSession:
         self.current_segment_ton_s: float = 0.0
         self.live_split: bool = False  # True sobald erster ICY-Split passiert
         self._split_lock: Optional[asyncio.Lock] = None  # Initialisiert bei Start
+
+    @property
+    def versatz_s(self) -> float:
+        """Wo die Aufnahme auf der Zeitachse des Empfangs beginnt."""
+        return self.empfang.sekunde(self.abnehmer.ab) if self.empfang and self.abnehmer else 0.0
+
+    @property
+    def ton_s(self) -> float:
+        """So viel Ton hat die Aufnahme (mit dem nachgespielten Teil), sonst die Zeit seit dem Start."""
+        if self.empfang and self.abnehmer:
+            return self.empfang.sekunde(self.abnehmer.bekommen)
+        return self.duration
 
     @property
     def duration(self) -> float:
@@ -204,7 +220,7 @@ class RecorderManager:
         aber die DB hat noch status='recording'."""
         with db_session() as conn:
             c = conn.cursor()
-            c.execute("SELECT id FROM sessions WHERE status = 'recording' AND COALESCE(rec_type, 'direct') != 'hls-rec'")
+            c.execute("SELECT id FROM sessions WHERE status = 'recording'")
             stale = c.fetchall()
             # ein beim Neustart unterbrochener Feinschnitt: die groben Stücke gelten
             c.execute("UPDATE sessions SET status = 'completed' WHERE status = 'feinschnitt'")
@@ -254,8 +270,8 @@ class RecorderManager:
         return "", ".mp3"
 
     def _eingang(self, session: RecordingSession) -> list[str]:
-        """Eingang von FFmpeg: der Ton des Stromlesers über stdin, ohne ihn liest FFmpeg selbst."""
-        if session.stromleser:
+        """Eingang von FFmpeg: der Ton des Empfangs über stdin, ohne ihn liest FFmpeg selbst."""
+        if session.empfang:
             return (["-f", session.eingang_format] if session.eingang_format else []) + ["-i", "pipe:0"]
         return ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5", "-i", session.stream_url]
 
@@ -317,8 +333,10 @@ class RecorderManager:
                 await process.wait()
 
     async def start(self, station_uuid: str, station_name: str, stream_url: str,
-                    bitrate: int = 0) -> dict:
-        """Startet Aufnahme mit Live-Split bei ICY-Titelwechsel."""
+                    bitrate: int = 0, von_s: Optional[float] = None, bis_s: Optional[float] = None) -> dict:
+        """Startet Aufnahme mit Live-Split bei ICY-Titelwechsel. `von_s`, `bis_s`: Abschnitt auf der Zeitachse des
+        laufenden Empfangs (Aufnahme ab hier, Bereich sichern); ohne `von_s` beginnt sie bei laufendem Empfang am
+        Anfang des laufenden Titels, sonst jetzt."""
 
         if self.active_session:
             return {
@@ -355,25 +373,25 @@ class RecorderManager:
         session.session_dir = session_dir
         session._split_lock = asyncio.Lock()
 
-        # Eine Verbindung für Ton und Sendedaten (RAD-33): erst verbinden, dann den Codec aus der Art des Stroms
+        # Der Empfang des Senders (RAD-46): ein laufender (Zeitversatz) oder ein neuer; der Codec kommt aus der Art
+        # des Stroms
         meta_path = session_dir / orte.TITELLISTE
         session.meta_file_path = meta_path
         session.titelbuch = Titelbuch(sperrliste=self._sperrliste(), bei_wechsel=self._on_title_change, datei=meta_path)
-        session.werbung = Sitzungswerbung(stillen_hoechstens=None)     # alle Stillen: der Feinschnitt braucht sie
-        session.stromleser = Stromleser(stream_url, lambda daten: self._ton(session, daten),
-                                        lambda angabe: self._angabe(session, angabe), bitrate=bitrate)
+        kopf = None
+        lief_schon = empfaenge.zu(stream_url) is not None
         try:
-            kopf = await session.stromleser.verbinden()
+            session.empfang = await empfaenge.holen(station_uuid, station_name, stream_url, bitrate, self._puffer_s())
+            kopf = session.empfang.kopf
             session.titelbuch.metaint = kopf.metaint
             session.eingang_format = kopf.format
-            session.werbung.sendername = kopf.name
-            session.stillen = Stillenwaechter(kopf.format, session.werbung.stille_zeile,
-                                              lambda t, m: self._pegel(session, t, m))
-            await session.stillen.starten()
         except StromFehler as f:
             art = "Wiedergabeliste" if isinstance(f, Wiedergabeliste) else f"Stromleser: {f}"
             logger.info(f"REC {art}; FFmpeg liest selbst, ohne Sendedaten")
-            session.stromleser, kopf = None, None
+            session.empfang = None
+        warten_auf: Optional[Werbestelle] = None
+        if session.empfang and von_s is None and lief_schon:
+            von_s, warten_auf = session.empfang.titelanfang()
         codec, ext = CODEC_AUS_FORMAT.get(kopf.format) if kopf and kopf.format in CODEC_AUS_FORMAT else \
             await self._detect_codec(stream_url)
         session.codec = codec
@@ -401,9 +419,16 @@ class RecorderManager:
             self._monitor_task = asyncio.create_task(self._monitor_process(session))
             self._stderr_task = asyncio.create_task(self._watch_stderr(session))
 
-            # Ton und Sendedaten aus der einen Verbindung lesen; Titelwechsel teilen die Aufnahme
-            if session.stromleser:
-                session.strom_task = asyncio.create_task(self._strom_laufen(session))
+            # Ton und Sendedaten vom Empfang; Titelwechsel teilen die Aufnahme
+            if session.empfang:
+                session.abnehmer = Abnehmer(f"Aufnahme {session_id}", lambda daten: self._ton(session, daten),
+                                            lambda angabe: self._angabe(session, angabe),
+                                            lambda: self._ende_des_tons(session))
+                if warten_auf:
+                    session.wartet = True
+                    session.warte_task = asyncio.create_task(self._nach_werbung_beginnen(session, warten_auf, bis_s))
+                else:
+                    await session.empfang.anmelden(session.abnehmer, von_s, bis_s)
 
             # In DB speichern (file_path = Ordner der Aufnahme in der Ablage; die Titelliste
             # wird beim Ablegen eingetragen)
@@ -433,15 +458,18 @@ class RecorderManager:
                 "success": True,
                 "session_id": session_id,
                 "codec": codec or "mp3",
-                "mode": "copy" if codec else "encode"
+                "mode": "copy" if codec else "encode",
+                # so viel Ton hat die Aufnahme schon beim Start (nachgespielt aus dem Mitschnitt)
+                "vorlauf_s": round(session.empfang.jetzt_s - session.versatz_s, 1)
+                if session.empfang and session.abnehmer and not session.wartet else 0.0,
             }
 
         except Exception as e:
             # Aufraumen bei Fehler
-            if session.stromleser:
-                session.stromleser.stop()
-            if session.stillen:
-                await session.stillen.beenden(2)
+            if session.empfang and session.abnehmer:
+                await session.empfang.abmelden(session.abnehmer)
+            elif session.empfang and not session.empfang.hat_abnehmer:
+                await session.empfang.beenden()
             if session_dir.exists():
                 shutil.rmtree(session_dir, ignore_errors=True)
             logger.warning(f"REC fehlgeschlagen: {e}")
@@ -457,29 +485,55 @@ class RecorderManager:
             return []
 
     @staticmethod
-    def _pegel(session: RecordingSession, t: float, m: float) -> None:
-        """Je 100 ms vom Stillenwächter: Pegel für den Feinschnitt; bis t ist auch jede Stille gemeldet."""
-        session.pegel.append((round(t, 2), round(m, 1)))
-        if session.werbung:
-            session.werbung.ton_bis(t)
+    def _puffer_s() -> int:
+        """So weit reicht der Mitschnitt eines Empfangs zurück: die Länge des Zeitversatzes."""
+        try:
+            from ..einstellungen import stand
+            return int(stand().hls_puffer_minuten) * 60
+        except Exception:
+            return 7200
+
+    async def _nach_werbung_beginnen(self, session: RecordingSession, stelle: Werbestelle,
+                                     bis_s: Optional[float]) -> None:
+        """Lief beim Start Werbung, beginnt die Aufnahme an ihrem Ende (dem Anfang des nächsten Titels). Fällt die
+        Stelle weg (ein Vorlauf ohne Stille war keiner), beginnt sie dort, wo die Stelle begann."""
+        e = session.empfang
+        try:
+            for _ in range(1200):                         # höchstens zehn Minuten, dann ab jetzt
+                if stelle not in e.werbung.stellen:
+                    von = stelle.von
+                    break
+                if stelle.bis is not None and e.jetzt_s >= stelle.bis:
+                    von = stelle.bis
+                    break
+                await asyncio.sleep(0.5)
+            else:
+                von = None
+            session.wartet = False
+            await e.anmelden(session.abnehmer, von, bis_s)
+            session.logger.log(f"BEGINN nach der Werbung bei {session.versatz_s:.1f} s")
+        except asyncio.CancelledError:
+            session.wartet = False
 
     async def _angabe(self, session: RecordingSession, a) -> None:
-        """Eine Angabe der Sendedaten: Werbung in die Werbestellen der Aufnahme, Titel ins Titelbuch (teilt die Aufnahme)."""
-        if session.werbung and (neu := session.werbung.angabe(a.roh, a.sekunde)):
-            session.logger.log(f"WERBUNG ab {neu.von:.2f} s: {neu.werbender or neu.kennung} ({neu.format})")
+        """Eine Angabe der Sendedaten (auf die Zeit der Aufnahme): ins Titelbuch, das teilt die Aufnahme."""
         if session.titelbuch:
             await session.titelbuch.angabe(a)
 
-    def _werbung_ablegen(self, session: RecordingSession) -> None:
+    def _werbung(self, session: RecordingSession, dauer: float) -> list[tuple[float, float, Werbestelle]]:
+        """Die Werbestellen der Aufnahme aus dem Empfang, Sekunden ab ihrem Beginn."""
+        if not session.empfang or not session.abnehmer:
+            return []
+        return session.empfang.abschnitt(session.versatz_s, dauer).werbung
+
+    def _werbung_ablegen(self, session: RecordingSession, dauer: float) -> None:
         """Die Werbestellen der Aufnahme speichern (Sekunden des ganzen aufgenommenen Tons); eine noch offene endet mit
         der Aufnahme."""
-        if not session.werbung or not session.werbung.stellen:
+        stellen = self._werbung(session, dauer)
+        if not stellen:
             return
-        ende = session.kumuliert_ms / 1000 or (session.stromleser.sekunde(session.stromleser.ton_bytes)
-                                               if session.stromleser else session.duration)
-        neue = [werbestellen.Neu(von=s.von, bis=min(ende, s.bis if s.bis is not None else ende),
-                                 text=(s.werbender or s.titel or s.kennung) + (" (beim Verbinden)" if s.beim_verbinden else ""))
-                for s in session.werbung.stellen if s.von < ende]
+        neue = [werbestellen.Neu(von=v, bis=b, text=w.name + (" (beim Verbinden)" if w.beim_verbinden else ""))
+                for v, b, w in stellen]
         try:
             zahl = werbestellen.ersetzen(werbestellen.Bezug.aufnahme(session.id), "sendedaten", neue)
             session.logger.log(f"WERBUNG {zahl} Stellen zur Aufnahme")
@@ -487,10 +541,7 @@ class RecorderManager:
             logger.warning(f"REC Werbestellen nicht gespeichert: {f}")
 
     async def _ton(self, session: RecordingSession, daten: bytes) -> None:
-        """Ziel des Stromlesers: der Ton zum Stillenwächter und in den laufenden FFmpeg; beim Teilen wartet er auf den
-        neuen."""
-        if session.stillen:
-            await session.stillen.ton(daten)
+        """Ton vom Empfang in den laufenden FFmpeg; beim Teilen wartet er auf den neuen."""
         async with session._split_lock:
             prozess = session.process
             if not prozess or not prozess.stdin or prozess.stdin.is_closing():
@@ -501,17 +552,27 @@ class RecorderManager:
             except (BrokenPipeError, ConnectionResetError):
                 pass   # FFmpeg endet gerade; die Überwachung entscheidet, wie es weitergeht
 
-    async def _strom_laufen(self, session: RecordingSession) -> None:
-        """Liest, bis die Aufnahme stoppt oder der Sender wegbleibt; dann bekommt FFmpeg das Ende des Tons und die
-        Überwachung schließt die Aufnahme ab wie früher, wenn FFmpeg den Strom verlor."""
-        try:
-            await session.stromleser.laufen()
-        finally:
-            if session.titelbuch:
-                session.titelbuch.abschliessen(session.stromleser.ton_bytes)
-            prozess = session.process
-            if prozess and prozess.stdin and not prozess.stdin.is_closing():
-                prozess.stdin.close()
+    async def _ende_des_tons(self, session: RecordingSession) -> None:
+        """Der Empfang ist zu Ende (Sender weg) oder das Ende des Abschnitts erreicht: FFmpeg bekommt das Ende des
+        Tons, die Überwachung schließt die Aufnahme ab."""
+        session.ton_zu_ende = True
+        if session.titelbuch and session.abnehmer:
+            session.titelbuch.abschliessen(session.abnehmer.bekommen)
+        prozess = session.process
+        if prozess and prozess.stdin and not prozess.stdin.is_closing():
+            prozess.stdin.close()
+
+    async def _stillen_abwarten(self, session: RecordingSession, dauer: float) -> None:
+        """Der Stillenwächter des Empfangs läuft dem Ton etwas nach: bis er das Ende der Aufnahme und das Fenster
+        dahinter geprüft hat, fehlen Stillen und Pegel am Ende (höchstens zehn Sekunden warten)."""
+        e = session.empfang
+        if not e:
+            return
+        ziel = session.versatz_s + dauer + 2.0
+        for _ in range(50):
+            if e.beendet or (e.pegel and e.pegel[-1][0] >= ziel):
+                return
+            await asyncio.sleep(0.2)
 
     async def _watch_stderr(self, session: RecordingSession):
         """Liest FFmpeg stderr zeilenweise und erkennt Codec-Wechsel.
@@ -600,12 +661,12 @@ class RecorderManager:
 
                     session.current_segment_file = new_file
                     session.current_segment_start = datetime.now()
-                    if session.stromleser:
-                        session.current_segment_ton_s = session.stromleser.sekunde(session.stromleser.ton_bytes)
+                    if session.empfang:
+                        session.current_segment_ton_s = session.ton_s
                     session.live_split = True
 
                     # Alten Prozess stoppen
-                    await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.stromleser is not None)
+                    await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.empfang is not None)
 
                     # Altes Segment ablegen
                     if old_file and old_file.exists() and old_file.stat().st_size > 0:
@@ -667,7 +728,7 @@ class RecorderManager:
             session.live_split = True
 
             # Alten FFmpeg sauber stoppen
-            await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.stromleser is not None)
+            await self._stop_ffmpeg_graceful(old_process, ende_des_tons=session.empfang is not None)
 
             # Altes Segment ablegen
             if old_file and old_file.exists() and old_file.stat().st_size > 0:
@@ -741,7 +802,7 @@ class RecorderManager:
                                 session.process.returncode is None):
                             continue  # Neuer FFmpeg laeuft, weiter ueberwachen
                     if self.active_session and self.active_session.id == session.id:
-                        if returncode != 0:
+                        if returncode != 0 and not session.ton_zu_ende:
                             logger.warning(f"REC abgebrochen: {session.id} (exit {returncode})")
                             log.log(f"FFMPEG EXIT {returncode}")
                             await asyncio.shield(self._abschliessen(session, "failed"))
@@ -756,6 +817,8 @@ class RecorderManager:
 
                 if not self.active_session or self.active_session.id != session.id:
                     return
+                if session.wartet:              # wartet auf das Ende laufender Werbung: noch kein Ton
+                    continue
 
                 # --- Stall-Detection: Segment-Count + Dateigroesse pruefen ---
                 current_size = session.file_size
@@ -886,10 +949,13 @@ class RecorderManager:
         session.abgeschlossen = True
         if self.active_session and self.active_session.id == session.id:
             self.active_session = None
-        # die letzten Stillen abwarten: Werbestellen und Feinschnitt brauchen sie
-        if session.stillen:
-            await session.stillen.beenden()
-            session.stillen = None
+        # nichts mehr vom Empfang (endet er dadurch, meldet sein Stillenwächter die letzten Stillen)
+        if session.warte_task and not session.warte_task.done():
+            session.warte_task.cancel()
+        if session.empfang and session.abnehmer:
+            await session.empfang.abmelden(session.abnehmer)
+        elif session.empfang and not session.empfang.hat_abnehmer:
+            await session.empfang.beenden()
 
         # Laufendes Stück (bei Abbruch, Stillstand, vollem Speicher) mit seinem Titel ablegen
         rest = session.current_segment_file
@@ -914,7 +980,10 @@ class RecorderManager:
             except Exception:
                 pass
 
-        self._werbung_ablegen(session)
+        teile = aufnahmen.segmente(session.id)
+        dauer_ton = real_duration if real_duration > 0 else sum(s["duration_ms"] or 0 for s in teile) / 1000.0
+        await self._stillen_abwarten(session, dauer_ton)
+        self._werbung_ablegen(session, dauer_ton)
 
         try:
             await aufnahmen.rest_ablegen(session.id, session.session_dir, session.kumuliert_ms)
@@ -946,17 +1015,16 @@ class RecorderManager:
     async def _feinschnitt_vorbereiten(self, session: RecordingSession, dauer: float) -> Optional[list]:
         """Die Analyse der Aufnahme festhalten (Analyse.json in der Ablage, zum späteren Neurechnen) und die Stücke des
         Feinschnitts planen; None, wenn es nichts zu verbessern gibt (ohne Sendedaten, ein Stück)."""
-        if not session.titelbuch or not session.werbung or dauer <= 0:
+        if not session.titelbuch or not session.empfang or not session.abnehmer or dauer <= 0:
             return None
-        analyse = feinschnitt_lauf.Analyse(
-            dauer=dauer, wechsel=session.titelbuch.wechsel, stillen=session.werbung.stillen, pegel=session.pegel,
-            werbung=[(w.von, w.bis if w.bis is not None else dauer, w.werbender or w.titel or w.kennung)
-                     for w in session.werbung.stellen])
+        teil = session.empfang.abschnitt(session.versatz_s, dauer)
+        analyse = feinschnitt_lauf.Analyse(dauer=dauer, wechsel=session.titelbuch.wechsel, stillen=teil.stillen,
+                                           pegel=teil.pegel, werbung=[(v, b, w.name) for v, b, w in teil.werbung])
         try:
             await feinschnitt_lauf.analyse_ablegen(session.id, analyse)
         except Exception as f:            # ohne gespeicherte Analyse geht nur das spätere Neurechnen nicht
             logger.warning(f"REC Analyse nicht abgelegt: {f}")
-        stuecke = feinschnitt_lauf.planen(analyse)
+        stuecke = feinschnitt_lauf.planen(analyse, len(aufnahmen.segmente(session.id)))
         if stuecke:
             session.logger.log("FEINSCHNITT " + feinschnitt_lauf.zusammenfassung(stuecke))
         return stuecke
@@ -995,19 +1063,18 @@ class RecorderManager:
             except asyncio.CancelledError:
                 pass
 
-        # Stromleser stoppen (vor FFmpeg, damit kein Ton und kein Titelwechsel mehr kommt)
-        if session.stromleser:
-            session.stromleser.stop()
-        if session.strom_task and not session.strom_task.done():
-            session.strom_task.cancel()
-            try:
-                await session.strom_task
-            except asyncio.CancelledError:
-                pass
+        # vom Empfang abmelden (vor FFmpeg, damit kein Ton und kein Titelwechsel mehr kommt); er läuft weiter,
+        # wenn der Zeitversatz an ihm hängt
+        if session.warte_task and not session.warte_task.done():
+            session.warte_task.cancel()
+        if session.empfang and session.abnehmer:
+            await session.empfang.abmelden(session.abnehmer)
+            if session.titelbuch:
+                session.titelbuch.abschliessen(session.abnehmer.bekommen)
 
         # FFmpeg sauber stoppen
         if session.process and session.process.returncode is None:
-            await self._stop_ffmpeg_graceful(session.process, ende_des_tons=session.stromleser is not None)
+            await self._stop_ffmpeg_graceful(session.process, ende_des_tons=session.empfang is not None)
 
         meta_count = session.titelbuch.entry_count if session.titelbuch else 0
         log = session.logger
@@ -1147,7 +1214,8 @@ class RecorderManager:
             "session_id": session.id,
             "station_name": session.station_name,
             "station_uuid": session.station_uuid,
-            "duration": session.duration,
+            "duration": session.ton_s,
+            "wartet": session.wartet,
             "file_size": session.file_size,
             "bitrate": session.bitrate,
             "codec": session.codec or "mp3",
@@ -1208,10 +1276,8 @@ class RecorderManager:
             rows = [dict(row) for row in c.fetchall()]
 
         active_id = self.active_session.id if self.active_session else None
-        from .hls_recorder import hls_recorder
-        hls_active_id = hls_recorder.active_session.id if hls_recorder.active_session else None
         for row in rows:
-            if row.get("status") == "recording" and row["id"] not in (active_id, hls_active_id):
+            if row.get("status") == "recording" and row["id"] != active_id:
                 row["status"] = "interrupted"
                 with db_session() as conn:
                     conn.cursor().execute(

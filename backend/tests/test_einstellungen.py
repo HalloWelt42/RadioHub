@@ -111,8 +111,9 @@ def test_api_config_trennt_einstellungen_und_stand_der_oberflaeche(client):
 
 
 async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
-    """Der zweite Übertrag (RAD-11) holt Sprache, Klicktöne, Rückblick, Werbeerkennung und Ort aus der Tabelle, auch die
-    doppelt verpackten Verfahren und die Schwelle als Anteil."""
+    """Der zweite Übertrag (RAD-11) holt Sprache, Klicktöne, Werbeerkennung und Ort aus der Tabelle, auch die doppelt
+    verpackten Verfahren und die Schwelle als Anteil. Der Rückblick der Puffer-Aufnahme ist seit RAD-46 keine
+    Einstellung mehr (die Aufnahme beginnt am laufenden Titel) und bleibt in der alten Tabelle."""
     db_pfad = tmp_path / "radiohub.db"
     v = sqlite3.connect(db_pfad)
     v.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT)")
@@ -127,8 +128,9 @@ async def test_rad11_uebertrag_nimmt_stand_der_oberflaeche_mit(tmp_path):
         await e.starten()
         uebernommen, uebergangen = await uebergang.config_uebernehmen(e, db_pfad, UEBERTRAEGE[1][1])
         assert uebergangen == [] and "last_station_uuid" not in uebernommen
+        assert "hls_rec_lookback_minutes" not in uebernommen
         st = e.stand
-        assert (st.language, st.ui_click_sounds, st.hls_rec_lookback_minutes) == ("en", False, 12)
+        assert (st.language, st.ui_click_sounds) == ("en", False)
         assert st.ad_detection_methods == ["header_check"] and st.ad_detection_threshold == 90
         assert (st.ort_name, st.ort_breite, st.ort_laenge) == ("Hannover", 52.37, 9.74)
 
@@ -142,8 +144,8 @@ def test_rad11_regeln_und_felder_ueber_die_schnittstelle(client):
         "Allgemein", "Radio", "Wiedergabe", "Aufnahmen", "Podcasts", "Wecker und Zeitansage", "Ablage", "Dienste"}
     falsch = client.patch("/api/v1/einstellungen", json={"werte": {"hls_min_bitrate": 256, "hls_max_bitrate": 128}})
     assert falsch.status_code in (400, 409, 422) and "kleinste Bitrate" in falsch.text
-    zu_lang = client.patch("/api/v1/einstellungen", json={"werte": {"hls_puffer_minuten": 30, "hls_rec_lookback_minutes": 60}})
-    assert zu_lang.status_code in (400, 409, 422) and "Rückblick" in zu_lang.text
+    weg = client.patch("/api/v1/einstellungen", json={"werte": {"hls_rec_lookback_minutes": 5}})   # seit RAD-46 entfallen
+    assert weg.status_code == 422 and "hls_rec_lookback_minutes" in weg.text and "hls_rec_lookback_minutes" not in felder
     assert client.put("/api/wecker/ort", json={"name": "Hannover", "breite": 52.37, "laenge": 9.74}).status_code == 200
     assert client.get("/api/wecker/ort").json() == {"name": "Hannover", "breite": 52.37, "laenge": 9.74}
     assert einstellungen.stand().ort_name == "Hannover"

@@ -67,7 +67,7 @@
     ...(S ? [
       { id: "wiedergabe", symbol: "fa-clock-rotate-left", reiter: [r("zeitversatz", "", [
         { karte: "zeitversatz", symbol: "fa-clock-rotate-left", hinweis: "zeitversatz",
-          felder: ["hls_min_bitrate", "hls_max_bitrate", "hls_sample_rate", "hls_puffer_minuten", "hls_rec_lookback_minutes"] }],
+          felder: ["hls_min_bitrate", "hls_max_bitrate", "hls_sample_rate", "hls_puffer_minuten"] }],
         t("einstellungen.bereich.wiedergabe"))] },
       { id: "aufnahmen", symbol: "fa-circle-dot", reiter: [
         r("ordner", "fa-folder-tree", [{ teil: AufnahmeordnerTeil }]),

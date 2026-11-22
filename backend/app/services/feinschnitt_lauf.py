@@ -38,13 +38,14 @@ class Analyse(BaseModel):
     werbung: list[tuple[float, float, str]] = []
 
 
-def planen(a: Analyse) -> Optional[list[feinschnitt.Stueck]]:
-    """Die Stücke nach dem Feinschnitt; None, wenn es nichts zu verbessern gibt."""
+def planen(a: Analyse, stuecke_bisher: int = 0) -> Optional[list[feinschnitt.Stueck]]:
+    """Die Stücke nach dem Feinschnitt; None, wenn es nichts zu verbessern gibt (ein Stück bleibt ein Stück). Mit
+    `stuecke_bisher` > 1 gilt auch ein Plan mit einem Stück: dann fallen Splitter des groben Schnitts weg."""
     if a.dauer <= 0 or not (a.wechsel or a.werbung):
         return None
     stuecke = feinschnitt.stuecke(a.dauer, [feinschnitt.Angabe(t, x, g) for t, x, g in a.wechsel], a.stillen,
                                   [feinschnitt.Werbung(v, b, w) for v, b, w in a.werbung], pegel=a.pegel)
-    return stuecke if len(stuecke) > 1 or a.werbung else None
+    return stuecke if len(stuecke) > 1 or a.werbung or stuecke_bisher > 1 else None
 
 
 async def analyse_ablegen(session_id: str, a: Analyse) -> Optional[str]:
@@ -99,7 +100,7 @@ async def neu(session_id: str) -> int:
     a = await analyse_lesen(session_id)
     if a is None:
         raise LookupError("Zu dieser Aufnahme gibt es keine Analyse")
-    stuecke = planen(a)
+    stuecke = planen(a, len(aufnahmen.segmente(session_id)))
     if not stuecke:
         return 0
     return await ausfuehren(session_id, stuecke)

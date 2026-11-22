@@ -112,10 +112,6 @@ class AppEinstellungen(Grundeinstellungen):
     hls_puffer_minuten: int = Field(120, ge=10, le=240, title="Länge des Puffers",
                                     json_schema_extra={**WIEDERGABE, "einheit": "min", "schritt": 10},
                                     description="So weit lässt sich ein laufender Sender zurückspulen.")
-    hls_rec_lookback_minutes: int = Field(5, ge=1, le=120, title="Rückblick der Puffer-Aufnahme",
-                                          json_schema_extra={**WIEDERGABE, "einheit": "min"},
-                                          description="Eine Aufnahme aus dem Puffer beginnt so weit vor dem Moment des "
-                                                      "Drückens; höchstens so lang wie der Puffer.")
     podcast_auto_refresh: bool = Field(True, title="Abos von selbst abrufen", json_schema_extra=PODCASTS,
                                        description="Ruft die Feeds aller Abos regelmäßig ab.")
     podcast_refresh_interval: int = Field(21600, ge=60, le=7 * 86400, title="Abstand des Abrufs",
@@ -185,7 +181,7 @@ CONFIG_FELDER: frozenset[str] = frozenset({
 # RAD-11: aus dem Stand der Oberfläche in die Einstellungen; eigener Übertrag (der erste ist auf bestehenden Rechnern
 # schon gelaufen), danach ebenfalls unter /api/config erreichbar
 CONFIG_FELDER_RAD11: frozenset[str] = frozenset({
-    "language", "ui_click_sounds", "hls_rec_lookback_minutes", "ad_detection_enabled", "ad_detection_methods",
+    "language", "ui_click_sounds", "ad_detection_enabled", "ad_detection_methods",
     "ad_detection_threshold", "ort_name", "ort_breite", "ort_laenge",
 })
 UEBERTRAEGE: tuple[tuple[str, frozenset[str]], ...] = (
@@ -199,8 +195,6 @@ def regeln_pruefen(alt: AppEinstellungen, neu: AppEinstellungen) -> str | None:
     """Regeln über mehrere Felder (vor jedem Speichern, appkern Einstellungen.regel)."""
     if neu.hls_min_bitrate > neu.hls_max_bitrate:
         return "Die kleinste Bitrate darf nicht größer sein als die größte."
-    if neu.hls_rec_lookback_minutes > neu.hls_puffer_minuten:
-        return "Der Rückblick der Puffer-Aufnahme darf nicht länger sein als der Puffer."
     if (neu.ort_breite is None) != (neu.ort_laenge is None):
         return "Breite und Länge des Orts gehören zusammen: beide angeben oder beide leer lassen."
     return None
