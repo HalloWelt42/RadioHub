@@ -18,8 +18,9 @@
    Leuchten, Tastenlicht, Pegel, Titel), trägt nur die Leuchtmarken, satt und ohne Glanzpunkte oder Weißmischung
    (Nutzer 17.11.2026); anders als im Entwurf ist darum auch Titel und Statuszeile nicht mit Licht gemischt. */
 
-/* Zeichen des Urhebers (RAD-77): klein rechts oben am Rand der Kanzel, in der Schrift des Schriftzugs */
-.rh-urheber { position: absolute; top: 3px; right: var(--rh-rand); z-index: 1; font-family: var(--rh-schrift-logo); font-size: calc(var(--marke) * .78);
+/* Zeichen des Urhebers (RAD-77): klein rechts oben in der Kanzel, auf der Höhe der Oberkante des Displays statt an der
+   Kante zur Liste (RAD-86), in der Schrift des Schriftzugs */
+.rh-urheber { position: absolute; top: 8px; right: var(--rh-rand); z-index: 1; font-family: var(--rh-schrift-logo); font-size: calc(var(--marke) * .78);
   font-weight: 900; letter-spacing: .08em; color: var(--ak-tinte-2); opacity: .75; white-space: nowrap; pointer-events: none; }
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
@@ -176,6 +177,9 @@
   grid-template-areas: "anzeige anzeige laut" "zeit steuerung laut"; align-items: center; }
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-modul > .ak-etikett { display: none; }
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-laut { margin-top: 0; }
+/* in Reihen ragt nichts über die Kanzel: oben so viel Luft wie seitlich, darin hat auch die Urheberzeile Platz (RAD-86) */
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) { padding-top: calc(var(--rh-rand) + 2px); }
+.rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-urheber { top: calc((var(--rh-rand) + 2px - 1.2em) / 2); line-height: 1.2; }
 .rh-kanzel-voll:is([data-reihen="2"], [data-reihen="3"]) .rh-m-laut { justify-content: center; }
 /* Tastenreihe bündig mit dem rechten Rand der Anzeige über ihr */
 .rh-kanzel-voll[data-reihen="2"] .rh-steuerung { justify-content: flex-end; }
