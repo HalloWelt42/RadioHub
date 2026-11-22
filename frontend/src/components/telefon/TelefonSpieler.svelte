@@ -84,9 +84,14 @@
       </button>
     </div>
     <div class="buehne">
-      <span class="tf-cover"><Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px)" /></span>
-      <h2>{info.title}</h2>
-      <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
+      <span class="tf-cover"><Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px, 26svh)" /></span>
+      {#if !folge && puffer.aktiv && pTitel}
+        <!-- zeigt der Zeitversatz den Titel unten im Kasten, steht oben nur der Sender, nichts doppelt (RAD-90) -->
+        <h2>{info.artist || info.title}</h2>
+      {:else}
+        <h2>{info.title}</h2>
+        <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
+      {/if}
     </div>
 
     {#if folge}
@@ -143,15 +148,21 @@
           </div>
         </div>
       {/if}
-      <!-- den laufenden Sender in der Liste wiederfinden (Nutzer 20.11.2026) -->
-      <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
     {/if}
-    {#if kann.uebergabe}
-      <!-- Übergabe zwischen Geräten (RAD-18): blinkt ruhig, solange woanders etwas spielt -->
-      <button class="tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
-        <i class="fa-solid fa-tower-broadcast"></i>
-        {geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}
-      </button>
+    <!-- unten nebeneinander (RAD-90): den Sender in der Liste wiederfinden (Nutzer 20.11.2026) und Geräte (RAD-18, blinkt
+         ruhig, solange woanders etwas spielt) -->
+    {#if !folge || kann.uebergabe}
+      <div class="tf-fuss">
+        {#if !folge}
+          <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
+        {/if}
+        {#if kann.uebergabe}
+          <button class="tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
+            <i class="fa-solid fa-tower-broadcast"></i>
+            {geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}
+          </button>
+        {/if}
+      </div>
     {/if}
   </div>
 {/if}
@@ -185,8 +196,9 @@
   @media (prefers-reduced-motion: reduce) { .tf-geraete.blinkt > i { animation: none; } }
   .tf-blatt-grund { position: fixed; inset: 0; z-index: 30; background: rgb(0 0 0 / .35); }
   .tf-blatt { position: fixed; inset: auto 0 0; z-index: 31; box-shadow: 0 -12px 30px rgb(0 0 0 / .4); }
-  .tf-zur-liste { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; margin-top: 6px;
-    border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; }
+  .tf-fuss { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
+  .tf-zur-liste { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px;
+    border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; white-space: nowrap; }
   .tf-leiste {
     flex: none;
     display: flex;
@@ -257,8 +269,11 @@
   .vollbild-kopf { display: flex; }
   .kopf-knopf { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
   .buehne { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 0; text-align: center; }
-  .buehne h2 { margin: 16px 0 0; font-size: 24px; font-weight: 700; overflow-wrap: anywhere; }
-  .buehne .zusatz { white-space: normal; }
+  .buehne > * { flex-shrink: 0; }   /* Titel und Sender werden nie zusammengedrückt; das Bild richtet sich nach der Höhe */
+  /* Titel höchstens zwei Zeilen, Sender oder Abo eine (RAD-90): nichts rutscht unter die Tasten */
+  .buehne h2 { margin: 12px 0 0; font-size: 22px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.25;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .buehne .zusatz { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-inline-size: 100%; }
   .position { margin: 16px 0 4px; }
   .position input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .zeiten { display: flex; justify-content: space-between; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
