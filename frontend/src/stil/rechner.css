@@ -54,8 +54,8 @@
 /* Radio (RAD-16): der Spaltenkopf steht fest über der rollenden Liste; beide halten denselben Platz für eine Rollleiste
    frei, damit die Spalten über den Zeilen stehen */
 .rh-liste-rahmen { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); container: liste / inline-size; font-size: var(--gross); }
-.rh-liste-rahmen > .rh-liste { scrollbar-gutter: stable; }
-.rh-liste-rahmen > .rh-spalten { position: static; margin: 0 0 8px; padding: 10px calc(var(--rh-rand) + 14px) 8px; background: none;
+.rh-liste-rahmen > .rh-liste { scrollbar-gutter: stable; padding-top: 8px; }   /* Ring und Schein der obersten Zeile bleiben sichtbar */
+.rh-liste-rahmen > .rh-spalten { position: static; margin: 0; padding: 10px calc(var(--rh-rand) + 14px) 8px; background: none;
   overflow: hidden; scrollbar-gutter: stable; }
 
 /* Seitenleiste als einschiebbare Tafel; der Knopf Filter steht in der Werkzeugleiste, Schließen im festen Kopf der Tafel */
