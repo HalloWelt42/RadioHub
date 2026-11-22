@@ -160,9 +160,9 @@
   {#if ansicht.verzeichnis}
     <TVerzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onzurueck={() => history.back()}
                   onoeffnen={(feed) => { const a = aboliste.vonFeed(feed); if (a) gehen((x) => ({ ...grund(x), abos: [a.id] })); }}
-                  onabonnieren={async (feed, titel) => { const neu = await aboliste.abonnieren(feed);
+                  onabonnieren={(feed, titel) => sicher(async () => { const neu = await aboliste.abonnieren(feed);
                     band = { symbol: "fa-podcast", name: neu.titel || titel, text: t("podcastAnsicht.bandAbonniert"),
-                             verweis: { text: t("podcastAnsicht.telefon.oeffnen"), aktion: () => gehen((x) => ({ ...grund(x), abos: [neu.id] })) } }; }} />
+                             verweis: { text: t("podcastAnsicht.telefon.oeffnen"), aktion: () => gehen((x) => ({ ...grund(x), abos: [neu.id] })) } }; })} />
   {:else if einAbo}
     <div class="t-kopf-zurueck tf-a-kopf">
       <button class="rund" type="button" aria-label={t("podcastAnsicht.telefon.zurueck")} title={t("podcastAnsicht.telefon.zurueck")}

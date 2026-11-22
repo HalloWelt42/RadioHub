@@ -21,9 +21,12 @@ export interface BrowserPodcastOptionen {
   parser?: () => DOMParser;
   /** so viele Feeds zugleich abrufen */
   gleichzeitig?: number;
+  /** so lange darf die Prüfung eines Treffers der Suche dauern (ms), danach gilt er als nicht lesbar */
+  pruefzeit?: number;
 }
 
 const SEITE = 50;
+const PRUEFZEIT_MS = 8000;
 const TAG_MS = 86_400_000;
 
 /** eine Folge im Speicher der Sitzung: aus dem Feed, mit ihrer festen Kennung */
@@ -51,6 +54,35 @@ class Antwortfehler extends Error {
   }
 }
 
+/** eine Webseite statt eines Feeds: als HTML angekündigt oder so begonnen */
+function istWebseite(text: string, art: string | null): boolean {
+  return /text\/html/i.test(art ?? "") || /^\s*(<!doctype html|<html)/i.test(text.slice(0, 200));
+}
+
+function mitFormatXml(adresse: string): string {
+  const u = new URL(adresse);
+  u.searchParams.set("format", "xml");
+  return u.toString();
+}
+
+/** in dieser Reihenfolge versuchen: je Adresse (http zuerst als https) erst so, dann mit format=xml */
+function versuche(feed: string): string[][] {
+  const sicher = feed.startsWith("http://") ? [feed.replace(/^http:/, "https:"), feed] : [feed];
+  return sicher.map((a) => [a, mitFormatXml(a)]);
+}
+
+/** der Anfang des Inhalts (erster Block), ohne den Rest zu laden */
+async function anfangLesen(antwort: Response): Promise<string> {
+  const leser = antwort.body?.getReader();
+  if (!leser) return (await antwort.text()).slice(0, 512);
+  try {
+    const { value } = await leser.read();
+    return value ? new TextDecoder().decode(value.slice(0, 512)) : "";
+  } finally {
+    void leser.cancel().catch(() => {});
+  }
+}
+
 function problemAus(f: unknown): Feedproblem {
   if (f instanceof Antwortfehler) return { art: "antwort", detail: String(f.status) };
   if (f instanceof Feedfehler) return { art: "inhalt", detail: f.message };
@@ -73,6 +105,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
   private readonly abruf: typeof fetch;
   private readonly parser: () => DOMParser;
   private readonly gleichzeitig: number;
+  private readonly pruefzeit: number;
   private ablage: Podcastablage;
   /** Folgen je Abo für diese Sitzung; laufende Abrufe teilen sich ein Versprechen */
   private feeds = new Map<number, Feedstand>();
@@ -85,6 +118,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
     this.abruf = o.abruf ?? ((a, i) => fetch(a, i));
     this.parser = o.parser ?? (() => new DOMParser());
     this.gleichzeitig = o.gleichzeitig ?? 4;
+    this.pruefzeit = o.pruefzeit ?? PRUEFZEIT_MS;
     this.ablage = ablageLesen(this.speicher);
   }
 
@@ -102,19 +136,28 @@ export class BrowserPodcastquelle implements Podcastquelle {
     return a;
   }
 
-  /** Text des Feeds; ein http-Feed zuerst über https (die Seite selbst ist https, http sperrt der Browser) */
+  /** Text des Feeds; ein http-Feed zuerst über https (die Seite selbst ist https, http sperrt der Browser). Manche
+   *  Feed-Dienste zeigen Telefonen statt des Feeds eine Webseite (RAD-107: Logbuch:Netzpolitik am iPhone); dann noch
+   *  einmal mit format=xml, der üblichen Weiche dieser Dienste für den rohen Feed. */
   private async feedText(feed: string): Promise<string> {
-    const versuche = feed.startsWith("http://") ? [feed.replace(/^http:/, "https:"), feed] : [feed];
     let fehler: unknown = null;
-    for (const adresse of versuche) {
-      try {
-        // immer frisch: ein Feed soll aktuell sein, und eine ältere Antwort im Zwischenspeicher ohne Freigabe (CORS)
-        // würde den Abruf sonst sperren (RAD-107)
-        const antwort = await this.abruf(adresse, { cache: "no-store" });
-        if (antwort.ok) return await antwort.text();
-        fehler = new Antwortfehler(antwort.status);
-      } catch (f) {
-        fehler = f;
+    for (const reihe of versuche(feed)) {
+      for (const versuch of reihe) {
+        try {
+          // immer frisch: ein Feed soll aktuell sein, und eine ältere Antwort im Zwischenspeicher ohne Freigabe (CORS)
+          // würde den Abruf sonst sperren (RAD-107)
+          const antwort = await this.abruf(versuch, { cache: "no-store" });
+          if (!antwort.ok) {
+            fehler = new Antwortfehler(antwort.status);
+            break;
+          }
+          const text = await antwort.text();
+          if (!istWebseite(text, antwort.headers.get("content-type"))) return text;
+          fehler = new Feedfehler("Der Server liefert eine Webseite statt des Feeds");
+        } catch (f) {
+          fehler = f;
+          break;
+        }
       }
     }
     throw fehler;
@@ -122,6 +165,32 @@ export class BrowserPodcastquelle implements Podcastquelle {
 
   private async lesen(feed: string): Promise<Feedinhalt> {
     return feedLesen(await this.feedText(feed), this.parser());
+  }
+
+  /** ob ein Feed im Browser lesbar ist, ohne ihn ganz zu laden: Freigabe (CORS), Antwort und Anfang des Inhalts. So
+   *  bietet die Suche nur an, was hier auch geht (RAD-109). */
+  private async lesbar(feed: string, signal?: AbortSignal): Promise<boolean> {
+    for (const reihe of versuche(feed)) {
+      for (const versuch of reihe) {
+        const ab = new AbortController();
+        const stopp = () => ab.abort();
+        signal?.addEventListener("abort", stopp);
+        const uhr = setTimeout(stopp, this.pruefzeit);
+        try {
+          const antwort = await this.abruf(versuch, { cache: "no-store", signal: ab.signal });
+          if (!antwort.ok) return false;
+          const anfang = await anfangLesen(antwort);
+          if (!istWebseite(anfang, antwort.headers.get("content-type"))) return /<(\?xml|rss)\b/i.test(anfang);
+        } catch {
+          break;   // keine Antwort (gesperrt, nicht erreichbar, zu langsam): die nächste Adresse oder nicht lesbar
+        } finally {
+          clearTimeout(uhr);
+          signal?.removeEventListener("abort", stopp);
+          ab.abort();
+        }
+      }
+    }
+    return false;
   }
 
   private eintraege(aboId: number, feed: string, inhalt: Feedinhalt): Eintrag[] {
@@ -148,27 +217,31 @@ export class BrowserPodcastquelle implements Podcastquelle {
       } finally {
         this.laeuft.delete(id);
       }
-      const stand: Feedstand = { folgen: this.eintraege(id, abo.feed, inhalt), problem: null };
-      this.feeds.set(id, stand);
-      // Angaben des Feeds nachziehen (Name, Bild); scheitert der Speicher, bleiben die Folgen trotzdem da
-      try {
-        this.aendern((a) => {
-          const x = a.abos.find((y) => y.id === id);
-          if (!x) return;
-          x.aktualisiert = new Date().toISOString();
-          // Angaben des Feeds nachziehen (Name, Bild), wenn er sie hat
-          if (inhalt.titel) x.titel = inhalt.titel;
-          if (inhalt.autor) x.autor = inhalt.autor;
-          if (inhalt.beschreibung) x.beschreibung = inhalt.beschreibung;
-          if (inhalt.bild) x.bild = inhalt.bild;
-        });
-      } catch {
-        /* nur die Angaben des Abos bleiben die alten */
-      }
-      return stand;
+      return this.uebernehmen(id, abo.feed, inhalt);
     })();
     this.laeuft.set(id, arbeit);
     return arbeit;
+  }
+
+  /** einen gelesenen Feed übernehmen: Folgen für die Sitzung, Angaben des Abos (Name, Bild) im Speicher; scheitert der
+   *  Speicher, bleiben die Folgen trotzdem da */
+  private uebernehmen(id: number, feed: string, inhalt: Feedinhalt): Feedstand {
+    const stand: Feedstand = { folgen: this.eintraege(id, feed, inhalt), problem: null };
+    this.feeds.set(id, stand);
+    try {
+      this.aendern((a) => {
+        const x = a.abos.find((y) => y.id === id);
+        if (!x) return;
+        x.aktualisiert = new Date().toISOString();
+        if (inhalt.titel) x.titel = inhalt.titel;
+        if (inhalt.autor) x.autor = inhalt.autor;
+        if (inhalt.beschreibung) x.beschreibung = inhalt.beschreibung;
+        if (inhalt.bild) x.bild = inhalt.bild;
+      });
+    } catch {
+      /* nur die Angaben des Abos bleiben die alten */
+    }
+    return stand;
   }
 
   /** mehrere Feeds, höchstens `gleichzeitig` auf einmal */
@@ -266,13 +339,23 @@ export class BrowserPodcastquelle implements Podcastquelle {
     const adresse = feed.trim();
     if (!/^https?:\/\//i.test(adresse)) throw new Quellfehler("Keine gültige Adresse eines Feeds", 422);
     const id = kennung(adresse);
-    if (!this.ablage.abos.some((a) => a.id === id)) {
-      const fund = this.funde.get(adresse);
-      this.aendern((a) => a.abos.push({ id, feed: adresse, titel: fund?.titel ?? "", autor: fund?.autor ?? "",
-                                        beschreibung: fund?.beschreibung ?? "", bild: fund?.bild ?? "", angeheftet: false,
-                                        sortierung: "", ordnerId: null, aktualisiert: "" }));
+    if (this.ablage.abos.some((a) => a.id === id)) {
+      await this.feedHolen(id, true);
+      return this.abo(this.aboDaten(id));
     }
-    await this.feedHolen(id, true);
+    // ein Feed, den der Browser nicht lesen kann, wird gar nicht erst abonniert (RAD-109): sonst stünde ein Abo ohne
+    // Folgen da; der Hinweis sagt warum
+    let inhalt: Feedinhalt;
+    try {
+      inhalt = await this.lesen(adresse);
+    } catch (f) {
+      throw new FeedGesperrt(this.o.hinweis(problemAus(f)));
+    }
+    const fund = this.funde.get(adresse);
+    this.aendern((a) => a.abos.push({ id, feed: adresse, titel: fund?.titel ?? "", autor: fund?.autor ?? "",
+                                      beschreibung: fund?.beschreibung ?? "", bild: fund?.bild ?? "", angeheftet: false,
+                                      sortierung: "", ordnerId: null, aktualisiert: "" }));
+    this.uebernehmen(id, adresse, inhalt);
     return this.abo(this.aboDaten(id));
   }
 
@@ -356,10 +439,19 @@ export class BrowserPodcastquelle implements Podcastquelle {
     this.aendern((a) => void (a.abos.find((x) => x.id === aboId)!.ordnerId = ordnerId));
   }
 
+  /** Treffer der Verzeichnisse, aber nur die, deren Feed der Browser lesen kann (RAD-109); geprüft wird zugleich, in
+   *  der Reihenfolge der Verzeichnisse */
   async suchen(text: string, signal?: AbortSignal): Promise<Fundstueck[]> {
     const funde = await verzeichnisSuchen(this.o.verzeichnis, text, signal, 20, this.abruf);
-    for (const f of funde) this.funde.set(f.feed, f);
-    return funde;
+    const offen = [...funde.keys()];
+    const gut = new Array<boolean>(funde.length).fill(false);
+    await Promise.all(Array.from({ length: Math.min(this.gleichzeitig * 2, offen.length) }, async () => {
+      for (let i = offen.shift(); i !== undefined; i = offen.shift()) gut[i] = await this.lesbar(funde[i].feed, signal);
+    }));
+    if (signal?.aborted) throw new DOMException("abgebrochen", "AbortError");
+    const lesbare = funde.filter((_, i) => gut[i]);
+    for (const f of lesbare) this.funde.set(f.feed, f);
+    return lesbare;
   }
 
   // ----- Folgen --------------------------------------------------------------------------------------------------------

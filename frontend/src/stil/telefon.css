@@ -96,7 +96,10 @@
 .tp-schalter ak-taster { inline-size: 100%; }
 .tp-abo-aktionen { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .tp-abo-aktionen .knopf { justify-content: center; }
-.tp-knoepfe .knopf, .tp-aktionen .knopf { block-size: 44px; }
+.tp-knoepfe .knopf { block-size: 44px; }
+/* Knöpfe neben einem Schalter mit Leuchte so hoch wie er (RAD-108: vorher 44 neben 48, schief); 48 ist die Höhe des
+   flachen Tasters im Appkern (instrumente/bausteine.css), auch wenn die Reihe umbricht */
+.tp-aktionen .knopf { block-size: 48px; }
 .tp-sort { padding: 0 0 8px; }
 .tp-blatt .t-blatt-kopf h2 { font-size: var(--gross); line-height: 1.3; }
 .tp-blatt .tp-text { margin: 10px 0 12px; color: var(--text-2); line-height: 1.5; }

@@ -112,13 +112,35 @@ describe("Browserquelle", () => {
     expect(JSON.parse(speicher.inhalt.get(PODCAST_SCHLUESSEL)!)).toEqual({ abos: [], ordner: [], folgen: {} });
   });
 
-  it("ein Feed ohne Freigabe bleibt abonniert und meldet den Hinweis statt der Folgen", async () => {
-    const { q } = quelle({ [FEED]: "gesperrt" });
+  it("ein Feed ohne Freigabe wird nicht abonniert, der Hinweis sagt warum (RAD-109)", async () => {
+    const { q, speicher } = quelle({ [FEED]: "gesperrt" });
+    await expect(q.abonnieren(FEED)).rejects.toBeInstanceOf(FeedGesperrt);
+    await expect(q.abonnieren(FEED)).rejects.toThrow("problem:abruf");
+    expect(speicher.inhalt.get(PODCAST_SCHLUESSEL)).toBeUndefined();
+  });
+
+  it("ein schon bestehendes Abo, dessen Feed nicht mehr lesbar ist, bleibt und zeigt den Hinweis statt der Folgen", async () => {
+    const { q, speicher } = quelle();
     const abo = await q.abonnieren(FEED);
-    expect(abo).toMatchObject({ feed: FEED, folgen: 0 });
-    await expect(q.folgen({ abos: [abo.id] })).rejects.toThrow("problem:abruf");
-    await expect(q.folgen({ abos: [abo.id] })).rejects.toBeInstanceOf(FeedGesperrt);
-    expect((await q.folgen({})).folgen).toEqual([]);
+    const spaeter = quelle({ [FEED]: "gesperrt" }, speicher).q;
+    await expect(spaeter.folgen({ abos: [abo.id] })).rejects.toThrow("problem:abruf");
+    expect((await spaeter.folgen({})).folgen).toEqual([]);
+    expect((await spaeter.abos()).map((a) => a.id)).toEqual([abo.id]);
+  });
+
+  it("die Suche bietet nur Podcasts an, deren Feed der Browser lesen kann (RAD-109)", async () => {
+    const gut = "https://gut.test/feed.xml", gesperrt = "https://gesperrt.test/feed.xml", webseite = "https://seite.test/feed";
+    const abruf = (async (adresse: string | URL | Request) => {
+      const a = String(adresse);
+      if (a.startsWith("https://w.test")) return Response.json({ results: [gut, gesperrt, webseite].map((f, i) => ({ collectionName: `P${i}`, feedUrl: f })) });
+      if (a.startsWith("https://d.test")) return Response.json({ data: [] });
+      if (a.startsWith(gut)) return new Response(XML, { headers: { "content-type": "application/rss+xml" } });
+      if (a.startsWith(webseite)) return new Response("<!DOCTYPE html><html></html>", { headers: { "content-type": "text/html" } });
+      throw new TypeError("Load failed");
+    }) as typeof fetch;
+    const q = new BrowserPodcastquelle({ speicher: fluechtigerSpeicher(), abruf, parser, hinweis: () => "x",
+                                         verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    expect((await q.suchen("probe")).map((f) => f.feed)).toEqual([gut]);
   });
 
   it("nennt die Ursache: Fehler des Servers oder unlesbarer Inhalt", async () => {
@@ -126,13 +148,11 @@ describe("Browserquelle", () => {
     const fehlt = "https://beispiel.test/fehlt.xml";
     const speicher = fluechtigerSpeicher();
     const abruf = (async (adresse: string | URL | Request) =>
-      String(adresse) === kaputt ? new Response("<html/>", { status: 200 }) : new Response("weg", { status: 404 })) as typeof fetch;
+      String(adresse) === kaputt ? new Response("<kaputt", { status: 200 }) : new Response("weg", { status: 404 })) as typeof fetch;
     const q = new BrowserPodcastquelle({ speicher, abruf, parser, hinweis: (p) => `${p.art}:${p.detail}`,
                                          verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
-    const a = await q.abonnieren(kaputt);
-    const b = await q.abonnieren(fehlt);
-    await expect(q.folgen({ abos: [a.id] })).rejects.toThrow(/^inhalt:/);
-    await expect(q.folgen({ abos: [b.id] })).rejects.toThrow("antwort:404");
+    await expect(q.abonnieren(kaputt)).rejects.toThrow(/^inhalt:/);
+    await expect(q.abonnieren(fehlt)).rejects.toThrow("antwort:404");
   });
 
   it("meldet einen vollen Speicher beim Abonnieren als Fehler, nicht als gesperrten Feed", async () => {
@@ -140,6 +160,20 @@ describe("Browserquelle", () => {
     const q = new BrowserPodcastquelle({ speicher, abruf: abruf({ [FEED]: XML }), parser, hinweis: () => "x",
                                          verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
     await expect(q.abonnieren(FEED)).rejects.toThrow("voll");
+  });
+
+  it("liefert der Server eine Webseite statt des Feeds, fragt sie mit format=xml nach (RAD-107, iPhone)", async () => {
+    const speicher = fluechtigerSpeicher();
+    const abruf = (async (adresse: string | URL | Request) => String(adresse).includes("format=xml")
+      ? new Response(XML, { status: 200, headers: { "content-type": "text/xml" } })
+      : new Response("<html><body>Feed</body></html>", { status: 200, headers: { "content-type": "text/html" } })) as typeof fetch;
+    const q = new BrowserPodcastquelle({ speicher, abruf, parser, hinweis: (p) => `${p.art}:${p.detail}`,
+                                         verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    expect((await q.abonnieren(FEED)).folgen).toBe(2);
+    const immerWebseite = (async () => new Response("<!DOCTYPE html><html></html>", { status: 200 })) as typeof fetch;
+    const q2 = new BrowserPodcastquelle({ speicher: fluechtigerSpeicher(), abruf: immerWebseite, parser, hinweis: (p) => `${p.art}:${p.detail}`,
+                                          verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    await expect(q2.abonnieren(FEED)).rejects.toThrow("inhalt:Der Server liefert eine Webseite statt des Feeds");
   });
 
   it("versucht einen http-Feed zuerst über https", async () => {
