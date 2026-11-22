@@ -17,9 +17,15 @@ TABELLE = Path(__file__).with_name("angaben.toml")
 Ende = Literal["dauer", "wechsel"]
 
 
+Bestaetigen = Literal["stille"]
+
+SENDERNAME = "{sendername}"
+
+
 class Format(BaseModel):
     name: str
-    erkennen: re.Pattern[str]
+    #: regulärer Ausdruck; mit {sendername} erst beim Lesen gebildet (der Name des Senders, maskiert)
+    erkennen: str
     kennung: re.Pattern[str]
     werbender: Optional[re.Pattern[str]] = None
     titel: Optional[re.Pattern[str]] = None
@@ -27,6 +33,13 @@ class Format(BaseModel):
     einfuegung: Optional[re.Pattern[str]] = None
     verbinden: tuple[str, ...] = ()
     ende: Ende = "wechsel"
+    nur_beim_verbinden: bool = False
+    bestaetigen: Optional[Bestaetigen] = None
+
+    def trifft(self, roh: str, sendername: str) -> bool:
+        if SENDERNAME not in self.erkennen:
+            return _ausdruck(self.erkennen).search(roh) is not None
+        return bool(sendername) and re.search(self.erkennen.replace(SENDERNAME, re.escape(sendername)), roh) is not None
 
 
 class Grenze(BaseModel):
@@ -50,24 +63,27 @@ class Werbeangabe(BaseModel):
     dauer_ms: Optional[int] = None
     beim_verbinden: bool = False
     ende: Ende
+    bestaetigen: Optional[Bestaetigen] = None
 
 
 @lru_cache(maxsize=1)
 def regeln() -> Regeln:
     daten = tomllib.loads(TABELLE.read_text(encoding="utf-8"))
     ausdruck = lambda f, k: re.compile(f[k]) if f.get(k) else None
-    formate = tuple(Format(name=f["name"], erkennen=re.compile(f["erkennen"]), kennung=re.compile(f["kennung"]),
+    formate = tuple(Format(name=f["name"], erkennen=f["erkennen"], kennung=re.compile(f["kennung"]),
                            werbender=ausdruck(f, "werbender"), titel=ausdruck(f, "titel"),
                            dauer_ms=ausdruck(f, "dauer_ms"), einfuegung=ausdruck(f, "einfuegung"),
-                           verbinden=tuple(f.get("verbinden", ())), ende=f.get("ende", "wechsel"))
+                           verbinden=tuple(f.get("verbinden", ())), ende=f.get("ende", "wechsel"),
+                           nur_beim_verbinden=f.get("nur_beim_verbinden", False), bestaetigen=f.get("bestaetigen"))
                     for f in daten["format"])
     return Regeln(grenze=Grenze(**daten["grenze"]), formate=formate)
 
 
-def lesen(roh: str) -> Optional[Werbeangabe]:
-    """Die Werbeangabe in einer Angabe der Sendedaten, oder None, wenn sie keine Werbung ankündigt."""
+def lesen(roh: str, sendername: str = "", erste: bool = False) -> Optional[Werbeangabe]:
+    """Die Werbeangabe in einer Angabe der Sendedaten, oder None, wenn sie keine Werbung ankündigt. `sendername`: der
+    Name aus dem Kopf des Stroms (icy-name); `erste`: die erste Angabe der Verbindung."""
     for f in regeln().formate:
-        if not f.erkennen.search(roh):
+        if (f.nur_beim_verbinden and not erste) or not f.trifft(roh, sendername):
             continue
         kennung = _gruppe(f.kennung, roh)
         if not kennung:
@@ -76,9 +92,14 @@ def lesen(roh: str) -> Optional[Werbeangabe]:
         einfuegung = _gruppe(f.einfuegung, roh)
         return Werbeangabe(format=f.name, kennung=kennung, werbender=_gruppe(f.werbender, roh),
                            titel=_gruppe(f.titel, roh), dauer_ms=int(dauer) if dauer.isdigit() else None,
-                           beim_verbinden=bool(einfuegung) and einfuegung in f.verbinden,
-                           ende=f.ende if dauer.isdigit() else "wechsel")
+                           beim_verbinden=(bool(einfuegung) and einfuegung in f.verbinden) or f.nur_beim_verbinden,
+                           ende=f.ende if dauer.isdigit() else "wechsel", bestaetigen=f.bestaetigen)
     return None
+
+
+@lru_cache(maxsize=64)
+def _ausdruck(muster: str) -> re.Pattern[str]:
+    return re.compile(muster)
 
 
 def _gruppe(ausdruck: Optional[re.Pattern[str]], roh: str) -> str:

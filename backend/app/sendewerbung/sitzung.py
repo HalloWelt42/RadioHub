@@ -12,6 +12,9 @@ Stille, die ffmpeg mitmeldet; ohne Stille bleibt die Grenze der Angabe.
   wird jede neue Stille gegen die Grenze laut Angabe geprüft, nicht gegen die schon gerückte.
 - Gemeldet (`bei_ende`) wird eine Stelle, wenn der Ton das Fenster hinter ihrem Ende laut Angabe passiert hat; dann
   steht auch die Stille fest.
+- Ein Format mit bestaetigen "stille" (Vorlauf beim Verbinden, RAD-47): endet die Stelle laut Angabe, bleibt sie offen,
+  bis höchstens `fenster_s` neben diesem Ende eine Stille gemeldet ist; dann endet sie dort. Hat der geprüfte Ton
+  (`ton_bis`) das Fenster passiert ohne Stille, wird sie verworfen: dann war es kein Vorlauf, nur ein später Titel.
 
 Ohne Ein- und Ausgabe; ffmpeg und der Stromleser rufen nur `angabe` und `stille`."""
 
@@ -50,6 +53,8 @@ class Werbestelle(BaseModel):
     _bis_angabe: Optional[float] = PrivateAttr(None)
 
     _bis_quelle: Optional[Herkunft] = PrivateAttr(None)
+    #: endet erst mit einer Stille am Ende laut Angabe (bestaetigen "stille")
+    _bestaetigen: bool = PrivateAttr(False)
 
     def ende_setzen(self, bis: float, aus: Herkunft) -> None:
         self.bis, self.bis_aus, self._bis_angabe, self._bis_quelle = bis, aus, bis, aus
@@ -71,21 +76,31 @@ class Sitzungswerbung:
         self._stille_beginn: Optional[float] = None
         self._angaben = 0
         self._offen: Optional[Werbestelle] = None
+        self._unbestaetigt: list[Werbestelle] = []
+        #: verworfene Stellen (Vorlauf ohne Stille am Ende), nur zur Auskunft
+        self.verworfen: list[Werbestelle] = []
+        #: Name des Senders aus dem Kopf des Stroms (icy-name); erst nach dem Verbinden bekannt
+        self.sendername = ""
 
     def angabe(self, roh: str, sekunde: float) -> Optional[Werbestelle]:
         """Eine Angabe an ihrer Stelle im Ton; gibt die neu begonnene Stelle zurück, falls eine beginnt."""
         self._melden(sekunde)
         erste = self._angaben == 0
         self._angaben += 1
-        w = lesen(roh)
+        w = lesen(roh, self.sendername, erste)
         offen = self._offen
         if offen and w and w.kennung == offen.kennung:
             return None                                       # derselbe Spot, die Angabe wiederholt sich
         if offen:
-            offen.ende_setzen(sekunde, "angabe")
             self._offen = None
-            self._an_stille(offen)
-            self._geendet(offen)
+            if offen._bestaetigen:
+                offen._bis_angabe = sekunde
+                self._unbestaetigt.append(offen)
+                self._bestaetigen()
+            else:
+                offen.ende_setzen(sekunde, "angabe")
+                self._an_stille(offen)
+                self._geendet(offen)
         if not w:
             return None
         neu = self._beginnen(w, 0.0 if erste else sekunde, "verbinden" if erste else "angabe")
@@ -94,6 +109,7 @@ class Sitzungswerbung:
     def _beginnen(self, w: Werbeangabe, von: float, von_aus: Herkunft) -> Werbestelle:
         s = Werbestelle(von=von, von_aus=von_aus, format=w.format, kennung=w.kennung, werbender=w.werbender,
                         titel=w.titel, angekuendigt_ms=w.dauer_ms, beim_verbinden=w.beim_verbinden or von_aus == "verbinden")
+        s._bestaetigen = w.bestaetigen == "stille"
         if von_aus != "verbinden":
             s._von_angabe = von
         if w.ende == "dauer" and w.dauer_ms:
@@ -105,6 +121,28 @@ class Sitzungswerbung:
         if s.bis is not None:
             self._geendet(s)
         return s
+
+    def _bestaetigen(self, jetzt: Optional[float] = None) -> None:
+        """Offene Stellen, die eine Stille an ihrem Ende brauchen: mit Stille enden sie, ohne (der geprüfte Ton `jetzt`
+        hat das Fenster passiert) fallen sie weg."""
+        fenster = self._regeln.grenze.fenster_s
+        for s in list(self._unbestaetigt):
+            ende = s._bis_angabe or 0.0
+            if self._naechste(ende, fenster):
+                self._unbestaetigt.remove(s)
+                s.ende_setzen(ende, "angabe")
+                self._an_stille(s)
+                self._geendet(s)
+            elif jetzt is not None and jetzt > ende + fenster:
+                self._unbestaetigt.remove(s)
+                self.stellen.remove(s)
+                self.verworfen.append(s)
+
+    def ton_bis(self, sekunde: float) -> None:
+        """Der FFmpeg, der die Stille meldet, hat den Ton bis `sekunde` geprüft (sein Takt, nicht der des Lesers: der
+        liest beim Verbinden einen Schwall Ton weit voraus). Bis hier ist jede Stille gemeldet."""
+        self._bestaetigen(sekunde)
+        self._melden(sekunde)
 
     def _geendet(self, s: Werbestelle) -> None:
         if self._bei_ende:
@@ -133,6 +171,7 @@ class Sitzungswerbung:
             del self._stillen[:-self._stillen_hoechstens]
         for s in self.stellen[-20:]:
             self._an_stille(s)
+        self._bestaetigen()
         self._melden(bis)
 
     def _an_stille(self, s: Werbestelle) -> None:
@@ -144,7 +183,7 @@ class Sitzungswerbung:
             g = wechsel_grenze(s._von_angabe, self._stillen)
             if g != s._von_angabe:
                 s.von, s.von_aus = g, "stille"
-        if s._bis_angabe is None:
+        if s._bis_angabe is None or s._bis_quelle is None:      # noch kein Ende, oder es wartet auf die Bestätigung
             return
         if s._bis_quelle == "angabe":
             g = wechsel_grenze(s._bis_angabe, self._stillen, nach=s.von)

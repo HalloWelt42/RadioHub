@@ -59,7 +59,9 @@ Verbinden spielt es nicht, die Wiedergabe beginnt danach (Hinweis mit Restzeit u
 springt es über Werbung ("Zurück und anhören"), live schaltet es stumm, bis sie vorbei ist ("Ton an"). Solange
 Werbung nicht zu hören ist, steht die Kanzel in Bernstein auf WERBUNG; die Stellen stehen bernsteinfarben auf dem
 Balken des Zeitversatzes. Ein Sender mit einem einzigen gefundenen Spot trägt in der Liste die Marke "Werbung". Woran
-Werbung in den Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`.
+Werbung in den Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`. Manche Sender
+spielen beim Verbinden je Hörer einen Vorlauf ein und nennen dabei als Titel nur ihren Namen (RAD-47); er zählt als
+Werbung beim Verbinden, wenn an seinem Ende eine Stille liegt, sonst war es nur ein später gemeldeter Titel.
 
 Ein aufgeklappter Sender (RAD-35) zeigt drei schmale Spalten: den Steckbrief (Läuft, Stream mit Kopieren und eigener
 Adresse, Codec, Homepage, Sprache, Ort, Prüfung, Titel pünktlich oder ungenau; Erklärungen als Tooltip am Info-Zeichen),

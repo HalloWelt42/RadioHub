@@ -39,6 +39,53 @@ def test_formate_an_echten_angaben():
         assert lesen(kein) is None, kein
 
 
+NEUNZIGER = "90s90s - DIGITAL WEB"
+VORLAUF = f"StreamTitle='{NEUNZIGER}';"
+CRUSH = "StreamTitle='Jennifer Paige - Crush';"
+
+
+def test_vorlauf_nur_als_erste_angabe_mit_dem_namen_des_senders():
+    v = lesen(VORLAUF, NEUNZIGER, erste=True)
+    assert (v.format, v.kennung, v.beim_verbinden, v.bestaetigen) == ("vorlauf", NEUNZIGER, True, "stille")
+    assert lesen(VORLAUF, NEUNZIGER, erste=False) is None      # mitten im Programm: der Name ist kein Vorlauf
+    assert lesen(VORLAUF, "", erste=True) is None              # ohne Namen im Kopf keine Aussage
+    assert lesen(CRUSH, NEUNZIGER, erste=True) is None
+    bob = "RADIO BOB - Livestream National"                     # Sonderzeichen im Namen zählen wörtlich
+    assert lesen(f"StreamTitle='{bob}';", bob, erste=True).format == "vorlauf"
+    assert lesen("StreamTitle='RADIO BOB - Livestream Nationalx';", bob, erste=True) is None
+
+
+def test_vorlauf_endet_an_der_stille():
+    """Echter Fall 90s90s 22.11.2026: Vorlauf 30 s, Stille 30,025 bis 30,072, erster Titel bei 30,4 s. FFmpeg meldet
+    die Stille erst nach der Angabe (der Leser liest beim Verbinden voraus)."""
+    w = Sitzungswerbung()
+    w.sendername = NEUNZIGER
+    w.angabe(VORLAUF, 0.34)
+    w.angabe(CRUSH, 30.38)
+    (s,) = w.stellen
+    assert (s.von, s.bis, s.beim_verbinden) == (0.0, None, True)         # wartet auf die Stille
+    w.ton_bis(29.0)
+    w.stille(30.025, 30.072)
+    assert (s.bis, s.bis_aus) == (30.072, "stille")
+    w.ton_bis(40.0)
+    assert w.stellen == [s] and not w.verworfen
+
+
+def test_vorlauf_ohne_stille_war_nur_ein_spaeter_titel():
+    """Echter Fall 90s90s 22.11.2026, gleichzeitige zweite Verbindung: kein Vorlauf, das Lied läuft schon, der Titel
+    kommt erst bei 12,6 s. Ohne Stille dort wird die Stelle verworfen."""
+    w = Sitzungswerbung()
+    w.sendername = NEUNZIGER
+    w.angabe(VORLAUF, 0.34)
+    w.angabe(CRUSH, 12.62)
+    w.ton_bis(13.5)
+    assert len(w.stellen) == 1
+    w.ton_bis(14.2)
+    assert w.stellen == [] and [s.kennung for s in w.verworfen] == [NEUNZIGER]
+    w.stille(20.0, 20.1)                                         # spätere Stille holt sie nicht zurück
+    assert w.stellen == []
+
+
 def test_spot_beim_verbinden_mit_laenge_und_stille():
     w = Sitzungswerbung()
     w.angabe(FFH, 1.0)                                        # erste Angabe nach dem ersten Block: Spot ab 0

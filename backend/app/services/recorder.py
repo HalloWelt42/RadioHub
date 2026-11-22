@@ -366,8 +366,9 @@ class RecorderManager:
             kopf = await session.stromleser.verbinden()
             session.titelbuch.metaint = kopf.metaint
             session.eingang_format = kopf.format
+            session.werbung.sendername = kopf.name
             session.stillen = Stillenwaechter(kopf.format, session.werbung.stille_zeile,
-                                              lambda t, m: session.pegel.append((round(t, 2), round(m, 1))))
+                                              lambda t, m: self._pegel(session, t, m))
             await session.stillen.starten()
         except StromFehler as f:
             art = "Wiedergabeliste" if isinstance(f, Wiedergabeliste) else f"Stromleser: {f}"
@@ -454,6 +455,13 @@ class RecorderManager:
                         for r in conn.execute("SELECT pattern, match_type FROM icy_title_ignore")]
         except Exception:
             return []
+
+    @staticmethod
+    def _pegel(session: RecordingSession, t: float, m: float) -> None:
+        """Je 100 ms vom Stillenwächter: Pegel für den Feinschnitt; bis t ist auch jede Stille gemeldet."""
+        session.pegel.append((round(t, 2), round(m, 1)))
+        if session.werbung:
+            session.werbung.ton_bis(t)
 
     async def _angabe(self, session: RecordingSession, a) -> None:
         """Eine Angabe der Sendedaten: Werbung in die Werbestellen der Aufnahme, Titel ins Titelbuch (teilt die Aufnahme)."""

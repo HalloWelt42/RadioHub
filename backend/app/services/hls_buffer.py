@@ -9,6 +9,7 @@ Mit adaptiver Bitrate-Anpassung und ICY-Metadata-Tracking.
 """
 import logging
 import asyncio
+import re
 import shutil
 import json
 from collections import deque
@@ -24,6 +25,9 @@ from ..sendewerbung.angaben import regeln as werberegeln
 from ..sendewerbung import spots as werbespots
 
 logger = logging.getLogger("radiohub.hls_buffer")
+
+#: ffmpeg beginnt ein Stück des Puffers ("Opening '.../segment_12.ts' for writing")
+STUECK_BEGINNT = re.compile(r"Opening '[^']*segment_(\d+)\.ts'")
 
 
 # Standard-Bitrate-Stufen (kbps)
@@ -303,6 +307,7 @@ class HLSBufferService:
             try:
                 kopf = await self._stromleser.verbinden()
                 self._titelbuch.metaint = kopf.metaint
+                self._werbung.sendername = kopf.name
             except Wiedergabeliste as f:
                 logger.info(f"Wiedergabeliste ({f}): ffmpeg liest selbst, ohne Sendedaten")
                 self._stromleser = None
@@ -486,6 +491,9 @@ class HLSBufferService:
                 if "silence_" in text:
                     if self._werbung:
                         self._werbung.stille_zeile(text)
+                elif self._werbung and (stueck := STUECK_BEGINNT.search(text)) and self.session:
+                    # ein neues Stück des Puffers: bis zu seinem Anfang hat ffmpeg den Ton geprüft
+                    self._werbung.ton_bis(int(stueck.group(1)) * self.session.segment_duration)
                 else:
                     letzte.append(text)
             return_code = await self._ffmpeg_process.wait()

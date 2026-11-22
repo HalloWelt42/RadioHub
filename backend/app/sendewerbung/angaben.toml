@@ -8,6 +8,11 @@
 #   ende       "dauer": der Spot endet nach dauer_ms; "wechsel": er endet mit der ersten Angabe, die nicht mehr zu ihm
 #              gehört (andere Kennung oder keine Werbung). Fehlt dauer_ms, gilt immer "wechsel".
 #   verbinden  Werte von einfuegung, die "Spot beim Verbinden" bedeuten
+#   nur_beim_verbinden   true: gilt nur für die erste Angabe einer Verbindung
+#   bestaetigen          "stille": die Stelle zählt erst, wenn an ihrem Ende (der nächsten Angabe) höchstens
+#                        fenster_s entfernt eine Stille liegt; sonst wird sie verworfen
+#
+# In erkennen steht {sendername} für den Namen, den der Sender im Kopf schickt (icy-name).
 #
 # Ein neues Format ist ein neuer Eintrag; Code braucht es dafür nicht. Werte der Angaben stehen in einfachen
 # Anführungszeichen, darum enden die Gruppen an einem "'".
@@ -49,4 +54,16 @@ name = "werbepause"
 erkennen = "StreamTitle='Kurze Werbepause"
 kennung = "StreamTitle='(Kurze Werbepause)"
 titel = "StreamTitle='([^']+)'"
+ende = "wechsel"
+
+[[format]]
+name = "vorlauf"
+# QuantumCast (80s80s, 90s90s, RADIO BOB, Radio 7, Rockland): beim Verbinden steht als erster Titel der Name des Stroms,
+# solange der für jeden Hörer eingespielte Vorlauf läuft (gemessen 22.11.2026: 20 bis 30 s, bei gleichzeitigen
+# Verbindungen verschieden oder gar keiner). Er endet mit einer digitalen Stille kurz vor dem ersten Titel. Kommt ohne
+# Vorlauf nur der Titel verspätet, fehlt die Stille, und das Lied bleibt ganz.
+erkennen = "^StreamTitle='{sendername}';"
+kennung = "StreamTitle='([^']+)'"
+nur_beim_verbinden = true
+bestaetigen = "stille"
 ende = "wechsel"
