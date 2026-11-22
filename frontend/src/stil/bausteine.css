@@ -38,7 +38,11 @@ a:is(.rh-pro, .rh-basic):hover, a:is(.rh-pro, .rh-basic):focus-visible { backgro
 a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .rh-pro, .rh-basic { transition: none; } }
 .rh-unterzeile { font-family: var(--schrift-zahl); font-size: var(--marke); letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; color: var(--text-3); }
-:root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); -webkit-background-clip: text; background-clip: text; }
+:root[data-theme="dunkel"] .rh-unterzeile { -webkit-text-fill-color: transparent; background: var(--rh-regenbogen); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; animation: rh-farblauf 30s linear infinite; }
+/* Lauflicht der Unterzeile (RAD-71): die Farben wandern langsam und unauffällig nach links, eine Runde in 30 Sekunden */
+@keyframes rh-farblauf { from { background-position: 0% center; } to { background-position: -200% center; } }
+@media (prefers-reduced-motion: reduce) { :root[data-theme="dunkel"] .rh-unterzeile { animation: none; } }
 
 /* Navigation: Pillenleiste als Gerät, ragt in den Inhalt; gewählter Bereich erhaben mit leuchtender Schrift */
 .rh-nav { padding: 6px; border-radius: var(--rh-pille); min-width: 0; max-inline-size: 100%;

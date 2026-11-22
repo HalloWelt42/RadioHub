@@ -43,7 +43,9 @@
   --rh-silber-kante-2: #5f666e;
   --rh-silber-kante-3: #3d434a;
   --rh-silber-schatten: rgb(10 14 20 / .55);
-  --rh-regenbogen: linear-gradient(90deg, #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0); /* Unterzeile im Dunkeln */
+  /* Unterzeile im Dunkeln: die Farben zweimal hintereinander und zurück zur ersten, damit das Lauflicht nahtlos kreist */
+  --rh-regenbogen: linear-gradient(90deg, #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0,
+    #e04a78, #e07a3a, #d8b23a, #3cd27e, #39b8e0, #6a5ae0, #c450e0, #e04a78);
   --rh-anzeige: var(--led-gruen);              /* Leuchtschrift der Anzeigen (wie heute grün) */
   --rh-licht-aus: #07090b;                     /* Grund eines dunklen Lichts (aus geschaltete Leuchten) */
   --rh-licht-unbekannt: #1a1e24;               /* Qualität unbekannt: Lichter schraffiert */
