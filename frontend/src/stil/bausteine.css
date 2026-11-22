@@ -6,7 +6,7 @@
    Navigation ist die Leuchte art="schlitz" der Instrumente des Appkerns. */
 
 html, body { height: 100%; overflow: hidden; }
-.rh-tafel[hidden], .rh-band[hidden] { display: none; }
+.rh-band[hidden] { display: none; }
 .rh-still { color: var(--text-3); font-size: var(--klein); }
 
 /* ═══ Kopf: Schriftzug, Navigation, Status, Darstellung ═══ */
@@ -53,10 +53,12 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-nav-knopf:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
 .rh-nav-knopf i { display: none; }
 
-.rh-darstellung { position: relative; }
-.rh-darstellung > .knopf { block-size: var(--rh-taste-klein); }
-.rh-tafel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; inline-size: min(340px, calc(100vw - 24px)); padding: 14px; display: grid; gap: 14px;
-  border-radius: var(--r3); background-color: var(--karte); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante), var(--schatten-schwebend); }
+/* Bedienung rechts im Kopf (RAD-71): Gruppen gewöhnlicher Knöpfe; gewählt trägt die Akzentfarbe wie ein offener Aufklapper */
+.rh-kopf-bedienung { display: flex; align-items: center; gap: 14px; }
+.rh-kopf-gruppe { display: flex; gap: 4px; }
+.rh-kopf-bedienung .rund { inline-size: var(--rh-taste-klein); block-size: var(--rh-taste-klein); }
+.rh-kopf-bedienung .rund.gewaehlt { color: var(--akzent); }
+.rh-sprachknopf { font-family: var(--schrift-zahl); font-size: var(--klein); letter-spacing: .04em; }
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }
 /* Symbol und Text in Segmenten der eigenen Ansichten mit Abstand (RAD-37: in den Einstellungen klebten sie aneinander;

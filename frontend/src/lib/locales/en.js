@@ -390,6 +390,9 @@ export default {
     ohneAnmeldung: 'without sign-in',
     fassung: 'Version',
     abmelden: 'Sign out',
+    sprache: 'Language',
+    abmeldenVon: 'Sign out ({name})',
+    trennenVon: 'Disconnect this device ({name})',
     trennen: 'Unpair',
     trennenFrage: 'Unpair this device?',
     trennenHinweis: 'To come back, pair the device again with a code from the Kellerwolke.'

@@ -4,7 +4,7 @@
 // diese Schicht. In Basic gibt es keine Server-Felder (Bauziel: EINSTELLUNGEN.server).
 import {
   einstellungen, einstellungenLaden, einstellungenSpeichern, einstellungenVerwerfen, einstellungsAngebot,
-  einstellungsFeld, einstellungSetzen, einstellungsWert,
+  einstellungsFeld, einstellungSetzen, einstellungSofortSpeichern, einstellungsWert,
 } from "appkern-oberflaeche";
 import { EINSTELLUNGEN } from "$ziel/einstellungen";
 import { anzeigeeinheit, wahlwert, zeileAusFeld } from "./aus-feld";
@@ -44,6 +44,13 @@ export function setzen(name: string, wert: unknown): void {
   const feld = einstellungsFeld(name);
   if (typeof wert === "number" && feld) wert = Math.round(wert * anzeigeeinheit(feld).faktor * 1000) / 1000;
   einstellungSetzen(name, typeof wert === "string" ? wahlwert(feld, wert) : wert);
+}
+
+/** Einen Wert sofort speichern und wirken lassen, ohne die Leiste Speichern (Sprache aus dem Kopf, RAD-71); der übrige
+    Entwurf wartet weiter. Ohne Server (Basic) wirkt er nur. */
+export async function sofortSpeichern(name: string, wert: unknown): Promise<void> {
+  if (amServer) await einstellungSofortSpeichern(name, wert);
+  wirkungen({ [name]: wert });
 }
 
 /** Vorgabe in den Entwurf (Knopf "Vorgabe", fragt vorher) */

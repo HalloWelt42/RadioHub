@@ -1,14 +1,13 @@
 <script lang="ts">
   // Kopf am Rechner wie im Entwurf (mockups/radio-filter/rechner.html): Schriftzug RadioHub mit Herz (führt zum
-  // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, und die Tafel
-  // Darstellung mit Konto. Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Neben dem
+  // Unterstützen), Pillen-Navigation mit Tastenlicht, die in den Inhalt ragt, und rechts
+  // die Bedienung (Thema, Schrift, Sprache, Abmelden; KopfBedienung, RAD-71). Das Tastenlicht zeigt, welcher Bereich gerade spielt (blau) oder aufnimmt (rot). Neben dem
   // Herz das Zeichen der Ausgabe (Nutzer 20.11.2026): PRO in Gold; die Basic-Webversion (RAD-4) zeigt BASIC in Silber,
   // das selbst zum Quellcode der PRO führt, dazu nur Radio und Einstellungen, ohne Konto; das Herz führt dort
   // zum Unterstützen.
   import { appState, actions } from "../lib/store.svelte.js";
   import { t } from "../lib/i18n.svelte.js";
-  import Darstellung from "./Darstellung.svelte";
-  import Konto from "./Konto.svelte";
+  import KopfBedienung from "./KopfBedienung.svelte";
   import { PRO_QUELLCODE, UNTERSTUETZEN, type Ausgabe } from "../lib/ausgabe";
 
   type Bereich = "radio" | "recordings" | "podcasts" | "settings";
@@ -43,27 +42,7 @@
   }
 
   const aktiv = (id: string) => appState.activeTab === id || (id === "radio" && appState.activeTab === "wecker");
-
-  let offen = $state(false);
-  let darstellungsKnopf = $state<HTMLElement>();
-  let tafel = $state<HTMLElement>();
-
-  // Tafel schließt bei Klick daneben und mit Escape
-  function daneben(e: MouseEvent) {
-    if (!offen) return;
-    const ziel = e.target as Node;
-    if (tafel?.contains(ziel) || darstellungsKnopf?.contains(ziel)) return;
-    offen = false;
-  }
-  function taste(e: KeyboardEvent) {
-    if (offen && e.key === "Escape") {
-      offen = false;
-      darstellungsKnopf?.focus();
-    }
-  }
 </script>
-
-<svelte:window onclick={daneben} onkeydown={taste} />
 
 <header class="rh-kopf">
   <div class="rh-marke">
@@ -85,13 +64,6 @@
     {/each}
   </div></nav>
   <div class="rh-kopf-rechts">
-    <div class="rh-darstellung">
-      <button class="knopf" type="button" bind:this={darstellungsKnopf} aria-controls="tafel-darstellung" aria-expanded={offen}
-              title={t("schale.darstellungTitel")} onclick={() => (offen = !offen)}><i class="fa-solid fa-circle-half-stroke"></i><span>{t("schale.darstellung")}</span></button>
-      <div class="rh-tafel" id="tafel-darstellung" role="dialog" aria-label={t("schale.darstellung")} hidden={!offen} bind:this={tafel}>
-        <Darstellung />
-        {#if backend}<Konto />{/if}
-      </div>
-    </div>
+    <KopfBedienung konto={backend} />
   </div>
 </header>

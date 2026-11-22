@@ -390,6 +390,9 @@ export default {
     ohneAnmeldung: 'ohne Anmeldung',
     fassung: 'Version',
     abmelden: 'Abmelden',
+    sprache: 'Sprache',
+    abmeldenVon: 'Abmelden ({name})',
+    trennenVon: 'Dieses Gerät trennen ({name})',
     trennen: 'Trennen',
     trennenFrage: 'Dieses Gerät trennen?',
     trennenHinweis: 'Zum Wiederkommen das Gerät mit einem Code aus der Kellerwolke neu koppeln.'
