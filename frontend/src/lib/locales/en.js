@@ -31,6 +31,7 @@ export default {
     fehler: 'Not reachable',
     favoritAn: 'Add to favourites',
     favoritAus: 'Remove favourite',
+    ausblendenWeiter: 'Hide station and play the next',
     abos: 'Subscriptions',
     neu: 'New',
     keineFolgen: 'No episodes',

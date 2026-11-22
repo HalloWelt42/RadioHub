@@ -16,6 +16,7 @@
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
   import { lack } from '../../lib/radio/anzeige';
+  import { einzelnAusgeblendet } from '../../lib/radio/bedienung.svelte';
   import { rasterStellen, STATUS_JE_SCHRIFT } from '../../spieler/rasterbreite';
   import { Auswahl, Geraeteliste } from 'appkern-oberflaeche';
   import { Bitrate } from '../../spieler/bitrate.svelte';
@@ -23,7 +24,7 @@
   import { faehigkeiten } from '../../lib/playerEngine.js';
   import { geraete, geraeteTexte, geraeteZeile } from '../../spieler/geraete.svelte';
 
-  let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung } = $props();
+  let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung, bedienung } = $props();
 
   const info = $derived(beschreibung(appState));
   const folge = $derived(!!appState.currentEpisode);
@@ -42,6 +43,17 @@
     probe.src = src;
     return () => { probe.onload = null; };
   });
+  /** Auge und Stern unter dem Sender (RAD-94): derselbe Eintrag wie in der Liste, sonst von der Quelle geholt */
+  const senderUuid = $derived(folge ? null : (appState.currentStation?.uuid ?? null));
+  const eintrag = $derived(bedienung.eintragVon(senderUuid));
+  $effect(() => { if (offen) void bedienung.eintragHolen(senderUuid); });
+  /** Auge: erst zum nächsten Sender, dann den bisherigen ausblenden (sonst fehlt Vor die Stelle in der Liste) */
+  function ausblendenUndWeiter() {
+    const e = eintrag;
+    if (!e) return;
+    steuerung.naechster();
+    void bedienung.ausblenden(e);
+  }
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
@@ -114,6 +126,21 @@
       {:else}
         <h2>{info.title}</h2>
         <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
+      {/if}
+      {#if eintrag}
+        <!-- Auge und Stern wie in der Zeile der Liste, rund wie die Tasten (RAD-94); während einer Aufnahme bleibt der Sender -->
+        <div class="tf-sender-aktionen">
+          {#if einzelnAusgeblendet(eintrag)}
+            <button class="rund tf-rund" type="button" onclick={() => void bedienung.einblenden(eintrag)}
+                    aria-label={t('radio.einblendenVon', { name: eintrag.name })} title={t('radio.einblendenHilfe')}><i class="fa-solid fa-eye"></i></button>
+          {:else}
+            <button class="rund tf-rund" type="button" disabled={appState.isRecording} onclick={ausblendenUndWeiter}
+                    aria-label={t('radio.ausblendenVon', { name: eintrag.name })} title={t('telefon.ausblendenWeiter')}><i class="fa-solid fa-eye-slash"></i></button>
+          {/if}
+          <button class="rund tf-rund" class:favorit={eintrag.favorit} type="button" aria-pressed={eintrag.favorit}
+                  aria-label={eintrag.favorit ? t('telefon.favoritAus') : t('telefon.favoritAn')} title={eintrag.favorit ? t('telefon.favoritAus') : t('telefon.favoritAn')}
+                  onclick={() => void bedienung.favorit(eintrag)}><i class="fa-{eintrag.favorit ? 'solid' : 'regular'} fa-star"></i></button>
+        </div>
       {/if}
     </div>
 
@@ -303,6 +330,7 @@
   /* Titel höchstens zwei Zeilen, Sender oder Abo eine (RAD-90): nichts rutscht unter die Tasten */
   .buehne h2 { margin: 12px 0 0; font-size: 22px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.25;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .tf-sender-aktionen { display: flex; gap: 14px; justify-content: center; margin-top: 4px; }
   .buehne .zusatz { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-inline-size: 100%; }
   .position { margin: 16px 0 4px; }
   .position input { width: 100%; height: 32px; accent-color: var(--t-akzent); }

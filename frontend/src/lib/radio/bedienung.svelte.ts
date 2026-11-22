@@ -33,6 +33,8 @@ export class Radiobedienung {
   private messung: AbortController | null = null;
   /** zuletzt eine Variante aus der aufgeklappten Zeile eines anderen Senders gespielt (RAD-41): welche, aus welcher Zeile */
   private ausZeile: { uuid: string; zeile: string } | null = null;
+  /** der spielende Sender, wenn er nicht in der geladenen Liste steht (für Auge und Stern im großen Spieler, RAD-94) */
+  private einzeln = $state<SenderEintrag | null>(null);
 
   constructor(private readonly quelle: Senderquelle) {
     this.liste = new Senderliste(quelle);
@@ -80,6 +82,24 @@ export class Radiobedienung {
     return uuid && this.ausZeile?.uuid === uuid ? this.ausZeile.zeile : uuid;
   }
 
+  /** Eintrag eines Senders aus der Liste oder, falls schon geholt, von der Quelle (RAD-94) */
+  eintragVon(uuid: string | null): SenderEintrag | null {
+    if (!uuid) return null;
+    return this.liste.eintraege.find((e) => e.uuid === uuid) ?? (this.einzeln?.uuid === uuid ? this.einzeln : null);
+  }
+
+  /** den Eintrag eines Senders bereitstellen, der nicht in der Liste steht; die Liste selbst bleibt, wie sie ist */
+  async eintragHolen(uuid: string | null): Promise<void> {
+    if (!uuid || this.eintragVon(uuid)) return;
+    const e = await this.quelle.sender(uuid).catch(() => null);
+    if (e) this.einzeln = e;
+  }
+
+  private eintragAendern(uuid: string, teil: Partial<SenderEintrag>): void {
+    this.liste.aendern(uuid, teil);
+    if (this.einzeln?.uuid === uuid) this.einzeln = { ...this.einzeln, ...teil };
+  }
+
   /** `zeile`: gespielt aus den Varianten dieser Zeile */
   async spielen(e: SenderEintrag, zeile?: SenderEintrag): Promise<void> {
     this.ausZeile = zeile && zeile.uuid !== e.uuid ? { uuid: e.uuid, zeile: zeile.uuid } : null;
@@ -109,7 +129,7 @@ export class Radiobedienung {
                       rueckgaengig: async () => { await this.quelle.favorit(e, true); this.liste.einfuegen({ ...e, favorit: true }, stelle); } };
         return;
       }
-      this.liste.aendern(e.uuid, { favorit: an });
+      this.eintragAendern(e.uuid, { favorit: an });
       actions.showToast(an ? t("toast.favHinzu") : t("toast.favEntfernt"), an ? "success" : "info");
     } catch (f) {
       actions.showToast((f as Error).message || t("common.fehler"), "error");
@@ -122,7 +142,7 @@ export class Radiobedienung {
     try {
       const s = await this.quelle.sperren(e.uuid);
       if (s.sichtbar) {
-        this.liste.aendern(e.uuid, { ausnahme: s.gruende });
+        this.eintragAendern(e.uuid, { ausnahme: s.gruende });
         this.band = { symbol: "fa-star", name: e.name, text: t("radio.bandBleibtFavorit"), rueckgaengig: () => this.entsperren(e, -1) };
         return;
       }
@@ -151,7 +171,7 @@ export class Radiobedienung {
       this.liste.einfuegen(e, stelle);
       if (this.bestand) this.bestand = { ...this.bestand, ausgeblendet: this.bestand.ausgeblendet - 1, sichtbar: this.bestand.sichtbar + 1 };
     } else {
-      this.liste.aendern(e.uuid, { ausnahme: s.sichtbar ? s.gruende : [] });
+      this.eintragAendern(e.uuid, { ausnahme: s.sichtbar ? s.gruende : [] });
     }
   }
 

@@ -8,13 +8,12 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
-  import { filterzustand, senderquelle } from "../../lib/radio";
+  import { filterzustand } from "../../lib/radio";
   import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
   import { bewertungName, format, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
-  import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
+  import type { Radiobedienung } from "../../lib/radio/bedienung.svelte";
   import { aktive, ohne, umschalten, zuAbfrage, zurueckgesetzt, type Chip, type Schnellfilter } from "../../lib/radio/schnellfilter";
   import type { Bewertung, Facette, Qualitaet } from "../../lib/radio/typen";
-  import Band from "../radio/Band.svelte";
   import Guete from "../radio/Guete.svelte";
   import Logo from "../radio/Logo.svelte";
   import Schnellwahl from "../radio/Schnellwahl.svelte";
@@ -23,8 +22,9 @@
   import Suchfeld from "../radio/Suchfeld.svelte";
   import Varianten from "../radio/Varianten.svelte";
 
-  const bedienung = new Radiobedienung(senderquelle);
-  const liste = bedienung.liste;
+  /** gemeinsam mit dem großen Spieler (Auge und Stern dort, RAD-94); das Rückgängig-Band zeigt das Telefon */
+  let { bedienung }: { bedienung: Radiobedienung } = $props();
+  const liste = $derived(bedienung.liste);
   let blatt = $state(false);
   /** Sender, dessen Varianten unter der Zeile aufgeklappt sind (Nutzer 20.11.2026: Varianten erreichbar, auch nach Fehlern) */
   let offeneVarianten = $state<string | null>(null);
@@ -174,4 +174,3 @@
       {t("radio.telefon.zeigen", { n: liste.gesamt === null ? "-" : zahl(liste.gesamt) })}</button></div>
   </div>
 {/if}
-<Band bind:inhalt={bedienung.band} />

@@ -8,7 +8,9 @@
    */
   import * as engine from '../../lib/playerEngine.js';
   import { appState, actions } from '../../lib/store.svelte.js';
-  import { filterzustand } from '../../lib/radio';
+  import { filterzustand, senderquelle } from '../../lib/radio';
+  import { Radiobedienung } from '../../lib/radio/bedienung.svelte';
+  import Band from '../radio/Band.svelte';
   import { tick } from 'svelte';
   import { t } from '../../lib/i18n.svelte.js';
   import { geraet } from '../../lib/geraet.svelte.js';
@@ -28,6 +30,9 @@
 
   /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
   let { angebot = { podcasts: true, aufnahmen: true, wecker: true, backend: true } } = $props();
+  /** eine Bedienung des Radios für die Liste und den großen Spieler (Auge und Stern, RAD-94): beide sehen denselben
+   *  Stand; das Rückgängig-Band steht hier, damit es auch über dem Spieler erscheint */
+  const radio = new Radiobedienung(senderquelle);
 
   // das eine Tonelement der Seite (bleibt beim Wechsel zwischen Rechner und Telefon bestehen, RAD-28)
   const audioEl = tonelement();
@@ -169,11 +174,12 @@
       {:else if appState.activeTab === 'wecker' && angebot.wecker}
         <TelefonWeckerListe />
       {:else}
-        <TelefonRadio />
+        <TelefonRadio bedienung={radio} />
       {/if}
     </main>
 
-    <div class="rh-alt"><TelefonSpieler bind:offen={spielerOffen} {zeit} {dauer} {steuerung} /></div>
+    <div class="rh-alt"><TelefonSpieler bind:offen={spielerOffen} {zeit} {dauer} {steuerung} bedienung={radio} /></div>
+    <Band bind:inhalt={radio.band} />
 
     {#if angebot.podcasts}
     <nav class="t-reiter" data-rahmen="fuss">

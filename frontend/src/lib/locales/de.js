@@ -31,6 +31,7 @@ export default {
     fehler: 'Nicht erreichbar',
     favoritAn: 'Als Favorit merken',
     favoritAus: 'Favorit entfernen',
+    ausblendenWeiter: 'Sender ausblenden und zum nächsten',
     abos: 'Abos',
     neu: 'Neu',
     keineFolgen: 'Keine Folgen',
