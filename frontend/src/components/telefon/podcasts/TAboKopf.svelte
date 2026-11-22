@@ -24,6 +24,7 @@
 
   let fragt = $state(false);
   const SORT: Podcastsortierung[] = ["neu", "alt", "laenge"];
+  const SORT_SYMBOL: Record<Podcastsortierung, string> = { neu: "fa-arrow-down-wide-short", alt: "fa-arrow-up-wide-short", titel: "fa-arrow-down-a-z", laenge: "fa-hourglass-half" };
 </script>
 
 <section class="tp-abokopf">
@@ -52,7 +53,10 @@
                 knopf={t("podcastAnsicht.abbestellen")} onabbrechen={() => (fragt = false)} onja={() => { fragt = false; void onabbestellen(); }} /></div>
   {/if}
 </section>
-<div class="t-chips tp-sort"><span class="rh-still">{t("podcastAnsicht.telefon.sortierung")}</span>
-  {#each SORT as s (s)}<button type="button" class="chip wahl" class:an={sortierung === s} aria-pressed={sortierung === s} onclick={() => onsortieren(s)}>{t(`podcastAnsicht.telefon.sort_${s}`)}</button>{/each}
-</div>
+<!-- Sortierung als gleich breiter Umschalter über die volle Breite, wie Hell, Dunkel und System (RAD-101); der Name
+     steht nur noch für Vorleser da -->
+<div class="rh-wahl tp-sort"><div class="segment" role="group" aria-label={t("podcastAnsicht.telefon.sortierung")}>
+  {#each SORT as s (s)}<button type="button" class:aktiv={sortierung === s} aria-pressed={sortierung === s} onclick={() => onsortieren(s)}><i
+    class="fa-solid {SORT_SYMBOL[s]}" aria-hidden="true"></i>{t(`podcastAnsicht.telefon.sort_${s}`)}</button>{/each}
+</div></div>
 
