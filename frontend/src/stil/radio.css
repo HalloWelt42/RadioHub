@@ -168,6 +168,11 @@
 .rh-aktionen .rund[aria-expanded="true"] i { transform: rotate(180deg); }
 .rh-varianten-knopf { block-size: 44px; justify-content: center; font-size: var(--klein); padding: 0 8px; white-space: nowrap; }
 .rh-varianten-knopf .rh-zahl { color: var(--akzent); font-weight: 600; }
+/* 0 bis 99 auf demselben Platz (zwei Ziffern, rechtsbündig), damit alle Knöpfe gleich breit sind; rechts der Pfeil zum
+   Aufklappen, offen nach oben gedreht (RAD-59) */
+.rh-varianten-knopf .rh-zahl { display: inline-block; min-inline-size: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
+.rh-varianten-pfeil { font-size: .8em; color: var(--text-3); transition: transform var(--schnell); }
+.rh-varianten-knopf.aktiv .rh-varianten-pfeil { transform: rotate(180deg); }
 .rh-varianten-knopf-schmal, .rh-auge-schmal { display: none; }
 .rh-varianten-knopf-schmal { min-block-size: 36px; }
 .rh-platz { display: block; }
@@ -261,10 +266,11 @@
 .rh-suchfeld .auswahl-liste button i { color: var(--text-3); }
 .rh-suchfeld .auswahl-liste .rh-verlauf-weg { color: var(--text-3); font-size: var(--marke); justify-content: center; }
 /* eigene Stream-Adresse bearbeiten */
-.rh-strom-eingabe { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; }
-.rh-strom-eingabe .eingabe { block-size: 40px; font-family: var(--schrift-code); font-size: var(--klein); }
-.rh-strom-eingabe input { font-size: max(16px, var(--klein)); }
-.rh-strom-eingabe .rund { inline-size: 36px; block-size: 36px; flex: none; }
+/* Bearbeiten der Adresse in genau der Höhe und Breite der angezeigten Adresse: nichts darunter oder daneben rückt (RAD-59) */
+.rh-strom-eingabe { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px; align-items: center; min-width: 0; }
+.rh-strom-eingabe .eingabe { block-size: 28px; min-block-size: 0; min-inline-size: 0; padding-block: 0; font-family: var(--schrift-code); font-size: var(--klein); }
+.rh-strom-eingabe input { inline-size: 100%; min-inline-size: 0; font-size: var(--klein); }
+.rh-strom-eingabe .rund { inline-size: 28px; block-size: 28px; min-block-size: 0; flex: none; }
 .rh-eigen { font-size: var(--marke); color: var(--akzent); font-weight: 600; margin-left: 6px; }
 /* Läuft gerade (Titel aus dem Strom) und Gründe der Sichtbarkeit im Steckbrief */
 .rh-laeuft { display: flex; gap: 8px; align-items: start; }
@@ -296,8 +302,8 @@
 
 /* Aufgeklappter Sender dicht (RAD-35, Entwurf A in steckbrief-kompakt.html): drei schmale Spalten, Werte zweispaltig,
    Erklärungen als Tooltip am Info-Zeichen, Werbung nach Werbenden, Einschätzung nur mit Gewähltem und Tafel am Plus */
-/* Steckbrief, Einschätzung, Werbung rechts außen und am schmalsten (RAD-59) */
-.rh-detail-dicht { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, .8fr); }
+/* Steckbrief nimmt den Platz, eigene Filter und Werbung schmal rechts (RAD-59) */
+.rh-detail-dicht { grid-template-columns: minmax(0, 1fr) calc(var(--gross) * 11) calc(var(--gross) * 16); }
 .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
 @container liste (max-width: 820px) { .rh-detail-dicht, .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); } }
 .rh-werte-dicht { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; font-size: var(--klein); align-items: center; }
@@ -314,7 +320,6 @@
 .rh-gut { color: var(--gut); margin-right: 5px; }
 .rh-schlecht { color: var(--led-rot); margin-right: 5px; }
 .rh-segment-klein button { padding: 2px 10px; min-block-size: 0; font-size: var(--klein); }
-.rh-h4-zahl { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-2); }
 .rh-zeile-dicht { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--klein); }
 .rh-zeile-dicht .rh-schalter { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
@@ -336,7 +341,13 @@
 ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-werbende.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.5 + 4px); }   /* kompakte Zeilen der Werbenden (RAD-59) */
 /* Einschätzung: nur Gewähltes (mit x zum Abwählen), alles Übrige in der Tafel am Plus */
-.rh-einschaetzung { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rh-einschaetzung { display: grid; gap: 6px; align-content: start; }
+/* die Auswahl als Liste gleich großer Einträge, ab sechs rollt sie in sich wie die Werbeliste (RAD-59) */
+.rh-einschaetzung-liste { display: grid; gap: 4px; }
+.rh-einschaetzung-liste:empty { display: none; }
+.rh-einschaetzung-liste > .chip { inline-size: 100%; justify-content: space-between; }
+.rh-einschaetzung-liste.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 1.25 + 8px); }   /* Eintrag plus Abstand */
+.rh-einschaetzung-fuss { display: flex; gap: 8px; align-items: center; }
 .rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit, var(--led-gelb)); font-size: var(--klein); }
 .chip.rh-chip-klein { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 .chip .rh-weg { margin-left: 6px; opacity: .6; }

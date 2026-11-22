@@ -64,6 +64,8 @@
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);
   let anker = $state<HTMLElement>();
+  /** die Tafel ganz zeigen: die Liste rollt beim Öffnen so weit, dass sie nicht hinter der Kanzel verschwindet (RAD-59) */
+  const ganzZeigen = (tafelEl: HTMLElement) => { requestAnimationFrame(() => tafelEl.scrollIntoView({ block: "nearest", behavior: "smooth" })); };
   function tafelAussen(e: MouseEvent) {
     if (tafel && anker && !anker.contains(e.target as Node)) tafel = false;
   }
@@ -71,8 +73,9 @@
 
   const sterne = $derived(Math.max(0, ...eintrag.bewertungen.map(sterneVon)));
   const strom = $derived(steckbrief ? (steckbrief.eigeneAdresse || steckbrief.adresse) : "");
-  const hatEinschaetzung = $derived(sterne > 0 || MARKIERUNGEN.some((b) => eintrag.bewertungen.includes(b)) || !!steckbrief?.widerspruch
-    || (faehig.kategorien && eintrag.kategorien.length > 0));
+  /** Einträge der eigenen Einschätzung (Sterne zählen als einer); ab sechs rollt die Liste in sich */
+  const anzahlEinschaetzung = $derived((sterne > 0 ? 1 : 0) + MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)).length
+    + (steckbrief?.widerspruch && faehig.werbung ? 1 : 0) + (faehig.kategorien ? kategorien.filter((k) => eintrag.kategorien.includes(k.id)).length : 0));
 
   async function tun(arbeit: () => Promise<void>) {
     if (arbeitet) return;
@@ -159,7 +162,8 @@
 <svelte:window onclick={tafelAussen} onkeydown={(e) => { if (e.key === "Escape" && tafel) { e.stopPropagation(); tafel = false; } }} />
 
 <div class="rh-detail rh-detail-dicht">
-  <section class="rh-tafel-detail"><h4><i class="fa-solid fa-circle-info"></i>{t("radio.steckbrief")}</h4>
+  <!-- ohne Überschriften (Nutzer 22.11.2026, RAD-59): Steckbrief, eigene Filter, Werbung sprechen für sich -->
+  <section class="rh-tafel-detail" aria-label={t("radio.steckbrief")}>
     <dl class="rh-werte-dicht">
       {#if spielt && appState.streamTitle}
         <dt>{t("radio.laeuft")}</dt>
@@ -221,9 +225,11 @@
     </dl>
   </section>
 
-  <section class="rh-tafel-detail"><h4><i class="fa-solid fa-star"></i>{t("radio.eigeneBewertung")}<i class="fa-solid fa-circle-info rh-info" title={t("radio.einschaetzungHinweis")}></i></h4>
+  <section class="rh-tafel-detail" aria-label={t("radio.eigeneBewertung")}>
     <div class="rh-einschaetzung">
-      {#if sterne}<span class="rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
+      <!-- die Auswahl als Liste gleich großer Einträge, die bei vielen in sich rollt wie die Werbeliste (RAD-59) -->
+      <div class="rh-einschaetzung-liste" class:rh-liste-rollt={anzahlEinschaetzung > 5}>
+      {#if sterne}<span class="chip wahl an rh-chip-klein rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
       {#each MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)) as b (b)}
         <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => markieren(b)}>
           {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}<i class="fa-solid fa-xmark rh-weg"></i></button>
@@ -236,12 +242,14 @@
           <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => kategorie(k.id)}><i class="fa-solid fa-folder"></i>{k.name}<i class="fa-solid fa-xmark rh-weg"></i></button>
         {/each}
       {/if}
-      {#if !hatEinschaetzung}<span class="rh-still">{t("radio.einschaetzungKeine")}</span>{/if}
+      </div>
+      <div class="rh-einschaetzung-fuss">
+      <span class="rh-still" title={t("radio.einschaetzungHinweis")}>{t("radio.eigeneFilter")}</span>
       <span class="rh-tafel-anker" bind:this={anker}>
         <button type="button" class="rund rh-mini" aria-expanded={tafel} aria-haspopup="dialog" title={t("radio.einschaetzungAendern")}
                 aria-label={t("radio.einschaetzungAendern")} onclick={() => (tafel = !tafel)}><i class="fa-solid {tafel ? 'fa-xmark' : 'fa-plus'}"></i></button>
         {#if tafel}
-          <div class="rh-einschaetzung-tafel" role="dialog" aria-label={t("radio.eigeneBewertung")}>
+          <div class="rh-einschaetzung-tafel" role="dialog" aria-label={t("radio.eigeneBewertung")} use:ganzZeigen>
             <div class="rh-tafel-zeile"><span class="ak-etikett">{t("radio.bewertungTitel")}</span><span class="rh-bewerten">
               {#each [1, 2, 3] as i (i)}
                 <button type="button" class="rh-stern" class:an={i <= sterne} aria-label={t("radio.sterneSetzen", { n: i })} aria-pressed={i <= sterne}
@@ -269,14 +277,14 @@
           </div>
         {/if}
       </span>
+      </div>
     </div>
   </section>
 
   <!-- Werbung rechts außen, schmal und kurz (RAD-59) -->
   {#if faehig.werbung}
-    <section class="rh-tafel-detail"><h4><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbungTitel")}
-        {#if werbung?.spots}<span class="rh-h4-zahl">{t("radio.werbungZahlen", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}</span>{/if}
-        <i class="fa-solid fa-circle-info rh-info" title={t("radio.werbungAusSendedaten")}></i></h4>
+    <section class="rh-tafel-detail" aria-label={t("radio.werbungTitel")}>
+      {#if werbung?.spots}<span class="rh-still rh-werbung-zahlen" title={t("radio.werbungAusSendedaten")}>{t("radio.werbungZahlen", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}</span>{/if}
       {#if gruppen.length}
         <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
           {#each werbendeListe.zeigen as g (g.name || g.kennung)}

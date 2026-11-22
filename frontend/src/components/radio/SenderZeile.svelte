@@ -48,7 +48,8 @@
 {#snippet variantenKnopf(schmal: boolean)}
   <button class="knopf rh-varianten-knopf" class:rh-varianten-knopf-schmal={schmal} class:aktiv={variantenOffen} type="button" aria-expanded={variantenOffen} aria-pressed={variantenOffen}
           title={t("radio.variantenHilfe", { n: e.varianten })} onclick={(ev) => halt(ev, onvarianten)}>
-    <i class="fa-solid fa-layer-group"></i><span><span class="rh-zahl">{e.varianten}</span> {t("radio.varianten")}</span></button>
+    <i class="fa-solid fa-layer-group"></i><span><span class="rh-zahl">{e.varianten}</span> {t("radio.varianten")}</span>
+    <i class="fa-solid fa-chevron-down rh-varianten-pfeil" aria-hidden="true"></i></button>
 {/snippet}
 
 {#snippet minusKnopf(klasse: string)}
