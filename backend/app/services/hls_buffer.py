@@ -474,6 +474,11 @@ class HLSBufferService:
         except Exception as e:
             logger.warning(f"ICY-Flag Update fehlgeschlagen: {e}")
 
+    def sendedaten(self) -> tuple[Optional[Titelbuch], Optional[Sitzungswerbung]]:
+        """Titelbuch und Werbestellen der laufenden Sitzung (Sekunden des Tons, Stück N beginnt bei N mal der Dauer
+        eines Stücks). Eine Aufnahme aus dem Puffer hält sie fest: sie bleiben, auch wenn der Puffer endet."""
+        return self._titelbuch, self._werbung
+
     def get_icy_entries(self) -> list[dict]:
         """Titelwechsel der laufenden Sitzung, Stellen in Millisekunden des Tons (wie die Segmente)."""
         return list(self._titelbuch.entries) if self._titelbuch else []

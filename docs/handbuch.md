@@ -119,6 +119,9 @@ eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, de
 größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
 der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
 Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
+Läuft der Zeitversatz, nimmt die Aufnahme mit Rückblick aus dem Puffer auf (RAD-48): sie hält dessen Titel und
+Werbestellen fest, auch wenn der Puffer vor dem Stopp endet, rechnet ihre Zeiten nach den Stücken des Puffers und
+bekommt denselben Feinschnitt (ohne Pegeltal, der Puffer misst nur die Stille).
 
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo

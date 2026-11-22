@@ -3,7 +3,11 @@ RadioHub v0.2.4 - HLS Recorder Service
 
 Aufnahme aus dem HLS-Buffer mit konfigurierbarem Lookback.
 Kopiert .ts Segmente, konkateniert per ffmpeg Stream-Copy zu .aac.
-Nutzt ICY-Metadata aus dem HLS-Buffer für Segment-Split.
+
+Sendedaten (RAD-48): beim Start hält die Aufnahme Titelbuch und Werbestellen des Puffers fest; sie bleiben, auch wenn
+der Puffer vor dem Stopp endet. Ihre Zeiten sind Sekunden des Tons im Puffer, Stück N beginnt bei N mal der Dauer eines
+Stücks; die Aufnahme beginnt mit ihrem ersten Stück. Daraus entsteht dieselbe Analyse wie bei einer Aufnahme vom
+Sender, und derselbe Feinschnitt (Grenzen an den Pausen, Werbung für sich, feinschnitt_lauf.py).
 
 Edge-Case-Härtung:
 - Stale-Session-Cleanup bei Server-Neustart
@@ -21,8 +25,11 @@ from typing import Optional
 from ..ablage import orte
 from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
+from . import feinschnitt_lauf, werbestellen
 from .aufnahmen import aufnahmen
 from .hls_buffer import hls_buffer
+from .titelbuch import Titelbuch
+from ..sendewerbung.sitzung import Sitzungswerbung, Werbestelle
 from .recorder import rec_manager
 from .audio_utils import probe_duration
 
@@ -46,7 +53,14 @@ class HLSRecSession:
         self.ts_dir: Optional[Path] = None
         self.collected_segments: list[int] = []
         self.start_segment: int = 0
-        self.icy_start_index: int = 0  # Index in ICY-Entries bei REC-Start
+        self.segment_duration: float = 1.0
+        self.titelbuch: Optional[Titelbuch] = None
+        self.werbung: Optional[Sitzungswerbung] = None
+
+    @property
+    def versatz_s(self) -> float:
+        """Wo die Aufnahme im Ton des Puffers beginnt (Anfang ihres ersten Stücks)."""
+        return self.start_segment * self.segment_duration
 
     @property
     def duration(self) -> float:
@@ -75,6 +89,7 @@ class HLSRecorderService:
         self.active_session: Optional[HLSRecSession] = None
         self._collector_task: Optional[asyncio.Task] = None
         self._stopping = False  # Guard gegen doppeltes stop()
+        self._feinschnitt_task: Optional[asyncio.Task] = None
 
     def startup(self):
         """Beim Start der App, nachdem die Datenbank eingerichtet ist (betrieb.Radiobetrieb)."""
@@ -170,10 +185,11 @@ class HLSRecorderService:
                 session.collected_segments.append(seg_num)
                 copied += 1
 
-        # ICY-Snapshot: Merke Position in ICY-Entries
-        # Letzten Eintrag vor Start einbeziehen (aktueller Titel)
-        icy_entries = hls_buffer.get_icy_entries()
-        session.icy_start_index = max(0, len(icy_entries) - 1)
+        # Sendedaten des Puffers festhalten; die Stillen ab dem Beginn der Aufnahme bleiben, solange sie läuft
+        session.segment_duration = float(hls_status.get("segment_duration") or 1)
+        session.titelbuch, session.werbung = hls_buffer.sendedaten()
+        if session.werbung:
+            session.werbung.behalten_ab = session.versatz_s
 
         self.active_session = session
 
@@ -345,9 +361,9 @@ class HLSRecorderService:
         real_duration = await probe_duration(output_file)
         file_size = output_file.stat().st_size if output_file.exists() else 0
 
-        # ICY-Metadata filtern und speichern
+        # Titelliste aus dem festgehaltenen Titelbuch, Zeiten ab dem Beginn der Aufnahme
         meta_file = session_dir / orte.TITELLISTE
-        meta_count = self._save_icy_metadata(session, meta_file, real_duration)
+        meta_count = self._titelliste_schreiben(session, meta_file, real_duration)
 
         # .ts Verzeichnis + concat-Datei aufräumen
         if concat_file.exists():
@@ -355,37 +371,22 @@ class HLSRecorderService:
         if session.ts_dir.exists():
             shutil.rmtree(session.ts_dir, ignore_errors=True)
 
-        # Stücke schneiden (mit Titelliste) und ablegen; lokal bleibt danach nichts
-        from .segment_splitter import splitter
-        stuecke = []
-        if meta_count > 0 and meta_file.exists():
-            try:
-                with open(meta_file, "r", encoding="utf-8") as f:
-                    titelliste = json.load(f)
-                # Stücke direkt in den Arbeitsordner: was nicht abgelegt wird, holt der nächste Start nach
-                stuecke = await splitter.nach_titelliste(
-                    output_file, titelliste, real_duration, ".aac", session_dir)
-            except Exception as e:
-                logger.warning(f"HLS-REC Split-Fehler: {e}")
-                stuecke = []
-        if stuecke:
-            # Die Stücke enthalten alles; die ganze Datei bliebe sonst liegen und käme beim Nachholen doppelt dazu
-            output_file.unlink(missing_ok=True)
-
+        # Erst die ganze Datei als ein Stück; die Stücke nach Titeln macht der Feinschnitt (an den Pausen)
+        plan = None
         try:
-            if stuecke:
-                anzahl = await aufnahmen.stuecke_ablegen(session.id, stuecke)
-            else:
-                await aufnahmen.teil_ablegen(session.id, 0, "Teil 1", 0, int(real_duration * 1000), output_file)
-                anzahl = 1
+            await aufnahmen.teil_ablegen(session.id, 0, "Teil 1", 0, int(real_duration * 1000), output_file)
+            anzahl = 1
             await aufnahmen.titelliste_ablegen(session.id, meta_file if meta_count > 0 else None)
             shutil.rmtree(session_dir, ignore_errors=True)
             status = "completed"
+            plan = await self._feinschnitt_vorbereiten(session, real_duration)
         except Exception as e:
             # Bleibt im Arbeitsordner; der nächste Start holt das Ablegen nach
             logger.warning(f"HLS-REC Ablage-Fehler: {e}")
             anzahl = len(aufnahmen.segmente(session.id))
             status = "interrupted"
+        if session.werbung:
+            session.werbung.behalten_ab = None
 
         file_size = sum(s["file_size"] or 0 for s in aufnahmen.segmente(session.id))
         with db_session() as conn:
@@ -393,7 +394,9 @@ class HLSRecorderService:
             c.execute('''UPDATE sessions SET
                 end_time = ?, duration = ?, file_size = ?, status = ?
                 WHERE id = ?''',
-                (datetime.now().isoformat(), real_duration, file_size, status, session.id))
+                (datetime.now().isoformat(), real_duration, file_size, "feinschnitt" if plan else status, session.id))
+        if plan:
+            self._feinschnitt_task = asyncio.create_task(self._feinschnitt(session.id, plan))
 
         logger.info(f"HLS-REC gestoppt: {session.id} "
               f"({total_segments} Segmente, {real_duration:.0f}s, "
@@ -418,64 +421,50 @@ class HLSRecorderService:
 
         return result
 
-    def _save_icy_metadata(self, session: HLSRecSession,
-                           meta_file: Path, total_duration: float) -> int:
-        """Filtert ICY-Einträge auf das Aufnahme-Zeitfenster und speichert sie."""
-        all_entries = hls_buffer.get_icy_entries()
-        if not all_entries:
+    def _titelliste_schreiben(self, session: HLSRecSession, meta_file: Path, dauer: float) -> int:
+        """Die Titel der Aufnahme mit Zeiten ab ihrem Beginn; der Titel, der beim Beginn lief, steht bei 0."""
+        eintraege = titel_ab(session.titelbuch.entries if session.titelbuch else [], session.versatz_s, dauer)
+        if not eintraege:
             return 0
-
-        # Lookback-Zeitfenster berechnen
-        lookback_ms = session.lookback_seconds * 1000
-        rec_elapsed_ms = int(session.duration * 1000)
-        total_window_ms = lookback_ms + rec_elapsed_ms
-
-        # Letzte ICY-Zeit als Referenz
-        last_icy_t = all_entries[-1].get("t", 0)
-        # Start des Aufnahme-Fensters in ICY-Zeit
-        window_start_t = max(0, last_icy_t - total_window_ms)
-
-        filtered = []
-        for entry in all_entries:
-            t = entry.get("t", 0)
-            if t >= window_start_t:
-                # Timestamp relativ zum Aufnahme-Start umrechnen
-                relative_t = t - window_start_t
-                filtered.append({
-                    "t": relative_t,
-                    "b": entry.get("b", 0),
-                    "title": entry.get("title", ""),
-                    "raw": entry.get("raw", "")
-                })
-
-        if not filtered:
-            return 0
-
-        # Byte-Positionen relativ machen
-        if filtered[0].get("b", 0) > 0:
-            base_bytes = filtered[0]["b"]
-            total_bytes = all_entries[-1].get("b", 0)
-            relative_total = total_bytes - base_bytes
-            for entry in filtered:
-                entry["b"] = entry["b"] - base_bytes
-        else:
-            relative_total = 0
-
-        meta = {
-            "metaint": 0,
-            "total_audio_bytes": relative_total if relative_total > 0 else 0,
-            "entries": filtered
-        }
-
         try:
             meta_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(meta_file, "w", encoding="utf-8") as f:
-                json.dump(meta, f, ensure_ascii=False, indent=2)
+            meta_file.write_text(json.dumps({"metaint": 0, "total_audio_bytes": 0, "entries": eintraege},
+                                            ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception as e:
-            logger.warning(f"HLS-REC Meta-Speichern fehlgeschlagen: {e}")
+            logger.warning(f"HLS-REC Titelliste nicht gespeichert: {e}")
             return 0
+        return len(eintraege)
 
-        return len(filtered)
+    async def _feinschnitt_vorbereiten(self, session: HLSRecSession, dauer: float) -> Optional[list]:
+        """Werbestellen und Analyse zur Aufnahme legen, die Stücke des Feinschnitts planen (wie bei einer Aufnahme
+        vom Sender); None ohne Sendedaten oder wenn es nichts zu verbessern gibt."""
+        if not session.titelbuch and not session.werbung:
+            return None
+        analyse = analyse_aus_puffer(session.versatz_s, dauer, session.titelbuch.wechsel if session.titelbuch else [],
+                                     session.werbung.stellen if session.werbung else [],
+                                     session.werbung.stillen if session.werbung else [])
+        try:
+            werbestellen.ersetzen(werbestellen.Bezug.aufnahme(session.id), "sendedaten",
+                                  [werbestellen.Neu(von=v, bis=b, text=werbetext(w)) for v, b, w in werbung_im_fenster(
+                                      session.werbung.stellen if session.werbung else [], session.versatz_s, dauer)])
+            await feinschnitt_lauf.analyse_ablegen(session.id, analyse)
+        except Exception as f:            # ohne sie geht nur das Anzeigen der Werbung und das Neurechnen nicht
+            logger.warning(f"HLS-REC Werbestellen oder Analyse nicht abgelegt: {f}")
+        stuecke = feinschnitt_lauf.planen(analyse)
+        if stuecke:
+            logger.info(f"HLS-REC Feinschnitt {session.id}: " + feinschnitt_lauf.zusammenfassung(stuecke))
+        return stuecke
+
+    async def _feinschnitt(self, session_id: str, stuecke: list) -> None:
+        try:
+            await feinschnitt_lauf.ausfuehren(session_id, stuecke)
+        except Exception as f:
+            logger.warning(f"HLS-REC Feinschnitt {session_id} fehlgeschlagen: {f} (die Aufnahme bleibt ein Stück)")
+
+    async def feinschnitt_abwarten(self) -> None:
+        """Bis ein laufender Feinschnitt fertig ist (Tests, Herunterfahren)."""
+        if self._feinschnitt_task:
+            await asyncio.gather(self._feinschnitt_task, return_exceptions=True)
 
     def _cleanup(self, session: HLSRecSession):
         """Bereinigt bei Fehler: Session-Dir + DB-Eintrag."""
@@ -542,24 +531,53 @@ class HLSRecorderService:
             "collector_alive": collector_alive
         }
 
-        # ICY-Daten seit REC-Start
-        icy_entries_raw = hls_buffer.get_icy_entries()
-        rec_entries = icy_entries_raw[session.icy_start_index:]
+        # Titel seit dem Beginn der Aufnahme (Zeiten ab ihrem Beginn, wie bei einer Aufnahme vom Sender)
+        eintraege = session.titelbuch.entries if session.titelbuch else []
+        ab = int(session.versatz_s * 1000)
+        rec_entries = [e for e in eintraege if e.get("t", 0) <= ab][-1:] + [e for e in eintraege if e.get("t", 0) > ab]
         if rec_entries:
             status["icy_title"] = rec_entries[-1].get("title", "")
             status["icy_count"] = len(rec_entries)
-            status["icy_entries"] = [
-                {
-                    "title": e.get("title", ""),
-                    "t": e.get("t", 0),
-                    "ignored": e.get("ignored", False),
-                    "raw_title": e.get("raw_title", e.get("title", ""))
-                }
-                for e in rec_entries
-            ]
+            status["icy_entries"] = [{"title": e.get("title", ""), "t": max(0, e.get("t", 0) - ab),
+                                      "ignored": e.get("ignored", False),
+                                      "raw_title": e.get("raw_title", e.get("title", ""))} for e in rec_entries]
 
         return status
 
 
 # Singleton
+def werbetext(s: Werbestelle) -> str:
+    return s.name + (" (beim Verbinden)" if s.beim_verbinden else "")
+
+
+def analyse_aus_puffer(versatz: float, dauer: float, wechsel: list[tuple[float, str, bool]],
+                       stellen: list[Werbestelle], stillen: list[tuple[float, float]]) -> feinschnitt_lauf.Analyse:
+    """Die Sendedaten des Puffers auf die Zeit der Aufnahme (beginnt bei `versatz` im Ton des Puffers, dauert `dauer`):
+    der Titel, der beim Beginn lief, steht bei 0; Stillen und Werbung werden am Rand gekappt."""
+    bis = versatz + dauer
+    vorher = [w for w in wechsel if w[0] <= versatz]
+    eigene = ([(0.0, vorher[-1][1], vorher[-1][2])] if vorher else []) + \
+             [(round(t - versatz, 3), x, g) for t, x, g in wechsel if versatz < t < bis]
+    still = [(round(max(0.0, v - versatz), 3), round(min(dauer, b - versatz), 3)) for v, b in stillen
+             if b > versatz and v < bis]
+    werbung = [(von, b, s.name) for von, b, s in werbung_im_fenster(stellen, versatz, dauer)]
+    return feinschnitt_lauf.Analyse(dauer=dauer, wechsel=eigene, stillen=still, werbung=werbung)
+
+
+def werbung_im_fenster(stellen: list[Werbestelle], versatz: float, dauer: float) -> list[tuple[float, float, Werbestelle]]:
+    """Die Werbestellen in der Aufnahme, Zeiten ab ihrem Beginn, am Rand gekappt (eine offene bis zum Ende)."""
+    bis = versatz + dauer
+    return [(round(max(0.0, s.von - versatz), 3), round(min(dauer, (s.bis if s.bis is not None else bis) - versatz), 3), s)
+            for s in stellen if (s.bis is None or s.bis > versatz) and s.von < bis]
+
+
+def titel_ab(eintraege: list[dict], versatz: float, dauer: float) -> list[dict]:
+    """Einträge des Titelbuchs (t in ms des Tons im Puffer) auf die Zeit der Aufnahme."""
+    ab, bis = int(versatz * 1000), int((versatz + dauer) * 1000)
+    vorher = [e for e in eintraege if e.get("t", 0) <= ab]
+    auswahl = vorher[-1:] + [e for e in eintraege if ab < e.get("t", 0) < bis]
+    return [{"t": max(0, e.get("t", 0) - ab), "b": 0, "title": e.get("title", ""), "raw": e.get("raw_title", "")}
+            for e in auswahl]
+
+
 hls_recorder = HLSRecorderService()
