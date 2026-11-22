@@ -7,7 +7,7 @@ import * as engine from "../lib/playerEngine.js";
 import { naechsteReihenfolge } from "./kanzel";
 import { tonelement } from "./tonelement";
 import { puffer } from "./puffer.svelte";
-import { springtTitel } from "./kanzel";
+import { blaetternInAufnahme, springtTitel } from "./kanzel";
 
 /** Die Taste Spielen (und die Leertaste), streng nach einer Regel (Nutzer 20.11.2026): sie bleibt Spielen und beendet
  *  nie; beendet wird nur über Stopp. Gestoppt startet sie die Quelle, beim Spielen hält sie an, in der Pause geht es
@@ -39,8 +39,9 @@ export function quelleStarten(): void {
   else if (app.currentRecording) engine.playRecording(app.currentRecording);
 }
 
-/** Stopp beendet das Hören; eine Aufnahme läuft weiter (RAD-46) */
-export function stoppen(): void {
+/** Stopp beendet das Hören und eine laufende Aufnahme (RAD-83, Nutzer 22.11.2026) */
+export async function stoppen(): Promise<void> {
+  if (app.isRecording) await actions.stopRecording();
   engine.stop();
 }
 
@@ -53,23 +54,33 @@ export function aufnehmen(): void {
 /** Zurück (RAD-60): hinter live im Zeitversatz an den Anfang des Titels, kurz nach dem Anfang zum vorherigen;
  *  sonst der vorherige Sender (Folge, Aufnahme) */
 export function zurueck(): void {
+  if (app.isRecording) {
+    if (blaetternInAufnahme(app, -1)) puffer.vorher();
+    return;
+  }
   if (springtTitel(app)) puffer.vorher();
   else actions.navigatePrev();
 }
 
 /** Vor (RAD-60): hinter live im Zeitversatz zum nächsten Titel, nach dem letzten an live; sonst der nächste Sender */
 export function vor(): void {
+  if (app.isRecording) {
+    if (blaetternInAufnahme(app, 1) && !puffer.weiter()) live();
+    return;
+  }
   if (!springtTitel(app)) actions.navigateNext();
   else if (!puffer.weiter()) live();
 }
 
-/** lang gedrückt: immer der Sender (Folge, Aufnahme), auch im Zeitversatz */
+/** lang gedrückt: immer der Sender (Folge, Aufnahme), auch im Zeitversatz; während einer Aufnahme wie kurz (RAD-83) */
 export function zurueckSender(): void {
-  actions.navigatePrev();
+  if (app.isRecording) zurueck();
+  else actions.navigatePrev();
 }
 
 export function vorSender(): void {
-  actions.navigateNext();
+  if (app.isRecording) vor();
+  else actions.navigateNext();
 }
 
 export function spulen(sekunden: number): void {

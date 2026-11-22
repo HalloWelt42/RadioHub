@@ -90,6 +90,11 @@ export const hatZeitversatz = (s: Stand): boolean => s.playerMode === "hls" && !
 export const springtTitel = (s: Pick<Stand, "playerMode" | "currentStation" | "currentEpisode" | "isLive">): boolean =>
   hatZeitversatz(s as Stand) && !s.isLive;
 
+/** Während einer Aufnahme bleibt der Sender (RAD-83, Nutzer 22.11.2026): Zurück und Vor springen nur durch die Titel
+ *  des Puffers, auch lang gedrückt; ohne Zeitversatz sind sie gesperrt, an der Live-Kante gibt es kein Vor */
+export const blaetternInAufnahme = (s: Pick<Stand, "isRecording" | "playerMode" | "currentStation" | "currentEpisode" | "isLive">,
+  schritt: -1 | 1): boolean => hatZeitversatz(s as Stand) && (schritt < 0 || !s.isLive);
+
 /** Spulen über die Position: Folgen und Aufnahmen */
 export const hatPosition = (s: Stand): boolean => artVon(s) === "podcast" || artVon(s) === "aufnahme";
 
@@ -297,8 +302,13 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
 
   const blatt = (schritt: -1 | 1): Taste => {
     const richtung = schritt < 0 ? "prev" : "next";
-    // eine Aufnahme hängt am Empfang ihres Senders (RAD-46): Blättern, Spielen und Moduswechsel bleiben frei
     let hilfe: string;
+    if (rec) {
+      const frei = blaetternInAufnahme(s, schritt);
+      hilfe = frei ? mitTaste(t(schritt < 0 ? "kanzel.titelZurueckKurz" : "kanzel.titelVorKurz"), schritt < 0 ? "←" : "→")
+        : t(hatZeitversatz(s) ? "kanzel.aufnahmeLive" : "kanzel.aufnahmeOhnePuffer");
+      return { an: false, licht: "aus", gesperrt: !frei, hilfe };
+    }
     if (springtTitel(s)) {
       const sender = blaettern ? nachbar(s, schritt) || t(`player.${richtung}Sender`) : null;
       const titel = t(schritt < 0 ? "kanzel.titelZurueckKurz" : "kanzel.titelVorKurz");
@@ -327,14 +337,14 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
     };
 
   const aufnahmeMoeglich = art === "sender" && s.isPlaying && !aufnahme;
-  // Aufnahme: leuchtet, solange sie läuft; ein Druck darauf beendet sie (Stopp beendet nur das Hören, RAD-46)
+  // Aufnahme: leuchtet, solange sie läuft; ein Druck darauf beendet sie, Stopp beendet sie ebenso (RAD-83)
   const aufnehmen: Taste = {
     an: rec, licht: rec ? "blinkt" : "aus", gesperrt: !rec && !aufnahmeMoeglich,
     hilfe: rec ? t("kanzel.aufnahmeBeendenHilfe") : aufnahme ? t("player.nichtBeiWiedergabe") : art !== "sender" ? t("player.keinSender")
       : !s.isPlaying ? t("player.keinPlay") : t("player.recStart"),
   };
 
-  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused,
+  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused && !rec,
     hilfe: t(s.weg?.aufnahme === false ? "kanzel.stoppHilfeOhneAufnahme" : "kanzel.stoppHilfe") };
 
   const kann = kannModusWechseln(s);

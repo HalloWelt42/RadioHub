@@ -137,7 +137,9 @@ endet; rechts endet die Kanzel mit demselben Rand wie links. Puffer öffnet die 
 Ziehen verschiebt, Doppelklick springt hin), darunter die Titel, neuester oben, je Titel hier hören, Aufnahme ab hier und
 in den Bereich nehmen; ein Bereich wird als fertige Aufnahme gesichert. Am Telefon im Spieler derselbe Balken mit den
 Knöpfen und die Puffer-Liste (antippen klappt Hören, Aufnehmen und Bereich auf). Eine Aufnahme beendet die Taste
-Aufnahme (sie leuchtet, solange sie läuft); Stopp beendet nur das Hören, Blättern und Moduswechsel bleiben frei.
+Aufnahme (sie leuchtet, solange sie läuft) oder Stopp, das zugleich das Hören beendet. Während der Aufnahme bleibt der
+Sender: Zurück und Vor springen nur im Zeitversatz durch die Titel des Puffers (an der Live-Kante kein Vor), sonst sind
+sie gesperrt (RAD-83).
 
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo

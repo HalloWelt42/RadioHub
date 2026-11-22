@@ -64,6 +64,7 @@
 
   // Vor und Zurück folgen der sichtbaren Liste des Radios (Vorgabe 7); ohne Liste (Radio noch nicht geöffnet) die Favoriten
   function favorit(schritt) {
+    if (appState.isRecording) return;   // während einer Aufnahme bleibt der Sender (RAD-83)
     if (appState.stations.length) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();
     const liste = appState.favorites;
     if (!liste.length) return;

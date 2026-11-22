@@ -106,16 +106,25 @@ describe("Steuerung", () => {
       .toMatchObject({ neuVerbinden: true, symbol: "fa-play", farbe: "rot", gesperrt: false, hilfe: "Sofort neu verbinden" });
     expect(kanzelTasten(spielt(), t).spielen.neuVerbinden).toBe(false);
   });
-  it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, ein Druck beendet sie; Wechsel frei (RAD-46)", () => {
+  it("Aufnahme: nur beim spielenden Sender, rot blinkend während sie läuft, ein Druck oder Stopp beendet sie (RAD-46, RAD-83)", () => {
     expect(kanzelTasten(spielt(), t).aufnahme.gesperrt).toBe(false);
     expect(kanzelTasten(stand({ isPlaying: true, playerMode: "podcast", currentEpisode: { title: "F" } }), t).aufnahme.gesperrt).toBe(true);
     const rec = kanzelTasten(spielt({ isRecording: true, stations: liste }), t);
     expect(rec.aufnahme).toMatchObject({ an: true, licht: "blinkt", gesperrt: false, hilfe: "Aufnahme beenden" });
-    expect(rec.zurueck).toMatchObject({ gesperrt: false, licht: "aus" });
-    expect(rec.vor.gesperrt).toBe(false);
+    // der Sender bleibt (RAD-83): ohne Zeitversatz kein Blättern
+    expect(rec.zurueck).toMatchObject({ gesperrt: true, licht: "aus" });
+    expect(rec.vor.gesperrt).toBe(true);
     expect(rec.stopp.gesperrt).toBe(false);
-    // ohne Wiedergabe (Radio aus) läuft die Aufnahme weiter und bleibt über ihre Taste zu beenden
+    // im Zeitversatz springen sie durch die Titel; an der Live-Kante gibt es kein Vor
+    const zv = kanzelTasten(spielt({ isRecording: true, stations: liste, playerMode: "hls", isLive: false }), t);
+    expect(zv.zurueck.gesperrt).toBe(false);
+    expect(zv.vor.gesperrt).toBe(false);
+    const zvLive = kanzelTasten(spielt({ isRecording: true, stations: liste, playerMode: "hls", isLive: true }), t);
+    expect(zvLive.zurueck.gesperrt).toBe(false);
+    expect(zvLive.vor.gesperrt).toBe(true);
+    // ohne Wiedergabe (Radio aus) läuft die Aufnahme weiter und bleibt über ihre Taste und Stopp zu beenden
     expect(kanzelTasten(stand({ isRecording: true }), t).aufnahme).toMatchObject({ an: true, gesperrt: false });
+    expect(kanzelTasten(stand({ isRecording: true }), t).stopp.gesperrt).toBe(false);
   });
   it("Zurück und Weiter nennen den Nachbarn, rundum wie der Store", () => {
     const k = kanzelTasten(spielt({ stations: liste }), t);
