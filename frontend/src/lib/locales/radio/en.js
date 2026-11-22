@@ -159,6 +159,7 @@ export default {
   markierungenTitel: 'Marks',
   listeHaeufigste: 'the {n} most frequent of {von}',
   kategorienTitel: 'Categories',
+  werbungKurz: 'Ads',
   werbungUeberspringen: 'Skip ads',
   werbungUeberspringenHilfe: 'Skip announced ads of this station (time shift) or mute them (live); the ad on connect is not played',
   werbungUeberspringenAlleAus: 'Skipping is switched off for all stations in the settings',

@@ -160,6 +160,7 @@ export default {
   listeHaeufigste: 'die {n} häufigsten von {von}',
   kategorienTitel: 'Kategorien',
   werbungUeberspringen: 'Werbung überspringen',
+  werbungKurz: 'Werbung',
   werbungUeberspringenHilfe: 'Angekündigte Werbung dieses Senders überspringen (Zeitversatz) oder stumm schalten (live); der Spot beim Verbinden wird nicht gespielt',
   werbungUeberspringenAlleAus: 'In den Einstellungen ist das Überspringen für alle Sender aus',
   werbungMal: '{n} ×',
