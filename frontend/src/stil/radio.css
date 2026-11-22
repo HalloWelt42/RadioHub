@@ -126,8 +126,7 @@
 /* Spaltenkopf klebt einen Pixel über der Oberkante der Liste: beginnt die Liste auf einem halben Pixel, rundet die
    Darstellung den Kopf nach unten und die rollenden Zeilen schienen in einer feinen Linie darüber durch (RAD-16) */
 .rh-spalten { position: sticky; top: -1px; z-index: 2; padding: 11px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
-  font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); background-image: var(--rh-grund-bild); background-attachment: fixed;
-  box-shadow: 0 1px 0 var(--rand); }   /* derselbe Grund wie die Seite, deckungsgleich (RAD-70) */
+  font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); background-image: var(--rh-grund-bild); background-attachment: fixed; }   /* derselbe Grund wie die Seite, deckungsgleich, ohne Linie (RAD-70) */
 .rh-spalten .rechts { text-align: right; }
 /* sortierbare Titel (RAD-25): sehen aus wie der Spaltentitel, der aktive hell mit Pfeil seiner Richtung */
 .rh-sortspalte { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 4px 0; border: 0; background: none;
