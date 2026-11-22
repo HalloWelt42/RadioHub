@@ -134,13 +134,13 @@
 
 <style>
   .tf-versatz { display: grid; gap: 8px; margin: 12px 0 4px; padding: 10px 12px; border-radius: 14px; background: var(--t-flaeche); }
-  .tf-etikett { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t-text-2); }
+  .tf-etikett { font-size: var(--marke); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t-text-2); }
   .tf-versatz-titel { display: grid; text-align: center; }
-  .tf-versatz-titel b { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tf-versatz-titel span { font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .tf-versatz-titel b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tf-versatz-titel span { font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
   .tf-versatz-knoepfe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .tf-versatz-knoepfe button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 4px;
-    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: 15px; }
+    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }
   .tf-versatz-knoepfe button:disabled { opacity: .45; }
   .tf-versatz-knoepfe .tf-primaer { background: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 700; }
   .tf-zur-liste { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; margin-top: 6px;

@@ -35,5 +35,5 @@
   .pb-striche i { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--t-grund);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 65%, transparent); }
   .pb-bereich { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; box-shadow: 0 0 0 2px var(--led-rot); pointer-events: none; }
-  .pb-zahlen { display: flex; justify-content: space-between; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .pb-zahlen { display: flex; justify-content: space-between; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
 </style>

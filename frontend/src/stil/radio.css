@@ -382,7 +382,7 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-pg-block.werbung { background-color: color-mix(in srgb, var(--violett) 45%, transparent); }
 .rh-pg-block.gewaehlt { box-shadow: inset 0 0 0 2px var(--led-rot); background-color: color-mix(in srgb, var(--led-rot) 14%, var(--flaeche-1, var(--hg))); }
 .rh-pg-kopfstrich { position: absolute; top: 0; bottom: 0; inline-size: 3px; margin-left: -1.5px; background-color: var(--led-blau); box-shadow: 0 0 8px var(--led-blau); z-index: 2; pointer-events: none; }
-.rh-pg-live, .rh-pg-laeuft { padding: 1px 6px; border-radius: 4px; background-color: var(--led-rot); color: #fff; font-size: var(--marke); font-weight: 700; text-transform: uppercase; }
+.rh-pg-live, .rh-pg-laeuft { padding: 1px 6px; border-radius: 4px; background-color: var(--led-rot); color: var(--rh-auf-rot); font-size: var(--marke); font-weight: 700; text-transform: uppercase; }
 .rh-pg-live { position: absolute; right: 4px; top: 4px; z-index: 2; }
 .rh-pg-skala { position: relative; block-size: 1.4em; font-family: var(--schrift-zahl); font-size: var(--marke); color: var(--text-3); }
 .rh-pg-skala span { position: absolute; translate: -50% 0; }

@@ -109,8 +109,8 @@
   .tp { position: fixed; inset: 0; z-index: 30; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto;
     padding-top: var(--rahmen-sicher-oben); background: var(--t-grund); color: var(--t-text); }
   .tp-kopf { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; padding: 0 var(--rahmen-rand); }
-  .tp-knopf-rund { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
-  .tp-titel { text-align: center; font-size: 16px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--t-text-2); }
+  .tp-knopf-rund { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: calc(var(--gross) * 1.3); }
+  .tp-titel { text-align: center; font-size: var(--klein); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--t-text-2); }
   .tp-oben { padding: 4px var(--rahmen-rand) 10px; }
   .tp-liste { min-height: 0; margin: 0; padding: 0 var(--rahmen-rand) 12px; list-style: none; display: grid; gap: 6px; align-content: start; overflow-y: auto; overflow-x: clip; }
   .tp-zeile { display: grid; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--t-flaeche); }
@@ -120,20 +120,20 @@
   .tp-kern { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; padding: 0; border: none; background: transparent;
     color: inherit; font: inherit; text-align: left; }
   .tp-kern > ak-led, .tp-wahl { margin-top: .3em; justify-self: center; }
-  .tp-wahl { font-size: 20px; color: var(--t-text-2); }
+  .tp-wahl { font-size: calc(var(--gross) * 1.15); color: var(--t-text-2); }
   .tp-wahl.aus { opacity: .35; }
   .tp-zeile.gewaehlt .tp-wahl { color: var(--led-rot); }
   .tp-text { display: grid; min-width: 0; }
-  .tp-text b { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tp-text b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tp-text b i { margin-right: 6px; }
-  .tp-meta { display: flex; gap: 12px; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
-  .tp-laeuft { padding: 0 6px; border-radius: 4px; background: var(--led-rot); color: #fff; font-weight: 700; text-transform: uppercase; }
+  .tp-meta { display: flex; gap: 12px; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  .tp-laeuft { padding: 0 6px; border-radius: 4px; background: var(--led-rot); color: var(--rh-auf-rot); font-weight: 700; text-transform: uppercase; }
   .tp-tat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .tp-tat button, .tp-fuss button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 6px;
-    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: 15px; }
+    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }
   .tp-tat button:disabled, .tp-fuss button:disabled { opacity: .45; }
   .tp-rec i, .tp-primaer i { color: var(--led-rot); }
   .tp-fuss { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 10px var(--rahmen-rand) 14px;
-    background: color-mix(in srgb, var(--led-rot) 12%, var(--t-flaeche)); font-size: 15px; }
+    background: color-mix(in srgb, var(--led-rot) 12%, var(--t-flaeche)); font-size: var(--klein); }
   .tp-primaer { font-weight: 700; }
 </style>
