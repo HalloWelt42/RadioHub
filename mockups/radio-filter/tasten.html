@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de" data-vorlage="hifi" data-effekte="kraeftig" data-theme="dunkel" data-schrift="mittel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RadioHub Entwurf: Tasten und LEDs</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="darstellung.js"></script>
+  <link rel="stylesheet" href="vendor/schriften.css">
+  <link rel="stylesheet" href="vendor/instrumente/instrumente.css">
+  <link rel="stylesheet" href="vendor/instrumente/vorlagen/hifi.css">
+  <!-- Schicht 1: Marken (für alle Vorlagen, dann je Vorlage) -->
+  <link rel="stylesheet" href="radio-marken.css">
+  <link rel="stylesheet" href="vorlagen/hifi/marken.css">
+  <link rel="stylesheet" href="vorlagen/ruhig/marken.css">
+  <!-- Schicht 2: Bausteine -->
+  <link rel="stylesheet" href="radio-bausteine.css">
+  <!-- Schicht 3: Anordnung der Seite -->
+  <link rel="stylesheet" href="telefon.css">
+  <link rel="stylesheet" href="rechner.css">
+  <link rel="stylesheet" href="podcast-werbung.css">
+  <link rel="stylesheet" href="tasten.css?v=rad58b">
+</head>
+<body>
+<div class="rh-buehne-seite">
+  <div class="rh-entwurf">
+    <span class="pille">Entwurf RAD-58: Tasten und LEDs</span>
+    <a href="index.html"><i class="fa-solid fa-table-cells-large"></i>Übersicht</a>
+    <a href="rechner.html"><i class="fa-solid fa-display"></i>Radio</a><a href="puffer.html"><i class="fa-solid fa-list-ul"></i>Puffer und Aufnahme</a>
+  </div>
+  <div class="rh-buehne-rollt">
+    <div class="rh-buehne-kopf">
+      <h1>Tasten und LEDs</h1>
+      <p>Vorschläge für die Tastenreihen der Kanzel und für die runden LEDs. Bei den Tasten bleiben das eingebaute Tastenlicht
+        mit seiner Lage oben in der Kappe, die Größe und die Lage der Symbole; neu sind Material, Plastizität und Farbe. Die
+        Kappe leuchtet in keiner Fassung, den Zustand zeigt nur das Tastenlicht. Jede Fassung steht dunkel und hell, mit der
+        ganzen Steuerung und den Zuständen aus, an, gedrückt und gesperrt. Bei den LEDs: jede Form in jeder Farbe, aus und
+        an, dazu atmend und blinkend, in der Größe der Listen und in der mittleren Größe. Was leuchtet, bleibt satt und ohne
+        Glanzpunkt.</p>
+    </div>
+    <div class="rh-buehne">
+      <h2 class="tv-abschnitt">Tasten</h2>
+      <div class="tv-liste" data-tasten></div>
+      <h2 class="tv-abschnitt">Runde LEDs</h2>
+      <div class="tv-liste" data-leds></div>
+    </div>
+  </div>
+</div>
+<script src="vendor/instrumente/instrumente.js"></script>
+<script src="vendor/instrumente/anzeigen.js"></script>
+<script src="daten.js"></script>
+<script src="radio.js"></script>
+<script src="tasten.js?v=rad58"></script>
+</body>
+</html>
