@@ -12,8 +12,7 @@
 import de from './locales/de.js';
 import en from './locales/en.js';
 
-// Locale-Dateien werden lazy geladen. Nur DE + EN sind initial da.
-// Weitere Sprachen können später als Dateien ergänzt werden.
+// Locale-Dateien werden lazy geladen. Nur DE + EN sind initial da (Rückfall); die übrigen kommen beim Wechsel.
 const locales = { de, en };
 
 // Reaktiver State (kein Svelte-Import nötig - einfaches Observer-Pattern)
@@ -51,6 +50,8 @@ export async function setLanguage(lang) {
 
   _lang = lang;
   _translations = locales[lang] || {};
+  // Sprache der Seite für Vorleser und Silbentrennung (RAD-99)
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
   // Alle Listener benachrichtigen
   for (const fn of _listeners) {
     try { fn(lang); } catch (e) { /* ignore */ }
@@ -119,9 +120,9 @@ export function t(key, params = null) {
  * Verfügbare Sprachen - 20 Sprachen mit Flaggen
  */
 export const availableLanguages = [
-  // vollständig: alle Bereiche übersetzt (die neuen Ansichten gibt es bisher nur auf Deutsch und Englisch)
-  { code: 'de', label: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}', vollstaendig: true },
-  { code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}', vollstaendig: true },
+  // alle vollständig übersetzt (RAD-99); tests/sprachen.test.ts misst das: gleiche Texte, Platzhalter und Zeichen wie Deutsch
+  { code: 'de', label: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}' },
+  { code: 'en', label: 'English', flag: '\u{1F1EC}\u{1F1E7}' },
   { code: 'fr', label: 'Fran\u00e7ais', flag: '\u{1F1EB}\u{1F1F7}' },
   { code: 'es', label: 'Espa\u00f1ol', flag: '\u{1F1EA}\u{1F1F8}' },
   { code: 'it', label: 'Italiano', flag: '\u{1F1EE}\u{1F1F9}' },

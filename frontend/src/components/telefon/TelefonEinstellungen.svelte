@@ -249,10 +249,11 @@
   .tf-karte .tf-klein { font-size: var(--klein); color: var(--text-3); }
   .tf-karte .rh-knoepfe { margin-top: 12px; }
   .tf-zeitfeld { display: grid; gap: 4px; min-width: 0; font-size: var(--klein); color: var(--text-3); }
-  .tf-tasten { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
   /* Tasten mit Leuchte (RAD-103, Wahl B): gleich breit über die Zeile, der Knopf füllt seine Spalte, die Schrift bleibt
-     in einer Zeile */
-  .tf-tasten :global(ak-taster) { inline-size: 100%; min-width: 0; }
+     in einer Zeile; nie schmaler als die Schrift, passt die Reihe nicht (lange Wörter anderer Sprachen, RAD-99), bricht
+     sie um */
+  .tf-tasten { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tf-tasten :global(ak-taster) { flex: 1 1 0; min-width: fit-content; }
   .tf-tasten :global(ak-taster .ak-taster-knopf) { inline-size: 100%; min-inline-size: 0; }
   .tf-tasten :global(ak-taster .ak-taster-beschriftung) { white-space: nowrap; }
   .tf-fundorte { display: grid; gap: 6px; margin-top: 8px; }

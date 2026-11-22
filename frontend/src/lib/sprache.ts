@@ -1,11 +1,11 @@
 // Sprache der Oberfläche je Gerät, wo kein Server sie für alle Geräte hält (Basic, RAD-28): gemerkt im Browser, ohne
-// eigene Wahl die des Browsers, sofern RadioHub sie vollständig kann, sonst Deutsch. Angeboten werden nur vollständig
-// übersetzte Sprachen; die übrigen kämen sonst halb englisch daher.
+// eigene Wahl die des Browsers, sofern RadioHub sie kann, sonst Deutsch. Angeboten werden alle Sprachen; dass jede
+// vollständig ist, misst tests/sprachen.test.ts (RAD-99).
 import { availableLanguages, setLanguage } from "./i18n.js";
 
 const SCHLUESSEL = "radiohub_sprache";
 
-export const SPRACHANGEBOT = availableLanguages.filter((l) => (l as { vollstaendig?: boolean }).vollstaendig);
+export const SPRACHANGEBOT = availableLanguages;
 const bekannt = (code: string | null | undefined): code is string => !!code && SPRACHANGEBOT.some((l) => l.code === code);
 
 export function geraetesprache(): string {

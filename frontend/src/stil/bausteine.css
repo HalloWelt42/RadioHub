@@ -83,6 +83,19 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-geraete-feld { position: absolute; inset-block-start: calc(100% + 8px); inset-inline-end: 0; z-index: 60; }
 .rh-flagge { inline-size: calc(var(--gross) * 1.35); block-size: calc(var(--gross) * .8); border-radius: 3px; box-shadow: 0 0 0 1px var(--rh-flaggen-rand); }
 .rh-sprachwahl { display: inline-flex; align-items: center; gap: 10px; }   /* Flagge und Name der Sprache (RAD-90) */
+/* Sprachwahl als Aufklappliste mit Flaggen (RAD-99): im Kopf rechtsbündig unter dem Flaggenknopf, am Telefon über die
+   ganze Breite; zwei Spalten, damit 20 Sprachen ohne langes Rollen passen */
+.rh-sprachwahl-feld { position: relative; display: inline-flex; }
+.rh-sprachwahl-feld.breit { display: flex; }
+.rh-sprachwahl-feld.breit .rh-sprachwahl { inline-size: 100%; justify-content: flex-start; }
+.rh-sprachwahl-pfeil { margin-inline-start: auto; font-size: var(--marke); color: var(--text-3); }
+.rh-sprachliste { position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0; z-index: 60; display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 4px; inline-size: max-content; max-inline-size: calc(100vw - 16px);
+  max-block-size: min(70vh, 520px); overflow-y: auto; background: var(--flaeche); border-radius: var(--r2); box-shadow: var(--schatten-schwebend); }
+.rh-sprachwahl-feld.breit .rh-sprachliste { inset-inline: 0; inline-size: auto; }
+.rh-sprachliste button { display: flex; align-items: center; gap: 10px; min-block-size: 40px; padding: 6px 12px; border: 0; border-radius: var(--r1);
+  background: transparent; color: var(--text); font: inherit; font-size: var(--klein); text-align: start; white-space: nowrap; cursor: pointer; }
+.rh-sprachliste button:hover, .rh-sprachliste button.aktiv { background: var(--akzent-weich); color: var(--akzent); }
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }
 /* Symbol und Text in Segmenten der eigenen Ansichten mit Abstand (RAD-37: in den Einstellungen klebten sie aneinander;

@@ -69,6 +69,8 @@
 /* zwei gleich breite Spalten, Beschriftung links, Anzahl rechts (Codec und Bitrate, Nutzer 22.11.2026, RAD-63) */
 .rh-chips-wahl.rh-chips-zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .rh-chips-zwei .chip.wahl { justify-content: space-between; min-inline-size: 0; }
+/* lange Wörter anderer Sprachen (RAD-99) brechen in der halben Breite um statt überzulaufen */
+.rh-chips-zwei .chip.wahl { white-space: normal; text-align: start; line-height: 1.15; hyphens: auto; overflow-wrap: break-word; }
 
 /* Qualität als Lichterleiste hinter Glas: vier Lichter, Farbe je Stufe */
 .rh-guete { display: inline-flex; gap: 3px; padding: 4px 5px; border-radius: var(--r1); background-color: var(--ak-glas); box-shadow: var(--ak-glas-tiefe); flex: none; vertical-align: middle; }

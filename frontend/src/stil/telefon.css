@@ -77,6 +77,8 @@
 .tp-wahl { padding: 0 var(--rh-rand) 8px; }
 .tp-wahl .segment { inline-size: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tp-wahl .segment button { min-block-size: 44px; padding: 0 4px; font-size: var(--klein); }
+/* lange Wörter anderer Sprachen (RAD-99) umbrechen statt überlaufen, mit Silbentrennung nach der Sprache der Seite */
+.tp-wahl .segment button { white-space: normal; line-height: 1.15; hyphens: auto; overflow-wrap: break-word; min-width: 0; }
 .tp-folge.gehoert b { color: var(--text-2); }
 .tp-stand-zeile { margin-top: 6px; font-size: var(--klein); }
 .tp-stand { grid-template-columns: calc(var(--gross) * 5) auto; align-items: center; gap: 8px; }
