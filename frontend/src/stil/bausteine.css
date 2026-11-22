@@ -71,6 +71,16 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 .rh-kopf-bedienung { display: flex; align-items: center; gap: 14px; }
 .rh-kopf-gruppe { display: flex; gap: 4px; }
 .rh-kopf-bedienung .rund { inline-size: var(--rh-taste-klein); block-size: var(--rh-taste-klein); }
+/* Geräte (RAD-18): Zahl der anderen Geräte am Knopf; blinkt ruhig, solange woanders etwas spielt; Feld darunter */
+.rh-geraete { position: relative; }
+.rh-geraete-knopf { position: relative; }
+.rh-geraete-zahl { position: absolute; inset-block-start: -4px; inset-inline-end: -4px; min-inline-size: 18px; block-size: 18px; padding: 0 4px;
+  border-radius: 9px; background: var(--akzent-flaeche); color: var(--auf-akzent); font: 700 11px/18px var(--schrift-zahl, inherit); text-align: center; }
+.rh-geraete-knopf.blinkt > i { color: var(--akzent); }
+.rh-geraete-knopf.blinkt > :is(i, .rh-geraete-zahl) { animation: rh-geraete-blinken 1.4s steps(1, end) infinite; }
+@keyframes rh-geraete-blinken { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .rh-geraete-knopf.blinkt > :is(i, .rh-geraete-zahl) { animation: none; } }
+.rh-geraete-feld { position: absolute; inset-block-start: calc(100% + 8px); inset-inline-end: 0; z-index: 60; }
 .rh-flagge { inline-size: calc(var(--gross) * 1.35); block-size: calc(var(--gross) * .8); border-radius: 3px; box-shadow: 0 0 0 1px var(--rh-flaggen-rand); }
 .rh-wahl h3 { margin: 0 0 8px; font-size: var(--marke); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
 .rh-wahl .segment { display: flex; }

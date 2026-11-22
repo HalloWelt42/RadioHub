@@ -353,6 +353,17 @@ export default {
   },
 
   // === Schale: Kopf, Navigation, Darstellung, Konto (RAD-6) ===
+  geraete: {
+    knopf: 'Geräte: Ton holen oder auf ein anderes Gerät geben',
+    knopfSpielt: 'Geräte: auf {n} anderen Gerät(en) spielt etwas; holen oder auf ein Gerät geben',
+    bereit: 'bereit', spielt: 'spielt: {titel}', angehalten: 'angehalten: {titel}',
+    uebernommen: 'Von {von} übernommen',
+    titel: 'Geräte', hier: 'hier', diesesGeraet: 'dieses Gerät', umbenennen: 'Dieses Gerät umbenennen', name: 'Name dieses Geräts',
+    schliessen: 'Schließen', holen: 'Holen', holenHilfe: 'Den Ton von dort hierher holen, an derselben Stelle',
+    dorthin: 'Dorthin', dorthinHilfe: 'Was hier läuft, dort weiterspielen; hier hält es an',
+    keins: 'Kein anderes Gerät offen. Öffne RadioHub auf einem zweiten Gerät.', verbindet: 'Verbindung zu den Geräten wird aufgebaut ...',
+    telefonKnopf: 'Geräte', telefonKnopfSpielt: 'Geräte · {n} spielt',
+  },
   schale: {
     werbungUebersprungen: 'Werbung übersprungen', werbungAnhoeren: 'Zurück und anhören', schliessen: 'Schließen',
     werbeherkunft_kapitel: 'Kapitel im Feed', werbeherkunft_hand: 'von Hand', werbeherkunft_vergleich: 'Vergleich der Fassungen',

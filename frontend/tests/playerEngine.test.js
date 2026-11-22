@@ -231,7 +231,7 @@ describe('PlayerEngine', () => {
       await vi.advanceTimersByTimeAsync?.(3000);
       expect(api.startHLS).not.toHaveBeenCalled();
       expect(api.updateConfig).not.toHaveBeenCalled();
-      expect(engine.faehigkeiten()).toEqual({ zeitversatz: false, aufnahme: false, folgen: false });
+      expect(engine.faehigkeiten()).toEqual({ zeitversatz: false, aufnahme: false, folgen: false, uebergabe: false });
     });
     it('fragt ohne Aufnahme im Weg keinen Aufnahmestand beim Backend ab', async () => {
       engine.wegSetzen(direkt);
@@ -240,7 +240,7 @@ describe('PlayerEngine', () => {
       expect(api.getRecordingStatus).not.toHaveBeenCalled();
     });
     it('volle App: über den Durchleiter des Backends mit Zeitversatz', () => {
-      expect(engine.faehigkeiten()).toEqual({ zeitversatz: true, aufnahme: true, folgen: true });
+      expect(engine.faehigkeiten()).toEqual({ zeitversatz: true, aufnahme: true, folgen: true, uebergabe: true });
     });
   });
 

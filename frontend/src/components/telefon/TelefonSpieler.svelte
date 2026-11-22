@@ -15,6 +15,9 @@
   import { live } from '../../spieler/aktionen';
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
+  import { Geraeteliste } from 'appkern-oberflaeche';
+  import { faehigkeiten } from '../../lib/playerEngine.js';
+  import { geraete, geraeteTexte, geraeteZeile } from '../../spieler/geraete.svelte';
 
   let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung } = $props();
 
@@ -25,6 +28,9 @@
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
+  /** Geräte als Blatt von unten (RAD-18) */
+  let geraeteOffen = $state(false);
+  const kann = faehigkeiten();
   const pStelle = $derived(puffer.stelle ?? puffer.ende);
   const pTitel = $derived(puffer.laufend);
   const pName = (a) => puffer.benennen(a);
@@ -129,6 +135,22 @@
       <!-- den laufenden Sender in der Liste wiederfinden (Nutzer 20.11.2026) -->
       <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
     {/if}
+    {#if kann.uebergabe}
+      <!-- Übergabe zwischen Geräten (RAD-18): blinkt ruhig, solange woanders etwas spielt -->
+      <button class="tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
+        <i class="fa-solid fa-tower-broadcast"></i>
+        {geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}
+      </button>
+    {/if}
+  </div>
+{/if}
+
+{#if geraeteOffen && offen}
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+  <div class="tf-blatt-grund" onclick={() => (geraeteOffen = false)}></div>
+  <div class="tf-blatt">
+    <Geraeteliste uebergabe={geraete} zeile={geraeteZeile} texte={geraeteTexte()} telefon
+                  hierSpielt={appState.isPlaying || appState.isPaused} onzu={() => (geraeteOffen = false)} />
   </div>
 {/if}
 
@@ -147,6 +169,11 @@
     border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }
   .tf-versatz-knoepfe button:disabled { opacity: .45; }
   .tf-versatz-knoepfe .tf-primaer { background: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 700; }
+  .tf-geraete.blinkt > i { color: var(--t-akzent); animation: tf-blinken 1.4s steps(1, end) infinite; }
+  @keyframes tf-blinken { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .tf-geraete.blinkt > i { animation: none; } }
+  .tf-blatt-grund { position: fixed; inset: 0; z-index: 30; background: rgb(0 0 0 / .35); }
+  .tf-blatt { position: fixed; inset: auto 0 0; z-index: 31; box-shadow: 0 -12px 30px rgb(0 0 0 / .4); }
   .tf-zur-liste { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; margin-top: 6px;
     border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; }
   .tf-leiste {

@@ -120,6 +120,13 @@ eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, de
 größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
 der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
 Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
+Geräte (RAD-18, nur PRO): Jedes Fenster von RadioHub meldet sich beim Vermittler des Appkerns
+(`WS /api/v1/geraete/ws`, angemeldet mit der ersten Nachricht) und sieht die anderen Fenster desselben Kontos. Der
+Knopf Geräte oben rechts nennt ihre Zahl und blinkt ruhig, solange auf einem davon etwas spielt; am Telefon steht er im
+großen Spieler und öffnet ein Blatt von unten. Holen übernimmt die Wiedergabe von dort (Folgen und Aufnahmen an
+derselben Stelle, ein Sender live), Dorthin gibt die eigene ab, hier hält sie an; eine laufende Aufnahme läuft weiter.
+Den eigenen Namen in der Liste antippen benennt das Gerät um (gilt für alle Fenster dieses Browsers). Was gemeldet und
+übergeben wird, steht in `backend/app/geraete.py` und `frontend/src/spieler/geraete.svelte.ts`.
 Ruhig hören (RAD-84): Ein direkter Strom (Original in PRO, jeder Sender in Basic) läuft über einen eigenen Vorrat im
 Browser (`lib/stromhalter.js`): gespielt wird nach etwa 6 Sekunden Vorlauf, läuft er leer, füllt er still auf, statt zu
 stottern, und reißt die Verbindung ab, verbindet er neu und hängt an, während der Vorrat weiterspielt (nach sechs

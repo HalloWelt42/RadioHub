@@ -9,6 +9,7 @@ import { api } from './api.js';
  * @property {boolean} zeitversatz  Zeitversatz über den Puffer im Backend (Original oder Zeitversatz, Spulen, Bitrate)
  * @property {boolean} aufnahme     Aufnahme eines Senders
  * @property {boolean} folgen       Folgen und Aufnahmen abspielen (Position, Spulen, Reihenfolge)
+ * @property {boolean} uebergabe    Übergabe zwischen Geräten (Vermittler im Backend, RAD-18)
  * @property {(station: { uuid: string, url?: string, url_resolved?: string }) => string} stromAdresse
  * @property {(station: { uuid: string, name: string }) => void} merken  letzten Sender merken
  */
@@ -16,6 +17,7 @@ import { api } from './api.js';
 /** @type {Wiedergabeweg} */
 export const ueberBackend = {
   zeitversatz: true,
+  uebergabe: true,
   aufnahme: true,
   folgen: true,
   stromAdresse: (station) => api.getStationStreamUrl(station.uuid),
@@ -29,6 +31,7 @@ const LETZTER_SENDER = 'radiohub.web.letzter_sender';   // wie die eigenen Angab
 /** @type {Wiedergabeweg} */
 export const direkt = {
   zeitversatz: false,
+  uebergabe: false,
   aufnahme: false,
   folgen: false,
   stromAdresse: (station) => station.url_resolved || station.url || '',

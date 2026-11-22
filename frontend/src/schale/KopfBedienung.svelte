@@ -2,13 +2,16 @@
   // Bedienung rechts im Kopf (Nutzer 22.11.2026, RAD-71): ohne Tafel, alles mit einem Klick. Ein Knopf für das Thema
   // schaltet reihum Hell, Dunkel, System und zeigt das geltende Symbol; Schrift kleiner und größer, die Sprache als Flagge (ein Klick schaltet zur nächsten vollständig übersetzten) und Abmelden. Alles sind
   // gewöhnliche Knöpfe (rund); das gewählte Thema und die gewählte Sprache tragen die Akzentfarbe. Die Vorlage wählt man
-  // in den Einstellungen unter Darstellung. Die Sprache gilt für alle Geräte und wird sofort gespeichert.
+  // in den Einstellungen unter Darstellung. Die Sprache gilt für alle Geräte und wird sofort gespeichert. Ganz vorn mit
+  // Backend der Knopf Geräte (Übergabe, RAD-18).
   import { abmelden, ohneAnmeldung, Rueckfrage, sitzung } from "appkern-oberflaeche";
   import { darstellung, darstellungSetzen, schriftAmRand, schriftSchritt } from "../lib/darstellung.svelte";
   import { availableLanguages, currentLanguage, onLanguageChange, t } from "../lib/i18n.svelte.js";
   import { server } from "../lib/einstellungen";
   import { actions } from "../lib/store.svelte.js";
   import Flagge from "./Flagge.svelte";
+  import GeraeteKnopf from "./GeraeteKnopf.svelte";
+  import { faehigkeiten } from "../lib/playerEngine.js";
 
   let { konto: mitKonto }: {
     /** PRO mit Anmeldung: Abmelden oder Gerät trennen */
@@ -51,6 +54,7 @@
 </script>
 
 <div class="rh-kopf-bedienung">
+  {#if faehigkeiten().uebergabe && mitKonto}<GeraeteKnopf />{/if}
   <button class="rund" type="button"
           title={t("schale.themaWechsel", { jetzt: t(`schale.thema_${THEMEN[themaJetzt][0]}`), danach: t(`schale.thema_${themaDanach}`) })}
           aria-label={t("schale.themaWechsel", { jetzt: t(`schale.thema_${THEMEN[themaJetzt][0]}`), danach: t(`schale.thema_${themaDanach}`) })}

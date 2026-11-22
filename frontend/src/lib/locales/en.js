@@ -353,6 +353,17 @@ export default {
   },
 
   // === Shell: header, navigation, display, account (RAD-6) ===
+  geraete: {
+    knopf: 'Devices: fetch the sound or hand it to another device',
+    knopfSpielt: 'Devices: something is playing on {n} other device(s); fetch it or hand over',
+    bereit: 'ready', spielt: 'playing: {titel}', angehalten: 'paused: {titel}',
+    uebernommen: 'Taken over from {von}',
+    titel: 'Devices', hier: 'here', diesesGeraet: 'this device', umbenennen: 'Rename this device', name: 'Name of this device',
+    schliessen: 'Close', holen: 'Fetch', holenHilfe: 'Bring the sound from there to here, at the same position',
+    dorthin: 'Send', dorthinHilfe: 'Continue what is playing here over there; it stops here',
+    keins: 'No other device open. Open RadioHub on a second device.', verbindet: 'Connecting to the devices ...',
+    telefonKnopf: 'Devices', telefonKnopfSpielt: 'Devices · {n} playing',
+  },
   schale: {
     werbungUebersprungen: 'Ad skipped', werbungAnhoeren: 'Go back and listen', schliessen: 'Close',
     werbeherkunft_kapitel: 'chapter in the feed', werbeherkunft_hand: 'by hand', werbeherkunft_vergleich: 'comparing versions',

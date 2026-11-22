@@ -92,7 +92,7 @@ export function wegSetzen(weg) {
 
 /** Was der Weg kann (für die Kanzel: sie zeigt nur, was geht). */
 export function faehigkeiten() {
-  return { zeitversatz: _weg.zeitversatz, aufnahme: _weg.aufnahme, folgen: _weg.folgen };
+  return { zeitversatz: _weg.zeitversatz, aufnahme: _weg.aufnahme, folgen: _weg.folgen, uebergabe: _weg.uebergabe };
 }
 
 /**

@@ -25,6 +25,7 @@ from fastapi.responses import JSONResponse
 from appkern.app import Geruest
 from appkern.app.sicherung import RegelmaessigeSicherung, regel_aus
 from appkern.sicherung import Ablage as Sicherungsablage
+from appkern.uebergabe import uebergabe_router
 
 from . import einstellungen, ort, uebergang
 from .ablage import AblageFehler, Belegt, NichtEingerichtet, NichtErreichbar, NichtGefunden
@@ -32,6 +33,7 @@ from .betrieb import Radiobetrieb
 from .config import DB_PATH, VERSION, erlaubte_urspruenge
 from .database import datenbank_erreichbar, datenbank_pruefen
 from .einstellungen import KENNUNG, AppEinstellungen
+from .geraete import vermittler
 from .routers import ALLE
 from .services import rec_manager
 from .services.aufnahmen import AufnahmeFehler
@@ -99,6 +101,8 @@ def app_bauen(daten: Path, transport: httpx.AsyncBaseTransport | None = None) ->
                            allow_headers=["*"])
     for router in ALLE:
         app.include_router(router, dependencies=[geruest.lesen])
+    # Übergabe zwischen Geräten (RAD-18): angemeldet wird mit der ersten Nachricht der Verbindung, nicht per Kopf
+    app.include_router(uebergabe_router(vermittler, geruest.anmeldung))
 
     @app.get("/health")
     async def health():

@@ -7,6 +7,7 @@
   import App from "../App.svelte";
   import { sitzungVerbinden } from "../lib/sitzung";
   import { t } from "../lib/i18n.svelte.js";
+  import { geraeteStarten } from "../spieler/geraete.svelte";
 
   // Lesezugang (Keks für Ton, Bilder und Ereignisströme, die der Browser ohne eigenen Kopf holt): der Appkern richtet
   // ihn beim Anmelden ein; die Weckeransicht am Nachttisch lädt tagelang nicht neu, darum hier alle zwölf Stunden neu.
@@ -20,6 +21,9 @@
   onMount(() => {
     void sitzungStarten();
   });
+
+  // Übergabe zwischen Geräten (RAD-18): verbunden, solange angemeldet
+  $effect(() => (sitzung.angemeldet ? geraeteStarten() : undefined));
 
   $effect(() => {
     if (!sitzung.angemeldet) return;
