@@ -77,7 +77,7 @@
         <span class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</span>
       </span>
     </button>
-    <button class="tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+    <button class="knopf primaer tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
       <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
     </button>
   </div>
@@ -112,28 +112,28 @@
         <div class="zeiten"><span>{uhr(ziehen ?? zeit)}</span><span>-{uhr(Math.max(0, dauer - (ziehen ?? zeit)))}</span></div>
       </div>
       <div class="knoepfe">
-        <button class="tf-rund mittel" onclick={() => steuerung.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
+        <button class="rund tf-rund mittel" onclick={() => steuerung.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
           <i class="fa-solid fa-rotate-left"></i><span class="tf-zahl">15</span>
         </button>
-        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf primaer tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
-        <button class="tf-rund mittel" onclick={() => steuerung.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
+        <button class="rund tf-rund mittel" onclick={() => steuerung.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
           <i class="fa-solid fa-rotate-right"></i><span class="tf-zahl">30</span>
         </button>
       </div>
     {:else}
       <div class="knoepfe">
-        <button class="tf-rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
+        <button class="rund tf-rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
           <i class="fa-solid fa-backward-step"></i>
         </button>
-        <button class="tf-rund mittel" onclick={steuerung.stoppen} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
+        <button class="rund tf-rund mittel" onclick={steuerung.stoppen} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
           <i class="fa-solid fa-stop"></i>
         </button>
-        <button class="tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf primaer tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
-        <button class="tf-rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
+        <button class="rund tf-rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
           <i class="fa-solid fa-forward-step"></i>
         </button>
       </div>
@@ -153,12 +153,12 @@
             {:else}<span>{t('puffer.ohneTitel')}</span>{/if}
           </div>
           <div class="tf-versatz-knoepfe">
-            <button type="button" aria-label={t('puffer.titelZurueckHilfe')} disabled={vorheriger(puffer.abschnitte, pStelle) === null} onclick={() => puffer.vorher()}>
+            <button type="button" class="knopf" aria-label={t('puffer.titelZurueckHilfe')} disabled={vorheriger(puffer.abschnitte, pStelle) === null} onclick={() => puffer.vorher()}>
               <i class="fa-solid fa-backward-step"></i>{t('puffer.titelZurueck')}</button>
-            <button type="button" aria-label={t('puffer.titelVorHilfe')} disabled={naechster(puffer.abschnitte, pStelle) === null} onclick={() => puffer.weiter()}>
+            <button type="button" class="knopf" aria-label={t('puffer.titelVorHilfe')} disabled={naechster(puffer.abschnitte, pStelle) === null} onclick={() => puffer.weiter()}>
               {t('puffer.titelVor')}<i class="fa-solid fa-forward-step"></i></button>
-            <button type="button" aria-label={t('player.goLive')} disabled={!!appState.isLive} onclick={live}><i class="fa-solid fa-tower-broadcast"></i>{t('kanzel.live')}</button>
-            <button type="button" class="tf-primaer" onclick={() => (pufferOffen = true)}><i class="fa-solid fa-list-ul"></i>{t('puffer.puffer')}</button>
+            <button type="button" class="knopf" aria-label={t('player.goLive')} disabled={!!appState.isLive} onclick={live}><i class="fa-solid fa-tower-broadcast"></i>{t('kanzel.live')}</button>
+            <button type="button" class="knopf primaer" onclick={() => (pufferOffen = true)}><i class="fa-solid fa-list-ul"></i>{t('puffer.puffer')}</button>
           </div>
         </div>
       {/if}
@@ -168,10 +168,10 @@
     {#if !folge || kann.uebergabe}
       <div class="tf-fuss">
         {#if !folge}
-          <button class="tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
+          <button class="knopf tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
         {/if}
         {#if kann.uebergabe}
-          <button class="tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
+          <button class="knopf tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
             <i class="fa-solid fa-tower-broadcast"></i>
             {geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}
           </button>
@@ -202,18 +202,14 @@
   .tf-versatz-titel b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tf-versatz-titel span { font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
   .tf-versatz-knoepfe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-  .tf-versatz-knoepfe button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 4px;
-    border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }
-  .tf-versatz-knoepfe button:disabled { opacity: .45; }
-  .tf-versatz-knoepfe .tf-primaer { background: var(--t-akzent-flaeche); color: var(--t-akzent-text); font-weight: 700; }
+  .tf-versatz-knoepfe .knopf { justify-content: center; gap: 6px; min-height: 44px; padding: 0 4px; font-size: var(--klein); }
   .tf-geraete.blinkt > i { color: var(--t-akzent); animation: tf-blinken 1.4s steps(1, end) infinite; }
   @keyframes tf-blinken { 50% { opacity: .25; } }
   @media (prefers-reduced-motion: reduce) { .tf-geraete.blinkt > i { animation: none; } }
   .tf-blatt-grund { position: fixed; inset: 0; z-index: 30; background: rgb(0 0 0 / .35); }
   .tf-blatt { position: fixed; inset: auto 0 0; z-index: 31; box-shadow: 0 -12px 30px rgb(0 0 0 / .4); }
   .tf-fuss { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
-  .tf-zur-liste { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px;
-    border: 1px solid var(--rand); border-radius: 22px; background: var(--t-flaeche); color: var(--t-text); font-size: 16px; white-space: nowrap; }
+  .tf-zur-liste { gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 16px; white-space: nowrap; }
   .tf-leiste {
     flex: none;
     display: flex;
@@ -239,18 +235,19 @@
   .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .tf-titel { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Knöpfe des Appkerns (rund, knopf, primaer; RAD-97): hier nur Form und Größe, Material und Farben kommen aus der
+     Vorlage (HiFi oder Klassisch) */
   .tf-rund {
     position: relative;
     width: 52px;
     height: 52px;
     flex: none;
-    border: none;
+    padding: 0;
     border-radius: 50%;
-    background: var(--t-akzent-flaeche);
-    color: var(--t-akzent-text);
+    justify-content: center;
     font-size: 20px;
   }
-  .tf-rund.mittel { width: clamp(52px, 17vw, 64px); height: clamp(52px, 17vw, 64px); background: var(--t-flaeche-2); color: var(--t-text); font-size: 24px; }
+  .tf-rund.mittel { width: clamp(52px, 17vw, 64px); height: clamp(52px, 17vw, 64px); font-size: 24px; }
   .tf-rund.tf-gross { width: clamp(68px, 22vw, 84px); height: clamp(68px, 22vw, 84px); font-size: 32px; }
   .tf-zahl { position: absolute; left: 0; right: 0; bottom: 6px; font-size: 15px; font-weight: 700; }
 
@@ -275,10 +272,9 @@
   .tf-schein.ohne { background-image: radial-gradient(circle at 50% 30%, var(--t-akzent), transparent 70%); }
   .tf-schein::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--t-grund) 55%, transparent); }
   /* Glas auf dem Schein */
-  /* Glas aus der Fläche der Knöpfe, nicht aus dem Grund: auch auf flachem Schein bleiben Knöpfe Knöpfe (RAD-90) */
-  .vollbild :is(.tf-versatz, .tf-zur-liste, .tf-rund.mittel) {
+  /* Glas nur für den Kasten des Zeitversatzes; die Knöpfe darauf sind Knöpfe des Appkerns (RAD-97) */
+  .vollbild .tf-versatz {
     background: color-mix(in srgb, var(--t-flaeche-2) 70%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .vollbild .tf-versatz-knoepfe button:not(.tf-primaer) { background: color-mix(in srgb, var(--t-flaeche-2) 60%, transparent); }
   .tf-cover { display: grid; }
   .tf-cover :global(.tf-bild) { border-radius: 22px; box-shadow: 0 18px 40px -12px rgb(0 0 0 / .55); }
   .vollbild-kopf { display: flex; }
