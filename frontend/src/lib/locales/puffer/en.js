@@ -9,6 +9,7 @@ export default {
   titelVorHilfe: 'To the start of the next track (ads are skipped)',
   puffer: 'Buffer',
   pufferHilfe: 'Buffer overview: all tracks, record from here, save a range',
+  pufferZuHilfe: 'Close the buffer overview, back to the station list',
   vonLaenge: '{a} of {b}',
   laeuft: 'live',
   ohneTitel: 'No tracks in the buffer yet',

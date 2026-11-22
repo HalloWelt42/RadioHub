@@ -10,6 +10,7 @@ export default {
   titelVorHilfe: 'Zum Anfang des nächsten Titels (Werbung wird übersprungen)',
   puffer: 'Puffer',
   pufferHilfe: 'Großansicht des Puffers: alle Titel, Aufnahme ab hier, Bereich sichern',
+  pufferZuHilfe: 'Großansicht des Puffers schließen, zurück zur Senderliste',
   vonLaenge: '{a} von {b}',
   laeuft: 'läuft',
   ohneTitel: 'Noch keine Titel im Puffer',

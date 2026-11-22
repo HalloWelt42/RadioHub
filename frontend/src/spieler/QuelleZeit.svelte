@@ -61,7 +61,7 @@
          Zeitversatzes gesperrt, damit nichts rückt -->
     <div class="rh-zeit-kopf">
       {#if spulbar}
-        <button class="knopf rh-spaltenknopf" type="button" title={t("puffer.pufferHilfe")} aria-label={t("puffer.pufferHilfe")} disabled={!imVersatz} aria-pressed={pufferansicht.offen} onclick={() => pufferansicht.umschalten()}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
+        <button class="knopf rh-spaltenknopf" type="button" title={t(pufferansicht.offen ? "puffer.pufferZuHilfe" : "puffer.pufferHilfe")} aria-label={t(pufferansicht.offen ? "puffer.pufferZuHilfe" : "puffer.pufferHilfe")} disabled={!imVersatz && !pufferansicht.offen} aria-pressed={pufferansicht.offen} onclick={() => pufferansicht.umschalten()}><i class="fa-solid fa-list-ul"></i>{t("puffer.puffer")}</button>
       {/if}
       <div class="ak-glas rh-zeit-glas">
         <ak-segmente class="rh-zeit-quelle" art="14" stellen="7" text={anzeige.quelle.text} hilfe={t("kanzel.quelleHilfe")}
