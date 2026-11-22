@@ -15,6 +15,7 @@
   import { live } from '../../spieler/aktionen';
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
+  import { rasterStellen, STATUS_JE_SCHRIFT } from '../../spieler/rasterbreite';
   import { Auswahl, Geraeteliste } from 'appkern-oberflaeche';
   import { Bitrate } from '../../spieler/bitrate.svelte';
   import { BITRATEN } from '../../spieler/kanzel';
@@ -41,6 +42,10 @@
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
+  /** Rasterdisplay der Leiste (RAD-97): Zeichenhöhe des Titels in Grundschriften, Stellen nach der Breite */
+  const LEISTE_JE_SCHRIFT = 0.95;
+  let titelStellen = $state(24);
+  let zusatzStellen = $state(30);
   /** Geräte als Blatt von unten (RAD-18) */
   let geraeteOffen = $state(false);
   const kann = faehigkeiten();
@@ -72,9 +77,14 @@
   <div class="tf-leiste">
     <button class="leiste-info" onclick={() => (offen = true)} aria-label={t('telefon.spielerOeffnen')}>
       <Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
-      <span class="tf-text">
-        <span class="tf-titel">{info.title}</span>
-        <span class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</span>
+      <!-- Rasterdisplay wie die Anzeige der Kanzel (RAD-97, Wahl A): Titel und Sender als Punktmatrix hinter Glas -->
+      <span class="ak-glas rh-display tf-raster">
+        <span class="rh-display-zeile rh-display-titel" use:rasterStellen={{ jeSchrift: LEISTE_JE_SCHRIFT, melden: (n) => (titelStellen = n) }}>
+          {#key titelStellen}<ak-segmente art="punkt" stellen={titelStellen} lauf="200" farbe="gruen" text={info.title}></ak-segmente>{/key}
+        </span>
+        <span class="rh-display-zeile" use:rasterStellen={{ jeSchrift: STATUS_JE_SCHRIFT, melden: (n) => (zusatzStellen = n) }}>
+          {#key zusatzStellen}<ak-segmente art="punkt" stellen={zusatzStellen} lauf="240" farbe="gruen" text={info.artist || (folge ? '' : t('telefon.live'))}></ak-segmente>{/key}
+        </span>
       </span>
     </button>
     <button class="knopf primaer tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
@@ -210,15 +220,21 @@
   .tf-blatt { position: fixed; inset: auto 0 0; z-index: 31; box-shadow: 0 -12px 30px rgb(0 0 0 / .4); }
   .tf-fuss { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
   .tf-zur-liste { gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 16px; white-space: nowrap; }
+  /* Spielerleiste als kleines Gerät aus dem Material der Kanzel (RAD-97, Wahl A) */
   .tf-leiste {
     flex: none;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 10px 8px 12px;
-    background: var(--t-flaeche);
-    border-top: 1px solid var(--rand);
+    background-color: var(--rh-geraet);
+    background-image: var(--rh-geraet-bild);
+    color: var(--rh-geraet-tinte);
+    box-shadow: var(--rh-kanzel-schatten);
   }
+  /* das Rasterdisplay füllt den Platz zwischen Bild und Knopf; jede Zeile misst ihre eigene Breite */
+  .tf-raster { flex: 1; min-width: 0; padding: 6px 8px; gap: 2px; }
+  .tf-raster .rh-display-zeile { container-type: inline-size; }
   .leiste-info {
     flex: 1;
     min-width: 0;
@@ -232,8 +248,6 @@
     font: inherit;
     padding: 0;
   }
-  .tf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .tf-titel { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .zusatz { font-size: 15px; color: var(--t-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* Knöpfe des Appkerns (rund, knopf, primaer; RAD-97): hier nur Form und Größe, Material und Farben kommen aus der
      Vorlage (HiFi oder Klassisch) */
