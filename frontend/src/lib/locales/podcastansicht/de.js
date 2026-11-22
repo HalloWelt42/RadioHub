@@ -131,6 +131,7 @@ export default {
     zurueck: 'Zurück', sortierung: 'Sortierung', sort_neu: 'Neueste', sort_alt: 'Älteste', sort_laenge: 'Kürzeste',
     hoeren: 'Hören', weiterAb: 'Weiter ab {zeit}', vonVorn: 'Von vorn', speichern: 'Speichern', gespeichertKnopf: 'Gespeichert',
     herunterladen: 'Herunterladen', gehoert: 'Gehört', schliessen: 'Schließen', mbWolke: '{mb} MB in der Kellerwolke',
+    kurzSpeichern: 'Speichern', kurzWerbung: 'Werbung', kurzPruefen: 'Prüfen',
     abbestellenFrage: '"{name}" abbestellen?', abbestellenHinweis: 'Die Folgen verschwinden aus der Liste; gespeicherte bleiben in der Kellerwolke.',
     abonnierenTitel: 'Abonnieren', abonnierenHilfe: 'Verzeichnis durchsuchen oder Adresse eines Feeds',
     keineFolgen: 'Keine Folgen für diese Auswahl', keineAbos: 'Noch keine Abos. Mit dem Plus oben einen Podcast suchen.',

@@ -1,6 +1,7 @@
 <script lang="ts">
-  // Kopf eines Abos am Telefon (Entwurf telefon-podcasts.html, Zustand 3): Bild, Beschreibung, Zahlen; Aktualisieren,
-  // Neue speichern (Schalter), Abbestellen mit Rückfrage; darunter die Sortierung der Folgen.
+  // Kopf eines Abos am Telefon (Entwurf telefon-podcasts.html, Zustand 3): Bild, Beschreibung, Zahlen; drei Schalter
+  // (Neue speichern, Werbung überspringen, Neue Folgen prüfen) gleich breit mit Symbol, Aktualisieren und Abbestellen mit
+  // Rückfrage gleich breit (RAD-101); darunter die Sortierung der Folgen.
   import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../../lib/i18n.svelte.js";
   import { textAus } from "../../../lib/podcasts/anzeige";
@@ -32,13 +33,18 @@
     <div class="tf-meta"><span><b>{abo.folgen}</b> {t("podcastAnsicht.folgen")}</span><span><b>{abo.ungehoert}</b> {t("podcastAnsicht.ungehoert")}</span>
       {#if kannSpeichern}<span title={t("podcastAnsicht.telefon.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i> <b>{abo.gespeichert}/{abo.folgen}</b></span>{/if}</div>
   </div>
-  <div class="tp-knoepfe">
+  <!-- Einstellungen als drei gleich breite Schalter mit Symbol und kurzem Wort, darunter die beiden Aktionen gleich
+       breit (RAD-101, Wahl A); die ausführliche Erklärung steht im Hinweis -->
+  <div class="tp-schalter">
+    {#if kannSpeichern}<Schalter an={abo.autoLaden} symbol="fa-cloud-arrow-down" text={t("podcastAnsicht.telefon.kurzSpeichern")}
+                                hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />{/if}
+    <Schalter an={abo.werbungUeberspringen} farbe="bernstein" symbol="fa-ban" text={t("podcastAnsicht.telefon.kurzWerbung")}
+              hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")} onwechsel={(an) => onwerbung({ ueberspringen: an })} />
+    <Schalter an={abo.werbungPruefen} farbe="bernstein" symbol="fa-magnifying-glass" text={t("podcastAnsicht.telefon.kurzPruefen")}
+              hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")} onwechsel={(an) => onwerbung({ pruefen: an })} />
+  </div>
+  <div class="tp-abo-aktionen">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
-    {#if kannSpeichern}<Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />{/if}
-    <Schalter an={abo.werbungUeberspringen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboUeberspringen")} hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")}
-              onwechsel={(an) => onwerbung({ ueberspringen: an })} />
-    <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
-              onwechsel={(an) => onwerbung({ pruefen: an })} />
     <button class="knopf" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("podcastAnsicht.abbestellen")}</button>
   </div>
   {#if fragt}
@@ -49,3 +55,4 @@
 <div class="t-chips tp-sort"><span class="rh-still">{t("podcastAnsicht.telefon.sortierung")}</span>
   {#each SORT as s (s)}<button type="button" class="chip wahl" class:an={sortierung === s} aria-pressed={sortierung === s} onclick={() => onsortieren(s)}>{t(`podcastAnsicht.telefon.sort_${s}`)}</button>{/each}
 </div>
+
