@@ -15,6 +15,7 @@
   import { live } from '../../spieler/aktionen';
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
+  import { lack } from '../../lib/radio/anzeige';
   import { rasterStellen, STATUS_JE_SCHRIFT } from '../../spieler/rasterbreite';
   import { Auswahl, Geraeteliste } from 'appkern-oberflaeche';
   import { Bitrate } from '../../spieler/bitrate.svelte';
@@ -28,6 +29,8 @@
   const folge = $derived(!!appState.currentEpisode);
   const spielt = $derived(appState.isPlaying && !appState.isPaused);
   const bildSrc = $derived(info?.bild || null);
+  /** Name der Quelle für die Kachel ohne Logo (Kürzel und Lack wie in der Liste, RAD-100) */
+  const quellName = $derived(appState.currentStation?.name || appState.currentEpisode?.podcast?.title || info?.title || '');
   /** das Bild, sobald es wirklich geladen ist: nur dann trägt es den Farbschein, sonst der Schein aus dem Akzent (RAD-90) */
   let scheinBild = $state(null);
   $effect(() => {
@@ -76,7 +79,7 @@
 {#if info}
   <div class="tf-leiste">
     <button class="leiste-info" onclick={() => (offen = true)} aria-label={t('telefon.spielerOeffnen')}>
-      <Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
+      <Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
       <!-- Rasterdisplay wie die Anzeige der Kanzel (RAD-97, Wahl A): Titel und Sender als Punktmatrix hinter Glas -->
       <span class="ak-glas rh-display tf-raster">
         <span class="rh-display-zeile rh-display-titel" use:rasterStellen={{ jeSchrift: LEISTE_JE_SCHRIFT, melden: (n) => (titelStellen = n) }}>
@@ -96,14 +99,15 @@
 {#if offen && info}
   <div class="vollbild" role="dialog" aria-modal="true" aria-label={info.title}>
     <!-- Farbschein aus dem Logo über die ganze Fläche, Bedienflächen als Glas darauf (RAD-56, Wahl A) -->
-    <div class="tf-schein" class:ohne={!scheinBild} aria-hidden="true" style:background-image={scheinBild ? `url("${scheinBild}")` : null}></div>
+    <div class="tf-schein" class:ohne={!scheinBild} aria-hidden="true" style:background-image={scheinBild ? `url("${scheinBild}")` : null}
+      style:--lack={scheinBild ? null : lack(quellName)}></div>
     <div class="vollbild-kopf">
       <button class="kopf-knopf" onclick={() => (offen = false)} aria-label={t('telefon.spielerSchliessen')}>
         <i class="fa-solid fa-chevron-down"></i>
       </button>
     </div>
     <div class="buehne">
-      <span class="tf-cover"><Bild src={bildSrc} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px, 26svh)" /></span>
+      <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px, 26svh)" /></span>
       {#if !folge && puffer.aktiv && pTitel}
         <!-- zeigt der Zeitversatz den Titel unten im Kasten, steht oben nur der Sender, nichts doppelt (RAD-90) -->
         <h2>{info.artist || info.title}</h2>
@@ -283,7 +287,8 @@
      damit Schrift in hell und dunkel lesbar bleibt; ohne Logo ein Schein aus dem Akzent */
   .tf-schein { position: fixed; inset: -20%; z-index: 0; pointer-events: none; background-size: cover; background-position: center;
     filter: blur(60px) saturate(1.8); transform: translateZ(0); }
-  .tf-schein.ohne { background-image: radial-gradient(circle at 50% 30%, var(--t-akzent), transparent 70%); }
+  /* ohne Logo der Schein aus der Lackfarbe der Kachel (RAD-100) */
+  .tf-schein.ohne { background-image: radial-gradient(circle at 50% 30%, var(--lack, var(--t-akzent)), transparent 70%); }
   .tf-schein::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--t-grund) 55%, transparent); }
   /* Glas auf dem Schein */
   /* Glas nur für den Kasten des Zeitversatzes; die Knöpfe darauf sind Knöpfe des Appkerns (RAD-97) */
