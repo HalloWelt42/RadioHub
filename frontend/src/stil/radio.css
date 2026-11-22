@@ -198,7 +198,7 @@
   .rh-aktionen .rh-varianten-zelle { display: none; }
   .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
   .rh-varianten { padding-left: 10px; }
-  .rh-varianten { grid-template-columns: 14px minmax(0, 1fr) auto; }
+  .rh-varianten { grid-template-columns: minmax(0, 1fr) auto; }   /* Text und Hören (RAD-89: die alte Spalte der Leuchte drückte den Text auf ein Zeichen) */
   .rh-variante .rh-guete-text, .rh-variante .stimmen-v { display: none; }
 }
 @container liste (max-width: 26em) {

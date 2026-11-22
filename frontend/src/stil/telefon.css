@@ -41,7 +41,7 @@
 .tf-meta .t-var { display: inline-flex; gap: 6px; align-items: center; color: var(--akzent); font-weight: 600; font: inherit; font-weight: 600;
   min-block-size: 32px; padding: 0 2px; border: 0; background: none; cursor: pointer; }
 .tf-varianten { margin: -2px 0 8px; }
-.tf-varianten .rh-varianten { grid-template-columns: 14px minmax(0, 1fr) auto; padding: 0; }
+.tf-varianten .rh-varianten { grid-template-columns: minmax(0, 1fr) auto; padding: 0; }   /* Text und Hören; Güte und Stimmen ausgeblendet (RAD-89) */
 .tf-varianten .rh-variante .rh-guete-text, .tf-varianten .rh-variante .stimmen-v { display: none; }
 .t-titel { margin-top: 2px; font-size: var(--klein); color: var(--text-2); overflow-wrap: anywhere; }
 .t-titel i { color: var(--led-blau); margin-right: 6px; }
