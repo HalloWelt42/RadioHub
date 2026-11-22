@@ -70,7 +70,7 @@
 .rh-facette.ohne-kennung { grid-template-columns: 22px minmax(0, 1fr) auto; }
 .rh-kennung { font-family: var(--schrift-zahl); font-size: var(--marke); line-height: 1.5; padding: 0 6px; border-radius: var(--r1); background-color: var(--mulde); box-shadow: var(--rh-mulde);
   color: var(--text-2); min-inline-size: 3ch; text-align: center; }
-.rh-sterne { color: var(--led-bernstein); letter-spacing: 1px; white-space: nowrap; font-size: var(--klein); line-height: 1.6;
+.rh-sterne { color: var(--rh-favorit); letter-spacing: 1px; white-space: nowrap; font-size: var(--klein); line-height: 1.6;
   text-shadow: 0 0 calc(8px * var(--ak-leuchten)) color-mix(in srgb, var(--led-bernstein) 50%, transparent); }
 .rh-sterne .aus { color: var(--text-3); opacity: .45; text-shadow: none; }
 .rh-chips-wahl { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -121,7 +121,9 @@
 .rh-spalten, .rh-sender-kern { --rh-varianten: calc(var(--klein) * 10.6); --rh-aktionen: calc(var(--rh-varianten) + 144px); display: grid; gap: 0 14px; align-items: start;
   grid-template-columns: calc(var(--gross) * 3) minmax(0, 1.5fr) minmax(0, 1fr) calc(var(--klein) * 9.6) calc(var(--klein) * 5.4) var(--rh-aktionen);
   grid-template-areas: "logo name genres guete stimmen aktionen"; }
-.rh-spalten { position: sticky; top: 0; z-index: 2; padding: 10px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
+/* Spaltenkopf klebt einen Pixel über der Oberkante der Liste: beginnt die Liste auf einem halben Pixel, rundet die
+   Darstellung den Kopf nach unten und die rollenden Zeilen schienen in einer feinen Linie darüber durch (RAD-16) */
+.rh-spalten { position: sticky; top: -1px; z-index: 2; padding: 11px calc(var(--rh-rand) + 14px) 8px; margin: 0 calc(-1 * var(--rh-rand)) 8px;
   font-size: var(--marke); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); background-color: var(--hg); box-shadow: 0 1px 0 var(--rand); }
 .rh-spalten .rechts { text-align: right; }
 /* sortierbare Titel (RAD-25): sehen aus wie der Spaltentitel, der aktive hell mit Pfeil seiner Richtung */
@@ -149,18 +151,20 @@
 .rh-sender.offen { background-color: var(--karte); }
 .rh-sender .rh-logo-bild { grid-area: logo; }
 .rh-sender .name { grid-area: name; min-width: 0; padding-top: 2px; }
-/* höchstens zwei Zeilen; der volle Name steht im Hinweis und im Steckbrief (Nutzer 20.11.2026 zu einem Namen über 15
-   Zeilen: "sowas darf nicht passieren") */
-.rh-sender .name b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; font-weight: 600; font-size: var(--gross);
-  line-height: 1.3; overflow-wrap: anywhere; }
+/* eine Zeile, lange Namen enden mit ...; der volle Name steht im Hinweis (Nutzer 22.11.2026, RAD-59) */
+.rh-sender .name b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: var(--gross);
+  line-height: 1.3; }
 .rh-sender .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 3px; font-size: var(--klein); color: var(--text-3); }
 .rh-titel { color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
 .rh-titel i { color: var(--led-blau); margin-right: 6px; }
+/* Genres in höchstens zwei Zeilen (zeilenbegrenzung.ts): voll, so weit Platz ist; das letzte Label nimmt den Rest auf,
+   füllt seine Zeile und kürzt sich mit ... (RAD-59) */
 .rh-sender .genres { grid-area: genres; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; min-width: 0; }
 .rh-genre { font-size: var(--marke); padding: 1px 8px; border-radius: var(--r1); color: var(--text-2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); white-space: nowrap; }
-.rh-sender .guete-zelle { grid-area: guete; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "licht stufe" "licht format"; gap: 0 8px; align-items: center; padding-top: 2px; font-size: var(--klein); }
+.rh-sender .genres .rh-genre { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; }
+.rh-sender .genres .rh-genre-rest { flex: 1 1 0; min-inline-size: 3.5em; }
+.rh-sender .guete-zelle { grid-area: guete; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "licht format"; gap: 0 8px; align-items: center; padding-top: 6px; font-size: var(--klein); }   /* gleichauf mit den Stimmen */   /* ohne Wort wie mittel, Codec und Bitrate reichen (RAD-59) */
 .rh-sender .guete-zelle .rh-guete { grid-area: licht; }
-.rh-sender .guete-zelle b { grid-area: stufe; font-weight: 600; line-height: 1.3; }
 .rh-sender .guete-zelle span { grid-area: format; color: var(--text-3); font-family: var(--schrift-zahl); white-space: nowrap; line-height: 1.3; }
 .rh-sender .stimmen { grid-area: stimmen; display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 6px; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-2); white-space: nowrap; }
 .rh-sender .stimmen i { color: var(--text-3); margin-right: 6px; font-size: .9em; }
@@ -196,8 +200,8 @@
   .rh-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .rh-spalten > .rh-ohne-sort { display: none; }
   .rh-sender-kern { grid-template-columns: calc(var(--gross) * 3) minmax(0, 1fr) auto; grid-template-areas: "logo name aktionen" "guete guete guete" "genres genres stimmen"; gap: 8px 12px; padding: 10px; }
-  .rh-sender .guete-zelle { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "licht stufe format"; padding-top: 0; }
   .rh-sender .stimmen { align-self: end; padding-top: 0; }
+  .rh-sender .guete-zelle { padding-top: 0; }
   .rh-aktionen { grid-template-columns: 44px 44px 44px; }
   .rh-aktionen .rh-varianten-zelle { display: none; }
   .rh-sender .meta .rh-varianten-knopf-schmal { display: inline-flex; }
@@ -251,7 +255,7 @@
    die Sterne gleich hoch */
 .rh-bewerten { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rh-stern { inline-size: 30px; block-size: 30px; font-size: var(--klein); border: 0; border-radius: var(--r2); background-color: var(--flaeche-2); background-image: var(--rh-erhaben); box-shadow: var(--rh-kante); cursor: pointer; color: var(--text-3); }
-.rh-stern.an { color: var(--led-bernstein); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) var(--led-bernstein); }
+.rh-stern.an { color: var(--rh-favorit); text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-favorit) 60%, transparent); }
 .rh-bewerten .chip.wahl { min-block-size: 30px; block-size: 30px; padding: 0 10px; gap: 6px; font-size: var(--marke); }
 .rh-ohne-treffer { padding: 40px 16px; display: grid; justify-items: center; gap: 10px; text-align: center; color: var(--text-2); }
 .rh-ohne-treffer i { font-size: 32px; color: var(--text-3); }
@@ -316,9 +320,10 @@
 @container liste (max-width: 820px) { .rh-detail-dicht, .rh-detail-dicht:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); } }
 .rh-werte-dicht { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; font-size: var(--klein); align-items: center; }
 .rh-werte-dicht dt { color: var(--text-3); }
-.rh-werte-dicht dd { margin: 0; min-width: 0; }
+.rh-werte-dicht dd { margin: 0; min-width: 0; font-weight: 700; }   /* Werte fett und hell, die Werbung daneben grau (RAD-59) */
 .rh-werte-dicht dd a { color: var(--akzent); }
-.rh-werte-dicht .rh-laeuft { align-items: center; }
+.rh-werte-dicht .rh-laeuft { align-items: center; min-block-size: 28px; }   /* so hoch wie mit Kopierknopf, auch leer (RAD-59) */
+.rh-werte-dicht .rh-titelinfo { min-block-size: calc(var(--klein) * 1.25 + 6px); }   /* so hoch wie die Wahl zuverlässig/ungenau */
 .rh-werte-dicht .rh-laeuft span, .rh-kurz { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-kurz { display: block; }
 .rh-strom-dicht { display: flex; gap: 4px; align-items: center; min-width: 0; }
@@ -339,7 +344,8 @@
 /* Anzahl und Stecker auf festen Plätzen: gleiche Abstände mit und ohne Stecker (RAD-59) */
 .rh-werbender summary > .rh-zahl { justify-self: end; }
 .rh-werbender summary::-webkit-details-marker { display: none; }
-.rh-werbender summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-werbender summary { color: var(--text-3); }
+.rh-werbender summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
 .rh-pfeil { color: var(--text-3); font-size: .8em; transition: transform .15s; }
 .rh-werbender[open] .rh-pfeil { transform: rotate(90deg); }
 .rh-verbinden { color: var(--text-3); justify-self: center; }   /* neutral wie graue Schrift (RAD-59) */
@@ -360,7 +366,7 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 /* Kopf "Eigene Filter" mit Plus: so hoch wie eine Steckbriefzeile mit Mini-Knöpfen, Schrift auf derselben Linie (RAD-59) */
 .rh-einschaetzung-kopf { display: flex; gap: 8px; align-items: center; min-block-size: 28px; font-size: var(--klein); }
 .rh-werbung-zahlen { display: flex; align-items: center; min-block-size: 28px; }   /* "17 × Werbung" auf derselben Linie */
-.rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit, var(--led-gelb)); font-size: var(--klein); }
+.rh-gewaehlt-sterne { display: inline-flex; gap: 2px; color: var(--rh-favorit); font-size: var(--klein); }
 .chip.rh-chip-klein { padding-block: 2px; min-block-size: 0; font-size: var(--klein); }
 .chip .rh-weg { margin-left: 6px; opacity: .6; }
 .rh-tafel-anker { position: relative; }

@@ -203,7 +203,7 @@ def test_spots_zaehlen_und_schalter_je_sender(client):
     w.stille(104.6, 104.65)                                   # Stille am Ende: jetzt erst gezählt, mit genauer Länge
     w.angabe(OLDIE, 130.0)                                    # ohne Stille: gezählt, sobald das Fenster vorbei ist
     (eintrag,) = [e for e in client.get("/api/sendewerbung").json() if e["uuid"] == "sender-1"]
-    assert (eintrag["uuid"], eintrag["spots"], eintrag["ueberspringen"]) == ("sender-1", 2, True)
+    assert (eintrag["uuid"], eintrag["spots"], eintrag["ueberspringen"], eintrag["marke"]) == ("sender-1", 2, True, True)
     brief = client.get("/api/sendewerbung/sender-1").json()
     assert {(s["kennung"], s["anzahl"], s["dauer_ms"], s["beim_verbinden"]) for s in brief["liste"]} == {
         ("198927", 1, 15046, True), ("199103", 2, 14650, False)}                  # Länge der letzten Messung
@@ -214,4 +214,20 @@ def test_spots_zaehlen_und_schalter_je_sender(client):
     client.put("/api/config", json={"updates": {"werbung_ueberspringen": True}})       # für die übrigen Tests zurück
     spots.setzen("sender-1", True)
     assert client.get("/api/sendewerbung/ohne-spots").json() == {
-        "uuid": "ohne-spots", "name": "", "spots": 0, "zuletzt": None, "ueberspringen": True, "ausgenommen": False, "liste": []}
+        "uuid": "ohne-spots", "name": "", "spots": 0, "zuletzt": None, "ueberspringen": True, "ausgenommen": False,
+        "marke": False, "liste": []}
+
+
+def test_marke_werbung_bleibt_entfernt(client):
+    """Ein werbender Sender trägt die Marke Werbung; entfernt bleibt sie weg, auch bei neuen Spots (RAD-59)."""
+    from app.sendewerbung import spots
+    w = Sitzungswerbung(bei_ende=lambda s: spots.merken("sender-marke", s))
+    w.angabe(FFH, 1.0)
+    w.angabe(OLDIE, 20.0)
+    assert client.get("/api/sendewerbung/sender-marke").json()["marke"] is True
+    assert client.delete("/api/sendewerbung/sender-marke/marke").json()["marke"] is False
+    w.angabe(OTTO, 40.0)                                      # neuer Fund: die Marke kommt nicht zurück
+    w.angabe(OLDIE, 55.0)
+    w.angabe(OLDIE, 80.0)                                     # Fenster vorbei: gezählt
+    brief = client.get("/api/sendewerbung/sender-marke").json()
+    assert (brief["spots"], brief["marke"]) == (2, False)

@@ -37,6 +37,8 @@ export interface SenderWerbung {
   zuletzt: string | null;
   ueberspringen: boolean;
   ausgenommen: boolean;
+  /** Marke Werbung: einmal Werbung erkannt und die Marke nicht entfernt (RAD-59); wirkt nicht auf Filter */
+  marke: boolean;
 }
 
 export interface Steckbrief extends SenderWerbung {
@@ -56,6 +58,11 @@ export class Sendewerbung {
 
   setzen(uuid: string, ueberspringen: boolean): Promise<Steckbrief> {
     return this.a(`/api/sendewerbung/${encodeURIComponent(uuid)}`, { methode: "PUT", daten: { ueberspringen } });
+  }
+
+  /** die Marke Werbung dauerhaft entfernen; neue Spots bringen sie nicht zurück */
+  markeEntfernen(uuid: string): Promise<Steckbrief> {
+    return this.a(`/api/sendewerbung/${encodeURIComponent(uuid)}/marke`, { methode: "DELETE" });
   }
 
   /** Einstellung für alle Sender (werbung_ueberspringen, Vorgabe an) */

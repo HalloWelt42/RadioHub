@@ -3,7 +3,8 @@
 Jede abgeschlossene Werbestelle aus den Sendedaten zählt ihren Spot (je Sender, Format und Kennung eine Zeile, mit
 Anzahl und wann zuerst und zuletzt). Ein Sender mit mindestens einem Spot gilt als werbend; schon ein Fund reicht.
 Ob angekündigte Werbung übersprungen wird, sagt die Einstellung für alle Sender (`werbung_ueberspringen`) und, wo
-eine Zeile in `sender_werbung` steht, die Ausnahme des Senders."""
+eine Zeile in `sender_werbung` steht, die Ausnahme des Senders. Ein werbender Sender trägt die Marke Werbung (RAD-59),
+bis man sie entfernt (`werbemarke_aus`); sie ist nur eine Marke und wirkt nicht auf den Werbeverdacht oder Regeln."""
 
 from __future__ import annotations
 
@@ -37,6 +38,8 @@ class SenderWerbung(BaseModel):
     ueberspringen: bool
     #: der Sender ist ausgenommen (eigene Zeile mit aus)
     ausgenommen: bool = False
+    #: Marke Werbung: Werbung erkannt und die Marke nicht entfernt
+    marke: bool = False
 
 
 class Steckbrief(SenderWerbung):
@@ -80,19 +83,27 @@ def setzen(uuid: str, ueberspringen: bool) -> None:
                          "ON CONFLICT(uuid) DO UPDATE SET ueberspringen = 0", (uuid,))
 
 
+def marke_entfernen(uuid: str) -> None:
+    """Die Marke Werbung des Senders dauerhaft entfernen; neue Spots bringen sie nicht zurück."""
+    with db_session() as conn:
+        conn.execute("INSERT OR IGNORE INTO werbemarke_aus (uuid) VALUES (?)", (uuid,))
+
+
 SENDER_SQL = """
 SELECT w.sender_uuid, COALESCE(MAX(st.name), MAX(f.name), '') AS name, COUNT(*) AS spots, MAX(w.zuletzt) AS zuletzt,
-       MAX(CASE WHEN sw.ueberspringen = 0 THEN 1 ELSE 0 END) AS ausgenommen
+       MAX(CASE WHEN sw.ueberspringen = 0 THEN 1 ELSE 0 END) AS ausgenommen,
+       MAX(CASE WHEN ma.uuid IS NULL THEN 1 ELSE 0 END) AS marke
 FROM werbespots w
 LEFT JOIN stations st ON st.uuid = w.sender_uuid
 LEFT JOIN favorites f ON f.uuid = w.sender_uuid
 LEFT JOIN sender_werbung sw ON sw.uuid = w.sender_uuid
+LEFT JOIN werbemarke_aus ma ON ma.uuid = w.sender_uuid
 """
 
 
 def _sender(z, alle_an: bool) -> SenderWerbung:
     return SenderWerbung(uuid=z[0], name=(z[1] or "").strip(), spots=z[2], zuletzt=z[3], ausgenommen=bool(z[4]),
-                         ueberspringen=alle_an and not z[4])
+                         ueberspringen=alle_an and not z[4], marke=bool(z[5]))
 
 
 def werbende() -> list[SenderWerbung]:

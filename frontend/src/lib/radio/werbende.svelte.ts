@@ -28,7 +28,7 @@ class Werbende {
   /** nach einer Änderung am Steckbrief eines Senders */
   merken(s: Steckbrief): void {
     const neu = new Map(this.sender);
-    if (s.spots) neu.set(s.uuid, { uuid: s.uuid, name: s.name, spots: s.spots, zuletzt: s.zuletzt, ueberspringen: s.ueberspringen, ausgenommen: s.ausgenommen });
+    if (s.spots) neu.set(s.uuid, { uuid: s.uuid, name: s.name, spots: s.spots, zuletzt: s.zuletzt, ueberspringen: s.ueberspringen, ausgenommen: s.ausgenommen, marke: s.marke });
     else neu.delete(s.uuid);
     this.sender = neu;
   }

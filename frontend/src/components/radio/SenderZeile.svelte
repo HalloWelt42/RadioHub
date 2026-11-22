@@ -11,6 +11,7 @@
   import SenderDetail from "./SenderDetail.svelte";
   import Varianten from "./Varianten.svelte";
   import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
+  import { zeilenbegrenzung } from "../../lib/radio/zeilenbegrenzung";
 
   let { eintrag: e, spielt, aufnahme, offen, fokus, variantenOffen, spielend, kategorien,
         onspielen, ondetails, onvarianten, onfavorit, onausblenden, oneinblenden, onaendern }: {
@@ -34,6 +35,9 @@
     onaendern: (teil: Partial<SenderEintrag>) => void;
   } = $props();
 
+  /** Genres stehen in höchstens so vielen Zeilen; mehr macht die Zeile nie höher */
+  const GENRE_ZEILEN = 2;
+  let genresBis = $state<number | null>(null);
   const mehrere = $derived(e.varianten > 1);
   const ausgeblendet = $derived(einzelnAusgeblendet(e));
 
@@ -70,8 +74,11 @@
         {#if mehrere}{@render variantenKnopf(true)}{/if}
       </div>
     </div>
-    <div class="genres">{#each e.genres as g (g)}<span class="rh-genre">{g}</span>{/each}</div>
-    <div class="guete-zelle"><Guete stufe={e.qualitaet} /><b>{qualitaetName(e.qualitaet)}</b><span>{format(e)}</span></div>
+    <!-- Genres in höchstens zwei Zeilen, voll so weit Platz ist; das letzte nimmt den Rest auf und kürzt sich mit ... (RAD-59) -->
+    <div class="genres" title={e.genres.join(", ")} use:zeilenbegrenzung={{ zeilen: GENRE_ZEILEN, anzahl: e.genres.length, setzen: (b) => (genresBis = b) }}>
+      {#each genresBis === null ? e.genres : e.genres.slice(0, genresBis - 1) as g (g)}<span class="rh-genre">{g}</span>{/each}
+      {#if genresBis !== null}<span class="rh-genre rh-genre-rest">{e.genres.slice(genresBis - 1).join(", ")}</span>{/if}</div>
+    <div class="guete-zelle" title={qualitaetName(e.qualitaet)}><Guete stufe={e.qualitaet} /><span>{format(e)}</span></div>
     <div class="stimmen">
       {@render minusKnopf("rh-auge-schmal")}
       <span title={t("radio.stimmenHilfeZeile")}><i class="fa-solid fa-thumbs-up"></i>{zahl(e.stimmen)}</span>

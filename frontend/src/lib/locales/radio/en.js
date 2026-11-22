@@ -159,6 +159,7 @@ export default {
   titelPuenktlich: 'reliable',
   titelUngenauKurz: 'inaccurate',
   werbungZahlen: '{m} × ads',
+  werbemarkeHilfe: 'Ads detected in the stream data. Only a label, it does not affect filters; once removed it stays away',
   werbungZahlenHilfe: '{m} × ads with {s} spots from {w} advertisers, from the stream data: advertiser, ID and length as the station states them',
   werbungOhneName: 'Spot {k}',
   werbungKeineBekannt: 'no announced ads known',

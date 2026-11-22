@@ -48,7 +48,7 @@
   --rh-licht-aus: #07090b;                     /* Grund eines dunklen Lichts (aus geschaltete Leuchten) */
   --rh-licht-unbekannt: #1a1e24;               /* Qualität unbekannt: Lichter schraffiert */
   --rh-schraffur: rgb(255 255 255 / .08);      /* Schraffur auf dunklem Licht */
-  --rh-favorit: var(--led-gelb);               /* Stern eines Favoriten */
+  --rh-favorit: var(--akzent-flaeche);         /* jeder Stern (Favorit, Bewertung): Farbe der gewählten Labels (RAD-59) */
   --rh-verworfen: color-mix(in srgb, var(--led-rot) 16%, transparent);   /* verworfenes Stück im Schnitt */
   --rh-auf-rot: #fff;           /* Schrift auf roter Fläche (Marken "läuft" und "live" im Puffer, RAD-46) */
   --rh-bildcode-grund: #fff;                    /* heller Grund unter Bildcodes (Bedanken), in beiden Themen lesbar */
@@ -57,7 +57,6 @@
 }
 :root[data-theme="hell"] {
   --rh-logo: #1f5fa6;
-  --rh-favorit: #9a6a00;
 }
 
 /* ═══ Tasten der Kanzel ═══ (RAD-58, Entwurf mockups/radio-filter/tasten.html, abgenommen 22.11.2026): dunkel

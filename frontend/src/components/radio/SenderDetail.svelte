@@ -53,6 +53,14 @@
       werbende.merken(werbung);
     });
   }
+  /** Marke Werbung, sobald einmal Werbung erkannt wurde (RAD-59); steht die eigene Markierung, gilt nur diese */
+  const werbemarke = $derived(faehig.werbung && !!werbung?.marke && !eintrag.bewertungen.includes("werbung"));
+  function werbemarkeEntfernen() {
+    void tun(async () => {
+      werbung = await sendewerbung.markeEntfernen(eintrag.uuid);
+      werbende.merken(werbung);
+    });
+  }
   // Werbende, die häufigsten zuerst; lange Listen rollen in sich und zeigen höchstens die häufigsten (haeufigste)
   const gruppen = $derived(nachWerbenden(werbung?.liste ?? []));
   const mal = $derived(gruppen.reduce((n, g) => n + g.mal, 0));
@@ -76,7 +84,7 @@
   const sterne = $derived(Math.max(0, ...eintrag.bewertungen.map(sterneVon)));
   const strom = $derived(steckbrief ? (steckbrief.eigeneAdresse || steckbrief.adresse) : "");
   /** Einträge der eigenen Einschätzung (Sterne zählen als einer); ab sechs rollt die Liste in sich */
-  const anzahlEinschaetzung = $derived((sterne > 0 ? 1 : 0) + MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)).length
+  const anzahlEinschaetzung = $derived((sterne > 0 ? 1 : 0) + (werbemarke ? 1 : 0) + MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)).length
     + (steckbrief?.widerspruch && faehig.werbung ? 1 : 0) + (faehig.kategorien ? kategorien.filter((k) => eintrag.kategorien.includes(k.id)).length : 0));
 
   async function tun(arbeit: () => Promise<void>) {
@@ -159,12 +167,8 @@
 <div class="rh-detail rh-detail-dicht">
   <!-- ohne Überschriften (Nutzer 22.11.2026, RAD-59): Steckbrief, eigene Filter, Werbung sprechen für sich -->
   <section class="rh-tafel-detail" aria-label={t("radio.steckbrief")}>
+    <!-- Stream zuoberst, jede Beschriftung steht immer, auch ohne Wert: die Zeilen bleiben an ihrem Platz (RAD-59) -->
     <dl class="rh-werte-dicht">
-      {#if spielt && appState.streamTitle}
-        <dt>{t("radio.laeuft")}</dt>
-        <dd class="rh-laeuft"><span>{appState.streamTitle}</span><button class="rund rh-mini" type="button" title={t("radio.titelKopieren")}
-            aria-label={t("radio.titelKopieren")} onclick={() => kopiere(appState.streamTitle ?? "", t("radio.titel"))}><i class="fa-regular fa-copy"></i></button></dd>
-      {/if}
       <dt>{t("radio.stream")}{#if eintrag.eigene_adresse}<span class="rh-eigen">{t("radio.eigene")}</span>{/if}</dt>
       {#if bearbeiten}
         <dd class="rh-strom-eingabe">
@@ -191,32 +195,31 @@
           {/if}
         </dd>
       {/if}
+      <dt>{t("radio.laeuft")}</dt>
+      <dd class="rh-laeuft">{#if spielt && appState.streamTitle}<span>{appState.streamTitle}</span><button class="rund rh-mini" type="button" title={t("radio.titelKopieren")}
+          aria-label={t("radio.titelKopieren")} onclick={() => kopiere(appState.streamTitle ?? "", t("radio.titel"))}><i class="fa-regular fa-copy"></i></button>{/if}</dd>
       <dt>{t("radio.codec")}</dt>
       <dd>{eintrag.codec === "unbekannt" ? t("radio.unbekannt") : eintrag.codec}{#if eintrag.kbps}{` ${zahl(eintrag.kbps)} kbit/s`}{/if}<i class="fa-solid fa-circle-info rh-info"
         title={`${eintrag.kbps_gemessen ? t("radio.gemessenKlein") : t("radio.lautVerzeichnis")} · ${t("radio.qualitaetTitel")} ${qualitaetName(eintrag.qualitaet)}`}></i></dd>
-      {#if eintrag.homepage}
-        <dt>{t("radio.homepage")}</dt>
-        <dd class="rh-kurz"><a href={eintrag.homepage} target="_blank" rel="noopener noreferrer" title={eintrag.homepage}>{eintrag.homepage.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd>
-      {/if}
+      <dt>{t("radio.homepage")}</dt>
+      <dd class="rh-kurz">{#if eintrag.homepage}<a href={eintrag.homepage} target="_blank" rel="noopener noreferrer" title={eintrag.homepage}>{eintrag.homepage.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a>{/if}</dd>
       <dt>{t("radio.sprachen")}</dt>
       <dd>{eintrag.sprachen.length ? eintrag.sprachen.map((s) => s.name).join(", ") : t("radio.keineAngabe")}</dd>
       <dt>{t("radio.ort")}</dt>
       <dd>{[eintrag.bundesland, landName(eintrag.land, eintrag.land_name)].filter(Boolean).join(", ") || t("radio.keineAngabe")}</dd>
       <dt>{t("radio.geprueft")}</dt>
       <dd>{#if eintrag.verschwunden}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.verschwundenKurz")}{:else if eintrag.erreichbar}<i class="fa-solid fa-check rh-gut"></i>{t("radio.erreichbarKurz")}{:else}<i class="fa-solid fa-circle-xmark rh-schlecht"></i>{t("radio.nichtErreichbarKurz")}{/if}</dd>
-      {#if faehig.titelBewerten && steckbrief?.titel}
+      {#if faehig.titelBewerten}
         <dt>{t("radio.titelKurz")}</dt>
-        <dd><span class="segment rh-segment-klein" role="group" aria-label={t("radio.titelImStrom")}>
+        <dd class="rh-titelinfo">{#if steckbrief?.titel}<span class="segment rh-segment-klein" role="group" aria-label={t("radio.titelImStrom")}>
           <button type="button" class:aktiv={steckbrief.titelGuete === "genau"} aria-pressed={steckbrief.titelGuete === "genau"}
                   title={t("radio.titelGenauHilfe")} onclick={() => titelGuete("genau")}>{t("radio.titelPuenktlich")}</button>
           <button type="button" class:aktiv={steckbrief.titelGuete === "ungenau"} aria-pressed={steckbrief.titelGuete === "ungenau"}
                   title={t("radio.titelUngenauHilfe")} onclick={() => titelGuete("ungenau")}>{t("radio.titelUngenauKurz")}</button>
-        </span></dd>
+        </span>{/if}</dd>
       {/if}
-      {#if eintrag.ausnahme.length}
-        <dt>{t("radio.sichtbarkeit")}</dt>
-        <dd class="rh-ausnahme"><i class="fa-solid fa-star"></i>{t("radio.ausnahme", { gruende: eintrag.ausnahme.map((g) => g.titel).join("; ") })}</dd>
-      {/if}
+      <dt>{t("radio.sichtbarkeit")}</dt>
+      <dd class="rh-ausnahme">{#if eintrag.ausnahme.length}<i class="fa-solid fa-star"></i>{t("radio.ausnahme", { gruende: eintrag.ausnahme.map((g) => g.titel).join("; ") })}{/if}</dd>
     </dl>
   </section>
 
@@ -261,6 +264,10 @@
       <!-- die Auswahl als Liste gleich großer Einträge, die bei vielen in sich rollt wie die Werbeliste (RAD-59) -->
       <div class="rh-einschaetzung-liste" class:rh-liste-rollt={anzahlEinschaetzung > 5}>
       {#if sterne}<span class="chip wahl an rh-chip-klein rh-gewaehlt-sterne" title={bewertungName(`sterne:${sterne}`)}>{#each { length: sterne } as _, i (i)}<i class="fa-solid fa-star"></i>{/each}</span>{/if}
+      {#if werbemarke}
+        <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.werbemarkeHilfe")} onclick={werbemarkeEntfernen}>
+          <i class="fa-solid fa-rectangle-ad"></i>{bewertungName("werbung")}<i class="fa-solid fa-xmark rh-weg"></i></button>
+      {/if}
       {#each MARKIERUNGEN.filter((b) => eintrag.bewertungen.includes(b)) as b (b)}
         <button type="button" class="chip wahl an rh-chip-klein" title={t("radio.abwaehlen")} onclick={() => markieren(b)}>
           {#if b === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{bewertungName(b)}<i class="fa-solid fa-xmark rh-weg"></i></button>

@@ -553,7 +553,16 @@ CREATE INDEX idx_werbestellen_folge ON werbestellen(folge_id, von);
 CREATE INDEX idx_werbestellen_aufnahme ON werbestellen(aufnahme_id, von);
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9]
+# Stufe 10 (RAD-59): ein Sender mit bekannten Spots trägt die Marke Werbung, bis man sie entfernt; entfernt bleibt sie
+# weg, auch wenn der Sender später wieder Werbung ankündigt
+STUFE_10 = """
+CREATE TABLE werbemarke_aus (
+    uuid TEXT PRIMARY KEY,
+    seit TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

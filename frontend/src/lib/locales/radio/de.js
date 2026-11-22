@@ -159,6 +159,7 @@ export default {
   titelPuenktlich: 'zuverlässig',
   titelUngenauKurz: 'ungenau',
   werbungZahlen: '{m} × Werbung',
+  werbemarkeHilfe: 'Werbung in den Sendedaten erkannt. Nur eine Marke, sie wirkt nicht auf Filter; entfernt bleibt sie weg',
   werbungZahlenHilfe: '{m} × Werbung mit {s} Spots von {w} Werbenden, aus den Sendedaten: Werbender, Kennung und Länge, wie der Sender sie angibt',
   werbungOhneName: 'Spot {k}',
   werbungKeineBekannt: 'keine angekündigte Werbung bekannt',
