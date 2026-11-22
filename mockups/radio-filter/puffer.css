@@ -138,3 +138,21 @@
 /* Hinweis zur Aufnahme: Zeichen, Text, Knöpfe in einer Reihe; schmal bricht der Text um, die Knöpfe bleiben rechts */
 .pz-band { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; }
 .pz-band > i.pz-rot { color: var(--led-rot); }
+
+/* ═══ Kanzel ohne Titelzeile (RAD-60) ═══ in voller Breite der Seite, wie die Kanzel im breiten Fenster */
+.rh-rahmen-block.rp-breit.pz60-block { max-inline-size: none; }
+/* alle vier Module in einer Reihe; in Quelle und Zeit steht Puffer über Live,
+   die Segmentanzeige reicht bis dahin. Die Angabe unter dem Balken ist fest reserviert (40ch), nichts springt. */
+.pz60-kanzel { display: grid; grid-template-columns: minmax(12em, 1fr) auto auto auto; gap: 14px; align-items: stretch; }
+.pz60-kanzel > .rh-modul { grid-area: auto; min-inline-size: 0; inline-size: auto; }
+.pz60-raster { display: grid; grid-template-columns: auto minmax(min-content, 1fr) auto auto; gap: 6px; align-items: center; }
+.pz60-glas { grid-column: 1 / 4; }
+/* Segmente in der Größe der Kanzel (wie #q-text und #zeit): die Anzeige ist so lang wie ihr Inhalt, Puffer daneben */
+.pz60-glas ak-segmente[art="14"] { --ak-zelle: calc(var(--gross) * 6.6); --ak-zeichen-max: 22px; }
+.pz60-glas ak-segmente[art="7"] { --ak-zelle: calc(var(--gross) * 8.4); --ak-zeichen-max: 28px; }
+.pz60-puffer { grid-column: 4; }
+.pz60-raster .knopf { block-size: 34px; padding: 0 8px; gap: 6px; font-size: var(--marke); }
+.pz60-raster .rh-puffer > span { min-inline-size: 40ch; font-family: var(--schrift-zahl); font-variant-numeric: tabular-nums; }
+.pz60-vor { position: relative; display: inline-grid; }
+.pz60-tipp { bottom: calc(100% + 10px); left: 50%; }
+@container (max-width: 1100px) { .pz60-kanzel { grid-template-columns: minmax(0, 1fr) auto; } }

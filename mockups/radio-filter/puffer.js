@@ -217,7 +217,57 @@
   const tListe = (el) => tPuffer(el, { offen: A.find((a) => a.titel.startsWith("Ace")).nr });
   const tBereich = (el) => { const v = A.find((a) => a.titel.startsWith("Seal")), b = A.find((a) => a.titel.startsWith("Fettes")); tPuffer(el, { bereich: [v.von, b.bis] }); };
 
-  const ZUSTAENDE = { versatz, aufnahme, gross, bereich, jung, "t-spieler": tSpieler, "t-liste": tListe, "t-bereich": tBereich };
+  // 9 und 10 (RAD-60): die ganze Kanzel ohne Titelzeile. Der Titel steht in der Matrixanzeige; Vor und Zurück der
+  // Steuerung springen im Zeitversatz kurz gedrückt durch die Titel, lang gedrückt wechseln sie den Sender; Puffer sitzt
+  // über Live neben der kürzeren Segmentanzeige.
+  const laut = `<section class="rh-modul rh-m-laut"><div class="ak-geraet rh-laut" data-bauform="inspektor">
+      <span class="ak-schraube lo" style="--dreh:12deg"></span><span class="ak-schraube ro" style="--dreh:58deg"></span><span class="ak-etikett">Lautstärke</span>
+      <div class="rh-laut-reihe"><span class="rh-vu"><ak-pegel richtung="senkrecht" kanaele="1" segmente="12" skala="" beschriftung="Pegel links"></ak-pegel>L</span>
+        <ak-dreh name="Lautstärke" wert="70" vorgabe="50" einheit="%"></ak-dreh>
+        <span class="rh-vu"><ak-pegel richtung="senkrecht" kanaele="1" segmente="12" skala="" beschriftung="Pegel rechts"></ak-pegel>R</span></div></div></section>`;
+  const steuerung = ({ titel, aufnahme: rec = false, tipp = "" }) => `<section class="rh-modul rh-m-steuerung pz60-steuerung" aria-label="Steuerung"><span class="ak-etikett">Steuerung</span>
+      <div class="rh-steuerung"><div class="rh-transport">
+        <ak-taster art="glas" symbol="fa-backward-step" farbe="weiss" led="bernstein" modus="tasten" hilfe="${titel ? "Kurz: Anfang dieses Titels, gleich danach vorheriger Titel · lang: vorheriger Sender" : "Vorheriger Sender"}"></ak-taster>
+        <ak-taster art="glas" symbol="fa-stop" farbe="weiss" led="weiss" modus="tasten" hilfe="Stopp"></ak-taster>
+        <ak-taster art="glas" symbol="fa-play" farbe="gruen" led="gruen" hilfe="Hören oder anhalten" an></ak-taster>
+        <ak-taster art="glas" symbol="fa-circle" farbe="rot" led="rot" hilfe="Aufnahme ab dem Anfang des laufenden Titels"${rec ? " an" : ""}></ak-taster>
+        <span class="pz60-vor"><ak-taster art="glas" symbol="fa-forward-step" farbe="weiss" led="bernstein" modus="tasten" hilfe="${titel ? "Kurz: nächster Titel · lang: nächster Sender" : "Nächster Sender"}"></ak-taster>
+          ${tipp ? `<span class="pz-tipp rechts pz60-tipp"><b>${esc(tipp)}</b><span>lang drücken: nächster Sender</span></span>` : ""}</span></div>
+        <div class="rh-betrieb"><div class="rh-betrieb-tasten">
+          <ak-taster art="glas" symbol="fa-location-crosshairs" farbe="weiss" led="blau" hilfe="Fokus: die Liste folgt dem laufenden Sender" an></ak-taster>
+          <ak-taster art="glas" symbol="fa-wave-square" farbe="weiss" led="weiss" hilfe="Bitrate"></ak-taster></div></div></div></section>`;
+  const quelle60 = ({ text, farbe, uhrtext, stelle, aufnahme: rec = null }) => {
+    const zeile = rec ? `${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel · <span class="pz-rot">Aufnahme ab ${uhr(rec)}</span>`
+      : `${zeit(JETZT - stelle)} hinter live · ${zeit(JETZT, true)} von 2:00:00 · ${A.length - 1} Titel`;
+    return `<section class="rh-modul rh-m-zeit pz60-zeit" aria-label="Quelle und Zeit"><span class="ak-etikett">Quelle und Zeit</span>
+      <div class="pz60-raster">
+        <div class="ak-glas rh-zeit-glas pz60-glas">
+          <ak-segmente art="14" stellen="7" farbe="${farbe}" text="${text}" hilfe="Quelle der Wiedergabe"></ak-segmente>
+          <ak-segmente art="7" stellen="7" farbe="${rec ? "rot" : "gruen"}" text="${uhrtext}" hilfe="${rec ? "Länge der Aufnahme" : "Abstand zu live"}"></ak-segmente></div>
+        <button class="knopf pz60-puffer" type="button" title="Großansicht des Puffers: alle Titel, Aufnahme ab hier, Bereich sichern"><i class="fa-solid fa-list-ul"></i>Puffer</button>
+        <button class="knopf" type="button" title="30 Sekunden zurück"><i class="fa-solid fa-rotate-left"></i>30</button>
+        <div class="rh-puffer pz-puffer" title="Zeitversatz: Striche sind Titelgrenzen, violett ist Werbung">${balken({ stelle, aufnahme: rec })}<span>${zeile}</span></div>
+        <button class="knopf" type="button" title="30 Sekunden vor"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-rotate-right"></i>30</button>
+        <button class="knopf" type="button" title="Zurück zu live"${stelle < JETZT ? "" : " disabled"}><i class="fa-solid fa-tower-broadcast"></i>Live</button>
+      </div></section>`;
+  };
+  function ohneTitelzeile(el) {
+    const stelle = JETZT - 570, a = bei(stelle);
+    el.innerHTML = `<div class="pz60-kanzel">
+      ${anzeige({ art: "9:30 HINTER LIVE", led: ["bernstein", "an"], titel: a.titel })}
+      ${quelle60({ text: "VERSATZ", farbe: "bernstein", uhrtext: "-09:30", stelle })}
+      ${laut}${steuerung({ titel: true, tipp: "Nächster Titel: Destiny's Child - Say My Name" })}</div>`;
+  }
+  function ohneTitelzeileAufnahme(el) {
+    const u = A[A.length - 1];
+    el.innerHTML = `<div class="pz60-kanzel">
+      ${anzeige({ art: "LIVE · AUFNAHME", led: ["rot", "atmet"], titel: u.titel })}
+      ${quelle60({ text: "LIVE", farbe: "blau", uhrtext: "03:24", stelle: JETZT, aufnahme: u.von })}
+      ${laut}${steuerung({ titel: false, aufnahme: true })}</div>`;
+  }
+
+  const ZUSTAENDE = { versatz, aufnahme, gross, bereich, jung, "t-spieler": tSpieler, "t-liste": tListe, "t-bereich": tBereich,
+    "ohne-titelzeile": ohneTitelzeile, "ohne-titelzeile-aufnahme": ohneTitelzeileAufnahme };
   customElements.whenDefined("ak-segmente").then(() => {
     document.querySelectorAll("[data-zustand]").forEach((el) => { ZUSTAENDE[el.dataset.zustand](el); R.tastenlicht?.(el); });
     // Listen zeigen die gewählten Titel oder den angetippten (wie die App beim Öffnen: die Stelle, um die es geht)
