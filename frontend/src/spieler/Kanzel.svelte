@@ -81,6 +81,7 @@
 </script>
 
 <footer class="rh-kanzel" use:kanzelmasse data-zustand={anzeige.zustand} aria-label={t("kanzel.abspielleiste")}>
+  <span class="rh-urheber">© HalloWelt42</span>
   <Tonausgang {wiedergabe} />
   <div class="rh-kanzel-voll" use:kanzelReihen>
     <Anzeige {anzeige} hinweis={bitrateHinweis} aufnahme={app.isRecording} />

@@ -18,6 +18,9 @@
    Leuchten, Tastenlicht, Pegel, Titel), trägt nur die Leuchtmarken, satt und ohne Glanzpunkte oder Weißmischung
    (Nutzer 17.11.2026); anders als im Entwurf ist darum auch Titel und Statuszeile nicht mit Licht gemischt. */
 
+/* Zeichen des Urhebers (RAD-77): klein rechts oben am Rand der Kanzel, in der Schrift des Schriftzugs */
+.rh-urheber { position: absolute; top: 3px; right: var(--rh-rand); z-index: 1; font-family: var(--rh-schrift-logo); font-size: calc(var(--marke) * .78);
+  font-weight: 900; letter-spacing: .08em; color: var(--ak-tinte-2); opacity: .75; white-space: nowrap; pointer-events: none; }
 .rh-kanzel { position: relative; z-index: 4; container: kanzel / inline-size; font-size: var(--gross); color: var(--rh-geraet-tinte);
   background-color: var(--rh-geraet); background-image: var(--rh-geraet-bild); box-shadow: var(--rh-kanzel-schatten); }
 /* --rh-anzeige-breite: in der einen Reihe ist die Anzeige mindestens so breit, dass sie bündig mit der linken Spalte der
