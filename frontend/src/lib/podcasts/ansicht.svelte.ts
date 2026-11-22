@@ -11,6 +11,8 @@ import { PODCASTSORTIERUNG, type Folgenabfrage, type Podcastsortierung } from ".
 
 export type Folgenwahl = "alle" | "ungehoert" | "gespeichert";
 export const FOLGENWAHL: readonly Folgenwahl[] = ["alle", "ungehoert", "gespeichert"];
+/** die Wahlen, die eine Quelle anbieten kann: "gespeichert" nur mit Ablage (Webversion ohne, RAD-102) */
+export const angeboteneWahl = (speichern: boolean): Folgenwahl[] => FOLGENWAHL.filter((w) => w !== "gespeichert" || speichern);
 
 export interface Podcastansicht {
   abos: number[];

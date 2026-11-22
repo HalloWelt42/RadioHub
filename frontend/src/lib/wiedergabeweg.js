@@ -12,6 +12,18 @@ import { api } from './api.js';
  * @property {boolean} uebergabe    Übergabe zwischen Geräten (Vermittler im Backend, RAD-18)
  * @property {(station: { uuid: string, url?: string, url_resolved?: string }) => string} stromAdresse
  * @property {(station: { uuid: string, name: string }) => void} merken  letzten Sender merken
+ * @property {Folgenweg | null} folge  woher Folgen kommen und wohin Stelle und gehört gehen (nur mit `folgen`)
+ */
+
+/**
+ * Folgen eines Podcasts (RAD-102): die volle App über das Backend (gespeichert, Durchleiter, Puffer), die Webversion
+ * direkt vom Server der Folge mit Stelle und gehört im Browser (ziel/web/podcasts.ts).
+ * @typedef {object} Folgenweg
+ * @property {boolean} puffern  nicht gespeicherte Folgen über den Puffer des Backends spielen (HLS)
+ * @property {(folge: object) => string} adresse  Adresse der Datei zum Abspielen
+ * @property {(folge: object) => string | null} bild  Bild der Folge (Sperrbildschirm), null ohne
+ * @property {(id: number, sekunden: number) => void} stelleMerken
+ * @property {(id: number) => void} gehoert  zu Ende gehört (Stelle zurück auf den Anfang)
  */
 
 /** @type {Wiedergabeweg} */
@@ -23,6 +35,16 @@ export const ueberBackend = {
   stromAdresse: (station) => api.getStationStreamUrl(station.uuid),
   merken: (station) => {
     api.updateConfig({ last_station_uuid: station.uuid, last_station_name: station.name }).catch(() => {});
+  },
+  folge: {
+    puffern: true,
+    adresse: (folge) => (folge.is_downloaded ? api.getEpisodePlayUrl(folge.id) : api.getEpisodeStreamUrl(folge.id)),
+    bild: (folge) => (folge.image_url || folge.podcast_image_url || folge.podcast?.image_url ? api.getEpisodeImageUrl(folge.id) : null),
+    stelleMerken: (id, sekunden) => { api.updateEpisodePosition(id, sekunden).catch(() => {}); },
+    gehoert: (id) => {
+      api.markEpisodePlayed(id).catch(() => {});
+      api.updateEpisodePosition(id, 0).catch(() => {});
+    },
   },
 };
 
@@ -42,4 +64,6 @@ export const direkt = {
       /* ohne Speicher im Browser bleibt nur der Sender dieser Sitzung */
     }
   },
+  // Folgen setzt das Bauziel dazu (ziel/web/wurzel.ts), sobald es eine Podcastquelle hat
+  folge: null,
 };

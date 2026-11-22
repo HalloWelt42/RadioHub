@@ -78,3 +78,20 @@ export class BackendWerbequelle implements Werbequelle {
     await this.json(`/api/podcasts/${aboId}/werbung`, { method: "PUT", body: JSON.stringify(teil) });
   }
 }
+
+/** ohne Werbeerkennung (Webversion, RAD-102): keine Stellen; ändern geht nicht, die Ansichten bieten es dort nicht an */
+export class OhneWerbequelle implements Werbequelle {
+  async stellen(): Promise<Werbestellen> {
+    return { stellen: [], quellen: [] };
+  }
+
+  private nicht(): never {
+    throw new Error("Werbeerkennung gibt es nur in der vollen App");
+  }
+
+  async setzen(): Promise<Werbestelle> { return this.nicht(); }
+  async verwerfen(): Promise<void> { this.nicht(); }
+  async suchen(): Promise<Record<string, number>> { return this.nicht(); }
+  async ohneWerbung(): Promise<string> { return this.nicht(); }
+  async aboSetzen(): Promise<void> { this.nicht(); }
+}

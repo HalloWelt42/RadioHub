@@ -1,6 +1,7 @@
 // Schnittstelle Podcastquelle (RAD-17): alles, was die Podcast-Ansichten am Rechner und am Telefon über Abos und
 // Folgen wissen und ändern. Die volle App setzt sie gegen das Backend um (backend.ts). Was eine Umsetzung nicht kann,
 // meldet sie in `faehig`; die Ansichten zeigen den Teil dann nicht (keine toten Knöpfe), wie bei der Senderquelle.
+// Die Webversion liest alles im Browser (browser/browser-quelle.ts, RAD-102); welche gilt, sagt das Bauziel ($ziel/podcasts).
 import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Ordner, Podcastsortierung } from "./typen";
 
 export interface Podcastfaehigkeiten {
@@ -8,10 +9,14 @@ export interface Podcastfaehigkeiten {
   abonnieren: boolean;
   /** Folgen in der Kellerwolke speichern (Ablage der vollen App) */
   speichern: boolean;
-  /** eine Folge als Datei auf das Gerät laden, das gerade bedient */
+  /** die laufende Folge als Datei auf das Gerät laden, das gerade bedient (großer Spieler) */
   herunterladen: boolean;
+  /** dasselbe auch in den Listen der Folgen (volle App); die Webversion bleibt dort schlank (RAD-102) */
+  herunterladenInListen: boolean;
   /** automatische Aktualisierung mit Abstand */
   automatisch: boolean;
+  /** Werbestellen finden und überspringen (Werbequelle, RAD-32) */
+  werbung: boolean;
 }
 
 /** Was der Spieler zum Abspielen einer Folge braucht (in seinem Format) */

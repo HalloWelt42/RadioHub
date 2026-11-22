@@ -123,3 +123,5 @@
   block-size: 4px; border-radius: 2px; background: color-mix(in srgb, var(--led-blau) 18%, var(--rh-licht-aus)); }
 .rh-telefon.mobil .t-reiter button.aktiv { color: var(--rh-nav-tinte-aktiv, var(--akzent)); }
 .rh-telefon.mobil .t-reiter button.aktiv::before { background: var(--led-blau); box-shadow: 0 0 calc(8px * var(--ak-leuchten, 1)) var(--led-blau); }
+/* "abonniert" im Verzeichnis öffnet das Abo (RAD-104): sieht aus wie die Marke, ist ein Knopf */
+button.tp-abonniert { background: none; border: 0; padding: 0; font: inherit; font-size: var(--klein); cursor: pointer; }

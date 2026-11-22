@@ -173,3 +173,6 @@
 .rh-werbeteil.schmal .rh-werbestellen li { grid-template-columns: auto minmax(0, 1fr) auto; }
 .rh-werbeteil.schmal .zeit, .rh-werbeteil.schmal .herkunft { grid-column: 2; }
 .rh-werbeteil.schmal .aktionen { grid-column: 3; grid-row: 1 / span 2; }
+/* "abonniert" im Verzeichnis öffnet das Abo (RAD-104): sieht aus wie die Marke, ist ein Knopf */
+button.rh-abo-oeffnen { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+button.rh-abo-oeffnen:hover { color: var(--text); }

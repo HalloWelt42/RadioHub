@@ -31,6 +31,14 @@ export function standVon(f: Folge): { art: Standart; anteil: number; rest: numbe
   return { art: "laeuft", anteil: f.dauer ? Math.min(1, f.stelle / f.dauer) : 0, rest: Math.max(0, f.dauer - f.stelle) };
 }
 
+/** Text zum angefangenen Stand: die Restzeit, ohne bekannte Länge (manche Feeds nennen keine) die gehörte Stelle;
+ *  als Schlüssel und Werte für t() der Ansicht */
+export function restAngabe(f: Folge): { schluessel: string; werte: Record<string, string | number> } {
+  const s = standVon(f);
+  return f.dauer > 0 ? { schluessel: "podcastAnsicht.noch", werte: { n: minuten(s.rest) } }
+                     : { schluessel: "podcastAnsicht.gehoertBis", werte: { zeit: stelleText(f.stelle) } };
+}
+
 export const megabyte = (bytes: number) => Math.max(1, Math.round(bytes / 1_000_000));
 
 /** sichtbarer Text einer Beschreibung in HTML (DOMParser lädt nichts und führt nichts aus) */

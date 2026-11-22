@@ -18,7 +18,8 @@ export interface BandInhalt {
   /** fett vor dem Text, etwa der Name des Senders */
   name?: string;
   rueckgaengig?: () => Promise<void> | void;
-  verweis?: { text: string; pfad: string };
+  /** Verweis auf eine Adresse oder, in einer Ansicht mit eigenem Zustand (Podcasts, RAD-104), eine Aktion */
+  verweis?: { text: string; pfad: string } | { text: string; aktion: () => void };
   art?: "gut" | "fehler";
 }
 

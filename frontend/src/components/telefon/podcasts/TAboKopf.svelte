@@ -10,11 +10,13 @@
   import Langtext from "../../radio/Langtext.svelte";
   import Schalter from "../../bausteine/Schalter.svelte";
 
-  let { abo, sortierung, arbeitet, kannSpeichern, onaktualisieren, onauto, onabbestellen, onsortieren, onwerbung }: {
+  let { abo, sortierung, arbeitet, kannSpeichern, kannWerbung, onaktualisieren, onauto, onabbestellen, onsortieren, onwerbung }: {
     abo: Abo;
     sortierung: Podcastsortierung;
     arbeitet: boolean;
     kannSpeichern: boolean;
+    /** Werbestellen gibt es nur in der vollen App (RAD-102) */
+    kannWerbung: boolean;
     onaktualisieren: () => void;
     onauto: (an: boolean) => void;
     onabbestellen: () => Promise<void>;
@@ -36,14 +38,18 @@
   </div>
   <!-- Einstellungen als drei gleich breite Schalter mit Symbol und kurzem Wort, darunter die beiden Aktionen gleich
        breit (RAD-101, Wahl A); die ausführliche Erklärung steht im Hinweis -->
+  {#if kannSpeichern || kannWerbung}
   <div class="tp-schalter">
     {#if kannSpeichern}<Schalter an={abo.autoLaden} symbol="fa-cloud-arrow-down" text={t("podcastAnsicht.telefon.kurzSpeichern")}
                                 hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />{/if}
+    {#if kannWerbung}
     <Schalter an={abo.werbungUeberspringen} farbe="bernstein" symbol="fa-ban" text={t("podcastAnsicht.telefon.kurzWerbung")}
               hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")} onwechsel={(an) => onwerbung({ ueberspringen: an })} />
     <Schalter an={abo.werbungPruefen} farbe="bernstein" symbol="fa-magnifying-glass" text={t("podcastAnsicht.telefon.kurzPruefen")}
               hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")} onwechsel={(an) => onwerbung({ pruefen: an })} />
+    {/if}
   </div>
+  {/if}
   <div class="tp-abo-aktionen">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
     <button class="knopf" type="button" onclick={() => (fragt = true)}><i class="fa-solid fa-trash-can rh-loeschen"></i>{t("podcastAnsicht.abbestellen")}</button>

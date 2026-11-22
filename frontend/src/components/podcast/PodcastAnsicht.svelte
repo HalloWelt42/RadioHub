@@ -134,9 +134,12 @@
     ev.stopPropagation();
   }
 
-  function meldung(symbol: string, name: string, text: string, rueckgaengig?: () => Promise<void>) {
-    band = { symbol, name, text, rueckgaengig };
+  function meldung(symbol: string, name: string, text: string, rueckgaengig?: () => Promise<void>, verweis?: BandInhalt["verweis"]) {
+    band = { symbol, name, text, rueckgaengig, verweis };
   }
+
+  /** ein Abo öffnen (aus dem Verzeichnis oder dem Band nach dem Abonnieren, RAD-104) */
+  const aboOeffnen = (id: number) => aendern((a) => ({ ...a, abos: [id], verzeichnis: false, offen: null, suche: "" }));
 
   async function sicher(arbeit: () => Promise<void>) {
     try {
@@ -223,7 +226,8 @@
   async function abonnieren(feed: string, titel: string) {
     await sicher(async () => {
       const neu = await aboliste.abonnieren(feed);
-      meldung("fa-podcast", neu.titel || titel, t("podcastAnsicht.bandAbonniert"));
+      meldung("fa-podcast", neu.titel || titel, t("podcastAnsicht.bandAbonniert"), undefined,
+              { text: t("podcastAnsicht.telefon.oeffnen"), aktion: () => aboOeffnen(neu.id) });
     });
   }
 </script>
@@ -245,7 +249,7 @@
           onclick={() => (leisteOffen = false)}></button>
 
   <main class="rh-haupt">
-    <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} {stand} laedt={aktualisiert} {leisteOffen}
+    <PodcastWerkzeug {ansicht} abos={aboliste.abos} gesamt={liste.gesamt} {ungehoert} stand={kann.automatisch ? stand : null} laedt={aktualisiert} {leisteOffen}
                      onaendern={aendern} onleiste={() => (leisteOffen = true)} onaktualisieren={() => void aktualisieren()}
                      onabonnieren={() => aendern((a) => ({ ...a, verzeichnis: true, offen: null }))}
                      oneinstellungen={() => actions.navigateTo("/einstellungen/podcasts")} />
@@ -253,10 +257,11 @@
     <div class="rh-liste" role="list" aria-label={t("podcastAnsicht.folgen")} bind:this={listeEl} tabindex="0" onkeydown={taste}>
       {#if ansicht.verzeichnis}
         <Verzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onabonnieren={abonnieren}
+                     onoeffnen={(feed) => { const a = aboliste.vonFeed(feed); if (a) aboOeffnen(a.id); }}
                      onzu={() => aendern((a) => ({ ...a, verzeichnis: false }))} />
       {:else}
         {#if einAbo}
-          <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} kannSpeichern={kann.speichern} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
+          <AboKopf abo={einAbo} {auftrag} arbeitet={aktualisiert} kannSpeichern={kann.speichern} kannWerbung={kann.werbung} onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))}
                    onaktualisieren={() => void aktualisieren(einAbo.id)} onallespeichern={() => void alleSpeichern(einAbo.id)}
                    onanheften={() => void sicher(() => aboliste.anheften(einAbo.id, !einAbo.angeheftet))}
                    onabbestellen={() => abbestellen(einAbo.id)}
@@ -287,7 +292,7 @@
           {#each liste.folgen as f, i (f.id)}
             <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id} fokus={gewaehlt === i}
                         onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} kannSpeichern={kann.speichern}
-                        dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
+                        dateiAdresse={kann.herunterladenInListen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
                         onloeschen={() => speichern(f, false)}
                         ongehoert={() => gehoert(f)} ondetails={() => details(f)}
                         onabo={() => aendern((a) => ({ ...a, abos: [f.aboId], offen: null }))}

@@ -3,7 +3,7 @@
   // Stand (neu, Balken mit Rest, gehört). Tipp auf die Zeile öffnet das Blatt, der Knopf rechts hört sofort (weiter ab
   // der Stelle).
   import { t } from "../../../lib/i18n.svelte.js";
-  import { datumKurz, minuten, standVon, stelleText, tageHer } from "../../../lib/podcasts/anzeige";
+  import { datumKurz, minuten, restAngabe, standVon, stelleText, tageHer } from "../../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../../lib/podcasts";
   import AboBild from "../../podcast/AboBild.svelte";
 
@@ -35,7 +35,7 @@
     <div class="tp-stand-zeile">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
-      {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
+      {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t(restAngabe(f).schluessel, restAngabe(f).werte)}</span>{/if}
     </div>
   </div>
   <span class="tf-aktionen"><button class="rund" type="button" aria-label={knopfText} title={knopfText} onclick={(e) => { e.stopPropagation(); onhoeren(); }}>

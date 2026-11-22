@@ -96,6 +96,11 @@ export function faehigkeiten() {
   return { zeitversatz: _weg.zeitversatz, aufnahme: _weg.aufnahme, folgen: _weg.folgen, uebergabe: _weg.uebergabe };
 }
 
+/** Bild einer Folge über den Weg der Wiedergabe (Backend oder direkt, RAD-102), null ohne */
+export function folgenBild(folge) {
+  return _weg.folge?.bild(folge) ?? null;
+}
+
 /**
  * Gibt die aktuelle Generation zurück (für Tests).
  */
@@ -251,25 +256,16 @@ export async function playPodcast(episode, podcast) {
   }
 
 
-  // Heruntergeladene Episoden: Direct Play (schnell, kein FFmpeg nötig)
-  if (episode.is_downloaded && episode.id) {
-    _audioEl.src = api.getEpisodePlayUrl(episode.id);
-    _audioEl.playbackRate = _appState.podcastSpeed || 1.0;
-    _audioEl.load();
-    try {
-      await _audioEl.play();
-      if (episode.resume_position > 0) {
-        _audioEl.currentTime = episode.resume_position;
-      }
-    } catch (e) {
-      console.warn('Podcast autoplay blocked:', e.message);
-    }
-    _startPodcastPositionSave();
+  const folgenweg = _weg.folge;
+  if (!folgenweg) {
+    _showPlayerError('Folgen gibt es hier nicht');
+    _appState.isPlaying = false;
     return;
   }
 
-  // Remote-Episoden: HLS-Buffer fuer stabilen Stream (128 kbps AAC)
-  if (episode.remote_audio_url && Hls.isSupported()) {
+  // Nicht gespeicherte Folgen über den Puffer des Backends (stabiler Strom, 128 kbps AAC); gespeicherte und die der
+  // Webversion spielen direkt (RAD-102)
+  if (folgenweg.puffern && !episode.is_downloaded && episode.remote_audio_url && Hls.isSupported()) {
     try {
       const result = await api.startHLSPodcast(episode);
       if (_generation !== gen) return;
@@ -299,8 +295,8 @@ export async function playPodcast(episode, podcast) {
     }
   }
 
-  // Fallback: Direct Stream (wenn HLS nicht verfuegbar)
-  _audioEl.src = api.getEpisodeStreamUrl(episode.id);
+  // direkt: gespeichert, ohne Puffer oder wenn der Puffer nicht startet
+  _audioEl.src = folgenweg.adresse(episode);
   _audioEl.playbackRate = _appState.podcastSpeed || 1.0;
   _audioEl.load();
   try {
@@ -443,6 +439,12 @@ export async function stop() {
   if (!_appState) return;
   _generation++; // Alle laufenden Operationen abbrechen
 
+  // 0. Podcast (direkt oder HLS): Stelle speichern, solange das Tonelement sie noch kennt (danach steht sie auf 0)
+  if (_appState.playerMode === 'podcast' || (_appState.playerMode === 'hls' && _appState.currentEpisode)) {
+    _savePodcastPosition();
+    _stopPodcastPositionSave();
+  }
+
   // 1. HLS zerstören (löst MediaSource VOR Audio-Cleanup)
   _destroyHLS();
   _stopHLSPolling();
@@ -456,12 +458,6 @@ export async function stop() {
   }
 
   // 4. Eine Aufnahme läuft weiter, bis sie beendet wird (RAD-46)
-
-  // 4b. Podcast (direkt oder HLS): Position speichern + Intervall stoppen
-  if (_appState.playerMode === 'podcast' || (_appState.playerMode === 'hls' && _appState.currentEpisode)) {
-    _savePodcastPosition();
-    _stopPodcastPositionSave();
-  }
 
   // 5. State zurücksetzen
   _appState.isPlaying = false;
@@ -1095,8 +1091,7 @@ export function handleEnded() {
   } else if (_appState?.playerMode === 'podcast' || (_appState?.playerMode === 'hls' && _appState?.currentEpisode)) {
     // Episode als gehört markieren
     if (_appState.currentEpisode?.id) {
-      api.markEpisodePlayed(_appState.currentEpisode.id).catch(() => {});
-      api.updateEpisodePosition(_appState.currentEpisode.id, 0).catch(() => {});
+      _weg.folge?.gehoert(_appState.currentEpisode.id);
     }
     _stopPodcastPositionSave();
 
@@ -1170,7 +1165,7 @@ function _savePodcastPosition() {
   if (_appState.playerMode !== 'podcast') return;
   const pos = Math.floor(_audioEl.currentTime || 0);
   if (pos > 0) {
-    api.updateEpisodePosition(_appState.currentEpisode.id, pos).catch(() => {});
+    _weg.folge?.stelleMerken(_appState.currentEpisode.id, pos);
   }
 }
 
@@ -1575,7 +1570,7 @@ function _switchToHLSPodcast(gen, episode) {
         // Fatal: Fallback zu Direct-Stream
         _destroyHLS();
         if (_appState && episode?.id) {
-          _audioEl.src = api.getEpisodeStreamUrl(episode.id);
+          _audioEl.src = _weg.folge.adresse(episode);
           _audioEl.load();
           _audioEl.play().catch(e => console.warn('Podcast fallback error:', e));
         }

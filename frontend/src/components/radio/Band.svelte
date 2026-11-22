@@ -39,7 +39,12 @@
     {/if}
     {#if inhalt.verweis}
       {@const v = inhalt.verweis}
-      <a class="knopf still" href={v.pfad} onclick={(e) => { e.preventDefault(); inhalt = null; actions.navigateTo(v.pfad); }}>{v.text}</a>
+      <!-- den Verweis vor dem Schließen festhalten: danach gibt es den Inhalt (und damit v) nicht mehr -->
+      {#if "pfad" in v}
+        <a class="knopf still" href={v.pfad} onclick={(e) => { e.preventDefault(); const pfad = v.pfad; inhalt = null; actions.navigateTo(pfad); }}>{v.text}</a>
+      {:else}
+        <button class="knopf still" type="button" onclick={() => { const aktion = v.aktion; inhalt = null; aktion(); }}>{v.text}</button>
+      {/if}
     {/if}
     <button class="rund rh-band-zu" type="button" aria-label={t("radio.schliessen")} title={t("radio.schliessen")} onclick={() => (inhalt = null)}>
       <i class="fa-solid fa-xmark"></i></button>

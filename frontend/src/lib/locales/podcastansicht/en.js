@@ -78,6 +78,7 @@ export default {
   neu: 'new',
   gehoert: 'played',
   noch: '{n} min left',
+  gehoertBis: 'played to {zeit}',
   minuten: '{n} min',
   heute: 'today',
   gestern: 'yesterday',
@@ -113,10 +114,12 @@ export default {
   verzeichnisSuchen: 'Search a podcast in the directory',
   verzeichnisHinweis: 'Searched in two directories; a feed address works too.',
   abonniert: 'subscribed',
+  abonniertOeffnen: 'Open subscription',
   nichtsGefunden: 'Nothing found',
   nichtsGefundenHilfe: 'Another word or the address of the feed.',
   bandAbonniert: 'subscribed, the episodes are on their way',
   feedAbonnieren: 'Subscribe to feed',
+  feedGesperrt: 'This podcast cannot be fetched in the browser, its server does not allow it. RadioHub PRO plays it through its own server.',
   // Phone (RAD-14)
   telefon: {
     wahl: 'What to show', neu: 'New', ungehoert: 'Unplayed', gespeichert: 'Saved', abos: 'Subscriptions',

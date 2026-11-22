@@ -1,6 +1,7 @@
 <script lang="ts">
   // Abonnieren am Telefon (Entwurf telefon-podcasts.html, Zustand 6): Suche im Verzeichnis oder Adresse eines Feeds,
-  // Treffer mit Plus oder "abonniert". Dieselbe Suche wie am Rechner (lib/podcasts/verzeichnissuche).
+  // Treffer mit Plus oder "abonniert"; "abonniert" öffnet das Abo (RAD-104). Dieselbe Suche wie am Rechner
+  // (lib/podcasts/verzeichnissuche).
   import { untrack } from "svelte";
   import { t } from "../../../lib/i18n.svelte.js";
   import { Verzeichnissuche, type Podcastquelle } from "../../../lib/podcasts";
@@ -10,10 +11,12 @@
 
   const verlauf = new Suchverlauf("radiohub_podcast_verzeichnis");
 
-  let { quelle, abonniert, onabonnieren, onzurueck }: {
+  let { quelle, abonniert, onabonnieren, onoeffnen, onzurueck }: {
     quelle: Podcastquelle;
     abonniert: (feed: string) => boolean;
     onabonnieren: (feed: string, titel: string) => Promise<void>;
+    /** ein schon abonniertes Abo öffnen */
+    onoeffnen: (feed: string) => void;
     onzurueck: () => void;
   } = $props();
 
@@ -44,7 +47,7 @@
       <div class="tf-sender tp-abo"><AboBild abo={{ titel: f.titel, bild: "" }} />
         <div><b>{f.titel}</b>{#if f.autor}<div class="tf-meta"><span>{f.autor}</span></div>{/if}</div>
         {#if abonniert(f.feed)}
-          <span class="tp-abonniert"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.abonniert")}</span>
+          <button class="tp-abonniert" type="button" title={t("podcastAnsicht.abonniertOeffnen")} onclick={() => onoeffnen(f.feed)}><i class="fa-solid fa-check"></i>{t("podcastAnsicht.abonniert")}</button>
         {:else}
           <span class="tf-aktionen"><button class="rund" type="button" disabled={suche.arbeitet !== null} aria-label={t("podcastAnsicht.abonnieren")} title={t("podcastAnsicht.abonnieren")}
                   onclick={() => void abonnieren(f.feed, f.titel)}><i class="fa-solid {suche.arbeitet === f.feed ? 'fa-spinner fa-spin' : 'fa-plus'}"></i></button></span>

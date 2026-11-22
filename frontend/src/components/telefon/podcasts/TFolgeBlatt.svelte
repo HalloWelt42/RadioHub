@@ -4,7 +4,7 @@
   // speichern (gespeichert: löschen fragt mit Datei und Größe), herunterladen aufs Telefon, gehört.
   import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../../lib/i18n.svelte.js";
-  import { datumKurz, megabyte, minuten, standVon, stelleText, textAus } from "../../../lib/podcasts/anzeige";
+  import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, textAus } from "../../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../../lib/podcasts";
   import Langtext from "../../radio/Langtext.svelte";
   import Schalter from "../../bausteine/Schalter.svelte";
@@ -47,7 +47,7 @@
     <div class="tp-stand-zeile">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
-      {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
+      {:else}<span class="rh-stand tp-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t(restAngabe(f).schluessel, restAngabe(f).werte)}</span>{/if}
     </div>
     {#if f.beschreibung}<Langtext text={textAus(f.beschreibung)} klasse="tp-text" />{/if}
     {#if fragt}

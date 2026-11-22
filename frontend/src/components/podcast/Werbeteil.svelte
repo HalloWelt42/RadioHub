@@ -7,7 +7,7 @@
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
   import { stelleText } from "../../lib/podcasts/anzeige";
-  import { aboliste, werbequelle, type Abo, type Folge, type Werbestelle, type Werbeherkunft } from "../../lib/podcasts";
+  import { aboliste, podcastquelle, werbequelle, type Abo, type Folge, type Werbestelle, type Werbeherkunft } from "../../lib/podcasts";
   import type { Fortschritt } from "../../lib/ereignisstrom";
   import { tonelement } from "../../spieler/tonelement";
   import { werbesprung } from "../../spieler/werbesprung.svelte";
@@ -123,6 +123,7 @@
   const prozent = (x: number) => (dauer ? Math.min(100, (x / dauer) * 100) : 0);
 </script>
 
+{#if podcastquelle.faehig.werbung}
 <section class="rh-werbeteil" class:schmal aria-label={t("podcastAnsicht.werbung.titel")}>
   <div class="rh-werbe-kopf"><h3><i class="fa-solid fa-rectangle-ad"></i>{t("podcastAnsicht.werbung.titel")}</h3>
     <span class="rh-still">{stellen.length === 1 ? t("podcastAnsicht.werbung.zusammenEins", { zeit: stelleText(summe) }) : stellen.length ? t("podcastAnsicht.werbung.zusammen", { n: stellen.length, zeit: stelleText(summe) }) : geladen ? t("podcastAnsicht.werbung.keine") : t("podcastAnsicht.laedt")}</span></div>
@@ -177,3 +178,4 @@
     {/if}
   </div>
 </section>
+{/if}

@@ -9,10 +9,12 @@
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
 
-  let { abo, auftrag, arbeitet, kannSpeichern, onauto, onaktualisieren, onallespeichern, onanheften, onabbestellen, onwerbung }: {
+  let { abo, auftrag, arbeitet, kannSpeichern, kannWerbung, onauto, onaktualisieren, onallespeichern, onanheften, onabbestellen, onwerbung }: {
     abo: Abo;
     auftrag: Speicherauftrag;
     kannSpeichern: boolean;
+    /** Werbestellen gibt es nur in der vollen App (RAD-102) */
+    kannWerbung: boolean;
     arbeitet: boolean;
     onauto: (an: boolean) => void;
     onaktualisieren: () => void;
@@ -49,15 +51,19 @@
     </div>
   </div>
   <!-- die Schalter gleich breit rechts außen untereinander, die Knöpfe in einer Reihe darunter (Nutzer 22.11.2026, RAD-70) -->
+  {#if kannSpeichern || kannWerbung}
   <div class="rh-abo-schalter">
     {#if kannSpeichern}
       <Schalter an={abo.autoLaden} text={t("podcastAnsicht.neueSpeichern")} hilfe={t("podcastAnsicht.neueSpeichernHilfe")} onwechsel={onauto} />
     {/if}
+    {#if kannWerbung}
     <Schalter an={abo.werbungUeberspringen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboUeberspringen")} hilfe={t("podcastAnsicht.werbung.aboUeberspringenHilfe")}
               onwechsel={(an) => onwerbung({ ueberspringen: an })} />
     <Schalter an={abo.werbungPruefen} farbe="bernstein" text={t("podcastAnsicht.werbung.aboPruefen")} hilfe={t("podcastAnsicht.werbung.aboPruefenHilfe")}
               onwechsel={(an) => onwerbung({ pruefen: an })} />
+    {/if}
   </div>
+  {/if}
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
     <button class="knopf" type="button" disabled={arbeitet} onclick={onaktualisieren}><i class="fa-solid fa-rotate" class:fa-spin={arbeitet}></i>{t("podcastAnsicht.aktualisieren")}</button>
     {#if kannSpeichern}<button class="knopf" type="button" disabled={auftrag.laeuft} onclick={onallespeichern}><i class="fa-solid fa-cloud-arrow-up"></i>{t("podcastAnsicht.alleSpeichern")}</button>{/if}

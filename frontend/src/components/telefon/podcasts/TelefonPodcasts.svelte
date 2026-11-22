@@ -64,7 +64,8 @@
 
   type Wahl = Folgenwahl | "abos";
   const wahl = $derived<Wahl>(ansicht.aboUebersicht ? "abos" : ansicht.wahl);
-  const WAHLEN: [Wahl, string][] = [["alle", "neu"], ["ungehoert", "ungehoert"], ["gespeichert", "gespeichert"], ["abos", "abos"]];
+  const WAHLEN: [Wahl, string][] = ([["alle", "neu"], ["ungehoert", "ungehoert"], ["gespeichert", "gespeichert"], ["abos", "abos"]] as [Wahl, string][])
+    .filter(([w]) => w !== "gespeichert" || kann.speichern);   // ohne Ablage (Webversion) kein Gespeichert (RAD-102)
   function waehlen(w: Wahl) {
     if (w === "abos") aendern((a) => ({ ...grund(a), aboUebersicht: true }));
     else aendern((a) => ({ ...grund(a), wahl: w, sortierung: "neu" }));
@@ -159,7 +160,10 @@
 <div class="tf-radio tp-podcasts" class:tp-mit-kopf={!!einAbo || ansicht.verzeichnis}>
   {#if ansicht.verzeichnis}
     <TVerzeichnis quelle={podcastquelle} abonniert={(feed) => aboliste.abonniert(feed)} onzurueck={() => history.back()}
-                  onabonnieren={async (feed, titel) => { const neu = await aboliste.abonnieren(feed); band = { symbol: "fa-podcast", name: neu.titel || titel, text: t("podcastAnsicht.bandAbonniert") }; }} />
+                  onoeffnen={(feed) => { const a = aboliste.vonFeed(feed); if (a) gehen((x) => ({ ...grund(x), abos: [a.id] })); }}
+                  onabonnieren={async (feed, titel) => { const neu = await aboliste.abonnieren(feed);
+                    band = { symbol: "fa-podcast", name: neu.titel || titel, text: t("podcastAnsicht.bandAbonniert"),
+                             verweis: { text: t("podcastAnsicht.telefon.oeffnen"), aktion: () => gehen((x) => ({ ...grund(x), abos: [neu.id] })) } }; }} />
   {:else if einAbo}
     <div class="t-kopf-zurueck tf-a-kopf">
       <button class="rund" type="button" aria-label={t("podcastAnsicht.telefon.zurueck")} title={t("podcastAnsicht.telefon.zurueck")}
@@ -167,7 +171,7 @@
       <div><b>{einAbo.titel}</b>{#if einAbo.autor}<span class="rh-still">{einAbo.autor}</span>{/if}</div>
     </div>
     <div class="tf-liste">
-      <TAboKopf abo={einAbo} sortierung={ansicht.sortierung} {arbeitet} kannSpeichern={kann.speichern} onaktualisieren={() => void aktualisieren(einAbo)}
+      <TAboKopf abo={einAbo} sortierung={ansicht.sortierung} {arbeitet} kannSpeichern={kann.speichern} kannWerbung={kann.werbung} onaktualisieren={() => void aktualisieren(einAbo)}
                 onauto={(an) => void sicher(() => aboliste.autoLaden(einAbo.id, an))} onabbestellen={() => abbestellen(einAbo)} onsortieren={sortieren}
                 onwerbung={(teil) => void werbungSetzen(einAbo, teil)} />
       {@render folgenliste(false)}
@@ -240,7 +244,7 @@
 
 {#if offen}
   <TFolgeBlatt folge={offen} abo={aboliste.abo(offen.aboId)} spielt={spielend === offen.id}
-               onanhoeren={(von) => void anhoeren(offen, von)} onwerbung={(w) => liste.aendern(offen.id, { werbung: w })} kannSpeichern={kann.speichern} dateiAdresse={kann.herunterladen ? podcastquelle.dateiAdresse(offen.id) : ""}
+               onanhoeren={(von) => void anhoeren(offen, von)} onwerbung={(w) => liste.aendern(offen.id, { werbung: w })} kannSpeichern={kann.speichern} dateiAdresse={kann.herunterladenInListen ? podcastquelle.dateiAdresse(offen.id) : ""}
                onhoeren={() => void hoeren(offen)} onvorn={() => void hoeren(offen, true)} onspeichern={() => void speichern(offen, true)}
                onloeschen={() => speichern(offen, false)} ongehoert={() => gehoert(offen)} onzu={() => history.back()} />
 {/if}

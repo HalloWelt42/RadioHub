@@ -23,7 +23,8 @@ const text = (w: unknown) => (typeof w === "string" ? w : "");
 const zahl = (w: unknown) => (typeof w === "number" && Number.isFinite(w) ? w : 0);
 
 export class BackendPodcastquelle implements Podcastquelle {
-  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, speichern: true, herunterladen: true, automatisch: true };
+  readonly faehig: Podcastfaehigkeiten = { abonnieren: true, speichern: true, herunterladen: true, herunterladenInListen: true,
+                                           automatisch: true, werbung: true };
   /** zuletzt gesehene Rohdaten je Kennung: der Spieler braucht sie in seinem Format */
   private rohFolgen = new Map<number, Roh>();
   private rohAbos = new Map<number, Roh>();

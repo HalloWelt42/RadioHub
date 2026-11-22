@@ -4,7 +4,7 @@
   // gespeicherte Folge zu löschen fragt vorher und nennt die Datei (Nutzerdatei, kommt in den Papierkorb).
   import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
-  import { datumKurz, megabyte, minuten, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
+  import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
@@ -72,7 +72,7 @@
     <div class="stand-zelle">
       {#if stand.art === "gehoert"}<span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.gehoert")}</span>
       {:else if stand.art === "neu"}<span class="rh-stand neu">{t("podcastAnsicht.neu")}</span>
-      {:else}<span class="rh-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t("podcastAnsicht.noch", { n: minuten(stand.rest) })}</span>{/if}
+      {:else}<span class="rh-stand"><span class="balken"><span style:width="{Math.round(stand.anteil * 100)}%"></span></span>{t(restAngabe(folge).schluessel, restAngabe(folge).werte)}</span>{/if}
     </div>
     <div class="laenge">{folge.dauer ? t("podcastAnsicht.minuten", { n: minuten(folge.dauer) }) : ""}</div>
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->

@@ -2,7 +2,7 @@
  * Wiedergabe am Sperrbildschirm (Media Session): Titel, Sender oder Abo, Bild, Wiedergabe und Pause; bei Folgen
  * Spulen, beim Radio voriger und nächster Favorit.
  */
-import { api } from '../api.js';
+import { folgenBild } from '../playerEngine.js';
 import { senderquelle } from '$ziel/quelle';
 
 /** App-Symbol als Ersatz am Sperrbildschirm, unter dem Pfad der Seite (Basic liegt unter /RadioHub/, RAD-90) */
@@ -20,7 +20,7 @@ function bild(src) {
 export function beschreibung(appState) {
   const ep = appState.currentEpisode;
   if (ep) {
-    const eigenes = ep.image_url || ep.podcast_image_url || ep.podcast?.image_url ? api.getEpisodeImageUrl(ep.id) : null;
+    const eigenes = folgenBild(ep);
     return { title: ep.title || '', artist: ep.podcast?.title || ep.podcast_title || '', album: 'RadioHub',
              bild: eigenes, artwork: bild(eigenes ?? APPBILD), folge: true };
   }

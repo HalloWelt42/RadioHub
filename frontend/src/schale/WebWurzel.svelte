@@ -1,10 +1,12 @@
 <script lang="ts">
-  // Wurzel der Webversion (RAD-4, Entscheidung 27): nur Radio, ohne Backend und ohne Anmeldung. Am Rechner Kopf mit
+  // Wurzel der Webversion (RAD-4, Entscheidung 27): Radio und Podcasts (RAD-102, alles im Browser), ohne Backend und
+  // ohne Anmeldung. Am Rechner Kopf mit
   // Radio und Einstellungen, die Radio-Ansicht oder die Einstellungen und die Kanzel; am Telefon die Telefonansicht
   // mit Radio und Wecker (Weckansicht quer, Wecker im Speicher des Browsers, RAD-15). Dieselben Bausteine wie die volle App; was fehlt, blenden sie über die Fähigkeiten der Senderquelle
   // und des Wiedergabewegs selbst aus.
   import Kanzel from "../spieler/Kanzel.svelte";
   import RadioAnsicht from "../components/radio/RadioAnsicht.svelte";
+  import PodcastAnsicht from "../components/podcast/PodcastAnsicht.svelte";
   import EinstellungenSeite from "../components/einstellungen/EinstellungenSeite.svelte";
   import Telefon from "../components/telefon/Telefon.svelte";
   import Kopf from "./Kopf.svelte";
@@ -16,12 +18,12 @@
   import { starten as aktualisierungStarten } from "../lib/aktualisierung.svelte.js";
   import { geraetespracheAnwenden } from "../lib/sprache";
 
-  const BEREICHE = ["radio", "settings"] as const;
+  const BEREICHE = ["radio", "podcasts", "settings"] as const;
   // ohne Server: Sprache dieses Geräts (RAD-28)
   geraetespracheAnwenden();
-  const TELEFON = { podcasts: false, aufnahmen: false, wecker: true, backend: false };
+  const TELEFON = { podcasts: true, aufnahmen: false, wecker: true, backend: false };
 
-  // Adresse und Bereich (Zurück und Vor im Browser); es gibt Radio, die Einstellungen (ohne Server: Allgemein,
+  // Adresse und Bereich (Zurück und Vor im Browser); es gibt Radio, Podcasts, die Einstellungen (ohne Server: Allgemein,
   // Darstellung, Radio, Wecker und Zeitansage, RAD-11) und am Telefon den Wecker
   $effect(() => {
     const anfang = router.init((info: { tab: string; segments: string[] }) => {
@@ -34,7 +36,7 @@
   $effect(() => {
     const tab = appState.activeTab as string;
     const wecker = tab === "wecker" && geraet.telefon && TELEFON.wecker;
-    if (tab !== "radio" && tab !== "settings" && !wecker) actions.navigateTo("/radio", { replace: true });
+    if (!(BEREICHE as readonly string[]).includes(tab) && !wecker) actions.navigateTo("/radio", { replace: true });
   });
 
   // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
@@ -55,6 +57,8 @@
     <main class="rh-mitte">
       {#if appState.activeTab === "settings"}
         <EinstellungenSeite bereichszahl={BEREICHE.length} />
+      {:else if appState.activeTab === "podcasts"}
+        <PodcastAnsicht />
       {:else}
         <RadioAnsicht />
       {/if}

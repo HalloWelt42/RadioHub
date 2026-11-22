@@ -8,7 +8,7 @@
   // Ordnerkopf oder zwischen dessen Abos in den Ordner, per Ziehen auf "Ohne Ordner" wieder heraus; angeheftete bleiben
   // unter sich. Ordner lassen sich ebenso umsortieren.
   import { t } from "../../lib/i18n.svelte.js";
-  import { FOLGENWAHL, type Abo, type Folgenwahl, type Ordner } from "../../lib/podcasts";
+  import { angeboteneWahl, podcastquelle, type Abo, type Folgenwahl, type Ordner } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import OrdnerKopf from "./OrdnerKopf.svelte";
 
@@ -162,7 +162,7 @@
 <aside class="rh-filter rh-podcast-leiste" class:offen id="rh-podcast-leiste" aria-label={t("podcastAnsicht.abosUndFilter")}>
   <div class="rh-filter-oben rh-folgen-wahl">
     <div class="segment" role="group" aria-label={t("podcastAnsicht.welcheFolgen")}>
-      {#each FOLGENWAHL as w (w)}
+      {#each angeboteneWahl(podcastquelle.faehig.speichern) as w (w)}
         <button type="button" class:aktiv={wahl === w} aria-pressed={wahl === w} title={w === "gespeichert" ? t("podcastAnsicht.gespeichertHilfe") : undefined}
                 onclick={() => onwahl(w)}>{t(`podcastAnsicht.wahl_${w}`)}</button>
       {/each}

@@ -11,10 +11,12 @@
 
   const verlauf = new Suchverlauf("radiohub_podcast_verzeichnis");
 
-  let { quelle, abonniert, onabonnieren, onzu }: {
+  let { quelle, abonniert, onabonnieren, onoeffnen, onzu }: {
     quelle: Podcastquelle;
     abonniert: (feed: string) => boolean;
     onabonnieren: (feed: string, titel: string) => Promise<void>;
+    /** ein schon abonniertes Abo öffnen (RAD-104) */
+    onoeffnen: (feed: string) => void;
     onzu: () => void;
   } = $props();
 
@@ -47,7 +49,7 @@
         <AboBild abo={{ titel: f.titel, bild: "" }} />
         <div class="name"><b>{f.titel}</b><div class="meta">{#if f.autor}<span>{f.autor}</span>{/if}</div></div>
         {#if abonniert(f.feed)}
-          <span class="rh-stand fertig"><i class="fa-solid fa-check"></i>{t("podcastAnsicht.abonniert")}</span>
+          <button class="rh-stand fertig rh-abo-oeffnen" type="button" title={t("podcastAnsicht.abonniertOeffnen")} onclick={() => onoeffnen(f.feed)}><i class="fa-solid fa-check"></i>{t("podcastAnsicht.abonniert")}</button>
         {:else}
           <button class="knopf primaer" type="button" disabled={suche.arbeitet !== null} onclick={() => abonnieren(f.feed, f.titel)}>
             <i class="fa-solid {suche.arbeitet === f.feed ? 'fa-spinner fa-spin' : 'fa-plus'}"></i>{t("podcastAnsicht.abonnieren")}</button>

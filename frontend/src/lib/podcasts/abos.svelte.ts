@@ -35,6 +35,11 @@ export class Aboliste {
     return this.abos.some((a) => a.feed === feed);
   }
 
+  /** das Abo eines Feeds, zum Öffnen aus dem Verzeichnis (RAD-104) */
+  vonFeed(feed: string): Abo | undefined {
+    return this.abos.find((a) => a.feed === feed);
+  }
+
   async abonnieren(feed: string): Promise<Abo> {
     const neu = await this.quelle.abonnieren(feed);
     this.abos = [...this.abos.filter((a) => a.id !== neu.id), neu];

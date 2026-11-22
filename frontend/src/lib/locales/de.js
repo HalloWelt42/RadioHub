@@ -383,7 +383,7 @@ export default {
     neuLaden: 'Neu laden',
     spaeter: 'Später',
     proTitel: 'RadioHub PRO: die volle Version mit Aufnahmen, Podcasts, Zeitversatz und Backend',
-    basicVerweis: 'RadioHub Basic: Webversion nur mit Radio. Zur PRO mit Frontend und Backend (Quellcode auf GitHub)',
+    basicVerweis: 'RadioHub Basic: Webversion mit Radio und Podcasts im Browser. Zur PRO mit Frontend und Backend (Quellcode auf GitHub)',
     laedt: 'Lädt ...',
     bereiche: 'Bereiche',
     radio: 'Radio',

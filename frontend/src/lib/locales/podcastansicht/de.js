@@ -81,6 +81,7 @@ export default {
   neu: 'neu',
   gehoert: 'gehört',
   noch: 'noch {n} min',
+  gehoertBis: 'bis {zeit} gehört',
   minuten: '{n} min',
   heute: 'heute',
   gestern: 'gestern',
@@ -118,10 +119,12 @@ export default {
   verzeichnisSuchen: 'Podcast im Verzeichnis suchen',
   verzeichnisHinweis: 'Gesucht wird in zwei Verzeichnissen; die Adresse eines Feeds geht auch.',
   abonniert: 'abonniert',
+  abonniertOeffnen: 'Abo öffnen',
   nichtsGefunden: 'Nichts gefunden',
   nichtsGefundenHilfe: 'Ein anderes Wort oder die Adresse des Feeds.',
   bandAbonniert: 'abonniert, die Folgen kommen gleich',
   feedAbonnieren: 'Feed abonnieren',
+  feedGesperrt: 'Dieser Podcast lässt sich im Browser nicht abrufen, sein Server erlaubt es nicht. In RadioHub PRO läuft er über den eigenen Server.',
   // Telefon (RAD-14)
   telefon: {
     wahl: 'Was zeigen', neu: 'Neu', ungehoert: 'Ungehört', gespeichert: 'Gespeichert', abos: 'Abos',
