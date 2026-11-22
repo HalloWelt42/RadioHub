@@ -10,6 +10,7 @@
 //   node tools/readme-bild.mjs --nur rechner --rechner http://localhost:5182/ --sitzung sitzung-probebetrieb
 //   node tools/readme-bild.mjs --nur telefon --app http://localhost:5190/RadioHub/     # Basic (Vite, --mode web)
 //   node tools/readme-bild.mjs --nur buehne          # nur die Präsentation neu aus den vorhandenen Aufnahmen
+//   node tools/readme-bild.mjs --nur basic           # media/webversion.png: Basic am Rechner, dunkel, Podcasts
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -24,6 +25,7 @@ const RECHNER = (argumente.rechner ?? APP).replace(/\/?$/, "/");
 const SITZUNG = argumente.sitzung ?? "";
 const NUR = argumente.nur ?? ("nur-buehne" in argumente ? "buehne" : "alles");
 const MIT = (teil) => NUR === "alles" || NUR === teil;
+const BASIC_BILD = join(WURZEL, "media/webversion.png");
 /** das beworbene Abo (Nutzer 22.11.2026) */
 const PODCAST = { feed: "https://anchor.fm/s/11972ae38/podcast/rss", titel: "morfCast + chill" };
 const ORDNER = join(WURZEL, "docs/readme-bild/aufnahmen");   // nicht im Repo (.gitignore), nur das fertige Bild
@@ -75,6 +77,30 @@ async function oeffnen(basis, pfad, angaben) {
 await rufe("Page.enable");
 await rufe("Runtime.enable");
 
+/** das Probe-Abo in Basic anlegen (Quelle des Entwicklungsservers) und seine Kennung liefern */
+async function aboAnlegen() {
+  const kennung = await auswerten(`(async () => {
+    const m = await import("${APP}src/lib/podcasts/index.ts").catch(() => null);
+    return m ? (await m.aboliste.abonnieren(${JSON.stringify(PODCAST.feed)})).id : null;
+  })()`);
+  if (kennung === null) throw new Error("Abo nicht angelegt (nur gegen den Entwicklungsserver von Basic)");
+  return kennung;
+}
+
+if (NUR === "basic") {
+  // Bild der Webversion in der README (media/webversion.png): Basic am Rechner, dunkel, das Abo morfCast + chill mit
+  // seinen Folgen; zeigt Podcasts und Bilder, die Basic neu kann (das Radio zeigt schon das Gerätebild)
+  await geraet(1440, 900, 1, false);
+  await oeffnen(APP, "podcasts", { radiohub_sprache: "de", radiohub_thema: "dunkel" });
+  await bisDa(`!!document.querySelector(".rh-podcast-leiste")`, "Podcasts", 300);
+  const kennung = await aboAnlegen();
+  await rufe("Page.navigate", { url: `${APP}podcasts/${kennung}` });
+  await bisDa(`document.querySelectorAll(".rh-folge").length > 3 && [...document.querySelectorAll(".rh-folge img")].slice(0, 6).every((b) => b.complete)`, "Folgen mit Bildern", 2500);
+  await aufnehmen(BASIC_BILD);
+  await seite.schliesse();
+  process.exit(0);
+}
+
 let stand = existsSync(STAND) ? JSON.parse(readFileSync(STAND, "utf-8")) : {};
 if (MIT("rechner")) {
   // 1. Rechner: Radio hell, ein Sender spielt (Anzeige mit Name und Titel); in PRO mit der Sitzung des Probebetriebs
@@ -93,11 +119,7 @@ if (MIT("telefon")) {
     .catch((f) => console.warn("ohne sicheren Rand:", f.message));
   await oeffnen(APP, "podcasts", { radiohub_sprache: "de", radiohub_thema: "dunkel" });
   await bisDa(`!!document.querySelector(".t-reiter")`, "Telefonansicht", 300);
-  const kennung = await auswerten(`(async () => {
-    const m = await import("${APP}src/lib/podcasts/index.ts").catch(() => null);
-    return m ? (await m.aboliste.abonnieren(${JSON.stringify(PODCAST.feed)})).id : null;
-  })()`);
-  if (kennung === null) throw new Error("Abo nicht angelegt (nur gegen den Entwicklungsserver von Basic)");
+  const kennung = await aboAnlegen();
   await rufe("Page.navigate", { url: `${APP}podcasts/${kennung}` });
   await bisDa(`document.querySelectorAll(".tp-folge").length > 0`, "Folgen");
   await auswerten(`document.querySelector(".tp-folge .tf-aktionen button").click(); true`);

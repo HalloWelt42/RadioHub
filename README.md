@@ -33,7 +33,7 @@ Datei sichern, Abos als OPML-Datei. Podcasts sucht Basic direkt in den Verzeichn
 bietet nur an, was der Browser lesen kann (manche Server erlauben das nicht, die gehen nur in PRO). Senderlogos und
 Bilder kommen direkt von den Servern der Sender und Podcasts. Ohne Zeitversatz, Aufnahmen und Werbeerkennung.
 
-![RadioHub Basic](media/webversion.png)
+![RadioHub Basic mit Podcasts im Browser](media/webversion.png)
 
 ## Starten
 
