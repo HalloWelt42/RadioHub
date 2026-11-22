@@ -20,6 +20,9 @@
   --rh-geraet: var(--hifi-metall-front);
   --rh-geraet-bild: var(--hifi-licht-oben), var(--hifi-buerste);
   --rh-seitenleiste-bild: var(--hifi-koernung);   /* Seitenleiste gleichmäßig gekörnt, ohne Verlauf (RAD-70) */
+  /* Grund der Seite wie der body der Vorlage; mit background-attachment: fixed deckungsgleich für Flächen, die ihn
+     verdecken müssen (klebender Spaltenkopf, RAD-70) */
+  --rh-grund-bild: radial-gradient(ellipse 90% 60% at 50% -12%, var(--hifi-grund-licht), transparent 72%), var(--hifi-koernung);
   --rh-geraet-tinte: var(--hifi-metall-tinte);
   --rh-geraet-tinte-2: var(--hifi-metall-tinte-2);
   --rh-geraet-kante: var(--hifi-kante-geraet);
@@ -46,4 +49,9 @@
   --rh-schleier: rgb(0 0 0 / .42);
   --rh-blatt-schatten: 0 -12px 34px rgb(0 0 0 / .5);
   --rh-spieler-schatten: inset 0 1px 0 rgb(255 255 255 / calc(.16 * var(--hifi-glanz))), 0 -8px 18px -8px rgb(0 0 0 / .5);
+}
+
+/* hell liegt der Grund der Seite auf Bürstung statt Körnung, wie der body der Vorlage (RAD-70) */
+:root[data-vorlage="hifi"][data-theme="hell"], :root[data-vorlage="hifi"]:not([data-theme]) {
+  --rh-grund-bild: radial-gradient(ellipse 90% 60% at 50% -12%, var(--hifi-grund-licht), transparent 72%), var(--hifi-buerste);
 }

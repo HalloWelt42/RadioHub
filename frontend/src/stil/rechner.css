@@ -57,7 +57,8 @@
 @media (max-width: 1099px) {
   .rh-radio { grid-template-columns: minmax(0, 1fr); }
   .rh-filter { position: absolute; left: 0; top: 0; bottom: 0; inline-size: min(calc(var(--gross) * 21), calc(100vw - 32px));
-    margin-top: 0; padding-top: 0; z-index: 12; transform: translateX(-105%); transition: transform var(--ruhig) ease-out; visibility: hidden; }
+    margin-top: 0; padding-top: 0; z-index: 12; transform: translateX(-105%); transition: transform var(--ruhig) ease-out; visibility: hidden;
+    background-color: var(--leiste); background-image: var(--rh-seitenleiste-bild); }
   .rh-filter.offen { transform: none; visibility: visible; }
   .rh-filter-zu { display: inline-flex; }
   .rh-filter-auf { display: inline-flex; }
