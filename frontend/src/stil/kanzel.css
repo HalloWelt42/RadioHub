@@ -150,7 +150,8 @@
 /* Steuerung mit zwei Köpfen auf einer Linie (RAD-72): STEUERUNG über den Tasten, der Name des Drehreglers (BITRATE oder
    TEMPO) über dem Regler. Am Regler bleibt oben eine Zeile frei und unten steht der Zustand, beide mit festem Platz: so
    steht der Knopf mittig auf der Höhe der Tasten. */
-.rh-m-steuerung { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "kopf drehkopf" "tasten dreh";
+.rh-m-steuerung { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "kopf drehkopf" "tasten dreh";   /* Kopfzeile fest oben, auch ohne Drehregler (Basic) */
   column-gap: 18px; row-gap: 5px; align-items: center; }
 .rh-m-steuerung > .ak-etikett { grid-area: kopf; }
 .rh-m-steuerung > .rh-dreh-kopf { grid-area: drehkopf; }
