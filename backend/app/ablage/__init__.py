@@ -38,6 +38,9 @@ class KeineAblage(Ablage):
     async def schreiben(self, pfad: str, daten: bytes) -> Eintrag:
         raise self._fehlt()
 
+    async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
+        raise self._fehlt()
+
     async def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:
         raise self._fehlt()
         yield b""  # pragma: no cover

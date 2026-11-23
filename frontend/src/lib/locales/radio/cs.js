@@ -190,7 +190,7 @@ export default {
     uebersetzenHilfe: 'Přeložit', kopieren: 'Kopírovat text', text: 'Text', leer: 'První text přijde po několika větách', aus: 'vypnuto',
     sammelt: 'sbírá další věty', hoert: 'poslouchá', uebersetzt: 'překládá', gestoert: 'přerušeno',
     stimme: 'Tlumočník', stimmeHilfe: 'Mluví překlad místo originálu; vypnuto je opět slyšet originál',
-    spricht: 'mluví', stimmeKommt: 'hlas hned začne',
+    spricht: 'mluví', stimmeKommt: 'hlas hned začne', ablegen: 'Zvuk, překlad a přepis se ukládají do Kellerwolke',
     zeitstimme: 'Hlas času', stimmwahl: 'Hlas tlumočníka',
     beginnt: 'stanice se spouští',
   },

@@ -186,7 +186,7 @@ export default {
     leer: 'De eerste tekst komt na enkele zinnen', aus: 'uit', sammelt: 'verzamelt de volgende zinnen', hoert: 'luistert', uebersetzt: 'vertaalt',
     gestoert: 'onderbroken',
     stimme: 'Tolk', stimmeHilfe: 'Spreekt de vertaling in plaats van het origineel; uit is het origineel weer te horen',
-    spricht: 'spreekt', stimmeKommt: 'stem komt zo',
+    spricht: 'spreekt', stimmeKommt: 'stem komt zo', ablegen: 'Geluid, stem en transcript worden in Kellerwolke bewaard',
     zeitstimme: 'Tijdstem', stimmwahl: 'Stem van de tolk',
     beginnt: 'zender start',
   },

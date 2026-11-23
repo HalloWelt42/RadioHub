@@ -28,12 +28,13 @@ from appkern.app import Begleiter, Geruest
 from . import ablage as ablage_paket
 from . import database, einstellungen, uebergang
 from .ablage import AblageEinstellungen, AblageFehler
-from .config import DB_PATH, VERSION
+from .config import DB_PATH, VERSION, get_arbeit_dir
 from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, timeshift_buffer
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
 from .services.mitlesen import mitleser
+from .services.mitschrift import Mitschriften
 from .services import lernliste, propagandafilter, uebersetzerstimme, zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
@@ -91,12 +92,15 @@ class Radiobetrieb(Begleiter):
         mitleser.stimme = lambda text, sprache: uebersetzerstimme.sprechen(self.geruest.verbund, text, sprache)
         mitleser.stimme_da = uebersetzerstimme.eingerichtet
         mitleser.ziel_name = lambda k: einstellungen.SPRACHEN.get(k, k)
+        mitschriften = Mitschriften(lambda: get_arbeit_dir("mitlesen"), lambda text, stufe: self._eintragen("radio.mitlesen", text, stufe))
+        mitleser.mitschriften = lambda: mitschriften if einstellungen.stand().mitlesen_ablegen else None
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
         mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs
         seed_domain_blacklist()         # Werbedomains der Erkennung
         aufnahmen.aufraeumen()          # alte Arbeitskopien
         self._aufgaben = [asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
                           asyncio.create_task(self._liegengebliebene_ablegen(), name="aufnahmen-nachholen"),
+                          asyncio.create_task(mitschriften.nachholen(), name="mitschriften-nachholen"),
                           asyncio.create_task(self._abgleich_planen(), name="abgleich-plan"),
                           asyncio.create_task(self._lernliste_weitergeben(), name="lernliste")]
         log.info("RadioHub %s gestartet, Daten in %s", VERSION, DB_PATH.parent)

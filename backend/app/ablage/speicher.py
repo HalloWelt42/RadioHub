@@ -52,6 +52,12 @@ class SpeicherAblage(Ablage):
     async def ablegen(self, pfad: str, quelle: Path) -> Eintrag:
         return await self.schreiben(pfad, quelle.read_bytes())
 
+    async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
+        pfad = sauberer_pfad(pfad)
+        if pfad not in self.dateien:
+            raise NichtGefunden(f"{pfad} nicht gefunden")
+        return await self.schreiben(f"{pfad.rsplit('.', 1)[0]}{zusatz}", daten.read_bytes() if isinstance(daten, Path) else daten)
+
     async def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:
         pfad = sauberer_pfad(pfad)
         if pfad not in self.dateien:

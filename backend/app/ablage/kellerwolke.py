@@ -120,6 +120,15 @@ class KellerwolkeAblage(Ablage):
     async def schreiben(self, pfad: str, daten: bytes) -> Eintrag:
         return await self._ablegen(pfad, bytes(daten))
 
+    async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
+        try:
+            haupt = await self._schreiben.pfad(self._voll(pfad))
+            vorhanden = next((b for b in await self._schreiben.begleiter(haupt.id) if b.rolle == rolle), None)
+            return self._eintrag(await self._schreiben.begleiter_schreiben(
+                haupt.id, rolle, zusatz, daten, stand=vorhanden.etag if vorhanden else None, nur_neu=vorhanden is None, inhaltstyp=inhaltstyp))
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+
     async def verschieben(self, pfad: str, neuer_pfad: str) -> Eintrag:
         knoten = await self._knoten(pfad)
         ziel = self._voll(neuer_pfad)

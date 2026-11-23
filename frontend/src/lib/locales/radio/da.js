@@ -190,7 +190,7 @@ export default {
     uebersetzenHilfe: 'Oversæt', kopieren: 'Kopiér tekst', text: 'Tekst', leer: 'Den første tekst kommer efter et par sætninger', aus: 'fra',
     sammelt: 'samler de næste sætninger', hoert: 'lytter', uebersetzt: 'oversætter', gestoert: 'afbrudt',
     stimme: 'Tolk', stimmeHilfe: 'Siger oversættelsen i stedet for originalen; slået fra høres originalen igen',
-    spricht: 'taler', stimmeKommt: 'stemmen kommer straks',
+    spricht: 'taler', stimmeKommt: 'stemmen kommer straks', ablegen: 'Lyd, oversættelse og udskrift gemmes i Kellerwolke',
     zeitstimme: 'Tidsstemme', stimmwahl: 'Tolkens stemme',
     beginnt: 'stationen starter',
   },

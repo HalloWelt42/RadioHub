@@ -5,6 +5,8 @@
     Aufnahmen/<Sender>/<JJJJ-MM-TT HH-MM-SS>/Wellenform.peaks     Wellenform für den Schnitt (entsteht bei Bedarf)
     Aufnahmen/<Ordner>/<Sender>/<JJJJ-MM-TT HH-MM-SS>/...         eine Aufnahme in einem eigenen Aufnahmeordner
     Podcasts/<Abo>/<JJJJ-MM-TT> <Folge>.mp3                       eine heruntergeladene Folge
+    Mitlesen/<Sender>/<JJJJ-MM-TT HH-MM-SS>.mp3                   Ton eines Mitlesens, daneben seine Begleiter
+                                                                  .sprache.mp3 (Übersetzung) und .transkript.json
     Zeitansage/<Stimme>/es-ist.mp3, stunde-05.mp3, minute-34.mp3  Bausteine der Zeitansage, je Stimme ein Ordner
 """
 
@@ -85,6 +87,14 @@ def folge(abo: str, titel: str, veroeffentlicht: str | None, endung: str) -> str
     datum = datum if re.fullmatch(r"\d{4}-\d{2}-\d{2}", datum) else ""
     stamm = f"{datum} {name(titel, ersatz='Folge')}".strip()
     return f"{podcastordner(abo)}/{stamm}{endung.lower()}"
+
+
+MITLESEN = "Mitlesen"
+
+
+def mitlesung(sender: str, beginn: datetime | str | None, endung: str) -> str:
+    """Der Ton eines Mitlesens (RAD-131); seine Begleiter heißen wie er."""
+    return f"{MITLESEN}/{name(sender, ersatz='Unbekannter Sender')}/{zeitpunkt(beginn)}{endung.lower()}"
 
 
 ZEITANSAGE = "Zeitansage"

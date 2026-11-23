@@ -50,7 +50,7 @@ describe("Übersetzerstimme", () => {
     (await import("../src/lib/stumm")).stummVerbinden(radio);
     const { uebersetzer } = await import("../src/spieler/uebersetzer.svelte");
     mitlesen.uuid = "u";
-    const stand = (sprechen: boolean, laeuft = true) => { mitlesen.stand = { laeuft, zustand: "sammelt", grund: "", uuid: "u", name: "", sprache: "en", ziel: "de", uebersetzen: true, sprechen, kann_sprechen: true, fassung: 1 }; };
+    const stand = (sprechen: boolean, laeuft = true) => { mitlesen.stand = { laeuft, zustand: "sammelt", grund: "", uuid: "u", name: "", sprache: "en", ziel: "de", uebersetzen: true, sprechen, kann_sprechen: true, ablegen: true, fassung: 1 }; };
     mitlesen.sprechen = async (an: boolean) => stand(an);
     stand(false);
     const bereit = (...l: number[]) => { mitlesen.absaetze = l.map((ton_s, i) => ({ nr: i + 1, von: 0, bis: 1, zeit: "", text: "t", uebersetzung: "ü", ton_s })); };

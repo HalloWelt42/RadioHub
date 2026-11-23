@@ -30,6 +30,8 @@ export interface Mitlesestand {
   /** die Übersetzerstimme spricht mit; kann_sprechen: Vertonung und Stimme sind eingerichtet */
   sprechen: boolean;
   kann_sprechen: boolean;
+  /** es wird in der Kellerwolke abgelegt */
+  ablegen: boolean;
   absaetze: Absatz[];
   fassung: number;
 }

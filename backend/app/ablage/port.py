@@ -92,6 +92,11 @@ class Ablage(ABC):
         """Kleinen Inhalt ablegen (Titelliste, Wellenform), sonst wie `ablegen`."""
 
     @abstractmethod
+    async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
+        """Begleitdatei einer Rolle neben die Datei `pfad` (Name: ihr Stamm mit `zusatz`), neu oder als neue Version; sie zieht
+        mit ihrer Hauptdatei mit."""
+
+    @abstractmethod
     def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:
         """Inhalt stückweise; mit `start` (und `ende`, einschließlich) nur ein Bereich."""
 

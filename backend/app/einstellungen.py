@@ -86,6 +86,9 @@ class AppEinstellungen(Grundeinstellungen):
     uebersetzerstimme: str = Field("", max_length=200, title="Stimme des Übersetzers", json_schema_extra=DIENSTE,
                                    description="Stimme der Vertonung, die beim Mitlesen die Übersetzung spricht: aus dem Katalog oder "
                                                "eine private, die die Vertonung für RadioHub freigibt. Leer: die Stimme der Zeitansage.")
+    mitlesen_ablegen: bool = Field(True, title="Mitlesen in der Kellerwolke ablegen", json_schema_extra=DIENSTE,
+                                   description="Legt nach jedem Mitlesen den Ton des Senders ab, daneben die gesprochene Übersetzung "
+                                               "und das Transkript (Ordner Mitlesen).")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "

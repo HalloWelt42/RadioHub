@@ -94,6 +94,7 @@
     <span class="rh-mitlese-fuss">
       <button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} disabled={!mitlesen.absaetze.length}
               onclick={() => void kopiere()}><i class="fa-regular fa-copy"></i></button>
+      {#if mitlesen.stand?.ablegen}<i class="fa-solid fa-cloud-arrow-up rh-mitlese-wolke" role="img" title={t("radio.mitlesen.ablegen")} aria-label={t("radio.mitlesen.ablegen")}></i>{/if}
       <span class="rh-mitlese-lage" class:gestoert={!!mitlesen.fehler} title={lage} aria-live="polite">{lage}</span>
     </span>
   </div>

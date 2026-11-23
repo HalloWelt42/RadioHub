@@ -4,7 +4,7 @@ geraet: [pi]
 abhaengigkeiten: [kellerwolke]
 daten:
   - "Pi: `{{wurzel}}/data/radiohub.db` (Sender mit Aufbereitung, Favoriten, Ausschlussregeln, Einzelsperren und Freigaben, Index der Aufnahmen, Abos und Folgen, Wecker, Stand der Oberfläche), `{{wurzel}}/data/appkern/radiohub.sqlite` (Einstellungen, Protokoll, Aufträge des Appkerns), `{{wurzel}}/data/cache` (Senderlogos, Zwischenstände, Arbeitsordner laufender Aufnahmen und Downloads), `{{wurzel}}/data/storage.json` (Speicherzonen)"
-  - "Kellerwolke, Ordner `Apps/RadioHub`: Aufnahmen mit Titelliste und Wellenform, heruntergeladene Podcast-Folgen, Bausteine der Zeitansage"
+  - "Kellerwolke, Ordner `Apps/RadioHub`: Aufnahmen mit Titelliste und Wellenform, heruntergeladene Podcast-Folgen, Mitgelesenes (Ton, Übersetzung, Transkript), Bausteine der Zeitansage"
 sicherung:
   - "nach der Regel des Appkerns eine Kopie von `radiohub.db` nach `{{wurzel}}/sicherungen` und eine der Datenbank des Gerüsts nach `{{wurzel}}/sicherungen/appkern`: regelmäßig von der App (Vorgabe alle 7 Tage) und vor jedem Ausrollen (nur wenn die jüngste älter als 24 Stunden ist und sich etwas geändert hat, höchstens drei je Datenbank)"
   - "Aufnahmen, Folgen und Bausteine hängen an der Sicherung der Kellerwolke"
@@ -110,6 +110,12 @@ gesprochenen Stelle (ohne Übersetzer dem neuesten Text); wer selbst rollt, blei
 sich etwas, spricht sie schneller (höchstens 1,4-fach) und lässt notfalls die ältesten Absätze aus. Pause am Radio hält sie
 an, die Lautstärke ist die des Radios. Feste Stimmen rechnen schneller als private (geklonte): kommt der Text deutlich
 schneller, als die Stimme fertig wird, ist eine feste Stimme die bessere Wahl.
+
+Ablage beim Mitlesen (RAD-131): nach jedem Ende liegt in der Kellerwolke unter `Mitlesen/<Sender>/` der gehörte Ton des
+Senders (`<Datum> <Uhrzeit>.mp3`), daneben als Begleitdateien die gesprochene Übersetzung (`.sprache.mp3`, wenn der
+Übersetzer lief) und das Transkript mit Zeiten und Übersetzung (`.transkript.json`, Format der [[Transkription]]). Die Stimme
+liegt am Stück, ihre Stellen stehen im Transkript. Bis dahin wächst alles im Arbeitsordner `arbeit/mitlesen`; nach einem
+Neustart oder ohne Kellerwolke wird nachgeholt, das Protokoll sagt es (radio.mitlesen). Abschalten: Einstellungen > Dienste.
 
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich

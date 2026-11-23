@@ -30,6 +30,7 @@ from .uebersetzerstimme import Gesprochen, StimmeFehler
 
 if TYPE_CHECKING:
     from .empfang import Empfang
+    from .mitschrift import Mitschrift, Mitschriften
 
 logger = logging.getLogger("radiohub.mitlesen")
 
@@ -89,6 +90,8 @@ class Stand(BaseModel):
     #: die Übersetzerstimme spricht mit; kann_sprechen: Vertonung und Stimme sind eingerichtet
     sprechen: bool = False
     kann_sprechen: bool = False
+    #: es wird in der Kellerwolke abgelegt
+    ablegen: bool = False
     #: was ab `ab` dazukam oder sich änderte (eine Übersetzung kommt nach ihrem Absatz)
     absaetze: list[Absatz] = []
     fassung: int = 0
@@ -104,6 +107,10 @@ def schnitt(pegel: list[tuple[float, float]], von: float, gehoert_bis: float) ->
     # über drei Messungen (0,3 s) gemittelt: ein einzelnes Loch ist keine Pause
     glatt = [(bereich[i][0], sum(m for _, m in bereich[max(0, i - 1):i + 2]) / len(bereich[max(0, i - 1):i + 2])) for i in range(len(bereich))]
     return round(min(glatt, key=lambda x: (x[1], x[0]))[0], 2)
+
+
+def _endung(e: Empfang) -> str:
+    return ENDUNG.get((e.kopf.format if e.kopf else "") or "", ".mp3")
 
 
 class Absatzsammler:
@@ -155,6 +162,8 @@ class Mitleser:
     nachfolger: Callable[[str], Empfang | None] = lambda _uuid: None
     stimme: Callable[[str, str], Awaitable[Gesprochen]] = _keine_stimme
     stimme_da: Callable[[], bool] = lambda: False
+    #: legt ab, was entsteht (RAD-131); None: es wird nichts abgelegt
+    mitschriften: Callable[[], Mitschriften | None] = lambda: None
 
     _empfang: Empfang | None = field(default=None, repr=False)
     _wahl: Wahl = field(default_factory=Wahl)
@@ -171,6 +180,9 @@ class Mitleser:
     _zu_uebersetzen: asyncio.Queue[int] = field(default_factory=asyncio.Queue, repr=False)
     _zu_sprechen: asyncio.Queue[int] = field(default_factory=asyncio.Queue, repr=False)
     _toene: dict[int, bytes] = field(default_factory=dict, repr=False)
+    _sammler: Absatzsammler = field(default_factory=Absatzsammler, repr=False)
+    _mitschrift: Mitschrift | None = field(default=None, repr=False)
+    _schriften: Mitschriften | None = field(default=None, repr=False)
 
     @property
     def eingerichtet(self) -> bool:
@@ -196,6 +208,8 @@ class Mitleser:
         self._zu_uebersetzen, self._zu_sprechen = asyncio.Queue(), asyncio.Queue()
         self._gelesen = self.uhr()
         ab = max(empfang.anfang_s, empfang.jetzt_s - EINSTIEG_S)
+        self._sammler = Absatzsammler()
+        self._mitschrift_beginnen(empfang, ab)
         self._aufgaben = [asyncio.create_task(self._mithoeren(empfang, ab)), asyncio.create_task(self._uebersetzen()), asyncio.create_task(self._sprechen())]
         return self.stand(0)
 
@@ -204,9 +218,12 @@ class Mitleser:
         aufgaben, self._aufgaben = [a for a in self._aufgaben if a is not asyncio.current_task()], []
         for a in aufgaben:
             a.cancel()
-        self._empfang, self._zustand, self._grund = None, "aus", grund
+        e, self._empfang, self._zustand, self._grund = self._empfang, None, "aus", grund
         self._wahl.sprechen = False
         await asyncio.gather(*aufgaben, return_exceptions=True)
+        if e is not None:
+            self._hinzu(e, self._sammler.rest())             # der letzte Satz gehört dazu
+        self._mitschrift_beenden()
 
     def stellen(self, uebersetzen: bool | None = None, sprechen: bool | None = None) -> None:
         """Übersetzen und Übersetzerstimme an oder aus; an holt die letzten Absätze nach. Sprechen schließt Übersetzen ein."""
@@ -234,13 +251,13 @@ class Mitleser:
         self._gelesen = self.uhr()
         e = self._empfang
         return Stand(laeuft=e is not None, zustand=self._zustand, grund=self._grund, uuid=e.uuid if e else "", name=e.name if e else "",
-                     sprache=self.sprache, ziel=self._wahl.ziel, uebersetzen=self._wahl.uebersetzen, sprechen=self._wahl.sprechen, kann_sprechen=self.stimme_da(), fassung=self._fassung,
+                     sprache=self.sprache, ziel=self._wahl.ziel, uebersetzen=self._wahl.uebersetzen, sprechen=self._wahl.sprechen, kann_sprechen=self.stimme_da(), ablegen=self._mitschrift is not None, fassung=self._fassung,
                      absaetze=[a for a in self._absaetze if self._geaendert[a.nr] > ab])
 
     # ----- Ablauf
 
     async def _mithoeren(self, e: Empfang, von: float) -> None:
-        sammler = Absatzsammler()
+        sammler = self._sammler
         try:
             while True:
                 if e.beendet:
@@ -248,8 +265,12 @@ class Mitleser:
                     neu = await self._neuer_empfang(e)
                     if neu is None:
                         break
+                    if _endung(neu) != _endung(e):
+                        self._mitschrift_beenden()
                     e = self._empfang = neu
                     von = e.anfang_s
+                    if self._mitschrift is None:
+                        self._mitschrift_beginnen(e, von)
                 if self.uhr() - self._gelesen > LESER_WEG_S:
                     return await self.beenden("niemand liest")
                 if e.jetzt_s - von > RUECKSTAND_S:
@@ -277,6 +298,16 @@ class Mitleser:
             logger.exception("Mitlesen %s", e.name)
             await self.beenden(type(f).__name__)
 
+    def _mitschrift_beginnen(self, e: Empfang, ab: float) -> None:
+        self._schriften = self.mitschriften()
+        beginn = datetime.now().astimezone() - timedelta(seconds=max(0.0, e.jetzt_s - ab))
+        self._mitschrift = self._schriften.beginnen(e.name, e.uuid, _endung(e), self._wahl.ziel, beginn) if self._schriften else None
+
+    def _mitschrift_beenden(self) -> None:
+        m, self._mitschrift = self._mitschrift, None
+        if m is not None and self._schriften is not None:
+            self._schriften.fertig(m)
+
     async def _neuer_empfang(self, alt: Empfang) -> Empfang | None:
         """Der Empfang, mit dem derselbe Sender weiterspielt, sonst None (das Radio ist aus)."""
         bis = self.uhr() + NACHFOLGER_S
@@ -301,12 +332,15 @@ class Mitleser:
             return []
         self._zustand = "hoert"
         with tempfile.TemporaryDirectory(prefix="mitlesen-") as ordner:
-            datei = Path(ordner) / f"stueck{ENDUNG.get(e.kopf.format if e.kopf else '', '.mp3') if e.kopf and e.kopf.format else '.mp3'}"
+            datei = Path(ordner) / f"stueck{_endung(e)}"
             datei.write_bytes(daten)
             with halten(HALTEN_S):
                 erg = await hoeren(ls, self.hoerdienst(), datei, self._wahl.sprache or "auto", versatz=von, titel="Live mitlesen")
         if not self._wahl.sprache and erg.sprache:
             self._erkannt = erg.sprache
+        if self._mitschrift is not None:
+            self._mitschrift.ton(daten, von, bis)
+            self._mitschrift.blatt.sprache = self.sprache
         return erg.segmente
 
     def _hinzu(self, e: Empfang, absaetze: list[tuple[float, float, str]]) -> None:
@@ -315,6 +349,8 @@ class Mitleser:
             zeit = datetime.now().astimezone() - timedelta(seconds=max(0.0, e.jetzt_s - von))
             self._absaetze.append(Absatz(nr=self._nr, von=round(von, 1), bis=round(bis, 1), zeit=zeit.isoformat(timespec="seconds"), text=text))
             self._merken(self._nr)
+            if self._mitschrift is not None:
+                self._mitschrift.absatz(self._nr, von, bis, self._absaetze[-1].zeit, text)
             if self._wahl.uebersetzen:
                 self._zu_uebersetzen.put_nowait(self._nr)
         for a in self._absaetze[:-ABSAETZE_HOECHSTENS]:
@@ -343,6 +379,8 @@ class Mitleser:
                     antwort = await ls.chat([*nachrichten, Nachricht.nutzer(a.text)], modell=modell, titel="Live mitlesen: übersetzen", temperature=0.2)
                 a.uebersetzung = gerade(antwort.text.strip())
                 self._merken(nr)
+                if self._mitschrift is not None:
+                    self._mitschrift.uebersetzt(nr, a.uebersetzung)
                 if self._wahl.sprechen:
                     self._zu_sprechen.put_nowait(nr)
             except LeitstellenFehler as f:
@@ -372,6 +410,8 @@ class Mitleser:
                 del self._toene[alt]
             a.ton_s = round(max(0.1, g.dauer_s), 1)
             self._merken(nr)
+            if self._mitschrift is not None:
+                self._mitschrift.gesprochen(nr, g.ton, g.dauer_s)
 
 
 mitleser = Mitleser()
