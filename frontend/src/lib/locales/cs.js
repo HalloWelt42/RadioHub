@@ -372,6 +372,7 @@ export default {
     telefonKnopf: 'Zařízení', telefonKnopfSpielt: 'Zařízení · {n} hraje',
   },
   schale: {
+    hinweise: 'Soukromí a původ',
     werbungUebersprungen: 'Reklama přeskočena', werbungAnhoeren: 'Zpět a poslechnout', schliessen: 'Zavřít',
     werbeherkunft_kapitel: 'Kapitola ve feedu', werbeherkunft_hand: 'ručně', werbeherkunft_vergleich: 'Porovnání verzí',
     werbeherkunft_transkript: 'z přepisu',

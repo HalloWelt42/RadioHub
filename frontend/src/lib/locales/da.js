@@ -372,6 +372,7 @@ export default {
     telefonKnopf: 'Enheder', telefonKnopfSpielt: 'Enheder · {n} spiller',
   },
   schale: {
+    hinweise: 'Privatliv og kilder',
     werbungUebersprungen: 'Reklame sprunget over', werbungAnhoeren: 'Tilbage og lyt', schliessen: 'Luk',
     werbeherkunft_kapitel: 'Kapitel i feedet', werbeherkunft_hand: 'manuelt', werbeherkunft_vergleich: 'Sammenligning af versioner',
     werbeherkunft_transkript: 'fra transskriptionen',

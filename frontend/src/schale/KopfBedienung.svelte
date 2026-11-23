@@ -3,11 +3,12 @@
   // schaltet reihum Hell, Dunkel, System und zeigt das geltende Symbol; Schrift kleiner und größer, die Sprache als Flagge mit Aufklappliste (RAD-99) und Abmelden. Alles sind
   // gewöhnliche Knöpfe (rund); das gewählte Thema und die gewählte Sprache tragen die Akzentfarbe. Die Vorlage wählt man
   // in den Einstellungen unter Darstellung. Die Sprache gilt für alle Geräte und wird sofort gespeichert. Ganz vorn mit
-  // Backend der Knopf Geräte (Übergabe, RAD-18).
+  // Backend der Knopf Geräte (Übergabe, RAD-18), in der Basic der Knopf Datenschutz und Herkunft (RAD-123).
   import { abmelden, ohneAnmeldung, Rueckfrage, sitzung } from "appkern-oberflaeche";
   import { darstellung, darstellungSetzen, schriftAmRand, schriftSchritt } from "../lib/darstellung.svelte";
   import { t } from "../lib/i18n.svelte.js";
   import { SPRACHEN } from "../lib/sprache.svelte";
+  import Hinweise from "./Hinweise.svelte";
   import Sprachwahl from "./Sprachwahl.svelte";
   import GeraeteKnopf from "./GeraeteKnopf.svelte";
   import { faehigkeiten } from "../lib/playerEngine.js";
@@ -39,6 +40,7 @@
 
 <div class="rh-kopf-bedienung">
   {#if faehigkeiten().uebergabe && mitKonto}<GeraeteKnopf />{/if}
+  <Hinweise />
   <button class="rund" type="button"
           title={t("schale.themaWechsel", { jetzt: t(`schale.thema_${THEMEN[themaJetzt][0]}`), danach: t(`schale.thema_${themaDanach}`) })}
           aria-label={t("schale.themaWechsel", { jetzt: t(`schale.thema_${THEMEN[themaJetzt][0]}`), danach: t(`schale.thema_${themaDanach}`) })}

@@ -33,17 +33,17 @@ const ORDNER = (pfad: string) => fileURLToPath(new URL(pfad, import.meta.url));
 
 // Webversion: Basis des Repos auf GitHub Pages (https://hallowelt42.github.io/RadioHub/)
 const WEB_BASIS = "/RadioHub/";
-// aus public die Symbole und die Ordner, die auch die Basic liest: legal (Texte unter Über) und images (Bildcodes unter
-// Bedanken; RAD-36: fehlten sie, zeigte Über "Text nicht gefunden"); dazu die statische Senderliste aus web/daten (per
+// aus public die Symbole und der Ordner, den auch die Basic liest: legal (Texte unter Über und im Fenster Datenschutz und
+// Herkunft; RAD-36: fehlten sie, zeigte Über "Text nicht gefunden"); dazu die statische Senderliste aus web/daten (per
 // Skript erzeugt, LIESMICH dort)
 const WEB_SYMBOLE = ["favicon.ico", "favicon-32.png", "favicon.svg", "icon-192.png", "icon-512.png", "icon-maskable-192.png",
   "icon-maskable-512.png", "apple-touch-icon.png"];
-const WEB_ORDNER = ["legal", "images"];
+const WEB_ORDNER = ["legal"];
 const WEB_DATEN = ORDNER("../web/daten");
 // Adressen der Basic ohne Kennung (Bereiche und Reiter der Einstellungen), siehe webDateien
 const WEB_ADRESSEN = ["radio", "einstellungen", "einstellungen/radio", "einstellungen/radio/regeln", "einstellungen/radio/ausgeblendet",
   "einstellungen/radio/laender", "einstellungen/radio/datei", "einstellungen/allgemein", "einstellungen/allgemein/bedienung",
-  "einstellungen/allgemein/tastatur", "einstellungen/allgemein/ueber", "einstellungen/allgemein/bedanken", "einstellungen/darstellung",
+  "einstellungen/allgemein/tastatur", "einstellungen/allgemein/ueber", "einstellungen/darstellung",
   "einstellungen/wecker", "einstellungen/wecker/zeitansage", "einstellungen/wecker/ort"];
 // Name der Webversion: RadioHub Basic (die volle Version ist RadioHub PRO, Nutzer 20.11.2026)
 const WEB_NAME = "RadioHub Basic";

@@ -3,7 +3,7 @@
 /* Orbitron (Wahl D): Köpfe in Versalien und ruhige Zahlen; Größe aus der eigenen Stufe mal --orbitron-mass */
 :is(.ak-etikett, .rh-spalten, .rh-gruppe-kopf h3, .ak-dreh-name) {
   font-family: var(--schrift-orbitron); font-weight: 700; letter-spacing: .04em; font-size: calc(var(--marke) * var(--orbitron-mass)); }
-.rh-karte-kopf h2 { font-family: var(--schrift-orbitron); font-weight: 700; letter-spacing: .02em; font-size: calc(var(--titel) * var(--orbitron-mass)); }
+.rh-karte-kopf h2, .rh-hinweise-kopf h2 { font-family: var(--schrift-orbitron); font-weight: 700; letter-spacing: .02em; font-size: calc(var(--titel) * var(--orbitron-mass)); }
 :is(.rh-facette .rh-zahl, .rh-chips-wahl .rh-zahl, .rh-sender .stimmen, .rh-sender .guete-zelle span, .rh-varianten-knopf .rh-zahl,
     .rh-werbender summary .rh-zahl, .rh-variante .stimmen-v) {
   font-family: var(--schrift-orbitron); font-weight: 500; letter-spacing: .02em; font-size: calc(var(--klein) * var(--orbitron-mass)); }

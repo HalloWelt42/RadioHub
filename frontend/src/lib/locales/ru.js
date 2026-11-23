@@ -356,6 +356,7 @@ export default {
     telefonKnopf: 'Устройства', telefonKnopfSpielt: 'Устройства · играет {n}',
   },
   schale: {
+    hinweise: 'Конфиденциальность и источники',
     werbungUebersprungen: 'Реклама пропущена', werbungAnhoeren: 'Вернуться и послушать', schliessen: 'Закрыть',
     werbeherkunft_kapitel: 'глава в ленте', werbeherkunft_hand: 'вручную', werbeherkunft_vergleich: 'сравнение версий',
     werbeherkunft_transkript: 'из расшифровки',

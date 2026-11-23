@@ -364,6 +364,7 @@ export default {
     telefonKnopf: 'Apparaten', telefonKnopfSpielt: 'Apparaten · {n} speelt',
   },
   schale: {
+    hinweise: 'Privacy en herkomst',
     werbungUebersprungen: 'Reclame overgeslagen', werbungAnhoeren: 'Terug en beluisteren', schliessen: 'Sluiten',
     werbeherkunft_kapitel: 'Hoofdstuk in de feed', werbeherkunft_hand: 'handmatig', werbeherkunft_vergleich: 'Vergelijking van versies',
     werbeherkunft_transkript: 'uit het transcript',

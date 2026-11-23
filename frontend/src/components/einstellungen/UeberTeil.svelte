@@ -2,7 +2,7 @@
   // Einstellungen > Allgemein > Über (RAD-11): Info, Lizenz, Datenschutz und Nutzungsbedingungen aus /legal/<sprache>/
   // (Rückfall Englisch, dann Deutsch), je Text gekürzt mit "Mehr zeigen".
   import { t, currentLanguage } from "../../lib/i18n.svelte.js";
-  import { parseMarkdown } from "../../lib/markdown.js";
+  import { rechtstexte } from "../../lib/rechtstexte";
   import { EINSTELLUNGEN } from "$ziel/einstellungen";
   import Karte from "./Karte.svelte";
 
@@ -10,29 +10,17 @@
   const TEXTE = ([
     { id: "info", dateien: ["info.md"], symbol: "fa-microchip" },
     { id: "lizenz", dateien: ["lizenz.md"], symbol: "fa-scale-balanced" },
-    { id: "recht", dateien: ["datenschutz.md", "agb.md"], symbol: "fa-shield-halved" },
+    { id: "recht", dateien: EINSTELLUNGEN.recht as readonly string[], symbol: "fa-shield-halved" },
   ] as const).filter((x) => (EINSTELLUNGEN.ueber as readonly string[]).includes(x.id));
 
   let inhalt = $state<Record<string, string>>({});
   let offen = $state<Record<string, boolean>>({});
 
-  async function laden(datei: string, sprache: string): Promise<string> {
-    for (const s of [...new Set([sprache, "en", "de"])]) {
-      try {
-        const r = await fetch(`${import.meta.env.BASE_URL}legal/${s}/${datei}`);
-        if (r.ok) return await r.text();
-      } catch { /* nächste Sprache */ }
-    }
-    return "";
-  }
-
   $effect(() => {
     void t("einstellungen.einstellungen");          // folgt dem Sprachwechsel
     const sprache = currentLanguage() || "de";
     for (const text of TEXTE) {
-      Promise.all(text.dateien.map((d) => laden(d, sprache))).then((teile) => {
-        inhalt[text.id] = teile.filter(Boolean).map((md) => parseMarkdown(md)).join("<hr>");
-      });
+      void rechtstexte(text.dateien, sprache).then((html) => (inhalt[text.id] = html));
     }
   });
 </script>

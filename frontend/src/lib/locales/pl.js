@@ -365,6 +365,7 @@ export default {
   },
   // === Powłoka: nagłówek, nawigacja, wygląd, konto (RAD-6) ===
   schale: {
+    hinweise: 'Prywatność i pochodzenie',
     werbungUebersprungen: 'Pominięto reklamę', werbungAnhoeren: 'Wróć i posłuchaj', schliessen: 'Zamknij',
     werbeherkunft_kapitel: 'Rozdziały w kanale', werbeherkunft_hand: 'ręcznie', werbeherkunft_vergleich: 'Porównanie wersji',
     werbeherkunft_transkript: 'z transkrypcji',

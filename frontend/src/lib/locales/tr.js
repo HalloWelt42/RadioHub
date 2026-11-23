@@ -355,6 +355,7 @@ export default {
     telefonKnopf: 'Cihazlar', telefonKnopfSpielt: 'Cihazlar · {n} çalıyor',
   },
   schale: {
+    hinweise: 'Gizlilik ve kaynak',
     werbungUebersprungen: 'Reklam atlandı', werbungAnhoeren: 'Geri dön ve dinle', schliessen: 'Kapat',
     werbeherkunft_kapitel: 'akıştaki bölüm', werbeherkunft_hand: 'elle', werbeherkunft_vergleich: 'sürümlerin karşılaştırması',
     werbeherkunft_transkript: 'dökümden',

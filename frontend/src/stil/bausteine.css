@@ -142,3 +142,17 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 
 @media (prefers-reduced-motion: reduce) { .rh-band, :root[data-kanzel] .rh-band { animation: none; } }
 
+/* ═══ Datenschutz und Herkunft (RAD-123) ═══ Fenster über allem, am Rechner als Karte, am Telefon fast im ganzen Bild */
+.rh-hinweise { inline-size: min(760px, calc(100vw - 20px)); max-inline-size: none; max-block-size: calc(100dvh - 40px); margin: auto; padding: 0;
+  border: 1px solid var(--rand-stark); border-radius: var(--r2); background-color: var(--karte); color: var(--text); box-shadow: var(--schatten-schwebend); overflow: hidden; }
+.rh-hinweise::backdrop { background: var(--rh-schleier); }
+.rh-hinweise-blatt { display: grid; grid-template-rows: auto minmax(0, 1fr); max-block-size: inherit; }
+.rh-hinweise-kopf { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 10px 18px; border-bottom: 1px solid var(--rand); }
+.rh-hinweise-kopf h2 { margin: 0; min-width: 0; font-size: var(--titel); display: flex; align-items: center; gap: 10px; }
+.rh-hinweise-kopf h2 i { color: var(--akzent); }
+.rh-hinweise-text { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 18px 22px; overflow-wrap: anywhere; }
+.rh-hinweise-text p { margin: 0 0 8px; line-height: 1.5; }
+.rh-hinweise-text .md-h2 { margin: 14px 0 6px; font-size: var(--titel); color: var(--text); }
+.rh-hinweise-text .md-h3 { margin: 16px 0 4px; font-size: var(--gross); color: var(--text); }
+.rh-hinweise-text a { color: var(--akzent); }
+.rh-hinweise-text hr { border: 0; border-top: 1px solid var(--rand); margin: 18px 0; }

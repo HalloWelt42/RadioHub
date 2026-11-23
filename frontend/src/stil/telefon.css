@@ -115,9 +115,10 @@
 /* Schriftzug im Kopf am Telefon (RAD-90): klein */
 .mobil .t-kopf h1.t-logo { display: flex; align-items: baseline; gap: 8px; flex: 0 1 auto; }
 /* der Schriftzug füllt den Platz: die Knöpfe stehen so immer rechts außen */
-.tf-marke { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
-.t-logo .rh-logo { font-size: calc(var(--gross) + 3px); }
-.t-logo :is(.rh-pro, .rh-basic) { font-size: calc(var(--gross) - 1px); }
+.tf-marke { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; container: marke / inline-size; }
+/* höchstens so groß, wie neben den Knöpfen Platz ist (drei Knöpfe in der Basic, große Schrift, RAD-123) */
+.t-logo .rh-logo { font-size: min(calc(var(--gross) + 3px), 9.4cqi); }
+.t-logo :is(.rh-pro, .rh-basic) { font-size: min(calc(var(--gross) - 1px), 7.4cqi); }
 
 /* Fußleiste wie die Navigation am Rechner (RAD-97, Wahl A): Schiene, nur Schrift in Versalien, Lichtschlitz über dem
    aktiven Bereich */

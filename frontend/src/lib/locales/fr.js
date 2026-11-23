@@ -372,6 +372,7 @@ export default {
     telefonKnopf: "Appareils", telefonKnopfSpielt: "Appareils · {n} en lecture",
   },
   schale: {
+    hinweise: 'Confidentialité et sources',
     werbungUebersprungen: "Pub sautée", werbungAnhoeren: "Revenir et écouter", schliessen: "Fermer",
     werbeherkunft_kapitel: "chapitre du flux", werbeherkunft_hand: "à la main", werbeherkunft_vergleich: "comparaison des versions",
     werbeherkunft_transkript: "d'après la transcription",

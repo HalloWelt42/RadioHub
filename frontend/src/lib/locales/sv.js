@@ -364,6 +364,7 @@ export default {
     telefonKnopf: 'Enheter', telefonKnopfSpielt: 'Enheter · {n} spelar',
   },
   schale: {
+    hinweise: 'Integritet och källor',
     werbungUebersprungen: 'Reklam överhoppad', werbungAnhoeren: 'Tillbaka och lyssna', schliessen: 'Stäng',
     werbeherkunft_kapitel: 'kapitel i flödet', werbeherkunft_hand: 'manuellt', werbeherkunft_vergleich: 'jämförelse av versionerna',
     werbeherkunft_transkript: 'från transkriptet',

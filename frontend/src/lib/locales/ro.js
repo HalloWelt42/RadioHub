@@ -355,6 +355,7 @@ export default {
     telefonKnopf: 'Dispozitive', telefonKnopfSpielt: 'Dispozitive · {n} rulează',
   },
   schale: {
+    hinweise: 'Confidențialitate și sursă',
     werbungUebersprungen: 'Reclamă sărită', werbungAnhoeren: 'Înapoi și ascultă', schliessen: 'Închide',
     werbeherkunft_kapitel: 'capitol în feed', werbeherkunft_hand: 'manual', werbeherkunft_vergleich: 'compararea versiunilor',
     werbeherkunft_transkript: 'din transcriere',

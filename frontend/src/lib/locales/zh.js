@@ -356,6 +356,7 @@ export default {
     telefonKnopf: '设备', telefonKnopfSpielt: '设备 · {n} 台在播放',
   },
   schale: {
+    hinweise: '隐私与来源',
     werbungUebersprungen: '已跳过广告', werbungAnhoeren: '返回收听', schliessen: '关闭',
     werbeherkunft_kapitel: '订阅源中的章节', werbeherkunft_hand: '手动', werbeherkunft_vergleich: '版本对比',
     werbeherkunft_transkript: '来自文字稿',

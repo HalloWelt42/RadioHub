@@ -372,6 +372,7 @@ export default {
     telefonKnopf: 'Laitteet', telefonKnopfSpielt: 'Laitteet · {n} soi',
   },
   schale: {
+    hinweise: 'Tietosuoja ja lähteet',
     werbungUebersprungen: 'Mainos ohitettu', werbungAnhoeren: 'Takaisin ja kuuntele', schliessen: 'Sulje',
     werbeherkunft_kapitel: 'Syötteen luku', werbeherkunft_hand: 'käsin', werbeherkunft_vergleich: 'Versioiden vertailu',
     werbeherkunft_transkript: 'litteroinnista',

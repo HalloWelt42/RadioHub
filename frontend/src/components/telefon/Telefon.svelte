@@ -25,6 +25,7 @@
   import TelefonWecker from './TelefonWecker.svelte';
   import TelefonWeckerListe from './TelefonWeckerListe.svelte';
   import TelefonEinstellungen from './TelefonEinstellungen.svelte';
+  import Hinweise from '../../schale/Hinweise.svelte';
   import Meldung from '../../schale/Meldung.svelte';
 
   /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
@@ -148,6 +149,7 @@
         </h1>
       </div>
       <span class="t-aktionen">
+        <Hinweise />
         {#if angebot.wecker}
         <button class="rund" class:aktiv={appState.activeTab === 'wecker'}
           onclick={() => actions.navigateTo(appState.activeTab === 'wecker' ? '/radio' : '/wecker')}

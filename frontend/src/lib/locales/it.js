@@ -372,6 +372,7 @@ export default {
     telefonKnopf: "Dispositivi", telefonKnopfSpielt: "Dispositivi · {n} in riproduzione",
   },
   schale: {
+    hinweise: 'Privacy e origine',
     werbungUebersprungen: "Spot saltato", werbungAnhoeren: "Torna indietro e ascolta", schliessen: "Chiudi",
     werbeherkunft_kapitel: "capitolo nel feed", werbeherkunft_hand: "a mano", werbeherkunft_vergleich: "confronto delle versioni",
     werbeherkunft_transkript: "dalla trascrizione",

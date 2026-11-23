@@ -356,6 +356,7 @@ export default {
     telefonKnopf: 'デバイス', telefonKnopfSpielt: 'デバイス · {n} 台で再生中',
   },
   schale: {
+    hinweise: 'プライバシーと出典',
     werbungUebersprungen: '広告をスキップしました', werbungAnhoeren: '戻って聞く', schliessen: '閉じる',
     werbeherkunft_kapitel: 'フィードのチャプター', werbeherkunft_hand: '手動', werbeherkunft_vergleich: 'バージョン比較',
     werbeherkunft_transkript: '文字起こしから',

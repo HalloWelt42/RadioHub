@@ -355,6 +355,7 @@ export default {
     telefonKnopf: 'Eszközök', telefonKnopfSpielt: 'Eszközök · {n} szól',
   },
   schale: {
+    hinweise: 'Adatvédelem és forrás',
     werbungUebersprungen: 'Reklám átugorva', werbungAnhoeren: 'Vissza és meghallgatás', schliessen: 'Bezárás',
     werbeherkunft_kapitel: 'fejezet a feedben', werbeherkunft_hand: 'kézzel', werbeherkunft_vergleich: 'változatok összevetése',
     werbeherkunft_transkript: 'az átiratból',

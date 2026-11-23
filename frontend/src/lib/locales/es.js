@@ -372,6 +372,7 @@ export default {
     telefonKnopf: "Dispositivos", telefonKnopfSpielt: "Dispositivos · {n} sonando",
   },
   schale: {
+    hinweise: 'Privacidad y origen',
     werbungUebersprungen: "Anuncio saltado", werbungAnhoeren: "Volver y escuchar", schliessen: "Cerrar",
     werbeherkunft_kapitel: "capítulo del feed", werbeherkunft_hand: "a mano", werbeherkunft_vergleich: "comparación de versiones",
     werbeherkunft_transkript: "según la transcripción",
