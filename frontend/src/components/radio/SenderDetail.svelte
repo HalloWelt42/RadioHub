@@ -286,11 +286,11 @@
   <!-- Werbung rechts außen, schmal und kurz (RAD-59) -->
   {#if faehig.werbung}
     <section class="rh-tafel-detail" aria-label={t("radio.werbungTitel")}>
-      <!-- Kopf: links die Anzahl, rechts außen der Schalter über der Liste der Werbenden (RAD-59) -->
+      <!-- Kopf: nur die Schalter, rechts außen; die Anzahl steht bei der Liste, nicht neben ihnen (RAD-129) -->
       <div class="rh-werbung-kopf">
-        {#if werbung?.spots}<span class="rh-still" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
         {@render schalter()}
       </div>
+      {#if werbung?.spots}<span class="rh-still rh-werbung-zahl" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
       {#if gruppen.length}
         <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
           {#each werbendeListe.zeigen as g (g.name || g.kennung)}

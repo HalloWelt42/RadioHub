@@ -323,9 +323,9 @@
 .rh-strom-dicht code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--schrift-code); font-size: var(--klein); }
 .rund.rh-mini { inline-size: 28px; block-size: 28px; min-block-size: 0; flex: none; }
 .rh-info { margin-left: 6px; color: var(--text-3); font-size: .85em; cursor: help; text-transform: none; }
-/* Kopf der Werbung: links die Anzahl, rechts außen der Schalter, auf der Linie der ersten Steckbriefzeile (RAD-59) */
+/* Kopf der Werbung: rechts außen die Schalter, auf der Linie der ersten Steckbriefzeile (RAD-59) */
 .rh-werbung-kopf { display: flex; gap: 6px 12px; align-items: start; justify-content: space-between; font-size: var(--klein); }
-.rh-werbung-kopf > .rh-still { display: flex; align-items: center; min-block-size: 28px; white-space: nowrap; }   /* Anzahl auf der Kopflinie, der Schalter mit Licht reicht tiefer */
+.rh-werbung-zahl { padding: 0 6px; font-size: var(--klein); }   /* Anzahl gleich über der Liste, bündig mit ihren Zeilen (RAD-129) */
 .rh-detail-schalter { display: inline-flex; gap: 6px; margin-left: auto; align-items: start; }
 /* im Steckbrief nur das Symbol, damit nichts gestaucht wird; der Name bleibt als Hinweis und für Vorleser (RAD-129) */
 .rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
