@@ -175,11 +175,11 @@ class Empfang:
         self.mitschnitt = Mitschnitt(self._ordner, int((self.puffer_s + RAND_S) * bytes_je_s))
         self.stillen = Stillenwaechter(self.kopf.format, self.werbung.stille_zeile, self._pegel)
         await self.stillen.starten()
-        self.klang = Klangerkennung(self.uuid, self.name, self.kopf.format, bytes_je_s, self.werbung, self._ton_zwischen)
+        self.klang = Klangerkennung(self.uuid, self.name, self.kopf.format, bytes_je_s, self.werbung, self.ton_zwischen)
         self.klang.starten()
         return self.kopf
 
-    def _ton_zwischen(self, von_s: float, bis_s: float) -> bytes:
+    def ton_zwischen(self, von_s: float, bis_s: float) -> bytes:
         """Rohdaten aus dem Mitschnitt, leer, wenn der Anfang nicht mehr darin liegt."""
         von, bis = self.bytes_bei(von_s), self.bytes_bei(bis_s)
         if not self.mitschnitt or von < self.mitschnitt.anfang:
@@ -428,6 +428,10 @@ class Empfangsstelle:
     def zu(self, adresse: str) -> Optional[Empfang]:
         e = self._laufend.get(adresse)
         return e if e and not e.beendet else None
+
+    def von_sender(self, uuid: str) -> Optional[Empfang]:
+        """Der laufende Empfang dieses Senders, sonst None."""
+        return next((e for e in self._laufend.values() if e.uuid == uuid and not e.beendet), None)
 
     async def holen(self, uuid: str, name: str, adresse: str, bitrate: int, puffer_s: int) -> Empfang:
         """Der laufende Empfang dieser Adresse oder ein neuer (verbindet; wirft StromFehler)."""

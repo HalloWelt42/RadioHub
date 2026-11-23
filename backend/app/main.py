@@ -81,7 +81,7 @@ def app_bauen(daten: Path, transport: httpx.AsyncBaseTransport | None = None) ->
     uebergang.alte_umgebung_uebernehmen(daten=daten)
     geruest = Geruest(name="RadioHub", kennung=KENNUNG, rolle="spielt Radio und Podcasts, nimmt auf und weckt",
                       symbol="fa-radio", symbolbild="/favicon.svg", farbe="#222222", fassung=VERSION,
-                      daten=ort.geruest_ordner(daten), einstellungen=AppEinstellungen, oberflaeche=OBERFLAECHE,
+                      daten=ort.geruest_ordner(daten), einstellungen=AppEinstellungen, oberflaeche=OBERFLAECHE, leitstelle_wahlweise=True,
                       sicherungen=ort.sicherungen_ordner() / ort.GERUEST, seiten=(LESEZUGANG,), transport=transport)
     betrieb = Radiobetrieb(geruest, transport)
     # die große Datenbank des Radios nach derselben Regel wie die des Gerüsts, im Ordner, in den auch das Ausrollen sichert

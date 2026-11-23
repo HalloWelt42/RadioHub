@@ -33,6 +33,7 @@ from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, 
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
+from .services.mitlesen import mitleser
 from .services import lernliste, propagandafilter, zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
@@ -67,6 +68,8 @@ class Radiobetrieb(Begleiter):
     async def starten(self) -> None:
         einstellungen.binden(self.geruest.einstellungen)
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
+        self.geruest.einstellungen.anbieten("mitlesen_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
+        self.geruest.einstellungen.anbieten("mitlesen_modell", self.geruest.leitstelle_angebot("uebersetzen"))
         self.geruest.einstellungen.regel(einstellungen.regeln_pruefen)
         try:
             self.datenbank = await database.einrichten(DB_PATH)
@@ -80,6 +83,10 @@ class Radiobetrieb(Begleiter):
         await self._config_uebernehmen()
         await self._senderbestand_pruefen()
         self._ablage_einrichten()
+        mitleser.leitstelle = lambda: self.geruest.leitstelle
+        mitleser.hoerdienst = lambda: einstellungen.stand().mitlesen_hoerdienst
+        mitleser.modell = lambda: einstellungen.stand().mitlesen_modell
+        mitleser.ziel_name = lambda k: einstellungen.SPRACHEN.get(k, k)
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
         mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs
         seed_domain_blacklist()         # Werbedomains der Erkennung
@@ -107,6 +114,7 @@ class Radiobetrieb(Begleiter):
         await buffer_manager.stop_buffering()
         await timeshift_buffer.stop_buffering()
         await hls_buffer.stop()
+        await mitleser.beenden()
         await empfaenge.alle_beenden()
         await podcast_service.close()
         await ablage_paket.ablage().schliessen()

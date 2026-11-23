@@ -78,6 +78,11 @@ class AppEinstellungen(Grundeinstellungen):
     zeitstimme_tempo: float = Field(1.0, ge=0.5, le=2.0, title="Sprechtempo der Zeitansage",
                                     json_schema_extra={**WECKER, "schritt": 0.05},
                                     description="1,0 ist das Tempo der Stimme; kleiner spricht langsamer.")
+    # --- Live mitlesen (RAD-129) ---
+    mitlesen_hoerdienst: str = Field("klangwerk-hoeren", max_length=120, title="Dienst zum Hören", json_schema_extra=DIENSTE,
+                                     description="Hördienst der Leitstelle, der beim Mitlesen aus dem Ton Text macht.")
+    mitlesen_modell: str = Field("qwen/qwen3-next-80b", max_length=200, title="Sprachmodell zum Übersetzen", json_schema_extra=DIENSTE,
+                                 description="Sprachmodell der Leitstelle, das beim Mitlesen fremdsprachige Sender übersetzt.")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "
