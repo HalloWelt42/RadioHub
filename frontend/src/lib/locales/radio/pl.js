@@ -185,8 +185,16 @@ export default {
     zeigen: 'Pokaż stacje: {n}',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Czytaj na żywo', hilfe: 'Zapisuje na żywo to, co jest mówione', mitlaufen: 'Przewijaj',
+    mitlaufenHilfe: 'Podąża za tekstem; wyłączone, stoi w miejscu', uebersetzenHilfe: 'Tłumacz', kopieren: 'Kopiuj tekst', text: 'Tekst',
+    leer: 'Pierwszy tekst pojawi się po kilku zdaniach', aus: 'wyłączone', sammelt: 'zbiera kolejne zdania', hoert: 'słucha', uebersetzt: 'tłumaczy',
+    gestoert: 'przerwane',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Godziny słuchania', sender: 'Stacje', nichtEingerichtet: 'Propaganda-Filter nie jest skonfigurowany.',
     fort: 'Propaganda-Filter jest teraz nieosiągalny. To, co znalazł, działa nadal.', spots: 'Znalezione reklamy', fach_pruefen: 'Do sprawdzenia',
     fach_wirkt: 'Filtrowane', fach_verworfen: 'Odrzucone', leer_pruefen: 'Nic do sprawdzenia', leer_wirkt: 'Jeszcze nic nie potwierdzono',

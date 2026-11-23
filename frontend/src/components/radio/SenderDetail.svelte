@@ -14,6 +14,9 @@
   import type { Bewertung, SenderEintrag } from "../../lib/radio/typen";
   import { haeufigste, KLANG, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief, type Werbender } from "../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../lib/radio/werbende.svelte";
+  import { mitlesen } from "../../lib/radio/mitlesen.svelte";
+  import { puffer } from "../../spieler/puffer.svelte";
+  import Mitlesefeld from "./Mitlesefeld.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
 
   let { eintrag, kategorien, spielt, onaendern, onneustart }: {
@@ -68,6 +71,14 @@
   /** ohne Namen aus den Sendedaten: eine Kennung aus Ziffern als "Spot 199326", ein Text (etwa "Kurze Werbepause") selbst */
   const werbendenName = (g: Werbender) =>
     g.name || (g.spots[0]?.format === KLANG ? t("schale.werbeherkunft_klang") : "") || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
+
+  // Live mitlesen (RAD-129): nur am Sender, der gerade über den Puffer spielt
+  $effect(() => { if (faehig.mitlesen) void mitlesen.pruefen(); });
+  const kannMitlesen = $derived(faehig.mitlesen && mitlesen.eingerichtet === true && spielt && puffer.aktiv);
+  const mitliest = $derived(mitlesen.laeuftFuer(eintrag.uuid));
+  function mitlesenSchalten(an: boolean) {
+    void tun(async () => { if (an) await mitlesen.starten(eintrag.uuid, eintrag.sprachen); else await mitlesen.beenden(); });
+  }
 
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);
@@ -153,7 +164,19 @@
 
 <svelte:window onclick={tafelAussen} onkeydown={(e) => { if (e.key === "Escape" && tafel) { e.stopPropagation(); tafel = false; } }} />
 
-<div class="rh-detail rh-detail-dicht">
+{#snippet schalter()}
+  <span class="rh-detail-schalter">
+    {#if kannMitlesen || mitliest}<Schalter an={mitliest} farbe="blau" symbol="fa-closed-captioning" text={t("radio.mitlesen.titel")} hilfe={t("radio.mitlesen.hilfe")} onwechsel={mitlesenSchalten} />{/if}
+    {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" symbol="fa-ban" text={t("radio.werbungKurz")}
+      hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
+      onwechsel={werbungSchalten} />{/if}
+  </span>
+{/snippet}
+
+<div class="rh-detail rh-detail-dicht" class:rh-mitliest={mitliest}>
+  {#if mitliest}
+    <Mitlesefeld {schalter} />
+  {:else}
   <!-- ohne Überschriften (Nutzer 22.11.2026, RAD-59): Steckbrief, eigene Filter, Werbung sprechen für sich -->
   <section class="rh-tafel-detail" aria-label={t("radio.steckbrief")}>
     <!-- Stream zuoberst, jede Beschriftung steht immer, auch ohne Wert: die Zeilen bleiben an ihrem Platz (RAD-59) -->
@@ -266,9 +289,7 @@
       <!-- Kopf: links die Anzahl, rechts außen der Schalter über der Liste der Werbenden (RAD-59) -->
       <div class="rh-werbung-kopf">
         {#if werbung?.spots}<span class="rh-still" title={t("radio.werbungZahlenHilfe", { s: zahl(werbung.spots), w: zahl(gruppen.length), m: zahl(mal) })}>{t("radio.werbungZahlen", { m: zahl(mal) })}</span>{/if}
-        {#if werbung}<Schalter an={werbung.ueberspringen} farbe="bernstein" symbol="fa-ban" text={t("radio.werbungKurz")}
-          hilfe={werbung.ausgenommen || werbung.ueberspringen ? t("radio.werbungUeberspringenHilfe") : t("radio.werbungUeberspringenAlleAus")}
-          onwechsel={werbungSchalten} />{/if}
+        {@render schalter()}
       </div>
       {#if gruppen.length}
         <div class="rh-werbende" class:rh-liste-rollt={werbendeListe.rollt}>
@@ -293,5 +314,6 @@
         <span class="rh-still">{t("radio.werbungKeineBekannt")}</span>
       {/if}
     </section>
+  {/if}
   {/if}
 </div>

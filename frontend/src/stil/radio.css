@@ -326,7 +326,24 @@
 /* Kopf der Werbung: links die Anzahl, rechts außen der Schalter, auf der Linie der ersten Steckbriefzeile (RAD-59) */
 .rh-werbung-kopf { display: flex; gap: 6px 12px; align-items: start; justify-content: space-between; font-size: var(--klein); }
 .rh-werbung-kopf > .rh-still { display: flex; align-items: center; min-block-size: 28px; white-space: nowrap; }   /* Anzahl auf der Kopflinie, der Schalter mit Licht reicht tiefer */
-.rh-werbung-kopf .rh-schalter { margin-left: auto; }
+.rh-detail-schalter { display: inline-flex; gap: 6px; margin-left: auto; align-items: start; }
+/* im Steckbrief nur das Symbol, damit nichts gestaucht wird; der Name bleibt als Hinweis und für Vorleser (RAD-129) */
+.rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
+.rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter .ak-taster-beschriftung { font-size: 0; gap: 0; }
+.rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
+/* Live mitlesen (RAD-129): nimmt den ganzen Steckbrief ein, die Schalter bleiben oben rechts an ihrem Platz */
+.rh-detail-dicht.rh-mitliest, .rh-detail-dicht.rh-mitliest:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); }
+.rh-mitlesen { min-width: 0; display: grid; gap: 10px; }
+.rh-mitlesen-kopf { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.rh-mitlese-lage { flex: 1 1 8em; min-width: 0; font-size: var(--klein); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-mitlese-lage.gestoert { color: var(--gefahr); }
+.rh-mitlese-feld { block-size: calc(var(--klein) * 20); overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante);
+  user-select: text; cursor: text; line-height: 1.55; }
+.rh-mitlese-feld p { margin: 0 0 .9em; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 14px; overflow-wrap: anywhere; }
+.rh-mitlese-feld p > time { font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-3); padding-top: .12em; }
+.rh-mitlese-original { grid-column: 2; font-size: var(--klein); color: var(--text-3); }
+.rh-mitlese-feld p.rh-mitlese-leer { display: block; color: var(--text-3); }
+@container liste (max-width: 820px) { .rh-mitlese-feld p { grid-template-columns: minmax(0, 1fr); } .rh-mitlese-original { grid-column: 1; } }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
 .rh-werbende { display: grid; gap: 0; }
 /* kompakte Zeilen ohne Kasten (RAD-59); Fläche nur beim Überfahren und aufgeklappt */

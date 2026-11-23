@@ -185,8 +185,15 @@ export default {
     zeigen: 'Vis {n} stasjoner',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Les med', hilfe: 'Skriver live ned det som sies', mitlaufen: 'Følg med', mitlaufenHilfe: 'Følger teksten; av står den stille',
+    uebersetzenHilfe: 'Oversett', kopieren: 'Kopier tekst', text: 'Tekst', leer: 'Den første teksten kommer etter noen setninger', aus: 'av',
+    sammelt: 'samler de neste setningene', hoert: 'lytter', uebersetzt: 'oversetter', gestoert: 'avbrutt',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Timer lyttet', sender: 'Stasjoner', nichtEingerichtet: 'Propaganda-Filter er ikke satt opp.',
     fort: 'Propaganda-Filter kan ikke nås akkurat nå. Det den har funnet, virker fortsatt.', spots: 'Funnet reklame', fach_pruefen: 'Til kontroll',
     fach_wirkt: 'Filtreres', fach_verworfen: 'Avvist', leer_pruefen: 'Ingenting å kontrollere', leer_wirkt: 'Ingenting bekreftet ennå',

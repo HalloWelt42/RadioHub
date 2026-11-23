@@ -185,8 +185,16 @@ export default {
     zeigen: '{n} Sender zeigen',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Mitlesen', hilfe: 'Schreibt live mit, was gesprochen wird', mitlaufen: 'Mitlaufen',
+    mitlaufenHilfe: 'Läuft mit dem Text mit; aus bleibt er stehen', uebersetzenHilfe: 'Übersetzen', kopieren: 'Text kopieren', text: 'Text',
+    leer: 'Der erste Text kommt nach einigen Sätzen', aus: 'aus', sammelt: 'sammelt die nächsten Sätze', hoert: 'hört', uebersetzt: 'übersetzt',
+    gestoert: 'gestört',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Stunden gehört', sender: 'Sender', nichtEingerichtet: 'Der Propaganda-Filter ist nicht eingerichtet.',
     fort: 'Der Propaganda-Filter ist gerade nicht erreichbar. Was er gefunden hat, wirkt weiter.', spots: 'Gefundene Werbung', fach_pruefen: 'Zu prüfen',
     fach_wirkt: 'Wird gefiltert', fach_verworfen: 'Verworfen', leer_pruefen: 'Nichts zu prüfen', leer_wirkt: 'Noch nichts bestätigt',

@@ -53,3 +53,29 @@ describe("Sprachen (RAD-99)", () => {
     });
   }
 });
+
+// Ein doppelter Schlüssel in einer Sprachdatei überschreibt still den ersten (RAD-128: "filter" war schon ein Wort, aus dem
+// Wort wurde eine Gruppe und die Taste zeigte ihren Schlüssel). Jeder feste Schlüssel im Code muss ein Text sein.
+describe("Texte im Code", () => {
+  const quellen = import.meta.glob(["../src/**/*.{svelte,ts,js}", "!../src/lib/locales/**"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+  it("jeder feste Schlüssel führt zu einem Text", () => {
+    const fehlt: string[] = [];
+    for (const [datei, text] of Object.entries(quellen)) {
+      for (const m of text.matchAll(/\bt\(\s*["']([a-z][\w]*(?:\.[\w]+)+)["']/gi)) if (!DEUTSCH.has(m[1])) fehlt.push(`${datei.split("/").pop()}: ${m[1]}`);
+    }
+    expect([...new Set(fehlt)]).toEqual([]);
+  });
+
+  const dateien = import.meta.glob("../src/lib/locales/**/*.js", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+  it("keine Gruppe und kein Wort steht in einer Sprachdatei doppelt", () => {
+    const doppelt: string[] = [];
+    for (const [datei, text] of Object.entries(dateien)) {
+      const gesehen = new Set<string>();
+      for (const m of text.matchAll(/^  (\w+):/gm)) {
+        if (gesehen.has(m[1])) doppelt.push(`${datei.split("locales/").pop()}: ${m[1]}`);
+        gesehen.add(m[1]);
+      }
+    }
+    expect(doppelt).toEqual([]);
+  });
+});

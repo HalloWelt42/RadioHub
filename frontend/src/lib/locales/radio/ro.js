@@ -178,8 +178,15 @@ export default {
     zeigen: 'Arată {n} posturi',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Citește live', hilfe: 'Transcrie live ce se spune', mitlaufen: 'Urmărește', mitlaufenHilfe: 'Urmărește textul; oprit, stă pe loc',
+    uebersetzenHilfe: 'Tradu', kopieren: 'Copiază textul', text: 'Text', leer: 'Primul text apare după câteva fraze', aus: 'oprit',
+    sammelt: 'adună următoarele fraze', hoert: 'ascultă', uebersetzt: 'traduce', gestoert: 'întrerupt',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Ore ascultate', sender: 'Posturi', nichtEingerichtet: 'Propaganda-Filter nu este configurat.',
     fort: 'Propaganda-Filter nu este accesibil acum. Ce a găsit funcționează în continuare.', spots: 'Reclame găsite', fach_pruefen: 'De verificat',
     fach_wirkt: 'Filtrate', fach_verworfen: 'Respinse', leer_pruefen: 'Nimic de verificat', leer_wirkt: 'Încă nimic confirmat',

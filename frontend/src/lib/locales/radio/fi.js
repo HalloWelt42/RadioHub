@@ -185,8 +185,15 @@ export default {
     zeigen: 'Näytä {n} asemaa',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Lue mukana', hilfe: 'Kirjoittaa suorana, mitä puhutaan', mitlaufen: 'Seuraa', mitlaufenHilfe: 'Seuraa tekstiä; pois päältä pysyy paikallaan',
+    uebersetzenHilfe: 'Käännä', kopieren: 'Kopioi teksti', text: 'Teksti', leer: 'Ensimmäinen teksti tulee muutaman lauseen jälkeen', aus: 'pois',
+    sammelt: 'kerää seuraavia lauseita', hoert: 'kuuntelee', uebersetzt: 'kääntää', gestoert: 'keskeytynyt',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Kuunneltu tunteja', sender: 'Asemat', nichtEingerichtet: 'Propaganda-Filter ei ole käytössä.',
     fort: 'Propaganda-Filteriin ei juuri nyt saada yhteyttä. Löydetty toimii edelleen.', spots: 'Löydetyt mainokset', fach_pruefen: 'Tarkistettavat',
     fach_wirkt: 'Suodatetaan', fach_verworfen: 'Hylätyt', leer_pruefen: 'Ei tarkistettavaa', leer_wirkt: 'Mitään ei ole vielä vahvistettu',

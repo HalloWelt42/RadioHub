@@ -323,7 +323,7 @@ describe("eigene Angaben", () => {
 
   it("meldet, was die Webversion kann, und wirft für den Rest", async () => {
     const { q } = quelle([{ uuid: "a", name: "A" }]);
-    expect(q.faehig).toEqual({ abgleich: false, eigeneAdresse: false, messen: false, kategorien: false, werbung: false, datei: true });
+    expect(q.faehig).toEqual({ abgleich: false, eigeneAdresse: false, messen: false, kategorien: false, werbung: false, mitlesen: false, datei: true });
     const e = (await q.abfragen({})).eintraege[0];
     expect(await q.wiedergabe(e)).toMatchObject({ uuid: "a", url: "https://strom.test/a", url_resolved: "https://strom.test/a", countrycode: "DE" });
     expect(await q.gespielt()).toBeNull();

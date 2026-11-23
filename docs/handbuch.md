@@ -92,6 +92,15 @@ Einstellungen > Radio > Werbefilter zeigt, was der Filter kennt: gefundene Spots
 Sendern, an denen sie liefen) oder "Verwerfen" (kommt nie wieder), den Lernlauf mit Schalter, Zeitfenster, laufenden
 Sendern und letzten Nächten, und je Sender den Grund, aus dem er gehört wird, mit Schalter.
 
+Live mitlesen (RAD-129, Pro): im aufgeklappten Sender, der gerade über den Zeitversatz spielt, links neben Werbung. An blendet
+den Steckbrief mit einem Textfeld über, das mitschreibt, was gesprochen wird: es beginnt bis zu 90 Sekunden zurück im Puffer,
+sammelt Stücke von 15 bis 30 Sekunden (geschnitten an der leisesten Stelle) und zeigt Absätze aus ganzen Sätzen. Das Feld
+läuft mit, bis man nach oben rollt oder "Mitlaufen" ausschaltet; Kopieren nimmt die Auswahl oder alles. Spricht der Sender
+laut seinem Sprachlabel eine andere Sprache als die Oberfläche, steht die Übersetzung oben und das Original klein darunter,
+mit Schalter; ohne eindeutiges Label erkennt der Hördienst die Sprache. Aus beendet auch die Arbeit am Server, ebenso wenn
+das Radio endet oder eine Minute niemand liest. Hören und Übersetzen rechnet die Leitstelle (Einstellungen > Dienste); ohne
+Leitstelle fehlt die Taste. Übersprungene Werbung wird nicht mitgeschrieben.
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge

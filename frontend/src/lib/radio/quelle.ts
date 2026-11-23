@@ -19,6 +19,8 @@ export interface Faehigkeiten {
   kategorien: boolean;
   /** Werbeerkennung: Werbeverdacht je Sender, Regelart Werbung, Widerspruch "kein Werbeverdacht" */
   werbung: boolean;
+  /** live mitlesen, was gesprochen wird (RAD-129) */
+  mitlesen: boolean;
   /** eigene Angaben (Favoriten, Bewertungen, Regeln, Sperren, Freigaben, Länder) als Datei sichern und einspielen */
   datei: boolean;
 }

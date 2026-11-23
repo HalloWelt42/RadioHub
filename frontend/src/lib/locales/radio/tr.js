@@ -178,8 +178,15 @@ export default {
     zeigen: '{n} istasyonu göster',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Canlı oku', hilfe: 'Söylenenleri canlı yazar', mitlaufen: 'Takip et', mitlaufenHilfe: 'Metni takip eder; kapalıyken durur',
+    uebersetzenHilfe: 'Çevir', kopieren: 'Metni kopyala', text: 'Metin', leer: 'İlk metin birkaç cümleden sonra gelir', aus: 'kapalı',
+    sammelt: 'sonraki cümleleri topluyor', hoert: 'dinliyor', uebersetzt: 'çeviriyor', gestoert: 'kesildi',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Dinlenen saat', sender: 'İstasyonlar', nichtEingerichtet: 'Propaganda-Filter kurulmamış.',
     fort: 'Propaganda-Filter şu anda erişilemiyor. Bulduğu şeyler çalışmaya devam ediyor.', spots: 'Bulunan reklamlar', fach_pruefen: 'İncelenecek',
     fach_wirkt: 'Filtreleniyor', fach_verworfen: 'Reddedilen', leer_pruefen: 'İncelenecek bir şey yok', leer_wirkt: 'Henüz onaylanan yok',

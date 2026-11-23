@@ -178,8 +178,15 @@ export default {
     zeigen: 'Показать станции: {n}',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Читать эфир', hilfe: 'Записывает вживую, что говорят', mitlaufen: 'Следить', mitlaufenHilfe: 'Следует за текстом; выключено, стоит на месте',
+    uebersetzenHilfe: 'Перевести', kopieren: 'Копировать текст', text: 'Текст', leer: 'Первый текст появится через несколько предложений',
+    aus: 'выключено', sammelt: 'собирает следующие предложения', hoert: 'слушает', uebersetzt: 'переводит', gestoert: 'прервано',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Прослушано часов', sender: 'Станции', nichtEingerichtet: 'Propaganda-Filter не настроен.',
     fort: 'Propaganda-Filter сейчас недоступен. Найденное продолжает действовать.', spots: 'Найденная реклама', fach_pruefen: 'На проверку',
     fach_wirkt: 'Фильтруется', fach_verworfen: 'Отклонено', leer_pruefen: 'Проверять нечего', leer_wirkt: 'Пока ничего не подтверждено',

@@ -30,7 +30,7 @@ const BEISPIELE = 5;
 
 export class StatischeQuelle implements Senderquelle {
   readonly faehig: Faehigkeiten = { abgleich: false, eigeneAdresse: false, messen: false, kategorien: false,
-                                    werbung: false, datei: true };
+                                    werbung: false, mitlesen: false, datei: true };
 
   /** das Logo direkt vom Server des Senders (nur https, schon beim Erzeugen der Liste geprüft; RAD-105, Nutzer
    *  22.11.2026); ohne Logo oder wenn es nicht lädt das Kürzel */

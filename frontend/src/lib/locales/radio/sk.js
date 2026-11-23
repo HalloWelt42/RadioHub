@@ -184,8 +184,15 @@ export default {
     zeigen: 'Zobraziť {n} staníc',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Čítať naživo', hilfe: 'Naživo zapisuje, čo sa hovorí', mitlaufen: 'Sledovať', mitlaufenHilfe: 'Sleduje text; vypnuté zostane stáť',
+    uebersetzenHilfe: 'Preložiť', kopieren: 'Kopírovať text', text: 'Text', leer: 'Prvý text príde po niekoľkých vetách', aus: 'vypnuté',
+    sammelt: 'zbiera ďalšie vety', hoert: 'počúva', uebersetzt: 'prekladá', gestoert: 'prerušené',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Počúvané hodiny', sender: 'Stanice', nichtEingerichtet: 'Propaganda-Filter nie je nastavený.',
     fort: 'Propaganda-Filter teraz nie je dostupný. Čo našiel, funguje ďalej.', spots: 'Nájdené reklamy', fach_pruefen: 'Na kontrolu',
     fach_wirkt: 'Filtruje sa', fach_verworfen: 'Zamietnuté', leer_pruefen: 'Nič na kontrolu', leer_wirkt: 'Zatiaľ nič nepotvrdené',

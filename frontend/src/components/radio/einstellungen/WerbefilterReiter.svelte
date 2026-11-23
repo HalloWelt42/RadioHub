@@ -74,37 +74,37 @@
   });
   const nurNeueSender = (s: Spotfund) => s.urteil !== "offen" || s.herkunft !== "lernlauf";
 
-  const titel = (s: Spotfund) => s.werbender || t(`radio.filter.klingt_${s.einschaetzung || "unklar"}`);
+  const titel = (s: Spotfund) => s.werbender || t(`radio.werbefilter.klingt_${s.einschaetzung || "unklar"}`);
   const orte = (s: Spotfund) => !s.quellen.length ? s.quelle : s.quellen.slice(0, 2).map((q) => q.name).join(", ") + (s.quellen.length > 2 ? ` +${zahl(s.quellen.length - 2)}` : "");
-  const zeitfenster = $derived<ZeileTyp>({ schluessel: "lernlauf", titel: t("radio.filter.zeitfenster"), beschreibung: "", art: "zeitraum",
+  const zeitfenster = $derived<ZeileTyp>({ schluessel: "lernlauf", titel: t("radio.werbefilter.zeitfenster"), beschreibung: "", art: "zeitraum",
     geltung: "alle", wert: [lern?.von ?? "", lern?.bis ?? ""], optionen: [], schritt: 15, einheit: "", fest: false, geaendert: false, angebot: false });
 </script>
 
 <section class="rh-reiter">
   {#if stand && !stand.erreichbar}
-    <p class="hinweis-band"><i class="fa-solid fa-plug-circle-xmark"></i><span>{stand.eingerichtet ? t("radio.filter.fort") : t("radio.filter.nichtEingerichtet")}</span></p>
+    <p class="hinweis-band"><i class="fa-solid fa-plug-circle-xmark"></i><span>{stand.eingerichtet ? t("radio.werbefilter.fort") : t("radio.werbefilter.nichtEingerichtet")}</span></p>
   {/if}
   <div class="ak-geraet rh-bestand" data-bauform="inspektor">
     <span class="ak-schraube lo" style="--dreh:14deg"></span><span class="ak-schraube ro" style="--dreh:58deg"></span><span class="ak-schraube lu" style="--dreh:-24deg"></span><span class="ak-schraube ru" style="--dreh:39deg"></span>
-    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="weiss" text={lern ? zahl(Math.round(lern.stunden)) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.filter.stundenGehoert")}</span></div>
-    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="bernstein" text={faecher ? zahl(faecher.pruefen) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.filter.fach_pruefen")}</span></div>
-    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="gruen" text={faecher ? zahl(faecher.wirkt) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.filter.fach_wirkt")}</span></div>
-    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="weiss" text={lern ? zahl(lern.sender) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.filter.sender")}</span></div>
+    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="weiss" text={lern ? zahl(Math.round(lern.stunden)) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.werbefilter.stundenGehoert")}</span></div>
+    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="bernstein" text={faecher ? zahl(faecher.pruefen) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.werbefilter.fach_pruefen")}</span></div>
+    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="gruen" text={faecher ? zahl(faecher.wirkt) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.werbefilter.fach_wirkt")}</span></div>
+    <div class="rh-bestand-feld"><ak-segmente art="7" stellen="5" farbe="weiss" text={lern ? zahl(lern.sender) : "-----"}></ak-segmente><span class="ak-etikett">{t("radio.werbefilter.sender")}</span></div>
   </div>
 
   {#if lern}
     <div class="karte rh-karte">
-      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-rectangle-ad"></i>{t("radio.filter.spots")}</h2></div>
-      <div class="segment" role="group" aria-label={t("radio.filter.spots")}>
+      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-rectangle-ad"></i>{t("radio.werbefilter.spots")}</h2></div>
+      <div class="segment" role="group" aria-label={t("radio.werbefilter.spots")}>
         {#each FAECHER as f (f)}
-          <button type="button" class:aktiv={gewaehlt === f} aria-pressed={gewaehlt === f} onclick={() => { gewaehlt = f; void spots.wechsel(); }}>{t(`radio.filter.fach_${f}`)} <span class="rh-zahl">{faecher ? zahl(faecher[f]) : ""}</span></button>
+          <button type="button" class:aktiv={gewaehlt === f} aria-pressed={gewaehlt === f} onclick={() => { gewaehlt = f; void spots.wechsel(); }}>{t(`radio.werbefilter.fach_${f}`)} <span class="rh-zahl">{faecher ? zahl(faecher[f]) : ""}</span></button>
         {/each}
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <div class="rh-a-liste rh-spots rh-rollfeld" role="list" tabindex="0" aria-label={t("radio.filter.spots")}>
+      <div class="rh-a-liste rh-spots rh-rollfeld" role="list" tabindex="0" aria-label={t("radio.werbefilter.spots")}>
         {#each spots.eintraege as s (s.id)}
           <div class="rh-a-zeile rh-spot" role="listitem">
-            <button class="rund" type="button" title={t("radio.filter.anhoeren")} aria-label="{titel(s)}: {t('radio.filter.anhoeren')}" aria-pressed={spielt === s.id} onclick={() => anhoeren(s)}>
+            <button class="rund" type="button" title={t("radio.werbefilter.anhoeren")} aria-label="{titel(s)}: {t('radio.werbefilter.anhoeren')}" aria-pressed={spielt === s.id} onclick={() => anhoeren(s)}>
               <i class="fa-solid {spielt === s.id ? 'fa-stop' : 'fa-play'}"></i></button>
             <span class="name"><b>{titel(s)}</b>{#if s.text}<span class="rh-spot-text" title={s.text}>{s.text}</span>{/if}</span>
             <span class="grund"><i class="fa-solid fa-tower-broadcast"></i><span title={s.quellen.map((q) => `${q.name} (${q.treffer})`).join(", ")}>{orte(s)}</span></span>
@@ -112,35 +112,35 @@
             <span class="rh-a-knoepfe">
               {#if gewaehlt === "pruefen"}
                 {#if nurNeueSender(s)}
-                  <button class="knopf" type="button" title={t("radio.filter.auchDortHilfe")} onclick={() => auchDort(s)}><i class="fa-solid fa-check"></i>{t("radio.filter.auchDort")}</button>
+                  <button class="knopf" type="button" title={t("radio.werbefilter.auchDortHilfe")} onclick={() => auchDort(s)}><i class="fa-solid fa-check"></i>{t("radio.werbefilter.auchDort")}</button>
                 {:else}
-                  <button class="knopf" type="button" title={t("radio.filter.filternHilfe")} onclick={() => urteilen(s, "bestaetigt")}><i class="fa-solid fa-check"></i>{t("radio.filter.filtern")}</button>
+                  <button class="knopf" type="button" title={t("radio.werbefilter.filternHilfe")} onclick={() => urteilen(s, "bestaetigt")}><i class="fa-solid fa-check"></i>{t("radio.werbefilter.filtern")}</button>
                 {/if}
-                <button class="knopf" type="button" title={t("radio.filter.verwerfenHilfe")} onclick={() => urteilen(s, "verworfen")}><i class="fa-solid fa-xmark"></i>{t("radio.filter.verwerfen")}</button>
+                <button class="knopf" type="button" title={t("radio.werbefilter.verwerfenHilfe")} onclick={() => urteilen(s, "verworfen")}><i class="fa-solid fa-xmark"></i>{t("radio.werbefilter.verwerfen")}</button>
               {:else if gewaehlt === "wirkt"}
-                <button class="knopf" type="button" title={t("radio.filter.verwerfenHilfe")} onclick={() => urteilen(s, "verworfen")}><i class="fa-solid fa-xmark"></i>{t("radio.filter.verwerfen")}</button>
+                <button class="knopf" type="button" title={t("radio.werbefilter.verwerfenHilfe")} onclick={() => urteilen(s, "verworfen")}><i class="fa-solid fa-xmark"></i>{t("radio.werbefilter.verwerfen")}</button>
               {:else}
-                <button class="knopf" type="button" onclick={() => urteilen(s, "offen")}><i class="fa-solid fa-rotate-left"></i>{t("radio.filter.zurueck")}</button>
+                <button class="knopf" type="button" onclick={() => urteilen(s, "offen")}><i class="fa-solid fa-rotate-left"></i>{t("radio.werbefilter.zurueck")}</button>
               {/if}
             </span>
           </div>
         {:else}
-          {#if spots.gesamt === 0}<p class="rh-still">{t(`radio.filter.leer_${gewaehlt}`)}</p>{/if}
+          {#if spots.gesamt === 0}<p class="rh-still">{t(`radio.werbefilter.leer_${gewaehlt}`)}</p>{/if}
         {/each}
         {@render ende(spots)}
       </div>
     </div>
 
     <div class="karte rh-karte">
-      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-moon"></i>{t("radio.filter.lernlauf")}</h2><span class="rh-still">{t("radio.filter.lernlaufHilfe")}</span></div>
-      <div class="rh-schalter-zeile"><span><b>{t("radio.filter.jedeNacht")}</b>{#if lern.naechste.length}<span>{t("radio.filter.naechste", { namen: lern.naechste.slice(0, 4).join(", ") })}</span>{/if}</span>
-        <Schalter an={lern.an} text={lern.an ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={t("radio.filter.jedeNacht")} onwechsel={(an) => versuchen(async () => lernSetzen(await werbefilter.stellen({ an })))} /></div>
+      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-moon"></i>{t("radio.werbefilter.lernlauf")}</h2><span class="rh-still">{t("radio.werbefilter.lernlaufHilfe")}</span></div>
+      <div class="rh-schalter-zeile"><span><b>{t("radio.werbefilter.jedeNacht")}</b>{#if lern.naechste.length}<span>{t("radio.werbefilter.naechste", { namen: lern.naechste.slice(0, 4).join(", ") })}</span>{/if}</span>
+        <Schalter an={lern.an} text={lern.an ? t("einstellungen.an") : t("einstellungen.aus")} hilfe={t("radio.werbefilter.jedeNacht")} onwechsel={(an) => versuchen(async () => lernSetzen(await werbefilter.stellen({ an })))} /></div>
       <Zeile zeile={zeitfenster} onwert={(w) => { const [von, bis] = w as [string, string]; if (von && bis) void versuchen(async () => lernSetzen(await werbefilter.stellen({ von, bis }))); }} />
       <div class="rh-knoepfe">
         {#if lern.sofort_bis}
           <button class="knopf" type="button" onclick={() => versuchen(async () => lernSetzen(await werbefilter.jetzt(0)))}><i class="fa-solid fa-stop"></i>{t("radio.einst.stopp")}</button>
         {:else}
-          <button class="knopf" type="button" title={t("radio.filter.jetztHilfe")} onclick={() => versuchen(async () => lernSetzen(await werbefilter.jetzt(SOFORT_MIN)))}><i class="fa-solid fa-play"></i>{t("radio.filter.jetzt")}</button>
+          <button class="knopf" type="button" title={t("radio.werbefilter.jetztHilfe")} onclick={() => versuchen(async () => lernSetzen(await werbefilter.jetzt(SOFORT_MIN)))}><i class="fa-solid fa-play"></i>{t("radio.werbefilter.jetzt")}</button>
         {/if}
       </div>
       {#if lern.laufend.length}
@@ -155,22 +155,22 @@
       {#if lern.laeufe.length}
         <dl class="rh-werte">
           {#each lern.laeufe.slice(0, 5) as l (l.id)}
-            <dt>{wann(l.begonnen)}</dt><dd>{t("radio.filter.lauf", { s: zahl(l.sender), h: zahl(Math.round(l.stunden)), n: zahl(l.neu), b: zahl(l.bekannte) })}</dd>
+            <dt>{wann(l.begonnen)}</dt><dd>{t("radio.werbefilter.lauf", { s: zahl(l.sender), h: zahl(Math.round(l.stunden)), n: zahl(l.neu), b: zahl(l.bekannte) })}</dd>
           {/each}
         </dl>
       {/if}
     </div>
 
     <div class="karte rh-karte">
-      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-tower-broadcast"></i>{t("radio.filter.senderTitel")}</h2><span class="rh-still">{t("radio.filter.senderHilfe")}</span></div>
+      <div class="rh-karte-kopf"><h2><i class="fa-solid fa-tower-broadcast"></i>{t("radio.werbefilter.senderTitel")}</h2><span class="rh-still">{t("radio.werbefilter.senderHilfe")}</span></div>
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <div class="rh-a-liste rh-rollfeld" role="list" tabindex="0" aria-label={t("radio.filter.senderTitel")}>
+      <div class="rh-a-liste rh-rollfeld" role="list" tabindex="0" aria-label={t("radio.werbefilter.senderTitel")}>
         {#each sender.eintraege as s (s.quelle)}
           <div class="rh-a-zeile" class:frei={s.aus} role="listitem"><Logo uuid={s.quelle} name={s.name} logo="" klein />
-            <span class="name"><b>{s.name}</b><span>{s.fehler ? s.fehler : s.zuletzt ? t("radio.filter.zuletzt", { wann: wann(s.zuletzt), h: zahl(Math.round(s.stunden * 10) / 10) }) : t("radio.filter.nochNie")}</span></span>
-            <span class="grund"><i class="fa-solid {GRUND[s.grund]}"></i><span>{t(`radio.filter.grund_${s.grund}`)}</span></span>
-            <span class="stimmen">{#if s.kandidaten + s.bekannte}{t("radio.filter.funde", { n: zahl(s.kandidaten + s.bekannte) })}{/if}</span>
-            <span class="rh-a-knoepfe"><Schalter an={!s.aus} text={t("radio.filter.hoeren")} symbol="fa-headphones" onwechsel={(an) => versuchen(async () => { sender.ersetzen(await werbefilter.ausnehmen(s.quelle, !an)); })} /></span></div>
+            <span class="name"><b>{s.name}</b><span>{s.fehler ? s.fehler : s.zuletzt ? t("radio.werbefilter.zuletzt", { wann: wann(s.zuletzt), h: zahl(Math.round(s.stunden * 10) / 10) }) : t("radio.werbefilter.nochNie")}</span></span>
+            <span class="grund"><i class="fa-solid {GRUND[s.grund]}"></i><span>{t(`radio.werbefilter.grund_${s.grund}`)}</span></span>
+            <span class="stimmen">{#if s.kandidaten + s.bekannte}{t("radio.werbefilter.funde", { n: zahl(s.kandidaten + s.bekannte) })}{/if}</span>
+            <span class="rh-a-knoepfe"><Schalter an={!s.aus} text={t("radio.werbefilter.hoeren")} symbol="fa-headphones" onwechsel={(an) => versuchen(async () => { sender.ersetzen(await werbefilter.ausnehmen(s.quelle, !an)); })} /></span></div>
         {/each}
         {@render ende(sender)}
       </div>

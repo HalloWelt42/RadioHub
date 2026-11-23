@@ -178,8 +178,14 @@ export default {
     zeigen: '{n} 局を表示',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'ライブ字幕', hilfe: '話された内容をその場で書き起こします', mitlaufen: '追従', mitlaufenHilfe: 'テキストに追従します。オフで止まります', uebersetzenHilfe: '翻訳', kopieren: 'テキストをコピー',
+    text: 'テキスト', leer: '最初のテキストは数文のあとに表示されます', aus: 'オフ', sammelt: '次の文を集めています', hoert: '聴取中', uebersetzt: '翻訳中', gestoert: '中断',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: '聴取時間', sender: '放送局', nichtEingerichtet: 'Propaganda-Filter は設定されていません。', fort: 'Propaganda-Filter に現在接続できません。見つかったものは引き続き有効です。',
     spots: '見つかった広告', fach_pruefen: '確認待ち', fach_wirkt: 'フィルター中', fach_verworfen: '却下', leer_pruefen: '確認するものはありません', leer_wirkt: '確認済みはまだありません',
     leer_verworfen: '却下はありません', klingt_werbung: '広告', klingt_sender: '放送局の自社宣伝', klingt_anderes: 'おそらく広告ではない', klingt_ohne_sprache: '音声なし',

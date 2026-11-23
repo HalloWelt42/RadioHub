@@ -178,8 +178,15 @@ export default {
     zeigen: '{n} adó mutatása',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: 'Élő olvasás', hilfe: 'Élőben leírja, ami elhangzik', mitlaufen: 'Követés', mitlaufenHilfe: 'Követi a szöveget; kikapcsolva megáll',
+    uebersetzenHilfe: 'Fordítás', kopieren: 'Szöveg másolása', text: 'Szöveg', leer: 'Az első szöveg néhány mondat után jön', aus: 'ki',
+    sammelt: 'gyűjti a következő mondatokat', hoert: 'hallgat', uebersetzt: 'fordít', gestoert: 'megszakadt',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: 'Meghallgatott órák', sender: 'Adók', nichtEingerichtet: 'A Propaganda-Filter nincs beállítva.',
     fort: 'A Propaganda-Filter most nem érhető el. Amit talált, továbbra is működik.', spots: 'Talált reklámok', fach_pruefen: 'Ellenőrzendő',
     fach_wirkt: 'Szűrt', fach_verworfen: 'Elvetett', leer_pruefen: 'Nincs mit ellenőrizni', leer_wirkt: 'Még nincs megerősítve semmi',

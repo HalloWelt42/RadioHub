@@ -178,8 +178,14 @@ export default {
     zeigen: '显示 {n} 个电台',
   },
 
+  // Live mitlesen (RAD-129)
+  mitlesen: {
+    titel: '实时阅读', hilfe: '实时记录所说的内容', mitlaufen: '跟随', mitlaufenHilfe: '跟随文本；关闭时停住', uebersetzenHilfe: '翻译', kopieren: '复制文本', text: '文本',
+    leer: '几句话之后出现第一段文本', aus: '关闭', sammelt: '正在收集接下来的句子', hoert: '正在听', uebersetzt: '正在翻译', gestoert: '已中断',
+  },
+
   // Werbefilter (RAD-128)
-  filter: {
+  werbefilter: {
     stundenGehoert: '已收听小时', sender: '电台', nichtEingerichtet: 'Propaganda-Filter 尚未设置。', fort: 'Propaganda-Filter 目前无法连接。已找到的内容继续有效。', spots: '找到的广告',
     fach_pruefen: '待检查', fach_wirkt: '过滤中', fach_verworfen: '已否决', leer_pruefen: '没有待检查的内容', leer_wirkt: '尚无已确认的内容', leer_verworfen: '没有否决的内容',
     klingt_werbung: '广告', klingt_sender: '电台自我宣传', klingt_anderes: '可能不是广告', klingt_ohne_sprache: '无人声', klingt_unklar: '尚未分类', anhoeren: '试听',
