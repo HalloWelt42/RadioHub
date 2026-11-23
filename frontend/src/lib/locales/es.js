@@ -45,6 +45,7 @@ export default {
     vor30: "Avanzar 30 s",
     voriger: "Emisora anterior",
     naechster: "Emisora siguiente",
+    fokus: 'Foco',
     inListeZeigen: "Mostrar en la lista",
     spielerOeffnen: "Abrir reproductor",
     spielerSchliessen: "Cerrar reproductor",

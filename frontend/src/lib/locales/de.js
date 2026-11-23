@@ -45,6 +45,7 @@ export default {
     vor30: '30 s vor',
     voriger: 'Voriger Sender',
     naechster: 'Nächster Sender',
+    fokus: 'Fokus',
     inListeZeigen: 'In der Liste zeigen',
     spielerOeffnen: 'Spieler öffnen',
     spielerSchliessen: 'Spieler schließen',

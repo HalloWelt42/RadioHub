@@ -45,6 +45,7 @@ export default {
     vor30: 'Forward 30 s',
     voriger: 'Previous station',
     naechster: 'Next station',
+    fokus: 'Focus',
     inListeZeigen: 'Show in the list',
     spielerOeffnen: 'Open player',
     spielerSchliessen: 'Close player',

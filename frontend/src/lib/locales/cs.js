@@ -45,6 +45,7 @@ export default {
     vor30: '30 s vpřed',
     voriger: 'Předchozí stanice',
     naechster: 'Další stanice',
+    fokus: 'Fokus',
     inListeZeigen: 'Ukázat v seznamu',
     spielerOeffnen: 'Otevřít přehrávač',
     spielerSchliessen: 'Zavřít přehrávač',

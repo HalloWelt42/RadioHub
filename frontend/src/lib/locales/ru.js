@@ -43,6 +43,7 @@ export default {
     vor30: 'Вперёд 30 с',
     voriger: 'Предыдущая станция',
     naechster: 'Следующая станция',
+    fokus: 'Фокус',
     inListeZeigen: 'Показать в списке',
     spielerOeffnen: 'Открыть плеер',
     spielerSchliessen: 'Закрыть плеер',

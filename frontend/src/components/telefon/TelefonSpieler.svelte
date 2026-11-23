@@ -27,6 +27,7 @@
   import { faehigkeiten } from '../../lib/playerEngine.js';
   import { geraete, geraeteTexte, geraeteZeile } from '../../spieler/geraete.svelte';
   import { fern, fernsteuerung } from '../../spieler/fern.svelte';
+  import Schalter from '../bausteine/Schalter.svelte';
 
   let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung, bedienung } = $props();
 
@@ -61,6 +62,7 @@
   }
   /** beim Ziehen gilt der eigene Wert, danach der gemeldete des Geräts */
   let lautZiehen = $state(null);
+  let lautSchieber = $state();
   const laut = $derived(lautZiehen ?? dort?.lautstaerke ?? null);
   const bildSrc = $derived(info?.bild || null);
   /** Name der Quelle für die Kachel ohne Logo (Kürzel und Lack wie in der Liste, RAD-100) */
@@ -147,7 +149,7 @@
         </span>
       </span>
     </button>
-    <button class="knopf tf-rund" class:primaer={!fremd} disabled={ruht} onclick={leisteUmschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+    <button class="knopf primaer tf-rund" disabled={ruht} onclick={leisteUmschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
       <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
     </button>
   </div>
@@ -165,15 +167,13 @@
     </div>
     {#if geraete.andere.length || fern.aktiv}
       <!-- wem die Tasten gehören (RAD-96, Wahl B): dieses Gerät oder ein anderes offenes -->
-      <div class="tf-geraetewahl" role="radiogroup" aria-label={t('telefon.fernWahl')}>
-        <button type="button" role="radio" aria-checked={!fern.aktiv} onclick={() => fern.waehlen(null)}>
-          <i class="fa-solid fa-mobile-screen"></i><span>{geraete.ich?.name ?? t('geraete.diesesGeraet')}</span></button>
+      <div class="tf-tasten tf-geraetewahl" role="group" aria-label={t('telefon.fernWahl')}>
+        <Schalter an={!fern.aktiv} symbol="fa-mobile-screen" text={geraete.ich?.name ?? t('geraete.diesesGeraet')} onwechsel={() => fern.waehlen(null)} />
         {#each geraete.andere as g (g.id)}
-          <button type="button" role="radio" aria-checked={fern.zielId === g.id} class="dort" onclick={() => fern.waehlen(g.id)}>
-            <i class="fa-solid {SYMBOL[g.art]}"></i><span>{g.name}</span></button>
+          <Schalter an={fern.zielId === g.id} farbe="blau" symbol={SYMBOL[g.art]} text={g.name} onwechsel={() => fern.waehlen(g.id)} />
         {/each}
         {#if ruht}
-          <button type="button" role="radio" aria-checked="true" class="dort" disabled><i class="fa-solid fa-plug-circle-xmark"></i><span>{fern.name}</span></button>
+          <Schalter an={true} farbe="rot" symbol="fa-plug-circle-xmark" text={fern.name} onwechsel={() => {}} />
         {/if}
       </div>
     {/if}
@@ -224,7 +224,7 @@
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
           <i class="fa-solid fa-rotate-left"></i><span class="tf-zahl">15</span>
         </button>
-        <button class="knopf tf-rund tf-gross" class:primaer={!fremd} disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf primaer tf-rund tf-gross" disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
@@ -239,7 +239,7 @@
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.stoppen()} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
           <i class="fa-solid fa-stop"></i>
         </button>
-        <button class="knopf tf-rund tf-gross" class:primaer={!fremd} disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf primaer tf-rund tf-gross" disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.naechster()} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
@@ -273,23 +273,24 @@
       {/if}
     {/if}
     {#if fern.aktiv && laut !== null}
-      <label class="tf-laut"><i class="fa-solid fa-volume-high" aria-hidden="true"></i>
-        <input name="fern-lautstaerke" type="range" min="0" max="100" step="1" value={laut} aria-label="{t('kanzel.lautstaerke')}: {fern.name}" disabled={ruht}
-          oninput={(ev) => { lautZiehen = Number(ev.currentTarget.value); fern.lautstaerke(lautZiehen); }}
-          onchange={() => { setTimeout(() => (lautZiehen = null), 600); }} />
-        <span>{laut} %</span></label>
+      <div class="tf-versatz tf-laut">
+        <ak-schieber bind:this={lautSchieber} art="balken" leuchte="blau" segmente="20" name={t('kanzel.lautstaerke')} hilfe="{t('kanzel.lautstaerke')}: {fern.name}"
+          min="0" max="100" schritt="1" einheit="%" wert={laut} gesperrt={ruht || undefined}
+          oninput={() => { const w = lautSchieber?.wert; if (typeof w !== 'number' || w === dort?.lautstaerke) return; lautZiehen = w; fern.lautstaerke(w); }}
+          onchange={() => { setTimeout(() => (lautZiehen = null), 600); }}></ak-schieber>
+      </div>
     {/if}
     <!-- unten nebeneinander (RAD-90): den Sender in der Liste wiederfinden (Nutzer 20.11.2026) und Geräte (RAD-18, blinkt
          ruhig, solange woanders etwas spielt) -->
     {#if !folge || kann.uebergabe}
       <div class="tf-fuss">
         {#if !folge && (!fremd || senderUuid)}
-          <button class="knopf tf-zur-liste" onclick={zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
+          <button class="knopf tf-zur-liste" onclick={zurListe} title={t('telefon.inListeZeigen')} aria-label={t('telefon.inListeZeigen')}><i class="fa-solid fa-location-crosshairs"></i>{t('telefon.fokus')}</button>
         {/if}
         {#if kann.uebergabe}
-          <button class="knopf tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
-            <i class="fa-solid fa-tower-broadcast"></i>
-            {geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}
+          <button class="knopf tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}
+            title={geraete.spielenWoanders.length ? t('geraete.telefonKnopfSpielt', { n: geraete.spielenWoanders.length }) : t('geraete.telefonKnopf')}>
+            <i class="fa-solid fa-tower-broadcast"></i>{t('geraete.telefonKnopf')}
           </button>
         {/if}
       </div>
@@ -324,8 +325,9 @@
   @media (prefers-reduced-motion: reduce) { .tf-geraete.blinkt > i { animation: none; } }
   .tf-blatt-grund { position: fixed; inset: 0; z-index: 30; background: rgb(0 0 0 / .35); }
   .tf-blatt { position: fixed; inset: auto 0 0; z-index: 31; box-shadow: 0 -12px 30px rgb(0 0 0 / .4); }
-  .tf-fuss { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
-  .tf-zur-liste { gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 16px; white-space: nowrap; }
+  /* eine Zeile, kurze Wörter (RAD-127): der Satz dazu steht im Hinweis */
+  .tf-fuss { display: flex; justify-content: center; gap: 8px; margin-top: 6px; }
+  .tf-zur-liste { gap: 8px; min-width: 0; min-height: 40px; padding: 0 16px; border-radius: 20px; font-size: 15px; white-space: nowrap; }
   /* Spielerleiste als kleines Gerät aus dem Material der Kanzel (RAD-97, Wahl A) */
   .tf-leiste {
     flex: none;
@@ -367,8 +369,9 @@
     justify-content: center;
     font-size: 20px;
   }
-  .tf-rund.mittel { width: clamp(52px, 17vw, 64px); height: clamp(52px, 17vw, 64px); font-size: 24px; }
-  .tf-rund.tf-gross { width: clamp(68px, 22vw, 84px); height: clamp(68px, 22vw, 84px); font-size: 32px; }
+  .tf-rund.mittel { width: clamp(46px, 13.5vw, 54px); height: clamp(46px, 13.5vw, 54px); font-size: 20px; }
+  .tf-rund.tf-gross { width: clamp(58px, 17vw, 68px); height: clamp(58px, 17vw, 68px); font-size: 26px; }
+  .tf-sender-aktionen .tf-rund { width: 44px; height: 44px; font-size: 17px; }
   .tf-zahl { position: absolute; left: 0; right: 0; bottom: 6px; font-size: 15px; font-weight: 700; }
 
   .vollbild {
@@ -412,20 +415,15 @@
   .position { margin: 16px 0 4px; }
   .position input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .zeiten { display: flex; justify-content: space-between; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
-  /* Steuermodus (RAD-96): alles, was auf dem anderen Gerät wirkt, ist blau */
-  .tf-geraetewahl { display: flex; gap: 4px; flex: none; padding: 4px; margin: 0 4px; border-radius: 26px; overflow-x: auto; background: color-mix(in srgb, var(--t-grund) 62%, transparent); }
-  .tf-geraetewahl button { flex: 1 0 auto; min-width: 0; min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    border: 0; border-radius: 22px; background: transparent; color: var(--t-text-2); font: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; }
-  .tf-geraetewahl span { overflow: hidden; text-overflow: ellipsis; max-inline-size: 11em; }
-  .tf-geraetewahl button[aria-checked="true"] { background: var(--t-flaeche-2); color: var(--t-text); }
-  .tf-geraetewahl button.dort[aria-checked="true"] { background: var(--t-fern); color: var(--t-auf-fern); }
-  .fern .knoepfe .tf-rund, .tf-leiste.fern .tf-rund { background: color-mix(in srgb, var(--t-fern) 24%, var(--t-flaeche-2)); color: var(--t-fern-hell);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-fern) 55%, transparent), 0 4px 12px rgb(0 0 0 / .3); }
-  .fern .knoepfe .tf-gross, .tf-leiste.fern .tf-rund { background: var(--t-fern); color: var(--t-auf-fern); box-shadow: 0 0 20px color-mix(in srgb, var(--t-fern) 45%, transparent); }
-  .fern .tf-rund:disabled { opacity: .45; }
-  .tf-laut { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; padding: 8px 14px; border-radius: 14px; color: var(--t-text);
-    background: color-mix(in srgb, var(--t-fern) 18%, color-mix(in srgb, var(--t-flaeche-2) 70%, transparent)); font-size: 15px; font-variant-numeric: tabular-nums; }
-  .tf-laut input { flex: 1; min-width: 0; height: 36px; accent-color: var(--t-fern); }
-  .tf-laut span { min-inline-size: 3.2em; text-align: right; }
+  /* Steuermodus (RAD-96, RAD-127): dieselben Bauteile wie überall (Taster mit Lampe, Schieber der Anlage, Knöpfe der Vorlage);
+     nur das Licht der Tasten, die auf dem anderen Gerät wirken, ist blau statt bernstein */
+  .tf-tasten { display: flex; flex-wrap: wrap; gap: 6px; flex: none; }
+  .tf-tasten :global(ak-taster) { flex: 1 1 0; min-width: fit-content; }
+  .tf-tasten :global(ak-taster .ak-taster-knopf) { inline-size: 100%; min-inline-size: 0; }
+  .tf-tasten :global(ak-taster .ak-taster-beschriftung) { white-space: nowrap; }
+  .tf-geraetewahl { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 10px; }   /* immer eine Zeile */
+  .vollbild.fern .knoepfe, .tf-leiste.fern { --akzent-flaeche: var(--t-fern); --auf-akzent: var(--t-auf-fern); --hifi-primaer-hover: var(--t-fern); }
+  .vollbild.fern .knoepfe .tf-rund:not(.tf-gross):not(:disabled) { color: var(--t-fern-hell); }
+  .tf-laut :global(ak-schieber) { --ak-zelle: 100%; display: block; }
   .knoepfe { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 16px 0 8px; }
 </style>

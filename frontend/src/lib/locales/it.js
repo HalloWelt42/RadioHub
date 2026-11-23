@@ -45,6 +45,7 @@ export default {
     vor30: "Avanti di 30 s",
     voriger: "Stazione precedente",
     naechster: "Stazione successiva",
+    fokus: 'Focus',
     inListeZeigen: "Mostra nell'elenco",
     spielerOeffnen: "Apri il lettore",
     spielerSchliessen: "Chiudi il lettore",

@@ -45,6 +45,7 @@ export default {
     vor30: '30 s framåt',
     voriger: 'Föregående station',
     naechster: 'Nästa station',
+    fokus: 'Fokus',
     inListeZeigen: 'Visa i listan',
     spielerOeffnen: 'Öppna spelaren',
     spielerSchliessen: 'Stäng spelaren',

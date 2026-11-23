@@ -45,6 +45,7 @@ export default {
     vor30: '30 s frem',
     voriger: 'Forrige station',
     naechster: 'Næste station',
+    fokus: 'Fokus',
     inListeZeigen: 'Vis på listen',
     spielerOeffnen: 'Åbn afspiller',
     spielerSchliessen: 'Luk afspiller',

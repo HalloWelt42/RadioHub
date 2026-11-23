@@ -43,6 +43,7 @@ export default {
     vor30: '30 s înainte',
     voriger: 'Postul anterior',
     naechster: 'Postul următor',
+    fokus: 'Focus',
     inListeZeigen: 'Arată în listă',
     spielerOeffnen: 'Deschide playerul',
     spielerSchliessen: 'Închide playerul',

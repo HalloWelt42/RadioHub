@@ -43,6 +43,7 @@ export default {
     vor30: '30秒進む',
     voriger: '前の放送局',
     naechster: '次の放送局',
+    fokus: 'フォーカス',
     inListeZeigen: 'リストで表示',
     spielerOeffnen: 'プレーヤーを開く',
     spielerSchliessen: 'プレーヤーを閉じる',

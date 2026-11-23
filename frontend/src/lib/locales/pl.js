@@ -45,6 +45,7 @@ export default {
     vor30: '30 s naprzód',
     voriger: 'Poprzednia stacja',
     naechster: 'Następna stacja',
+    fokus: 'Fokus',
     inListeZeigen: 'Pokaż na liście',
     spielerOeffnen: 'Otwórz odtwarzacz',
     spielerSchliessen: 'Zamknij odtwarzacz',

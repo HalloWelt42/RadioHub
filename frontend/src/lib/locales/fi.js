@@ -45,6 +45,7 @@ export default {
     vor30: '30 s eteen',
     voriger: 'Edellinen asema',
     naechster: 'Seuraava asema',
+    fokus: 'Kohdistus',
     inListeZeigen: 'Näytä luettelossa',
     spielerOeffnen: 'Avaa soitin',
     spielerSchliessen: 'Sulje soitin',

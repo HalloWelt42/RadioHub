@@ -43,6 +43,7 @@ export default {
     vor30: '前进 30 秒',
     voriger: '上一个电台',
     naechster: '下一个电台',
+    fokus: '焦点',
     inListeZeigen: '在列表中显示',
     spielerOeffnen: '打开播放器',
     spielerSchliessen: '关闭播放器',

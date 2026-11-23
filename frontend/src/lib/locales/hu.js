@@ -43,6 +43,7 @@ export default {
     vor30: '30 mp előre',
     voriger: 'Előző adó',
     naechster: 'Következő adó',
+    fokus: 'Fókusz',
     inListeZeigen: 'Megjelenítés a listában',
     spielerOeffnen: 'Lejátszó megnyitása',
     spielerSchliessen: 'Lejátszó bezárása',

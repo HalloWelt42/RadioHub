@@ -45,6 +45,7 @@ export default {
     vor30: '30 s vooruit',
     voriger: 'Vorige zender',
     naechster: 'Volgende zender',
+    fokus: 'Focus',
     inListeZeigen: 'In de lijst tonen',
     spielerOeffnen: 'Speler openen',
     spielerSchliessen: 'Speler sluiten',

@@ -43,6 +43,7 @@ export default {
     vor30: '30 sn ileri',
     voriger: 'Önceki istasyon',
     naechster: 'Sonraki istasyon',
+    fokus: 'Odak',
     inListeZeigen: 'Listede göster',
     spielerOeffnen: 'Oynatıcıyı aç',
     spielerSchliessen: 'Oynatıcıyı kapat',

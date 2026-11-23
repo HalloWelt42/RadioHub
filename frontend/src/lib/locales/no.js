@@ -45,6 +45,7 @@ export default {
     vor30: '30 s frem',
     voriger: 'Forrige stasjon',
     naechster: 'Neste stasjon',
+    fokus: 'Fokus',
     inListeZeigen: 'Vis i listen',
     spielerOeffnen: 'Åpne spilleren',
     spielerSchliessen: 'Lukk spilleren',
