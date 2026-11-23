@@ -190,6 +190,8 @@ export default {
     titel: 'Leggi in diretta', hilfe: 'Trascrive in diretta ciò che si dice', mitlaufen: 'Segui', mitlaufenHilfe: 'Segue il testo; spento, resta fermo',
     uebersetzenHilfe: 'Traduci', kopieren: 'Copia testo', text: 'Testo', leer: 'Il primo testo arriva dopo alcune frasi', aus: 'spento',
     sammelt: 'raccoglie le prossime frasi', hoert: 'ascolta', uebersetzt: 'traduce', gestoert: 'interrotto',
+    stimme: 'Interprete', stimmeHilfe: 'Pronuncia la traduzione al posto dell\'originale; spento, torna l\'originale',
+    spricht: 'parla',
   },
 
   // Werbefilter (RAD-128)

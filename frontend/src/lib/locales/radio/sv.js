@@ -184,6 +184,8 @@ export default {
     titel: 'Läs med', hilfe: 'Skriver live ner vad som sägs', mitlaufen: 'Följ med', mitlaufenHilfe: 'Följer texten; av står den still',
     uebersetzenHilfe: 'Översätt', kopieren: 'Kopiera text', text: 'Text', leer: 'Den första texten kommer efter några meningar', aus: 'av',
     sammelt: 'samlar nästa meningar', hoert: 'lyssnar', uebersetzt: 'översätter', gestoert: 'avbrutet',
+    stimme: 'Tolk', stimmeHilfe: 'Talar översättningen i stället för originalet; av hörs originalet igen',
+    spricht: 'talar',
   },
 
   // Werbefilter (RAD-128)

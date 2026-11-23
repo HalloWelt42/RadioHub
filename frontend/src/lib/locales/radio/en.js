@@ -190,6 +190,8 @@ export default {
     titel: 'Read along', hilfe: 'Writes down live what is said', mitlaufen: 'Follow', mitlaufenHilfe: 'Follows the text; off, it stays put',
     uebersetzenHilfe: 'Translate', kopieren: 'Copy text', text: 'Text', leer: 'The first text appears after a few sentences', aus: 'off',
     sammelt: 'collecting the next sentences', hoert: 'listening', uebersetzt: 'translating', gestoert: 'interrupted',
+    stimme: 'Interpreter', stimmeHilfe: 'Speak the translation instead of the original; off brings the original back',
+    spricht: 'speaking',
   },
 
   // Werbefilter (RAD-128)

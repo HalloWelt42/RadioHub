@@ -182,6 +182,8 @@ export default {
   mitlesen: {
     titel: 'ライブ字幕', hilfe: '話された内容をその場で書き起こします', mitlaufen: '追従', mitlaufenHilfe: 'テキストに追従します。オフで止まります', uebersetzenHilfe: '翻訳', kopieren: 'テキストをコピー',
     text: 'テキスト', leer: '最初のテキストは数文のあとに表示されます', aus: 'オフ', sammelt: '次の文を集めています', hoert: '聴取中', uebersetzt: '翻訳中', gestoert: '中断',
+    stimme: '通訳', stimmeHilfe: '原音の代わりに翻訳を読み上げます。オフで原音に戻ります',
+    spricht: '話しています',
   },
 
   // Werbefilter (RAD-128)

@@ -341,6 +341,7 @@
   user-select: text; cursor: text; line-height: 1.55; }
 .rh-mitlese-feld p { margin: 0 0 .9em; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 14px; overflow-wrap: anywhere; }
 .rh-mitlese-feld p > time { font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--text-3); padding-top: .12em; }
+.rh-mitlese-feld p.spricht > span:not(.rh-mitlese-original) { color: var(--led-gelb); }
 .rh-mitlese-original { grid-column: 2; font-size: var(--klein); color: var(--text-3); }
 .rh-mitlese-feld p.rh-mitlese-leer { display: block; color: var(--text-3); }
 @container liste (max-width: 820px) { .rh-mitlese-feld p { grid-template-columns: minmax(0, 1fr); } .rh-mitlese-original { grid-column: 1; } }

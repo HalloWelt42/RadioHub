@@ -183,6 +183,8 @@ export default {
     titel: 'Élő olvasás', hilfe: 'Élőben leírja, ami elhangzik', mitlaufen: 'Követés', mitlaufenHilfe: 'Követi a szöveget; kikapcsolva megáll',
     uebersetzenHilfe: 'Fordítás', kopieren: 'Szöveg másolása', text: 'Szöveg', leer: 'Az első szöveg néhány mondat után jön', aus: 'ki',
     sammelt: 'gyűjti a következő mondatokat', hoert: 'hallgat', uebersetzt: 'fordít', gestoert: 'megszakadt',
+    stimme: 'Tolmács', stimmeHilfe: 'A fordítást mondja az eredeti helyett; kikapcsolva újra az eredeti hallható',
+    spricht: 'beszél',
   },
 
   // Werbefilter (RAD-128)

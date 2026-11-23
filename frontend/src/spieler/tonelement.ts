@@ -3,6 +3,7 @@
 // einmal an die Engine gebunden, und die Ansichten hängen nur ihre Ereignisse an (und beim Abbau wieder ab).
 import * as engine from "../lib/playerEngine.js";
 import { appState } from "../lib/store.svelte.js";
+import { stummVerbinden } from "../lib/stumm";
 
 let element: HTMLAudioElement | null = null;
 
@@ -17,6 +18,7 @@ export function tonelement(): HTMLAudioElement {
   neu.addEventListener("error", (e) => engine.handleError(e));
   document.body.append(neu);
   engine.init(neu, appState);
+  stummVerbinden(neu);
   element = neu;
   return neu;
 }

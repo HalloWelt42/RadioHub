@@ -189,6 +189,8 @@ export default {
     titel: 'Čítať naživo', hilfe: 'Naživo zapisuje, čo sa hovorí', mitlaufen: 'Sledovať', mitlaufenHilfe: 'Sleduje text; vypnuté zostane stáť',
     uebersetzenHilfe: 'Preložiť', kopieren: 'Kopírovať text', text: 'Text', leer: 'Prvý text príde po niekoľkých vetách', aus: 'vypnuté',
     sammelt: 'zbiera ďalšie vety', hoert: 'počúva', uebersetzt: 'prekladá', gestoert: 'prerušené',
+    stimme: 'Tlmočník', stimmeHilfe: 'Hovorí preklad namiesto originálu; vypnuté je opäť počuť originál',
+    spricht: 'hovorí',
   },
 
   // Werbefilter (RAD-128)

@@ -189,6 +189,8 @@ export default {
     titel: 'Číst živě', hilfe: 'Živě zapisuje, co se říká', mitlaufen: 'Sledovat', mitlaufenHilfe: 'Sleduje text; vypnuto zůstane stát',
     uebersetzenHilfe: 'Přeložit', kopieren: 'Kopírovat text', text: 'Text', leer: 'První text přijde po několika větách', aus: 'vypnuto',
     sammelt: 'sbírá další věty', hoert: 'poslouchá', uebersetzt: 'překládá', gestoert: 'přerušeno',
+    stimme: 'Tlumočník', stimmeHilfe: 'Mluví překlad místo originálu; vypnuto je opět slyšet originál',
+    spricht: 'mluví',
   },
 
   // Werbefilter (RAD-128)

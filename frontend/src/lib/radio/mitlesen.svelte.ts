@@ -12,6 +12,8 @@ export interface Absatz {
   zeit: string;
   text: string;
   uebersetzung: string;
+  /** Länge des gesprochenen Tons in Sekunden; 0: nicht gesprochen */
+  ton_s: number;
 }
 
 export type Zustand = "aus" | "sammelt" | "hoert" | "uebersetzt" | "gestoert";
@@ -25,6 +27,9 @@ export interface Mitlesestand {
   sprache: string;
   ziel: string;
   uebersetzen: boolean;
+  /** die Übersetzerstimme spricht mit; kann_sprechen: Vertonung und Stimme sind eingerichtet */
+  sprechen: boolean;
+  kann_sprechen: boolean;
   absaetze: Absatz[];
   fassung: number;
 }
@@ -103,6 +108,11 @@ export class Mitlesen {
 
   async uebersetzen(an: boolean): Promise<void> {
     this.uebernehmen(await this.a("/api/mitlesen", { methode: "PUT", daten: { uebersetzen: an } }));
+  }
+
+  /** Übersetzerstimme an oder aus (an schließt Übersetzen ein) */
+  async sprechen(an: boolean): Promise<void> {
+    this.uebernehmen(await this.a("/api/mitlesen", { methode: "PUT", daten: { sprechen: an } }));
   }
 
   async lesen(): Promise<void> {

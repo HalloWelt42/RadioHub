@@ -190,6 +190,8 @@ export default {
     titel: 'Lue mukana', hilfe: 'Kirjoittaa suorana, mitä puhutaan', mitlaufen: 'Seuraa', mitlaufenHilfe: 'Seuraa tekstiä; pois päältä pysyy paikallaan',
     uebersetzenHilfe: 'Käännä', kopieren: 'Kopioi teksti', text: 'Teksti', leer: 'Ensimmäinen teksti tulee muutaman lauseen jälkeen', aus: 'pois',
     sammelt: 'kerää seuraavia lauseita', hoert: 'kuuntelee', uebersetzt: 'kääntää', gestoert: 'keskeytynyt',
+    stimme: 'Tulkki', stimmeHilfe: 'Puhuu käännöksen alkuperäisen sijaan; pois päältä alkuperäinen kuuluu taas',
+    spricht: 'puhuu',
   },
 
   // Werbefilter (RAD-128)

@@ -191,6 +191,8 @@ export default {
     mitlaufenHilfe: 'Läuft mit dem Text mit; aus bleibt er stehen', uebersetzenHilfe: 'Übersetzen', kopieren: 'Text kopieren', text: 'Text',
     leer: 'Der erste Text kommt nach einigen Sätzen', aus: 'aus', sammelt: 'sammelt die nächsten Sätze', hoert: 'hört', uebersetzt: 'übersetzt',
     gestoert: 'gestört',
+    stimme: 'Übersetzer', stimmeHilfe: 'Die Übersetzung sprechen statt des Originals; aus ist wieder das Original zu hören',
+    spricht: 'spricht',
   },
 
   // Werbefilter (RAD-128)

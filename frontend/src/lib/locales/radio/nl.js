@@ -185,6 +185,8 @@ export default {
     mitlaufenHilfe: 'Loopt mee met de tekst; uit blijft hij staan', uebersetzenHilfe: 'Vertalen', kopieren: 'Tekst kopiëren', text: 'Tekst',
     leer: 'De eerste tekst komt na enkele zinnen', aus: 'uit', sammelt: 'verzamelt de volgende zinnen', hoert: 'luistert', uebersetzt: 'vertaalt',
     gestoert: 'onderbroken',
+    stimme: 'Tolk', stimmeHilfe: 'Spreekt de vertaling in plaats van het origineel; uit is het origineel weer te horen',
+    spricht: 'spreekt',
   },
 
   // Werbefilter (RAD-128)

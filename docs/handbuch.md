@@ -101,6 +101,12 @@ mit Schalter; ohne eindeutiges Label erkennt der Hördienst die Sprache. Aus bee
 das Radio endet oder eine Minute niemand liest. Hören und Übersetzen rechnet die Leitstelle (Einstellungen > Dienste); ohne
 Leitstelle fehlt die Taste. Übersprungene Werbung wird nicht mitgeschrieben.
 
+Übersetzer (RAD-130): im Mitlesefeld eines fremdsprachigen Senders spricht die Zeitstimme die übersetzten Absätze, sobald zwei
+davon fertig sind (Vertonung, Einstellung Zeitstimme). Solange sie spricht, ist das Radio stumm und läuft weiter; Puffer und
+Aufnahme bleiben unverändert. Aus bringt sofort das Original zurück, ebenso eine Pause von sechs Sekunden ohne Übersetzung
+(Musik). Staut sich etwas, spricht sie bis zu ein Viertel schneller und lässt notfalls die ältesten Absätze aus. Pause am
+Radio hält sie an, die Lautstärke ist die des Radios.
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge

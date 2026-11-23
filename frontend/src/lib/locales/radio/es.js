@@ -190,6 +190,8 @@ export default {
     titel: 'Leer en vivo', hilfe: 'Transcribe en vivo lo que se dice', mitlaufen: 'Seguir', mitlaufenHilfe: 'Sigue el texto; apagado, se queda quieto',
     uebersetzenHilfe: 'Traducir', kopieren: 'Copiar texto', text: 'Texto', leer: 'El primer texto llega tras unas frases', aus: 'apagado',
     sammelt: 'reuniendo las próximas frases', hoert: 'escuchando', uebersetzt: 'traduciendo', gestoert: 'interrumpido',
+    stimme: 'Intérprete', stimmeHilfe: 'Dice la traducción en lugar del original; apagado, vuelve el original',
+    spricht: 'habla',
   },
 
   // Werbefilter (RAD-128)

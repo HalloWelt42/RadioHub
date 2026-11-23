@@ -183,6 +183,8 @@ export default {
     titel: 'Citește live', hilfe: 'Transcrie live ce se spune', mitlaufen: 'Urmărește', mitlaufenHilfe: 'Urmărește textul; oprit, stă pe loc',
     uebersetzenHilfe: 'Tradu', kopieren: 'Copiază textul', text: 'Text', leer: 'Primul text apare după câteva fraze', aus: 'oprit',
     sammelt: 'adună următoarele fraze', hoert: 'ascultă', uebersetzt: 'traduce', gestoert: 'întrerupt',
+    stimme: 'Interpret', stimmeHilfe: 'Rostește traducerea în locul originalului; oprit, se aude din nou originalul',
+    spricht: 'vorbește',
   },
 
   // Werbefilter (RAD-128)

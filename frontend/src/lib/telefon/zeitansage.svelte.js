@@ -10,6 +10,7 @@
 import { zeitbausteine } from '$ziel/telefon';
 import { kontext, entsperren } from './tonkontext.svelte.js';
 import { planPruefen } from './zeitplan.js';
+import { stummSetzen } from '../stumm';
 
 export { entsperren };
 
@@ -142,7 +143,7 @@ export async function ansagen({ nacht = false, jetzt = new Date() } = {}) {
   try {
     if (radio) {
       await blenden(radio, 0, BLENDEN_MS, lauf);
-      if (radio.volume > 0.01) radio.muted = true;   // Lautstärke nicht stellbar (iOS): stumm statt leise
+      if (radio.volume > 0.01) stummSetzen('zeitansage', true);   // Lautstärke nicht stellbar (iOS): stumm statt leise
     }
     if (lauf.aus) return;
     if (c.state !== 'running' && radio) {
@@ -170,7 +171,7 @@ export async function ansagen({ nacht = false, jetzt = new Date() } = {}) {
     for (const q of _quellen) { try { q.stop(); } catch { /* schon zu Ende */ } }
     _quellen = [];
     if (radio) {
-      radio.muted = false;
+      stummSetzen('zeitansage', false);
       if (pausiert) { try { await radio.play(); } catch { /* der Wächter verbindet neu */ } }
       await blenden(radio, alt, lauf.aus ? 150 : BLENDEN_MS, null);
       radio.volume = alt;

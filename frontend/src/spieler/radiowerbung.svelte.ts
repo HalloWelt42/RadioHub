@@ -8,6 +8,7 @@ import { untrack } from "svelte";
 import { appState } from "../lib/store.svelte.js";
 import { springeZuPuffer, tonZuPuffer, vorabHoeren } from "../lib/playerEngine.js";
 import { herkunftVon, stellenSchluessel, werbetat, type Pufferstand, type Werbestelle } from "../lib/radio/sendewerbung";
+import { stummSetzen, stummWegen } from "../lib/stumm";
 import { anhaengen, tonelement } from "./tonelement";
 import { werbehinweis } from "./werbehinweis.svelte";
 
@@ -22,8 +23,6 @@ const dauerVon = (s: Werbestelle): number | null =>
 class Radiowerbung {
   private angehoert = new Set<string>();
   private sitzung: string | null = null;
-  /** stumm geschaltet von hier (nur dann schaltet es hier auch wieder an) */
-  private stumm = false;
   private uhr: ReturnType<typeof setTimeout> | undefined;
 
   private get puffer(): Puffer | null {
@@ -51,14 +50,11 @@ class Radiowerbung {
       this.tonAn();
       if (springeZuPuffer(tat.nach)) this.uebersprungen(tat.stelle);
     } else if (tat.art === "stumm") {
-      if (!ton.muted) {
-        ton.muted = true;
-        this.stumm = true;
-      }
+      stummSetzen("werbung", true);
       const s = tat.stelle;
       werbehinweis.jetzt = { art: "stumm", dauer: dauerVon(s), rest: tat.rest, herkunft: herkunftVon(s), werbender: s.werbender,
                              anhoeren: () => this.anhoeren(s) };
-    } else if (this.stumm || werbehinweis.jetzt?.art === "stumm") {
+    } else if (stummWegen("werbung") || werbehinweis.jetzt?.art === "stumm") {
       this.tonAn();
       if (werbehinweis.jetzt?.art === "stumm") werbehinweis.jetzt = null;
     }
@@ -102,8 +98,7 @@ class Radiowerbung {
   }
 
   private tonAn(): void {
-    if (this.stumm) tonelement().muted = false;
-    this.stumm = false;
+    stummSetzen("werbung", false);
   }
 
   private aufheben(): void {

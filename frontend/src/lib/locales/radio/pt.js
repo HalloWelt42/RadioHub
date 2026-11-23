@@ -190,6 +190,8 @@ export default {
     titel: 'Ler em direto', hilfe: 'Transcreve em direto o que se diz', mitlaufen: 'Seguir', mitlaufenHilfe: 'Segue o texto; desligado, fica parado',
     uebersetzenHilfe: 'Traduzir', kopieren: 'Copiar texto', text: 'Texto', leer: 'O primeiro texto surge após algumas frases', aus: 'desligado',
     sammelt: 'a reunir as próximas frases', hoert: 'a ouvir', uebersetzt: 'a traduzir', gestoert: 'interrompido',
+    stimme: 'Intérprete', stimmeHilfe: 'Diz a tradução em vez do original; desligado, volta o original',
+    spricht: 'a falar',
   },
 
   // Werbefilter (RAD-128)

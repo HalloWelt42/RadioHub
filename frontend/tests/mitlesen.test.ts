@@ -2,8 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { alsText, Mitlesen, spracheVon, zusammen, type Absatz, type Mitlesestand } from "../src/lib/radio/mitlesen.svelte";
 
-const absatz = (nr: number, text = `Text ${nr}.`, uebersetzung = ""): Absatz => ({ nr, von: nr, bis: nr + 1, zeit: `2026-11-23T18:00:0${nr}+01:00`, text, uebersetzung });
-const stand = (teil: Partial<Mitlesestand> = {}): Mitlesestand => ({ laeuft: true, zustand: "sammelt", grund: "", uuid: "u", name: "S", sprache: "en", ziel: "de", uebersetzen: true, absaetze: [], fassung: 0, ...teil });
+const absatz = (nr: number, text = `Text ${nr}.`, uebersetzung = ""): Absatz => ({ nr, von: nr, bis: nr + 1, zeit: `2026-11-23T18:00:0${nr}+01:00`, text, uebersetzung, ton_s: 0 });
+const stand = (teil: Partial<Mitlesestand> = {}): Mitlesestand => ({ laeuft: true, zustand: "sammelt", grund: "", uuid: "u", name: "S", sprache: "en", ziel: "de", uebersetzen: true, sprechen: false, kann_sprechen: true, absaetze: [], fassung: 0, ...teil });
 
 describe("Mitlesen (RAD-129)", () => {
   beforeEach(() => void vi.useFakeTimers());
