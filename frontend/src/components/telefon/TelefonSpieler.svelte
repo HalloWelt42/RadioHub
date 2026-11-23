@@ -273,7 +273,7 @@
       {/if}
     {/if}
     {#if fern.aktiv && laut !== null}
-      <div class="tf-versatz tf-laut">
+      <div class="tf-laut"><i class="fa-solid fa-volume-high" aria-hidden="true"></i>
         <ak-schieber bind:this={lautSchieber} art="balken" leuchte="blau" segmente="20" name={t('kanzel.lautstaerke')} hilfe="{t('kanzel.lautstaerke')}: {fern.name}"
           min="0" max="100" schritt="1" einheit="%" wert={laut} gesperrt={ruht || undefined}
           oninput={() => { const w = lautSchieber?.wert; if (typeof w !== 'number' || w === dort?.lautstaerke) return; lautZiehen = w; fern.lautstaerke(w); }}
@@ -424,6 +424,9 @@
   .tf-geraetewahl { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 10px; }   /* immer eine Zeile */
   .vollbild.fern .knoepfe, .tf-leiste.fern { --akzent-flaeche: var(--t-fern); --auf-akzent: var(--t-auf-fern); --hifi-primaer-hover: var(--t-fern); }
   .vollbild.fern .knoepfe .tf-rund:not(.tf-gross):not(:disabled) { color: var(--t-fern-hell); }
-  .tf-laut :global(ak-schieber) { --ak-zelle: 100%; display: block; }
+  /* Lautstärke schmal: Symbol und Balken, ohne Überschrift und Zahl (RAD-127) */
+  .tf-laut { display: flex; align-items: center; gap: 12px; flex: none; margin: 4px 6px; color: var(--t-text-2); }
+  .tf-laut :global(ak-schieber) { --ak-zelle: 100%; flex: 1; min-width: 0; display: block; }
+  .tf-laut :global(ak-schieber .ak-schieber-kopf) { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
   .knoepfe { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 16px 0 8px; }
 </style>
