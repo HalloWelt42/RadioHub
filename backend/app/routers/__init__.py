@@ -25,6 +25,7 @@ from .station_tags import router as station_tags_router
 from .station_custom_urls import router as station_custom_urls_router
 from .wecker import router as wecker_router
 from .zeitansage import router as zeitansage_router
+from .lernlauf import router as lernlauf_router
 from .radio import router as radio_router
 
 # In dieser Reihenfolge eingebunden (main.app_bauen), alle hinter der Anmeldung
@@ -33,11 +34,12 @@ ALLE = [
     config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router,
     recording_folders_router, storage_router, services_router, favicons_router,
     station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router,
-    radio_router,
+    radio_router, lernlauf_router,
 ]
 
 __all__ = [
     "ALLE",
+    "lernlauf_router",
     "radio_router",
     "stations_router",
     "favorites_router",

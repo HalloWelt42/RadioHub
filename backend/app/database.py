@@ -562,7 +562,18 @@ CREATE TABLE werbemarke_aus (
 );
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10]
+# Stufe 11 (HELF-256): wie lange ein Sender je Tag lief, damit der Lernlauf nachts das hört, was man selbst hört
+STUFE_11 = """
+CREATE TABLE hoerverlauf (
+    uuid TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    sekunden INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (uuid, tag)
+) WITHOUT ROWID;
+CREATE INDEX hoerverlauf_tag ON hoerverlauf(tag);
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10, STUFE_11]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

@@ -27,8 +27,9 @@ from pathlib import Path
 from typing import Optional
 
 from ..sendewerbung import spots as werbespots
-from ..sendewerbung.sitzung import Sitzungswerbung, Werbestelle
-from . import feinschnitt
+from ..sendewerbung.sitzung import KLANG, Sitzungswerbung, Werbestelle
+from . import feinschnitt, hoerverlauf
+from .klangerkennung import Klangerkennung
 from .stillenwaechter import Stillenwaechter
 from .stromleser import Angabe, Kopf, Stromleser
 from .titelbuch import Titelbuch
@@ -131,6 +132,7 @@ class Empfang:
         self.kopf: Optional[Kopf] = None
         self.stillen: Optional[Stillenwaechter] = None
         self.mitschnitt: Optional[Mitschnitt] = None
+        self.klang: Optional[Klangerkennung] = None
         self._ordner = ordner
         self._angaben: list[Angabe] = []
         #: alle Angemeldeten; am laufenden Ton hängen davon die in `_abnehmer` (die übrigen werden nachgespielt)
@@ -173,7 +175,20 @@ class Empfang:
         self.mitschnitt = Mitschnitt(self._ordner, int((self.puffer_s + RAND_S) * bytes_je_s))
         self.stillen = Stillenwaechter(self.kopf.format, self.werbung.stille_zeile, self._pegel)
         await self.stillen.starten()
+        self.klang = Klangerkennung(self.uuid, self.name, self.kopf.format, bytes_je_s, self.werbung, self._ton_zwischen)
+        self.klang.starten()
         return self.kopf
+
+    def _ton_zwischen(self, von_s: float, bis_s: float) -> bytes:
+        """Rohdaten aus dem Mitschnitt, leer, wenn der Anfang nicht mehr darin liegt."""
+        von, bis = self.bytes_bei(von_s), self.bytes_bei(bis_s)
+        if not self.mitschnitt or von < self.mitschnitt.anfang:
+            return b""
+        teile = []
+        while von < bis and (daten := self.mitschnitt.lesen(von, bis - von)):
+            teile.append(daten)
+            von += len(daten)
+        return b"".join(teile)
 
     async def _laufen(self) -> None:
         try:
@@ -192,6 +207,8 @@ class Empfang:
             self.mitschnitt.schreiben(daten)
         if self.stillen:
             await self.stillen.ton(daten)
+        if self.klang:
+            self.klang.ton(daten, ende - len(daten))
         for a in list(self._abnehmer):
             await self._liefern(a, daten, ende - len(daten))
 
@@ -209,6 +226,13 @@ class Empfang:
         self.werbung.ton_bis(t)
         if len(self.pegel) % 600 == 0:              # etwa jede Minute: was vor dem Mitschnitt liegt, vergessen
             self._vergessen()
+            self._hoeren_merken(60)
+
+    def _hoeren_merken(self, sekunden: int) -> None:
+        try:
+            hoerverlauf.merken(self.uuid, sekunden)
+        except Exception as f:            # der Empfang hängt nicht am Verlauf
+            logger.warning(f"Hörverlauf nicht gemerkt: {f}")
 
     def _vergessen(self) -> None:
         grenze = self.anfang_s
@@ -223,6 +247,8 @@ class Empfang:
             werbespots.merken(self.uuid, stelle)
         except Exception as f:            # der Empfang hängt nicht an der Zählung
             logger.warning(f"Spot nicht gezählt: {f}")
+        if self.klang and stelle.format != KLANG:
+            self.klang.angekuendigt(stelle)
 
     # --- Abnehmer ----------------------------------------------------------------------------------------------
 
@@ -323,6 +349,9 @@ class Empfang:
         await self._aufraeumen()
 
     async def _aufraeumen(self) -> None:
+        if self.klang:
+            await self.klang.schliessen()
+            self.klang = None
         if self.stillen:
             await self.stillen.beenden()
             self.stillen = None

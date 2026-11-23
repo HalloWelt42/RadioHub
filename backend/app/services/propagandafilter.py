@@ -52,6 +52,26 @@ class FilterEinstellungen:
         return cls.aus(einstellungen_stand())
 
 
+def verbindung(e: FilterEinstellungen, transport: httpx.AsyncBaseTransport | None = None, *, lesen_s: float = 60.0) -> httpx.AsyncClient:
+    """Angemeldete Verbindung zum Filter (Wege ab /api/v1)."""
+    if not e.eingerichtet:
+        raise FilterFehler("Der Propaganda-Filter ist nicht eingerichtet (Einstellungen > Dienste)")
+    return httpx.AsyncClient(base_url=e.adresse, headers={"Authorization": f"Bearer {e.schluessel}"}, verify=tls_pruefung(e.ca_datei),
+                             transport=transport, timeout=httpx.Timeout(lesen_s, connect=10.0, write=600.0))
+
+
+async def fragen(methode: str, pfad: str, *, transport: httpx.AsyncBaseTransport | None = None, **art) -> httpx.Response:
+    """Eine Anfrage an den Filter; jede Absage und jede Störung wird zum FilterFehler."""
+    try:
+        async with verbindung(FilterEinstellungen.jetzt(), transport, lesen_s=20.0) as c:
+            antwort = await c.request(methode, f"/api/v1/{pfad}", **art)
+    except httpx.HTTPError as f:
+        raise FilterFehler(f"Propaganda-Filter nicht erreichbar: {type(f).__name__}") from f
+    if antwort.status_code >= 400:
+        raise FilterFehler(f"Propaganda-Filter lehnt ab ({antwort.status_code}): {_meldung(antwort)}")
+    return antwort
+
+
 class Fundstelle(BaseModel):
     von: float
     bis: float
@@ -71,11 +91,7 @@ async def vergleichen(e: FilterEinstellungen, fassung_a: AsyncIterator[bytes], z
                       melden: Melden = lambda *_: None, *, transport: httpx.AsyncBaseTransport | None = None,
                       uhr: Callable[[], float] = time.monotonic) -> Vergleichsergebnis:
     """Fassung A (Strom der gespeicherten Datei) mit der Folge unter `zweite` vergleichen lassen."""
-    if not e.eingerichtet:
-        raise FilterFehler("Der Propaganda-Filter ist nicht eingerichtet (Einstellungen > Dienste)")
-    kopf = {"Authorization": f"Bearer {e.schluessel}"}
-    async with httpx.AsyncClient(base_url=e.adresse, headers=kopf, verify=tls_pruefung(e.ca_datei), transport=transport,
-                                 timeout=httpx.Timeout(60.0, connect=10.0, write=600.0)) as c:
+    async with verbindung(e, transport) as c:
         try:
             antwort = await c.post("/api/v1/vergleiche", params={"zweite": zweite, "quelle": quelle[:300]},
                                    content=fassung_a, headers={"Content-Type": "application/octet-stream"})

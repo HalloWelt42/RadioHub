@@ -30,7 +30,10 @@ from pydantic import BaseModel, PrivateAttr
 from ..services.feinschnitt import grenze as wechsel_grenze
 from .angaben import Regeln, Werbeangabe, lesen, regeln
 
-Herkunft = Literal["angabe", "stille", "verbinden", "dauer"]
+Herkunft = Literal["angabe", "stille", "verbinden", "dauer", "klang"]
+
+#: Format einer Stelle, die am Klang erkannt wurde (Propaganda-Filter, HELF-256)
+KLANG = "klang"
 
 #: so viele Stillen bleiben gemerkt (eine Stelle braucht nur die in ihrer Nähe)
 STILLEN_HOECHSTENS = 400
@@ -63,7 +66,7 @@ class Werbestelle(BaseModel):
     @property
     def name(self) -> str:
         """Wer wirbt, so genau die Angabe es sagt."""
-        return self.werbender or self.titel or self.kennung
+        return self.werbender or self.titel or ("" if self.format == KLANG else self.kennung)
 
     def ende_setzen(self, bis: float, aus: Herkunft) -> None:
         self.bis, self.bis_aus, self._bis_angabe, self._bis_quelle = bis, aus, bis, aus
@@ -131,6 +134,19 @@ class Sitzungswerbung:
         if s.bis is not None:
             self._geendet(s)
         return s
+
+    def erkannt(self, kennung: str, von: float, bis: float, werbender: str) -> None:
+        """Am Klang erkannte Werbung. Was der Sender selbst ankündigt, gilt vor; dieselbe Stelle noch einmal rückt nur ihr Ende."""
+        for s in self.stellen:
+            if s.format == KLANG and s.kennung == kennung and abs(s.von - von) < 1.0:
+                s.bis = bis
+                return
+            if s.format != KLANG and von < (s.bis if s.bis is not None else von + 1) and bis > s.von:
+                return
+        neu = Werbestelle(von=von, von_aus="klang", bis=bis, bis_aus="klang", format=KLANG, kennung=kennung, werbender=werbender)
+        self.stellen.append(neu)
+        self.stellen.sort(key=lambda s: s.von)
+        self._geendet(neu)
 
     def _bestaetigen(self, jetzt: Optional[float] = None) -> None:
         """Offene Stellen, die eine Stille an ihrem Ende brauchen: mit Stille enden sie, ohne (der geprüfte Ton `jetzt`

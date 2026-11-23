@@ -33,12 +33,13 @@ from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, 
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
-from .services import zeitstimmen
+from .services import lernliste, propagandafilter, zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
 
 ERSTER_ABRUF_S = 60
+LERNLISTE_ERST_S, LERNLISTE_ALLE_S = 300, 6 * 3600
 
 
 def naechster_lauf(uhrzeit: str, ab: datetime) -> datetime | None:
@@ -85,7 +86,8 @@ class Radiobetrieb(Begleiter):
         aufnahmen.aufraeumen()          # alte Arbeitskopien
         self._aufgaben = [asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
                           asyncio.create_task(self._liegengebliebene_ablegen(), name="aufnahmen-nachholen"),
-                          asyncio.create_task(self._abgleich_planen(), name="abgleich-plan")]
+                          asyncio.create_task(self._abgleich_planen(), name="abgleich-plan"),
+                          asyncio.create_task(self._lernliste_weitergeben(), name="lernliste")]
         log.info("RadioHub %s gestartet, Daten in %s", VERSION, DB_PATH.parent)
 
     async def verbunden(self) -> None:
@@ -166,6 +168,17 @@ class Radiobetrieb(Begleiter):
                     await self._eintragen("radio.abgleich", f"Abgleich nicht eingereiht: {f}", "warnung")
                 naechster = naechster_lauf(uhrzeit, datetime.now() + timedelta(minutes=1))
             await asyncio.sleep(30)
+
+    async def _lernliste_weitergeben(self) -> None:
+        """Alle paar Stunden: was man hört und was dazu passt, an den Lernlauf des Propaganda-Filters (HELF-256)."""
+        await asyncio.sleep(LERNLISTE_ERST_S)
+        while True:
+            if propagandafilter.FilterEinstellungen.jetzt().eingerichtet:
+                try:
+                    log.info("Lernlauf: %d Sender zur Wahl", await lernliste.weitergeben())
+                except Exception as f:  # noqa: BLE001 - der nächste Durchgang versucht es wieder
+                    log.info("Lernlauf: Liste nicht weitergegeben (%s)", f)
+            await asyncio.sleep(LERNLISTE_ALLE_S)
 
     async def _podcasts_abrufen(self) -> None:
         """Abruf der Feeds aller Abos im eingestellten Abstand (erster Abruf eine Minute nach dem Start)."""
