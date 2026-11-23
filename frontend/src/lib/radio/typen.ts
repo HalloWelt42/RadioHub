@@ -148,6 +148,8 @@ export interface StationQuery {
   nur_favoriten?: boolean;
   nur_erreichbar?: boolean;
   sortierung?: Sortierung;
+  /** die Reihenfolge der Sortierung von hinten */
+  umgekehrt?: boolean;
   varianten_buendeln?: boolean;
   nach?: string | null;
   anzahl?: number;

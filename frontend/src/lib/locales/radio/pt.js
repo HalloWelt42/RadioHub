@@ -75,6 +75,7 @@ export default {
   sortierungTitel: 'Ordenação',
   sortierung: { stimmen: 'Popularidade', name: 'Nome', qualitaet: 'Qualidade', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'mais populares primeiro', name: 'A a Z', qualitaet: 'melhores primeiro', bitrate: 'mais alta primeiro' },
+  sortierungUmgekehrt: 'ordem inversa',
   neuErfassen: 'Atualizar estações',
   aktiveFilter: 'Filtros rápidos ativos',
   keineFilter: 'Sem filtros rápidos, todas as estações visíveis',

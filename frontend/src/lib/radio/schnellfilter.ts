@@ -25,11 +25,13 @@ export interface Schnellfilter {
   bitrate: number;
   suche: string;
   sortierung: Sortierung;
+  /** Reihenfolge von hinten (zweiter Klick auf den Spaltenkopf) */
+  umgekehrt: boolean;
 }
 
 export const VORGABE: Readonly<Schnellfilter> = Object.freeze({
   laender: [], genres: [], qualitaet: [], codecs: [], bewertungen: [], kategorien: [],
-  nurFavoriten: false, nurErreichbar: true, stimmen: 0, bitrate: 0, suche: "", sortierung: "stimmen",
+  nurFavoriten: false, nurErreichbar: true, stimmen: 0, bitrate: 0, suche: "", sortierung: "stimmen", umgekehrt: false,
 });
 
 export function leer(): Schnellfilter {
@@ -40,7 +42,7 @@ export function leer(): Schnellfilter {
 
 const SCHLUESSEL = {
   land: "land", genre: "genre", qualitaet: "qualitaet", codec: "codec", bewertung: "bewertung", kategorie: "kategorie",
-  favoriten: "favoriten", erreichbar: "erreichbar", stimmen: "stimmen", bitrate: "bitrate", suche: "suche", sortierung: "sort",
+  favoriten: "favoriten", erreichbar: "erreichbar", stimmen: "stimmen", bitrate: "bitrate", suche: "suche", sortierung: "sort", umgekehrt: "um",
 } as const;
 
 /** Werte eines Schlüssels: wiederholt (land=DE&land=FR) oder mit Komma (land=DE,FR); Genres nur wiederholt */
@@ -70,6 +72,7 @@ export function ausAdresse(p: URLSearchParams): Schnellfilter {
     bitrate: stufe(BITRATE_STUFEN, Number(p.get(SCHLUESSEL.bitrate))),
     suche: (p.get(SCHLUESSEL.suche) ?? "").trim().slice(0, 100),
     sortierung: sortierung && SORTIERUNGEN.includes(sortierung) ? sortierung : "stimmen",
+    umgekehrt: p.get(SCHLUESSEL.umgekehrt) === "1",
   };
 }
 
@@ -88,6 +91,7 @@ export function inAdresse(f: Schnellfilter): URLSearchParams {
   if (f.bitrate) p.set(SCHLUESSEL.bitrate, String(f.bitrate));
   if (f.suche) p.set(SCHLUESSEL.suche, f.suche);
   if (f.sortierung !== "stimmen") p.set(SCHLUESSEL.sortierung, f.sortierung);
+  if (f.umgekehrt) p.set(SCHLUESSEL.umgekehrt, "1");
   return p;
 }
 
@@ -114,7 +118,7 @@ export function zuAbfrage(f: Schnellfilter): StationQuery {
   return {
     suche: f.suche, laender: f.laender, genres: f.genres, qualitaet: f.qualitaet, codecs: f.codecs,
     bewertungen: f.bewertungen, kategorien: f.kategorien, nur_favoriten: f.nurFavoriten, nur_erreichbar: f.nurErreichbar,
-    stimmen_min: f.stimmen || null, bitrate_min: f.bitrate || null, sortierung: f.sortierung,
+    stimmen_min: f.stimmen || null, bitrate_min: f.bitrate || null, sortierung: f.sortierung, umgekehrt: f.umgekehrt,
   };
 }
 
@@ -165,7 +169,7 @@ export function ohne(f: Schnellfilter, c: Chip): Schnellfilter {
 
 /** Alle Filter zurück auf die Vorgabe; die Sortierung bleibt */
 export function zurueckgesetzt(f: Schnellfilter): Schnellfilter {
-  return { ...leer(), sortierung: f.sortierung };
+  return { ...leer(), sortierung: f.sortierung, umgekehrt: f.umgekehrt };
 }
 
 /** Wert einer Liste an- oder abwählen */

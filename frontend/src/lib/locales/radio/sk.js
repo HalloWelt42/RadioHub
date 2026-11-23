@@ -74,6 +74,7 @@ export default {
   sortierungTitel: 'Zoradenie',
   sortierung: { stimmen: 'Obľúbenosť', name: 'Názov', qualitaet: 'Kvalita', bitrate: 'Dátový tok' },
   sortierungHinweis: { stimmen: 'najobľúbenejšie prvé', name: 'A až Z', qualitaet: 'najlepšie prvé', bitrate: 'najvyšší prvý' },
+  sortierungUmgekehrt: 'opačné poradie',
   neuErfassen: 'Znova načítať stanice',
   aktiveFilter: 'Aktívne rýchle filtre',
   keineFilter: 'Žiadne rýchle filtre, všetky viditeľné stanice',

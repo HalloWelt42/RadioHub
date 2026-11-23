@@ -73,6 +73,7 @@ export default {
   sortierungTitel: 'Sortering',
   sortierung: { stimmen: 'Populariteit', name: 'Naam', qualitaet: 'Kwaliteit', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'populairste eerst', name: 'A tot Z', qualitaet: 'beste eerst', bitrate: 'hoogste eerst' },
+  sortierungUmgekehrt: 'omgekeerde volgorde',
   neuErfassen: 'Zenders opnieuw inlezen',
   aktiveFilter: 'Actieve snelfilters',
   keineFilter: 'Geen snelfilters, alle zichtbare zenders',

@@ -97,6 +97,18 @@ def test_abfrage_mit_filtern_seiten_und_facetten(radio):
     assert _namen(_abfrage(radio, qualitaet=["niedrig"])) == ["Leise"]
     assert _namen(_abfrage(radio, sortierung="name")) == ["Klassik", "Leise", "Pop", "Russisch"]
 
+    assert _namen(_abfrage(radio, umgekehrt=True)) == ["Leise", "Russisch", "Pop", "Klassik"]
+    hinten, zeiger = [], None
+    while True:                                  # umgekehrt lückenlos über die Seiten; der Zeiger gilt nur in seiner Richtung
+        seite = _abfrage(radio, sortierung="name", umgekehrt=True, anzahl=1, nach=zeiger)
+        hinten += _namen(seite)
+        if zeiger:
+            assert radio.post("/api/radio/abfrage", json={"sortierung": "name", "nach": zeiger}).status_code == 400
+        zeiger = seite["weiter"]
+        if not zeiger:
+            break
+    assert hinten == ["Russisch", "Pop", "Leise", "Klassik"]
+
     # Seiten über den Zeiger: lückenlos, ohne Doppel, Gesamtzahl nur auf der ersten Seite
     gesehen, zeiger = [], None
     while True:

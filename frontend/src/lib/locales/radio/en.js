@@ -75,6 +75,7 @@ export default {
   sortierungTitel: 'Sort order',
   sortierung: { stimmen: 'Popularity', name: 'Name', qualitaet: 'Quality', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'most popular first', name: 'A to Z', qualitaet: 'best first', bitrate: 'highest first' },
+  sortierungUmgekehrt: 'reverse order',
   neuErfassen: 'Fetch stations again',
   aktiveFilter: 'Active quick filters',
   keineFilter: 'No quick filters, all visible stations',

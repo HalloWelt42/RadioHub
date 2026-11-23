@@ -72,6 +72,7 @@ export default {
   sortierungTitel: 'Rendezés',
   sortierung: { stimmen: 'Népszerűség', name: 'Név', qualitaet: 'Minőség', bitrate: 'Bitráta' },
   sortierungHinweis: { stimmen: 'legnépszerűbb elöl', name: 'A-tól Z-ig', qualitaet: 'legjobb elöl', bitrate: 'legmagasabb elöl' },
+  sortierungUmgekehrt: 'fordított sorrend',
   neuErfassen: 'Adók újra lekérése',
   aktiveFilter: 'Aktív gyorsszűrők',
   keineFilter: 'Nincs gyorsszűrő, minden látható adó',

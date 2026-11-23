@@ -93,6 +93,16 @@ describe("Abfrage", () => {
     expect(namen(await q.abfragen({ nur_erreichbar: false }))).toHaveLength(4);
 
     // Seiten über den Zeiger: lückenlos, ohne Doppel, Gesamtzahl und Facetten nur auf der ersten Seite
+    const vonHinten: string[] = [];
+    let z2: string | null = null;
+    do {
+      const s: Abfrageergebnis = await q.abfragen({ sortierung: "name", umgekehrt: true, anzahl: 1, nach: z2 });
+      vonHinten.push(...namen(s));
+      z2 = s.weiter;
+    } while (z2);
+    expect(vonHinten).toEqual(["Russisch", "Pop", "Leise", "Klassik"]);
+    expect(namen(await q.abfragen({ umgekehrt: true }))).toEqual(["Leise", "Russisch", "Pop", "Klassik"]);
+
     const gesehen: string[] = [];
     let zeiger: string | null = null;
     do {

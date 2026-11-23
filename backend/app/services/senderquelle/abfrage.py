@@ -130,26 +130,36 @@ def bedingungen(q: StationQuery, ohne: str | None = None) -> Bedingungen:
 
 # ----- Seitenzeiger ------------------------------------------------------------------------------------------------------
 
-def zeiger_bauen(sortierung: str, zeile: sqlite3.Row) -> str:
-    werte = [zeile[s.split(".")[1]] for s, _ in _SORTEN[sortierung]] + [zeile["uuid"]]
-    roh = json.dumps([sortierung, *werte], ensure_ascii=False).encode()
+def _spalten(q: StationQuery) -> list[tuple[str, str]]:
+    """Spalten und Richtungen der Ordnung; umgekehrt läuft alles von hinten, auch die uuid (derselbe Index rückwärts)."""
+    spalten = [*_SORTEN[q.sortierung], ("i.uuid", "ASC")]
+    return [(s, "ASC" if r == "DESC" else "DESC") for s, r in spalten] if q.umgekehrt else spalten
+
+
+def _kennung(q: StationQuery) -> str:
+    return f"-{q.sortierung}" if q.umgekehrt else q.sortierung
+
+
+def zeiger_bauen(q: StationQuery, zeile: sqlite3.Row) -> str:
+    werte = [zeile[s.split(".")[1]] for s, _ in _spalten(q)]
+    roh = json.dumps([_kennung(q), *werte], ensure_ascii=False).encode()
     return base64.urlsafe_b64encode(roh).decode().rstrip("=")
 
 
-def zeiger_lesen(sortierung: str, zeiger: str) -> list[object]:
+def zeiger_lesen(q: StationQuery, zeiger: str) -> list[object]:
     try:
         daten = json.loads(base64.urlsafe_b64decode(zeiger + "=" * (-len(zeiger) % 4)))
     except (ValueError, TypeError) as f:
         raise FalscherZeiger("Seitenzeiger unlesbar") from f
-    if not isinstance(daten, list) or not daten or daten[0] != sortierung or len(daten) != len(_SORTEN[sortierung]) + 2:
+    if not isinstance(daten, list) or not daten or daten[0] != _kennung(q) or len(daten) != len(_spalten(q)) + 1:
         raise FalscherZeiger("Seitenzeiger passt nicht zur Sortierung")
     return daten[1:]
 
 
-def _nach(b: Bedingungen, sortierung: str, werte: list[object]) -> None:
+def _nach(b: Bedingungen, q: StationQuery, werte: list[object]) -> None:
     """Bedingung "nach dem Zeiger": (a, b, uuid) in der Richtung der Sortierung; die erste Spalte zusätzlich als
     Bereich, damit SQLite im Index springt statt zu zählen."""
-    spalten = [*_SORTEN[sortierung], ("i.uuid", "ASC")]
+    spalten = _spalten(q)
     oder: list[str] = []
     oder_werte: list[object] = []
     for n, (spalte, richtung) in enumerate(spalten):
@@ -218,11 +228,11 @@ def seite(v: sqlite3.Connection, q: StationQuery) -> tuple[list[SenderEintrag], 
     b = bedingungen(q)
     gesamt = None if q.nach else v.execute(f"SELECT COUNT(*) FROM sender_index i WHERE {b.sql}", b.werte).fetchone()[0]
     if q.nach:
-        _nach(b, q.sortierung, zeiger_lesen(q.sortierung, q.nach))
-    ordnung = ", ".join(f"{s} {r}" for s, r in _SORTEN[q.sortierung]) + ", i.uuid ASC"
+        _nach(b, q, zeiger_lesen(q, q.nach))
+    ordnung = ", ".join(f"{s} {r}" for s, r in _spalten(q))
     zeilen = v.execute(f"SELECT {_SPALTEN} FROM sender_index i JOIN stations s ON s.uuid = i.uuid WHERE {b.sql} "
                        f"ORDER BY {ordnung} LIMIT ?", [*b.werte, q.anzahl + 1]).fetchall()
-    weiter = zeiger_bauen(q.sortierung, zeilen[q.anzahl - 1]) if len(zeilen) > q.anzahl else None
+    weiter = zeiger_bauen(q, zeilen[q.anzahl - 1]) if len(zeilen) > q.anzahl else None
     return _eintraege(v, zeilen[:q.anzahl]), weiter, gesamt
 
 

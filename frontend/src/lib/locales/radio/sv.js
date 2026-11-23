@@ -73,6 +73,7 @@ export default {
   sortierungTitel: 'Sortering',
   sortierung: { stimmen: 'Popularitet', name: 'Namn', qualitaet: 'Kvalitet', bitrate: 'Bithastighet' },
   sortierungHinweis: { stimmen: 'populärast först', name: 'A till Ö', qualitaet: 'bäst först', bitrate: 'högst först' },
+  sortierungUmgekehrt: 'omvänd ordning',
   neuErfassen: 'Läs in stationer på nytt',
   aktiveFilter: 'Aktiva snabbfilter',
   keineFilter: 'Inga snabbfilter, alla synliga stationer',

@@ -75,6 +75,7 @@ export default {
   sortierungTitel: 'Lajittelu',
   sortierung: { stimmen: 'Suosio', name: 'Nimi', qualitaet: 'Laatu', bitrate: 'Bittinopeus' },
   sortierungHinweis: { stimmen: 'suosituimmat ensin', name: 'A-Ö', qualitaet: 'paras ensin', bitrate: 'suurin ensin' },
+  sortierungUmgekehrt: 'käänteinen järjestys',
   neuErfassen: 'Lue asemat uudelleen',
   aktiveFilter: 'Käytössä olevat pikasuodattimet',
   keineFilter: 'Ei pikasuodattimia, kaikki näkyvät asemat',

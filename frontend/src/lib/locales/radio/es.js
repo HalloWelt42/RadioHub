@@ -75,6 +75,7 @@ export default {
   sortierungTitel: "Orden",
   sortierung: { stimmen: "Popularidad", name: "Nombre", qualitaet: "Calidad", bitrate: "Tasa de bits" },
   sortierungHinweis: { stimmen: "más populares primero", name: "de la A a la Z", qualitaet: "mejores primero", bitrate: "más alta primero" },
+  sortierungUmgekehrt: 'orden inverso',
   neuErfassen: "Volver a cargar emisoras",
   aktiveFilter: "Filtros rápidos activos",
   keineFilter: "Sin filtros rápidos, todas las emisoras visibles",

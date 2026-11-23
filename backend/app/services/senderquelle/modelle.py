@@ -209,6 +209,7 @@ class StationQuery(BaseModel):
     nur_erreichbar: bool = True            # ohne Sender, die die letzte Prüfung des Verzeichnisses nicht bestanden
     #                                        (Favoriten bleiben)
     sortierung: Sortierung = "stimmen"
+    umgekehrt: bool = False                # die Reihenfolge der Sortierung von hinten
     varianten_buendeln: bool = True
     nach: str | None = Field(None, max_length=600)
     anzahl: int = Field(50, ge=1, le=200)

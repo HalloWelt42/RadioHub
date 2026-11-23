@@ -72,6 +72,7 @@ export default {
   sortierungTitel: '並べ替え',
   sortierung: { stimmen: '人気', name: '名前', qualitaet: '音質', bitrate: 'ビットレート' },
   sortierungHinweis: { stimmen: '人気順', name: 'A から Z', qualitaet: '高音質順', bitrate: '高い順' },
+  sortierungUmgekehrt: '逆順',
   neuErfassen: '放送局を再取得',
   aktiveFilter: '有効なクイックフィルター',
   keineFilter: 'クイックフィルターなし、表示中のすべての放送局',

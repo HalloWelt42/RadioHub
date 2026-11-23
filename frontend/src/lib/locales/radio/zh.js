@@ -72,6 +72,7 @@ export default {
   sortierungTitel: '排序',
   sortierung: { stimmen: '人气', name: '名称', qualitaet: '音质', bitrate: '码率' },
   sortierungHinweis: { stimmen: '最受欢迎在前', name: 'A 到 Z', qualitaet: '最佳在前', bitrate: '最高在前' },
+  sortierungUmgekehrt: '倒序',
   neuErfassen: '重新获取电台',
   aktiveFilter: '已启用的快速筛选',
   keineFilter: '无快速筛选，显示所有可见电台',

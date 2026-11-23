@@ -8,7 +8,7 @@ import {
 
 const voll: Schnellfilter = {
   laender: ["DE", "AT"], genres: ["Rock", "Jazz, Soul"], qualitaet: ["hoch"], codecs: ["AAC"], bewertungen: ["sterne:3", "werbung"],
-  kategorien: [5], nurFavoriten: true, nurErreichbar: false, stimmen: 100, bitrate: 128, suche: "wdr 5", sortierung: "name",
+  kategorien: [5], nurFavoriten: true, nurErreichbar: false, stimmen: 100, bitrate: 128, suche: "wdr 5", sortierung: "name", umgekehrt: true,
 };
 
 describe("Schnellfilter in der Adresse", () => {
@@ -57,7 +57,7 @@ describe("Schnellfilter in der Adresse", () => {
 
   it("baut die Abfrage der Senderquelle", () => {
     expect(zuAbfrage(voll)).toMatchObject({ suche: "wdr 5", laender: ["DE", "AT"], nur_favoriten: true, nur_erreichbar: false,
-      stimmen_min: 100, bitrate_min: 128, sortierung: "name", kategorien: [5] });
+      stimmen_min: 100, bitrate_min: 128, sortierung: "name", umgekehrt: true, kategorien: [5] });
     expect(zuAbfrage(leer())).toMatchObject({ stimmen_min: null, bitrate_min: null, nur_erreichbar: true });
   });
 });
@@ -74,7 +74,7 @@ describe("Chips", () => {
   });
 
   it("Zurücksetzen behält die Sortierung", () => {
-    expect(zurueckgesetzt(voll)).toEqual({ ...leer(), sortierung: "name" });
+    expect(zurueckgesetzt(voll)).toEqual({ ...leer(), sortierung: "name", umgekehrt: true });
     expect(umschalten(["a"], "b")).toEqual(["a", "b"]);
     expect(umschalten(["a", "b"], "a")).toEqual(["b"]);
   });

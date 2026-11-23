@@ -75,6 +75,7 @@ export default {
   sortierungTitel: "Tri",
   sortierung: { stimmen: "Popularité", name: "Nom", qualitaet: "Qualité", bitrate: "Débit" },
   sortierungHinweis: { stimmen: "plus populaires d'abord", name: "de A à Z", qualitaet: "meilleures d'abord", bitrate: "plus élevé d'abord" },
+  sortierungUmgekehrt: 'ordre inverse',
   neuErfassen: "Recharger les stations",
   aktiveFilter: "Filtres rapides actifs",
   keineFilter: "Aucun filtre rapide, toutes les stations visibles",

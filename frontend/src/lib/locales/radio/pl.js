@@ -75,6 +75,7 @@ export default {
   sortierungTitel: 'Sortowanie',
   sortierung: { stimmen: 'Popularność', name: 'Nazwa', qualitaet: 'Jakość', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'najpopularniejsze najpierw', name: 'od A do Z', qualitaet: 'najlepsze najpierw', bitrate: 'najwyższy najpierw' },
+  sortierungUmgekehrt: 'odwrotna kolejność',
   neuErfassen: 'Pobierz stacje ponownie',
   aktiveFilter: 'Aktywne szybkie filtry',
   keineFilter: 'Brak szybkich filtrów, wszystkie widoczne stacje',

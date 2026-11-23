@@ -72,6 +72,7 @@ export default {
   sortierungTitel: 'Сортировка',
   sortierung: { stimmen: 'Популярность', name: 'Название', qualitaet: 'Качество', bitrate: 'Битрейт' },
   sortierungHinweis: { stimmen: 'сначала популярные', name: 'от А до Я', qualitaet: 'сначала лучшие', bitrate: 'сначала высокий' },
+  sortierungUmgekehrt: 'обратный порядок',
   neuErfassen: 'Обновить станции',
   aktiveFilter: 'Активные быстрые фильтры',
   keineFilter: 'Без быстрых фильтров, все видимые станции',

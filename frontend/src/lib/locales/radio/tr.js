@@ -72,6 +72,7 @@ export default {
   sortierungTitel: 'Sıralama',
   sortierung: { stimmen: 'Popülerlik', name: 'Ad', qualitaet: 'Kalite', bitrate: 'Bit hızı' },
   sortierungHinweis: { stimmen: 'en popüler önce', name: 'A dan Z ye', qualitaet: 'en iyi önce', bitrate: 'en yüksek önce' },
+  sortierungUmgekehrt: 'ters sıra',
   neuErfassen: 'İstasyonları yeniden al',
   aktiveFilter: 'Etkin hızlı filtreler',
   keineFilter: 'Hızlı filtre yok, tüm görünür istasyonlar',

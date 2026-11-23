@@ -75,6 +75,7 @@ export default {
   sortierungTitel: 'Sortierung',
   sortierung: { stimmen: 'Beliebtheit', name: 'Name', qualitaet: 'Qualität', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'beliebteste zuerst', name: 'A bis Z', qualitaet: 'beste zuerst', bitrate: 'höchste zuerst' },
+  sortierungUmgekehrt: 'umgekehrte Reihenfolge',
   neuErfassen: 'Sender neu erfassen',
   aktiveFilter: 'Aktive Schnellfilter',
   keineFilter: 'Keine Schnellfilter, alle sichtbaren Sender',

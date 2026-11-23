@@ -239,8 +239,9 @@
     <!-- Spaltenkopf fest über der rollenden Liste, nicht klebend in ihr: so zittert er beim Rollen nie (RAD-16) -->
     <div class="rh-liste-rahmen">
       {#snippet sortspalte(s: Sortierung, titel: string)}
-        <SortSpalte {titel} hilfe={t(`radio.sortierungHinweis.${s}`)} aktiv={filter.sortierung === s} absteigend={s !== "name"}
-                    onwahl={() => aendern((f) => ({ ...f, sortierung: s }))} />
+        <SortSpalte {titel} hilfe={t(filter.sortierung === s && filter.umgekehrt ? "radio.sortierungUmgekehrt" : `radio.sortierungHinweis.${s}`)} aktiv={filter.sortierung === s}
+                    absteigend={(s !== "name") !== (filter.sortierung === s && filter.umgekehrt)}
+                    onwahl={() => aendern((f) => ({ ...f, sortierung: s, umgekehrt: f.sortierung === s && !f.umgekehrt }))} />
       {/snippet}
       <div class="rh-spalten" role="group" aria-label={t("radio.sortierungTitel")}>
         <span>{@render sortspalte("name", t("radio.sender"))}</span><span class="rh-ohne-sort">{t("radio.genres")}</span>

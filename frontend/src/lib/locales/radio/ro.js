@@ -72,6 +72,7 @@ export default {
   sortierungTitel: 'Sortare',
   sortierung: { stimmen: 'Popularitate', name: 'Nume', qualitaet: 'Calitate', bitrate: 'Bitrate' },
   sortierungHinweis: { stimmen: 'cele mai populare întâi', name: 'A la Z', qualitaet: 'cele mai bune întâi', bitrate: 'cel mai mare întâi' },
+  sortierungUmgekehrt: 'ordine inversă',
   neuErfassen: 'Preia din nou posturile',
   aktiveFilter: 'Filtre rapide active',
   keineFilter: 'Niciun filtru rapid, toate posturile vizibile',

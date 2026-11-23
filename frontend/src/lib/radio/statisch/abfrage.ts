@@ -26,7 +26,7 @@ export function abfragePruefen(q: StationQuery): Abfrage {
     suche: q.suche ?? "", laender: q.laender ?? [], genres: q.genres ?? [], qualitaet: q.qualitaet ?? [], codecs: q.codecs ?? [],
     bitrate_min: q.bitrate_min ?? null, bitrate_max: q.bitrate_max ?? null, stimmen_min: q.stimmen_min ?? null,
     stimmen_max: q.stimmen_max ?? null, bewertungen: q.bewertungen ?? [], kategorien: q.kategorien ?? [],
-    nur_favoriten: q.nur_favoriten ?? false, nur_erreichbar: q.nur_erreichbar ?? true, sortierung: q.sortierung ?? "stimmen",
+    nur_favoriten: q.nur_favoriten ?? false, nur_erreichbar: q.nur_erreichbar ?? true, sortierung: q.sortierung ?? "stimmen", umgekehrt: q.umgekehrt ?? false,
     varianten_buendeln: q.varianten_buendeln ?? true, nach: q.nach ?? null, anzahl: q.anzahl ?? 50, mit_facetten: q.mit_facetten ?? null,
   };
   if (zeichen(a.suche) > 100) throw new Quellfehler("Suche: höchstens 100 Zeichen", 422);
@@ -75,19 +75,22 @@ function sortwerte(b: Senderbestand, sortierung: Sortierung, i: number): Zeigerw
 }
 const ABSTEIGEND: Record<Sortierung, boolean[]> = { stimmen: [true], name: [false], qualitaet: [true, true], bitrate: [true] };
 
-export function zeigerBauen(b: Senderbestand, sortierung: Sortierung, i: number): string {
-  return base64urlKodieren(JSON.stringify([sortierung, ...sortwerte(b, sortierung, i), b.uuid[i]]));
+type Ordnung = Pick<Abfrage, "sortierung" | "umgekehrt">;
+const ordnungskennung = (o: Ordnung): string => (o.umgekehrt ? `-${o.sortierung}` : o.sortierung);
+
+export function zeigerBauen(b: Senderbestand, o: Ordnung, i: number): string {
+  return base64urlKodieren(JSON.stringify([ordnungskennung(o), ...sortwerte(b, o.sortierung, i), b.uuid[i]]));
 }
 
-export function zeigerLesen(sortierung: Sortierung, zeiger: string): Zeigerwert[] {
+export function zeigerLesen(o: Ordnung, zeiger: string): Zeigerwert[] {
   let daten: unknown;
   try {
     daten = JSON.parse(base64urlLesen(zeiger));
   } catch {
     throw new Quellfehler("Seitenzeiger unlesbar");
   }
-  const laenge = ABSTEIGEND[sortierung].length + 2;
-  if (!Array.isArray(daten) || daten[0] !== sortierung || daten.length !== laenge
+  const laenge = ABSTEIGEND[o.sortierung].length + 2;
+  if (!Array.isArray(daten) || daten[0] !== ordnungskennung(o) || daten.length !== laenge
       || daten.slice(1).some((w) => typeof w !== "number" && typeof w !== "string")) {
     throw new Quellfehler("Seitenzeiger passt nicht zur Sortierung");
   }
@@ -98,9 +101,9 @@ const gleichArtig = (a: Zeigerwert, b: Zeigerwert): number =>
   typeof a === "number" && typeof b === "number" ? a - b : vergleichen(String(a), String(b));
 
 /** < 0: Sender i steht vor dem Zeiger, > 0: danach */
-function gegenZeiger(b: Senderbestand, sortierung: Sortierung, i: number, werte: Zeigerwert[]): number {
-  const eigene = [...sortwerte(b, sortierung, i), b.uuid[i]];
-  const richtung = [...ABSTEIGEND[sortierung], false];
+function gegenZeiger(b: Senderbestand, o: Ordnung, i: number, werte: Zeigerwert[]): number {
+  const eigene = [...sortwerte(b, o.sortierung, i), b.uuid[i]];
+  const richtung = [...ABSTEIGEND[o.sortierung], false].map((ab) => ab !== o.umgekehrt);
   for (let k = 0; k < eigene.length; k++) {
     const d = gleichArtig(eigene[k], werte[k]);
     if (d) return richtung[k] ? -d : d;
@@ -114,7 +117,7 @@ function nachDemZeiger(b: Senderbestand, q: Abfrage, liste: Int32Array, werte: Z
   let oben = liste.length;
   while (unten < oben) {
     const mitte = (unten + oben) >> 1;
-    if (gegenZeiger(b, q.sortierung, liste[mitte], werte) <= 0) unten = mitte + 1;
+    if (gegenZeiger(b, q, liste[mitte], werte) <= 0) unten = mitte + 1;
     else oben = mitte;
   }
   return unten;
@@ -145,7 +148,7 @@ export function durchgehen(b: Senderbestand, s: Sicht, q: Abfrage): Durchgang {
   const treffer: number[] = [];
   const kandidaten: number[] = [];
   const verfehlt: number[] = [];
-  for (const i of b.reihen[q.sortierung]) {
+  for (const i of q.umgekehrt ? b.reihen[q.sortierung].slice().reverse() : b.reihen[q.sortierung]) {
     if (!s.sichtbar[i] || (gebuendelt && !s.vertreter[i]) || (suche && !suche(i))) continue;
     const kbps = b.kbps[i];
     if ((q.bitrate_min && kbps < q.bitrate_min) || (q.bitrate_max && kbps > q.bitrate_max)) continue;
@@ -239,9 +242,9 @@ export function durchgangSchluessel(q: Abfrage): string {
 }
 
 export function seite(b: Senderbestand, s: Sicht, q: Abfrage, d: Durchgang, leiste: string[]): Abfrageergebnis {
-  const anfang = q.nach ? nachDemZeiger(b, q, d.treffer, zeigerLesen(q.sortierung, q.nach)) : 0;
+  const anfang = q.nach ? nachDemZeiger(b, q, d.treffer, zeigerLesen(q, q.nach)) : 0;
   const stellen = d.treffer.subarray(anfang, anfang + q.anzahl);
-  const weiter = anfang + q.anzahl < d.treffer.length ? zeigerBauen(b, q.sortierung, stellen[stellen.length - 1]) : null;
+  const weiter = anfang + q.anzahl < d.treffer.length ? zeigerBauen(b, q, stellen[stellen.length - 1]) : null;
   const mit = q.mit_facetten ?? !q.nach;
   return { gesamt: q.nach ? null : d.treffer.length, eintraege: [...stellen].map((i) => eintrag(b, s, i)), weiter,
            facetten: mit ? facetten(b, s, q, d, leiste) : null };
