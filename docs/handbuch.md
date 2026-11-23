@@ -82,6 +82,13 @@ Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespe
 die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
 Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
 
+Werbung am Klang (HELF-256): ist der Propaganda-Filter eingerichtet, geht der laufende Ton eines Senders (MP3, AAC) in
+Stücken an ihn; erkennt er einen bekannten Spot, der an diesem Sender gefiltert wird, entsteht eine Werbestelle wie aus
+den Sendedaten. Angekündigte Spots bekommt der Filter als Ausschnitt, damit er sie auch ohne Ankündigung wiedererkennt.
+Ist der Filter fort, ruht nur das Erkennen; Gefundenes wirkt weiter. Für den Lernlauf des Filters stellt RadioHub alle
+sechs Stunden die Senderliste zusammen: was man hört (Tabelle hoerverlauf, 60 Tage), die Favoriten, ähnliche Sender nach
+Genre, Sprache und Land und die bekanntesten der eigenen Länder; ausgeblendete Sender kommen nie hinein.
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge
