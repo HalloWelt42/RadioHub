@@ -23,7 +23,10 @@ export interface BandInhalt {
   art?: "gut" | "fehler";
 }
 
-/** Felder der Wiedergabe aus dem Eintrag, solange die des Verzeichnisses noch nicht geholt sind */
+/** so nah am Ende der geladenen Liste lädt der laufende Sender die nächste Seite vor */
+const VORRAT = 2;
+/** so viele Seiten lädt die Suche nach dem laufenden Sender höchstens nach, wenn seine Stelle nicht bekannt ist */
+const SUCHSEITEN = 10;
 
 export class Radiobedienung {
   readonly liste: Senderliste;
@@ -34,6 +37,9 @@ export class Radiobedienung {
   private messung: AbortController | null = null;
   /** zuletzt eine Variante aus der aufgeklappten Zeile eines anderen Senders gespielt (RAD-41): welche, aus welcher Zeile */
   private ausZeile: { uuid: string; zeile: string } | null = null;
+  /** wo der laufende Sender zuletzt in der Liste stand (RAD-124): die Stelle gilt auch, wenn er inzwischen ausgeblendet ist
+   *  oder die Liste wieder bei ihrer ersten Seite beginnt, solange es dieselbe Abfrage ist */
+  private platz: { zeile: string; stelle: number; abfrage: string } | null = null;
   /** der spielende Sender, wenn er nicht in der geladenen Liste steht (für Auge und Stern im großen Spieler, RAD-94) */
   private einzeln = $state<SenderEintrag | null>(null);
 
@@ -71,6 +77,8 @@ export class Radiobedienung {
     const liste = this.liste.eintraege;
     const i = liste.findIndex((e) => e.uuid === zeile);
     if (i < 0 || !liste.length) return;
+    this.platz = { zeile, stelle: i, abfrage: this.liste.schluessel };
+    if (i >= liste.length - VORRAT) void this.liste.mehr();
     for (const j of [i - 1, i + 1]) {
       const e = liste[(j + liste.length) % liste.length];
       if (e && !this.wiedergabe[e.uuid]) void this.holen(e).catch(() => {});
@@ -81,6 +89,38 @@ export class Radiobedienung {
    *  (sie kann selbst weit weg in der Liste stehen oder gar nicht), sonst der Sender selbst */
   zeileFuer(uuid: string | null): string | null {
     return uuid && this.ausZeile?.uuid === uuid ? this.ausZeile.zeile : uuid;
+  }
+
+  /** Der Sender vor (-1) oder nach (1) dem laufenden, für Vor, Zurück und Ausblenden (RAD-124): folgt der sichtbaren Liste
+   *  (Vorgabe 7) und lädt nach, statt am Ende der geladenen Seite von vorn zu beginnen. Rundum geht es erst, wenn die Liste
+   *  wirklich zu Ende ist. Steht der laufende nicht mehr darin, gilt seine letzte Stelle; kennt die Liste ihn gar nicht,
+   *  beginnt Vor beim ersten. */
+  async nachbar(uuid: string, schritt: -1 | 1): Promise<Wiedergabesender | null> {
+    const zeile = this.zeileFuer(uuid) ?? uuid;
+    const jetzt = () => this.liste.eintraege.findIndex((e) => e.uuid === zeile);
+    const gemerkt = this.platz?.zeile === zeile && this.platz.abfrage === this.liste.schluessel ? this.platz.stelle : null;
+    const unbekannt = () => jetzt() < 0 && (gemerkt === null || this.liste.eintraege.length <= gemerkt);
+    for (let seite = 0; unbekannt() && (gemerkt !== null || seite < SUCHSEITEN); seite++) if (!(await this.nachladen())) break;
+    const stelle = jetzt() >= 0 ? jetzt() : gemerkt;
+    if (stelle === null && schritt < 0) return null;
+    // ist er ausgeblendet (auch während des Nachladens), rückt der nächste an seine Stelle
+    const ziel = () => {
+      const i = jetzt();
+      if (i >= 0) return i + schritt;
+      return stelle === null ? 0 : schritt > 0 ? stelle : stelle - 1;
+    };
+    if (ziel() >= this.liste.eintraege.length) await this.nachladen();
+    const n = this.liste.eintraege.length;
+    if (!n) return null;
+    const e = this.liste.eintraege[(Math.min(ziel(), n) + n) % n];
+    return this.wiedergabe[e.uuid] ?? ausEintrag(e);
+  }
+
+  /** die nächste Seite holen; ob Sender dazukamen */
+  private async nachladen(): Promise<boolean> {
+    const vorher = this.liste.eintraege.length;
+    await this.liste.mehr();
+    return this.liste.eintraege.length > vorher;
   }
 
   /** Eintrag eines Senders aus der Liste oder, falls schon geholt, von der Quelle (RAD-94) */

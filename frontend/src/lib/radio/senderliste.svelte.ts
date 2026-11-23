@@ -20,10 +20,18 @@ export class Senderliste {
   private abfrage: StationQuery = {};
   private lauf = 0;
   private abbruch: AbortController | null = null;
+  /** was gerade lädt: wer die nächste Seite braucht, wartet darauf, statt leer auszugehen */
+  private erste: Promise<void> | null = null;
+  private naechste: Promise<void> | null = null;
 
   constructor(private readonly quelle: Senderquelle, private readonly seite = SEITE) {}
 
-  async laden(abfrage: StationQuery): Promise<void> {
+  laden(abfrage: StationQuery): Promise<void> {
+    const arbeit = this.ersteLaden(abfrage).finally(() => { if (this.erste === arbeit) this.erste = null; });
+    return (this.erste = arbeit);
+  }
+
+  private async ersteLaden(abfrage: StationQuery): Promise<void> {
     const meiner = ++this.lauf;
     this.abbruch?.abort();
     const abbruch = (this.abbruch = new AbortController());
@@ -48,8 +56,20 @@ export class Senderliste {
     }
   }
 
+  /** Kennung der Abfrage: zwei gleiche liefern dieselbe Reihenfolge */
+  get schluessel(): string {
+    return JSON.stringify(this.abfrage);
+  }
+
   /** nächste Seite; doppelte Sender (zwischen zwei Seiten geändert) kommen nur einmal */
   async mehr(): Promise<void> {
+    if (this.erste) await this.erste;
+    if (this.naechste) return this.naechste;
+    const arbeit = this.naechsteLaden().finally(() => { if (this.naechste === arbeit) this.naechste = null; });
+    return (this.naechste = arbeit);
+  }
+
+  private async naechsteLaden(): Promise<void> {
     if (!this.weiter || this.laedt || this.laedtMehr) return;
     const meiner = this.lauf;
     this.laedtMehr = true;

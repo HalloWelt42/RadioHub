@@ -85,6 +85,22 @@ export const appState = $state({
 });
 
 // === Actions ===
+/** Wer den Nachbarn des laufenden Senders kennt: die Bedienung der sichtbaren Liste (RAD-124). Sie lädt nach; die Liste
+ *  hier (appState.stations) ist nur ihr gerade geladener Ausschnitt.
+ *  @type {((uuid: string, schritt: -1 | 1) => Promise<any>) | null} */
+let senderfolge = null;
+export function senderfolgeSetzen(folge) {
+  senderfolge = folge;
+}
+
+async function zumNachbarn(schritt) {
+  const jetzt = appState.currentStation;
+  if (!jetzt || !senderfolge) return;
+  const ziel = await senderfolge(jetzt.uuid, schritt);
+  // inzwischen anders gewählt: nichts überfahren
+  if (ziel && appState.currentStation?.uuid === jetzt.uuid) await engine.playStation(ziel);
+}
+
 export const actions = {
   // Navigation
   setTab(tab) {
@@ -282,14 +298,7 @@ export const actions = {
       }
       return;
     }
-    if (appState.currentStation && appState.stations.length > 0) {
-      const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
-      if (idx > 0) {
-        engine.playStation(appState.stations[idx - 1]);
-      } else if (idx === 0) {
-        engine.playStation(appState.stations[appState.stations.length - 1]);
-      }
-    }
+    return zumNachbarn(-1);
   },
 
   navigateNext() {
@@ -339,14 +348,7 @@ export const actions = {
       }
       return;
     }
-    if (appState.currentStation && appState.stations.length > 0) {
-      const idx = appState.stations.findIndex(s => s.uuid === appState.currentStation.uuid);
-      if (idx < appState.stations.length - 1) {
-        engine.playStation(appState.stations[idx + 1]);
-      } else {
-        engine.playStation(appState.stations[0]);
-      }
-    }
+    return zumNachbarn(1);
   },
 
   // Stream-Modus wechseln (Original/HLS)

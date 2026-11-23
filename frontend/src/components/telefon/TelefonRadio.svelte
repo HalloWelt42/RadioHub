@@ -6,7 +6,7 @@
   import { onMount, untrack } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
-  import { appState } from "../../lib/store.svelte.js";
+  import { appState, senderfolgeSetzen } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { filterzustand } from "../../lib/radio";
   import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
@@ -48,6 +48,7 @@
   // Vor und Zurück (auch am Sperrbildschirm) folgen der sichtbaren Liste (Vorgabe 7)
   $effect(() => {
     (appState as { stations: unknown[] }).stations = bedienung.fuerWiedergabe();
+    senderfolgeSetzen((uuid: string, schritt: -1 | 1) => bedienung.nachbar(uuid, schritt));
   });
   $effect(() => {
     const uuid = spielend;

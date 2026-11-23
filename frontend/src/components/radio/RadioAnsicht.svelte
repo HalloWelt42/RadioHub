@@ -8,7 +8,7 @@
   import PufferAnsicht from "./PufferAnsicht.svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
-  import { appState } from "../../lib/store.svelte.js";
+  import { appState, senderfolgeSetzen } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
@@ -121,6 +121,7 @@
   // Vor und Zurück der Wiedergabe folgen der sichtbaren Liste (Vorgabe 7); die Nachbarn bekommen ihre Felder vorab
   $effect(() => {
     (appState as { stations: unknown[] }).stations = bedienung.fuerWiedergabe();
+    senderfolgeSetzen((uuid: string, schritt: -1 | 1) => bedienung.nachbar(uuid, schritt));
   });
   $effect(() => {
     const uuid = spielend;

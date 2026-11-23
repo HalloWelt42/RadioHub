@@ -76,7 +76,7 @@
     if (!liste.length) return;
     const i = liste.findIndex((f) => f.uuid === appState.currentStation?.uuid);
     const ziel = liste[(i + schritt + liste.length) % liste.length];
-    actions.playStation(ziel);
+    return actions.playStation(ziel);
   }
 
   function abspielen() {

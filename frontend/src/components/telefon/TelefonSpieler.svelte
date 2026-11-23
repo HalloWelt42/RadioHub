@@ -48,12 +48,18 @@
   const senderUuid = $derived(folge ? null : (appState.currentStation?.uuid ?? null));
   const eintrag = $derived(bedienung.eintragVon(senderUuid));
   $effect(() => { if (offen) void bedienung.eintragHolen(senderUuid); });
-  /** Auge: erst zum nächsten Sender, dann den bisherigen ausblenden (sonst fehlt Vor die Stelle in der Liste) */
-  function ausblendenUndWeiter() {
+  /** Auge: zum nächsten Sender und den bisherigen ausblenden. Bis gewechselt ist, ruht der Knopf für diesen Sender (RAD-124);
+   *  beim nächsten gilt er sofort wieder, auch wenn der noch verbindet */
+  let gehtWeg = $state(null);
+  async function ausblendenUndWeiter() {
     const e = eintrag;
-    if (!e) return;
-    steuerung.naechster();
-    void bedienung.ausblenden(e);
+    if (!e || gehtWeg === e.uuid) return;
+    gehtWeg = e.uuid;
+    try {
+      await Promise.all([steuerung.naechster(), bedienung.ausblenden(e)]);
+    } finally {
+      if (gehtWeg === e.uuid) gehtWeg = null;
+    }
   }
   /** Herunterladen der laufenden Folge, nur hier im großen Spieler (RAD-102, Wahl B); in Basic die Datei des Feeds,
    *  die der Browser dann selbst öffnet (fremder Server) */
@@ -146,7 +152,7 @@
             <button class="rund tf-rund" type="button" onclick={() => void bedienung.einblenden(eintrag)}
                     aria-label={t('radio.einblendenVon', { name: eintrag.name })} title={t('radio.einblendenHilfe')}><i class="fa-solid fa-eye"></i></button>
           {:else}
-            <button class="rund tf-rund" type="button" disabled={appState.isRecording} onclick={ausblendenUndWeiter}
+            <button class="rund tf-rund" type="button" disabled={appState.isRecording || gehtWeg === senderUuid} onclick={ausblendenUndWeiter}
                     aria-label={t('radio.ausblendenVon', { name: eintrag.name })} title={t('telefon.ausblendenWeiter')}><i class="fa-solid fa-eye-slash"></i></button>
           {/if}
           <button class="rund tf-rund" class:favorit={eintrag.favorit} type="button" aria-pressed={eintrag.favorit}
