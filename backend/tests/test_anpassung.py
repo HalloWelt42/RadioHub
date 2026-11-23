@@ -35,6 +35,32 @@ def test_statische_liste_ohne_getroffene():
     assert gelesen == 3 and liste.kopf.anzahl == 2
 
 
+def test_eigene_anpassung_der_webversion_trifft_rechner():
+    def satz(k: str, url: str, aufgeloest: str = "") -> Verzeichnisdatensatz:
+        return Verzeichnisdatensatz.model_validate({"stationuuid": k, "name": k, "url": url, "url_resolved": aufgeloest, "lastcheckok": 1})
+    a = Anpassung(kennungen=frozenset({kennung("welle.test")}))
+    assert sl.trifft(a, satz("a", "https://welle.test/x")) and sl.trifft(a, satz("b", "https://Eis.Welle.test:8443/x"))
+    assert sl.trifft(a, satz("c", "https://liste.test/x.pls", "https://eis2.welle.test/x")), "auch die aufgelöste Adresse"
+    assert not sl.trifft(a, satz("d", "https://andere-welle.test/x")) and not sl.trifft(a, satz("e", "https://strom.test/welle.test"))
+    assert not sl.trifft(a, satz("f", "kaputt")) and not sl.trifft(a, satz("g", "https://[kaputt/"))
+    assert list(sl.rechnernamen("https://a.b.test/")) == ["a.b.test", "b.test"], "nie die oberste Ebene"
+
+
+def test_eigene_anpassung_fehlt_nie_unbemerkt(tmp_path, monkeypatch):
+    datei = tmp_path / "anpassung.txt"
+    with pytest.raises(SystemExit, match="nicht gefunden"):
+        sl.eigene_anpassung(datei)
+    datei.write_text("\n")
+    with pytest.raises(SystemExit, match="leer"):
+        sl.eigene_anpassung(datei)
+    datei.write_text("welle.test\n")
+    with pytest.raises(SystemExit, match="Zeile 1"):
+        sl.eigene_anpassung(datei)
+    datei.write_text(kennung("welle.test"))
+    monkeypatch.setattr(sl, "EIGENE_ANPASSUNG", datei)
+    assert sl.eigene_anpassung().trifft("welle.test")
+
+
 @pytest.fixture
 def angepasst(monkeypatch):
     """Die App mit eigener Liste; Ergebnis: die Menge, in die eine Prüfung ihre uuids legt."""

@@ -20,6 +20,9 @@ Aus dem Ordner `backend/`:
 .venv/bin/python -m app.werkzeuge.statische_liste --aus ../web/daten --aus-datenbank <Pfad>/radiohub.db
 ```
 
+Das Werkzeug erwartet die eigene Anpassung der Webversion (`--anpassung <Datei>`, siehe Kopf des Werkzeugs); wer keine
+hat, sagt es mit `--ohne-eigene-anpassung`.
+
 Ohne `--aus-datenbank` lädt das Werkzeug das ganze Verzeichnis seitenweise über die eingestellten Server; mit der
 Angabe liest es die Tabelle `stations` der Datenbank nur lesend (ohne verschwundene Sender). Das Format beschreibt der
 Kopf des Werkzeugs (`backend/app/werkzeuge/statische_liste.py`), gelesen wird es in

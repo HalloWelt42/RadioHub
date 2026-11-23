@@ -8,7 +8,11 @@ Datensatz mit dem Senderdaten-Baustein auf und schreibt nur abspielbare Sender: 
     python -m app.werkzeuge.statische_liste --aus ../web/daten
     python -m app.werkzeuge.statische_liste --aus ../web/daten --aus-datenbank data/radiohub.db
 
-Die Anpassung der Senderliste (RAD-12, senderdaten.anpassung) gilt immer, wie im Backend.
+Die Anpassung der Senderliste (RAD-12, senderdaten.anpassung) gilt immer, wie im Backend. Dazu kommt die eigene
+Anpassung der Webversion (RAD-116): eine Datei gleichen Formats außerhalb des Projekts (--anpassung, sonst
+EIGENE_ANPASSUNG). Ihre Kennungen gelten für die uuid und für die Rechner der
+Stream-Adressen samt ihren übergeordneten Namen. Fehlt die Datei, bricht das Werkzeug ab, damit die Liste nie ohne sie
+entsteht; wer keine hat, sagt das mit --ohne-eigene-anpassung.
 
 Format von sender.json (Spaltenformat, Fassung FORMAT): {"kopf": {...}, "zeilen": [[...], ...]}. Der Kopf nennt die
 Fassung des Formats und der Aufbereitung, den Zeitpunkt, die Herkunft, die Anzahl, die Spalten und die Wörterbücher;
@@ -27,6 +31,7 @@ from collections.abc import AsyncIterator, Iterable, Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -41,6 +46,7 @@ from ..services.senderquelle import abgleich, bestand
 FORMAT = 3   # 3: wieder mit Spalte logo (nur https), Basic zeigt Senderlogos (RAD-105); 2 war ohne
 DATEI = "sender.json"
 SICHER = "https://"
+EIGENE_ANPASSUNG = Path("~/.config/radiohub/anpassung-basic.txt")
 # Gedankenstriche und typografische Anführungszeichen in Namen des Verzeichnisses schreibt die Datei als
 # JSON-Escape: die Daten bleiben gleich, die Datei selbst enthält nur gerade Zeichen (Prüfung im Git-Haken)
 _ALS_ESCAPE = {ord(z): f"\\u{ord(z):04x}" for z in "\u2013\u2014\u2018\u2019\u201c\u201d\u201e"}
@@ -92,6 +98,37 @@ def abspielbar(d: Verzeichnisdatensatz) -> bool:
     """Spielt direkt im Browser über https: Adresse sicher, zuletzt erreichbar, Zertifikat in Ordnung."""
     adresse = (d.url_resolved or d.url).strip()
     return adresse.lower().startswith(SICHER) and bool(d.lastcheckok) and not d.ssl_error
+
+
+def rechnernamen(adresse: str) -> Iterator[str]:
+    """Der Rechner einer Adresse und seine übergeordneten Namen, ohne die oberste Ebene (a.b.test: a.b.test, b.test)."""
+    try:
+        name = (urlsplit(adresse.strip()).hostname or "").rstrip(".")
+    except ValueError:
+        return
+    teile = name.split(".")
+    for n in range(len(teile) - 1):
+        yield ".".join(teile[n:])
+
+
+def trifft(anpassung: Anpassung, d: Verzeichnisdatensatz) -> bool:
+    """Gehört der Sender nicht zur Liste: seine uuid oder ein Rechner seiner Adressen steht in der Anpassung?"""
+    return anpassung.trifft(d.stationuuid) or any(
+        anpassung.trifft(name) for adresse in (d.url, d.url_resolved) for name in rechnernamen(adresse))
+
+
+def eigene_anpassung(pfad: Path | None = None) -> Anpassung:
+    """Die eigene Anpassung der Webversion; fehlt sie, Abbruch (nie eine Liste ohne sie)."""
+    datei = (pfad or EIGENE_ANPASSUNG).expanduser()
+    if not datei.is_file():
+        raise SystemExit(f"Eigene Anpassung nicht gefunden: {datei} (bewusst ohne: --ohne-eigene-anpassung)")
+    try:
+        anpassung = anpassung_baustein.aus_text(datei.read_text(encoding="utf-8"))
+    except ValueError as f:
+        raise SystemExit(f"{datei}: {f}") from f
+    if not anpassung.kennungen:
+        raise SystemExit(f"Eigene Anpassung ist leer: {datei}")
+    return anpassung
 
 
 def sicheres_logo(logo: str) -> str:
@@ -200,7 +237,7 @@ def liste_bauen(saetze: Iterable[Verzeichnisdatensatz], quelle: Literal["verzeic
     nach_uuid: dict[str, Sender] = {}
     for d in saetze:
         gelesen += 1
-        if anpassung is not None and anpassung.trifft(d.stationuuid):
+        if anpassung is not None and trifft(anpassung, d):
             continue
         if d.stationuuid and d.stationuuid not in nach_uuid and abspielbar(d):
             nach_uuid[d.stationuuid] = senderdaten.aufbereiten(d)
@@ -236,8 +273,8 @@ async def _alle(quelle: AsyncIterator[Verzeichnisdatensatz]) -> list[Verzeichnis
     return [d async for d in quelle]
 
 
-def erzeugen(ordner: Path, datenbank: Path | None = None) -> Bericht:
-    anpassung = anpassung_baustein.laden()
+def erzeugen(ordner: Path, datenbank: Path | None = None, eigene: Anpassung | None = None) -> Bericht:
+    anpassung = Anpassung(kennungen=anpassung_baustein.laden().kennungen | (eigene or Anpassung()).kennungen)
     if datenbank is not None:
         liste, gelesen = liste_bauen(aus_datenbank(datenbank), "datenbank", anpassung=anpassung)
     else:
@@ -255,8 +292,12 @@ def main() -> None:
     teiler.add_argument("--aus", required=True, type=Path, help="Ordner für sender.json")
     teiler.add_argument("--aus-datenbank", type=Path, default=None,
                         help="statt des Verzeichnisses die Tabelle stations dieser Datenbank (nur lesend)")
+    wahl = teiler.add_mutually_exclusive_group()
+    wahl.add_argument("--anpassung", type=Path, default=None, help="eigene Anpassung der Webversion (Datei)")
+    wahl.add_argument("--ohne-eigene-anpassung", action="store_true", help="bewusst ohne eigene Anpassung")
     argumente = teiler.parse_args()
-    bericht = erzeugen(argumente.aus, argumente.aus_datenbank)
+    eigene = Anpassung() if argumente.ohne_eigene_anpassung else eigene_anpassung(argumente.anpassung)
+    bericht = erzeugen(argumente.aus, argumente.aus_datenbank, eigene)
     print(f"{bericht.geschrieben} abspielbare von {bericht.gelesen} Sendern nach {bericht.datei} "
           f"({bericht.bytes / 1_000_000:.1f} MB)")
     sys.stdout.flush()
