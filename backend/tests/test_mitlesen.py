@@ -163,7 +163,28 @@ async def test_hoert_auf_wenn_niemand_liest_oder_das_radio_endet(bau):
     assert x._grund == "niemand liest"
     await x.starten(e, m.Wahl(sprache="en"))
     e.beendet = True
+    await asyncio.sleep(0.05)
+    assert x.laeuft, "vielleicht verbindet der Sender nur neu"
+    jetzt[0] += m.NACHFOLGER_S + 1
     await bis_(lambda: not x.laeuft)
+
+
+async def test_verbindet_der_sender_neu_geht_es_dort_weiter(bau):
+    d, alt, neu, gesprochen = Dienst(), Empfang(), Empfang(), []
+    x = bau(d)
+    x.stimme, x.stimme_da = await _sprecher(gesprochen), lambda: True
+    await x.starten(alt, m.Wahl(sprache="en", ziel="de", uebersetzen=True, sprechen=True))
+    await bis_(lambda: any(a.ton_s for a in x.stand(0).absaetze))
+    vorher = x.stand(0)
+    x.nachfolger = lambda uuid: neu if uuid == "u1" else None
+    alt.beendet = True
+    await bis_(lambda: neu.gelesen)
+    assert neu.gelesen[0][0] == 0.0
+    await bis_(lambda: len(x.stand(0).absaetze) > len(vorher.absaetze))
+    st = x.stand(0)
+    assert st.laeuft and st.sprechen and [a.nr for a in st.absaetze] == sorted({a.nr for a in st.absaetze}), "derselbe Text läuft weiter"
+    await bis_(lambda: x.stand(0).absaetze[-1].ton_s > 0)
+    await x.beenden()
 
 
 async def test_stoerung_wird_gezeigt_und_geht_weiter(bau):

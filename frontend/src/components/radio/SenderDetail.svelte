@@ -76,9 +76,16 @@
   $effect(() => { if (faehig.mitlesen) void mitlesen.pruefen(); });
   const kannMitlesen = $derived(faehig.mitlesen && mitlesen.eingerichtet === true);
   const mitliest = $derived(mitlesen.laeuftFuer(eintrag.uuid));
+  function senderStarten() {
+    if (!spielt || !puffer.aktiv) onneustart(eintrag);
+  }
+  async function mitlesenWeiter() {
+    senderStarten();
+    await mitlesen.starten(eintrag.uuid, eintrag.sprachen, true);
+  }
   function mitlesenSchalten(an: boolean) {
     if (!an) return void mitlesen.beenden();
-    if (!spielt || !puffer.aktiv) onneustart(eintrag);
+    senderStarten();
     mitlesen.starten(eintrag.uuid, eintrag.sprachen).catch((f: Error) => actions.showToast(f.message, "error"));
   }
 
@@ -177,7 +184,7 @@
 
 <div class="rh-detail rh-detail-dicht" class:rh-mitliest={mitliest}>
   {#if mitliest}
-    <Mitlesefeld {schalter} />
+    <Mitlesefeld {schalter} onweiter={mitlesenWeiter} />
   {:else}
   <!-- ohne Überschriften (Nutzer 22.11.2026, RAD-59): Steckbrief, eigene Filter, Werbung sprechen für sich -->
   <section class="rh-tafel-detail" aria-label={t("radio.steckbrief")}>

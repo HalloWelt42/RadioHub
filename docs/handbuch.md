@@ -99,7 +99,7 @@ sammelt Stücke von 15 bis 30 Sekunden (geschnitten an der leisesten Stelle) und
 läuft mit, bis man nach oben rollt oder "Mitlaufen" ausschaltet; Kopieren nimmt die Auswahl oder alles. Spricht der Sender
 laut seinem Sprachlabel eine andere Sprache als die Oberfläche, steht die Übersetzung oben und das Original klein darunter,
 mit Schalter; ohne eindeutiges Label erkennt der Hördienst die Sprache. Aus beendet auch die Arbeit am Server, ebenso wenn
-das Radio endet oder eine Minute niemand liest. Hören und Übersetzen rechnet die Leitstelle (Einstellungen > Dienste); ohne
+das Radio endet oder zweieinhalb Minuten niemand liest; startet der Sender nur neu, geht es dort weiter. Hören und Übersetzen rechnet die Leitstelle (Einstellungen > Dienste); ohne
 Leitstelle fehlt die Taste. Übersprungene Werbung wird nicht mitgeschrieben.
 
 Übersetzer (RAD-130): im Mitlesefeld eines fremdsprachigen Senders spricht die Zeitstimme die übersetzten Absätze, sobald zwei

@@ -86,13 +86,16 @@ export class Mitlesen {
     this.eingerichtet = (await this.a<{ eingerichtet: boolean }>("/api/mitlesen/kann").catch(() => ({ eingerichtet: false }))).eingerichtet;
   }
 
-  /** Das Feld steht sofort da; läuft der Sender noch nicht, wird gewartet, bis er über den Puffer spielt */
-  async starten(uuid: string, sprachen: SpracheKurz[]): Promise<void> {
+  /** Das Feld steht sofort da; läuft der Sender noch nicht, wird gewartet, bis er über den Puffer spielt. `weiter`: nach einem Ende
+   *  fortsetzen, der gelesene Text bleibt */
+  async starten(uuid: string, sprachen: SpracheKurz[], weiter = false): Promise<void> {
     const ziel = currentLanguage() || "de", sprache = spracheVon(sprachen);
     const daten = { uuid, sprache, ziel, uebersetzen: !!sprache && sprache !== ziel };
     clearInterval(this.takt);
-    this.absaetze = [];
-    this.stand = null;
+    if (!weiter) {
+      this.absaetze = [];
+      this.stand = null;
+    }
     this.fehler = "";
     this.uuid = uuid;
     this.beginnt = true;
@@ -102,7 +105,7 @@ export class Mitlesen {
       this.uebernehmen(s);
       this.takt = setInterval(() => void this.lesen(), TAKT_MS);
     } catch (f) {
-      if (this.uuid === uuid) this.uuid = "";
+      if (this.uuid === uuid && !weiter) this.uuid = "";
       throw f;
     } finally {
       this.beginnt = false;

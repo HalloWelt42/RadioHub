@@ -11,7 +11,8 @@
   import Schalter from "../bausteine/Schalter.svelte";
 
   /** `schalter`: die Schalter, die an ihrem Platz bleiben (Mitlesen, Werbung) */
-  let { schalter }: { schalter: Snippet } = $props();
+  /** `onweiter`: das Mitlesen nach einem Ende (Radio aus, Server neu gestartet) fortsetzen */
+  let { schalter, onweiter }: { schalter: Snippet; onweiter: () => Promise<void> } = $props();
 
   const NAH_PX = 32;
   let feld = $state<HTMLElement>();
@@ -52,6 +53,10 @@
     void server.angebot("uebersetzerstimme").then((a) => { stimmen = [{ wert: "", titel: t("radio.mitlesen.zeitstimme") }, ...a.optionen]; }).catch(() => undefined);
   });
   const waehlen = (w: string) => void server.sofortSpeichern("uebersetzerstimme", w).catch((f: Error) => actions.showToast(f.message, "error"));
+  async function sprechen(an: boolean) {
+    if (an && !mitlesen.stand?.laeuft) await onweiter();
+    await uebersetzer.schalten(an);
+  }
   const richtung = $derived(`${mitlesen.stand?.sprache.toUpperCase()} > ${mitlesen.stand?.ziel.toUpperCase()}`);
   const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || t(`radio.mitlesen.${mitlesen.beginnt ? "beginnt" : mitlesen.stand?.zustand ?? "sammelt"}`));
 </script>
@@ -65,7 +70,7 @@
     {/if}
     {#if mitlesen.fremd && mitlesen.stand?.kann_sprechen}
       <Schalter an={uebersetzer.an} farbe="gelb" symbol="fa-headset" text={t("radio.mitlesen.stimme")} hilfe={t("radio.mitlesen.stimmeHilfe")}
-        onwechsel={(an) => void uebersetzer.schalten(an).catch((f: Error) => actions.showToast(f.message, "error"))} />
+        onwechsel={(an) => void sprechen(an).catch((f: Error) => actions.showToast(f.message, "error"))} />
     {/if}
     {#if uebersetzer.an && stimmen.length}<Auswahl bind:wert={stimme} optionen={stimmen} titel={t("radio.mitlesen.stimmwahl")} klein onwahl={waehlen} />{/if}
     <button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} disabled={!mitlesen.absaetze.length}

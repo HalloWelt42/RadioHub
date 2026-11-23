@@ -1,7 +1,8 @@
 """Live mitlesen, was ein Sender spricht (RAD-129), und es auf Wunsch übersetzt sprechen lassen (RAD-130): aus dem Mitschnitt des Empfangs wird Stück für Stück Text, wahlweise
 übersetzt. Beides rechnet die Leitstelle (Hördienst, Sprachmodell); der Pi liefert nur den Ton.
 
-Es hängt am laufenden Empfang, hält ihn aber nicht am Leben: endet das Radio, endet das Mitlesen. Es läuft nur, solange jemand
+Es hängt am laufenden Empfang, hält ihn aber nicht am Leben: endet das Radio, endet das Mitlesen. Verbindet der Sender neu (neu
+gestartet, andere Bitrate), geht es am neuen Empfang weiter. Es läuft nur, solange jemand
 liest (jede Abfrage der Oberfläche verlängert), und hört ganz auf, wenn man es ausschaltet.
 
 Geschnitten wird im Ton an der leisesten Stelle zwischen `STUECK_VON_S` und `STUECK_BIS_S` (die Pegel misst der Empfang schon),
@@ -36,8 +37,9 @@ STUECK_VON_S, STUECK_BIS_S = 15.0, 30.0      # so lang ist ein Stück Ton
 EINSTIEG_S = 90.0                            # so weit zurück beginnt es im Puffer
 RUECKSTAND_S = 300.0                         # weiter als so viel hinkt es nie hinterher, dann springt es nach vorn
 ABSATZ_ZEICHEN = 160                         # ein Absatz ist mindestens so lang und endet mit einem Satz
-ABSATZ_HOECHSTENS_S = 60.0                   # so lange wartet Text höchstens auf ein Satzende
-LESER_WEG_S = 60.0                           # fragt so lange niemand, hört es auf
+ABSATZ_HOECHSTENS_S = 40.0                   # so lange wartet Text höchstens auf ein Satzende
+LESER_WEG_S = 150.0                          # fragt so lange niemand, hört es auf (ein Fenster im Hintergrund fragt nur jede Minute)
+NACHFOLGER_S = 20.0                          # so lange wartet es, ob der Sender neu verbindet
 HALTEN_S = 120                               # es kommt gleich mehr: so lange bleiben die Modelle geladen
 TAKT_S = 1.0
 NACH_FEHLER_S = 15.0
@@ -150,6 +152,7 @@ class Mitleser:
     modell: Callable[[], str] = lambda: ""
     ziel_name: Callable[[str], str] = lambda k: k
     uhr: Callable[[], float] = time.monotonic
+    nachfolger: Callable[[str], Empfang | None] = lambda _uuid: None
     stimme: Callable[[str, str], Awaitable[Gesprochen]] = _keine_stimme
     stimme_da: Callable[[], bool] = lambda: False
 
@@ -158,8 +161,9 @@ class Mitleser:
     _aufgaben: list[asyncio.Task[None]] = field(default_factory=list, repr=False)
     _absaetze: list[Absatz] = field(default_factory=list, repr=False)
     _geaendert: dict[int, int] = field(default_factory=dict, repr=False)      # Absatz -> Fassung seiner letzten Änderung
-    _fassung: int = 0
-    _nr: int = 0
+    #: beide beginnen bei der Uhrzeit: nach einem Neustart des Servers kommt nie eine Nummer wieder, die ein Leser schon hat
+    _fassung: int = field(default_factory=lambda: int(time.time()))
+    _nr: int = field(default_factory=lambda: int(time.time()))
     _zustand: Zustand = "aus"
     _grund: str = ""
     _gelesen: float = 0.0
@@ -238,7 +242,14 @@ class Mitleser:
     async def _mithoeren(self, e: Empfang, von: float) -> None:
         sammler = Absatzsammler()
         try:
-            while not e.beendet:
+            while True:
+                if e.beendet:
+                    self._hinzu(e, sammler.rest())
+                    neu = await self._neuer_empfang(e)
+                    if neu is None:
+                        break
+                    e = self._empfang = neu
+                    von = e.anfang_s
                 if self.uhr() - self._gelesen > LESER_WEG_S:
                     return await self.beenden("niemand liest")
                 if e.jetzt_s - von > RUECKSTAND_S:
@@ -259,13 +270,22 @@ class Mitleser:
                 except LeitstellenFehler as f:
                     self._zustand, self._grund = "gestoert", f.meldung
                     await asyncio.sleep(NACH_FEHLER_S)
-            self._hinzu(e, sammler.rest())
             await self.beenden()
         except asyncio.CancelledError:
             raise
         except Exception as f:  # noqa: BLE001 - das Radio hängt nicht am Mitlesen
             logger.exception("Mitlesen %s", e.name)
             await self.beenden(type(f).__name__)
+
+    async def _neuer_empfang(self, alt: Empfang) -> Empfang | None:
+        """Der Empfang, mit dem derselbe Sender weiterspielt, sonst None (das Radio ist aus)."""
+        bis = self.uhr() + NACHFOLGER_S
+        self._zustand = "sammelt"
+        while self.uhr() < bis:
+            if (neu := self.nachfolger(alt.uuid)) is not None and neu is not alt and not neu.beendet:
+                return neu
+            await asyncio.sleep(TAKT_S)
+        return None
 
     @staticmethod
     def _nach_werbung(e: Empfang, von: float) -> float:

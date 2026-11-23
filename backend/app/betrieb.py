@@ -87,6 +87,7 @@ class Radiobetrieb(Begleiter):
         mitleser.leitstelle = lambda: self.geruest.leitstelle
         mitleser.hoerdienst = lambda: einstellungen.stand().mitlesen_hoerdienst
         mitleser.modell = lambda: einstellungen.stand().mitlesen_modell
+        mitleser.nachfolger = empfaenge.von_sender
         mitleser.stimme = lambda text, sprache: uebersetzerstimme.sprechen(self.geruest.verbund, text, sprache)
         mitleser.stimme_da = uebersetzerstimme.eingerichtet
         mitleser.ziel_name = lambda k: einstellungen.SPRACHEN.get(k, k)

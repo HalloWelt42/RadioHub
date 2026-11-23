@@ -84,4 +84,19 @@ describe("Mitlesen (RAD-129)", () => {
     await vi.advanceTimersByTimeAsync(60000);
     expect([await dritter, m.laeuftFuer("w")]).toEqual(["läuft nicht", false]);
   });
+
+  it("setzt nach einem Ende fort, ohne den Text zu verlieren", async () => {
+    let antwort = stand({ absaetze: [absatz(1)], fassung: 3 });
+    const m = new Mitlesen((async () => antwort) as never);
+    await m.starten("u", []);
+    antwort = stand({ laeuft: false, zustand: "aus", fassung: 3 });
+    await vi.advanceTimersByTimeAsync(2100);
+    expect(m.stand?.laeuft).toBe(false);
+    antwort = stand({ absaetze: [absatz(2)], fassung: 5 });
+    await m.starten("u", [], true);
+    expect([m.stand?.laeuft, m.absaetze.map((a) => a.nr)]).toEqual([true, [1, 2]]);
+    await vi.advanceTimersByTimeAsync(2100);
+    expect(m.laeuftFuer("u")).toBe(true);
+    await m.beenden();
+  });
 });
