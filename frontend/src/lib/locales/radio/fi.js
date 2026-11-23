@@ -185,11 +185,27 @@ export default {
     zeigen: 'Näytä {n} asemaa',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Kuunneltu tunteja', sender: 'Asemat', nichtEingerichtet: 'Propaganda-Filter ei ole käytössä.',
+    fort: 'Propaganda-Filteriin ei juuri nyt saada yhteyttä. Löydetty toimii edelleen.', spots: 'Löydetyt mainokset', fach_pruefen: 'Tarkistettavat',
+    fach_wirkt: 'Suodatetaan', fach_verworfen: 'Hylätyt', leer_pruefen: 'Ei tarkistettavaa', leer_wirkt: 'Mitään ei ole vielä vahvistettu',
+    leer_verworfen: 'Mitään ei ole hylätty', klingt_werbung: 'Mainos', klingt_sender: 'Aseman oma mainos', klingt_anderes: 'Tuskin mainos',
+    klingt_ohne_sprache: 'Ei puhetta', klingt_unklar: 'Ei vielä luokiteltu', anhoeren: 'Kuuntele', filtern: 'Suodata',
+    filternHilfe: 'On mainos: ohitetaan näillä asemilla', verwerfen: 'Hylkää', verwerfenHilfe: 'Ei mainos: ei koskaan suodateta', zurueck: 'Palauta',
+    auchDort: 'Myös siellä', auchDortHilfe: 'Tuttu mainos, kuultu nyt muillakin asemilla: suodatetaan myös siellä', lernlauf: 'Oppiminen',
+    lernlaufHilfe: 'Kuuntelee asemia taustalla ja kerää toistuvat kohdat', jedeNacht: 'Joka yö', naechste: 'Seuraavaksi: {namen}',
+    zeitfenster: 'Aikaikkuna', jetzt: 'Kuuntele nyt', jetztHilfe: 'Tunnin ajan, myös aikaikkunan ulkopuolella',
+    lauf: '{s} asemaa, {h} h · {n} uutta, {b} tuttua', senderTitel: 'Oppimisen asemat', senderHilfe: 'Valittu kuuntelusi mukaan',
+    grund_gehoert: 'Kuuntelet usein', grund_favorit: 'Suosikki', grund_aehnlich: 'Samankaltainen', grund_bekannt: 'Suosittu maassa',
+    zuletzt: 'Viimeksi {wann} · {h} h', nochNie: 'Ei vielä kuunneltu', funde: '{n} löytöä', hoeren: 'Kuuntele',
+  },
+
   // Settings > Radio
   einst: {
     einstellungen: 'Asetukset',
     radio: 'Radio',
-    reiter: { regeln: 'Poissulkusäännöt', ausgeblendet: 'Piilotetut asemat', laender: 'Sivupalkin maat', werbung: 'Mainostunnistus', abgleich: 'Asemahakemisto', kategorien: 'Luokat', datei: 'Omat tiedot' },
+    reiter: { regeln: 'Poissulkusäännöt', ausgeblendet: 'Piilotetut asemat', laender: 'Sivupalkin maat', werbung: 'Mainostunnistus', werbefilter: 'Mainossuodatin', abgleich: 'Asemahakemisto', kategorien: 'Luokat', datei: 'Omat tiedot' },
     gesamt: 'Yhteensä',
     sichtbar: 'Näkyvissä',
     durchRegelnAus: 'Piilotettu säännöillä',

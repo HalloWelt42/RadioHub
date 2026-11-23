@@ -185,11 +185,27 @@ export default {
     zeigen: 'Show {n} stations',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Hours heard', sender: 'Stations', nichtEingerichtet: 'The Propaganda Filter is not set up.',
+    fort: 'The Propaganda Filter cannot be reached right now. What it has found keeps working.', spots: 'Ads found', fach_pruefen: 'To review',
+    fach_wirkt: 'Filtered', fach_verworfen: 'Rejected', leer_pruefen: 'Nothing to review', leer_wirkt: 'Nothing confirmed yet',
+    leer_verworfen: 'Nothing rejected', klingt_werbung: 'Ad', klingt_sender: 'The station\'s own promo', klingt_anderes: 'Probably not an ad',
+    klingt_ohne_sprache: 'No speech', klingt_unklar: 'Not classified yet', anhoeren: 'Listen', filtern: 'Filter',
+    filternHilfe: 'Is an ad: skip it on these stations', verwerfen: 'Reject', verwerfenHilfe: 'Not an ad: never filter', zurueck: 'Bring back',
+    auchDort: 'There too', auchDortHilfe: 'A known ad, now heard on more stations: filter it there too', lernlauf: 'Learning run',
+    lernlaufHilfe: 'Listens to stations in the background and collects what repeats', jedeNacht: 'Every night', naechste: 'Next: {namen}',
+    zeitfenster: 'Time window', jetzt: 'Listen now', jetztHilfe: 'For one hour, also outside the time window',
+    lauf: '{s} stations, {h} h · {n} new, {b} known', senderTitel: 'Stations of the learning run', senderHilfe: 'Chosen by what you listen to',
+    grund_gehoert: 'You listen often', grund_favorit: 'Favourite', grund_aehnlich: 'Similar', grund_bekannt: 'Popular in the country',
+    zuletzt: 'Last {wann} · {h} h', nochNie: 'Not heard yet', funde: '{n} finds', hoeren: 'Listen',
+  },
+
   // Settings > Radio
   einst: {
     einstellungen: 'Settings',
     radio: 'Radio',
-    reiter: { regeln: 'Exclusion rules', ausgeblendet: 'Hidden stations', laender: 'Sidebar countries', werbung: 'Ad detection', abgleich: 'Station directory', kategorien: 'Categories', datei: 'Own data' },
+    reiter: { regeln: 'Exclusion rules', ausgeblendet: 'Hidden stations', laender: 'Sidebar countries', werbung: 'Ad detection', werbefilter: 'Ad filter', abgleich: 'Station directory', kategorien: 'Categories', datei: 'Own data' },
     gesamt: 'Total',
     sichtbar: 'Visible',
     durchRegelnAus: 'Hidden by rules',

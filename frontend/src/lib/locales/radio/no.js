@@ -185,11 +185,27 @@ export default {
     zeigen: 'Vis {n} stasjoner',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Timer lyttet', sender: 'Stasjoner', nichtEingerichtet: 'Propaganda-Filter er ikke satt opp.',
+    fort: 'Propaganda-Filter kan ikke nås akkurat nå. Det den har funnet, virker fortsatt.', spots: 'Funnet reklame', fach_pruefen: 'Til kontroll',
+    fach_wirkt: 'Filtreres', fach_verworfen: 'Avvist', leer_pruefen: 'Ingenting å kontrollere', leer_wirkt: 'Ingenting bekreftet ennå',
+    leer_verworfen: 'Ingenting avvist', klingt_werbung: 'Reklame', klingt_sender: 'Stasjonens egenreklame', klingt_anderes: 'Trolig ikke reklame',
+    klingt_ohne_sprache: 'Uten tale', klingt_unklar: 'Ikke innordnet ennå', anhoeren: 'Lytt', filtern: 'Filtrer',
+    filternHilfe: 'Er reklame: hopp over på disse stasjonene', verwerfen: 'Avvis', verwerfenHilfe: 'Ikke reklame: filtrer aldri',
+    zurueck: 'Hent tilbake', auchDort: 'Også der', auchDortHilfe: 'Kjent reklame, nå hørt på flere stasjoner: filtrer også der', lernlauf: 'Læring',
+    lernlaufHilfe: 'Lytter til stasjoner i bakgrunnen og samler det som gjentas', jedeNacht: 'Hver natt', naechste: 'Neste: {namen}',
+    zeitfenster: 'Tidsvindu', jetzt: 'Lytt nå', jetztHilfe: 'I en time, også utenfor tidsvinduet', lauf: '{s} stasjoner, {h} t · {n} nye, {b} kjente',
+    senderTitel: 'Læringens stasjoner', senderHilfe: 'Valgt etter det du lytter til', grund_gehoert: 'Lytter du ofte til', grund_favorit: 'Favoritt',
+    grund_aehnlich: 'Lignende', grund_bekannt: 'Mye lyttet til i landet', zuletzt: 'Sist {wann} · {h} t', nochNie: 'Ikke hørt ennå', funde: '{n} funn',
+    hoeren: 'Lytt',
+  },
+
   // Innstillinger > Radio
   einst: {
     einstellungen: 'Innstillinger',
     radio: 'Radio',
-    reiter: { regeln: 'Utelatelsesregler', ausgeblendet: 'Skjulte stasjoner', laender: 'Land i sidepanelet', werbung: 'Reklamegjenkjenning', abgleich: 'Stasjonskatalog', kategorien: 'Kategorier', datei: 'Egne data' },
+    reiter: { regeln: 'Utelatelsesregler', ausgeblendet: 'Skjulte stasjoner', laender: 'Land i sidepanelet', werbung: 'Reklamegjenkjenning', werbefilter: 'Reklamefilter', abgleich: 'Stasjonskatalog', kategorien: 'Kategorier', datei: 'Egne data' },
     gesamt: 'Totalt',
     sichtbar: 'Synlige',
     durchRegelnAus: 'Skjult av regler',

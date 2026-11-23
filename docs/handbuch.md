@@ -88,6 +88,9 @@ den Sendedaten. Angekündigte Spots bekommt der Filter als Ausschnitt, damit er 
 Ist der Filter fort, ruht nur das Erkennen; Gefundenes wirkt weiter. Für den Lernlauf des Filters stellt RadioHub alle
 sechs Stunden die Senderliste zusammen: was man hört (Tabelle hoerverlauf, 60 Tage), die Favoriten, ähnliche Sender nach
 Genre, Sprache und Land und die bekanntesten der eigenen Länder; ausgeblendete Sender kommen nie hinein.
+Einstellungen > Radio > Werbefilter zeigt, was der Filter kennt: gefundene Spots anhören und "Filtern" (wirkt bei den
+Sendern, an denen sie liefen) oder "Verwerfen" (kommt nie wieder), den Lernlauf mit Schalter, Zeitfenster, laufenden
+Sendern und letzten Nächten, und je Sender den Grund, aus dem er gehört wird, mit Schalter.
 
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich

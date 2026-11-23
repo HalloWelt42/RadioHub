@@ -178,10 +178,22 @@ export default {
     zeigen: '显示 {n} 个电台',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: '已收听小时', sender: '电台', nichtEingerichtet: 'Propaganda-Filter 尚未设置。', fort: 'Propaganda-Filter 目前无法连接。已找到的内容继续有效。', spots: '找到的广告',
+    fach_pruefen: '待检查', fach_wirkt: '过滤中', fach_verworfen: '已否决', leer_pruefen: '没有待检查的内容', leer_wirkt: '尚无已确认的内容', leer_verworfen: '没有否决的内容',
+    klingt_werbung: '广告', klingt_sender: '电台自我宣传', klingt_anderes: '可能不是广告', klingt_ohne_sprache: '无人声', klingt_unklar: '尚未分类', anhoeren: '试听',
+    filtern: '过滤', filternHilfe: '是广告: 在这些电台跳过', verwerfen: '否决', verwerfenHilfe: '不是广告: 永不过滤', zurueck: '恢复', auchDort: '那里也过滤',
+    auchDortHilfe: '已知广告，现在也在其他电台出现: 那里也过滤', lernlauf: '学习', lernlaufHilfe: '在后台收听电台并收集重复的内容', jedeNacht: '每晚', naechste: '接下来: {namen}',
+    zeitfenster: '时间段', jetzt: '立即收听', jetztHilfe: '一小时，时间段之外也可以', lauf: '{s} 个电台，{h} 小时 · 新 {n}，已知 {b}', senderTitel: '学习的电台', senderHilfe: '按你收听的内容选择',
+    grund_gehoert: '经常收听', grund_favorit: '收藏', grund_aehnlich: '相似', grund_bekannt: '本国热门', zuletzt: '上次 {wann} · {h} 小时', nochNie: '尚未收听',
+    funde: '{n} 个发现', hoeren: '收听',
+  },
+
   einst: {
     einstellungen: '设置',
     radio: '电台',
-    reiter: { regeln: '排除规则', ausgeblendet: '已隐藏的电台', laender: '侧栏国家', werbung: '广告识别', abgleich: '电台目录', kategorien: '分类', datei: '我的数据' },
+    reiter: { regeln: '排除规则', ausgeblendet: '已隐藏的电台', laender: '侧栏国家', werbung: '广告识别', werbefilter: '广告过滤', abgleich: '电台目录', kategorien: '分类', datei: '我的数据' },
     gesamt: '总计',
     sichtbar: '可见',
     durchRegelnAus: '被规则隐藏',

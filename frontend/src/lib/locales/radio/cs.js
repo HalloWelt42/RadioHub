@@ -184,11 +184,27 @@ export default {
     zeigen: 'Zobrazit {n} stanic',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Poslechnuto hodin', sender: 'Stanice', nichtEingerichtet: 'Propaganda-Filter není nastaven.',
+    fort: 'Propaganda-Filter teď není dostupný. Co našel, funguje dál.', spots: 'Nalezené reklamy', fach_pruefen: 'Ke kontrole',
+    fach_wirkt: 'Filtruje se', fach_verworfen: 'Zamítnuto', leer_pruefen: 'Nic ke kontrole', leer_wirkt: 'Zatím nic nepotvrzeno',
+    leer_verworfen: 'Nic nezamítnuto', klingt_werbung: 'Reklama', klingt_sender: 'Vlastní upoutávka stanice', klingt_anderes: 'Asi není reklama',
+    klingt_ohne_sprache: 'Bez řeči', klingt_unklar: 'Zatím nezařazeno', anhoeren: 'Poslechnout', filtern: 'Filtrovat',
+    filternHilfe: 'Je to reklama: na těchto stanicích přeskočit', verwerfen: 'Zamítnout', verwerfenHilfe: 'Není to reklama: nikdy nefiltrovat',
+    zurueck: 'Vrátit zpět', auchDort: 'Tam také', auchDortHilfe: 'Známá reklama, teď slyšená na dalších stanicích: filtrovat i tam', lernlauf: 'Učení',
+    lernlaufHilfe: 'Poslouchá stanice na pozadí a sbírá, co se opakuje', jedeNacht: 'Každou noc', naechste: 'Dále: {namen}', zeitfenster: 'Časové okno',
+    jetzt: 'Poslouchat teď', jetztHilfe: 'Hodinu, i mimo časové okno', lauf: '{s} stanic, {h} h · {n} nových, {b} známých', senderTitel: 'Stanice učení',
+    senderHilfe: 'Vybrané podle toho, co posloucháš', grund_gehoert: 'Posloucháš často', grund_favorit: 'Oblíbená', grund_aehnlich: 'Podobná',
+    grund_bekannt: 'Hodně poslouchaná v zemi', zuletzt: 'Naposledy {wann} · {h} h', nochNie: 'Zatím neposlechnuto', funde: '{n} nálezů',
+    hoeren: 'Poslouchat',
+  },
+
   // Settings > Radio
   einst: {
     einstellungen: 'Nastavení',
     radio: 'Rádio',
-    reiter: { regeln: 'Vylučovací pravidla', ausgeblendet: 'Skryté stanice', laender: 'Země v postranním panelu', werbung: 'Rozpoznání reklamy', abgleich: 'Adresář stanic', kategorien: 'Kategorie', datei: 'Vlastní data' },
+    reiter: { regeln: 'Vylučovací pravidla', ausgeblendet: 'Skryté stanice', laender: 'Země v postranním panelu', werbung: 'Rozpoznání reklamy', werbefilter: 'Filtr reklam', abgleich: 'Adresář stanic', kategorien: 'Kategorie', datei: 'Vlastní data' },
     gesamt: 'Celkem',
     sichtbar: 'Viditelné',
     durchRegelnAus: 'Skryto pravidly',

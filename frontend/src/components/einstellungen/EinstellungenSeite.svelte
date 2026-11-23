@@ -13,6 +13,7 @@
   import AusgeblendetReiter from "../radio/einstellungen/AusgeblendetReiter.svelte";
   import LaenderReiter from "../radio/einstellungen/LaenderReiter.svelte";
   import WerbungReiter from "../radio/einstellungen/WerbungReiter.svelte";
+  import WerbefilterReiter from "../radio/einstellungen/WerbefilterReiter.svelte";
   import AbgleichReiter from "../radio/einstellungen/AbgleichReiter.svelte";
   import DateiReiter from "../radio/einstellungen/DateiReiter.svelte";
   import AblageTeil from "./AblageTeil.svelte";
@@ -56,7 +57,7 @@
       radio("regeln", "fa-filter-circle-xmark", [{ teil: RegelnReiter }]),
       radio("ausgeblendet", "fa-eye-slash", [{ teil: AusgeblendetReiter }]),
       radio("laender", "fa-earth-europe", [{ teil: LaenderReiter }]),
-      ...(faehig.werbung ? [radio("werbung", "fa-rectangle-ad", [{ teil: WerbungReiter }])] : []),
+      ...(faehig.werbung ? [radio("werbung", "fa-rectangle-ad", [{ teil: WerbungReiter }]), radio("werbefilter", "fa-ear-listen", [{ teil: WerbefilterReiter }])] : []),
       ...(faehig.abgleich ? [radio("abgleich", "fa-arrows-rotate", [{ teil: AbgleichReiter },
         { karte: "abgleich", symbol: "fa-moon", hinweis: "abgleich", felder: ["abgleich_uhrzeit"] }])] : []),
       ...(faehig.kategorien ? [radio("kategorien", "fa-folder", [{ teil: KategorienTeil }])] : []),

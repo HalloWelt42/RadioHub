@@ -241,3 +241,14 @@
   .rh-ort-felder label:first-child { grid-column: 1 / -1; }
   .rh-sonne { grid-template-columns: minmax(0, 1fr); padding: 20px 14px 14px; }
 }
+
+/* ═══ RAD-128: Werbefilter (Spots anhören und entscheiden, Lernlauf) ═══ */
+.rh-spots, .rh-laufend, .rh-laufend + .rh-werte { margin-top: 12px; }
+.rh-a-zeile.rh-spot { grid-template-columns: auto minmax(0, 1fr) minmax(0, 13em) calc(var(--klein) * 6) calc(var(--klein) * 16.5); }
+.rh-spot .rund { grid-area: logo; }
+.rh-spot-text { display: block; color: var(--text-2); font-size: var(--klein); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rh-spot .rh-a-knoepfe { flex-wrap: nowrap; }
+@container karte (max-width: 46em) {
+  .rh-a-zeile.rh-spot { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name stimmen" "grund grund frei"; }
+  .rh-spot-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}

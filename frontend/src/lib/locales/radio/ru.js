@@ -178,10 +178,26 @@ export default {
     zeigen: 'Показать станции: {n}',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Прослушано часов', sender: 'Станции', nichtEingerichtet: 'Propaganda-Filter не настроен.',
+    fort: 'Propaganda-Filter сейчас недоступен. Найденное продолжает действовать.', spots: 'Найденная реклама', fach_pruefen: 'На проверку',
+    fach_wirkt: 'Фильтруется', fach_verworfen: 'Отклонено', leer_pruefen: 'Проверять нечего', leer_wirkt: 'Пока ничего не подтверждено',
+    leer_verworfen: 'Ничего не отклонено', klingt_werbung: 'Реклама', klingt_sender: 'Самореклама станции', klingt_anderes: 'Вряд ли реклама',
+    klingt_ohne_sprache: 'Без речи', klingt_unklar: 'Пока не определено', anhoeren: 'Прослушать', filtern: 'Фильтровать',
+    filternHilfe: 'Это реклама: пропускать на этих станциях', verwerfen: 'Отклонить', verwerfenHilfe: 'Не реклама: никогда не фильтровать',
+    zurueck: 'Вернуть', auchDort: 'И там', auchDortHilfe: 'Известная реклама, теперь звучит и на других станциях: фильтровать и там',
+    lernlauf: 'Обучение', lernlaufHilfe: 'Слушает станции в фоне и собирает то, что повторяется', jedeNacht: 'Каждую ночь', naechste: 'Далее: {namen}',
+    zeitfenster: 'Время', jetzt: 'Слушать сейчас', jetztHilfe: 'Один час, в том числе вне заданного времени',
+    lauf: '{s} станций, {h} ч · {n} новых, {b} известных', senderTitel: 'Станции обучения', senderHilfe: 'Выбраны по тому, что ты слушаешь',
+    grund_gehoert: 'Часто слушаешь', grund_favorit: 'Избранное', grund_aehnlich: 'Похожая', grund_bekannt: 'Популярна в стране',
+    zuletzt: 'Последний раз {wann} · {h} ч', nochNie: 'Ещё не прослушано', funde: 'Находок: {n}', hoeren: 'Слушать',
+  },
+
   einst: {
     einstellungen: 'Настройки',
     radio: 'Радио',
-    reiter: { regeln: 'Правила исключения', ausgeblendet: 'Скрытые станции', laender: 'Страны боковой панели', werbung: 'Распознавание рекламы', abgleich: 'Каталог станций', kategorien: 'Категории', datei: 'Свои данные' },
+    reiter: { regeln: 'Правила исключения', ausgeblendet: 'Скрытые станции', laender: 'Страны боковой панели', werbung: 'Распознавание рекламы', werbefilter: 'Фильтр рекламы', abgleich: 'Каталог станций', kategorien: 'Категории', datei: 'Свои данные' },
     gesamt: 'Всего',
     sichtbar: 'Видно',
     durchRegelnAus: 'Скрыто правилами',

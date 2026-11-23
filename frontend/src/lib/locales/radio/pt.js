@@ -185,11 +185,27 @@ export default {
     zeigen: 'Mostrar {n} estações',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Horas ouvidas', sender: 'Estações', nichtEingerichtet: 'O Propaganda-Filter não está configurado.',
+    fort: 'O Propaganda-Filter não está acessível neste momento. O que encontrou continua a funcionar.', spots: 'Anúncios encontrados',
+    fach_pruefen: 'A rever', fach_wirkt: 'Filtrados', fach_verworfen: 'Rejeitados', leer_pruefen: 'Nada a rever', leer_wirkt: 'Ainda nada confirmado',
+    leer_verworfen: 'Nada rejeitado', klingt_werbung: 'Anúncio', klingt_sender: 'Promoção da estação', klingt_anderes: 'Provavelmente não é anúncio',
+    klingt_ohne_sprache: 'Sem voz', klingt_unklar: 'Ainda não classificado', anhoeren: 'Ouvir', filtern: 'Filtrar',
+    filternHilfe: 'É anúncio: saltar nestas estações', verwerfen: 'Rejeitar', verwerfenHilfe: 'Não é anúncio: nunca filtrar', zurueck: 'Recuperar',
+    auchDort: 'Também aí', auchDortHilfe: 'Anúncio conhecido, agora ouvido noutras estações: filtrar também aí', lernlauf: 'Aprendizagem',
+    lernlaufHilfe: 'Ouve estações em segundo plano e reúne o que se repete', jedeNacht: 'Todas as noites', naechste: 'A seguir: {namen}',
+    zeitfenster: 'Janela horária', jetzt: 'Ouvir agora', jetztHilfe: 'Durante uma hora, também fora da janela horária',
+    lauf: '{s} estações, {h} h · {n} novos, {b} conhecidos', senderTitel: 'Estações da aprendizagem', senderHilfe: 'Escolhidas pelo que ouves',
+    grund_gehoert: 'Ouves muitas vezes', grund_favorit: 'Favorita', grund_aehnlich: 'Semelhante', grund_bekannt: 'Muito ouvida no país',
+    zuletzt: 'Última vez {wann} · {h} h', nochNie: 'Ainda não ouvida', funde: '{n} achados', hoeren: 'Ouvir',
+  },
+
   // Definições > Rádio
   einst: {
     einstellungen: 'Definições',
     radio: 'Rádio',
-    reiter: { regeln: 'Regras de exclusão', ausgeblendet: 'Estações ocultas', laender: 'Países da barra lateral', werbung: 'Deteção de publicidade', abgleich: 'Diretório de estações', kategorien: 'Categorias', datei: 'Dados próprios' },
+    reiter: { regeln: 'Regras de exclusão', ausgeblendet: 'Estações ocultas', laender: 'Países da barra lateral', werbung: 'Deteção de publicidade', werbefilter: 'Filtro de anúncios', abgleich: 'Diretório de estações', kategorien: 'Categorias', datei: 'Dados próprios' },
     gesamt: 'Total',
     sichtbar: 'Visíveis',
     durchRegelnAus: 'Ocultadas por regras',

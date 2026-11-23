@@ -179,10 +179,26 @@ export default {
     zeigen: 'Visa {n} stationer',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Lyssnade timmar', sender: 'Stationer', nichtEingerichtet: 'Propaganda-Filter är inte inställt.',
+    fort: 'Propaganda-Filter kan inte nås just nu. Det som hittats fortsätter att gälla.', spots: 'Hittad reklam', fach_pruefen: 'Att granska',
+    fach_wirkt: 'Filtreras', fach_verworfen: 'Avvisad', leer_pruefen: 'Inget att granska', leer_wirkt: 'Inget bekräftat ännu',
+    leer_verworfen: 'Inget avvisat', klingt_werbung: 'Reklam', klingt_sender: 'Stationens egen reklam', klingt_anderes: 'Troligen inte reklam',
+    klingt_ohne_sprache: 'Utan tal', klingt_unklar: 'Inte inordnad ännu', anhoeren: 'Lyssna', filtern: 'Filtrera',
+    filternHilfe: 'Är reklam: hoppa över på dessa stationer', verwerfen: 'Avvisa', verwerfenHilfe: 'Inte reklam: filtrera aldrig',
+    zurueck: 'Hämta tillbaka', auchDort: 'Även där', auchDortHilfe: 'Känd reklam, nu hörd på fler stationer: filtrera även där', lernlauf: 'Inlärning',
+    lernlaufHilfe: 'Lyssnar på stationer i bakgrunden och samlar det som upprepas', jedeNacht: 'Varje natt', naechste: 'Härnäst: {namen}',
+    zeitfenster: 'Tidsfönster', jetzt: 'Lyssna nu', jetztHilfe: 'I en timme, även utanför tidsfönstret',
+    lauf: '{s} stationer, {h} h · {n} nya, {b} kända', senderTitel: 'Inlärningens stationer', senderHilfe: 'Valda efter vad du lyssnar på',
+    grund_gehoert: 'Lyssnar du ofta på', grund_favorit: 'Favorit', grund_aehnlich: 'Liknande', grund_bekannt: 'Populär i landet',
+    zuletzt: 'Senast {wann} · {h} h', nochNie: 'Inte lyssnad ännu', funde: '{n} fynd', hoeren: 'Lyssna',
+  },
+
   einst: {
     einstellungen: 'Inställningar',
     radio: 'Radio',
-    reiter: { regeln: 'Uteslutningsregler', ausgeblendet: 'Dolda stationer', laender: 'Länder i sidofältet', werbung: 'Reklamigenkänning', abgleich: 'Stationskatalog', kategorien: 'Kategorier', datei: 'Egna data' },
+    reiter: { regeln: 'Uteslutningsregler', ausgeblendet: 'Dolda stationer', laender: 'Länder i sidofältet', werbung: 'Reklamigenkänning', werbefilter: 'Reklamfilter', abgleich: 'Stationskatalog', kategorien: 'Kategorier', datei: 'Egna data' },
     gesamt: 'Totalt',
     sichtbar: 'Synliga',
     durchRegelnAus: 'Dolda av regler',

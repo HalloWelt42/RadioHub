@@ -185,11 +185,27 @@ export default {
     zeigen: 'Pokaż stacje: {n}',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Godziny słuchania', sender: 'Stacje', nichtEingerichtet: 'Propaganda-Filter nie jest skonfigurowany.',
+    fort: 'Propaganda-Filter jest teraz nieosiągalny. To, co znalazł, działa nadal.', spots: 'Znalezione reklamy', fach_pruefen: 'Do sprawdzenia',
+    fach_wirkt: 'Filtrowane', fach_verworfen: 'Odrzucone', leer_pruefen: 'Nic do sprawdzenia', leer_wirkt: 'Jeszcze nic nie potwierdzono',
+    leer_verworfen: 'Nic nie odrzucono', klingt_werbung: 'Reklama', klingt_sender: 'Autopromocja stacji', klingt_anderes: 'Raczej nie reklama',
+    klingt_ohne_sprache: 'Bez mowy', klingt_unklar: 'Jeszcze niesklasyfikowane', anhoeren: 'Posłuchaj', filtern: 'Filtruj',
+    filternHilfe: 'To reklama: pomijaj w tych stacjach', verwerfen: 'Odrzuć', verwerfenHilfe: 'To nie reklama: nigdy nie filtruj', zurueck: 'Przywróć',
+    auchDort: 'Tam też', auchDortHilfe: 'Znana reklama, teraz słyszana w innych stacjach: filtruj też tam', lernlauf: 'Nauka',
+    lernlaufHilfe: 'Słucha stacji w tle i zbiera to, co się powtarza', jedeNacht: 'Każdej nocy', naechste: 'Następne: {namen}',
+    zeitfenster: 'Przedział czasu', jetzt: 'Słuchaj teraz', jetztHilfe: 'Przez godzinę, także poza przedziałem czasu',
+    lauf: '{s} stacji, {h} h · {n} nowych, {b} znanych', senderTitel: 'Stacje nauki', senderHilfe: 'Wybrane według tego, czego słuchasz',
+    grund_gehoert: 'Często słuchasz', grund_favorit: 'Ulubiona', grund_aehnlich: 'Podobna', grund_bekannt: 'Popularna w kraju',
+    zuletzt: 'Ostatnio {wann} · {h} h', nochNie: 'Jeszcze niesłuchana', funde: '{n} znalezisk', hoeren: 'Słuchaj',
+  },
+
   // Ustawienia > Radio
   einst: {
     einstellungen: 'Ustawienia',
     radio: 'Radio',
-    reiter: { regeln: 'Reguły wykluczeń', ausgeblendet: 'Ukryte stacje', laender: 'Kraje paska bocznego', werbung: 'Wykrywanie reklam', abgleich: 'Katalog stacji', kategorien: 'Kategorie', datei: 'Własne dane' },
+    reiter: { regeln: 'Reguły wykluczeń', ausgeblendet: 'Ukryte stacje', laender: 'Kraje paska bocznego', werbung: 'Wykrywanie reklam', werbefilter: 'Filtr reklam', abgleich: 'Katalog stacji', kategorien: 'Kategorie', datei: 'Własne dane' },
     gesamt: 'Łącznie',
     sichtbar: 'Widoczne',
     durchRegelnAus: 'Ukryte przez reguły',

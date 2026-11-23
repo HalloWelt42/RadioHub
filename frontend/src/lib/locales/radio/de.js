@@ -185,11 +185,27 @@ export default {
     zeigen: '{n} Sender zeigen',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Stunden gehört', sender: 'Sender', nichtEingerichtet: 'Der Propaganda-Filter ist nicht eingerichtet.',
+    fort: 'Der Propaganda-Filter ist gerade nicht erreichbar. Was er gefunden hat, wirkt weiter.', spots: 'Gefundene Werbung', fach_pruefen: 'Zu prüfen',
+    fach_wirkt: 'Wird gefiltert', fach_verworfen: 'Verworfen', leer_pruefen: 'Nichts zu prüfen', leer_wirkt: 'Noch nichts bestätigt',
+    leer_verworfen: 'Nichts verworfen', klingt_werbung: 'Werbung', klingt_sender: 'Eigenwerbung des Senders', klingt_anderes: 'Wohl keine Werbung',
+    klingt_ohne_sprache: 'Ohne Sprache', klingt_unklar: 'Noch nicht eingeordnet', anhoeren: 'Anhören', filtern: 'Filtern',
+    filternHilfe: 'Ist Werbung: bei diesen Sendern überspringen', verwerfen: 'Verwerfen', verwerfenHilfe: 'Keine Werbung: nie filtern',
+    zurueck: 'Zurückholen', auchDort: 'Auch dort', auchDortHilfe: 'Bekannte Werbung, jetzt bei weiteren Sendern gehört: auch dort filtern',
+    lernlauf: 'Lernlauf', lernlaufHilfe: 'Hört Sender im Hintergrund und sammelt, was sich wiederholt', jedeNacht: 'Jede Nacht',
+    naechste: 'Als Nächstes: {namen}', zeitfenster: 'Zeitfenster', jetzt: 'Jetzt hören', jetztHilfe: 'Eine Stunde lang, auch außerhalb des Zeitfensters',
+    lauf: '{s} Sender, {h} h · {n} neu, {b} bekannt', senderTitel: 'Sender des Lernlaufs', senderHilfe: 'Gewählt nach dem, was du hörst',
+    grund_gehoert: 'Hörst du oft', grund_favorit: 'Favorit', grund_aehnlich: 'Ähnlich', grund_bekannt: 'Viel gehört im Land',
+    zuletzt: 'Zuletzt {wann} · {h} h', nochNie: 'Noch nicht gehört', funde: '{n} Funde', hoeren: 'Hören',
+  },
+
   // Einstellungen > Radio
   einst: {
     einstellungen: 'Einstellungen',
     radio: 'Radio',
-    reiter: { regeln: 'Ausschlussregeln', ausgeblendet: 'Ausgeblendete Sender', laender: 'Länder der Seitenleiste', werbung: 'Werbeerkennung', abgleich: 'Senderverzeichnis', kategorien: 'Kategorien', datei: 'Eigene Daten' },
+    reiter: { regeln: 'Ausschlussregeln', ausgeblendet: 'Ausgeblendete Sender', laender: 'Länder der Seitenleiste', werbung: 'Werbeerkennung', werbefilter: 'Werbefilter', abgleich: 'Senderverzeichnis', kategorien: 'Kategorien', datei: 'Eigene Daten' },
     gesamt: 'Gesamt',
     sichtbar: 'Sichtbar',
     durchRegelnAus: 'Durch Regeln ausgeblendet',

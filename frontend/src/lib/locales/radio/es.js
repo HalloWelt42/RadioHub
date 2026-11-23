@@ -185,11 +185,28 @@ export default {
     zeigen: "Mostrar {n} emisoras",
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Horas escuchadas', sender: 'Emisoras', nichtEingerichtet: 'El Propaganda-Filter no está configurado.',
+    fort: 'El Propaganda-Filter no está disponible ahora. Lo que ha encontrado sigue actuando.', spots: 'Anuncios encontrados',
+    fach_pruefen: 'Por revisar', fach_wirkt: 'Filtrados', fach_verworfen: 'Descartados', leer_pruefen: 'Nada por revisar',
+    leer_wirkt: 'Nada confirmado todavía', leer_verworfen: 'Nada descartado', klingt_werbung: 'Anuncio', klingt_sender: 'Promoción de la emisora',
+    klingt_anderes: 'Probablemente no es un anuncio', klingt_ohne_sprache: 'Sin voz', klingt_unklar: 'Sin clasificar', anhoeren: 'Escuchar',
+    filtern: 'Filtrar', filternHilfe: 'Es un anuncio: saltarlo en estas emisoras', verwerfen: 'Descartar',
+    verwerfenHilfe: 'No es un anuncio: no filtrar nunca', zurueck: 'Recuperar', auchDort: 'También ahí',
+    auchDortHilfe: 'Anuncio conocido, oído ahora en más emisoras: filtrarlo también ahí', lernlauf: 'Aprendizaje',
+    lernlaufHilfe: 'Escucha emisoras en segundo plano y reúne lo que se repite', jedeNacht: 'Cada noche', naechste: 'A continuación: {namen}',
+    zeitfenster: 'Franja horaria', jetzt: 'Escuchar ahora', jetztHilfe: 'Durante una hora, también fuera de la franja horaria',
+    lauf: '{s} emisoras, {h} h · {n} nuevos, {b} conocidos', senderTitel: 'Emisoras del aprendizaje', senderHilfe: 'Elegidas según lo que escuchas',
+    grund_gehoert: 'La escuchas a menudo', grund_favorit: 'Favorita', grund_aehnlich: 'Similar', grund_bekannt: 'Muy escuchada en el país',
+    zuletzt: 'Última vez {wann} · {h} h', nochNie: 'Aún no escuchada', funde: '{n} hallazgos', hoeren: 'Escuchar',
+  },
+
   // Ajustes > Radio
   einst: {
     einstellungen: "Ajustes",
     radio: "Radio",
-    reiter: { regeln: "Reglas de exclusión", ausgeblendet: "Emisoras ocultas", laender: "Países de la barra lateral", werbung: "Detección de anuncios", abgleich: "Directorio de emisoras", kategorien: "Categorías", datei: "Mis datos" },
+    reiter: { regeln: "Reglas de exclusión", ausgeblendet: "Emisoras ocultas", laender: "Países de la barra lateral", werbung: "Detección de anuncios", werbefilter: 'Filtro de anuncios', abgleich: "Directorio de emisoras", kategorien: "Categorías", datei: "Mis datos" },
     gesamt: "Total",
     sichtbar: "Visibles",
     durchRegelnAus: "Ocultas por reglas",

@@ -185,11 +185,28 @@ export default {
     zeigen: "Mostra {n} stazioni",
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Ore ascoltate', sender: 'Emittenti', nichtEingerichtet: 'Il Propaganda-Filter non è configurato.',
+    fort: 'Il Propaganda-Filter non è raggiungibile al momento. Ciò che ha trovato continua a funzionare.', spots: 'Pubblicità trovate',
+    fach_pruefen: 'Da verificare', fach_wirkt: 'Filtrate', fach_verworfen: 'Scartate', leer_pruefen: 'Niente da verificare',
+    leer_wirkt: 'Ancora niente di confermato', leer_verworfen: 'Niente di scartato', klingt_werbung: 'Pubblicità',
+    klingt_sender: 'Promozione dell\'emittente', klingt_anderes: 'Probabilmente non è pubblicità', klingt_ohne_sprache: 'Senza parlato',
+    klingt_unklar: 'Non ancora classificato', anhoeren: 'Ascolta', filtern: 'Filtra', filternHilfe: 'È pubblicità: saltarla su queste emittenti',
+    verwerfen: 'Scarta', verwerfenHilfe: 'Non è pubblicità: non filtrare mai', zurueck: 'Ripristina', auchDort: 'Anche lì',
+    auchDortHilfe: 'Pubblicità nota, ora sentita su altre emittenti: filtrarla anche lì', lernlauf: 'Apprendimento',
+    lernlaufHilfe: 'Ascolta emittenti in sottofondo e raccoglie ciò che si ripete', jedeNacht: 'Ogni notte', naechste: 'Poi: {namen}',
+    zeitfenster: 'Fascia oraria', jetzt: 'Ascolta ora', jetztHilfe: 'Per un\'ora, anche fuori dalla fascia oraria',
+    lauf: '{s} emittenti, {h} h · {n} nuove, {b} note', senderTitel: 'Emittenti dell\'apprendimento', senderHilfe: 'Scelte in base a ciò che ascolti',
+    grund_gehoert: 'Ascoltata spesso', grund_favorit: 'Preferita', grund_aehnlich: 'Simile', grund_bekannt: 'Molto ascoltata nel paese',
+    zuletzt: 'Ultima volta {wann} · {h} h', nochNie: 'Non ancora ascoltata', funde: '{n} risultati', hoeren: 'Ascolta',
+  },
+
   // Impostazioni > Radio
   einst: {
     einstellungen: "Impostazioni",
     radio: "Radio",
-    reiter: { regeln: "Regole di esclusione", ausgeblendet: "Stazioni nascoste", laender: "Paesi della barra laterale", werbung: "Rilevamento pubblicità", abgleich: "Catalogo delle stazioni", kategorien: "Categorie", datei: "I miei dati" },
+    reiter: { regeln: "Regole di esclusione", ausgeblendet: "Stazioni nascoste", laender: "Paesi della barra laterale", werbung: "Rilevamento pubblicità", werbefilter: 'Filtro pubblicità', abgleich: "Catalogo delle stazioni", kategorien: "Categorie", datei: "I miei dati" },
     gesamt: "Totale",
     sichtbar: "Visibili",
     durchRegelnAus: "Nascoste da regole",

@@ -178,10 +178,26 @@ export default {
     zeigen: '{n} istasyonu göster',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Dinlenen saat', sender: 'İstasyonlar', nichtEingerichtet: 'Propaganda-Filter kurulmamış.',
+    fort: 'Propaganda-Filter şu anda erişilemiyor. Bulduğu şeyler çalışmaya devam ediyor.', spots: 'Bulunan reklamlar', fach_pruefen: 'İncelenecek',
+    fach_wirkt: 'Filtreleniyor', fach_verworfen: 'Reddedilen', leer_pruefen: 'İncelenecek bir şey yok', leer_wirkt: 'Henüz onaylanan yok',
+    leer_verworfen: 'Reddedilen yok', klingt_werbung: 'Reklam', klingt_sender: 'İstasyonun kendi tanıtımı', klingt_anderes: 'Muhtemelen reklam değil',
+    klingt_ohne_sprache: 'Konuşma yok', klingt_unklar: 'Henüz sınıflandırılmadı', anhoeren: 'Dinle', filtern: 'Filtrele',
+    filternHilfe: 'Reklam: bu istasyonlarda atla', verwerfen: 'Reddet', verwerfenHilfe: 'Reklam değil: asla filtreleme', zurueck: 'Geri al',
+    auchDort: 'Orada da', auchDortHilfe: 'Bilinen reklam, şimdi başka istasyonlarda da duyuldu: orada da filtrele', lernlauf: 'Öğrenme',
+    lernlaufHilfe: 'Arka planda istasyonları dinler ve tekrarlananları toplar', jedeNacht: 'Her gece', naechste: 'Sıradaki: {namen}',
+    zeitfenster: 'Zaman aralığı', jetzt: 'Şimdi dinle', jetztHilfe: 'Bir saat boyunca, zaman aralığı dışında da',
+    lauf: '{s} istasyon, {h} sa · {n} yeni, {b} bilinen', senderTitel: 'Öğrenme istasyonları', senderHilfe: 'Dinlediklerine göre seçildi',
+    grund_gehoert: 'Sık dinliyorsun', grund_favorit: 'Favori', grund_aehnlich: 'Benzer', grund_bekannt: 'Ülkede çok dinleniyor',
+    zuletzt: 'Son {wann} · {h} sa', nochNie: 'Henüz dinlenmedi', funde: '{n} bulgu', hoeren: 'Dinle',
+  },
+
   einst: {
     einstellungen: 'Ayarlar',
     radio: 'Radyo',
-    reiter: { regeln: 'Hariç tutma kuralları', ausgeblendet: 'Gizli istasyonlar', laender: 'Kenar çubuğu ülkeleri', werbung: 'Reklam algılama', abgleich: 'İstasyon dizini', kategorien: 'Kategoriler', datei: 'Kendi verilerim' },
+    reiter: { regeln: 'Hariç tutma kuralları', ausgeblendet: 'Gizli istasyonlar', laender: 'Kenar çubuğu ülkeleri', werbung: 'Reklam algılama', werbefilter: 'Reklam filtresi', abgleich: 'İstasyon dizini', kategorien: 'Kategoriler', datei: 'Kendi verilerim' },
     gesamt: 'Toplam',
     sichtbar: 'Görünür',
     durchRegelnAus: 'Kurallarla gizlendi',

@@ -185,11 +185,29 @@ export default {
     zeigen: "Afficher {n} stations",
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Heures écoutées', sender: 'Stations', nichtEingerichtet: 'Le Propaganda-Filter n\'est pas configuré.',
+    fort: 'Le Propaganda-Filter est injoignable pour le moment. Ce qu\'il a trouvé continue d\'agir.', spots: 'Publicités trouvées',
+    fach_pruefen: 'À vérifier', fach_wirkt: 'Filtrées', fach_verworfen: 'Rejetées', leer_pruefen: 'Rien à vérifier', leer_wirkt: 'Rien de confirmé',
+    leer_verworfen: 'Rien de rejeté', klingt_werbung: 'Publicité', klingt_sender: 'Autopromotion de la station',
+    klingt_anderes: 'Sans doute pas une publicité', klingt_ohne_sprache: 'Sans parole', klingt_unklar: 'Pas encore classé', anhoeren: 'Écouter',
+    filtern: 'Filtrer', filternHilfe: 'C\'est une publicité : la sauter sur ces stations', verwerfen: 'Rejeter',
+    verwerfenHilfe: 'Pas une publicité : ne jamais filtrer', zurueck: 'Rétablir', auchDort: 'Là aussi',
+    auchDortHilfe: 'Publicité connue, entendue sur d\'autres stations : la filtrer là aussi', lernlauf: 'Apprentissage',
+    lernlaufHilfe: 'Écoute des stations en arrière-plan et rassemble ce qui se répète', jedeNacht: 'Chaque nuit', naechste: 'Ensuite : {namen}',
+    zeitfenster: 'Plage horaire', jetzt: 'Écouter maintenant', jetztHilfe: 'Pendant une heure, même hors de la plage horaire',
+    lauf: '{s} stations, {h} h · {n} nouvelles, {b} connues', senderTitel: 'Stations de l\'apprentissage',
+    senderHilfe: 'Choisies selon ce que tu écoutes', grund_gehoert: 'Souvent écoutée', grund_favorit: 'Favori', grund_aehnlich: 'Similaire',
+    grund_bekannt: 'Très écoutée dans le pays', zuletzt: 'Dernière fois {wann} · {h} h', nochNie: 'Pas encore écoutée', funde: '{n} trouvailles',
+    hoeren: 'Écouter',
+  },
+
   // Réglages > Radio
   einst: {
     einstellungen: "Réglages",
     radio: "Radio",
-    reiter: { regeln: "Règles d'exclusion", ausgeblendet: "Stations masquées", laender: "Pays de la barre latérale", werbung: "Détection de pub", abgleich: "Annuaire des stations", kategorien: "Catégories", datei: "Mes données" },
+    reiter: { regeln: "Règles d'exclusion", ausgeblendet: "Stations masquées", laender: "Pays de la barre latérale", werbung: "Détection de pub", werbefilter: 'Filtre publicitaire', abgleich: "Annuaire des stations", kategorien: "Catégories", datei: "Mes données" },
     gesamt: "Total",
     sichtbar: "Visibles",
     durchRegelnAus: "Masquées par des règles",

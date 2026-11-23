@@ -179,10 +179,26 @@ export default {
     zeigen: '{n} zenders tonen',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Uren geluisterd', sender: 'Zenders', nichtEingerichtet: 'Het Propaganda-Filter is niet ingesteld.',
+    fort: 'Het Propaganda-Filter is nu niet bereikbaar. Wat het heeft gevonden, blijft werken.', spots: 'Gevonden reclame',
+    fach_pruefen: 'Te controleren', fach_wirkt: 'Gefilterd', fach_verworfen: 'Verworpen', leer_pruefen: 'Niets te controleren',
+    leer_wirkt: 'Nog niets bevestigd', leer_verworfen: 'Niets verworpen', klingt_werbung: 'Reclame', klingt_sender: 'Eigen promotie van de zender',
+    klingt_anderes: 'Waarschijnlijk geen reclame', klingt_ohne_sprache: 'Zonder spraak', klingt_unklar: 'Nog niet ingedeeld', anhoeren: 'Beluisteren',
+    filtern: 'Filteren', filternHilfe: 'Is reclame: bij deze zenders overslaan', verwerfen: 'Verwerpen', verwerfenHilfe: 'Geen reclame: nooit filteren',
+    zurueck: 'Terughalen', auchDort: 'Daar ook', auchDortHilfe: 'Bekende reclame, nu bij meer zenders gehoord: daar ook filteren', lernlauf: 'Leerronde',
+    lernlaufHilfe: 'Luistert op de achtergrond naar zenders en verzamelt wat zich herhaalt', jedeNacht: 'Elke nacht', naechste: 'Hierna: {namen}',
+    zeitfenster: 'Tijdvenster', jetzt: 'Nu luisteren', jetztHilfe: 'Een uur lang, ook buiten het tijdvenster',
+    lauf: '{s} zenders, {h} u · {n} nieuw, {b} bekend', senderTitel: 'Zenders van de leerronde', senderHilfe: 'Gekozen op basis van wat je luistert',
+    grund_gehoert: 'Luister je vaak', grund_favorit: 'Favoriet', grund_aehnlich: 'Vergelijkbaar', grund_bekannt: 'Veel beluisterd in het land',
+    zuletzt: 'Laatst {wann} · {h} u', nochNie: 'Nog niet beluisterd', funde: '{n} vondsten', hoeren: 'Luisteren',
+  },
+
   einst: {
     einstellungen: 'Instellingen',
     radio: 'Radio',
-    reiter: { regeln: 'Uitsluitingsregels', ausgeblendet: 'Verborgen zenders', laender: 'Landen in de zijbalk', werbung: 'Reclameherkenning', abgleich: 'Zendercatalogus', kategorien: 'Categorieën', datei: 'Eigen gegevens' },
+    reiter: { regeln: 'Uitsluitingsregels', ausgeblendet: 'Verborgen zenders', laender: 'Landen in de zijbalk', werbung: 'Reclameherkenning', werbefilter: 'Reclamefilter', abgleich: 'Zendercatalogus', kategorien: 'Categorieën', datei: 'Eigen gegevens' },
     gesamt: 'Totaal',
     sichtbar: 'Zichtbaar',
     durchRegelnAus: 'Verborgen door regels',

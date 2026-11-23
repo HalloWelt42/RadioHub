@@ -178,10 +178,22 @@ export default {
     zeigen: '{n} 局を表示',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: '聴取時間', sender: '放送局', nichtEingerichtet: 'Propaganda-Filter は設定されていません。', fort: 'Propaganda-Filter に現在接続できません。見つかったものは引き続き有効です。',
+    spots: '見つかった広告', fach_pruefen: '確認待ち', fach_wirkt: 'フィルター中', fach_verworfen: '却下', leer_pruefen: '確認するものはありません', leer_wirkt: '確認済みはまだありません',
+    leer_verworfen: '却下はありません', klingt_werbung: '広告', klingt_sender: '放送局の自社宣伝', klingt_anderes: 'おそらく広告ではない', klingt_ohne_sprache: '音声なし',
+    klingt_unklar: '未分類', anhoeren: '聴く', filtern: 'フィルター', filternHilfe: '広告です。これらの放送局で飛ばします', verwerfen: '却下', verwerfenHilfe: '広告ではありません。フィルターしません',
+    zurueck: '元に戻す', auchDort: 'そこでも', auchDortHilfe: '既知の広告が他の放送局でも流れました。そこでもフィルターします', lernlauf: '学習', lernlaufHilfe: 'バックグラウンドで放送局を聴き、繰り返されるものを集めます',
+    jedeNacht: '毎晩', naechste: '次: {namen}', zeitfenster: '時間帯', jetzt: '今すぐ聴く', jetztHilfe: '1時間、時間帯の外でも', lauf: '{s} 局、{h} 時間 · 新規 {n}、既知 {b}',
+    senderTitel: '学習の放送局', senderHilfe: 'あなたの聴取に基づいて選択', grund_gehoert: 'よく聴く', grund_favorit: 'お気に入り', grund_aehnlich: '類似', grund_bekannt: '国内で人気',
+    zuletzt: '前回 {wann} · {h} 時間', nochNie: 'まだ聴いていない', funde: '{n} 件', hoeren: '聴く',
+  },
+
   einst: {
     einstellungen: '設定',
     radio: 'ラジオ',
-    reiter: { regeln: '除外ルール', ausgeblendet: '非表示の放送局', laender: 'サイドバーの国', werbung: '広告検出', abgleich: '放送局ディレクトリ', kategorien: 'カテゴリ', datei: 'マイデータ' },
+    reiter: { regeln: '除外ルール', ausgeblendet: '非表示の放送局', laender: 'サイドバーの国', werbung: '広告検出', werbefilter: '広告フィルター', abgleich: '放送局ディレクトリ', kategorien: 'カテゴリ', datei: 'マイデータ' },
     gesamt: '合計',
     sichtbar: '表示中',
     durchRegelnAus: 'ルールで非表示',

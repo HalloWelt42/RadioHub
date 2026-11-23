@@ -178,10 +178,26 @@ export default {
     zeigen: '{n} adó mutatása',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Meghallgatott órák', sender: 'Adók', nichtEingerichtet: 'A Propaganda-Filter nincs beállítva.',
+    fort: 'A Propaganda-Filter most nem érhető el. Amit talált, továbbra is működik.', spots: 'Talált reklámok', fach_pruefen: 'Ellenőrzendő',
+    fach_wirkt: 'Szűrt', fach_verworfen: 'Elvetett', leer_pruefen: 'Nincs mit ellenőrizni', leer_wirkt: 'Még nincs megerősítve semmi',
+    leer_verworfen: 'Nincs elvetve semmi', klingt_werbung: 'Reklám', klingt_sender: 'Az adó saját ajánlója', klingt_anderes: 'Valószínűleg nem reklám',
+    klingt_ohne_sprache: 'Beszéd nélkül', klingt_unklar: 'Még nincs besorolva', anhoeren: 'Meghallgatás', filtern: 'Szűrés',
+    filternHilfe: 'Ez reklám: ezeken az adókon átugrani', verwerfen: 'Elvetés', verwerfenHilfe: 'Nem reklám: soha ne szűrje', zurueck: 'Visszahozás',
+    auchDort: 'Ott is', auchDortHilfe: 'Ismert reklám, most más adókon is hallható: ott is szűrje', lernlauf: 'Tanulás',
+    lernlaufHilfe: 'A háttérben adókat hallgat, és gyűjti az ismétlődőt', jedeNacht: 'Minden éjjel', naechste: 'Következő: {namen}',
+    zeitfenster: 'Időablak', jetzt: 'Hallgatás most', jetztHilfe: 'Egy órán át, az időablakon kívül is', lauf: '{s} adó, {h} ó · {n} új, {b} ismert',
+    senderTitel: 'A tanulás adói', senderHilfe: 'Aszerint választva, amit hallgatsz', grund_gehoert: 'Gyakran hallgatod', grund_favorit: 'Kedvenc',
+    grund_aehnlich: 'Hasonló', grund_bekannt: 'Népszerű az országban', zuletzt: 'Utoljára {wann} · {h} ó', nochNie: 'Még nem hallgatta',
+    funde: '{n} találat', hoeren: 'Hallgatás',
+  },
+
   einst: {
     einstellungen: 'Beállítások',
     radio: 'Rádió',
-    reiter: { regeln: 'Kizáró szabályok', ausgeblendet: 'Elrejtett adók', laender: 'Oldalsáv országai', werbung: 'Reklámfelismerés', abgleich: 'Adójegyzék', kategorien: 'Kategóriák', datei: 'Saját adatok' },
+    reiter: { regeln: 'Kizáró szabályok', ausgeblendet: 'Elrejtett adók', laender: 'Oldalsáv országai', werbung: 'Reklámfelismerés', werbefilter: 'Reklámszűrő', abgleich: 'Adójegyzék', kategorien: 'Kategóriák', datei: 'Saját adatok' },
     gesamt: 'Összesen',
     sichtbar: 'Látható',
     durchRegelnAus: 'Szabályokkal elrejtve',

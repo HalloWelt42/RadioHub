@@ -178,10 +178,26 @@ export default {
     zeigen: 'Arată {n} posturi',
   },
 
+  // Werbefilter (RAD-128)
+  filter: {
+    stundenGehoert: 'Ore ascultate', sender: 'Posturi', nichtEingerichtet: 'Propaganda-Filter nu este configurat.',
+    fort: 'Propaganda-Filter nu este accesibil acum. Ce a găsit funcționează în continuare.', spots: 'Reclame găsite', fach_pruefen: 'De verificat',
+    fach_wirkt: 'Filtrate', fach_verworfen: 'Respinse', leer_pruefen: 'Nimic de verificat', leer_wirkt: 'Încă nimic confirmat',
+    leer_verworfen: 'Nimic respins', klingt_werbung: 'Reclamă', klingt_sender: 'Promovare proprie a postului', klingt_anderes: 'Probabil nu e reclamă',
+    klingt_ohne_sprache: 'Fără vorbire', klingt_unklar: 'Încă neclasificat', anhoeren: 'Ascultă', filtern: 'Filtrează',
+    filternHilfe: 'Este reclamă: se sare la aceste posturi', verwerfen: 'Respinge', verwerfenHilfe: 'Nu e reclamă: nu se filtrează niciodată',
+    zurueck: 'Readu', auchDort: 'Și acolo', auchDortHilfe: 'Reclamă cunoscută, auzită acum la alte posturi: se filtrează și acolo', lernlauf: 'Învățare',
+    lernlaufHilfe: 'Ascultă posturi în fundal și adună ce se repetă', jedeNacht: 'În fiecare noapte', naechste: 'Urmează: {namen}',
+    zeitfenster: 'Interval orar', jetzt: 'Ascultă acum', jetztHilfe: 'Timp de o oră, și în afara intervalului',
+    lauf: '{s} posturi, {h} h · {n} noi, {b} cunoscute', senderTitel: 'Posturile învățării', senderHilfe: 'Alese după ce asculți',
+    grund_gehoert: 'Asculți des', grund_favorit: 'Favorit', grund_aehnlich: 'Asemănător', grund_bekannt: 'Foarte ascultat în țară',
+    zuletzt: 'Ultima dată {wann} · {h} h', nochNie: 'Încă neascultat', funde: '{n} găsite', hoeren: 'Ascultă',
+  },
+
   einst: {
     einstellungen: 'Setări',
     radio: 'Radio',
-    reiter: { regeln: 'Reguli de excludere', ausgeblendet: 'Posturi ascunse', laender: 'Țările din bara laterală', werbung: 'Detectarea reclamelor', abgleich: 'Director de posturi', kategorien: 'Categorii', datei: 'Date proprii' },
+    reiter: { regeln: 'Reguli de excludere', ausgeblendet: 'Posturi ascunse', laender: 'Țările din bara laterală', werbung: 'Detectarea reclamelor', werbefilter: 'Filtru de reclame', abgleich: 'Director de posturi', kategorien: 'Categorii', datei: 'Date proprii' },
     gesamt: 'Total',
     sichtbar: 'Vizibile',
     durchRegelnAus: 'Ascunse prin reguli',
