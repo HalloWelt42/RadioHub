@@ -1,7 +1,7 @@
 <script lang="ts">
-  // Aufnahmen am Telefon nach dem Entwurf (mockups/radio-filter/telefon-aufnahmen.html, RAD-17): nur hören. Die Liste
-  // mit Suche und Ordnern als Chips, eine geöffnete Aufnahme mit ihren Titeln und "Alles hören". Verwalten und
-  // Schneiden gibt es am Rechner. Dieselben Bausteine wie das Radio am Telefon; Zustand und Adresse wie am Rechner.
+  // Aufnahmen am Telefon nach dem Entwurf (mockups/radio-filter/telefon-aufnahmen.html, RAD-17): die Liste mit Suche und
+  // Ordnern als Chips, eine geöffnete Aufnahme mit Angaben, Laden, Ordner, Löschen (RAD-134) und ihren Titeln. Schneiden
+  // gibt es am Rechner. Dieselben Bausteine wie das Radio am Telefon; Zustand und Adresse wie am Rechner.
   import { onMount, untrack } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
@@ -9,9 +9,9 @@
   import { appPfad } from "../../lib/router.js";
   import { zahl } from "../../lib/radio/anzeige";
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
-  import { aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste, type Aufnahme, type Titel } from "../../lib/aufnahmen";
+  import { aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste, reiheAus, type Aufnahme, type Spieleintrag, type Titel } from "../../lib/aufnahmen";
   import { datum, zeit } from "../../lib/aufnahmen/anzeige";
-  import { schnittquelle } from "../../lib/schnitt";
+  import AufnahmeKopf from "../aufnahmen/AufnahmeKopf.svelte";
   import Logo from "../radio/Logo.svelte";
   import Suchfeld from "../radio/Suchfeld.svelte";
 
@@ -49,28 +49,41 @@
     });
   });
 
-  type Eintrag = { path: string; name: string; session_id: string; station_name: string; duration: number; playUrl: string; source: "recording" };
-  const jetzt = $derived(appState.isPlaying ? ((appState.currentRecording as Eintrag | null) ?? null) : null);
-  const eintrag = (a: Aufnahme, x: Titel): Eintrag => ({ path: x.pfad, name: x.titel || a.sender, session_id: a.id, station_name: a.sender, duration: x.dauer,
-    playUrl: quelle.titelTon(x.id), source: "recording" });
-
+  const jetzt = $derived(appState.isPlaying ? ((appState.currentRecording as Spieleintrag | null) ?? null) : null);
   async function hoeren(a: Aufnahme, ab?: Titel) {
     if (a.status === "laeuft") return;
     if (appState.isRecording) { actions.showToast(t("aufnahmenAnsicht.erstBeenden"), "error"); return; }
     try {
       const reihe = a.id === gewaehlt?.id && titel.length ? titel : await quelle.titel(a.id);
-      if (!reihe.length) {
-        const ganz: Eintrag = { path: `sitzung:${a.id}`, name: a.sender, session_id: a.id, station_name: a.sender, duration: a.dauer,
-          playUrl: schnittquelle.ton({ art: "sitzung", kennung: a.id }), source: "recording" };
-        appState.recordingPlaylist = [ganz];
-        void actions.playRecording(ganz);
-        return;
-      }
-      const eintraege = reihe.map((x) => eintrag(a, x));
-      const start = eintraege[ab ? reihe.findIndex((x) => x.id === ab.id) : 0] ?? eintraege[0];
+      const eintraege = reiheAus(quelle, a, reihe);
+      const start = eintraege[ab ? Math.max(0, reihe.findIndex((x) => x.id === ab.id)) : 0] ?? eintraege[0];
       if (jetzt?.path === start.path) { actions.stop(); return; }
       appState.recordingPlaylist = eintraege;
       void actions.playRecording(start);
+    } catch (f) {
+      actions.showToast((f as Error).message, "error");
+    }
+  }
+
+  async function loeschen(a: Aufnahme) {
+    if (jetzt?.session_id === a.id) actions.stop();
+    try {
+      await quelle.loeschen(a.id);
+      liste.entfernen(a.id);
+      zustand.gehen((v) => ({ ...v, aufnahme: null }));
+      actions.showToast(t("aufnahmenAnsicht.geloescht"), "success");
+      void ordnerliste.laden().catch(() => undefined);
+    } catch (f) {
+      actions.showToast((f as Error).message, "error");
+    }
+  }
+  async function verschieben(a: Aufnahme, ordnerId: number | null) {
+    try {
+      await quelle.verschieben(a.id, ordnerId);
+      if (gewaehlt?.id === a.id) gewaehlt = { ...gewaehlt, ordnerId };
+      actions.showToast(t("aufnahmenAnsicht.verschoben", { name: ordnerName(ordnerId) }), "success");
+      void ordnerliste.laden().catch(() => undefined);
+      void liste.laden(zustand.abfrage());
     } catch (f) {
       actions.showToast((f as Error).message, "error");
     }
@@ -86,20 +99,23 @@
     <div class="t-kopf-zurueck tf-a-kopf">
       <button class="rund" type="button" aria-label={t("aufnahmenAnsicht.telefon.zurueck")} title={t("aufnahmenAnsicht.telefon.zurueck")}
               onclick={() => zustand.gehen((a) => ({ ...a, aufnahme: null }))}><i class="fa-solid fa-chevron-left"></i></button>
-      <div><b>{gewaehlt.sender}</b><span class="rh-still">{datum(gewaehlt.beginn)} · {t("aufnahmenAnsicht.telefon.titel", { n: gewaehlt.titelzahl })} · {zeit(gewaehlt.dauer)}</span></div>
-    </div>
-    <div class="t-chips">
-      <button class="knopf primaer" type="button" disabled={gewaehlt.status === "laeuft"} onclick={() => void hoeren(gewaehlt!)}><i class="fa-solid fa-play"></i>{t("aufnahmenAnsicht.telefon.alles")}</button>
-      <span class="rh-still">{ordnerName(gewaehlt.ordnerId)}</span>
+      <div><b>{gewaehlt.sender}</b></div>
     </div>
     <div class="tf-liste">
+      <div class="tf-a-detail">
+        <AufnahmeKopf aufnahme={gewaehlt} ordner={ordnerliste.ordner} titelwechsel={0} zip={quelle.alsZip(gewaehlt.id)} eineDatei={quelle.alsEineDatei(gewaehlt.id)}
+                      kannSchneiden={false} kannVerwalten={quelle.faehig.verwalten && gewaehlt.status !== "laeuft"} onhoeren={() => void hoeren(gewaehlt!)}
+                      onschneiden={() => undefined} onteilen={async () => undefined} onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} />
+      </div>
       {#each titel as x (x.id)}
         {@const spielt = jetzt?.path === x.pfad}
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
         <div class="tf-sender" class:spielt onclick={() => void hoeren(gewaehlt!, x)}>
           <span class="rh-a-nr">{String(x.nr).padStart(2, "0")}</span>
           <div><b>{x.titel}</b><div class="tf-meta"><span>{t("aufnahmenAnsicht.spalteAb")} {zeit(x.start)}</span><span>{zeit(x.dauer)}</span></div></div>
-          <span class="tf-aktionen"><button class="rund" type="button" aria-label={t("aufnahmenAnsicht.abHier")} title={t("aufnahmenAnsicht.abHier")}
+          <span class="tf-aktionen">
+            <a class="rund" href={quelle.titelDatei(x.id)} download aria-label={t("aufnahmenAnsicht.laden")} title={t("aufnahmenAnsicht.laden")} onclick={(e) => e.stopPropagation()}><i class="fa-solid fa-download"></i></a>
+            <button class="rund" type="button" aria-label={t("aufnahmenAnsicht.abHier")} title={t("aufnahmenAnsicht.abHier")}
                   onclick={(e) => { e.stopPropagation(); void hoeren(gewaehlt!, x); }}><i class="fa-solid {spielt ? 'fa-volume-high' : 'fa-play'}"></i></button></span>
         </div>
       {/each}

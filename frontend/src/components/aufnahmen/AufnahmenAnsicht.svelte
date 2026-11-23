@@ -10,7 +10,7 @@
   import { api } from "../../lib/api.js";
   import { appPfad } from "../../lib/router.js";
   import { abwaerts, aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste,
-    type Aufnahme, type Aufnahmeansicht, type Aufnahmesortierung, type Titel, type Wolkendatei, type Wolkenebene } from "../../lib/aufnahmen";
+    type Aufnahme, type Aufnahmeansicht, type Aufnahmesortierung, type Titel, type Wolkendatei, type Wolkenebene, reiheAus, type Spieleintrag } from "../../lib/aufnahmen";
   import { dauer } from "../../lib/aufnahmen/anzeige";
   import { schnittquelle, type Schnittgegenstand } from "../../lib/schnitt";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
@@ -193,17 +193,12 @@
   }
 
   // ----- Hören über die Kanzel ------------------------------------------------------------------------------------
-  type Eintrag = { path: string; name: string; session_id?: string; station_name: string; date?: string; duration: number; playUrl: string; source: "recording" };
-  const jetzt = $derived(appState.isPlaying ? ((appState.currentRecording as Eintrag | null) ?? null) : null);
+  const jetzt = $derived(appState.isPlaying ? ((appState.currentRecording as Spieleintrag | null) ?? null) : null);
 
-  const ganzEintrag = (a: Aufnahme): Eintrag => ({ path: `sitzung:${a.id}`, name: a.sender, session_id: a.id, station_name: a.sender, date: a.beginn,
-    duration: a.dauer, playUrl: schnittquelle.ton({ art: "sitzung", kennung: a.id }), source: "recording" });
-  const titelEintrag = (a: Aufnahme, x: Titel): Eintrag => ({ path: x.pfad, name: x.titel || a.sender, session_id: a.id, station_name: a.sender,
-    duration: x.dauer, playUrl: quelle.titelTon(x.id), source: "recording" });
-  const wolkeEintrag = (d: Wolkendatei): Eintrag => ({ path: d.pfad, name: d.name, station_name: t("aufnahmenAnsicht.kellerwolke"), duration: 0,
+  const wolkeEintrag = (d: Wolkendatei): Spieleintrag => ({ path: d.pfad, name: d.name, station_name: t("aufnahmenAnsicht.kellerwolke"), duration: 0,
     playUrl: quelle.wolkeTon(d.pfad), source: "recording" });
 
-  function abspielen(reihe: Eintrag[], start: Eintrag) {
+  function abspielen(reihe: Spieleintrag[], start: Spieleintrag) {
     if (appState.isRecording) { actions.showToast(t("aufnahmenAnsicht.erstBeenden"), "error"); return; }
     if (jetzt?.path === start.path) { actions.stop(); return; }
     appState.recordingPlaylist = reihe;
@@ -214,8 +209,7 @@
     if (a.status === "laeuft") return;
     await sicher(async () => {
       const reihe = a.id === gewaehlt?.id && titel.length ? titel : await quelle.titel(a.id);
-      if (!reihe.length) { abspielen([ganzEintrag(a)], ganzEintrag(a)); return; }
-      const eintraege = reihe.map((x) => titelEintrag(a, x));
+      const eintraege = reiheAus(quelle, a, reihe);
       abspielen(eintraege, eintraege[ab ? reihe.findIndex((x) => x.id === ab.id) : 0] ?? eintraege[0]);
     });
   }

@@ -10,6 +10,10 @@
 .t-suche .rh-suchfeld { min-width: 0; }
 .t-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 var(--rh-rand) 8px; }
 /* oben Luft für den Rand der spielenden Zeile (2 px und Schein), sonst schneidet die Kante des Rollfelds ihn ab (RAD-10) */
+/* Detail einer Aufnahme (RAD-134): Angaben und gleich breite Tasten, rollt mit den Titeln */
+.tf-a-detail { margin-bottom: 10px; }
+.tf-a-detail .rh-abo-knoepfe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tf-a-detail .rh-abo-knoepfe > *, .tf-a-detail .auswahl-knopf { inline-size: 100%; justify-content: center; }
 /* Live mitlesen (RAD-133): füllt den Platz der Liste, rollt nur in sich; oben kleine Tasten, gleich breit */
 .tf-mitlesen { grid-row: 2 / -1; min-height: 0; display: grid; container: liste / inline-size; padding: 0 var(--rh-rand) 8px; }
 .tf-mitlesen .rh-mitlesen { min-height: 0; gap: 6px 8px; grid-template: "tasten schalter" auto "feld feld" minmax(0, 1fr) / minmax(0, 1fr) auto; }

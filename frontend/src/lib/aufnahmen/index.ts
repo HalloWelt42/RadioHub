@@ -18,3 +18,4 @@ export const aufnahmezustand = new Aufnahmezustand({
 export * from "./zustand.svelte";
 export type { Aufnahmequelle, Aufnahmefaehigkeiten } from "./quelle";
 export * from "./typen";
+export * from "./spielreihe";

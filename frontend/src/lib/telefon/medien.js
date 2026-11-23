@@ -1,6 +1,7 @@
 /**
  * Wiedergabe am Sperrbildschirm (Media Session): Titel, Sender oder Abo, Bild, Wiedergabe und Pause; bei Folgen
- * Spulen, beim Radio voriger und nächster Favorit.
+ * Spulen, beim Radio voriger und nächster Favorit, bei Aufnahmen Spulen und voriger
+ * und nächster Titel (RAD-134).
  */
 import { folgenBild } from '../playerEngine.js';
 import { senderquelle } from '$ziel/quelle';
@@ -22,13 +23,19 @@ export function beschreibung(appState) {
   if (ep) {
     const eigenes = folgenBild(ep);
     return { title: ep.title || '', artist: ep.podcast?.title || ep.podcast_title || '', album: 'RadioHub',
-             bild: eigenes, artwork: bild(eigenes ?? APPBILD), folge: true };
+             bild: eigenes, artwork: bild(eigenes ?? APPBILD), folge: true, spulbar: true, reihe: false };
+  }
+  const a = appState.currentRecording;
+  if (a) {
+    const logo = a.station_uuid ? senderquelle.logoAdresse(a.station_uuid, '') : null;
+    return { title: a.name || a.station_name || '', artist: a.name === a.station_name ? '' : a.station_name || '', album: 'RadioHub',
+             bild: logo, artwork: bild(logo ?? APPBILD), folge: false, spulbar: true, reihe: true };
   }
   const s = appState.currentStation;
   if (s) {
     const logo = senderquelle.logoAdresse(s.uuid, s.favicon || '');
     return { title: appState.streamTitle || s.name || '', artist: appState.streamTitle ? s.name : '', album: 'RadioHub',
-             bild: logo, artwork: bild(logo ?? APPBILD), folge: false };
+             bild: logo, artwork: bild(logo ?? APPBILD), folge: false, spulbar: false, reihe: true };
   }
   return null;
 }
@@ -43,11 +50,11 @@ export function aktualisieren(appState, aktionen) {
   const setzen = (name, fn) => { try { ms.setActionHandler(name, fn); } catch { /* nicht unterstützt */ } };
   setzen('play', aktionen.abspielen);
   setzen('pause', aktionen.pause);
-  setzen('seekbackward', b?.folge ? (d) => aktionen.zurueck(d?.seekOffset || 15) : null);
-  setzen('seekforward', b?.folge ? (d) => aktionen.vor(d?.seekOffset || 30) : null);
-  setzen('seekto', b?.folge ? (d) => aktionen.springen(d.seekTime) : null);
-  setzen('previoustrack', b && !b.folge ? aktionen.voriger : null);
-  setzen('nexttrack', b && !b.folge ? aktionen.naechster : null);
+  setzen('seekbackward', b?.spulbar && !b.reihe ? (d) => aktionen.zurueck(d?.seekOffset || 15) : null);
+  setzen('seekforward', b?.spulbar && !b.reihe ? (d) => aktionen.vor(d?.seekOffset || 30) : null);
+  setzen('seekto', b?.spulbar ? (d) => aktionen.springen(d.seekTime) : null);
+  setzen('previoustrack', b?.reihe ? aktionen.voriger : null);
+  setzen('nexttrack', b?.reihe ? aktionen.naechster : null);
 }
 
 /** Position für die Leiste am Sperrbildschirm (nur bei Folgen mit bekannter Dauer). */

@@ -1,7 +1,7 @@
 <script>
   /**
    * Spielerleiste über der Fußleiste (Bild, Titel, Wiedergabe/Pause); antippen öffnet den Spieler als Vollbild:
-   * bei Folgen Position, Spulen, 15 s zurück und 30 s vor; beim Radio voriger und nächster Sender und Stopp. Der große
+   * bei Folgen und Aufnahmen Position, Spulen, 15 s zurück und 30 s vor, bei Aufnahmen dazu die Titel (RAD-134); beim Radio voriger und nächster Sender und Stopp. Der große
    * Knopf hält nur an und setzt fort, beendet wird nur über Stopp (Nutzer 20.11.2026, wie an der Kanzel). Hinter dem
    * Vollbild liegt das Logo weichgezeichnet als Farbschein, die Bedienflächen darauf sind aus Glas (RAD-56). Ist ein
    * anderes Gerät desselben Kontos offen, wählt der Umschalter oben, wem die Tasten gehören (RAD-96): im Steuermodus sind
@@ -42,6 +42,8 @@
   const ruht = $derived(fern.aktiv && !fern.erreichbar);
   const info = $derived(fremd ? fremdeBeschreibung(dort) : lokal);
   const folge = $derived(fremd ? dort?.art === 'folge' : !!appState.currentEpisode);
+  const aufnahme = $derived(fremd ? dort?.art === 'aufnahme' : !folge && !appState.currentStation && !!appState.currentRecording);
+  const spulbar = $derived(folge || aufnahme);
   const spielt = $derived(fremd ? !!dort?.laeuft : appState.isPlaying && !appState.isPaused);
   const tasten = $derived(fern.aktiv ? { ...steuerung, ...fernsteuerung } : steuerung);
 
@@ -69,7 +71,7 @@
   const laut = $derived(lautZiehen ?? dort?.lautstaerke ?? null);
   const bildSrc = $derived(info?.bild || null);
   /** Name der Quelle für die Kachel ohne Logo (Kürzel und Lack wie in der Liste, RAD-100) */
-  const quellName = $derived(fremd ? (dort?.titel || fern.name) : (appState.currentStation?.name || appState.currentEpisode?.podcast?.title || info?.title || ''));
+  const quellName = $derived(fremd ? (dort?.titel || fern.name) : (appState.currentStation?.name || appState.currentRecording?.station_name || appState.currentEpisode?.podcast?.title || info?.title || ''));
   /** das Bild, sobald es wirklich geladen ist: nur dann trägt es den Farbschein, sonst der Schein aus dem Akzent (RAD-90) */
   let scheinBild = $state(null);
   $effect(() => {
@@ -111,7 +113,8 @@
   /** Herunterladen der laufenden Folge, nur hier im großen Spieler (RAD-102, Wahl B); in Basic die Datei des Feeds,
    *  die der Browser dann selbst öffnet (fremder Server) */
   const dateiAdresse = $derived(!fremd && folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
-    ? podcastquelle.dateiAdresse(appState.currentEpisode.id) : '');
+    ? podcastquelle.dateiAdresse(appState.currentEpisode.id) : !fremd && aufnahme ? appState.currentRecording?.ladeUrl ?? '' : '');
+  const ladeHilfe = $derived(t(aufnahme ? 'aufnahmenAnsicht.laden' : 'podcastAnsicht.herunterladenHilfe'));
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
@@ -153,14 +156,14 @@
 {#if info}
   <div class="tf-leiste" class:fern={fremd}>
     <button class="leiste-info" onclick={leisteOeffnen} aria-label={t('telefon.spielerOeffnen')}>
-      <Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
+      <Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : aufnahme ? 'fa-circle-dot' : 'fa-radio'} groesse={44} />
       <!-- Rasterdisplay wie die Anzeige der Kanzel (RAD-97, Wahl A): Titel und Sender als Punktmatrix hinter Glas -->
       <span class="ak-glas rh-display tf-raster">
         <span class="rh-display-zeile rh-display-titel" use:rasterStellen={{ jeSchrift: LEISTE_JE_SCHRIFT, melden: (n) => (titelStellen = n) }}>
           {#key titelStellen}<ak-segmente art="punkt" stellen={titelStellen} lauf="200" farbe="gruen" text={info.title}></ak-segmente>{/key}
         </span>
         <span class="rh-display-zeile" use:rasterStellen={{ jeSchrift: STATUS_JE_SCHRIFT, melden: (n) => (zusatzStellen = n) }}>
-          {#key zusatzStellen}<ak-segmente art="punkt" stellen={zusatzStellen} lauf="240" farbe="gruen" text={info.artist || (folge ? '' : t('telefon.live'))}></ak-segmente>{/key}
+          {#key zusatzStellen}<ak-segmente art="punkt" stellen={zusatzStellen} lauf="240" farbe="gruen" text={info.artist || (spulbar ? '' : t('telefon.live'))}></ak-segmente>{/key}
         </span>
       </span>
     </button>
@@ -193,19 +196,19 @@
       </div>
     {/if}
     <div class="buehne">
-      <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(100cqi, 100cqb)" /></span>
+      <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : aufnahme ? 'fa-circle-dot' : 'fa-radio'} groesse="min(100cqi, 100cqb)" /></span>
       {#if !fremd && !folge && puffer.aktiv && pTitel}
         <!-- zeigt der Zeitversatz den Titel unten im Kasten, steht oben nur der Sender, nichts doppelt (RAD-90) -->
         <h2>{info.artist || info.title}</h2>
       {:else}
         <h2>{info.title}</h2>
-        <p class="zusatz">{info.artist || (folge ? '' : t('telefon.live'))}</p>
+        <p class="zusatz">{info.artist || (spulbar ? '' : t('telefon.live'))}</p>
       {/if}
       {#if dateiAdresse}
         <!-- Herunterladen unter dem Titel, rund wie die Tasten (RAD-102, Wahl B) -->
         <div class="tf-sender-aktionen">
           <a class="rund tf-rund" href={dateiAdresse} download target="_blank" rel="noopener"
-             aria-label={t('podcastAnsicht.herunterladenHilfe')} title={t('podcastAnsicht.herunterladenHilfe')}><i class="fa-solid fa-download"></i></a>
+             aria-label={ladeHilfe} title={ladeHilfe}><i class="fa-solid fa-download"></i></a>
         </div>
       {/if}
       {#if eintrag}
@@ -229,7 +232,7 @@
       {/if}
     </div>
 
-    {#if folge}
+    {#if spulbar}
       {#if !fremd}
       <div class="position">
         <input name="position" type="range" min="0" max={Math.max(1, Math.floor(dauer))} step="1"
@@ -240,6 +243,8 @@
       </div>
       {/if}
       <div class="knoepfe">
+        {#if aufnahme}<button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.voriger()} aria-label={t('puffer.titelZurueckHilfe')} title={t('puffer.titelZurueckHilfe')}>
+          <i class="fa-solid fa-backward-step"></i></button>{/if}
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
           <i class="fa-solid fa-rotate-left"></i><span class="tf-zahl">15</span>
         </button>
@@ -249,6 +254,8 @@
         <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
           <i class="fa-solid fa-rotate-right"></i><span class="tf-zahl">30</span>
         </button>
+        {#if aufnahme}<button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.naechster()} aria-label={t('puffer.titelVorHilfe')} title={t('puffer.titelVorHilfe')}>
+          <i class="fa-solid fa-forward-step"></i></button>{/if}
       </div>
     {:else}
       <div class="knoepfe">
@@ -306,7 +313,7 @@
          ruhig, solange woanders etwas spielt) -->
     {#if !folge || kann.uebergabe}
       <div class="tf-fuss">
-        {#if !folge && (!fremd || senderUuid)}
+        {#if !folge && (!fremd || senderUuid) && !(aufnahme && !fremd && !appState.currentRecording?.session_id)}
           <button class="knopf tf-zur-liste" onclick={zurListe} title={t('telefon.inListeZeigen')} aria-label={t('telefon.inListeZeigen')}><i class="fa-solid fa-location-crosshairs"></i>{t('telefon.fokus')}</button>
         {/if}
         {#if kann.uebergabe}

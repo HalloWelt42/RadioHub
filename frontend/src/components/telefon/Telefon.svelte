@@ -18,6 +18,8 @@
   import { radioSetzen } from '../../lib/telefon/zeitansage.svelte.js';
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import { anhaengen, tonelement } from '../../spieler/tonelement';
+  import { folgewegSetzen } from '../../spieler/geraete.svelte';
+  import { fern } from '../../spieler/fern.svelte';
   import TelefonRadio from './TelefonRadio.svelte';
   import TelefonPodcasts from './podcasts/TelefonPodcasts.svelte';
   import TelefonAufnahmen from './TelefonAufnahmen.svelte';
@@ -60,16 +62,24 @@
     return () => document.removeEventListener('visibilitychange', sichtbar);
   });
 
+  // Übergabe zwischen Geräten (RAD-134): was hier ankommt, zeigt der große Spieler; was man abgibt, steuert man weiter von hier
+  $effect(() => folgewegSetzen({
+    angekommen: () => { fern.waehlen(null); if (appState.activeTab !== 'wecker') spielerOffen = true; },
+    abgegeben: (id) => fern.waehlen(id),
+  }));
+
   function zeitAktualisieren() {
     const r = engine.handleTimeUpdate();
     if (!r) return;
     zeit = r.currentTime;
     dauer = r.duration;
     if (appState.currentEpisode) medien.position(dauer, zeit, appState.podcastSpeed || 1);
+    else if (appState.currentRecording) medien.position(dauer, zeit);
   }
 
   // Vor und Zurück folgen der sichtbaren Liste des Radios (Vorgabe 7); ohne Liste (Radio noch nicht geöffnet) die Favoriten
   function favorit(schritt) {
+    if (appState.currentRecording) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();   // Titel der Aufnahme
     if (appState.isRecording) return;   // während einer Aufnahme bleibt der Sender (RAD-83)
     if (appState.stations.length) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();
     const liste = appState.favorites;
@@ -83,7 +93,9 @@
     wunsch.spielen = true;   // ab jetzt soll etwas zu hören sein (der Wächter der Weckeransicht verbindet neu)
     if (appState.isPaused) return actions.resume();
     if (appState.isPlaying) return;
-    if (appState.currentEpisode) {
+    if (appState.currentRecording) {
+      actions.playRecording(appState.currentRecording);
+    } else if (appState.currentEpisode) {
       actions.playEpisode(appState.currentEpisode, appState.currentEpisode.podcast);
     } else if (appState.currentStation) {
       actions.playStation(appState.currentStation);
@@ -112,6 +124,11 @@
   /** Laufenden Sender in der Liste zeigen: Spieler zu, zur Zeile rollen; steht er wegen eines Filters nicht in der
    *  Liste, sucht ihn die Liste gezielt (als Suche sichtbar, mit einem Tipp entfernbar) */
   async function zurListe(sender = appState.currentStation) {
+    const aufnahme = sender ? null : appState.currentRecording;
+    if (aufnahme?.session_id) {
+      spielerOffen = false;
+      return actions.navigateTo(`/aufnahmen/${encodeURIComponent(aufnahme.session_id)}`);
+    }
     if (!sender) return;
     spielerOffen = false;
     if (appState.activeTab !== 'radio') actions.navigateTo('/radio');
