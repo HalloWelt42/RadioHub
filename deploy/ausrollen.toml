@@ -14,6 +14,8 @@ ton = false
 [zugaenge]
 name = "RadioHub"
 kellerwolke = "admin"
+# Live mitlesen (RAD-129): hören und übersetzen über die Leitstelle
+leitstelle = ["text", "hoeren", "uebersetzen"]
 
 [radio]
 # Dienst der App in compose.pi.yml (dort läuft die Sicherung) und die Dateien relativ zum Ordner der App: Daten bleiben
