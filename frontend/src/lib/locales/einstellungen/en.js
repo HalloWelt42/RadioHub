@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcasts', wecker: 'Alarm and time announcement', ablage: 'Storage', dienste: 'Services',
   },
   reiter: {
-    bedienung: 'Controls', tastatur: 'Keyboard', ueber: 'About', bedanken: 'Thanks', ordner: 'Folders', titel: 'Ignored titles',
+    bedienung: 'Controls', tastatur: 'Keyboard', ueber: 'About', ordner: 'Folders', titel: 'Ignored titles',
     technik: 'Technical', zeitansage: 'Time announcement', ort: 'Location',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Arrow right', taste_ziffern: '1 to {n}',
   },
   ueber: { info: 'Technical information', lizenz: 'Licence', recht: 'Privacy and terms', fehlt: 'Text not found.' },
-  bedanken: {
-    titel: 'Thanks', text: 'RadioHub is private and without ads. If you want to give something back:',
-    seite: 'Open donation page', adresse: 'Address', kopieren: 'Copy', kopiert: 'Address copied',
-  },
   ordner: {
     titel: 'Recording folders', hilfe: 'new recordings go to the folder marked "Recording here"', stamm: 'No folder',
     stammHilfe: 'no folder of its own, directly under recordings', aufnahmen: 'Recordings', ordner: 'Folder',

@@ -6,7 +6,7 @@ export default {
     podcasts: 'Podcasts', wecker: 'Wekker en tijdmelding', ablage: 'Opslag', dienste: 'Diensten',
   },
   reiter: {
-    bedienung: 'Bediening', tastatur: 'Toetsenbord', ueber: 'Over', bedanken: 'Bedanken', ordner: 'Mappen', titel: 'Nummers negeren',
+    bedienung: 'Bediening', tastatur: 'Toetsenbord', ueber: 'Over', ordner: 'Mappen', titel: 'Nummers negeren',
     technik: 'Techniek', zeitansage: 'Tijdmelding', ort: 'Locatie',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: 'Pijl rechts', taste_ziffern: '1 tot {n}',
   },
   ueber: { info: 'Technische informatie', lizenz: 'Licentie', recht: 'Privacy en gebruiksvoorwaarden', fehlt: 'Tekst niet gevonden.' },
-  bedanken: {
-    titel: 'Bedanken', text: 'RadioHub is privé en zonder reclame. Wie iets terug wil doen:',
-    seite: 'Donatiepagina openen', adresse: 'Adres', kopieren: 'Kopiëren', kopiert: 'Adres gekopieerd',
-  },
   ordner: {
     titel: 'Opnamemappen', hilfe: 'nieuwe opnamen komen in de map met "Neemt op"', stamm: 'Zonder map',
     stammHilfe: 'direct onder Opnamen, in geen eigen map', aufnahmen: 'Opnamen', ordner: 'Map',

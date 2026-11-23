@@ -6,7 +6,7 @@ export default {
     podcasts: 'Podcasty', wecker: 'Budzik i zapowiedź godziny', ablage: 'Pamięć', dienste: 'Usługi',
   },
   reiter: {
-    bedienung: 'Obsługa', tastatur: 'Klawiatura', ueber: 'O aplikacji', bedanken: 'Podziękuj', ordner: 'Foldery', titel: 'Ignorowane utwory',
+    bedienung: 'Obsługa', tastatur: 'Klawiatura', ueber: 'O aplikacji', ordner: 'Foldery', titel: 'Ignorowane utwory',
     technik: 'Technika', zeitansage: 'Zapowiedź godziny', ort: 'Miejsce',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: 'Strzałka w prawo', taste_ziffern: '1 do {n}',
   },
   ueber: { info: 'Informacje techniczne', lizenz: 'Licencja', recht: 'Prywatność i warunki korzystania', fehlt: 'Nie znaleziono tekstu.' },
-  bedanken: {
-    titel: 'Podziękuj', text: 'RadioHub jest prywatny i bez reklam. Jeśli chcesz coś dać w zamian:',
-    seite: 'Otwórz stronę darowizn', adresse: 'Adres', kopieren: 'Kopiuj', kopiert: 'Skopiowano adres',
-  },
   ordner: {
     titel: 'Foldery nagrań', hilfe: 'nowe nagrania trafiają do folderu oznaczonego "Nagrywa"', stamm: 'Bez folderu',
     stammHilfe: 'bezpośrednio w Nagraniach, w żadnym własnym folderze', aufnahmen: 'Nagrania', ordner: 'Folder',

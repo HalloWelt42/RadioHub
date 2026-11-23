@@ -257,8 +257,7 @@ export default {
   },
 
   app: {
-    digitalAudioSystem: 'デジタルオーディオシステム',
-    unterstuetzenTitle: '支援する'
+    digitalAudioSystem: 'デジタルオーディオシステム'
   },
 
   // ドットマトリクスと14セグメント表示はラテン文字のみ表示できるため、その文字列は英字のまま

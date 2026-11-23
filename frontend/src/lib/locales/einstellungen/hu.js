@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcastok', wecker: 'Ébresztő és időbemondás', ablage: 'Tárhely', dienste: 'Szolgáltatások',
   },
   reiter: {
-    bedienung: 'Kezelés', tastatur: 'Billentyűzet', ueber: 'Névjegy', bedanken: 'Köszönet', ordner: 'Mappák', titel: 'Figyelmen kívül hagyott címek',
+    bedienung: 'Kezelés', tastatur: 'Billentyűzet', ueber: 'Névjegy', ordner: 'Mappák', titel: 'Figyelmen kívül hagyott címek',
     technik: 'Technika', zeitansage: 'Időbemondás', ort: 'Hely',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Jobb nyíl', taste_ziffern: '1-{n}',
   },
   ueber: { info: 'Műszaki információk', lizenz: 'Licenc', recht: 'Adatvédelem és felhasználási feltételek', fehlt: 'A szöveg nem található.' },
-  bedanken: {
-    titel: 'Köszönet', text: 'A RadioHub magáncélú és reklámmentes. Ha szeretnél valamit visszaadni:',
-    seite: 'Adományoldal megnyitása', adresse: 'Cím', kopieren: 'Másolás', kopiert: 'Cím másolva',
-  },
   ordner: {
     titel: 'Felvételi mappák', hilfe: 'az új felvételek a "Ide vesz fel" jelölésű mappába kerülnek', stamm: 'Mappa nélkül',
     stammHilfe: 'közvetlenül a Felvételek alatt, saját mappa nélkül', aufnahmen: 'Felvételek', ordner: 'Mappa',

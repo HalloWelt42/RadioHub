@@ -112,12 +112,10 @@
 /* schmale Telefone: das Zählwerk ohne Wort, damit das Suchfeld Platz behält (das Wort steht im Hinweis) */
 @media (max-width: 420px) { .tp-suche .tp-treffer-wort { display: none; } .tp-suche .t-treffer { padding-right: 2px; } }
 
-/* Schriftzug im Kopf am Telefon (RAD-90): klein, ohne Herz */
+/* Schriftzug im Kopf am Telefon (RAD-90): klein */
 .mobil .t-kopf h1.t-logo { display: flex; align-items: baseline; gap: 8px; flex: 0 1 auto; }
-/* Schriftzug und Herz als eine Gruppe, die den Platz füllt: die Knöpfe stehen so immer rechts außen, mit oder ohne
-   Herz (Basic hat keins, RAD-91) */
+/* der Schriftzug füllt den Platz: die Knöpfe stehen so immer rechts außen */
 .tf-marke { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
-.tf-marke .t-herz { flex: none; font-size: var(--gross); }
 .t-logo .rh-logo { font-size: calc(var(--gross) + 3px); }
 .t-logo :is(.rh-pro, .rh-basic) { font-size: calc(var(--gross) - 1px); }
 

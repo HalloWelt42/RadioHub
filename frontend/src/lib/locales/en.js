@@ -270,8 +270,7 @@ export default {
 
   // === App / Header / Footer ===
   app: {
-    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM',
-    unterstuetzenTitle: 'Support'
+    digitalAudioSystem: 'DIGITAL AUDIO SYSTEM'
   },
 
   // === Cutter Extra ===

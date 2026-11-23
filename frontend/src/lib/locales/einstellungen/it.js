@@ -7,7 +7,7 @@ export default {
     podcasts: "Podcast", wecker: "Sveglia e annuncio dell'ora", ablage: "Archiviazione", dienste: "Servizi",
   },
   reiter: {
-    bedienung: "Utilizzo", tastatur: "Tastiera", ueber: "Informazioni", bedanken: "Ringrazia", ordner: "Cartelle", titel: "Titoli ignorati",
+    bedienung: "Utilizzo", tastatur: "Tastiera", ueber: "Informazioni", ordner: "Cartelle", titel: "Titoli ignorati",
     technik: "Tecnica", zeitansage: "Annuncio dell'ora", ort: "Luogo",
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: "Freccia destra", taste_ziffern: "da 1 a {n}",
   },
   ueber: { info: "Informazioni tecniche", lizenz: "Licenza", recht: "Privacy e condizioni d'uso", fehlt: "Testo non trovato." },
-  bedanken: {
-    titel: "Ringrazia", text: "RadioHub è privato e senza pubblicità. Se vuoi ricambiare:",
-    seite: "Apri la pagina delle donazioni", adresse: "Indirizzo", kopieren: "Copia", kopiert: "Indirizzo copiato",
-  },
   ordner: {
     titel: "Cartelle di registrazione", hilfe: "le nuove registrazioni finiscono nella cartella con \"Registra qui\"", stamm: "Senza cartella",
     stammHilfe: "direttamente in Registrazioni, in nessuna cartella", aufnahmen: "Registrazioni", ordner: "Cartella",

@@ -270,8 +270,7 @@ export default {
 
   // === App / Cabeçalho / Rodapé ===
   app: {
-    digitalAudioSystem: 'SISTEMA DE ÁUDIO DIGITAL',
-    unterstuetzenTitle: 'Apoiar'
+    digitalAudioSystem: 'SISTEMA DE ÁUDIO DIGITAL'
   },
 
   // === Editor, extra ===

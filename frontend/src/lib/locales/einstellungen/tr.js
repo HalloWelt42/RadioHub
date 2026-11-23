@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcastler', wecker: 'Alarm ve saat anonsu', ablage: 'Depolama', dienste: 'Hizmetler',
   },
   reiter: {
-    bedienung: 'Kullanım', tastatur: 'Klavye', ueber: 'Hakkında', bedanken: 'Teşekkür', ordner: 'Klasörler', titel: 'Yok sayılan başlıklar',
+    bedienung: 'Kullanım', tastatur: 'Klavye', ueber: 'Hakkında', ordner: 'Klasörler', titel: 'Yok sayılan başlıklar',
     technik: 'Teknik', zeitansage: 'Saat anonsu', ort: 'Konum',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Sağ ok', taste_ziffern: '1 - {n}',
   },
   ueber: { info: 'Teknik bilgiler', lizenz: 'Lisans', recht: 'Gizlilik ve kullanım koşulları', fehlt: 'Metin bulunamadı.' },
-  bedanken: {
-    titel: 'Teşekkür', text: 'RadioHub özel ve reklamsızdır. Bir şeyler geri vermek isteyenler için:',
-    seite: 'Bağış sayfasını aç', adresse: 'Adres', kopieren: 'Kopyala', kopiert: 'Adres kopyalandı',
-  },
   ordner: {
     titel: 'Kayıt klasörleri', hilfe: 'yeni kayıtlar "Buraya kaydediyor" işaretli klasöre gider', stamm: 'Klasörsüz',
     stammHilfe: 'doğrudan Kayıtlar altında, ayrı bir klasör olmadan', aufnahmen: 'Kayıtlar', ordner: 'Klasör',

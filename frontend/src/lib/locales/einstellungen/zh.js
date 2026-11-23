@@ -6,7 +6,7 @@ export default {
     podcasts: '播客', wecker: '闹钟和报时', ablage: '存储', dienste: '服务',
   },
   reiter: {
-    bedienung: '操作', tastatur: '键盘', ueber: '关于', bedanken: '致谢', ordner: '文件夹', titel: '忽略曲名',
+    bedienung: '操作', tastatur: '键盘', ueber: '关于', ordner: '文件夹', titel: '忽略曲名',
     technik: '技术', zeitansage: '报时', ort: '地点',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: '右方向键', taste_ziffern: '1 至 {n}',
   },
   ueber: { info: '技术信息', lizenz: '许可证', recht: '隐私和使用条款', fehlt: '未找到文本。' },
-  bedanken: {
-    titel: '致谢', text: 'RadioHub 是个人项目，没有广告。想回馈一点的话：',
-    seite: '打开捐助页面', adresse: '地址', kopieren: '复制', kopiert: '地址已复制',
-  },
   ordner: {
     titel: '录音文件夹', hilfe: '新录音会存入标有 "录入此处" 的文件夹', stamm: '不放入文件夹',
     stammHilfe: '直接放在录音下，不放入单独的文件夹', aufnahmen: '录音', ordner: '文件夹',

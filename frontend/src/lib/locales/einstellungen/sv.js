@@ -8,7 +8,7 @@ export default {
     podcasts: 'Poddar', wecker: 'Väckarklocka och tidsutrop', ablage: 'Lagring', dienste: 'Tjänster',
   },
   reiter: {
-    bedienung: 'Användning', tastatur: 'Tangentbord', ueber: 'Om', bedanken: 'Tacka', ordner: 'Mappar', titel: 'Ignorera spår',
+    bedienung: 'Användning', tastatur: 'Tangentbord', ueber: 'Om', ordner: 'Mappar', titel: 'Ignorera spår',
     technik: 'Teknik', zeitansage: 'Tidsutrop', ort: 'Plats',
   },
   karte: {
@@ -71,10 +71,6 @@ export default {
     taste_ArrowRight: 'Pil höger', taste_ziffern: '1 till {n}',
   },
   ueber: { info: 'Teknisk information', lizenz: 'Licens', recht: 'Integritet och användarvillkor', fehlt: 'Texten hittades inte.' },
-  bedanken: {
-    titel: 'Tacka', text: 'RadioHub är privat och utan reklam. Vill du ge något tillbaka:',
-    seite: 'Öppna donationssidan', adresse: 'Adress', kopieren: 'Kopiera', kopiert: 'Adressen kopierad',
-  },
   ordner: {
     titel: 'Inspelningsmapp', hilfe: 'nya inspelningar hamnar i mappen märkt "Spelar in"', stamm: 'Utan mapp',
     stammHilfe: 'direkt under Inspelningar, inte i någon egen mapp', aufnahmen: 'Inspelningar', ordner: 'Mapp',

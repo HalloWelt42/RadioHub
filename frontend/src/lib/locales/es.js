@@ -270,8 +270,7 @@ export default {
 
   // === App / Cabecera / Pie ===
   app: {
-    digitalAudioSystem: "SISTEMA DE AUDIO DIGITAL",
-    unterstuetzenTitle: "Apoyar"
+    digitalAudioSystem: "SISTEMA DE AUDIO DIGITAL"
   },
 
   // === Editor, extras ===

@@ -6,11 +6,16 @@ import type { Wahlwert, Zeile, ZeilenArt } from "./typen";
 /** Ab so vielen Werten klappt eine Wahl auf, statt als Segment nebeneinander zu stehen */
 export const SEGMENT_HOECHSTENS = 6;
 
+/** Art einer Wahl nach ihrer Zahl von Werten, für Felder des Servers und Einstellungen dieses Geräts gleich */
+export function wahlArt(anzahl: number): "wahl" | "auswahl" {
+  return anzahl > SEGMENT_HOECHSTENS ? "auswahl" : "wahl";
+}
+
 function art(feld: Feld): ZeilenArt {
   switch (feld.art) {
     case "schalter": return "schalter";
     case "zahl": return "zahl";
-    case "auswahl": return feld.angebot || feld.optionen.length > SEGMENT_HOECHSTENS ? "auswahl" : "wahl";
+    case "auswahl": return feld.angebot ? "auswahl" : wahlArt(feld.optionen.length);
     case "liste": return Object.keys(feld.beschriftungen ?? {}).length ? "mehrfach" : "liste";
     case "text": return feld.einheit === "Uhrzeit" ? "uhrzeit" : feld.angebot ? "auswahl" : "text";
     default: return "text";

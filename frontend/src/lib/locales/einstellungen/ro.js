@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcasturi', wecker: 'Alarmă și anunțarea orei', ablage: 'Stocare', dienste: 'Servicii',
   },
   reiter: {
-    bedienung: 'Utilizare', tastatur: 'Tastatură', ueber: 'Despre', bedanken: 'Mulțumiri', ordner: 'Dosare', titel: 'Titluri ignorate',
+    bedienung: 'Utilizare', tastatur: 'Tastatură', ueber: 'Despre', ordner: 'Dosare', titel: 'Titluri ignorate',
     technik: 'Tehnic', zeitansage: 'Anunțarea orei', ort: 'Loc',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Săgeată dreapta', taste_ziffern: '1 la {n}',
   },
   ueber: { info: 'Informații tehnice', lizenz: 'Licență', recht: 'Confidențialitate și condiții de utilizare', fehlt: 'Textul nu a fost găsit.' },
-  bedanken: {
-    titel: 'Mulțumiri', text: 'RadioHub este privat și fără reclame. Dacă vrei să dai ceva înapoi:',
-    seite: 'Deschide pagina de donații', adresse: 'Adresă', kopieren: 'Copiază', kopiert: 'Adresă copiată',
-  },
   ordner: {
     titel: 'Dosare de înregistrare', hilfe: 'înregistrările noi ajung în dosarul marcat cu "Înregistrează aici"', stamm: 'Fără dosar',
     stammHilfe: 'direct sub Înregistrări, fără dosar propriu', aufnahmen: 'Înregistrări', ordner: 'Dosar',

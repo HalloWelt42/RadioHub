@@ -18,7 +18,6 @@
   import AblageTeil from "./AblageTeil.svelte";
   import AufnahmeordnerTeil from "./AufnahmeordnerTeil.svelte";
   import BausteineTeil from "./BausteineTeil.svelte";
-  import BedankenTeil from "./BedankenTeil.svelte";
   import Felder from "./Felder.svelte";
   import Karte from "./Karte.svelte";
   import KategorienTeil from "./KategorienTeil.svelte";
@@ -49,7 +48,6 @@
         : [r("bedienung", "fa-hand-pointer", [{ karte: "spracheGeraet", symbol: "fa-language", felder: ["geraet:sprache"] }])]),
       r("tastatur", "fa-keyboard", [{ teil: TastaturTeil }]),
       r("ueber", "fa-circle-info", [{ teil: UeberTeil }]),
-      r("bedanken", "fa-heart", [{ teil: BedankenTeil }]),
     ] },
     { id: "darstellung", symbol: "fa-circle-half-stroke", reiter: [r("darstellung", "", [
       { karte: "aussehen", symbol: "fa-palette", hinweis: "aussehen", felder: ["geraet:vorlage", "geraet:thema", "geraet:schrift"] },

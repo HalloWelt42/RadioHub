@@ -270,8 +270,7 @@ export default {
 
   // === App / Header / Footer ===
   app: {
-    digitalAudioSystem: 'DIGITÁLNY AUDIOSYSTÉM',
-    unterstuetzenTitle: 'Podporiť'
+    digitalAudioSystem: 'DIGITÁLNY AUDIOSYSTÉM'
   },
 
   // === Cutter extra ===

@@ -264,8 +264,7 @@ export default {
 
   // === App / Header / Footer ===
   app: {
-    digitalAudioSystem: 'DIGITAAL AUDIOSYSTEEM',
-    unterstuetzenTitle: 'Steunen'
+    digitalAudioSystem: 'DIGITAAL AUDIOSYSTEEM'
   },
 
   // === Control bar on the computer (RAD-8). Source in 14 segments: at most 7 characters ===

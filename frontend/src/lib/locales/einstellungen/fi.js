@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcastit', wecker: 'Herätys ja aikailmoitus', ablage: 'Tallennustila', dienste: 'Palvelut',
   },
   reiter: {
-    bedienung: 'Käyttö', tastatur: 'Näppäimistö', ueber: 'Tietoja', bedanken: 'Kiitä', ordner: 'Kansiot', titel: 'Ohita kappaleet',
+    bedienung: 'Käyttö', tastatur: 'Näppäimistö', ueber: 'Tietoja', ordner: 'Kansiot', titel: 'Ohita kappaleet',
     technik: 'Tekniikka', zeitansage: 'Aikailmoitus', ort: 'Sijainti',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Nuoli oikealle', taste_ziffern: '1-{n}',
   },
   ueber: { info: 'Tekniset tiedot', lizenz: 'Lisenssi', recht: 'Tietosuoja ja käyttöehdot', fehlt: 'Tekstiä ei löytynyt.' },
-  bedanken: {
-    titel: 'Kiitä', text: 'RadioHub on yksityinen ja mainokseton. Jos haluat antaa jotain takaisin:',
-    seite: 'Avaa lahjoitussivu', adresse: 'Osoite', kopieren: 'Kopioi', kopiert: 'Osoite kopioitu',
-  },
   ordner: {
     titel: 'Tallennuskansiot', hilfe: 'uudet tallenteet menevät kansioon, jossa on "Tallentaa"', stamm: 'Ei kansiota',
     stammHilfe: 'suoraan Tallenteet-kohdassa, ei omassa kansiossa', aufnahmen: 'Tallenteet', ordner: 'Kansio',

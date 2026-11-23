@@ -257,8 +257,7 @@ export default {
   },
 
   app: {
-    digitalAudioSystem: 'DIGITÁLIS AUDIORENDSZER',
-    unterstuetzenTitle: 'Támogatás'
+    digitalAudioSystem: 'DIGITÁLIS AUDIORENDSZER'
   },
 
   kanzel: {

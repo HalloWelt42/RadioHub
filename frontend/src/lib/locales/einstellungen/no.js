@@ -6,7 +6,7 @@ export default {
     podcasts: 'Podkaster', wecker: 'Alarm og tidsopplesning', ablage: 'Lagring', dienste: 'Tjenester',
   },
   reiter: {
-    bedienung: 'Betjening', tastatur: 'Tastatur', ueber: 'Om', bedanken: 'Takk', ordner: 'Mapper', titel: 'Ignorer spor',
+    bedienung: 'Betjening', tastatur: 'Tastatur', ueber: 'Om', ordner: 'Mapper', titel: 'Ignorer spor',
     technik: 'Teknikk', zeitansage: 'Tidsopplesning', ort: 'Sted',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: 'Pil høyre', taste_ziffern: '1 til {n}',
   },
   ueber: { info: 'Teknisk informasjon', lizenz: 'Lisens', recht: 'Personvern og bruksvilkår', fehlt: 'Fant ikke teksten.' },
-  bedanken: {
-    titel: 'Takk', text: 'RadioHub er privat og uten reklame. For den som vil gi noe tilbake:',
-    seite: 'Åpne donasjonssiden', adresse: 'Adresse', kopieren: 'Kopier', kopiert: 'Adresse kopiert',
-  },
   ordner: {
     titel: 'Opptaksmappe', hilfe: 'nye opptak havner i mappen merket "Tar opp"', stamm: 'Uten mappe',
     stammHilfe: 'rett under Opptak, i ingen egen mappe', aufnahmen: 'Opptak', ordner: 'Mappe',

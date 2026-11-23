@@ -2,7 +2,7 @@
 // fest gesetzt, Typ der Wahl) und die Tastentabelle, aus der Verhalten und Seite Tastatur zugleich lesen.
 import { describe, expect, it, vi } from "vitest";
 import type { Feld } from "appkern-oberflaeche";
-import { anzeigeeinheit, SEGMENT_HOECHSTENS, wahlwert, zeileAusFeld } from "../src/lib/einstellungen/aus-feld";
+import { anzeigeeinheit, SEGMENT_HOECHSTENS, wahlArt, wahlwert, zeileAusFeld } from "../src/lib/einstellungen/aus-feld";
 
 const feld = (teil: Partial<Feld>): Feld => ({
   name: "x", titel: "X", beschreibung: "", art: "text", optionen: [], beschriftungen: {}, schritt: null, kleinste: null, groesste: null,
@@ -10,6 +10,9 @@ const feld = (teil: Partial<Feld>): Feld => ({
 } as Feld);
 
 describe("Feld als Zeile", () => {
+  it("eine Wahl klappt ab einer Grenze auf, für Server und Gerät gleich (RAD-122)", () => {
+    expect([wahlArt(SEGMENT_HOECHSTENS), wahlArt(SEGMENT_HOECHSTENS + 1), wahlArt(20)]).toEqual(["wahl", "auswahl", "auswahl"]);
+  });
   it("Arten: Schalter, Zahl, wenige Werte als Segment, viele als Aufklappliste, Liste mit Namen als Mehrfachwahl, Uhrzeit", () => {
     expect(zeileAusFeld(feld({ art: "schalter" }), true, false).art).toBe("schalter");
     expect(zeileAusFeld(feld({ art: "zahl", kleinste: 8, groesste: 512, schritt: 8, einheit: "kbit/s" }), 32, false))

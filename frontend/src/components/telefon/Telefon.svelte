@@ -19,7 +19,6 @@
   import { wunsch } from '../../lib/telefon/verbindung.svelte.js';
   import { anhaengen, tonelement } from '../../spieler/tonelement';
   import TelefonRadio from './TelefonRadio.svelte';
-  import { SPENDENSEITE } from '../../lib/ausgabe';
   import TelefonPodcasts from './podcasts/TelefonPodcasts.svelte';
   import TelefonAufnahmen from './TelefonAufnahmen.svelte';
   import TelefonSpieler from './TelefonSpieler.svelte';
@@ -141,14 +140,12 @@
     <TelefonWecker {steuerung} audio={audioEl} />
   {:else}
     <div class="t-kopf mit-aktionen" data-rahmen="kopf">
-      <!-- Schriftzug klein statt des Bereichs (RAD-90, Wahl A): ohne Herz, mit PRO oder BASIC; den Bereich zeigt die Leiste unten -->
+      <!-- Schriftzug klein statt des Bereichs (RAD-90, Wahl A): mit PRO oder BASIC; den Bereich zeigt die Leiste unten -->
       <div class="tf-marke">
         <h1 class="t-logo" aria-label="RadioHub {angebot.backend ? 'PRO' : 'Basic'}: {titel}">
           <span class="rh-logo" aria-hidden="true">{#each 'RadioHub'.split('') as zeichen, i (i)}<span class="rh-logo-zeichen" style:--i={i}>{zeichen}</span>{/each}</span>
           <span class={angebot.backend ? 'rh-pro' : 'rh-basic'} aria-hidden="true">{angebot.backend ? 'PRO' : 'BASIC'}</span>
         </h1>
-        <!-- das Herz direkt zur Spendenseite, in PRO und Basic (RAD-91, RAD-106) -->
-        <a class="rh-herz t-herz" href={SPENDENSEITE} target="_blank" rel="noopener" title={t('app.unterstuetzenTitle')} aria-label={t('app.unterstuetzenTitle')}><i class="fa-solid fa-heart"></i></a>
       </div>
       <span class="t-aktionen">
         {#if angebot.wecker}

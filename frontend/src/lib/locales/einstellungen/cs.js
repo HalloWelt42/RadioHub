@@ -6,7 +6,7 @@ export default {
     podcasts: 'Podcasty', wecker: 'Budík a hlášení času', ablage: 'Úložiště', dienste: 'Služby',
   },
   reiter: {
-    bedienung: 'Ovládání', tastatur: 'Klávesnice', ueber: 'O aplikaci', bedanken: 'Poděkovat', ordner: 'Složky', titel: 'Ignorované skladby',
+    bedienung: 'Ovládání', tastatur: 'Klávesnice', ueber: 'O aplikaci', ordner: 'Složky', titel: 'Ignorované skladby',
     technik: 'Technika', zeitansage: 'Hlášení času', ort: 'Místo',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: 'Šipka vpravo', taste_ziffern: '1 až {n}',
   },
   ueber: { info: 'Technické informace', lizenz: 'Licence', recht: 'Ochrana osobních údajů a podmínky užívání', fehlt: 'Text nenalezen.' },
-  bedanken: {
-    titel: 'Poděkovat', text: 'RadioHub je soukromý projekt bez reklamy. Kdo chce něco vrátit:',
-    seite: 'Otevřít stránku pro dary', adresse: 'Adresa', kopieren: 'Kopírovat', kopiert: 'Adresa zkopírována',
-  },
   ordner: {
     titel: 'Složky nahrávek', hilfe: 'nové nahrávky se ukládají do složky s označením "Nahrává sem"', stamm: 'Bez složky',
     stammHilfe: 'přímo v Nahrávkách, v žádné vlastní složce', aufnahmen: 'Nahrávky', ordner: 'Složka',

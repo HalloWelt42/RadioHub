@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcasts', wecker: 'Wecker und Zeitansage', ablage: 'Ablage', dienste: 'Dienste',
   },
   reiter: {
-    bedienung: 'Bedienung', tastatur: 'Tastatur', ueber: 'Über', bedanken: 'Bedanken', ordner: 'Ordner', titel: 'Titel ignorieren',
+    bedienung: 'Bedienung', tastatur: 'Tastatur', ueber: 'Über', ordner: 'Ordner', titel: 'Titel ignorieren',
     technik: 'Technik', zeitansage: 'Zeitansage', ort: 'Ort',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Pfeil rechts', taste_ziffern: '1 bis {n}',
   },
   ueber: { info: 'Technische Informationen', lizenz: 'Lizenz', recht: 'Datenschutz und Nutzungsbedingungen', fehlt: 'Text nicht gefunden.' },
-  bedanken: {
-    titel: 'Bedanken', text: 'RadioHub ist privat und ohne Werbung. Wer etwas zurückgeben möchte:',
-    seite: 'Spendenseite öffnen', adresse: 'Adresse', kopieren: 'Kopieren', kopiert: 'Adresse kopiert',
-  },
   ordner: {
     titel: 'Aufnahmeordner', hilfe: 'neue Aufnahmen landen im Ordner mit "Nimmt auf"', stamm: 'Ohne Ordner',
     stammHilfe: 'direkt unter Aufnahmen, in keinem eigenen Ordner', aufnahmen: 'Aufnahmen', ordner: 'Ordner',

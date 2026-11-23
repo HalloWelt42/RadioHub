@@ -7,7 +7,7 @@ export default {
     podcasts: "Podcasts", wecker: "Réveil et annonce de l'heure", ablage: "Stockage", dienste: "Services",
   },
   reiter: {
-    bedienung: "Utilisation", tastatur: "Clavier", ueber: "À propos", bedanken: "Remercier", ordner: "Dossiers", titel: "Titres ignorés",
+    bedienung: "Utilisation", tastatur: "Clavier", ueber: "À propos", ordner: "Dossiers", titel: "Titres ignorés",
     technik: "Technique", zeitansage: "Annonce de l'heure", ort: "Lieu",
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: "Flèche droite", taste_ziffern: "1 à {n}",
   },
   ueber: { info: "Informations techniques", lizenz: "Licence", recht: "Confidentialité et conditions d'utilisation", fehlt: "Texte introuvable." },
-  bedanken: {
-    titel: "Remercier", text: "RadioHub est privé et sans publicité. Pour ceux qui veulent donner quelque chose en retour :",
-    seite: "Ouvrir la page de dons", adresse: "Adresse", kopieren: "Copier", kopiert: "Adresse copiée",
-  },
   ordner: {
     titel: "Dossiers d'enregistrement", hilfe: "les nouveaux enregistrements vont dans le dossier marqué \"Enregistre ici\"", stamm: "Sans dossier",
     stammHilfe: "directement sous Enregistrements, dans aucun dossier", aufnahmen: "Enregistrements", ordner: "Dossier",

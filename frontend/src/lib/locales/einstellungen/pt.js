@@ -7,7 +7,7 @@ export default {
     podcasts: 'Podcasts', wecker: 'Despertador e hora falada', ablage: 'Armazenamento', dienste: 'Serviços',
   },
   reiter: {
-    bedienung: 'Utilização', tastatur: 'Teclado', ueber: 'Sobre', bedanken: 'Agradecer', ordner: 'Pastas', titel: 'Ignorar faixas',
+    bedienung: 'Utilização', tastatur: 'Teclado', ueber: 'Sobre', ordner: 'Pastas', titel: 'Ignorar faixas',
     technik: 'Técnica', zeitansage: 'Hora falada', ort: 'Local',
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: 'Seta para a direita', taste_ziffern: '1 a {n}',
   },
   ueber: { info: 'Informações técnicas', lizenz: 'Licença', recht: 'Privacidade e termos de utilização', fehlt: 'Texto não encontrado.' },
-  bedanken: {
-    titel: 'Agradecer', text: 'O RadioHub é privado e sem publicidade. Quem quiser retribuir:',
-    seite: 'Abrir página de donativos', adresse: 'Endereço', kopieren: 'Copiar', kopiert: 'Endereço copiado',
-  },
   ordner: {
     titel: 'Pastas de gravação', hilfe: 'as novas gravações vão para a pasta com "A gravar"', stamm: 'Sem pasta',
     stammHilfe: 'diretamente em Gravações, sem pasta própria', aufnahmen: 'Gravações', ordner: 'Pasta',

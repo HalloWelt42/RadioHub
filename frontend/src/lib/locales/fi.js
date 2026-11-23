@@ -270,8 +270,7 @@ export default {
 
   // === App / Header / Footer ===
   app: {
-    digitalAudioSystem: 'DIGITAALINEN ÄÄNIJÄRJESTELMÄ',
-    unterstuetzenTitle: 'Tue'
+    digitalAudioSystem: 'DIGITAALINEN ÄÄNIJÄRJESTELMÄ'
   },
 
   // === Cutter extra ===

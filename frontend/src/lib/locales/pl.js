@@ -264,8 +264,7 @@ export default {
 
   // === Aplikacja / nagłówek / stopka ===
   app: {
-    digitalAudioSystem: 'CYFROWY SYSTEM AUDIO',
-    unterstuetzenTitle: 'Wesprzyj'
+    digitalAudioSystem: 'CYFROWY SYSTEM AUDIO'
   },
 
   // === Pulpit: pasek odtwarzania na komputerze (RAD-8). Źródło w 14 segmentach: maksymalnie 7 znaków ===

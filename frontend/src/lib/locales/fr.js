@@ -270,8 +270,7 @@ export default {
 
   // === App / En-tête / Pied de page ===
   app: {
-    digitalAudioSystem: "SYSTÈME AUDIO NUMÉRIQUE",
-    unterstuetzenTitle: "Soutenir"
+    digitalAudioSystem: "SYSTÈME AUDIO NUMÉRIQUE"
   },
 
   // === Montage, compléments ===

@@ -6,7 +6,7 @@ export default {
     podcasts: 'ポッドキャスト', wecker: 'アラームと時報', ablage: 'ストレージ', dienste: 'サービス',
   },
   reiter: {
-    bedienung: '操作', tastatur: 'キーボード', ueber: '情報', bedanken: '支援', ordner: 'フォルダ', titel: '無視する曲名',
+    bedienung: '操作', tastatur: 'キーボード', ueber: '情報', ordner: 'フォルダ', titel: '無視する曲名',
     technik: '技術', zeitansage: '時報', ort: '場所',
   },
   karte: {
@@ -69,10 +69,6 @@ export default {
     taste_ArrowRight: '右矢印', taste_ziffern: '1 から {n}',
   },
   ueber: { info: '技術情報', lizenz: 'ライセンス', recht: 'プライバシーと利用規約', fehlt: 'テキストが見つかりません。' },
-  bedanken: {
-    titel: '支援', text: 'RadioHub は個人のプロジェクトで、広告はありません。お礼をしたい方はこちら:',
-    seite: '寄付ページを開く', adresse: 'アドレス', kopieren: 'コピー', kopiert: 'アドレスをコピーしました',
-  },
   ordner: {
     titel: '録音フォルダ', hilfe: '新しい録音は "録音先" のフォルダに入ります', stamm: 'フォルダなし',
     stammHilfe: '録音の直下、独自のフォルダには入れない', aufnahmen: '録音', ordner: 'フォルダ',

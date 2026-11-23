@@ -1,4 +1,4 @@
-/* Bausteine der Schale des Radios: Formen der Teile, die nur das Radio hat (Kopf mit Schriftzug und Herz,
+/* Bausteine der Schale des Radios: Formen der Teile, die nur das Radio hat (Kopf mit Schriftzug,
    Pillen-Navigation, Status, Darstellung, Meldung). Übernommen aus dem abgenommenen Entwurf
    (mockups/radio-filter/radio-bausteine.css, RAD-3), Abschnitte Kopf und Rückgängig-Band; die übrigen Bausteine des
    Entwurfs kommen mit ihren Bereichen (Etappen 3 und 4). Nur Marken: --rh-* (radio-marken.css und die Vorlage), die
@@ -25,13 +25,7 @@ html, body { height: 100%; overflow: hidden; }
     0 0 40px color-mix(in srgb, var(--rh-logo) 30%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) { :root[data-theme="dunkel"] .rh-logo-zeichen { animation: none; } }
-.rh-herz { text-decoration: none; display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer;
-  color: var(--rh-herz); font-size: 19px; text-shadow: 0 0 calc(10px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-herz) 75%, transparent), var(--rh-praegung); }
-.rh-herz i { animation: rh-pochen 2.2s ease-in-out infinite; }
-.rh-herz:hover i { animation: none; transform: scale(1.18); }
-.rh-herz:focus-visible { outline: 1px solid var(--ak-fokus-rand); outline-offset: 3px; }
-@keyframes rh-pochen { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.14); } }
-/* Zeichen der Ausgabe neben dem Herz: Schrift wie RadioHub, 3D-Prägung aus gestaffelten Schatten; PRO in Gold
+/* Zeichen der Ausgabe neben dem Schriftzug: Schrift wie RadioHub, 3D-Prägung aus gestaffelten Schatten; PRO in Gold
    (Marken --rh-gold-*), BASIC in Silber (--rh-silber-*), das in der Webversion auf den Quellcode der PRO verweist. Ein
    Glanz zieht beim Zeigen darüber. */
 .rh-pro, .rh-basic { position: relative; display: inline-block; font-family: var(--rh-schrift-logo); font-weight: 900; font-size: calc(var(--appname) + 1px);
@@ -146,5 +140,5 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 :root[data-kanzel] .rh-band > .rh-band-zu { position: absolute; top: 8px; right: 8px; inline-size: 32px; block-size: 32px; min-block-size: 0; }
 @keyframes rh-ausfahren { from { translate: 0 100%; } }
 
-@media (prefers-reduced-motion: reduce) { .rh-herz i, .rh-band, :root[data-kanzel] .rh-band { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .rh-band, :root[data-kanzel] .rh-band { animation: none; } }
 

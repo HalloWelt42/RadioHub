@@ -9,6 +9,7 @@ import { actions, appState } from "../store.svelte.js";
 import { wach, wachHaltenSetzen } from "../telefon/wachHalten.svelte.js";
 import { nachtsSetzen, planSetzen, zeit, zeitansageSchalten } from "../telefon/zeitansage.svelte.js";
 import { ABSTAENDE_MIN, BEDINGUNGEN, ZEITRAUM_SCHRITT_MIN } from "../telefon/zeitplan.js";
+import { wahlArt } from "./aus-feld";
 import type { Zeile, ZeilenArt } from "./typen";
 
 interface Geraetewert {
@@ -29,7 +30,7 @@ const NACHTS = ["normal", "leise", "aus"] as const;
 
 export const GERAET: Record<string, Geraetewert> = {
   sprache: {
-    zeile: () => geraetezeile("sprache", "wahl", geraetesprache(), { optionen: SPRACHANGEBOT.map((l) => ({ wert: l.code, titel: l.label })) }),
+    zeile: () => geraetezeile("sprache", wahlArt(SPRACHANGEBOT.length), geraetesprache(), { optionen: SPRACHANGEBOT.map((l) => ({ wert: l.code, titel: l.label })) }),
     setzen: (w) => geraetespracheSetzen(String(w)),
   },
   vorlage: {

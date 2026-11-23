@@ -7,7 +7,7 @@ export default {
     podcasts: "Podcasts", wecker: "Alarma y anuncio de la hora", ablage: "Almacenamiento", dienste: "Servicios",
   },
   reiter: {
-    bedienung: "Manejo", tastatur: "Teclado", ueber: "Acerca de", bedanken: "Agradecer", ordner: "Carpetas", titel: "Títulos ignorados",
+    bedienung: "Manejo", tastatur: "Teclado", ueber: "Acerca de", ordner: "Carpetas", titel: "Títulos ignorados",
     technik: "Técnica", zeitansage: "Anuncio de la hora", ort: "Lugar",
   },
   karte: {
@@ -70,10 +70,6 @@ export default {
     taste_ArrowRight: "Flecha derecha", taste_ziffern: "1 a {n}",
   },
   ueber: { info: "Información técnica", lizenz: "Licencia", recht: "Privacidad y condiciones de uso", fehlt: "Texto no encontrado." },
-  bedanken: {
-    titel: "Agradecer", text: "RadioHub es privado y sin publicidad. Si quieres devolver algo:",
-    seite: "Abrir la página de donaciones", adresse: "Dirección", kopieren: "Copiar", kopiert: "Dirección copiada",
-  },
   ordner: {
     titel: "Carpetas de grabación", hilfe: "las grabaciones nuevas van a la carpeta marcada con \"Graba aquí\"", stamm: "Sin carpeta",
     stammHilfe: "directamente en Grabaciones, sin carpeta propia", aufnahmen: "Grabaciones", ordner: "Carpeta",

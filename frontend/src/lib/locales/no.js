@@ -264,8 +264,7 @@ export default {
 
   // === App / topp / bunn ===
   app: {
-    digitalAudioSystem: 'DIGITALT LYDSYSTEM',
-    unterstuetzenTitle: 'Støtt oss'
+    digitalAudioSystem: 'DIGITALT LYDSYSTEM'
   },
 
   // === Kanzel: avspillingslinje på datamaskinen (RAD-8). Kilde i 14 segmenter: maks 7 tegn ===

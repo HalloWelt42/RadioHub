@@ -257,8 +257,7 @@ export default {
   },
 
   app: {
-    digitalAudioSystem: '数字音频系统',
-    unterstuetzenTitle: '支持'
+    digitalAudioSystem: '数字音频系统'
   },
 
   // 点阵和 14 段显示屏只能显示拉丁字母，因此这些文字保留英文

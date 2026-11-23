@@ -257,8 +257,7 @@ export default {
   },
 
   app: {
-    digitalAudioSystem: 'SISTEM AUDIO DIGITAL',
-    unterstuetzenTitle: 'Susține'
+    digitalAudioSystem: 'SISTEM AUDIO DIGITAL'
   },
 
   kanzel: {

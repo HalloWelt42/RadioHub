@@ -32,8 +32,7 @@
 /* ═══ Farben der Marke RadioHub ═══ in jeder Vorlage gleich */
 :root {
   --rh-logo: #4a90d9;                          /* Schriftzug, dunkel */
-  --rh-herz: #e0294f;                          /* Herz neben dem Schriftzug */
-  /* Zeichen PRO neben dem Herz (Nutzer 20.11.2026): poliertes Gold in 3D, Schrift wie RadioHub. Fläche mit
+  /* Zeichen PRO neben dem Schriftzug (Nutzer 20.11.2026): poliertes Gold in 3D, Schrift wie RadioHub. Fläche mit
      Lichtkante oben und Horizont in der Mitte, die Kanten der Prägung nach unten rechts dunkler, darunter ein
      weicher Schatten. Glanz gehört hier zum Material, nicht zu einem Licht. */
   --rh-gold-flaeche: linear-gradient(180deg, #fffbe6 0%, #ffe9a0 16%, #f2c64a 38%, #b47a16 50%, #d9a23a 58%, #ffe08a 82%, #fff4c4 100%);
@@ -61,7 +60,6 @@
   --rh-flaggen-rand: #000;
   /* Schatten des Kopfs auf den Hauptbereich (RAD-71): deutlich, damit der Übergang klar ist */
   --rh-kopf-schatten: 0 1px 0 rgb(0 0 0 / .55), 0 3px 6px rgb(0 0 0 / .45), 0 10px 24px rgb(0 0 0 / .5);                      /* feiner dunkler Rand der Flaggen im Kopf (RAD-71) */
-  --rh-bildcode-grund: #fff;                    /* heller Grund unter Bildcodes (Bedanken), in beiden Themen lesbar */
   --rh-lack-1: #2759a6; --rh-lack-2: #23804a; --rh-lack-3: #b3302c; --rh-lack-4: #7442b8; --rh-lack-5: #8d5229; /* Lackflächen der Senderlogos ohne Bild */
   --rh-lack-6: #11807a; --rh-lack-7: #5f6b78; --rh-lack-8: #a0457a; --rh-lack-9: #3f6f8f; --rh-lack-10: #6b7a1f;
 }

@@ -220,10 +220,6 @@
 .rh-md { color: var(--text-2); max-inline-size: 80ch; }
 .rh-md.gekuerzt { max-block-size: calc(var(--gross) * 1.5 * 6); overflow: hidden; mask-image: linear-gradient(to bottom, var(--text) 60%, transparent); }
 .rh-md + .rh-mehr { margin: 6px 0 0 -10px; }
-.rh-dank { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-.rh-dank-adresse { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 16px; }
-.rh-dank-adresse img { border-radius: var(--r2); background-color: var(--rh-bildcode-grund); padding: 8px; }
-.rh-dank-adresse > div { display: grid; gap: 8px; justify-items: start; min-width: 0; }
 .rh-pfadwert { justify-self: start; padding: 6px 12px; border-radius: var(--r2); font-family: var(--schrift-zahl); background-color: var(--mulde); box-shadow: var(--rh-mulde); overflow-wrap: anywhere; }
 .rh-bausteine { gap: 12px; }
 .rh-ort { display: grid; gap: 14px; }

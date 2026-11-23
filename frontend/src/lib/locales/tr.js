@@ -257,8 +257,7 @@ export default {
   },
 
   app: {
-    digitalAudioSystem: 'DİJİTAL SES SİSTEMİ',
-    unterstuetzenTitle: 'Destek ol'
+    digitalAudioSystem: 'DİJİTAL SES SİSTEMİ'
   },
 
   kanzel: {

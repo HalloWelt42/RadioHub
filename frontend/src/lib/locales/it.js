@@ -270,8 +270,7 @@ export default {
 
   // === App / Intestazione / Piè di pagina ===
   app: {
-    digitalAudioSystem: "SISTEMA AUDIO DIGITALE",
-    unterstuetzenTitle: "Sostieni"
+    digitalAudioSystem: "SISTEMA AUDIO DIGITALE"
   },
 
   // === Editor, extra ===
