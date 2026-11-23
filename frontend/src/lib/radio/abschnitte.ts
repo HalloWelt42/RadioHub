@@ -14,6 +14,10 @@ export interface Abschnitt {
   sicher: boolean;
   /** der letzte Abschnitt läuft noch (sein Ende ist die Live-Kante) */
   laufend: boolean;
+  /** beide Grenzen liegen im Puffer: der Titel lässt sich sichern (RAD-132) */
+  komplett: boolean;
+  /** Kennung seiner Aufnahme, leer: noch nicht gesichert */
+  gesichert: string;
 }
 
 /** so weit hinter dem Anfang eines Titels springt "Vorheriger Titel" an den Anfang des vorigen statt dieses */

@@ -117,6 +117,17 @@ Senders (`<Datum> <Uhrzeit>.mp3`), daneben als Begleitdateien die gesprochene Ü
 liegt am Stück, ihre Stellen stehen im Transkript. Bis dahin wächst alles im Arbeitsordner `arbeit/mitlesen`; nach einem
 Neustart oder ohne Kellerwolke wird nachgeholt, das Protokoll sagt es (radio.mitlesen). Abschalten: Einstellungen > Dienste.
 
+Mitlesen am Telefon (RAD-133): die Taste Mitlesen steht beim laufenden Sender in der Liste und im großen Spieler. Das Feld
+nimmt den Platz der Liste ein, zwischen Suche und Spielerleiste, und rollt nur in sich; oben kleine Tasten (Mitlaufen,
+Richtung, Übersetzer, Stimme, Kopieren). Das Kreuz führt zurück zur Liste und lässt das Mitlesen laufen, Mitlesen aus
+beendet es.
+
+Titel speichern (RAD-132): ein Titel, dessen beide Grenzen im Puffer liegen, lässt sich mit einem Klick als eigene Aufnahme
+sichern, auch während eine Aufnahme läuft: im Hinweis über der Spur der Kanzel, mit einem Klick auf den Titel in der
+Zeitleiste der Großansicht (Doppelklick springt weiterhin hin) oder der Taste in seiner Zeile; am Telefon mit der Taste je
+Titel im Puffer, ein Tipp auf den Balken klappt ihn auf. Gespeicherte tragen einen Haken; nach dem Löschen der Aufnahme
+geht es wieder. Der laufende Titel und der erste, vorn abgeschnittene, lassen sich so nicht sichern (dafür Aufnahme, Bereich).
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge

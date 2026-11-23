@@ -10,6 +10,17 @@
 .t-suche .rh-suchfeld { min-width: 0; }
 .t-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 var(--rh-rand) 8px; }
 /* oben Luft für den Rand der spielenden Zeile (2 px und Schein), sonst schneidet die Kante des Rollfelds ihn ab (RAD-10) */
+/* Live mitlesen (RAD-133): füllt den Platz der Liste, rollt nur in sich; oben kleine Tasten, gleich breit */
+.tf-mitlesen { grid-row: 2 / -1; min-height: 0; display: grid; container: liste / inline-size; padding: 0 var(--rh-rand) 8px; }
+.tf-mitlesen .rh-mitlesen { min-height: 0; gap: 6px 8px; grid-template: "tasten schalter" auto "feld feld" minmax(0, 1fr) / minmax(0, 1fr) auto; }
+.tf-mitlesen .rh-mitlese-feld { block-size: auto; min-height: 0; padding: 8px 10px; }
+.tf-mitlesen .rh-mitlese-tasten { display: flex; flex-wrap: wrap; align-items: center; justify-self: stretch; max-inline-size: none; }
+.tf-mitlesen ak-taster[art="flach"] .ak-taster-knopf { inline-size: 46px; block-size: 42px; }
+.tf-mitlesen .rh-richtung ak-taster[art="flach"] .ak-taster-knopf { inline-size: auto; padding-inline: 10px; }
+.tf-mitlesen .rh-mitlese-fuss { flex: 1 1 5em; flex-wrap: nowrap; inline-size: auto; min-inline-size: 0; }
+.tf-mitlesen .rh-mitlese-lage { flex-basis: auto; max-block-size: 1.3em; white-space: nowrap; text-overflow: ellipsis; }
+.tf-mitlesen .rh-detail-schalter .rund { inline-size: 42px; block-size: 42px; }
+.rund.liest > i { color: var(--akzent); }
 .tf-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 6px var(--rh-rand) 12px; }
 .tf-hinweis { margin: 16px 0; color: var(--text-2); font-size: var(--klein); }
 .t-schleier { position: fixed; inset: 0; z-index: 70; }

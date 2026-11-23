@@ -1,15 +1,18 @@
 <script lang="ts">
   // Puffer am Telefon (RAD-46, Entwurf puffer.html Zustände 7 und 8): oben der Balken mit Titelgrenzen und Werbung,
-  // darunter die Abschnitte als Liste, neuester oben. Antippen klappt Hören, Aufnehmen und Bereich auf; im Bereich
-  // werden Titel angehakt, unten steht Sichern.
+  // darunter die Abschnitte als Liste, neuester oben. Antippen (auch auf dem Balken) klappt Hören, Aufnehmen und Bereich auf; im Bereich
+  // werden Titel angehakt, unten steht Sichern. Ein fertiger Titel hat in seiner Zeile die Taste zum Speichern (RAD-132).
   import { appState, actions } from "../../lib/store.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
   import { formatTimeShort } from "../../lib/formatters.js";
   import { bei, bereichAus, imBereich, type Abschnitt } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
+  import { tick, untrack } from "svelte";
+  import { titelsichern } from "../../spieler/titelsichern.svelte";
   import PufferBalken from "./PufferBalken.svelte";
 
-  let { onzu }: { onzu: () => void } = $props();
+  /** `ziel`: dieser Abschnitt ist beim Öffnen aufgeklappt und im Blick */
+  let { onzu, ziel = null }: { onzu: () => void; ziel?: Abschnitt | null } = $props();
 
   let offen = $state<number | null>(null);
   let bereichAn = $state(false);
@@ -21,6 +24,15 @@
   const bereich = $derived(wahl ? bereichAus(wahl.a, wahl.b) : null);
   const gewaehlt = $derived(bereich ? imBereich(liste, bereich.von, bereich.bis) : []);
   const name = (a: Abschnitt) => puffer.benennen(a);
+
+  let listeEl = $state<HTMLElement>();
+  async function zeigen(a: Abschnitt): Promise<void> {
+    if (bereichAn) return antippen(a);
+    offen = a.von;
+    await tick();
+    listeEl?.querySelector(`[data-von="${a.von}"]`)?.scrollIntoView({ block: "center" });
+  }
+  $effect(() => { const a = ziel; if (a && listeEl) untrack(() => void zeigen(a)); });
 
   function antippen(a: Abschnitt): void {
     if (!bereichAn) { offen = offen === a.von ? null : a.von; return; }
@@ -67,12 +79,12 @@
     <span class="tp-titel">{t("puffer.puffer")} · {formatTimeShort(puffer.ende - puffer.anfang)}</span>
     <span></span>
   </div>
-  <div class="tp-oben"><PufferBalken {stelle} {bereich} links={puffer.uhr(puffer.anfang)} mitte={t("puffer.zahlTitel", { n: puffer.titelZahl })} /></div>
-  <ol class="tp-liste">
+  <div class="tp-oben"><PufferBalken {stelle} {bereich} links={puffer.uhr(puffer.anfang)} mitte={t("puffer.zahlTitel", { n: puffer.titelZahl })} onwahl={(a) => void zeigen(a)} /></div>
+  <ol class="tp-liste" bind:this={listeEl}>
     {#each [...liste].reverse() as a (a.von)}
       {@const hoert = bei(liste, stelle)?.von === a.von}
       {@const imBer = gewaehlt.some((g) => g.von === a.von)}
-      <li class="tp-zeile {a.art}" class:hoert class:gewaehlt={imBer}>
+      <li class="tp-zeile {a.art}" class:hoert class:gewaehlt={imBer} class:mit-sichern={a.komplett && !bereichAn} data-von={a.von}>
         <button class="tp-kern" class:mit-wahl={bereichAn} type="button" onclick={() => antippen(a)} aria-expanded={!bereichAn ? offen === a.von : undefined}>
           {#if bereichAn}
             <i class="tp-wahl {imBer ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}" class:aus={a.art === "werbung" || a.laufend}></i>
@@ -80,6 +92,10 @@
           <span class="tp-text"><b>{#if a.art === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}{name(a)}</b>
             <span class="tp-meta"><span>{puffer.uhr(a.von)}</span><span>{formatTimeShort(a.bis - a.von)}</span>{#if a.laufend}<span class="tp-laeuft">{t("puffer.laeuft")}</span>{/if}</span></span>
         </button>
+        {#if a.komplett && !bereichAn}
+          <button class="tp-sichern" type="button" title={titelsichern.hilfe(a)} aria-label="{titelsichern.hilfe(a)}: {name(a)}" disabled={!titelsichern.geht(a)}
+            onclick={() => void titelsichern.tun(a)}><i class={titelsichern.symbol(a)}></i></button>
+        {/if}
         {#if !bereichAn && offen === a.von}
           <div class="tp-tat">
             <button type="button" onclick={() => { puffer.springen(a.von); offen = null; }}><i class="fa-solid fa-play"></i>{t("puffer.hierHoeren")}</button>
@@ -126,6 +142,10 @@
   .tp-text b i { margin-right: 6px; }
   .tp-meta { display: flex; gap: 12px; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
   .tp-laeuft { padding: 0 6px; border-radius: 4px; background: var(--led-rot); color: var(--rh-auf-rot); font-weight: 700; text-transform: uppercase; }
+  .tp-zeile.mit-sichern { grid-template-columns: minmax(0, 1fr) 44px; }
+  .tp-zeile.mit-sichern .tp-tat { grid-column: 1 / -1; }
+  .tp-sichern { inline-size: 44px; block-size: 44px; border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font-size: var(--gross); }
+  .tp-sichern:disabled { opacity: .6; }
   .tp-tat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .tp-tat button, .tp-fuss button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 6px;
     border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }

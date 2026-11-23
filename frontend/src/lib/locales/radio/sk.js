@@ -190,7 +190,7 @@ export default {
     uebersetzenHilfe: 'Preložiť', kopieren: 'Kopírovať text', text: 'Text', leer: 'Prvý text príde po niekoľkých vetách', aus: 'vypnuté',
     sammelt: 'zbiera ďalšie vety', hoert: 'počúva', uebersetzt: 'prekladá', gestoert: 'prerušené',
     stimme: 'Tlmočník', stimmeHilfe: 'Hovorí preklad namiesto originálu; vypnuté je opäť počuť originál',
-    spricht: 'hovorí', stimmeKommt: 'hlas hneď začne', ablegen: 'Zvuk, hlas a prepis sa ukladajú do Kellerwolke',
+    spricht: 'hovorí', stimmeKommt: 'hlas hneď začne', ablegen: 'Zvuk, hlas a prepis sa ukladajú do Kellerwolke', zurListe: 'Späť na zoznam, čítanie beží ďalej',
     zeitstimme: 'Hlas času', stimmwahl: 'Hlas tlmočníka',
     beginnt: 'stanica sa spúšťa',
   },

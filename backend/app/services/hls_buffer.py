@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import Optional
 from dataclasses import dataclass, field
 
+from . import titelsicherung
 from .empfang import Abnehmer, Empfang, empfaenge
 from .stromleser import StromFehler, Wiedergabeliste
 from ..sendewerbung import spots as werbespots
@@ -508,7 +509,10 @@ class HLSBufferService:
         v = self._versatz_s
         liste = self._empfang.stuecke(anfang + v)
         return [{"von": round(max(anfang, s.von - v), 3), "bis": round(s.bis - v, 3), "titel": s.name, "art": s.art,
-                 "sicher": s.sicher, "laufend": i == len(liste) - 1} for i, s in enumerate(liste) if s.bis - v > anfang]
+                 "sicher": s.sicher, "laufend": i == len(liste) - 1,
+                 # beide Grenzen liegen im Puffer: der Titel lässt sich sichern (RAD-132)
+                 "komplett": 0 < i < len(liste) - 1 and s.art == "titel",
+                 "gesichert": titelsicherung.gesichert(self._empfang, s.von, s.bis)} for i, s in enumerate(liste) if s.bis - v > anfang]
 
     async def _monitor_ffmpeg(self):
         """Überwacht ffmpeg Prozess im Hintergrund"""

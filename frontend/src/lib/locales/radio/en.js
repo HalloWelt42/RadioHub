@@ -191,7 +191,7 @@ export default {
     uebersetzenHilfe: 'Translate', kopieren: 'Copy text', text: 'Text', leer: 'The first text appears after a few sentences', aus: 'off',
     sammelt: 'collecting the next sentences', hoert: 'listening', uebersetzt: 'translating', gestoert: 'interrupted',
     stimme: 'Interpreter', stimmeHilfe: 'Speak the translation instead of the original; off brings the original back',
-    spricht: 'speaking', stimmeKommt: 'voice coming up', ablegen: 'Audio, voice and transcript are saved to Kellerwolke',
+    spricht: 'speaking', stimmeKommt: 'voice coming up', ablegen: 'Audio, voice and transcript are saved to Kellerwolke', zurListe: 'Back to the list, reading along continues',
     zeitstimme: 'Time voice', stimmwahl: 'Interpreter voice',
     beginnt: 'starting the station',
   },

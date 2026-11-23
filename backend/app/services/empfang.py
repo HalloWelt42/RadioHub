@@ -141,6 +141,8 @@ class Empfang:
         self._lauf: Optional[asyncio.Task] = None
         self._bei_ende_des_empfangs: Optional[Callable[["Empfang"], None]] = None
         self.beendet = False
+        #: gesicherte Titel (RAD-132): Anfang und Ende auf dieser Zeitachse, Kennung der Aufnahme
+        self.gesichert: list[tuple[float, float, str]] = []
 
     # --- Zeitachse ---------------------------------------------------------------------------------------------
 

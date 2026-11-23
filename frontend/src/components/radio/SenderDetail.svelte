@@ -15,7 +15,7 @@
   import { haeufigste, KLANG, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief, type Werbender } from "../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../lib/radio/werbende.svelte";
   import { mitlesen } from "../../lib/radio/mitlesen.svelte";
-  import { puffer } from "../../spieler/puffer.svelte";
+  import { mitlesetaste } from "../../spieler/mitlesetaste.svelte";
   import Mitlesefeld from "./Mitlesefeld.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
 
@@ -73,21 +73,12 @@
     g.name || (g.spots[0]?.format === KLANG ? t("schale.werbeherkunft_klang") : "") || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
 
   // Live mitlesen (RAD-129): die Taste steht immer da; spielt der Sender noch nicht, startet sie ihn
-  $effect(() => { if (faehig.mitlesen) void mitlesen.pruefen(); });
-  const kannMitlesen = $derived(faehig.mitlesen && mitlesen.eingerichtet === true);
+  $effect(() => mitlesetaste.pruefen());
+  const kannMitlesen = $derived(mitlesetaste.kann);
   const mitliest = $derived(mitlesen.laeuftFuer(eintrag.uuid));
-  function senderStarten() {
-    if (!spielt || !puffer.aktiv) onneustart(eintrag);
-  }
-  async function mitlesenWeiter() {
-    senderStarten();
-    await mitlesen.starten(eintrag.uuid, eintrag.sprachen, true);
-  }
-  function mitlesenSchalten(an: boolean) {
-    if (!an) return void mitlesen.beenden();
-    senderStarten();
-    mitlesen.starten(eintrag.uuid, eintrag.sprachen).catch((f: Error) => actions.showToast(f.message, "error"));
-  }
+  const starten = () => onneustart(eintrag);
+  const mitlesenWeiter = () => mitlesetaste.weiter(eintrag, spielt, starten);
+  const mitlesenSchalten = (an: boolean) => mitlesetaste.schalten(eintrag, an, spielt, starten);
 
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);

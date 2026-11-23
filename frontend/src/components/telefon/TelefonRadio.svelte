@@ -14,7 +14,7 @@
   import { bewertungName, format, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import type { Radiobedienung } from "../../lib/radio/bedienung.svelte";
   import { aktive, ohne, umschalten, zuAbfrage, zurueckgesetzt, type Chip, type Schnellfilter } from "../../lib/radio/schnellfilter";
-  import type { Bewertung, Facette, Qualitaet } from "../../lib/radio/typen";
+  import type { Bewertung, Facette, Qualitaet, SenderEintrag } from "../../lib/radio/typen";
   import Guete from "../radio/Guete.svelte";
   import Logo from "../radio/Logo.svelte";
   import Schnellwahl from "../radio/Schnellwahl.svelte";
@@ -22,6 +22,10 @@
   import Sterne from "../radio/Sterne.svelte";
   import Suchfeld from "../radio/Suchfeld.svelte";
   import Varianten from "../radio/Varianten.svelte";
+  import Mitlesefeld from "../radio/Mitlesefeld.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
+  import { mitlesen } from "../../lib/radio/mitlesen.svelte";
+  import { mitlesetaste } from "../../spieler/mitlesetaste.svelte";
 
   /** gemeinsam mit dem großen Spieler (Auge und Stern dort, RAD-94); das Rückgängig-Band zeigt das Telefon */
   let { bedienung }: { bedienung: Radiobedienung } = $props();
@@ -57,6 +61,21 @@
     void liste.eintraege.length;
     untrack(() => bedienung.nachbarnVorbereiten(uuid));
   });
+
+  // Live mitlesen (RAD-133): steht an der Stelle der Liste; Kopf, Suche und Fußleiste bleiben. Zurück zur Liste läuft es weiter.
+  $effect(() => mitlesetaste.pruefen());
+  const gelesen = $derived(mitlesetaste.offen && mitlesen.uuid ? mitlesen.uuid : "");
+  const leser = $derived(gelesen ? bedienung.eintragVon(gelesen) : null);
+  $effect(() => { if (gelesen) void bedienung.eintragHolen(gelesen); });
+  $effect(() => { if (!mitlesen.uuid) mitlesetaste.offen = false; });
+  function mitlesenOeffnen(e: SenderEintrag) {
+    if (!mitlesen.laeuftFuer(e.uuid)) mitlesetaste.schalten(e, true, spielend === e.uuid, () => void bedienung.spielen(e));
+    mitlesetaste.offen = true;
+  }
+  async function mitlesenWeiter() {
+    const e = leser;
+    if (e) await mitlesetaste.weiter(e, spielend === e.uuid, () => void bedienung.spielen(e));
+  }
 
   function chipText(c: Chip): string {
     switch (c.art) {
@@ -103,6 +122,18 @@
     <Suchfeld wert={filter.suche} platzhalter={t("telefon.senderSuchen")} onsuche={(s) => aendern((f) => ({ ...f, suche: s }))} />
     <button class="knopf" type="button" aria-expanded={blatt} onclick={() => (blatt = true)}><i class="fa-solid fa-sliders"></i>{t("radio.filter")}{#if chips.length}<span class="pille">{chips.length}</span>{/if}</button>
   </div>
+  {#if gelesen}
+    <div class="tf-mitlesen">
+      <Mitlesefeld onweiter={mitlesenWeiter}>
+        {#snippet schalter()}
+          <span class="rh-detail-schalter">
+            <Schalter an={true} farbe="blau" symbol="fa-closed-captioning" text={t("radio.mitlesen.titel")} hilfe={t("radio.mitlesen.hilfe")} onwechsel={() => void mitlesen.beenden()} />
+            <button class="rund" type="button" title={t("radio.mitlesen.zurListe")} aria-label={t("radio.mitlesen.zurListe")} onclick={() => (mitlesetaste.offen = false)}><i class="fa-solid fa-xmark"></i></button>
+          </span>
+        {/snippet}
+      </Mitlesefeld>
+    </div>
+  {:else}
   <div class="t-chips">
     <span class="t-treffer" title={t("radio.trefferHilfe")}><ak-segmente art="7" stellen="5" farbe="gruen" text={liste.gesamt === null ? "-----" : zahl(liste.gesamt)}></ak-segmente>{t("radio.treffer")}</span>
     {#each chips as c (`${c.art}:${c.wert}`)}
@@ -133,6 +164,10 @@
             {#if spielt}<div class="t-titel"><i class="fa-solid fa-volume-high"></i>{appState.streamTitle || t("radio.spielt")}</div>{/if}
           </div>
           <span class="tf-aktionen">
+            {#if spielt && !fern.aktiv && mitlesetaste.kann}
+              <button class="rund" class:liest={mitlesen.laeuftFuer(e.uuid)} type="button" aria-pressed={mitlesen.laeuftFuer(e.uuid)} aria-label={t("radio.mitlesen.titel")} title={t("radio.mitlesen.hilfe")}
+                      onclick={(ev) => { ev.stopPropagation(); mitlesenOeffnen(e); }}><i class="fa-solid fa-closed-captioning"></i></button>
+            {/if}
             <!-- Das durchgestrichene Auge blendet den Sender sofort aus (Rückgängig im Band); blieb er als Favorit sichtbar, blendet das Auge ihn wieder ein -->
             {#if einzelnAusgeblendet(e)}
               <button class="rund" type="button" aria-label={t("radio.einblendenVon", { name: e.name })} title={t("radio.einblendenHilfe")}
@@ -153,6 +188,7 @@
       <Nachladen geladen={liste.eintraege.length} gesamt={liste.gesamt} laedt={liste.laedtMehr} fehler={liste.fehler} onmehr={() => void liste.mehr()} einheit={t("radio.geladen")} />
     {/if}
   </div>
+  {/if}
 </div>
 
 {#if blatt}

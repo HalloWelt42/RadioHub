@@ -7,13 +7,16 @@
    * anderes Gerät desselben Kontos offen, wählt der Umschalter oben, wem die Tasten gehören (RAD-96): im Steuermodus sind
    * sie blau und der Spieler zeigt, was dort läuft.
    */
-  import { appState } from '../../lib/store.svelte.js';
+  import { appState, actions } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
   import { beschreibung } from '../../lib/telefon/medien.js';
   import Bild from './Bild.svelte';
   import PufferBalken from './PufferBalken.svelte';
   import TelefonPuffer from './TelefonPuffer.svelte';
   import { puffer } from '../../spieler/puffer.svelte';
+  import { mitlesetaste } from '../../spieler/mitlesetaste.svelte';
+  import { mitlesen } from '../../lib/radio/mitlesen.svelte';
+  import { titelsichern } from '../../spieler/titelsichern.svelte';
   import { live } from '../../spieler/aktionen';
   import { naechster, vorheriger } from '../../lib/radio/abschnitte';
   import { formatTimeShort } from '../../lib/formatters.js';
@@ -95,6 +98,16 @@
       if (gehtWeg === e.uuid) gehtWeg = null;
     }
   }
+  /** Live mitlesen aus dem großen Spieler (RAD-133): das Feld steht in der Radioliste */
+  $effect(() => { if (offen) mitlesetaste.pruefen(); });
+  function mitlesenOeffnen() {
+    const e = eintrag;
+    if (!e) return;
+    if (!mitlesen.laeuftFuer(e.uuid)) mitlesetaste.schalten(e, true, true, () => void bedienung.spielen(e));
+    mitlesetaste.offen = true;
+    offen = false;
+    if (appState.activeTab !== 'radio') actions.navigateTo('/radio');
+  }
   /** Herunterladen der laufenden Folge, nur hier im großen Spieler (RAD-102, Wahl B); in Basic die Datei des Feeds,
    *  die der Browser dann selbst öffnet (fremder Server) */
   const dateiAdresse = $derived(!fremd && folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
@@ -102,6 +115,8 @@
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
+  /** auf dem Balken angetippter Abschnitt: in der Liste aufgeklappt (RAD-132) */
+  let pufferZiel = $state(null);
   /** Rasterdisplay der Leiste (RAD-97): Zeichenhöhe des Titels in Grundschriften, Stellen nach der Breite */
   const LEISTE_JE_SCHRIFT = 0.95;
   let titelStellen = $state(24);
@@ -203,6 +218,10 @@
             <button class="rund tf-rund" type="button" disabled={ruht || (!fremd && appState.isRecording) || gehtWeg === senderUuid} onclick={ausblendenUndWeiter}
                     aria-label={t('radio.ausblendenVon', { name: eintrag.name })} title={t('telefon.ausblendenWeiter')}><i class="fa-solid fa-eye-slash"></i></button>
           {/if}
+          {#if !fremd && mitlesetaste.kann}
+            <button class="rund tf-rund" class:liest={mitlesen.laeuftFuer(eintrag.uuid)} type="button" aria-pressed={mitlesen.laeuftFuer(eintrag.uuid)} onclick={mitlesenOeffnen}
+                    aria-label={t('radio.mitlesen.titel')} title={t('radio.mitlesen.hilfe')}><i class="fa-solid fa-closed-captioning"></i></button>
+          {/if}
           <button class="rund tf-rund" class:favorit={eintrag.favorit} type="button" aria-pressed={eintrag.favorit}
                   aria-label={eintrag.favorit ? t('telefon.favoritAus') : t('telefon.favoritAn')} title={eintrag.favorit ? t('telefon.favoritAus') : t('telefon.favoritAn')}
                   onclick={() => void bedienung.favorit(eintrag)}><i class="fa-{eintrag.favorit ? 'solid' : 'regular'} fa-star"></i></button>
@@ -256,8 +275,11 @@
                      onwahl={(w) => { bitrate.vormerken(w); void bitrate.anwenden(); }} />
           </div>
           <PufferBalken stelle={pStelle} links={t('puffer.vorLive', { zeit: formatTimeShort(puffer.hinter) })}
-            mitte={t('puffer.laengeVonMax', { laenge: formatTimeShort(puffer.ende - puffer.anfang), max: formatTimeShort(puffer.groesste) })} />
-          <div class="tf-versatz-titel">
+            mitte={t('puffer.laengeVonMax', { laenge: formatTimeShort(puffer.ende - puffer.anfang), max: formatTimeShort(puffer.groesste) })}
+            onwahl={(a) => { pufferZiel = a; pufferOffen = true; }} />
+          <div class="tf-versatz-titel" class:mit-sichern={pTitel?.komplett}>
+            {#if pTitel?.komplett}<button class="rund tf-rund tf-sichern" type="button" title={titelsichern.hilfe(pTitel)} aria-label={titelsichern.hilfe(pTitel)}
+              disabled={!titelsichern.geht(pTitel)} onclick={() => void titelsichern.tun(pTitel)}><i class={titelsichern.symbol(pTitel)}></i></button>{/if}
             {#if pTitel}<b>{pName(pTitel)}</b><span>{t('puffer.vonLaenge', { a: formatTimeShort(Math.max(0, pStelle - pTitel.von)), b: formatTimeShort(pTitel.bis - pTitel.von) })}</span>
             {:else}<span>{t('puffer.ohneTitel')}</span>{/if}
           </div>
@@ -267,7 +289,7 @@
             <button type="button" class="knopf" aria-label={t('puffer.titelVorHilfe')} disabled={naechster(puffer.abschnitte, pStelle) === null} onclick={() => puffer.weiter()}>
               {t('puffer.titelVor')}<i class="fa-solid fa-forward-step"></i></button>
             <button type="button" class="knopf" aria-label={t('player.goLive')} disabled={!!appState.isLive} onclick={live}><i class="fa-solid fa-tower-broadcast"></i>{t('kanzel.live')}</button>
-            <button type="button" class="knopf primaer" onclick={() => (pufferOffen = true)}><i class="fa-solid fa-list-ul"></i>{t('puffer.puffer')}</button>
+            <button type="button" class="knopf primaer" onclick={() => { pufferZiel = null; pufferOffen = true; }}><i class="fa-solid fa-list-ul"></i>{t('puffer.puffer')}</button>
           </div>
         </div>
       {/if}
@@ -308,7 +330,7 @@
 {/if}
 
 {#if pufferOffen && offen}
-  <TelefonPuffer onzu={() => (pufferOffen = false)} />
+  <TelefonPuffer ziel={pufferZiel} onzu={() => (pufferOffen = false)} />
 {/if}
 
 <style>
@@ -316,6 +338,9 @@
   .tf-versatz-kopf { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .tf-etikett { font-size: var(--marke); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t-text-2); }
   .tf-versatz-titel { display: grid; text-align: center; }
+  .tf-versatz-titel { position: relative; }
+  .tf-versatz-titel.mit-sichern { padding-inline: 52px; }
+  .tf-sichern { position: absolute; right: 0; top: 50%; translate: 0 -50%; inline-size: 44px; block-size: 44px; }
   .tf-versatz-titel b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tf-versatz-titel span { font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
   .tf-versatz-knoepfe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }

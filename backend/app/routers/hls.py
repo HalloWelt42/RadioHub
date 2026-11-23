@@ -18,6 +18,7 @@ from fastapi.responses import Response, FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
+from ..services import titelsicherung
 from ..services.hls_buffer import hls_buffer
 from ..services.config_service import get_config_service
 from ..services.bitrate_detector import save_detected_bitrate
@@ -139,6 +140,28 @@ async def aufnahme_aus_dem_puffer(wunsch: PufferAufnahme):
     if not ergebnis.get("success"):
         raise HTTPException(409, ergebnis.get("error", "Aufnahme nicht gestartet"))
     return ergebnis
+
+
+class Titelwunsch(BaseModel):
+    """Eine Sekunde des Puffers, die im Titel liegt."""
+    bei_s: float
+
+
+@router.post("/titel")
+async def titel_sichern(wunsch: Titelwunsch):
+    """Den fertigen Titel an dieser Stelle als eigene Aufnahme sichern (RAD-132), auch während eine Aufnahme läuft."""
+    empfang = hls_buffer.empfang
+    if not hls_buffer.session or not empfang:
+        raise HTTPException(409, "Kein Zeitversatz mit Sendedaten aktiv")
+    a = next((a for a in hls_buffer.abschnitte() if a["von"] - 0.5 <= wunsch.bei_s < a["bis"]), None)
+    if a is None or not a["komplett"]:
+        raise HTTPException(409, "An dieser Stelle ist kein fertiger Titel")
+    v = hls_buffer.versatz_s
+    try:
+        kennung = await titelsicherung.sichern(empfang, a["von"] + v, a["bis"] + v, a["titel"])
+    except titelsicherung.SicherungFehler as f:
+        raise HTTPException(409, str(f)) from f
+    return {"session_id": kennung, "titel": a["titel"]}
 
 
 @router.get("/playlist.m3u8")

@@ -328,9 +328,9 @@
 .rh-werbung-zahl { padding: 0 6px; font-size: var(--klein); }   /* Anzahl gleich über der Liste, bündig mit ihren Zeilen (RAD-129) */
 .rh-detail-schalter { display: inline-flex; gap: 6px; margin-left: auto; align-items: start; }
 /* nur das Symbol, damit nichts gestaucht wird und beide beim Umschalten an ihrem Platz bleiben; der Name bleibt als Hinweis und für Vorleser (RAD-129) */
-.rh-detail-dicht .rh-detail-schalter ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
-.rh-detail-dicht .rh-detail-schalter .ak-taster-beschriftung { font-size: 0; gap: 0; }
-.rh-detail-dicht .rh-detail-schalter .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
+:is(.rh-detail-dicht, .tf-mitlesen) .rh-detail-schalter ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
+:is(.rh-detail-dicht, .tf-mitlesen) .rh-detail-schalter .ak-taster-beschriftung { font-size: 0; gap: 0; }
+:is(.rh-detail-dicht, .tf-mitlesen) .rh-detail-schalter .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
 .rh-richtung { display: contents; }   /* nur ein Name für die Regel darunter, kein eigener Kasten */
 /* Live mitlesen (RAD-129): nimmt den ganzen Steckbrief ein, die Schalter bleiben oben rechts an ihrem Platz */
 .rh-detail-dicht.rh-mitliest, .rh-detail-dicht.rh-mitliest:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); }
@@ -451,7 +451,11 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-pg-ausschnitt.ziehbar { cursor: grab; }
 .rh-pg-block { position: absolute; top: 0; bottom: 0; display: grid; align-content: center; gap: 2px; padding: 0 8px; min-inline-size: 0; overflow: hidden;
   background-color: var(--flaeche-1, var(--hg)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-1) 25%, transparent); font-size: var(--klein); }
+.rh-pg-block.komplett { cursor: pointer; }
+.rh-pg-block.gesichert { cursor: default; }
+.rh-pg-block b i { margin-right: 6px; }
 .rh-pg-block.zweit { background-color: color-mix(in srgb, var(--flaeche-1, var(--hg)) 70%, var(--flaeche-2)); }
+.rh-pg-block.komplett:not(.gesichert):hover { background-color: color-mix(in srgb, var(--akzent) 22%, var(--flaeche-2)); }
 .rh-pg-block b, .rh-pg-block span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-pg-block span { color: var(--text-3); font-size: var(--marke); }
 .rh-pg-block.werbung { background-color: color-mix(in srgb, var(--violett) 45%, transparent); }

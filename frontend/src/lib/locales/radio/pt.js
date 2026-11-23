@@ -191,7 +191,7 @@ export default {
     uebersetzenHilfe: 'Traduzir', kopieren: 'Copiar texto', text: 'Texto', leer: 'O primeiro texto surge após algumas frases', aus: 'desligado',
     sammelt: 'a reunir as próximas frases', hoert: 'a ouvir', uebersetzt: 'a traduzir', gestoert: 'interrompido',
     stimme: 'Intérprete', stimmeHilfe: 'Diz a tradução em vez do original; desligado, volta o original',
-    spricht: 'a falar', stimmeKommt: 'a voz já vem', ablegen: 'O áudio, a voz e a transcrição são guardados na Kellerwolke',
+    spricht: 'a falar', stimmeKommt: 'a voz já vem', ablegen: 'O áudio, a voz e a transcrição são guardados na Kellerwolke', zurListe: 'Voltar à lista, a leitura continua',
     zeitstimme: 'Voz das horas', stimmwahl: 'Voz do intérprete',
     beginnt: 'a iniciar a estação',
   },

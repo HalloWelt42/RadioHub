@@ -14,6 +14,7 @@
   import { formatTimeShort } from "../lib/formatters.js";
   import { app } from "./app";
   import { pufferansicht } from "./pufferansicht.svelte";
+  import { titelsichern } from "./titelsichern.svelte";
   import { faehigkeiten } from "../lib/playerEngine.js";
 
   // ohne Zeitversatz und ohne Folgen (Webversion) gibt es nichts zu spulen: die Zeile entfällt dort
@@ -42,7 +43,8 @@
     const a = t0 === null ? null : bei(puffer.abschnitte, t0);
     if (!a || t0 === null) return null;
     const titel = a.art === "werbung" ? t("puffer.werbung") : a.art === "einschub" ? t("puffer.einschub") : a.titel;
-    return { titel, links: pufferProzent(stand, a.von), text: `${t("puffer.tippText", { vor: formatTimeShort(Math.max(0, puffer.ende - a.von)), laenge: formatTimeShort(a.bis - a.von) })} · ${t("puffer.tippKlick")}` };
+    const taste = a.komplett ? { symbol: titelsichern.symbol(a), text: titelsichern.hilfe(a), gesperrt: !titelsichern.geht(a), tun: () => void titelsichern.tun(a) } : undefined;
+    return { titel, taste, links: pufferProzent(stand, a.von), text: `${t("puffer.tippText", { vor: formatTimeShort(Math.max(0, puffer.ende - a.von)), laenge: formatTimeShort(a.bis - a.von) })} · ${t("puffer.tippKlick")}` };
   }
   /** loslassen nahe einer Titelgrenze (höchstens 1 % der Bahn): genau an die Grenze */
   function einrasten(lage: number): number {

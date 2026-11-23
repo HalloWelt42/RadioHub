@@ -185,7 +185,7 @@ export default {
     uebersetzenHilfe: 'Översätt', kopieren: 'Kopiera text', text: 'Text', leer: 'Den första texten kommer efter några meningar', aus: 'av',
     sammelt: 'samlar nästa meningar', hoert: 'lyssnar', uebersetzt: 'översätter', gestoert: 'avbrutet',
     stimme: 'Tolk', stimmeHilfe: 'Talar översättningen i stället för originalet; av hörs originalet igen',
-    spricht: 'talar', stimmeKommt: 'rösten kommer strax', ablegen: 'Ljud, röst och utskrift sparas i Kellerwolke',
+    spricht: 'talar', stimmeKommt: 'rösten kommer strax', ablegen: 'Ljud, röst och utskrift sparas i Kellerwolke', zurListe: 'Till listan, läsningen fortsätter',
     zeitstimme: 'Tidsröst', stimmwahl: 'Tolkens röst',
     beginnt: 'stationen startar',
   },

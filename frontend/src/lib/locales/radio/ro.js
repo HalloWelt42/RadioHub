@@ -184,7 +184,7 @@ export default {
     uebersetzenHilfe: 'Tradu', kopieren: 'Copiază textul', text: 'Text', leer: 'Primul text apare după câteva fraze', aus: 'oprit',
     sammelt: 'adună următoarele fraze', hoert: 'ascultă', uebersetzt: 'traduce', gestoert: 'întrerupt',
     stimme: 'Interpret', stimmeHilfe: 'Rostește traducerea în locul originalului; oprit, se aude din nou originalul',
-    spricht: 'vorbește', stimmeKommt: 'vocea vine imediat', ablegen: 'Sunetul, vocea și transcrierea se salvează în Kellerwolke',
+    spricht: 'vorbește', stimmeKommt: 'vocea vine imediat', ablegen: 'Sunetul, vocea și transcrierea se salvează în Kellerwolke', zurListe: 'Înapoi la listă, citirea continuă',
     zeitstimme: 'Vocea orei', stimmwahl: 'Vocea interpretului',
     beginnt: 'postul pornește',
   },

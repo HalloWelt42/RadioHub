@@ -237,6 +237,9 @@
 .rh-balkentipp { position: absolute; bottom: calc(100% + 6px); translate: -50% 0; z-index: 5; display: grid; gap: 2px; padding: 6px 10px;
   inline-size: max-content; max-inline-size: 300px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-geraet-schatten-klein);
   font-family: var(--schrift-text, inherit); font-size: var(--klein); color: var(--text-1); text-align: left; pointer-events: none; }
+.rh-balkentipp:has(.rh-tipp-taste) { pointer-events: auto; }
+.rh-balkentipp::after { content: ""; position: absolute; inset: 100% 0 -10px; }   /* Brücke zum Balken: der Hinweis bleibt beim Hinfahren */
+.rh-tipp-taste { justify-self: start; min-block-size: 32px; margin-top: 4px; padding: 0 12px; font-size: var(--klein); }
 .rh-balkentipp b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-balkentipp span { color: var(--text-3); font-family: var(--schrift-zahl); font-size: var(--marke); white-space: nowrap; }
 .rh-balkentipp.rechts { translate: calc(-100% + 16px) 0; }

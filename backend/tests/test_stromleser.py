@@ -306,6 +306,38 @@ async def test_bereich_aus_dem_puffer_sichern(client, mp3, tmp_path, monkeypatch
     assert abs(stuecke[0]["duration_ms"] / 1000 - (b["bis"] - b["von"])) < 0.6
 
 
+async def test_titel_aus_dem_puffer_sichern(client, mp3, tmp_path, monkeypatch):
+    """RAD-132: ein fertiger Titel wird sofort eine eigene Aufnahme, auch während eine andere läuft, und nur einmal."""
+    from app.routers import hls as wege
+    from app.services.aufnahmen import aufnahmen
+    from app.services.hls_buffer import HLSBufferService
+    rec = recorder_modul.rec_manager
+    puffer = HLSBufferService(str(tmp_path / "hls"))
+    monkeypatch.setattr(wege, "hls_buffer", puffer)
+    wunsch = lambda s: wege.titel_sichern(wege.Titelwunsch(bei_s=s))  # noqa: E731
+    async with Sender(mp3 * 6, DREI, takt_s=0.1) as sender:
+        assert (await puffer.start("s1", "Probesender", sender.adresse(), bitrate=64))["status"] == "started"
+        await _puffer_bis(puffer, 18.0)
+        b, c = puffer.abschnitte()[1:]
+        assert b["gesichert"] == ""
+        assert (await rec.start("s1", "Probesender", sender.adresse(), 64))["success"]      # die Aufnahme stört nicht
+        antwort = await wunsch((b["von"] + b["bis"]) / 2)
+        assert antwort["titel"] == "B - Zwei" and rec.active_session
+        assert (await wunsch(b["von"] + 1))["session_id"] == antwort["session_id"], "nicht doppelt"
+        assert puffer.abschnitte()[1]["gesichert"] == antwort["session_id"]
+        with pytest.raises(wege.HTTPException) as f:
+            await wunsch(c["bis"] - 0.2)
+        assert f.value.status_code == 409, "der laufende Titel ist noch nicht fertig"
+        await rec.stop()
+        await rec.feinschnitt_abwarten()
+        (s,), sitzung = aufnahmen.segmente(antwort["session_id"]), aufnahmen.sitzung(antwort["session_id"])
+        assert s["title"] == "B - Zwei" and sitzung["status"] == "completed" and sitzung["file_size"] == s["file_size"] > 0
+        assert abs(s["duration_ms"] / 1000 - (b["bis"] - b["von"])) < 0.6
+        await aufnahmen.sitzung_loeschen(antwort["session_id"])
+        assert puffer.abschnitte()[1]["gesichert"] == "", "gelöscht lässt er sich wieder sichern"
+        await puffer.stop()
+
+
 def test_abschnitt_des_empfangs_auf_die_zeit_der_aufnahme(tmp_path):
     from app.sendewerbung.sitzung import Werbestelle
     from app.services.empfang import Empfang

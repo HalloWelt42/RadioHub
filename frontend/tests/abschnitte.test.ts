@@ -6,7 +6,7 @@ import { bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, ty
 import { lageZuSekunde, pufferAufnahme, pufferSekunde, pufferStriche, sekundeZuLage, type Stand } from "../src/spieler/kanzel";
 
 const A = (von: number, bis: number, titel: string, art: Abschnitt["art"] = "titel", laufend = false): Abschnitt =>
-  ({ von, bis, titel, art, sicher: true, laufend });
+  ({ von, bis, titel, art, sicher: true, laufend, komplett: von > 0 && art !== "werbung" && !laufend, gesichert: "" });
 const LISTE: Abschnitt[] = [A(0, 9.4, "90s90s - DIGITAL WEB", "werbung"), A(9.4, 288.3, "OMC - How Bizarre"),
   A(288.3, 524.9, "Shaggy - Boombastic"), A(524.9, 600, "Werbung", "werbung"), A(600, 845, "Cut 'n' Move - Give It Up", "titel", true)];
 
