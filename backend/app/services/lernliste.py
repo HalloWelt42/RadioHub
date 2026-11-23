@@ -55,7 +55,7 @@ def zusammenstellen() -> list[Lernsender]:
         eigene = [z for z in eigene if _tauglich(z)]
         for z in eigene:
             gehoert = stunden.get(z["uuid"], 0.0)
-            liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip(), adresse=z["adresse"],
+            liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip()[:200], adresse=z["adresse"],
                                           grund="gehoert" if gehoert >= 0.25 else "favorit", gewicht=round(min(gehoert, 20.0), 1))
         # der eigene Geschmack: was man hört, zählt nach Stunden, ein Favorit wie eine Stunde
         vorbilder = sorted(eigene, key=lambda z: -(stunden.get(z["uuid"], 0.0) + z["favorit"]))[:VORBILDER]
@@ -80,14 +80,14 @@ def zusammenstellen() -> list[Lernsender]:
                 heimat = (1.0 if z["land"] in laender else 0.0) + (1.0 if any(s in sprachen for s in _sprachen(z)) else 0.0)
                 punkte[z["uuid"]] = (naehe * (0.3 + heimat) * (1 + min(z["stimmen"], 5000) / 2500), z)
         for wert, z in sorted(punkte.values(), key=lambda x: -x[0])[:AEHNLICHE]:
-            liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip(), adresse=z["adresse"], grund="aehnlich", gewicht=round(wert, 2))
+            liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip()[:200], adresse=z["adresse"], grund="aehnlich", gewicht=round(wert, 2))
         orte = {l: w for l, w in laender.most_common(4) if l} or {"DE": 1.0}
         for land, w in orte.items():                  # so viele bekannte je Land, wie man aus ihm hört
             anzahl = max(5, round(BEKANNTE * w / sum(orte.values())))
             bekannte = c.execute(f"{SPALTEN} WHERE {BRAUCHBAR} AND i.vertreter = 1 AND i.land = ? ORDER BY i.stimmen DESC LIMIT ?",
                                  (land, anzahl * 4)).fetchall()
             for z in [z for z in bekannte if z["uuid"] not in liste and _tauglich(z)][:anzahl]:
-                liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip(), adresse=z["adresse"], grund="bekannt")
+                liste[z["uuid"]] = Lernsender(quelle=z["uuid"], name=(z["name"] or "").strip()[:200], adresse=z["adresse"], grund="bekannt")
     return list(liste.values())
 
 
