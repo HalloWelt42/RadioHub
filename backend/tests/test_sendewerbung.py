@@ -189,6 +189,44 @@ async def test_zeitversatz_meldet_werbestelle_mit_grenze_an_der_stille(tmp_path,
     assert abs(s["bis"] - 3.3) < 0.1, s                        # Ende der Stille nach dem Spot
 
 
+PAUSE_181 = "StreamTitle='181.fm - 181.FM - THIS STATION WILL CONTINUE AFTER THIS BREAK';StreamUrl='';StreamArtwork='';"
+PROMO_181 = "StreamTitle='181.fm - Music Promo30 ';StreamUrl='';StreamArtwork='';"
+LISTEN_181 = "StreamTitle='Listen.FM - Listen.FM ';StreamUrl='';StreamArtwork='';"
+
+
+def test_programmpause_an_der_ganzen_ansage():
+    assert [(w.format, w.kennung) for w in map(lesen, (PAUSE_181, PROMO_181, LISTEN_181))] == [
+        ("programmpause", "THIS STATION WILL CONTINUE AFTER THIS BREAK"), ("programmpause", "Music Promo30"),
+        ("programmpause", "Listen.FM - Listen.FM")]
+    for kein in ("StreamTitle='Notorious B.I.G. - Nasty Boy (Clean Radio Mix) ';", "StreamTitle='EPMD - Crossover ';",
+                 "StreamTitle='Hooverphonic - Out Of Sight ';", "StreamTitle='ENERGY 93 - EURO DANCE ';",
+                 "StreamTitle='Beatles - Revolution (Hit 45 Version) ';", "StreamTitle='Destiny - Break (Promo Mix)';",
+                 "StreamTitle='181.fm - The Breeze';", "StreamTitle='Listen.FM - Das Lied';",
+                 "StreamTitle='Jurassic 5 - Break';"):
+        assert lesen(kein) is None, kein
+
+
+def test_programmpause_ist_eine_zusammenhaengende_werbung():
+    """Echter Fall 181.FM Old School 23.11.2026 (Stellen im Ton, Stillen von ffmpeg): von der Ansage bis zum nächsten Lied."""
+    gemeldet = []
+    w = Sitzungswerbung(bei_ende=gemeldet.append)
+    w.angabe("StreamTitle='Arrested Development - Mr. Wendal ';", 1.0)
+    w.angabe(PAUSE_181, 32.0)
+    w.stille(31.824, 33.051)
+    w.angabe(PROMO_181, 94.0)
+    w.stille(93.008, 93.199)
+    w.angabe(LISTEN_181, 125.0)
+    w.stille(123.31, 124.534)
+    w.angabe("StreamTitle='Notorious B.I.G. - Nasty Boy (Clean Radio Mix) ';", 131.0)
+    w.stille(127.363, 127.523)
+    w.ton_bis(140.0)
+    assert len(w.stellen) == 3 and len(gemeldet) == 3
+    assert (w.stellen[0].von, w.stellen[0].von_aus) == (33.051, "stille")      # die Pause davor ist still
+    for davor, danach in zip(w.stellen, w.stellen[1:]):
+        assert danach.von <= davor.bis, "keine Lücke, in der kurz Werbung zu hören wäre"
+    assert (w.stellen[-1].bis, w.stellen[-1].bis_aus) == (127.523, "stille")   # die Angabe kam 3,5 s danach
+
+
 def test_spots_zaehlen_und_schalter_je_sender(client):
     """Jede abgeschlossene Stelle zählt ihren Spot beim Sender; ein Fund macht den Sender werbend. Der Schalter je
     Sender nimmt ihn aus, die Einstellung für alle schaltet es überall ab."""

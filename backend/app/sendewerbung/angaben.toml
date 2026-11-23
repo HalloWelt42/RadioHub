@@ -59,6 +59,16 @@ titel = "StreamTitle='([^']+)'"
 ende = "wechsel"
 
 [[format]]
+name = "programmpause"
+# 181.FM (gemessen 23.11.2026): eine Pause für alle Hörer im Programm, der Reihe nach "THIS STATION WILL CONTINUE AFTER THIS
+# BREAK" (62 s), die Eigenwerbung "Music Promo30" (31 s) und "Listen.FM" (6 s). An den Wechseln liegt digitale Stille. Die
+# Wörter promo oder break allein stehen auch in Liedtiteln, darum zählt nur die ganze Ansage.
+erkennen = "(?i)StreamTitle='([^']*THIS STATION WILL CONTINUE AFTER THIS BREAK|181\\.fm - Music Promo\\d*|Listen\\.FM - Listen\\.FM)\\s*'"
+kennung = "(?i)StreamTitle='(?:181\\.fm - )*([^']+?)\\s*'"
+titel = "(?i)StreamTitle='(?:181\\.fm - )*([^']+?)\\s*'"
+ende = "wechsel"
+
+[[format]]
 name = "vorlauf"
 # QuantumCast (80s80s, 90s90s, RADIO BOB, Radio 7, Rockland): beim Verbinden steht als erster Titel der Name des Stroms,
 # solange der für jeden Hörer eingespielte Vorlauf läuft (gemessen 22.11.2026: 20 bis 30 s, bei gleichzeitigen
