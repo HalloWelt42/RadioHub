@@ -1,9 +1,9 @@
 """Lernlauf und Signaturen des Propaganda-Filters für die Oberfläche (HELF-256): was nachts gehört und gefunden wurde, was alles
 weggefiltert werden kann, anhören, bestätigen, verwerfen. RadioHub reicht nur durch; die Wahrheit liegt beim Filter."""
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
 from ..services import lernliste
@@ -11,6 +11,8 @@ from ..services import propagandafilter as pf
 
 router = APIRouter(prefix="/api/werbefilter", tags=["werbung"])
 
+Ab = Annotated[int, Query(ge=0)]
+Anzahl = Annotated[int, Query(ge=1, le=200)]
 ZEIT = r"^([01]\d|2[0-3]):[0-5]\d$"
 
 
@@ -67,8 +69,8 @@ async def lernlauf_jetzt(neu: Sofortlauf) -> Any:
 
 
 @router.get("/sender")
-async def sender() -> Any:
-    return await _filter("GET", "lernlauf/sender")
+async def sender(ab: Ab = 0, anzahl: Anzahl = 25) -> Any:
+    return await _filter("GET", "lernlauf/sender", params={"ab": ab, "anzahl": anzahl})
 
 
 @router.post("/sender")
@@ -85,9 +87,10 @@ async def sender_ausnehmen(uuid: UUID, neu: Ausnahme) -> Any:
     return await _filter("PUT", f"lernlauf/sender/{uuid}", json=neu.model_dump())
 
 
-@router.get("/signaturen")
-async def signaturen(urteil: Literal["offen", "bestaetigt", "verworfen"] | None = None) -> Any:
-    return (await _filter("GET", "signaturen", params={"grenze": 1000, **({"urteil": urteil} if urteil else {})}))["signaturen"]
+@router.get("/spots/{fach}")
+async def spots(fach: Literal["pruefen", "wirkt", "verworfen"], ab: Ab = 0, anzahl: Anzahl = 25) -> Any:
+    """Ein Stück eines Fachs der Durchsicht und wie viele in jedem Fach liegen."""
+    return await _filter("GET", f"signaturen/fach/{fach}", params={"ab": ab, "anzahl": anzahl})
 
 
 @router.get("/signaturen/{kennung}/ton")

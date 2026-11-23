@@ -198,5 +198,6 @@ async def test_liste_folgt_dem_hoeren(filter_, lernsender, monkeypatch):
 def test_wege_der_oberflaeche(client, anonym):
     assert anonym.get("/api/werbefilter").status_code == 401
     assert client.get("/api/werbefilter").json()["eingerichtet"] is False
-    assert client.get("/api/werbefilter/signaturen").status_code == 503
+    assert client.get("/api/werbefilter/spots/pruefen").status_code == 503
+    assert client.get("/api/werbefilter/spots/boese").status_code == 422
     assert client.put("/api/werbefilter/lernlauf", json={"von": "25:00"}).status_code == 422

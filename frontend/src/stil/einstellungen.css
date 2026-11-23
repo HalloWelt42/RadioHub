@@ -244,6 +244,9 @@
 
 /* ═══ RAD-128: Werbefilter (Spots anhören und entscheiden, Lernlauf) ═══ */
 .rh-spots, .rh-laufend, .rh-laufend + .rh-werte { margin-top: 12px; }
+/* Liste mit eigener Höhe, lädt beim Rollen nach */
+.rh-rollfeld { max-block-size: min(58vh, calc(var(--klein) * 34)); overflow-y: auto; overscroll-behavior: contain; padding: 1px 6px 1px 1px; margin-inline-start: -1px; }
+.rh-rollfeld .nl .knopf.still { display: none; }      /* lädt von selbst */
 .rh-a-zeile.rh-spot { grid-template-columns: auto minmax(0, 1fr) minmax(0, 13em) calc(var(--klein) * 6) calc(var(--klein) * 16.5); }
 .rh-spot .rund { grid-area: logo; }
 .rh-spot-text { display: block; color: var(--text-2); font-size: var(--klein); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

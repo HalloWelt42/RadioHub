@@ -1,8 +1,10 @@
 // Werbefilter (HELF-256, RAD-128): was der Propaganda-Filter kennt und was sein Lernlauf hört. RadioHub reicht nur durch.
-// Dazu reine Regeln für die Liste der Spots (Reihenfolge, Gruppen), mit vitest prüfbar.
+// Die Listen kommen stückweise und laden beim Rollen nach (Stueckliste).
 import { netz, type Anfrage } from "./netz";
 
 export type Urteil = "offen" | "bestaetigt" | "verworfen";
+/** Fach der Durchsicht; was wohin gehört, sagt der Filter */
+export type Fach = "pruefen" | "wirkt" | "verworfen";
 export type Grund = "gehoert" | "favorit" | "aehnlich" | "bekannt";
 
 export interface Fundsender {
@@ -96,14 +98,14 @@ export class Werbefilter {
   jetzt(minuten: number): Promise<Lernstand> {
     return this.a("/api/werbefilter/lernlauf/jetzt", { methode: "POST", daten: { minuten } });
   }
-  sender(): Promise<Lernsender[]> {
-    return this.a("/api/werbefilter/sender");
+  sender(ab: number, anzahl: number): Promise<{ gesamt: number; sender: Lernsender[] }> {
+    return this.a(`/api/werbefilter/sender?ab=${ab}&anzahl=${anzahl}`);
   }
-  ausnehmen(uuid: string, aus: boolean): Promise<Lernsender[]> {
+  ausnehmen(uuid: string, aus: boolean): Promise<Lernsender> {
     return this.a(`/api/werbefilter/sender/${encodeURIComponent(uuid)}`, { methode: "PUT", daten: { aus } });
   }
-  spots(): Promise<Spotfund[]> {
-    return this.a("/api/werbefilter/signaturen");
+  spots(fach: Fach, ab: number, anzahl: number): Promise<{ faecher: Record<Fach, number>; signaturen: Spotfund[] }> {
+    return this.a(`/api/werbefilter/spots/${fach}?ab=${ab}&anzahl=${anzahl}`);
   }
   beurteilen(id: string, urteil: Urteil): Promise<Spotfund> {
     return this.a(`/api/werbefilter/signaturen/${encodeURIComponent(id)}`, { methode: "PUT", daten: { urteil } });
@@ -114,24 +116,60 @@ export class Werbefilter {
   tonadresse = (id: string): string => `/api/werbefilter/signaturen/${encodeURIComponent(id)}/ton`;
 }
 
-export type Fach = "pruefen" | "wirkt" | "verworfen";
+/** wie oft ein Spot insgesamt lief */
+export const gehoert = (s: Spotfund): number => s.quellen.reduce((n, q) => n + q.treffer, 0);
 
-/** Angekündigte und im Schnitt markierte Spots wirken an ihrem Sender sofort, die übrigen erst nach der Bestätigung */
-export function fach(s: Spotfund): Fach {
-  if (s.urteil === "verworfen") return "verworfen";
-  if (s.urteil === "offen" && s.herkunft === "lernlauf") return "pruefen";
-  return s.quellen.some((q) => q.stand === "vorschlag") ? "pruefen" : "wirkt";
+export const JE_STUECK = 25;
+
+/** Eine Liste, die stückweise lädt. `holen` liefert ab einer Stelle das nächste Stück und wie viele es insgesamt sind. */
+export class Stueckliste<T> {
+  eintraege = $state.raw<T[]>([]);
+  gesamt = $state<number | null>(null);
+  laedt = $state(false);
+  fehler = $state("");
+  private lauf = 0;
+
+  constructor(private readonly holen: (ab: number, anzahl: number) => Promise<{ eintraege: T[]; gesamt: number }>, private readonly kennung: (e: T) => string) {}
+
+  /** das nächste Stück; was inzwischen gerutscht ist, steht nie doppelt da */
+  async mehr(): Promise<void> {
+    if (this.laedt || (this.gesamt !== null && this.eintraege.length >= this.gesamt)) return;
+    await this.stueck(this.eintraege.length, JE_STUECK, true);
+  }
+
+  /** von vorn, so viele wie gerade gezeigt */
+  async neu(): Promise<void> {
+    await this.stueck(0, Math.min(200, Math.max(JE_STUECK, this.eintraege.length)), false);
+  }
+
+  /** leer und von vorn (anderes Fach) */
+  async wechsel(): Promise<void> {
+    this.eintraege = [];
+    this.gesamt = null;
+    await this.neu();
+  }
+
+  ersetzen(e: T): void {
+    this.eintraege = this.eintraege.map((x) => (this.kennung(x) === this.kennung(e) ? e : x));
+  }
+
+  private async stueck(ab: number, anzahl: number, anhaengen: boolean): Promise<void> {
+    const lauf = ++this.lauf;
+    this.laedt = true;
+    this.fehler = "";
+    try {
+      const r = await this.holen(ab, anzahl);
+      if (lauf !== this.lauf) return;                         // inzwischen gilt eine andere Anfrage
+      const da = new Set(anhaengen ? this.eintraege.map(this.kennung) : []);
+      const neue = r.eintraege.filter((e) => !da.has(this.kennung(e)));
+      this.eintraege = anhaengen ? [...this.eintraege, ...neue] : neue;
+      this.gesamt = anhaengen && !neue.length ? this.eintraege.length : r.gesamt;   // nichts Neues mehr: Ende
+    } catch (f) {
+      if (lauf === this.lauf) this.fehler = (f as Error).message;
+    } finally {
+      if (lauf === this.lauf) this.laedt = false;
+    }
+  }
 }
-
-const RANG: Record<Spotfund["einschaetzung"], number> = { werbung: 0, unklar: 1, "": 1, anderes: 2, sender: 3, ohne_sprache: 4 };
-const mal = (s: Spotfund) => s.quellen.reduce((n, q) => n + q.treffer, 0);
-
-/** Was am ehesten Werbung ist, zuerst; bei Gleichstand, was öfter lief */
-export function geordnet(spots: Spotfund[], f: Fach): Spotfund[] {
-  return spots.filter((s) => fach(s) === f)
-    .sort((a, b) => (f === "pruefen" ? RANG[a.einschaetzung] - RANG[b.einschaetzung] : 0) || mal(b) - mal(a) || b.angelegt.localeCompare(a.angelegt));
-}
-
-export const gehoert = mal;
 
 export const werbefilter = new Werbefilter();
