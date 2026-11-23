@@ -193,6 +193,7 @@ export default {
     gestoert: 'przerwane',
     stimme: 'Tłumacz', stimmeHilfe: 'Czyta tłumaczenie zamiast oryginału; wyłączone, wraca oryginał',
     spricht: 'mówi',
+    zeitstimme: 'Głos godziny', stimmwahl: 'Głos tłumacza',
   },
 
   // Werbefilter (RAD-128)

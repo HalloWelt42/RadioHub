@@ -331,6 +331,13 @@
 .rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
 .rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter .ak-taster-beschriftung { font-size: 0; gap: 0; }
 .rh-detail-dicht:not(.rh-mitliest) .rh-detail-schalter .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
+.rh-richtung { display: contents; }   /* nur ein Name für die Regel darunter, kein eigener Kasten */
+/* Mitlesefeld in schmaler Liste: eine Zeile, Tasten nur mit Symbol; die Richtung (EN > DE) behält ihre Schrift */
+@container liste (max-width: 1000px) {
+  .rh-mitlesen-kopf ak-taster[art="flach"]:not(.rh-richtung *) .ak-taster-knopf { min-inline-size: 0; inline-size: 52px; padding-inline: 0; }
+  .rh-mitlesen-kopf ak-taster:not(.rh-richtung *) .ak-taster-beschriftung { font-size: 0; gap: 0; }
+  .rh-mitlesen-kopf ak-taster:not(.rh-richtung *) .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
+}
 /* Live mitlesen (RAD-129): nimmt den ganzen Steckbrief ein, die Schalter bleiben oben rechts an ihrem Platz */
 .rh-detail-dicht.rh-mitliest, .rh-detail-dicht.rh-mitliest:not(:has(> :nth-child(3))) { grid-template-columns: minmax(0, 1fr); }
 .rh-mitlesen { min-width: 0; display: grid; gap: 10px; }

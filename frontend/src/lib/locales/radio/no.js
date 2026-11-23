@@ -192,6 +192,7 @@ export default {
     sammelt: 'samler de neste setningene', hoert: 'lytter', uebersetzt: 'oversetter', gestoert: 'avbrutt',
     stimme: 'Tolk', stimmeHilfe: 'Sier oversettelsen i stedet for originalen; av høres originalen igjen',
     spricht: 'snakker',
+    zeitstimme: 'Tidsstemme', stimmwahl: 'Tolkens stemme',
   },
 
   // Werbefilter (RAD-128)

@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Literal
 from appkern.leitstelle import GehoertesSegment, Leitstelle, LeitstellenFehler, Nachricht, gerade, halten, hoeren
 from pydantic import BaseModel
 
-from .uebersetzerstimme import Gesprochen, StimmeFehler, eingerichtet as stimme_eingerichtet, sprechen as stimme_sprechen
+from .uebersetzerstimme import Gesprochen, StimmeFehler
 
 if TYPE_CHECKING:
     from .empfang import Empfang
@@ -51,6 +51,11 @@ Zustand = Literal["aus", "sammelt", "hoert", "uebersetzt", "gestoert"]
 
 ANWEISUNG = """Du übersetzt fortlaufend, was in einem Radioprogramm gesprochen wird, ins {ziel}. Du bekommst den nächsten Absatz der
 Abschrift; sie kann Hörfehler enthalten. Gib nur die Übersetzung dieses Absatzes aus, vollständig, flüssig und ohne Zusätze."""
+#: beim Sprechen dolmetschen: die Übersetzung darf nicht länger dauern als das Original
+KNAPP = """ Die Übersetzung wird vorgelesen, während das Programm weiterläuft, und soll etwa so lange dauern wie das Original: rund
+{zeichen} Zeichen, nicht mehr. Gib den Inhalt dabei so vollständig wie möglich wieder, mit Namen und Zahlen; gekürzt wird nur,
+was anders nicht hineinpasst."""
+ZEICHEN_JE_S = 14                            # so viele Zeichen spricht die Stimme etwa in einer Sekunde, leicht beschleunigt
 
 
 class Absatz(BaseModel):
@@ -64,6 +69,10 @@ class Absatz(BaseModel):
     uebersetzung: str = ""
     #: Länge des gesprochenen Tons in Sekunden; 0: (noch) nicht gesprochen
     ton_s: float = 0.0
+
+
+async def _keine_stimme(_text: str, _sprache: str) -> Gesprochen:
+    raise StimmeFehler("Keine Stimme eingerichtet", True)
 
 
 class Stand(BaseModel):
@@ -141,8 +150,8 @@ class Mitleser:
     modell: Callable[[], str] = lambda: ""
     ziel_name: Callable[[str], str] = lambda k: k
     uhr: Callable[[], float] = time.monotonic
-    stimme: Callable[[str, str], Awaitable[Gesprochen]] = stimme_sprechen
-    stimme_da: Callable[[], bool] = stimme_eingerichtet
+    stimme: Callable[[str, str], Awaitable[Gesprochen]] = _keine_stimme
+    stimme_da: Callable[[], bool] = lambda: False
 
     _empfang: Empfang | None = field(default=None, repr=False)
     _wahl: Wahl = field(default_factory=Wahl)
@@ -305,7 +314,8 @@ class Mitleser:
             if a is None or a.uebersetzung or not self._wahl.uebersetzen or not self.fremd or ls is None or not modell:
                 continue
             vorher = next((x for x in reversed(self._absaetze) if x.nr < nr and x.uebersetzung), None)
-            nachrichten = [Nachricht.system(ANWEISUNG.format(ziel=self.ziel_name(self._wahl.ziel)))]
+            knapp = KNAPP.format(zeichen=max(80, round((a.bis - a.von) * ZEICHEN_JE_S))) if self._wahl.sprechen else ""
+            nachrichten = [Nachricht.system(ANWEISUNG.format(ziel=self.ziel_name(self._wahl.ziel)) + knapp)]
             if vorher:
                 nachrichten += [Nachricht.nutzer(vorher.text), Nachricht.assistent(vorher.uebersetzung)]
             try:

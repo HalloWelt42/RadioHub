@@ -185,6 +185,7 @@ export default {
     sammelt: 'gyűjti a következő mondatokat', hoert: 'hallgat', uebersetzt: 'fordít', gestoert: 'megszakadt',
     stimme: 'Tolmács', stimmeHilfe: 'A fordítást mondja az eredeti helyett; kikapcsolva újra az eredeti hallható',
     spricht: 'beszél',
+    zeitstimme: 'Időhang', stimmwahl: 'A tolmács hangja',
   },
 
   // Werbefilter (RAD-128)

@@ -83,6 +83,9 @@ class AppEinstellungen(Grundeinstellungen):
                                      description="Hördienst der Leitstelle, der beim Mitlesen aus dem Ton Text macht.")
     mitlesen_modell: str = Field("qwen/qwen3-next-80b", max_length=200, title="Sprachmodell zum Übersetzen", json_schema_extra=DIENSTE,
                                  description="Sprachmodell der Leitstelle, das beim Mitlesen fremdsprachige Sender übersetzt.")
+    uebersetzerstimme: str = Field("", max_length=200, title="Stimme des Übersetzers", json_schema_extra=DIENSTE,
+                                   description="Stimme der Vertonung, die beim Mitlesen die Übersetzung spricht: aus dem Katalog oder "
+                                               "eine private, die die Vertonung für RadioHub freigibt. Leer: die Stimme der Zeitansage.")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "

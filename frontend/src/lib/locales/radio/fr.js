@@ -193,6 +193,7 @@ export default {
     uebersetzt: 'traduit', gestoert: 'interrompu',
     stimme: 'Interprète', stimmeHilfe: 'Dit la traduction à la place de l\'original ; désactivé, on entend de nouveau l\'original',
     spricht: 'parle',
+    zeitstimme: 'Voix de l\'heure', stimmwahl: 'Voix de l\'interprète',
   },
 
   // Werbefilter (RAD-128)

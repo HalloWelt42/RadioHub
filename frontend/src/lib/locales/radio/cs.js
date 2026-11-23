@@ -191,6 +191,7 @@ export default {
     sammelt: 'sbírá další věty', hoert: 'poslouchá', uebersetzt: 'překládá', gestoert: 'přerušeno',
     stimme: 'Tlumočník', stimmeHilfe: 'Mluví překlad místo originálu; vypnuto je opět slyšet originál',
     spricht: 'mluví',
+    zeitstimme: 'Hlas času', stimmwahl: 'Hlas tlumočníka',
   },
 
   // Werbefilter (RAD-128)

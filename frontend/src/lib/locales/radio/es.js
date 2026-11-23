@@ -192,6 +192,7 @@ export default {
     sammelt: 'reuniendo las próximas frases', hoert: 'escuchando', uebersetzt: 'traduciendo', gestoert: 'interrumpido',
     stimme: 'Intérprete', stimmeHilfe: 'Dice la traducción en lugar del original; apagado, vuelve el original',
     spricht: 'habla',
+    zeitstimme: 'Voz de la hora', stimmwahl: 'Voz del intérprete',
   },
 
   // Werbefilter (RAD-128)

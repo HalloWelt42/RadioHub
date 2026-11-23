@@ -185,6 +185,7 @@ export default {
     aus: 'выключено', sammelt: 'собирает следующие предложения', hoert: 'слушает', uebersetzt: 'переводит', gestoert: 'прервано',
     stimme: 'Переводчик', stimmeHilfe: 'Озвучивает перевод вместо оригинала; выключено, снова слышен оригинал',
     spricht: 'говорит',
+    zeitstimme: 'Голос времени', stimmwahl: 'Голос переводчика',
   },
 
   // Werbefilter (RAD-128)

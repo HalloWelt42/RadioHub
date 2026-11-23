@@ -192,6 +192,7 @@ export default {
     sammelt: 'collecting the next sentences', hoert: 'listening', uebersetzt: 'translating', gestoert: 'interrupted',
     stimme: 'Interpreter', stimmeHilfe: 'Speak the translation instead of the original; off brings the original back',
     spricht: 'speaking',
+    zeitstimme: 'Time voice', stimmwahl: 'Interpreter voice',
   },
 
   // Werbefilter (RAD-128)

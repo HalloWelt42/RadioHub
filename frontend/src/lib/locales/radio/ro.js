@@ -185,6 +185,7 @@ export default {
     sammelt: 'adună următoarele fraze', hoert: 'ascultă', uebersetzt: 'traduce', gestoert: 'întrerupt',
     stimme: 'Interpret', stimmeHilfe: 'Rostește traducerea în locul originalului; oprit, se aude din nou originalul',
     spricht: 'vorbește',
+    zeitstimme: 'Vocea orei', stimmwahl: 'Vocea interpretului',
   },
 
   // Werbefilter (RAD-128)

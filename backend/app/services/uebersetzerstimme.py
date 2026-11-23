@@ -1,16 +1,21 @@
-"""Die Übersetzerstimme beim Mitlesen (RAD-130): ein fertig übersetzter Absatz wird von der Vertonung mit der Zeitstimme gesprochen,
-als MP3 ohne Stille am Rand. Was dabei ankommt, spielt die Oberfläche; der Ton des Senders bleibt davon unberührt."""
+"""Die Übersetzerstimme beim Mitlesen (RAD-130): ein fertig übersetzter Absatz wird von der Vertonung gesprochen, über den Verbund
+des Appkerns (App-Schlüssel, Zertifikatsstelle), als MP3 ohne Stille am Rand. Welche Stimme, sagt die Einstellung
+`uebersetzerstimme` (leer: die Zeitstimme); die Stimmen und ihre Freigaben hält die Vertonung, gerechnet wird über die Leitstelle."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 import httpx
+from appkern.verbund import Verbund, VerbundFehler
+from appkern.vorlesen import stimmwahl
 
+from ..einstellungen import AppEinstellungen
 from ..einstellungen import stand as einstellungen_stand
-from .zeitansage import ZeitansageEinstellungen, client_fuer, kuerzen, stimme_der_app
+from .zeitansage import kuerzen
 
 ZEIT = httpx.Timeout(120.0, connect=10.0)
+ZEICHEN_HOECHSTENS = 2000         # mehr nimmt die Vertonung am Stück nicht
 
 
 class StimmeFehler(Exception):
@@ -27,25 +32,27 @@ class Gesprochen:
     dauer_s: float
 
 
+def stimme_aus(e: AppEinstellungen) -> str:
+    return e.uebersetzerstimme.strip() or e.zeitstimme.strip()
+
+
 def eingerichtet() -> bool:
-    return ZeitansageEinstellungen.aus(einstellungen_stand()).eingerichtet
+    e = einstellungen_stand()
+    return bool(e.vertonung_adresse.strip() and stimme_aus(e) and e.kellerwolke_schluessel.get_secret_value().strip())
 
 
-async def sprechen(text: str, sprache: str, *, transport: httpx.AsyncBaseTransport | None = None,
-                   einstellungen: ZeitansageEinstellungen | None = None) -> Gesprochen:
-    e = einstellungen or ZeitansageEinstellungen.aus(einstellungen_stand())
-    if not e.eingerichtet:
-        raise StimmeFehler("Vertonung oder Zeitstimme fehlt (Einstellungen)", True)
+async def sprechen(verbund: Verbund, text: str, sprache: str) -> Gesprochen:
+    e = einstellungen_stand()
+    wahl = stimmwahl(stimme_aus(e))
+    if wahl is None or not e.vertonung_adresse.strip():
+        raise StimmeFehler("Vertonung oder Stimme fehlt (Einstellungen)", True)
     try:
-        async with client_fuer(e, transport) as c:
-            antwort = await c.post(f"{e.adresse}/api/v1/sprechen", headers={"Authorization": f"Bearer {e.schluessel}"}, timeout=ZEIT,
-                                   json={"text": text[:2000], "stimme": stimme_der_app(e), "sprache": sprache, "tempo": e.tempo, "ausschreiben": True})
-    except httpx.HTTPError as f:
-        raise StimmeFehler(f"Vertonung nicht erreichbar: {type(f).__name__}", False) from f
-    if antwort.status_code != 200:
-        raise StimmeFehler(f"Vertonung antwortet {antwort.status_code}", 400 <= antwort.status_code < 500 and antwort.status_code != 429)
-    try:
+        antwort = await verbund.anfrage("POST", e.vertonung_adresse.strip().rstrip("/"), "/api/v1/sprechen", timeout=ZEIT,
+                                        json={"text": text[:ZEICHEN_HOECHSTENS], "stimme": wahl, "sprache": sprache,
+                                              "tempo": e.zeitstimme_tempo, "ausschreiben": True})
         ton = await kuerzen(antwort.content)
+    except VerbundFehler as f:
+        raise StimmeFehler(f"Vertonung: {f.meldung}", f.status is not None and 400 <= f.status < 500 and f.status != 429) from f
     except RuntimeError as f:
         raise StimmeFehler(str(f), False) from f
     return Gesprochen(ton, float(antwort.headers.get("x-dauer") or len(ton) / 12000))

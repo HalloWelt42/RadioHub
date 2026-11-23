@@ -34,7 +34,7 @@ from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
 from .services.mitlesen import mitleser
-from .services import lernliste, propagandafilter, zeitstimmen
+from .services import lernliste, propagandafilter, uebersetzerstimme, zeitstimmen
 from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
@@ -68,6 +68,7 @@ class Radiobetrieb(Begleiter):
     async def starten(self) -> None:
         einstellungen.binden(self.geruest.einstellungen)
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
+        self.geruest.einstellungen.anbieten("uebersetzerstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("mitlesen_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
         self.geruest.einstellungen.anbieten("mitlesen_modell", self.geruest.leitstelle_angebot("uebersetzen"))
         self.geruest.einstellungen.regel(einstellungen.regeln_pruefen)
@@ -86,6 +87,8 @@ class Radiobetrieb(Begleiter):
         mitleser.leitstelle = lambda: self.geruest.leitstelle
         mitleser.hoerdienst = lambda: einstellungen.stand().mitlesen_hoerdienst
         mitleser.modell = lambda: einstellungen.stand().mitlesen_modell
+        mitleser.stimme = lambda text, sprache: uebersetzerstimme.sprechen(self.geruest.verbund, text, sprache)
+        mitleser.stimme_da = uebersetzerstimme.eingerichtet
         mitleser.ziel_name = lambda k: einstellungen.SPRACHEN.get(k, k)
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
         mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs

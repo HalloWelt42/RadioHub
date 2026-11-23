@@ -186,6 +186,7 @@ export default {
     sammelt: 'samlar nästa meningar', hoert: 'lyssnar', uebersetzt: 'översätter', gestoert: 'avbrutet',
     stimme: 'Tolk', stimmeHilfe: 'Talar översättningen i stället för originalet; av hörs originalet igen',
     spricht: 'talar',
+    zeitstimme: 'Tidsröst', stimmwahl: 'Tolkens röst',
   },
 
   // Werbefilter (RAD-128)

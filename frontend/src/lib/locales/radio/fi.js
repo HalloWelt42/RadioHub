@@ -192,6 +192,7 @@ export default {
     sammelt: 'kerää seuraavia lauseita', hoert: 'kuuntelee', uebersetzt: 'kääntää', gestoert: 'keskeytynyt',
     stimme: 'Tulkki', stimmeHilfe: 'Puhuu käännöksen alkuperäisen sijaan; pois päältä alkuperäinen kuuluu taas',
     spricht: 'puhuu',
+    zeitstimme: 'Kellonaikaääni', stimmwahl: 'Tulkin ääni',
   },
 
   // Werbefilter (RAD-128)

@@ -184,6 +184,7 @@ export default {
     leer: '几句话之后出现第一段文本', aus: '关闭', sammelt: '正在收集接下来的句子', hoert: '正在听', uebersetzt: '正在翻译', gestoert: '已中断',
     stimme: '口译', stimmeHilfe: '朗读译文代替原声；关闭后恢复原声',
     spricht: '正在说话',
+    zeitstimme: '报时语音', stimmwahl: '口译的声音',
   },
 
   // Werbefilter (RAD-128)

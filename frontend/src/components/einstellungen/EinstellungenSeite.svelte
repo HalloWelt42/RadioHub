@@ -88,7 +88,7 @@
         { karte: "kellerwolke", symbol: "fa-cloud", felder: ["kellerwolke_wurzel", "kellerwolke_geduld_s"] }], t("einstellungen.bereich.ablage"))] },
       { id: "dienste", symbol: "fa-plug", reiter: [r("dienste", "", [
         { karte: "verzeichnisse", symbol: "fa-book-atlas", felder: ["service_radio_browser_servers", "service_itunes_search_url", "service_fyyd_search_url"] },
-        { karte: "helfer", symbol: "fa-house-signal", felder: ["ortssuche_adresse", "vertonung_adresse", "mitlesen_hoerdienst", "mitlesen_modell"] },
+        { karte: "helfer", symbol: "fa-house-signal", felder: ["ortssuche_adresse", "vertonung_adresse", "mitlesen_hoerdienst", "mitlesen_modell", "uebersetzerstimme"] },
         { karte: "zugang", symbol: "fa-shield-halved", felder: ["erlaubte_urspruenge"] }], t("einstellungen.bereich.dienste"))] },
     ] : []),
   ]);

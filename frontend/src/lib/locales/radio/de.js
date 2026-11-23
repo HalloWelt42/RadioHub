@@ -193,6 +193,7 @@ export default {
     gestoert: 'gestört',
     stimme: 'Übersetzer', stimmeHilfe: 'Die Übersetzung sprechen statt des Originals; aus ist wieder das Original zu hören',
     spricht: 'spricht',
+    zeitstimme: 'Zeitstimme', stimmwahl: 'Stimme des Übersetzers',
   },
 
   // Werbefilter (RAD-128)

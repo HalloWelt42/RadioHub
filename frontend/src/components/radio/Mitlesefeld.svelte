@@ -2,10 +2,11 @@
   // Das Feld zum Mitlesen im Steckbrief (RAD-129): eine Zeile mit eigenen Tasten, darunter der laufende Text. Es läuft mit,
   // bis man nach oben rollt oder es fixiert; unten angekommen läuft es wieder mit. Text ist frei wählbar und kopierbar.
   import { tick, type Snippet } from "svelte";
-  import { kopieren } from "appkern-oberflaeche";
+  import { Auswahl, kopieren } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
   import { alsText, mitlesen, uhrzeit } from "../../lib/radio/mitlesen.svelte";
+  import { server, type Wahlwert } from "../../lib/einstellungen";
   import { uebersetzer } from "../../spieler/uebersetzer.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
 
@@ -42,6 +43,15 @@
     const ok = await kopieren(text);
     actions.showToast(ok ? t("radio.kopiert", { was: t("radio.mitlesen.text") }) : t("radio.kopierenFehler"), ok ? "success" : "error");
   }
+  // Stimme des Übersetzers: das Angebot kommt frisch aus der Vertonung, gewählt gilt sie ab dem nächsten Absatz
+  let stimmen = $state<Wahlwert[]>([]);
+  let stimme = $state("");
+  $effect(() => {
+    if (!uebersetzer.an || stimmen.length) return;
+    void server.laden().then(() => { stimme = String(server.zeile("uebersetzerstimme")?.wert ?? ""); });
+    void server.angebot("uebersetzerstimme").then((a) => { stimmen = [{ wert: "", titel: t("radio.mitlesen.zeitstimme") }, ...a.optionen]; }).catch(() => undefined);
+  });
+  const waehlen = (w: string) => void server.sofortSpeichern("uebersetzerstimme", w).catch((f: Error) => actions.showToast(f.message, "error"));
   const richtung = $derived(`${mitlesen.stand?.sprache.toUpperCase()} > ${mitlesen.stand?.ziel.toUpperCase()}`);
   const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || t(`radio.mitlesen.${mitlesen.stand?.zustand ?? "sammelt"}`));
 </script>
@@ -50,13 +60,14 @@
   <div class="rh-mitlesen-kopf">
     <Schalter an={laeuftMit} symbol="fa-angles-down" text={t("radio.mitlesen.mitlaufen")} hilfe={t("radio.mitlesen.mitlaufenHilfe")} onwechsel={mitlaufen} />
     {#if mitlesen.fremd}
-      <Schalter an={uebersetzt} farbe="blau" symbol="fa-language" text={richtung} hilfe={t("radio.mitlesen.uebersetzenHilfe")}
-        onwechsel={(an) => void mitlesen.uebersetzen(an).catch((f: Error) => actions.showToast(f.message, "error"))} />
+      <span class="rh-richtung"><Schalter an={uebersetzt} farbe="blau" symbol="fa-language" text={richtung} hilfe={t("radio.mitlesen.uebersetzenHilfe")}
+        onwechsel={(an) => void mitlesen.uebersetzen(an).catch((f: Error) => actions.showToast(f.message, "error"))} /></span>
     {/if}
     {#if mitlesen.fremd && mitlesen.stand?.kann_sprechen}
       <Schalter an={uebersetzer.an} farbe="gelb" symbol="fa-headset" text={t("radio.mitlesen.stimme")} hilfe={t("radio.mitlesen.stimmeHilfe")}
         onwechsel={(an) => void uebersetzer.schalten(an).catch((f: Error) => actions.showToast(f.message, "error"))} />
     {/if}
+    {#if uebersetzer.an && stimmen.length}<Auswahl bind:wert={stimme} optionen={stimmen} titel={t("radio.mitlesen.stimmwahl")} klein onwahl={waehlen} />{/if}
     <button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} disabled={!mitlesen.absaetze.length}
             onclick={() => void kopiere()}><i class="fa-regular fa-copy"></i></button>
     <span class="rh-mitlese-lage" class:gestoert={!!mitlesen.fehler} aria-live="polite">{lage}</span>

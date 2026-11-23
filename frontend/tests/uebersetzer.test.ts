@@ -1,12 +1,12 @@
 // Übersetzerstimme (RAD-130): die Regeln (Vorlauf, Tempo, Auslassen) und das Spielen mit nachgestelltem Ton.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { naechster, STAU_BIS_S, tempoBei } from "../src/lib/radio/stimmplan";
+import { naechster, STAU_BIS_S, TEMPO_HOECHSTENS, tempoFuer } from "../src/lib/radio/stimmplan";
 
 const radio = { muted: false, paused: false };
 vi.mock("../src/spieler/tonelement", () => ({ tonelement: () => radio, anhaengen: () => undefined }));
 vi.mock("../src/lib/store.svelte.js", () => ({ appState: { volume: 50 }, actions: {} }));
 
-const absaetze = (...laengen: number[]) => laengen.map((ton_s, i) => ({ nr: i + 1, ton_s }));
+const absaetze = (...laengen: number[]) => laengen.map((ton_s, i) => ({ nr: i + 1, ton_s, von: i * 30, bis: i * 30 + 30 }));
 
 describe("Plan der Übersetzerstimme", () => {
   it("wartet auf den Vorlauf und spricht danach ohne", () => {
@@ -17,8 +17,13 @@ describe("Plan der Übersetzerstimme", () => {
     expect(naechster(absaetze(10, 8), 2, true)).toBeNull();
     expect(naechster(absaetze(0, 8, 9), 0, false)?.nr).toBe(2);                       // nicht gesprochene bleiben stumm
   });
-  it("wird bei Stau schneller und lässt dann die ältesten aus", () => {
-    expect([10, 30, 50, 80].map(tempoBei)).toEqual([1, 1.07, 1.15, 1.25]);
+  it("dauert etwa so lange wie das Original, bei Stau etwas kürzer, nie schneller als die Grenze", () => {
+    const a = (ton_s: number, original: number) => ({ nr: 1, ton_s, von: 0, bis: original });
+    expect([tempoFuer(a(20, 30), 0), tempoFuer(a(22, 20), 0), tempoFuer(a(40, 20), 0)]).toEqual([1, 1.1, 1.25]);
+    expect([tempoFuer(a(20, 20), 50), tempoFuer(a(20, 20), 70)]).toEqual([1.08, 1.15]);
+    expect(tempoFuer(a(40, 10), 80)).toBe(TEMPO_HOECHSTENS);
+  });
+  it("lässt bei zu viel Rückstand die ältesten aus", () => {
     const s = naechster(absaetze(20, 20, 20, 20, 20), 0, true)!;
     expect(s.nr).toBe(4);
     expect(20 * (5 - s.nr + 1)).toBeLessThanOrEqual(STAU_BIS_S);

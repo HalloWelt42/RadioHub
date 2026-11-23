@@ -185,6 +185,7 @@ export default {
     sammelt: 'sonraki cümleleri topluyor', hoert: 'dinliyor', uebersetzt: 'çeviriyor', gestoert: 'kesildi',
     stimme: 'Tercüman', stimmeHilfe: 'Orijinal yerine çeviriyi seslendirir; kapalıyken yine orijinal duyulur',
     spricht: 'konuşuyor',
+    zeitstimme: 'Saat sesi', stimmwahl: 'Tercümanın sesi',
   },
 
   // Werbefilter (RAD-128)

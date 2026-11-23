@@ -192,6 +192,7 @@ export default {
     sammelt: 'a reunir as próximas frases', hoert: 'a ouvir', uebersetzt: 'a traduzir', gestoert: 'interrompido',
     stimme: 'Intérprete', stimmeHilfe: 'Diz a tradução em vez do original; desligado, volta o original',
     spricht: 'a falar',
+    zeitstimme: 'Voz das horas', stimmwahl: 'Voz do intérprete',
   },
 
   // Werbefilter (RAD-128)

@@ -254,27 +254,56 @@ async def test_ohne_stimme_wird_gesagt_warum(bau):
 
 async def test_stimme_der_vertonung(monkeypatch):
     from app.services import uebersetzerstimme as u
-    gesehen: list[dict] = []
+    from appkern.verbund import VerbundFehler
+    gesehen: list[tuple[str, str, dict]] = []
 
     async def unveraendert(wav: bytes) -> bytes:
         return wav
     monkeypatch.setattr(u, "kuerzen", unveraendert)
-    e = u.ZeitansageEinstellungen(adresse="https://vertonung.test", stimme="katalog:sohee", schluessel="kw_x")
+    einst = SimpleNamespace(vertonung_adresse="https://vertonung.test/", uebersetzerstimme="", zeitstimme="katalog:sohee", zeitstimme_tempo=1.1,
+                            kellerwolke_schluessel=SimpleNamespace(get_secret_value=lambda: "kw_x"))
+    monkeypatch.setattr(u, "einstellungen_stand", lambda: einst)
 
-    def antwort(status: int) -> httpx.MockTransport:
-        def h(r: httpx.Request) -> httpx.Response:
-            gesehen.append(json.loads(r.content))
-            return httpx.Response(status, content=b"wav", headers={"X-Dauer": "7.5"})
-        return httpx.MockTransport(h)
-    g = await u.sprechen("Guten Abend.", "de", transport=antwort(200), einstellungen=e)
-    assert (g.ton, g.dauer_s) == (b"wav", 7.5)
-    assert gesehen[0]["stimme"] == {"art": "katalog", "name": "sohee"} and gesehen[0]["sprache"] == "de" and gesehen[0]["ausschreiben"] is True
-    for status, dauerhaft in ((403, True), (422, True), (429, False), (503, False)):
+    class Verbund:
+        status = 200
+
+        async def anfrage(self, methode, adresse, pfad, *, timeout, json):
+            gesehen.append((adresse, pfad, json))
+            if self.status != 200:
+                raise VerbundFehler("nein", self.status or None)
+            return httpx.Response(200, content=b"wav", headers={"X-Dauer": "7.5"})
+    v = Verbund()
+    assert u.eingerichtet()
+    g = await u.sprechen(v, "Guten Abend.", "de")
+    assert (g.ton, g.dauer_s) == (b"wav", 7.5) and gesehen[0][:2] == ("https://vertonung.test", "/api/v1/sprechen")
+    assert gesehen[0][2]["stimme"] == {"art": "katalog", "name": "sohee"} and gesehen[0][2]["tempo"] == 1.1
+    einst.uebersetzerstimme = "katalog:vivian"
+    await u.sprechen(v, "x", "de")
+    assert gesehen[-1][2]["stimme"]["name"] == "vivian", "die eigene Stimme geht der Zeitstimme vor"
+    for v.status, dauerhaft in ((403, True), (422, True), (429, False), (503, False), (0, False)):
         with pytest.raises(u.StimmeFehler) as f:
-            await u.sprechen("x", "de", transport=antwort(status), einstellungen=e)
+            await u.sprechen(v, "x", "de")
         assert f.value.dauerhaft is dauerhaft
+    einst.vertonung_adresse = ""
+    assert not u.eingerichtet()
     with pytest.raises(u.StimmeFehler, match="fehlt"):
-        await u.sprechen("x", "de", einstellungen=u.ZeitansageEinstellungen())
+        await u.sprechen(v, "x", "de")
+
+
+async def test_beim_sprechen_wird_knapp_gedolmetscht(bau):
+    d, e = Dienst(), Empfang()
+    x = bau(d)
+    x.stimme, x.stimme_da = await _sprecher([]), lambda: True
+    await x.starten(e, m.Wahl(sprache="en", ziel="de", uebersetzen=True))
+    await bis_(lambda: d.zahl("/completions") >= 1)
+    anweisung = lambda: json.loads(next(r for r in reversed(d.anfragen) if r.url.path.endswith("/completions")).content)["messages"][0]["content"]
+    assert "vorgelesen" not in anweisung()
+    x.stellen(sprechen=True)
+    e.weiter(40)
+    n = d.zahl("/completions")
+    await bis_(lambda: d.zahl("/completions") > n)
+    assert "vorgelesen" in anweisung() and "Zeichen" in anweisung()
+    await x.beenden()
 
 
 def test_weg_des_tons(client):

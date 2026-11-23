@@ -102,9 +102,10 @@ das Radio endet oder eine Minute niemand liest. Hören und Übersetzen rechnet d
 Leitstelle fehlt die Taste. Übersprungene Werbung wird nicht mitgeschrieben.
 
 Übersetzer (RAD-130): im Mitlesefeld eines fremdsprachigen Senders spricht die Zeitstimme die übersetzten Absätze, sobald zwei
-davon fertig sind (Vertonung, Einstellung Zeitstimme). Solange sie spricht, ist das Radio stumm und läuft weiter; Puffer und
+davon fertig sind (Vertonung; die Stimme wählt man im Feld, ohne Wahl die Zeitstimme). Gedolmetscht wird knapp, jeder
+Absatz dauert etwa so lange wie im Original. Solange sie spricht, ist das Radio stumm und läuft weiter; Puffer und
 Aufnahme bleiben unverändert. Aus bringt sofort das Original zurück, ebenso eine Pause von sechs Sekunden ohne Übersetzung
-(Musik). Staut sich etwas, spricht sie bis zu ein Viertel schneller und lässt notfalls die ältesten Absätze aus. Pause am
+(Musik). Staut sich etwas, spricht sie schneller (höchstens 1,4-fach) und lässt notfalls die ältesten Absätze aus. Pause am
 Radio hält sie an, die Lautstärke ist die des Radios.
 
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
