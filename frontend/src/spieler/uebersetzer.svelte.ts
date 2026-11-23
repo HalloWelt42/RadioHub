@@ -4,10 +4,13 @@
 import { appState } from "../lib/store.svelte.js";
 import { mitlesen } from "../lib/radio/mitlesen.svelte";
 import { naechster } from "../lib/radio/stimmplan";
-import { stummSetzen } from "../lib/stumm";
+import { tonAuffrischen } from "../lib/playerEngine.js";
+import { stummSetzen, stummWegen } from "../lib/stumm";
 import { tonelement } from "./tonelement";
 
 const TAKT_MS = 400;
+/** so lange nach dem Ausschalten muss das Original um so viel weiter sein, sonst steht es */
+const STEHT_NACH_MS = 2500, STEHT_S = 0.3;
 /** kürzester gültiger Ton: gibt das Abspielen im Klick frei, der die Stimme einschaltet */
 const STILLE = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
 
@@ -55,7 +58,20 @@ class Uebersetzer {
     this.spricht = null;
     this.begonnen = false;
     this.ton?.pause();
+    if (!stummWegen("uebersetzer")) return;
     stummSetzen("uebersetzer", false);
+    this.originalSichern();
+  }
+
+  /** Das Original kommt gleich zurück, auch wenn das Telefon es unter der Stimme angehalten hat: noch im Klick weiterspielen, und
+   *  geht es danach nicht voran, neu ansetzen */
+  private originalSichern(): void {
+    if (!appState.isPlaying || appState.isPaused) return;
+    const radio = tonelement(), stelle = radio.currentTime;
+    void radio.play()?.catch(() => undefined);
+    setTimeout(() => {
+      if (!this.an && appState.isPlaying && !appState.isPaused && Math.abs(radio.currentTime - stelle) < STEHT_S) tonAuffrischen();
+    }, STEHT_NACH_MS);
   }
 
   private fertig(): void {

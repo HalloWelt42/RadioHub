@@ -13,7 +13,7 @@ import shutil
 import json
 from collections import deque
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from dataclasses import dataclass, field
 
@@ -77,6 +77,9 @@ class HLSSession:
     error: Optional[str] = None
 
 
+KENNUNG = "%Y%m%d_%H%M%S"
+
+
 class HLSBufferService:
     """
     HLS Buffer Service
@@ -100,6 +103,11 @@ class HLSBufferService:
         self._empfang: Optional[Empfang] = None
         self._abnehmer: Optional[Abnehmer] = None
         self._versatz_s: float = 0.0
+        # Starten und Beenden laufen nacheinander: ein Start während des Aufräumens verlöre sonst seinen frischen Puffer
+        # (Stille bis zum nächsten Start, RAD-130). Von mehreren wartenden Starts läuft nur der jüngste.
+        self._folge = asyncio.Lock()
+        self._starts = 0
+        self._kennung = ""
         
     def _ensure_buffer_dir(self):
         """Buffer-Verzeichnis erstellen/leeren"""
@@ -257,7 +265,16 @@ class HLSBufferService:
         ]
         return cmd
     
-    async def start(
+    async def start(self, *args, **kwargs) -> dict:
+        """Startet den Puffer (siehe `_starten`); kam inzwischen ein neuerer Start, gilt dieser als überholt."""
+        self._starts += 1
+        nummer = self._starts
+        async with self._folge:
+            if nummer != self._starts:
+                return {"status": "superseded"}
+            return await self._starten(*args, **kwargs)
+
+    async def _starten(
         self,
         station_uuid: str,
         station_name: str,
@@ -298,10 +315,10 @@ class HLSBufferService:
                     "session_id": self.session.session_id
                 }
             # Anderen Stream stoppen
-            await self.stop()
+            await self._beenden()
         
         # Neue Session
-        session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        session_id = self._neue_kennung()
         segment_duration = 1  # 1 Sekunde für präzises Seeking
         # Podcast: 4h Buffer (ganzes File), Radio: Rolling Window
         max_segments = 14400 if is_podcast else max_minutes * 60
@@ -540,9 +557,22 @@ class HLSBufferService:
                 self.session.error = str(e)
                 self.session.is_active = False
     
-    async def stop(self) -> dict:
-        """Stoppt HLS Buffering"""
-        
+    def _neue_kennung(self) -> str:
+        """Beginn der Sitzung (die Oberfläche liest die Uhrzeit daraus), nie zweimal dieselbe."""
+        jetzt = datetime.now()
+        if self._kennung and jetzt.strftime(KENNUNG) <= self._kennung:
+            jetzt = datetime.strptime(self._kennung, KENNUNG) + timedelta(seconds=1)
+        self._kennung = jetzt.strftime(KENNUNG)
+        return self._kennung
+
+    async def stop(self, session_id: Optional[str] = None) -> dict:
+        """Beendet den Puffer. Mit `session_id` nur diese Sitzung: ein verspätetes Ende trifft keine neuere."""
+        async with self._folge:
+            if session_id and self.session and self.session.session_id != session_id:
+                return {"status": "not_active"}
+            return await self._beenden()
+
+    async def _beenden(self) -> dict:
         if not self.session:
             return {"status": "not_active"}
         
@@ -554,6 +584,8 @@ class HLSBufferService:
 
         # ffmpeg beenden
         if self._ffmpeg_process and self._ffmpeg_process.returncode is None:
+            # erst das Ende des Tons: ffmpeg hängt sonst im Lesen und reagiert nicht aufs Beenden (3 s bis zum Abschuss)
+            await self._ende_des_tons()
             try:
                 self._ffmpeg_process.terminate()
                 await asyncio.wait_for(

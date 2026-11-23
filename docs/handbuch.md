@@ -113,6 +113,11 @@ schneller, als die Stimme fertig wird, ist eine feste Stimme die bessere Wahl.
 Solange der Übersetzer spricht, gilt das Übersetzen in der [[Leitstelle]] als wichtig (Entscheidung des Nutzers, 23.11.2026): es wartet
 nicht auf den Nachlauf der Sprachausgabe. Nur Mitlesen gilt als gewöhnliche Arbeit.
 
+Nach dem Ausschalten spielt der Sender sofort weiter; hat das Telefon ihn unter der Stimme angehalten oder steht er nach
+zweieinhalb Sekunden noch, setzt die Wiedergabe neu an. Starten und Beenden des Zeitversatzes laufen am Server nacheinander
+(`POST /api/hls/stop?sid=` beendet nur diese Sitzung, von mehreren wartenden Starts läuft der jüngste). Lädt das Abspielpaket
+dasselbe Tonstück in einer Schleife, ruht es kurz und setzt notfalls neu an (`src/lib/stueckwache.js`).
+
 Ablage beim Mitlesen (RAD-131): nach jedem Ende liegt in der Kellerwolke unter `Mitlesen/<Sender>/` der gehörte Ton des
 Senders (`<Datum> <Uhrzeit>.mp3`), daneben als Begleitdateien die gesprochene Übersetzung (`.sprache.mp3`, wenn der
 Übersetzer lief) und das Transkript mit Zeiten und Übersetzung (`.transkript.json`, Format der [[Transkription]]). Die Stimme

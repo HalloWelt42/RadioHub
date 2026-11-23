@@ -2,9 +2,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { naechster, STAU_BIS_S, TEMPO_HOECHSTENS, tempoFuer } from "../src/lib/radio/stimmplan";
 
-const radio = { muted: false, paused: false };
+const radio = { muted: false, paused: false, currentTime: 0, gespielt: 0, async play() { this.gespielt++; this.paused = false; } };
 vi.mock("../src/spieler/tonelement", () => ({ tonelement: () => radio, anhaengen: () => undefined }));
-vi.mock("../src/lib/store.svelte.js", () => ({ appState: { volume: 50 }, actions: {} }));
+const zustand = { volume: 50, isPlaying: true, isPaused: false };
+const tonAuffrischen = vi.fn();
+vi.mock("../src/lib/store.svelte.js", () => ({ appState: zustand, actions: {} }));
+vi.mock("../src/lib/playerEngine.js", () => ({ tonAuffrischen }));
 
 const absaetze = (...laengen: number[]) => laengen.map((ton_s, i) => ({ nr: i + 1, ton_s, von: i * 30, bis: i * 30 + 30 }));
 
@@ -42,7 +45,7 @@ class Ton {
 }
 
 describe("Übersetzerstimme", () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.stubGlobal("Audio", Ton); Object.assign(radio, { muted: false, paused: false }); Ton.alle = []; });
+  beforeEach(() => { vi.useFakeTimers(); vi.stubGlobal("Audio", Ton); Object.assign(radio, { muted: false, paused: false, currentTime: 0, gespielt: 0 }); Object.assign(zustand, { isPlaying: true, isPaused: false }); tonAuffrischen.mockClear(); Ton.alle = []; });
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.resetModules(); });
 
   async function bau() {
@@ -97,6 +100,26 @@ describe("Übersetzerstimme", () => {
     await geschaltet;
     expect([uebersetzer.an, radio.muted]).toEqual([true, true]);
     uebersetzer.halt();
+  });
+
+  it("nach dem Ausschalten läuft das Original gleich weiter; steht es, setzt die Wiedergabe neu an", async () => {
+    const { uebersetzer } = await bau();
+    await uebersetzer.schalten(true);
+    radio.paused = true;                                          // das Telefon hat es unter der Stimme angehalten
+    await uebersetzer.schalten(false);
+    expect([radio.muted, radio.paused, radio.gespielt]).toEqual([false, false, 1]);
+    radio.currentTime = 2;
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(tonAuffrischen).not.toHaveBeenCalled();
+    await uebersetzer.schalten(true);
+    await uebersetzer.schalten(false);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(tonAuffrischen).toHaveBeenCalledTimes(1);
+    zustand.isPaused = true;                                      // angehalten heißt angehalten
+    await uebersetzer.schalten(true);
+    await uebersetzer.schalten(false);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect([tonAuffrischen.mock.calls.length, radio.gespielt]).toEqual([1, 2]);
   });
 
   it("scheitert das Einschalten, ist der Sender wieder zu hören", async () => {

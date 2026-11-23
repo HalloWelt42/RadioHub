@@ -14,7 +14,7 @@
   "dependencies": {
     "@fontsource/orbitron": "^5.2.8",
     "appkern-oberflaeche": "github:HalloWelt42/appkern#13677435d482afe0ffd645df1b94592f123e42eb",
-    "hls.js": "^1.5.0"
+    "hls.js": "^1.7.4"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",

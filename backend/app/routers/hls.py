@@ -93,9 +93,9 @@ async def start_hls_buffer(request: HLSStartRequest):
 
 
 @router.post("/stop")
-async def stop_hls_buffer():
-    """Stoppt HLS Buffering und gibt Ressourcen frei"""
-    return await hls_buffer.stop()
+async def stop_hls_buffer(sid: Optional[str] = None):
+    """Stoppt HLS Buffering und gibt Ressourcen frei; mit `sid` nur diese Sitzung"""
+    return await hls_buffer.stop(sid)
 
 
 @router.get("/status")

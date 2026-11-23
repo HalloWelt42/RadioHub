@@ -18,6 +18,7 @@
  *   'recording' - Aufnahme-Wiedergabe (seekbar, feste Dauer)
  */
 import Hls from 'hls.js';
+import { Stueckwache } from './stueckwache.js';
 import { api } from './api.js';
 import { ueberBackend } from './wiedergabeweg.js';
 import { stromHalten } from './stromhalter.js';
@@ -45,6 +46,8 @@ let _halter = null;
 /** "Live" im Zeitversatz heißt so viele Sekunden hinter der Kante des Puffers (RAD-84): die Stücke sind 1 s lang, dicht
  *  an der Kante (bisher 0,3 bis 3 s) reichte schon kurzes Zögern im Netz für Aussetzer. Eine Stelle für alle Wege. */
 const LIVE_ABSTAND_S = 8;
+/** Stückwache (RAD-130): so lange ruht das Laden nach einer Schleife; weniger Vorrat als das gilt als aufgebraucht */
+const LADEN_RUHT_MS = 1000, VORRAT_AUS_S = 0.5;
 
 /** Zeit im Tonelement für "live" im Zeitversatz */
 function _liveZeit() {
@@ -151,14 +154,7 @@ export async function playStation(station) {
 
   // --- Phase 2: Backend-HLS sauber stoppen ---
   if (_appState.hlsActive) {
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
-    try {
-      await api.stopHLS();
-    } catch (e) {
-      console.error('HLS stop error:', e);
-    }
+    await _pufferBeenden();
   }
   if (_generation !== gen) return;
 
@@ -229,10 +225,7 @@ export async function playPodcast(episode, podcast) {
   _silenceAudio();
 
   if (_appState.hlsActive) {
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
-    try { await api.stopHLS(); } catch (_) {}
+    await _pufferBeenden();
   }
   if (_generation !== gen) return;
 
@@ -332,10 +325,7 @@ export async function playRecording(recording, startTime = 0) {
   _silenceAudio();
 
   if (_appState.hlsActive) {
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
-    try { await api.stopHLS(); } catch (_) {}
+    await _pufferBeenden();
   }
   if (_generation !== gen) return;
 
@@ -454,7 +444,7 @@ export async function stop() {
 
   // 3. Backend HLS stoppen
   if (_appState.hlsActive) {
-    api.stopHLS().catch(e => console.error('HLS stop error:', e));
+    void _pufferBeenden();
   }
 
   // 4. Eine Aufnahme läuft weiter, bis sie beendet wird (RAD-46)
@@ -653,8 +643,7 @@ export function toggleStreamMode() {
     const gen = _generation;
     (async () => {
       try {
-        await api.stopHLS();
-        _appState.hlsActive = false;
+        await _pufferBeenden();
         const result = await api.startHLS(station);
         if (_generation !== gen) return;
         if (result.status === 'started' || result.status === 'already_active') {
@@ -731,10 +720,7 @@ export async function restartHLS() {
     _stopHLSPolling();
 
     // 2. Backend-Session stoppen
-    await api.stopHLS();
-    _appState.hlsActive = false;
-    _appState.hlsStatus = null;
-    _hlsSessionId = null;
+    await _pufferBeenden();
 
     // 3. Neue Session starten + auf Segmente warten + neue hls.js-Instanz
     const gen = _generation;
@@ -1286,7 +1272,7 @@ async function _ueberZeitversatz(station, gen) {
     _appState.playerMode = 'direct';
     return false;
   }
-  if (_generation !== gen) return true;
+  if (_generation !== gen) { _verspaetet(result); return true; }
   if (result.status !== 'started' && result.status !== 'already_active') { _appState.playerMode = 'direct'; return false; }
   _hlsSessionId = result.session_id || null;
   _appState.hlsActive = true;
@@ -1316,6 +1302,25 @@ async function _ueberZeitversatz(station, gen) {
   _appState.playerMode = 'direct';
   _destroyHLS();
   return false;
+}
+
+/** Den eigenen Puffer am Server beenden, genau diese Sitzung: ein verspätetes Ende trifft keine neuere (RAD-130) */
+async function _pufferBeenden(sitzung = _hlsSessionId) {
+  if (sitzung === _hlsSessionId) {
+    _appState.hlsActive = false;
+    _appState.hlsStatus = null;
+    _hlsSessionId = null;
+  }
+  try {
+    await api.stopHLS(sitzung);
+  } catch (e) {
+    console.error('HLS stop error:', e);
+  }
+}
+
+/** Ein Start kam erst an, als man schon gestoppt hatte: der Puffer liefe sonst ungehört weiter */
+function _verspaetet(result) {
+  if (result?.status === 'started' && result.session_id && !_appState?.isPlaying) void _pufferBeenden(result.session_id);
 }
 
 /** RAD-33: den Spot beim Verbinden doch hören */
@@ -1365,7 +1370,7 @@ export function springeZuPuffer(sekunde) {
 async function _startHLSBackground(station, gen) {
   try {
     const result = await api.startHLS(station);
-    if (_generation !== gen) return;
+    if (_generation !== gen) { _verspaetet(result); return; }
 
     if (result.status === 'started' || result.status === 'already_active') {
       _hlsSessionId = result.session_id || null;
@@ -1483,6 +1488,8 @@ function _switchToHLS(gen, startSekunde = null) {
     });
   }
 
+  _stueckeWachen(_hlsInstance, gen);
+
   _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
     if (_generation !== gen) return;
     _appState.playerMode = 'hls';
@@ -1522,6 +1529,33 @@ function _switchToHLS(gen, startSekunde = null) {
   const playlistUrl = api.getHLSPlaylistUrl(_hlsSessionId);
   _hlsInstance.loadSource(playlistUrl);
   _hlsInstance.attachMedia(_audioEl);
+}
+
+/** Lädt hls.js dasselbe Stück in einer Schleife, ruht das Laden kurz; ist der Vorrat schon aufgebraucht, geht es hinter dem Stück
+ *  weiter. Hilft das nicht, setzt die Wiedergabe neu an (RAD-130) */
+function _stueckeWachen(hls, gen) {
+  const wache = new Stueckwache();
+  hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+    if (_generation !== gen || _hlsInstance !== hls) return;
+    const tat = wache.geladen(data.frag.sn, Date.now());
+    if (tat === 'weiter') return;
+    console.warn(`Tonstück ${data.frag.sn} in einer Schleife:`, tat);
+    if (tat === 'neu') return tonAuffrischen();
+    hls.stopLoad();
+    if (_audioEl && data.frag.start - _audioEl.currentTime < VORRAT_AUS_S) _audioEl.currentTime = data.frag.end + 0.05;
+    setTimeout(() => { if (_generation === gen && _hlsInstance === hls) hls.startLoad(-1); }, LADEN_RUHT_MS);
+  });
+}
+
+/** Die Wiedergabe am selben Ort neu ansetzen, wenn sie steht, obwohl sie laufen soll */
+export function tonAuffrischen() {
+  if (!_audioEl || !_appState?.isPlaying || _appState.isPaused) return;
+  if (_hlsInstance) {
+    _hlsInstance.recoverMediaError();
+    _audioEl.play().catch(e => console.warn('Wiedergabe neu angesetzt:', e.message));
+  } else if (_appState.playerMode === 'direct' && _appState.currentStation) {
+    _direktStarten(_appState.currentStation);
+  }
 }
 
 /**

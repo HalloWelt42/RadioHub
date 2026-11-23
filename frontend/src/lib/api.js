@@ -472,8 +472,9 @@ class RadioHubAPI {
     });
   }
 
-  async stopHLS() {
-    return this.fetch('/api/hls/stop', { method: 'POST' });
+  /** `sid`: nur diese Sitzung beenden; ein verspätetes Ende trifft so keine neuere */
+  async stopHLS(sid = null) {
+    return this.fetch(`/api/hls/stop${sid ? `?sid=${encodeURIComponent(sid)}` : ''}`, { method: 'POST' });
   }
 
   async getHLSStatus() {
