@@ -1,4 +1,4 @@
-"""Live mitlesen, was ein Sender spricht (RAD-129): aus dem Mitschnitt des Empfangs wird Stück für Stück Text, wahlweise
+"""Live mitlesen, was ein Sender spricht (RAD-129), und es auf Wunsch übersetzt sprechen lassen (RAD-130): aus dem Mitschnitt des Empfangs wird Stück für Stück Text, wahlweise
 übersetzt. Beides rechnet die Leitstelle (Hördienst, Sprachmodell); der Pi liefert nur den Ton.
 
 Es hängt am laufenden Empfang, hält ihn aber nicht am Leben: endet das Radio, endet das Mitlesen. Es läuft nur, solange jemand
@@ -16,7 +16,7 @@ import logging
 import re
 import tempfile
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING, Literal
 
 from appkern.leitstelle import GehoertesSegment, Leitstelle, LeitstellenFehler, Nachricht, gerade, halten, hoeren
 from pydantic import BaseModel
+
+from .uebersetzerstimme import Gesprochen, StimmeFehler, eingerichtet as stimme_eingerichtet, sprechen as stimme_sprechen
 
 if TYPE_CHECKING:
     from .empfang import Empfang
@@ -40,6 +42,8 @@ HALTEN_S = 120                               # es kommt gleich mehr: so lange bl
 TAKT_S = 1.0
 NACH_FEHLER_S = 15.0
 ABSAETZE_HOECHSTENS = 2000
+SPRECHEN_WARTET = 3                          # mehr wartet nicht aufs Sprechen: der älteste Absatz bleibt stumm, sonst fällt die Stimme zurück
+TOENE_HOECHSTENS = 40                        # so viele gesprochene Absätze bleiben abrufbar
 SATZENDE = re.compile(r"[.!?。！？…][\"')\]»]*\s*$")
 ENDUNG = {"mp3": ".mp3", "aac": ".aac", "ogg": ".ogg", "flac": ".flac"}
 
@@ -58,6 +62,8 @@ class Absatz(BaseModel):
     zeit: str
     text: str
     uebersetzung: str = ""
+    #: Länge des gesprochenen Tons in Sekunden; 0: (noch) nicht gesprochen
+    ton_s: float = 0.0
 
 
 class Stand(BaseModel):
@@ -69,6 +75,9 @@ class Stand(BaseModel):
     sprache: str = ""
     ziel: str = ""
     uebersetzen: bool = False
+    #: die Übersetzerstimme spricht mit; kann_sprechen: Vertonung und Stimme sind eingerichtet
+    sprechen: bool = False
+    kann_sprechen: bool = False
     #: was ab `ab` dazukam oder sich änderte (eine Übersetzung kommt nach ihrem Absatz)
     absaetze: list[Absatz] = []
     fassung: int = 0
@@ -120,6 +129,7 @@ class Wahl:
     sprache: str = ""               # Kürzel laut Sprachlabel des Senders, leer: erkennen
     ziel: str = "de"
     uebersetzen: bool = False
+    sprechen: bool = False
 
 
 @dataclass
@@ -131,6 +141,8 @@ class Mitleser:
     modell: Callable[[], str] = lambda: ""
     ziel_name: Callable[[str], str] = lambda k: k
     uhr: Callable[[], float] = time.monotonic
+    stimme: Callable[[str, str], Awaitable[Gesprochen]] = stimme_sprechen
+    stimme_da: Callable[[], bool] = stimme_eingerichtet
 
     _empfang: Empfang | None = field(default=None, repr=False)
     _wahl: Wahl = field(default_factory=Wahl)
@@ -144,6 +156,8 @@ class Mitleser:
     _gelesen: float = 0.0
     _erkannt: str = ""
     _zu_uebersetzen: asyncio.Queue[int] = field(default_factory=asyncio.Queue, repr=False)
+    _zu_sprechen: asyncio.Queue[int] = field(default_factory=asyncio.Queue, repr=False)
+    _toene: dict[int, bytes] = field(default_factory=dict, repr=False)
 
     @property
     def eingerichtet(self) -> bool:
@@ -165,10 +179,11 @@ class Mitleser:
     async def starten(self, empfang: Empfang, wahl: Wahl) -> Stand:
         await self.beenden()
         self._empfang, self._wahl, self._zustand, self._grund, self._erkannt = empfang, wahl, "sammelt", "", ""
-        self._absaetze, self._geaendert, self._zu_uebersetzen = [], {}, asyncio.Queue()
+        self._absaetze, self._geaendert, self._toene = [], {}, {}
+        self._zu_uebersetzen, self._zu_sprechen = asyncio.Queue(), asyncio.Queue()
         self._gelesen = self.uhr()
         ab = max(empfang.anfang_s, empfang.jetzt_s - EINSTIEG_S)
-        self._aufgaben = [asyncio.create_task(self._mithoeren(empfang, ab)), asyncio.create_task(self._uebersetzen())]
+        self._aufgaben = [asyncio.create_task(self._mithoeren(empfang, ab)), asyncio.create_task(self._uebersetzen()), asyncio.create_task(self._sprechen())]
         return self.stand(0)
 
     async def beenden(self, grund: str = "") -> None:
@@ -177,22 +192,36 @@ class Mitleser:
         for a in aufgaben:
             a.cancel()
         self._empfang, self._zustand, self._grund = None, "aus", grund
+        self._wahl.sprechen = False
         await asyncio.gather(*aufgaben, return_exceptions=True)
 
-    def stellen(self, uebersetzen: bool) -> None:
-        """Übersetzen an oder aus; an holt die letzten Absätze nach."""
-        self._wahl.uebersetzen = uebersetzen
+    def stellen(self, uebersetzen: bool | None = None, sprechen: bool | None = None) -> None:
+        """Übersetzen und Übersetzerstimme an oder aus; an holt die letzten Absätze nach. Sprechen schließt Übersetzen ein."""
+        if sprechen is not None:
+            self._wahl.sprechen = sprechen
+            uebersetzen = True if sprechen else uebersetzen
+        if uebersetzen is not None:
+            self._wahl.uebersetzen = uebersetzen
+            self._wahl.sprechen = self._wahl.sprechen and uebersetzen
         if uebersetzen:
             for a in self._absaetze[-3:]:
                 if not a.uebersetzung:
                     self._zu_uebersetzen.put_nowait(a.nr)
+        if sprechen:
+            for a in [a for a in self._absaetze if a.uebersetzung][-2:]:      # gleich etwas Vorlauf
+                if a.nr not in self._toene:
+                    self._zu_sprechen.put_nowait(a.nr)
+
+    def ton(self, nr: int) -> bytes | None:
+        """Der gesprochene Absatz (MP3), solange er aufgehoben ist."""
+        return self._toene.get(nr)
 
     def stand(self, ab: int) -> Stand:
         """Der Stand und alle Absätze, die nach der Fassung `ab` kamen oder sich änderten. Wer fragt, liest."""
         self._gelesen = self.uhr()
         e = self._empfang
         return Stand(laeuft=e is not None, zustand=self._zustand, grund=self._grund, uuid=e.uuid if e else "", name=e.name if e else "",
-                     sprache=self.sprache, ziel=self._wahl.ziel, uebersetzen=self._wahl.uebersetzen, fassung=self._fassung,
+                     sprache=self.sprache, ziel=self._wahl.ziel, uebersetzen=self._wahl.uebersetzen, sprechen=self._wahl.sprechen, kann_sprechen=self.stimme_da(), fassung=self._fassung,
                      absaetze=[a for a in self._absaetze if self._geaendert[a.nr] > ab])
 
     # ----- Ablauf
@@ -284,9 +313,35 @@ class Mitleser:
                     antwort = await ls.chat([*nachrichten, Nachricht.nutzer(a.text)], modell=modell, titel="Live mitlesen: übersetzen", temperature=0.2)
                 a.uebersetzung = gerade(antwort.text.strip())
                 self._merken(nr)
+                if self._wahl.sprechen:
+                    self._zu_sprechen.put_nowait(nr)
             except LeitstellenFehler as f:
                 self._grund = f.meldung
                 logger.info("Übersetzung fehlt: %s", f)
+
+
+    async def _sprechen(self) -> None:
+        """Absatz für Absatz sprechen lassen; kommt es nicht nach, bleiben die ältesten stumm."""
+        while True:
+            nr = await self._zu_sprechen.get()
+            while self._zu_sprechen.qsize() >= SPRECHEN_WARTET:
+                nr = self._zu_sprechen.get_nowait()
+            a = next((x for x in self._absaetze if x.nr == nr), None)
+            if a is None or not a.uebersetzung or a.ton_s or not self._wahl.sprechen:
+                continue
+            try:
+                g = await self.stimme(a.uebersetzung, self._wahl.ziel)
+            except StimmeFehler as f:
+                self._grund = str(f)
+                logger.info("Nicht gesprochen: %s", f)
+                if f.dauerhaft:
+                    self._wahl.sprechen = False
+                continue
+            self._toene[nr] = g.ton
+            for alt in sorted(self._toene)[:-TOENE_HOECHSTENS]:
+                del self._toene[alt]
+            a.ton_s = round(max(0.1, g.dauer_s), 1)
+            self._merken(nr)
 
 
 mitleser = Mitleser()

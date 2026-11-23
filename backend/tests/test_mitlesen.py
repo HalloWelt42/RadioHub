@@ -195,3 +195,88 @@ def test_wege(client, anonym):
     assert client.post("/api/mitlesen", json={"uuid": "x", "sprache": "Deutsch"}).status_code == 422
     assert client.get("/api/mitlesen").json()["laeuft"] is False
     assert client.delete("/api/mitlesen").json()["zustand"] == "aus"
+
+
+# ----- Übersetzerstimme (RAD-130)
+
+async def _sprecher(zeichen: list[str], dauer: float = 0.0):
+    async def sprechen(text: str, sprache: str) -> m.Gesprochen:
+        zeichen.append(f"{sprache}:{text}")
+        await asyncio.sleep(dauer)
+        return m.Gesprochen(b"mp3", 12.34)
+    return sprechen
+
+
+async def test_spricht_fertig_uebersetzte_absaetze(bau):
+    d, e, gesprochen = Dienst(), Empfang(), []
+    x = bau(d)
+    x.stimme, x.stimme_da = await _sprecher(gesprochen), lambda: True
+    await x.starten(e, m.Wahl(sprache="en", ziel="de"))
+    await bis_(lambda: x.stand(0).absaetze)
+    assert not gesprochen and x.stand(0).kann_sprechen and not x.stand(0).sprechen
+    x.stellen(sprechen=True)                                  # schließt Übersetzen ein und holt den Vorlauf
+    await bis_(lambda: any(a.ton_s for a in x.stand(0).absaetze))
+    a = next(a for a in x.stand(0).absaetze if a.ton_s)
+    assert a.ton_s == 12.3 and x.ton(a.nr) == b"mp3" and gesprochen[0] == "de:Das ist die Übersetzung."
+    assert x.stand(0).uebersetzen and x.stand(0).sprechen
+    x.stellen(uebersetzen=False)
+    assert not x.stand(0).sprechen, "ohne Übersetzung gibt es nichts zu sprechen"
+    await x.beenden()
+    assert x.ton(a.nr) == b"mp3" and x.ton(999) is None
+
+
+async def test_kommt_es_nicht_nach_bleibt_der_aelteste_stumm(bau, monkeypatch):
+    monkeypatch.setattr(m, "SPRECHEN_WARTET", 2)
+    d, e, gesprochen = Dienst(), Empfang(), []
+    x = bau(d)
+    x.stimme, x.stimme_da = await _sprecher(gesprochen, 0.3), lambda: True
+    await x.starten(e, m.Wahl(sprache="en", ziel="de", uebersetzen=True, sprechen=True))
+    e.weiter(180)
+    await bis_(lambda: sum(bool(a.uebersetzung) for a in x.stand(0).absaetze) >= 6)
+    await bis_(lambda: x._zu_sprechen.empty() and sum(bool(a.ton_s) for a in x.stand(0).absaetze) == len(gesprochen))
+    stumm = [a.nr for a in x.stand(0).absaetze if a.uebersetzung and not a.ton_s]
+    assert stumm and max(a.nr for a in x.stand(0).absaetze if a.ton_s) > min(stumm)
+    await x.beenden()
+
+
+async def test_ohne_stimme_wird_gesagt_warum(bau):
+    d, e = Dienst(), Empfang()
+    x = bau(d)
+
+    async def nein(text: str, sprache: str) -> m.Gesprochen:
+        raise m.StimmeFehler("Vertonung antwortet 403", True)
+    x.stimme, x.stimme_da = nein, lambda: True
+    await x.starten(e, m.Wahl(sprache="en", ziel="de", uebersetzen=True, sprechen=True))
+    await bis_(lambda: not x.stand(0).sprechen)
+    assert "403" in x.stand(0).grund and x.laeuft, "gelesen wird weiter"
+    await x.beenden()
+
+
+async def test_stimme_der_vertonung(monkeypatch):
+    from app.services import uebersetzerstimme as u
+    gesehen: list[dict] = []
+
+    async def unveraendert(wav: bytes) -> bytes:
+        return wav
+    monkeypatch.setattr(u, "kuerzen", unveraendert)
+    e = u.ZeitansageEinstellungen(adresse="https://vertonung.test", stimme="katalog:sohee", schluessel="kw_x")
+
+    def antwort(status: int) -> httpx.MockTransport:
+        def h(r: httpx.Request) -> httpx.Response:
+            gesehen.append(json.loads(r.content))
+            return httpx.Response(status, content=b"wav", headers={"X-Dauer": "7.5"})
+        return httpx.MockTransport(h)
+    g = await u.sprechen("Guten Abend.", "de", transport=antwort(200), einstellungen=e)
+    assert (g.ton, g.dauer_s) == (b"wav", 7.5)
+    assert gesehen[0]["stimme"] == {"art": "katalog", "name": "sohee"} and gesehen[0]["sprache"] == "de" and gesehen[0]["ausschreiben"] is True
+    for status, dauerhaft in ((403, True), (422, True), (429, False), (503, False)):
+        with pytest.raises(u.StimmeFehler) as f:
+            await u.sprechen("x", "de", transport=antwort(status), einstellungen=e)
+        assert f.value.dauerhaft is dauerhaft
+    with pytest.raises(u.StimmeFehler, match="fehlt"):
+        await u.sprechen("x", "de", einstellungen=u.ZeitansageEinstellungen())
+
+
+def test_weg_des_tons(client):
+    assert client.get("/api/mitlesen/ton/7").status_code == 404
+    assert client.put("/api/mitlesen", json={"sprechen": True}).json()["kann_sprechen"] is False

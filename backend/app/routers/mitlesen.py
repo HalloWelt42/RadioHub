@@ -1,7 +1,7 @@
 """Live mitlesen (RAD-129): starten am laufenden Sender, abfragen, Übersetzen schalten, beenden. Jede Abfrage hält es am Laufen."""
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
 from ..services.empfang import empfaenge
@@ -22,7 +22,8 @@ class Start(BaseModel):
 
 
 class Stellung(BaseModel):
-    uebersetzen: bool
+    uebersetzen: bool | None = None
+    sprechen: bool | None = None
 
 
 class Faehigkeit(BaseModel):
@@ -49,9 +50,18 @@ def lesen(ab: Annotated[int, Query(ge=0)] = 0) -> Stand:
     return mitleser.stand(ab)
 
 
+@router.get("/ton/{nr}")
+def ton(nr: int) -> Response:
+    """Ein gesprochener Absatz."""
+    daten = mitleser.ton(nr)
+    if daten is None:
+        raise HTTPException(404, "Dieser Absatz ist nicht gesprochen")
+    return Response(daten, media_type="audio/mpeg", headers={"Cache-Control": "private, max-age=3600"})
+
+
 @router.put("")
 def stellen(s: Stellung) -> Stand:
-    mitleser.stellen(s.uebersetzen)
+    mitleser.stellen(s.uebersetzen, s.sprechen)
     return mitleser.stand(0)
 
 

@@ -86,7 +86,7 @@ class ZeitansageEinstellungen:
                    ca_datei=stand.ca_datei.strip())
 
 
-async def _kuerzen(wav: bytes) -> bytes:
+async def kuerzen(wav: bytes) -> bytes:
     """Stille am Anfang und Ende weg, MP3 mono: die Bausteine schließen dann ohne Lücke aneinander an."""
     with tempfile.TemporaryDirectory() as ordner:
         ein, aus = Path(ordner) / "ein.wav", Path(ordner) / "aus.mp3"
@@ -120,7 +120,7 @@ async def baustein_sprechen(client: httpx.AsyncClient, e: ZeitansageEinstellunge
         hinweis = " (Stimme für RadioHub freigeben: Vertonung, Private Stimmen für)" \
             if antwort.status_code in (403, 404) else ""
         raise RuntimeError(f"Vertonung antwortet {antwort.status_code}{hinweis}: {antwort.text[:200]}")
-    return await _kuerzen(antwort.content)
+    return await kuerzen(antwort.content)
 
 
 def client_fuer(e: ZeitansageEinstellungen, transport: httpx.AsyncBaseTransport | None = None) -> httpx.AsyncClient:
