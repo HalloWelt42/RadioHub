@@ -7,7 +7,7 @@
 import { untrack } from "svelte";
 import { appState } from "../lib/store.svelte.js";
 import { springeZuPuffer, tonZuPuffer, vorabHoeren } from "../lib/playerEngine.js";
-import { stellenSchluessel, werbetat, type Pufferstand, type Werbestelle } from "../lib/radio/sendewerbung";
+import { herkunftVon, stellenSchluessel, werbetat, type Pufferstand, type Werbestelle } from "../lib/radio/sendewerbung";
 import { anhaengen, tonelement } from "./tonelement";
 import { werbehinweis } from "./werbehinweis.svelte";
 
@@ -56,7 +56,7 @@ class Radiowerbung {
         this.stumm = true;
       }
       const s = tat.stelle;
-      werbehinweis.jetzt = { art: "stumm", dauer: dauerVon(s), rest: tat.rest, herkunft: "sendedaten", werbender: s.werbender,
+      werbehinweis.jetzt = { art: "stumm", dauer: dauerVon(s), rest: tat.rest, herkunft: herkunftVon(s), werbender: s.werbender,
                              anhoeren: () => this.anhoeren(s) };
     } else if (this.stumm || werbehinweis.jetzt?.art === "stumm") {
       this.tonAn();
@@ -65,7 +65,7 @@ class Radiowerbung {
   }
 
   private uebersprungen(s: Werbestelle): void {
-    werbehinweis.jetzt = { art: "uebersprungen", dauer: dauerVon(s), herkunft: "sendedaten", werbender: s.werbender,
+    werbehinweis.jetzt = { art: "uebersprungen", dauer: dauerVon(s), herkunft: herkunftVon(s), werbender: s.werbender,
                            anhoeren: () => this.zurueck(s), schliessen: () => this.schliessen() };
     clearTimeout(this.uhr);
     this.uhr = setTimeout(() => this.schliessen(), HINWEIS_MS);
@@ -92,7 +92,7 @@ class Radiowerbung {
       return;
     }
     const s = start.stelle;
-    werbehinweis.jetzt = { art: "verbinden", dauer: dauerVon(s), rest: start.rest, herkunft: "sendedaten", werbender: s.werbender,
+    werbehinweis.jetzt = { art: "verbinden", dauer: dauerVon(s), rest: start.rest, herkunft: herkunftVon(s), werbender: s.werbender,
                            anhoeren: () => {
                              this.sitzungPruefen(this.puffer ?? (appState.hlsStatus as Puffer | null));
                              this.angehoert.add(stellenSchluessel(s));

@@ -379,6 +379,7 @@ export default {
     werbeherkunft_kapitel: "capítulo del feed", werbeherkunft_hand: "a mano", werbeherkunft_vergleich: "comparación de versiones",
     werbeherkunft_transkript: "según la transcripción",
     werbeherkunft_sendedaten: "según los datos de emisión",
+    werbeherkunft_klang: 'reconocido por el sonido',
     werbungVerbinden: "Anuncio al conectar", werbungNichtGespielt: "RadioHub no lo reproduce, faltan",
     werbungNichtGespieltOffen: "RadioHub no lo reproduce, la reproducción empieza después", werbungTrotzdem: "Escuchar igualmente",
     werbungLaeuft: "Anuncio en curso", werbungStumm: "silenciado durante", werbungStummOffen: "silenciado hasta el final",

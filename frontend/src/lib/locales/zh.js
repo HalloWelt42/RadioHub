@@ -363,6 +363,7 @@ export default {
     werbeherkunft_kapitel: '订阅源中的章节', werbeherkunft_hand: '手动', werbeherkunft_vergleich: '版本对比',
     werbeherkunft_transkript: '来自文字稿',
     werbeherkunft_sendedaten: '来自播出数据',
+    werbeherkunft_klang: '按声音识别',
     werbungVerbinden: '连接时的广告', werbungNichtGespielt: 'RadioHub 不播放，还剩',
     werbungNichtGespieltOffen: 'RadioHub 不播放，结束后开始播放', werbungTrotzdem: '仍然收听',
     werbungLaeuft: '广告中', werbungStumm: '静音还剩', werbungStummOffen: '静音至结束',

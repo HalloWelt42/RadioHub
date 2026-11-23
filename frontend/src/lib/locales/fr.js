@@ -379,6 +379,7 @@ export default {
     werbeherkunft_kapitel: "chapitre du flux", werbeherkunft_hand: "à la main", werbeherkunft_vergleich: "comparaison des versions",
     werbeherkunft_transkript: "d'après la transcription",
     werbeherkunft_sendedaten: "d'après les données de diffusion",
+    werbeherkunft_klang: 'reconnu au son',
     werbungVerbinden: "Pub à la connexion", werbungNichtGespielt: "RadioHub ne la diffuse pas, encore",
     werbungNichtGespieltOffen: "RadioHub ne la diffuse pas, la lecture commence ensuite", werbungTrotzdem: "Écouter quand même",
     werbungLaeuft: "Pub en cours", werbungStumm: "son coupé encore", werbungStummOffen: "son coupé jusqu'à la fin",

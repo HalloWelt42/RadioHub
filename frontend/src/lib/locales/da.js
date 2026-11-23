@@ -379,6 +379,7 @@ export default {
     werbeherkunft_kapitel: 'Kapitel i feedet', werbeherkunft_hand: 'manuelt', werbeherkunft_vergleich: 'Sammenligning af versioner',
     werbeherkunft_transkript: 'fra transskriptionen',
     werbeherkunft_sendedaten: 'fra udsendelsesdataene',
+    werbeherkunft_klang: 'genkendt på lyden',
     werbungVerbinden: 'Reklame ved tilslutning', werbungNichtGespielt: 'RadioHub afspiller den ikke, endnu',
     werbungNichtGespieltOffen: 'RadioHub afspiller den ikke, afspilningen starter bagefter', werbungTrotzdem: 'Lyt alligevel',
     werbungLaeuft: 'Reklame kører', werbungStumm: 'lyd fra endnu', werbungStummOffen: 'lyd fra til slutningen',

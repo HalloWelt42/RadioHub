@@ -169,6 +169,12 @@ export function werbetat(t: number, p: Pufferstand, angehoert: (s: Werbestelle) 
 }
 
 /** Kennung einer Stelle für "angehört" (dieselbe Stelle behält Kennung und Anfang) */
+/** Format einer Werbestelle, die der Propaganda-Filter am Klang erkannt hat */
+export const KLANG = "klang";
+
+/** woher eine Werbestelle stammt: am Klang erkannt (Propaganda-Filter) oder aus den Sendedaten */
+export const herkunftVon = (s: Pick<Werbestelle, "format">): "klang" | "sendedaten" => (s.format === KLANG ? "klang" : "sendedaten");
+
 export const stellenSchluessel = (s: Werbestelle): string => `${s.format}:${s.kennung}@${Math.round(s.von)}`;
 
 export const sendewerbung = new Sendewerbung();

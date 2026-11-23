@@ -12,7 +12,7 @@
   import { MARKIERUNGEN, bewertungName, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import type { Kategorie, Steckbrief } from "../../lib/radio/quelle";
   import type { Bewertung, SenderEintrag } from "../../lib/radio/typen";
-  import { haeufigste, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief } from "../../lib/radio/sendewerbung";
+  import { haeufigste, KLANG, nachWerbenden, sendewerbung, type Steckbrief as Werbesteckbrief, type Werbender } from "../../lib/radio/sendewerbung";
   import { wann, werbende } from "../../lib/radio/werbende.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
 
@@ -66,8 +66,8 @@
   const mal = $derived(gruppen.reduce((n, g) => n + g.mal, 0));
   const werbendeListe = $derived(haeufigste(gruppen));
   /** ohne Namen aus den Sendedaten: eine Kennung aus Ziffern als "Spot 199326", ein Text (etwa "Kurze Werbepause") selbst */
-  const werbendenName = (g: { name: string; kennung: string }) =>
-    g.name || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
+  const werbendenName = (g: Werbender) =>
+    g.name || (g.spots[0]?.format === KLANG ? t("schale.werbeherkunft_klang") : "") || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
 
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben
   let tafel = $state(false);
@@ -280,7 +280,7 @@
                 {#if g.beimVerbinden}<i class="fa-solid fa-plug rh-verbinden" title={t("radio.werbungBeimVerbinden")}></i>{:else}<span></span>{/if}</summary>
               <ul class:rh-liste-rollt={spots.rollt}>
                 {#each spots.zeigen as s (s.format + s.kennung)}
-                  <li><span class="rh-zahl">{spotDauer(s.dauer_ms)}</span><span class="rh-kurz" title={s.titel}>{s.titel || s.kennung}</span><span class="rh-zahl">{t("radio.werbungMal", { n: zahl(s.anzahl) })}</span>
+                  <li><span class="rh-zahl">{spotDauer(s.dauer_ms)}</span><span class="rh-kurz" title={s.titel}>{s.titel || (s.format === KLANG ? t("schale.werbeherkunft_klang") : s.kennung)}</span><span class="rh-zahl">{t("radio.werbungMal", { n: zahl(s.anzahl) })}</span>
                     <span class="rh-still">{t(s.beim_verbinden ? "radio.werbungBeimVerbinden" : "radio.werbungImProgramm")} · {wann(s.zuletzt)}</span></li>
                 {/each}
                 {#if spots.weggelassen}<li class="rh-still">{t("radio.listeHaeufigste", { n: zahl(spots.zeigen.length), von: zahl(g.spots.length) })}</li>{/if}

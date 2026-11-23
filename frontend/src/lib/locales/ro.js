@@ -362,6 +362,7 @@ export default {
     werbeherkunft_kapitel: 'capitol în feed', werbeherkunft_hand: 'manual', werbeherkunft_vergleich: 'compararea versiunilor',
     werbeherkunft_transkript: 'din transcriere',
     werbeherkunft_sendedaten: 'din datele de emisie',
+    werbeherkunft_klang: 'recunoscut după sunet',
     werbungVerbinden: 'Reclamă la conectare', werbungNichtGespielt: 'RadioHub nu o redă, mai sunt',
     werbungNichtGespieltOffen: 'RadioHub nu o redă, redarea începe după ea', werbungTrotzdem: 'Ascultă totuși',
     werbungLaeuft: 'Rulează reclamă', werbungStumm: 'fără sunet încă', werbungStummOffen: 'fără sunet până la final',

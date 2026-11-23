@@ -363,6 +363,7 @@ export default {
     werbeherkunft_kapitel: 'フィードのチャプター', werbeherkunft_hand: '手動', werbeherkunft_vergleich: 'バージョン比較',
     werbeherkunft_transkript: '文字起こしから',
     werbeherkunft_sendedaten: '放送データから',
+    werbeherkunft_klang: '音で認識',
     werbungVerbinden: '接続時の広告', werbungNichtGespielt: 'RadioHub は再生しません。残り',
     werbungNichtGespieltOffen: 'RadioHub は再生しません。終わってから再生が始まります', werbungTrotzdem: 'それでも聞く',
     werbungLaeuft: '広告中', werbungStumm: 'ミュート残り', werbungStummOffen: '終わるまでミュート',

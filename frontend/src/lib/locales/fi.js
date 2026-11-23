@@ -379,6 +379,7 @@ export default {
     werbeherkunft_kapitel: 'Syötteen luku', werbeherkunft_hand: 'käsin', werbeherkunft_vergleich: 'Versioiden vertailu',
     werbeherkunft_transkript: 'litteroinnista',
     werbeherkunft_sendedaten: 'lähetystiedoista',
+    werbeherkunft_klang: 'tunnistettu äänestä',
     werbungVerbinden: 'Mainos yhdistettäessä', werbungNichtGespielt: 'RadioHub ei soita sitä, vielä',
     werbungNichtGespieltOffen: 'RadioHub ei soita sitä, toisto alkaa sen jälkeen', werbungTrotzdem: 'Kuuntele silti',
     werbungLaeuft: 'Mainos käynnissä', werbungStumm: 'mykistetty vielä', werbungStummOffen: 'mykistetty loppuun asti',

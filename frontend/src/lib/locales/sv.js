@@ -371,6 +371,7 @@ export default {
     werbeherkunft_kapitel: 'kapitel i flödet', werbeherkunft_hand: 'manuellt', werbeherkunft_vergleich: 'jämförelse av versionerna',
     werbeherkunft_transkript: 'från transkriptet',
     werbeherkunft_sendedaten: 'från sändningsdata',
+    werbeherkunft_klang: 'igenkänd på ljudet',
     werbungVerbinden: 'Reklam vid anslutning', werbungNichtGespielt: 'RadioHub spelar den inte, återstår',
     werbungNichtGespieltOffen: 'RadioHub spelar den inte, uppspelningen börjar efteråt', werbungTrotzdem: 'Lyssna ändå',
     werbungLaeuft: 'Reklam pågår', werbungStumm: 'tyst i', werbungStummOffen: 'tyst till slutet',

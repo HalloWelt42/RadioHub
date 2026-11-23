@@ -362,6 +362,7 @@ export default {
     werbeherkunft_kapitel: 'akıştaki bölüm', werbeherkunft_hand: 'elle', werbeherkunft_vergleich: 'sürümlerin karşılaştırması',
     werbeherkunft_transkript: 'dökümden',
     werbeherkunft_sendedaten: 'yayın verilerinden',
+    werbeherkunft_klang: 'sesinden tanındı',
     werbungVerbinden: 'Bağlanırken reklam', werbungNichtGespielt: 'RadioHub bunu çalmıyor, kalan',
     werbungNichtGespieltOffen: 'RadioHub bunu çalmıyor, çalma ardından başlar', werbungTrotzdem: 'Yine de dinle',
     werbungLaeuft: 'Reklam sürüyor', werbungStumm: 'sessiz, kalan', werbungStummOffen: 'bitene kadar sessiz',

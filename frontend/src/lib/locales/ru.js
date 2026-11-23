@@ -363,6 +363,7 @@ export default {
     werbeherkunft_kapitel: 'глава в ленте', werbeherkunft_hand: 'вручную', werbeherkunft_vergleich: 'сравнение версий',
     werbeherkunft_transkript: 'из расшифровки',
     werbeherkunft_sendedaten: 'из данных эфира',
+    werbeherkunft_klang: 'распознано по звуку',
     werbungVerbinden: 'Реклама при подключении', werbungNichtGespielt: 'RadioHub её не воспроизводит, ещё',
     werbungNichtGespieltOffen: 'RadioHub её не воспроизводит, воспроизведение начнётся после неё', werbungTrotzdem: 'Всё равно слушать',
     werbungLaeuft: 'Идёт реклама', werbungStumm: 'без звука ещё', werbungStummOffen: 'без звука до конца',

@@ -372,6 +372,7 @@ export default {
     werbeherkunft_kapitel: 'Rozdziały w kanale', werbeherkunft_hand: 'ręcznie', werbeherkunft_vergleich: 'Porównanie wersji',
     werbeherkunft_transkript: 'z transkrypcji',
     werbeherkunft_sendedaten: 'z danych audycji',
+    werbeherkunft_klang: 'rozpoznane po dźwięku',
     werbungVerbinden: 'Reklama przy łączeniu', werbungNichtGespielt: 'RadioHub jej nie odtwarza, jeszcze',
     werbungNichtGespieltOffen: 'RadioHub jej nie odtwarza, odtwarzanie zacznie się po niej', werbungTrotzdem: 'Słuchaj mimo to',
     werbungLaeuft: 'Trwa reklama', werbungStumm: 'wyciszenie jeszcze', werbungStummOffen: 'wyciszenie do końca',

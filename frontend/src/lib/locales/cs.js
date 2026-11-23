@@ -379,6 +379,7 @@ export default {
     werbeherkunft_kapitel: 'Kapitola ve feedu', werbeherkunft_hand: 'ručně', werbeherkunft_vergleich: 'Porovnání verzí',
     werbeherkunft_transkript: 'z přepisu',
     werbeherkunft_sendedaten: 'z dat vysílání',
+    werbeherkunft_klang: 'poznáno podle zvuku',
     werbungVerbinden: 'Reklama při připojení', werbungNichtGespielt: 'RadioHub ji nepřehrává, ještě',
     werbungNichtGespieltOffen: 'RadioHub ji nepřehrává, přehrávání začne potom', werbungTrotzdem: 'Přesto poslechnout',
     werbungLaeuft: 'Běží reklama', werbungStumm: 'ztlumeno ještě', werbungStummOffen: 'ztlumeno do konce',

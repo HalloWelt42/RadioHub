@@ -371,6 +371,7 @@ export default {
     werbeherkunft_kapitel: 'Hoofdstuk in de feed', werbeherkunft_hand: 'handmatig', werbeherkunft_vergleich: 'Vergelijking van versies',
     werbeherkunft_transkript: 'uit het transcript',
     werbeherkunft_sendedaten: 'uit de uitzendgegevens',
+    werbeherkunft_klang: 'herkend aan het geluid',
     werbungVerbinden: 'Reclame bij verbinden', werbungNichtGespielt: 'RadioHub speelt die niet af, nog',
     werbungNichtGespieltOffen: 'RadioHub speelt die niet af, het afspelen begint daarna', werbungTrotzdem: 'Toch beluisteren',
     werbungLaeuft: 'Reclame loopt', werbungStumm: 'nog gedempt', werbungStummOffen: 'gedempt tot het einde',

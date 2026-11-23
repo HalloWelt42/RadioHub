@@ -362,6 +362,7 @@ export default {
     werbeherkunft_kapitel: 'fejezet a feedben', werbeherkunft_hand: 'kézzel', werbeherkunft_vergleich: 'változatok összevetése',
     werbeherkunft_transkript: 'az átiratból',
     werbeherkunft_sendedaten: 'az adás adataiból',
+    werbeherkunft_klang: 'hang alapján felismerve',
     werbungVerbinden: 'Reklám kapcsolódáskor', werbungNichtGespielt: 'A RadioHub nem játssza le, még',
     werbungNichtGespieltOffen: 'A RadioHub nem játssza le, a lejátszás utána indul', werbungTrotzdem: 'Meghallgatom mégis',
     werbungLaeuft: 'Reklám megy', werbungStumm: 'némítva még', werbungStummOffen: 'némítva a végéig',
