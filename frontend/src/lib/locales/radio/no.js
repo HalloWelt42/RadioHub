@@ -191,7 +191,7 @@ export default {
     uebersetzenHilfe: 'Oversett', kopieren: 'Kopier tekst', text: 'Tekst', leer: 'Den første teksten kommer etter noen setninger', aus: 'av',
     sammelt: 'samler de neste setningene', hoert: 'lytter', uebersetzt: 'oversetter', gestoert: 'avbrutt',
     stimme: 'Tolk', stimmeHilfe: 'Sier oversettelsen i stedet for originalen; av høres originalen igjen',
-    spricht: 'snakker',
+    spricht: 'snakker', stimmeKommt: 'stemmen kommer straks',
     zeitstimme: 'Tidsstemme', stimmwahl: 'Tolkens stemme',
     beginnt: 'stasjonen starter',
   },

@@ -183,7 +183,7 @@ export default {
     titel: '实时阅读', hilfe: '实时记录所说的内容', mitlaufen: '跟随', mitlaufenHilfe: '跟随文本；关闭时停住', uebersetzenHilfe: '翻译', kopieren: '复制文本', text: '文本',
     leer: '几句话之后出现第一段文本', aus: '关闭', sammelt: '正在收集接下来的句子', hoert: '正在听', uebersetzt: '正在翻译', gestoert: '已中断',
     stimme: '口译', stimmeHilfe: '朗读译文代替原声；关闭后恢复原声',
-    spricht: '正在说话',
+    spricht: '正在说话', stimmeKommt: '语音即将开始',
     zeitstimme: '报时语音', stimmwahl: '口译的声音',
     beginnt: '正在启动电台',
   },

@@ -1,6 +1,6 @@
-// Die Übersetzerstimme (RAD-130): spielt die gesprochenen Absätze des Mitlesens nacheinander. Solange sie spricht, ist das Radio
-// stumm und läuft weiter (Puffer und Aufnahme merken nichts); hat sie eine Weile nichts zu sagen (Musik), hört man wieder das
-// Original. Pause am Radio hält sie an, die Lautstärke ist die des Radios.
+// Die Übersetzerstimme (RAD-130): spielt die gesprochenen Absätze des Mitlesens nacheinander. Vom Einschalten bis zum Ausschalten
+// ist das Radio stumm und läuft weiter (Puffer und Aufnahme merken nichts): der Sender spricht nie in die Stimme hinein, auch
+// nicht, während sie auf den nächsten Absatz wartet. Pause am Radio hält sie an, die Lautstärke ist die des Radios.
 import { appState } from "../lib/store.svelte.js";
 import { mitlesen } from "../lib/radio/mitlesen.svelte";
 import { naechster } from "../lib/radio/stimmplan";
@@ -8,8 +8,6 @@ import { stummSetzen } from "../lib/stumm";
 import { tonelement } from "./tonelement";
 
 const TAKT_MS = 400;
-/** so lange nach dem letzten Wort bleibt das Original noch stumm */
-const NACHLAUF_MS = 6000;
 /** kürzester gültiger Ton: gibt das Abspielen im Klick frei, der die Stimme einschaltet */
 const STILLE = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
 
@@ -18,8 +16,9 @@ class Uebersetzer {
   /** der Absatz, der gerade gesprochen wird */
   spricht = $state<number | null>(null);
   private zuletzt = 0;
-  private zuletztAm = 0;
   private begonnen = false;
+  /** der Server hat das Einschalten bestätigt; vorher sagt sein Stand noch nichts */
+  private bestaetigt = false;
   private ton: HTMLAudioElement | null = null;
   private takt: ReturnType<typeof setInterval> | undefined;
 
@@ -28,6 +27,7 @@ class Uebersetzer {
     else this.halt();
     try {
       await mitlesen.sprechen(an);
+      this.bestaetigt = true;
     } catch (f) {
       this.halt();
       throw f;
@@ -36,7 +36,8 @@ class Uebersetzer {
 
   private starten(): void {
     this.an = true;
-    this.begonnen = false;
+    this.begonnen = this.bestaetigt = false;
+    stummSetzen("uebersetzer", true);
     // ab jetzt: was schon gelesen ist, wird nicht nachgesprochen, außer den letzten beiden als Vorlauf
     this.zuletzt = mitlesen.absaetze.filter((a) => a.uebersetzung).at(-3)?.nr ?? 0;
     this.ton ??= new Audio();
@@ -61,12 +62,12 @@ class Uebersetzer {
     if (this.spricht === null) return;
     this.zuletzt = this.spricht;
     this.spricht = null;
-    this.zuletztAm = Date.now();
     this.pruefen();
   }
 
   private pruefen(): void {
     if (!this.an || !this.ton) return;
+    if (!this.bestaetigt) return;
     if (!mitlesen.uuid || !mitlesen.stand?.laeuft || !mitlesen.stand.sprechen) return this.halt();
     const radio = tonelement();
     this.ton.volume = Math.min(1, Math.max(0, appState.volume / 100));
@@ -77,16 +78,9 @@ class Uebersetzer {
     }
     if (radio.paused) return;
     const s = naechster(mitlesen.absaetze, this.zuletzt, this.begonnen);
-    if (!s) {
-      if (this.begonnen && Date.now() - this.zuletztAm > NACHLAUF_MS) {
-        this.begonnen = false;                      // Pause oder Musik: das Original, und danach wieder mit Vorlauf
-        stummSetzen("uebersetzer", false);
-      }
-      return;
-    }
+    if (!s) return;
     this.begonnen = true;
     this.spricht = s.nr;
-    stummSetzen("uebersetzer", true);
     this.ton.src = `/api/mitlesen/ton/${s.nr}`;
     this.ton.playbackRate = s.tempo;
     void this.ton.play().catch(() => this.fertig());

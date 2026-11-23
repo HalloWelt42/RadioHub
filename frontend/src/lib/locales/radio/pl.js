@@ -192,7 +192,7 @@ export default {
     leer: 'Pierwszy tekst pojawi się po kilku zdaniach', aus: 'wyłączone', sammelt: 'zbiera kolejne zdania', hoert: 'słucha', uebersetzt: 'tłumaczy',
     gestoert: 'przerwane',
     stimme: 'Tłumacz', stimmeHilfe: 'Czyta tłumaczenie zamiast oryginału; wyłączone, wraca oryginał',
-    spricht: 'mówi',
+    spricht: 'mówi', stimmeKommt: 'głos zaraz się odezwie',
     zeitstimme: 'Głos godziny', stimmwahl: 'Głos tłumacza',
     beginnt: 'uruchamianie stacji',
   },

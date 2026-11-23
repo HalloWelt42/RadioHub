@@ -184,7 +184,7 @@ export default {
     uebersetzenHilfe: 'Çevir', kopieren: 'Metni kopyala', text: 'Metin', leer: 'İlk metin birkaç cümleden sonra gelir', aus: 'kapalı',
     sammelt: 'sonraki cümleleri topluyor', hoert: 'dinliyor', uebersetzt: 'çeviriyor', gestoert: 'kesildi',
     stimme: 'Tercüman', stimmeHilfe: 'Orijinal yerine çeviriyi seslendirir; kapalıyken yine orijinal duyulur',
-    spricht: 'konuşuyor',
+    spricht: 'konuşuyor', stimmeKommt: 'ses birazdan',
     zeitstimme: 'Saat sesi', stimmwahl: 'Tercümanın sesi',
     beginnt: 'istasyon başlıyor',
   },

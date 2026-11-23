@@ -57,10 +57,11 @@ describe("Übersetzerstimme", () => {
     return { mitlesen, uebersetzer, stand, bereit };
   }
 
-  it("macht das Radio stumm, solange sie spricht, und gibt es beim Ausschalten sofort frei", async () => {
+  it("macht das Radio sofort stumm und gibt es erst beim Ausschalten frei", async () => {
     const { uebersetzer, bereit } = await bau();
-    await uebersetzer.schalten(true);
-    expect(radio.muted).toBe(false);                             // noch kein Vorlauf: man hört das Original
+    const geschaltet = uebersetzer.schalten(true);
+    expect(radio.muted).toBe(true);                              // noch vor der Antwort des Servers und vor dem ersten Absatz
+    await geschaltet;
     bereit(12, 11);
     await vi.advanceTimersByTimeAsync(500);
     const ton = Ton.alle[0];
@@ -71,17 +72,38 @@ describe("Übersetzerstimme", () => {
     expect([uebersetzer.an, uebersetzer.spricht, radio.muted, ton.paused]).toEqual([false, null, false, true]);
   });
 
-  it("hat sie nichts mehr zu sagen, kommt nach kurzer Zeit das Original wieder", async () => {
+  it("wartet sie auf den nächsten Absatz, bleibt der Sender still, und sie spricht ihn, sobald er da ist", async () => {
     const { uebersetzer, bereit } = await bau();
     await uebersetzer.schalten(true);
     bereit(22);
     await vi.advanceTimersByTimeAsync(500);
     Ton.alle[0].ende();
-    await vi.advanceTimersByTimeAsync(4000);
-    expect(radio.muted).toBe(true);
-    await vi.advanceTimersByTimeAsync(3500);
-    expect([radio.muted, uebersetzer.an]).toEqual([false, true]);
+    await vi.advanceTimersByTimeAsync(90_000);
+    expect([radio.muted, uebersetzer.an, uebersetzer.spricht]).toEqual([true, true, null]);
+    bereit(22, 5);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(uebersetzer.spricht).toBe(2);
     await uebersetzer.schalten(false);
+    expect(radio.muted).toBe(false);
+  });
+
+  it("braucht der Server zum Einschalten länger, bleibt sie an", async () => {
+    const { mitlesen, uebersetzer, stand } = await bau();
+    mitlesen.sprechen = async (an: boolean) => { await new Promise((r) => setTimeout(r, 3000)); stand(an); };
+    const geschaltet = uebersetzer.schalten(true);
+    await vi.advanceTimersByTimeAsync(2500);
+    expect([uebersetzer.an, radio.muted]).toEqual([true, true]);
+    await vi.advanceTimersByTimeAsync(1000);
+    await geschaltet;
+    expect([uebersetzer.an, radio.muted]).toEqual([true, true]);
+    uebersetzer.halt();
+  });
+
+  it("scheitert das Einschalten, ist der Sender wieder zu hören", async () => {
+    const { mitlesen, uebersetzer } = await bau();
+    mitlesen.sprechen = async () => { throw new Error("nein"); };
+    await expect(uebersetzer.schalten(true)).rejects.toThrow("nein");
+    expect([uebersetzer.an, radio.muted]).toEqual([false, false]);
   });
 
   it("Pause am Radio hält sie an, das Ende des Mitlesens schaltet sie aus", async () => {

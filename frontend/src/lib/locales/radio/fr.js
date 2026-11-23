@@ -192,7 +192,7 @@ export default {
     leer: 'Le premier texte apparaît après quelques phrases', aus: 'arrêté', sammelt: 'rassemble les phrases suivantes', hoert: 'écoute',
     uebersetzt: 'traduit', gestoert: 'interrompu',
     stimme: 'Interprète', stimmeHilfe: 'Dit la traduction à la place de l\'original ; désactivé, on entend de nouveau l\'original',
-    spricht: 'parle',
+    spricht: 'parle', stimmeKommt: 'la voix arrive',
     zeitstimme: 'Voix de l\'heure', stimmwahl: 'Voix de l\'interprète',
     beginnt: 'démarrage de la station',
   },

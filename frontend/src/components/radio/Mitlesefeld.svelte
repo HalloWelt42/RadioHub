@@ -1,6 +1,7 @@
 <script lang="ts">
-  // Das Feld zum Mitlesen im Steckbrief (RAD-129): eine Zeile mit eigenen Tasten, darunter der laufende Text. Es läuft mit,
-  // bis man nach oben rollt oder es fixiert; unten angekommen läuft es wieder mit. Text ist frei wählbar und kopierbar.
+  // Das Feld zum Mitlesen im Steckbrief (RAD-129): der laufende Text in lesbarer Breite, die Tasten daneben. Es läuft mit dem
+  // neuesten Text mit, spricht der Übersetzer (RAD-130), mit der gesprochenen Stelle; bis man selbst rollt oder es fixiert.
+  // Text ist frei wählbar und kopierbar.
   import { tick, type Snippet } from "svelte";
   import { Auswahl, kopieren } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
@@ -15,27 +16,44 @@
   let { schalter, onweiter }: { schalter: Snippet; onweiter: () => Promise<void> } = $props();
 
   const NAH_PX = 32;
+  /** so weit von oben steht der gesprochene Absatz */
+  const LESEHOEHE = 0.15;
   let feld = $state<HTMLElement>();
-  let unten = $state(true);
   let fixiert = $state(false);
-  const laeuftMit = $derived(unten && !fixiert);
+  /** von Hand weggerollt */
+  let weg = $state(false);
+  const laeuftMit = $derived(!weg && !fixiert);
   const uebersetzt = $derived(mitlesen.fremd && !!mitlesen.stand?.uebersetzen);
 
   $effect(() => {
-    void mitlesen.absaetze;
-    if (laeuftMit) void tick().then(ansEnde);
+    void uebersetzer.an;              // ein anderes Ziel: gleich dorthin, auch wenn man gerade woanders las
+    weg = fixiert = false;
   });
-  function ansEnde() {
-    if (feld) feld.scrollTop = feld.scrollHeight;
+  $effect(() => {
+    void [mitlesen.absaetze, uebersetzer.spricht, uebersetzer.an];
+    if (laeuftMit) void tick().then(folgen);
+  });
+  /** das Feld nutzt die Höhe der Liste: sie rollt so weit, dass es ganz zu sehen ist */
+  const ganzZeigen = (e: HTMLElement) => { requestAnimationFrame(() => e.scrollIntoView({ block: "nearest", behavior: "smooth" })); };
+  function folgen() {
+    if (!feld) return;
+    if (!uebersetzer.an) return void (feld.scrollTop = feld.scrollHeight);
+    const p = feld.querySelector("p.spricht");
+    if (p) feld.scrollTop += p.getBoundingClientRect().top - feld.getBoundingClientRect().top - feld.clientHeight * LESEHOEHE;
   }
+  // Ohne Stimme sagt die Stelle, ob man mitläuft: unten angekommen wieder. Mit Stimme rollt auch das Folgen selbst, dann zählt die Hand.
   function gerollt() {
-    if (feld) unten = feld.scrollHeight - feld.scrollTop - feld.clientHeight < NAH_PX;
+    if (feld && !uebersetzer.an) weg = feld.scrollHeight - feld.scrollTop - feld.clientHeight >= NAH_PX;
+  }
+  function vonHand(e: Event) {
+    const taste = e instanceof KeyboardEvent ? /^(Arrow|Page|Home|End)/.test(e.key) : e.type !== "pointerdown" || e.target === feld;
+    if (uebersetzer.an && taste) weg = true;
   }
   function mitlaufen(an: boolean) {
     fixiert = !an;
     if (an) {
-      unten = true;
-      ansEnde();
+      weg = false;
+      folgen();
     }
   }
   async function kopiere() {
@@ -58,11 +76,11 @@
     await uebersetzer.schalten(an);
   }
   const richtung = $derived(`${mitlesen.stand?.sprache.toUpperCase()} > ${mitlesen.stand?.ziel.toUpperCase()}`);
-  const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || t(`radio.mitlesen.${mitlesen.beginnt ? "beginnt" : mitlesen.stand?.zustand ?? "sammelt"}`));
+  const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || (uebersetzer.an ? t("radio.mitlesen.stimmeKommt") : "") || t(`radio.mitlesen.${mitlesen.beginnt ? "beginnt" : mitlesen.stand?.zustand ?? "sammelt"}`));
 </script>
 
-<section class="rh-mitlesen" aria-label={t("radio.mitlesen.titel")}>
-  <div class="rh-mitlesen-kopf">
+<section class="rh-mitlesen" {@attach ganzZeigen} aria-label={t("radio.mitlesen.titel")}>
+  <div class="rh-mitlese-tasten">
     <Schalter an={laeuftMit} symbol="fa-angles-down" text={t("radio.mitlesen.mitlaufen")} hilfe={t("radio.mitlesen.mitlaufenHilfe")} onwechsel={mitlaufen} />
     {#if mitlesen.fremd}
       <span class="rh-richtung"><Schalter an={uebersetzt} farbe="blau" symbol="fa-language" text={richtung} hilfe={t("radio.mitlesen.uebersetzenHilfe")}
@@ -73,13 +91,16 @@
         onwechsel={(an) => void sprechen(an).catch((f: Error) => actions.showToast(f.message, "error"))} />
     {/if}
     {#if uebersetzer.an && stimmen.length}<Auswahl bind:wert={stimme} optionen={stimmen} titel={t("radio.mitlesen.stimmwahl")} klein onwahl={waehlen} />{/if}
-    <button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} disabled={!mitlesen.absaetze.length}
-            onclick={() => void kopiere()}><i class="fa-regular fa-copy"></i></button>
-    <span class="rh-mitlese-lage" class:gestoert={!!mitlesen.fehler} aria-live="polite">{lage}</span>
-    {@render schalter()}
+    <span class="rh-mitlese-fuss">
+      <button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} disabled={!mitlesen.absaetze.length}
+              onclick={() => void kopiere()}><i class="fa-regular fa-copy"></i></button>
+      <span class="rh-mitlese-lage" class:gestoert={!!mitlesen.fehler} title={lage} aria-live="polite">{lage}</span>
+    </span>
   </div>
-  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-  <div class="rh-mitlese-feld" bind:this={feld} onscroll={gerollt} role="log" tabindex="0" aria-label={t("radio.mitlesen.text")}>
+  {@render schalter()}
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+  <div class="rh-mitlese-feld" bind:this={feld} onscroll={gerollt} onwheel={vonHand} ontouchmove={vonHand} onkeydown={vonHand} onpointerdown={vonHand}
+       role="log" tabindex="0" aria-label={t("radio.mitlesen.text")}>
     {#each mitlesen.absaetze as a (a.nr)}
       <p class:spricht={uebersetzer.spricht === a.nr}><time datetime={a.zeit}>{uhrzeit(a.zeit)}</time>
         {#if uebersetzt && a.uebersetzung}<span>{a.uebersetzung}</span><span class="rh-mitlese-original">{a.text}</span>{:else}<span>{a.text}</span>{/if}</p>

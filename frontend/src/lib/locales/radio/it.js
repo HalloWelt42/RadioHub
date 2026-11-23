@@ -191,7 +191,7 @@ export default {
     uebersetzenHilfe: 'Traduci', kopieren: 'Copia testo', text: 'Testo', leer: 'Il primo testo arriva dopo alcune frasi', aus: 'spento',
     sammelt: 'raccoglie le prossime frasi', hoert: 'ascolta', uebersetzt: 'traduce', gestoert: 'interrotto',
     stimme: 'Interprete', stimmeHilfe: 'Pronuncia la traduzione al posto dell\'originale; spento, torna l\'originale',
-    spricht: 'parla',
+    spricht: 'parla', stimmeKommt: 'la voce arriva',
     zeitstimme: 'Voce dell\'ora', stimmwahl: 'Voce dell\'interprete',
     beginnt: 'avvio dell\'emittente',
   },

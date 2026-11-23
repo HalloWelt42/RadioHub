@@ -191,7 +191,7 @@ export default {
     uebersetzenHilfe: 'Käännä', kopieren: 'Kopioi teksti', text: 'Teksti', leer: 'Ensimmäinen teksti tulee muutaman lauseen jälkeen', aus: 'pois',
     sammelt: 'kerää seuraavia lauseita', hoert: 'kuuntelee', uebersetzt: 'kääntää', gestoert: 'keskeytynyt',
     stimme: 'Tulkki', stimmeHilfe: 'Puhuu käännöksen alkuperäisen sijaan; pois päältä alkuperäinen kuuluu taas',
-    spricht: 'puhuu',
+    spricht: 'puhuu', stimmeKommt: 'ääni tulee pian',
     zeitstimme: 'Kellonaikaääni', stimmwahl: 'Tulkin ääni',
     beginnt: 'asema käynnistyy',
   },

@@ -192,7 +192,7 @@ export default {
     leer: 'Der erste Text kommt nach einigen Sätzen', aus: 'aus', sammelt: 'sammelt die nächsten Sätze', hoert: 'hört', uebersetzt: 'übersetzt',
     gestoert: 'gestört',
     stimme: 'Übersetzer', stimmeHilfe: 'Die Übersetzung sprechen statt des Originals; aus ist wieder das Original zu hören',
-    spricht: 'spricht',
+    spricht: 'spricht', stimmeKommt: 'Stimme kommt gleich',
     zeitstimme: 'Zeitstimme', stimmwahl: 'Stimme des Übersetzers',
     beginnt: 'Sender startet',
   },

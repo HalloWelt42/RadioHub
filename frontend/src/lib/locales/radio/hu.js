@@ -184,7 +184,7 @@ export default {
     uebersetzenHilfe: 'Fordítás', kopieren: 'Szöveg másolása', text: 'Szöveg', leer: 'Az első szöveg néhány mondat után jön', aus: 'ki',
     sammelt: 'gyűjti a következő mondatokat', hoert: 'hallgat', uebersetzt: 'fordít', gestoert: 'megszakadt',
     stimme: 'Tolmács', stimmeHilfe: 'A fordítást mondja az eredeti helyett; kikapcsolva újra az eredeti hallható',
-    spricht: 'beszél',
+    spricht: 'beszél', stimmeKommt: 'a hang mindjárt jön',
     zeitstimme: 'Időhang', stimmwahl: 'A tolmács hangja',
     beginnt: 'az adó indul',
   },
