@@ -193,6 +193,7 @@ export default {
     stimme: 'Interprete', stimmeHilfe: 'Pronuncia la traduzione al posto dell\'originale; spento, torna l\'originale',
     spricht: 'parla',
     zeitstimme: 'Voce dell\'ora', stimmwahl: 'Voce dell\'interprete',
+    beginnt: 'avvio dell\'emittente',
   },
 
   // Werbefilter (RAD-128)

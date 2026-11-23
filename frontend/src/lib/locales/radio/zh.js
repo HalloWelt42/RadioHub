@@ -185,6 +185,7 @@ export default {
     stimme: '口译', stimmeHilfe: '朗读译文代替原声；关闭后恢复原声',
     spricht: '正在说话',
     zeitstimme: '报时语音', stimmwahl: '口译的声音',
+    beginnt: '正在启动电台',
   },
 
   // Werbefilter (RAD-128)

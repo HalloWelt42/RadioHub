@@ -194,6 +194,7 @@ export default {
     stimme: 'Interprète', stimmeHilfe: 'Dit la traduction à la place de l\'original ; désactivé, on entend de nouveau l\'original',
     spricht: 'parle',
     zeitstimme: 'Voix de l\'heure', stimmwahl: 'Voix de l\'interprète',
+    beginnt: 'démarrage de la station',
   },
 
   // Werbefilter (RAD-128)

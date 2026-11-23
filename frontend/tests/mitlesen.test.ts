@@ -58,4 +58,30 @@ describe("Mitlesen (RAD-129)", () => {
     await vi.advanceTimersByTimeAsync(9000);
     expect([anfragen, m.absaetze.length, m.laeuftFuer("u"), m.stand?.zustand]).toEqual([n, 1, true, "aus"]);
   });
+
+  it("wartet, bis der Sender läuft, und hört beim Ausschalten damit auf", async () => {
+    const { Netzfehler } = await import("../src/lib/radio/netz");
+    let post = 0, nochNicht = 3;
+    const m = new Mitlesen((async (_w: string, o: { methode?: string } = {}) => {
+      if (o.methode === "POST" && (post++, nochNicht-- > 0)) throw new Netzfehler(409, "läuft nicht");
+      return stand();
+    }) as never);
+    const lauf = m.starten("u", []);
+    expect([m.laeuftFuer("u"), m.beginnt]).toEqual([true, true]);      // das Feld steht sofort da
+    await vi.advanceTimersByTimeAsync(3500);
+    await lauf;
+    expect([post, m.beginnt, m.stand?.laeuft]).toEqual([4, false, true]);
+    await m.beenden();
+    nochNicht = 99;
+    post = 0;
+    const zweiter = m.starten("v", []);
+    await vi.advanceTimersByTimeAsync(2500);
+    await m.beenden();
+    await vi.advanceTimersByTimeAsync(5000);
+    await zweiter;
+    expect(post).toBeLessThanOrEqual(4);
+    const dritter = m.starten("w", []).catch((f: Error) => f.message);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect([await dritter, m.laeuftFuer("w")]).toEqual(["läuft nicht", false]);
+  });
 });

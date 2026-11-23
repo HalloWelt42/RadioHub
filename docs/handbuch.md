@@ -92,7 +92,8 @@ Einstellungen > Radio > Werbefilter zeigt, was der Filter kennt: gefundene Spots
 Sendern, an denen sie liefen) oder "Verwerfen" (kommt nie wieder), den Lernlauf mit Schalter, Zeitfenster, laufenden
 Sendern und letzten Nächten, und je Sender den Grund, aus dem er gehört wird, mit Schalter.
 
-Live mitlesen (RAD-129, Pro): im aufgeklappten Sender, der gerade über den Zeitversatz spielt, links neben Werbung. An blendet
+Live mitlesen (RAD-129, Pro): im aufgeklappten Sender links neben Werbung (Symbol CC); spielt er noch nicht, startet die
+Taste ihn. An blendet
 den Steckbrief mit einem Textfeld über, das mitschreibt, was gesprochen wird: es beginnt bis zu 90 Sekunden zurück im Puffer,
 sammelt Stücke von 15 bis 30 Sekunden (geschnitten an der leisesten Stelle) und zeigt Absätze aus ganzen Sätzen. Das Feld
 läuft mit, bis man nach oben rollt oder "Mitlaufen" ausschaltet; Kopieren nimmt die Auswahl oder alles. Spricht der Sender

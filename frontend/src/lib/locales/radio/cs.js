@@ -192,6 +192,7 @@ export default {
     stimme: 'Tlumočník', stimmeHilfe: 'Mluví překlad místo originálu; vypnuto je opět slyšet originál',
     spricht: 'mluví',
     zeitstimme: 'Hlas času', stimmwahl: 'Hlas tlumočníka',
+    beginnt: 'stanice se spouští',
   },
 
   // Werbefilter (RAD-128)

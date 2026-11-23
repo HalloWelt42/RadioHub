@@ -193,6 +193,7 @@ export default {
     stimme: 'Interpreter', stimmeHilfe: 'Speak the translation instead of the original; off brings the original back',
     spricht: 'speaking',
     zeitstimme: 'Time voice', stimmwahl: 'Interpreter voice',
+    beginnt: 'starting the station',
   },
 
   // Werbefilter (RAD-128)

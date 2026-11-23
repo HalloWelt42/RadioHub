@@ -186,6 +186,7 @@ export default {
     stimme: 'Tolmács', stimmeHilfe: 'A fordítást mondja az eredeti helyett; kikapcsolva újra az eredeti hallható',
     spricht: 'beszél',
     zeitstimme: 'Időhang', stimmwahl: 'A tolmács hangja',
+    beginnt: 'az adó indul',
   },
 
   // Werbefilter (RAD-128)

@@ -186,6 +186,7 @@ export default {
     stimme: 'Tercüman', stimmeHilfe: 'Orijinal yerine çeviriyi seslendirir; kapalıyken yine orijinal duyulur',
     spricht: 'konuşuyor',
     zeitstimme: 'Saat sesi', stimmwahl: 'Tercümanın sesi',
+    beginnt: 'istasyon başlıyor',
   },
 
   // Werbefilter (RAD-128)

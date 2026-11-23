@@ -188,6 +188,7 @@ export default {
     stimme: 'Tolk', stimmeHilfe: 'Spreekt de vertaling in plaats van het origineel; uit is het origineel weer te horen',
     spricht: 'spreekt',
     zeitstimme: 'Tijdstem', stimmwahl: 'Stem van de tolk',
+    beginnt: 'zender start',
   },
 
   // Werbefilter (RAD-128)

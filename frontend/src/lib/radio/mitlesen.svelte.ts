@@ -1,7 +1,7 @@
 // Live mitlesen (RAD-129): ein Mitlesen zugleich, am laufenden Sender. Es läuft, bis man es ausschaltet, der Sender wechselt
 // oder das Radio endet; ein zugeklappter Steckbrief beendet es nicht. Jede Abfrage sagt dem Server, dass noch jemand liest.
 import { currentLanguage } from "../i18n.js";
-import { netz, type Anfrage } from "./netz";
+import { Netzfehler, netz, type Anfrage } from "./netz";
 import type { SpracheKurz } from "./typen";
 
 export interface Absatz {
@@ -35,6 +35,8 @@ export interface Mitlesestand {
 }
 
 const TAKT_MS = 2000;
+/** so lange darf der Sender brauchen, bis er über den Puffer läuft (409, bis dahin) */
+const ANLAUF_MS = 1000, ANLAUF_HOECHSTENS = 25;
 
 /** Sprache des Senders laut Label: genau eine mit Kürzel; bei keiner oder mehreren erkennt sie der Hördienst */
 export function spracheVon(sprachen: Pick<SpracheKurz, "schluessel">[]): string {
@@ -84,19 +86,39 @@ export class Mitlesen {
     this.eingerichtet = (await this.a<{ eingerichtet: boolean }>("/api/mitlesen/kann").catch(() => ({ eingerichtet: false }))).eingerichtet;
   }
 
+  /** Das Feld steht sofort da; läuft der Sender noch nicht, wird gewartet, bis er über den Puffer spielt */
   async starten(uuid: string, sprachen: SpracheKurz[]): Promise<void> {
     const ziel = currentLanguage() || "de", sprache = spracheVon(sprachen);
+    const daten = { uuid, sprache, ziel, uebersetzen: !!sprache && sprache !== ziel };
     clearInterval(this.takt);
-    this.beginnt = true;
+    this.absaetze = [];
+    this.stand = null;
     this.fehler = "";
+    this.uuid = uuid;
+    this.beginnt = true;
     try {
-      this.absaetze = [];
-      this.uebernehmen(await this.a("/api/mitlesen", { methode: "POST", daten: { uuid, sprache, ziel, uebersetzen: !!sprache && sprache !== ziel } }));
-      this.uuid = uuid;
+      const s = await this.anlaufen(daten);
+      if (this.uuid !== uuid || !s) return;            // inzwischen ausgeschaltet
+      this.uebernehmen(s);
       this.takt = setInterval(() => void this.lesen(), TAKT_MS);
+    } catch (f) {
+      if (this.uuid === uuid) this.uuid = "";
+      throw f;
     } finally {
       this.beginnt = false;
     }
+  }
+
+  private async anlaufen(daten: { uuid: string }): Promise<Mitlesestand | null> {
+    for (let i = 0; this.uuid === daten.uuid; i++) {
+      try {
+        return await this.a<Mitlesestand>("/api/mitlesen", { methode: "POST", daten });
+      } catch (f) {
+        if (!(f instanceof Netzfehler) || f.status !== 409 || i >= ANLAUF_HOECHSTENS) throw f;
+        await new Promise((r) => setTimeout(r, ANLAUF_MS));
+      }
+    }
+    return null;
   }
 
   /** Aus beendet auch die Arbeit am Server */

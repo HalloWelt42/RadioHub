@@ -193,6 +193,7 @@ export default {
     stimme: 'Tulkki', stimmeHilfe: 'Puhuu käännöksen alkuperäisen sijaan; pois päältä alkuperäinen kuuluu taas',
     spricht: 'puhuu',
     zeitstimme: 'Kellonaikaääni', stimmwahl: 'Tulkin ääni',
+    beginnt: 'asema käynnistyy',
   },
 
   // Werbefilter (RAD-128)

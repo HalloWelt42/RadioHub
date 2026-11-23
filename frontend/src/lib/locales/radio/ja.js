@@ -185,6 +185,7 @@ export default {
     stimme: '通訳', stimmeHilfe: '原音の代わりに翻訳を読み上げます。オフで原音に戻ります',
     spricht: '話しています',
     zeitstimme: '時報の声', stimmwahl: '通訳の声',
+    beginnt: '放送局を開始しています',
   },
 
   // Werbefilter (RAD-128)

@@ -53,7 +53,7 @@
   });
   const waehlen = (w: string) => void server.sofortSpeichern("uebersetzerstimme", w).catch((f: Error) => actions.showToast(f.message, "error"));
   const richtung = $derived(`${mitlesen.stand?.sprache.toUpperCase()} > ${mitlesen.stand?.ziel.toUpperCase()}`);
-  const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || t(`radio.mitlesen.${mitlesen.stand?.zustand ?? "sammelt"}`));
+  const lage = $derived(mitlesen.fehler || (uebersetzer.spricht !== null ? t("radio.mitlesen.spricht") : "") || mitlesen.stand?.grund || t(`radio.mitlesen.${mitlesen.beginnt ? "beginnt" : mitlesen.stand?.zustand ?? "sammelt"}`));
 </script>
 
 <section class="rh-mitlesen" aria-label={t("radio.mitlesen.titel")}>

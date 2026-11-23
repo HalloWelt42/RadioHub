@@ -194,6 +194,7 @@ export default {
     stimme: 'Tłumacz', stimmeHilfe: 'Czyta tłumaczenie zamiast oryginału; wyłączone, wraca oryginał',
     spricht: 'mówi',
     zeitstimme: 'Głos godziny', stimmwahl: 'Głos tłumacza',
+    beginnt: 'uruchamianie stacji',
   },
 
   // Werbefilter (RAD-128)

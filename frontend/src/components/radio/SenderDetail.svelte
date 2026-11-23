@@ -72,12 +72,14 @@
   const werbendenName = (g: Werbender) =>
     g.name || (g.spots[0]?.format === KLANG ? t("schale.werbeherkunft_klang") : "") || (/^\d+$/.test(g.kennung) ? t("radio.werbungOhneName", { k: g.kennung }) : g.kennung);
 
-  // Live mitlesen (RAD-129): nur am Sender, der gerade über den Puffer spielt
+  // Live mitlesen (RAD-129): die Taste steht immer da; spielt der Sender noch nicht, startet sie ihn
   $effect(() => { if (faehig.mitlesen) void mitlesen.pruefen(); });
-  const kannMitlesen = $derived(faehig.mitlesen && mitlesen.eingerichtet === true && spielt && puffer.aktiv);
+  const kannMitlesen = $derived(faehig.mitlesen && mitlesen.eingerichtet === true);
   const mitliest = $derived(mitlesen.laeuftFuer(eintrag.uuid));
   function mitlesenSchalten(an: boolean) {
-    void tun(async () => { if (an) await mitlesen.starten(eintrag.uuid, eintrag.sprachen); else await mitlesen.beenden(); });
+    if (!an) return void mitlesen.beenden();
+    if (!spielt || !puffer.aktiv) onneustart(eintrag);
+    mitlesen.starten(eintrag.uuid, eintrag.sprachen).catch((f: Error) => actions.showToast(f.message, "error"));
   }
 
   // Tafel der Einschätzung: öffnet am Plus, schließt mit Escape oder einem Klick daneben

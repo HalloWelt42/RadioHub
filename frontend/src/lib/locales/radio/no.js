@@ -193,6 +193,7 @@ export default {
     stimme: 'Tolk', stimmeHilfe: 'Sier oversettelsen i stedet for originalen; av høres originalen igjen',
     spricht: 'snakker',
     zeitstimme: 'Tidsstemme', stimmwahl: 'Tolkens stemme',
+    beginnt: 'stasjonen starter',
   },
 
   // Werbefilter (RAD-128)
