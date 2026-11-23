@@ -18,12 +18,13 @@ import re
 import tempfile
 import time
 from collections.abc import Awaitable, Callable
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from appkern.leitstelle import GehoertesSegment, Leitstelle, LeitstellenFehler, Nachricht, gerade, halten, hoeren
+from appkern.leitstelle import GehoertesSegment, Leitstelle, LeitstellenFehler, Nachricht, als_wichtig, gerade, halten, hoeren
 from pydantic import BaseModel
 
 from .uebersetzerstimme import Gesprochen, StimmeFehler
@@ -375,7 +376,9 @@ class Mitleser:
             if vorher:
                 nachrichten += [Nachricht.nutzer(vorher.text), Nachricht.assistent(vorher.uebersetzung)]
             try:
-                with halten(HALTEN_S):
+                # beim Dolmetschen wichtig (Nutzer 23.11.2026, RAD-130): sonst sperrt die eben gesprochene Stimme ihren Rechner eine
+                # halbe Minute für Text, also für die Übersetzung, aus der ihr nächster Satz entsteht
+                with halten(HALTEN_S), als_wichtig() if self._wahl.sprechen else nullcontext():
                     antwort = await ls.chat([*nachrichten, Nachricht.nutzer(a.text)], modell=modell, titel="Live mitlesen: übersetzen", temperature=0.2)
                 a.uebersetzung = gerade(antwort.text.strip())
                 self._merken(nr)

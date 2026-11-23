@@ -110,6 +110,8 @@ gesprochenen Stelle (ohne Übersetzer dem neuesten Text); wer selbst rollt, blei
 sich etwas, spricht sie schneller (höchstens 1,4-fach) und lässt notfalls die ältesten Absätze aus. Pause am Radio hält sie
 an, die Lautstärke ist die des Radios. Feste Stimmen rechnen schneller als private (geklonte): kommt der Text deutlich
 schneller, als die Stimme fertig wird, ist eine feste Stimme die bessere Wahl.
+Solange der Übersetzer spricht, gilt das Übersetzen in der [[Leitstelle]] als wichtig (Entscheidung des Nutzers, 23.11.2026): es wartet
+nicht auf den Nachlauf der Sprachausgabe. Nur Mitlesen gilt als gewöhnliche Arbeit.
 
 Ablage beim Mitlesen (RAD-131): nach jedem Ende liegt in der Kellerwolke unter `Mitlesen/<Sender>/` der gehörte Ton des
 Senders (`<Datum> <Uhrzeit>.mp3`), daneben als Begleitdateien die gesprochene Übersetzung (`.sprache.mp3`, wenn der

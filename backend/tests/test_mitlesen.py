@@ -109,6 +109,7 @@ async def test_steigt_im_puffer_ein_und_uebersetzt(bau):
     st = x.stand(0)
     assert st.absaetze[0].text.startswith("This is") and st.absaetze[0].uebersetzung == "Das ist die Übersetzung."
     assert st.laeuft and st.sprache == "en" and x.fremd
+    assert not any("x-leitstelle-wichtig" in r.headers for r in d.anfragen), "nur Lesen ist nicht wichtig"
     hoer = next(r for r in d.anfragen if r.url.path.endswith("/stt"))
     assert b'name="language"\r\n\r\nen' in hoer.content and hoer.headers["x-leitstelle-halten"] == str(m.HALTEN_S)
     neu = x.stand(st.fassung)
@@ -239,6 +240,9 @@ async def test_spricht_fertig_uebersetzte_absaetze(bau):
     await bis_(lambda: any(a.ton_s for a in x.stand(0).absaetze))
     a = next(a for a in x.stand(0).absaetze if a.ton_s)
     assert a.ton_s == 12.3 and x.ton(a.nr) == b"mp3" and gesprochen[0] == "de:Das ist die Übersetzung."
+    chats = [r for r in d.anfragen if r.url.path.endswith("/chat/completions")]
+    assert chats and all(r.headers.get("x-leitstelle-wichtig") == "ja" for r in chats), "beim Dolmetschen wichtig"
+    assert not any("x-leitstelle-wichtig" in r.headers for r in d.anfragen if r.url.path.endswith("/stt"))
     assert x.stand(0).uebersetzen and x.stand(0).sprechen
     x.stellen(uebersetzen=False)
     assert not x.stand(0).sprechen, "ohne Übersetzung gibt es nichts zu sprechen"
