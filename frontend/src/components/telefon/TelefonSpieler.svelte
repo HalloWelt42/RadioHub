@@ -130,7 +130,7 @@
       </button>
     </div>
     <div class="buehne">
-      <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(72vw, 320px, 26svh)" /></span>
+      <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(100cqi, 100cqb)" /></span>
       {#if !folge && puffer.aktiv && pTitel}
         <!-- zeigt der Zeitversatz den Titel unten im Kasten, steht oben nur der Sender, nichts doppelt (RAD-90) -->
         <h2>{info.artist || info.title}</h2>
@@ -339,12 +339,14 @@
   /* Glas nur für den Kasten des Zeitversatzes; die Knöpfe darauf sind Knöpfe des Appkerns (RAD-97) */
   .vollbild .tf-versatz {
     background: color-mix(in srgb, var(--t-flaeche-2) 70%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .tf-cover { display: grid; }
+  /* das Bild nimmt, was übrig ist: höchstens wie bisher, auf kleinen Telefonen und bei großer Schrift kleiner (RAD-125) */
+  .tf-cover { flex: 1 0 0; min-height: 76px; max-height: min(72vw, 320px, 26svh); inline-size: 100%; container-type: size; display: grid; place-items: center; }
   .tf-cover :global(.tf-bild) { border-radius: 22px; box-shadow: 0 18px 40px -12px rgb(0 0 0 / .55); }
   .vollbild-kopf { display: flex; }
   .kopf-knopf { width: 48px; height: 48px; border: none; border-radius: 12px; background: transparent; color: var(--t-text); font-size: 22px; }
-  .buehne { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 0; text-align: center; }
-  .buehne > * { flex-shrink: 0; }   /* Titel und Sender werden nie zusammengedrückt; das Bild richtet sich nach der Höhe */
+  /* nie kleiner als ihr Inhalt: reicht der Platz nicht, rollt die Ansicht, statt dass Titel und Tasten sich überdecken (RAD-125) */
+  .buehne { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+  .buehne > :not(.tf-cover) { flex-shrink: 0; }   /* Titel und Sender werden nie zusammengedrückt; das Bild richtet sich nach der Höhe */
   /* Titel höchstens zwei Zeilen, Sender oder Abo eine (RAD-90): nichts rutscht unter die Tasten */
   .buehne h2 { margin: 12px 0 0; font-size: 22px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.25;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
