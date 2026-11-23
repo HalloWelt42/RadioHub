@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "A gombokkal vezérelt eszköz", fernWeg: "{name} most nem érhető el", fernGestartet: "Lejátszás itt: {name}",
     tonOriginalHinweis: 'változatlanul az adótól, legjobb minőség',
     tonVollHinweis: 'átalakítva, ha ez a telefon nem játssza le az eredetit',
     radio: 'Rádió',

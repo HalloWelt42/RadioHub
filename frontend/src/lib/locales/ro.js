@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "Dispozitivul comandat de taste", fernWeg: "{name} nu este disponibil acum", fernGestartet: "Se redă pe {name}",
     tonOriginalHinweis: 'neschimbat de la post, cea mai bună calitate',
     tonVollHinweis: 'convertit, dacă acest telefon nu redă originalul',
     radio: 'Radio',

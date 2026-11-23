@@ -9,7 +9,15 @@ export interface RadioZustand {
   titel: string;
   untertitel: string;
   laeuft: boolean;
+  /** uuid des Senders, sonst leer (Auge und Stern am steuernden Gerät, RAD-96) */
+  kennung: string;
+  /** Bild der Quelle, so wie es das steuernde Gerät lädt; leer ohne */
+  bild: string;
+  lautstaerke: number | null;
 }
+
+/** Was ein Gerät an einem anderen auslöst (RAD-96); unbekannte Aktionen übergeht das andere */
+export type Fernaktion = "umschalten" | "stopp" | "weiter" | "vorher" | "vor" | "zurueck" | "lautstaerke";
 
 type Verweis = Record<string, unknown>;
 
@@ -38,12 +46,15 @@ export function kompakt(wert: unknown): Verweis | undefined {
 
 const kurz = (s: unknown) => String(s ?? "").slice(0, 300);
 
-/** was hier gerade spielt, für die anderen Geräte; null: nichts */
-export function zustandJetzt(s: AppZustand): RadioZustand | null {
+/** was hier gerade spielt, für die anderen Geräte; null: nichts. `bild`: das Bild der Quelle, wie die Oberfläche es zeigt */
+export function zustandJetzt(s: AppZustand, bild: string | null = null): RadioZustand | null {
   const laeuft = !!s.isPlaying && !s.isPaused;
-  if (s.currentEpisode) return { art: "folge", titel: kurz(s.currentEpisode.title), untertitel: kurz(s.currentEpisode.podcast?.title), laeuft };
-  if (s.currentRecording) return { art: "aufnahme", titel: kurz(s.currentRecording.name), untertitel: kurz(s.currentRecording.station_name), laeuft };
-  if (s.currentStation && (s.isPlaying || s.isPaused)) return { art: "sender", titel: kurz(s.currentStation.name), untertitel: kurz(s.streamTitle), laeuft };
+  const rest = { laeuft, kennung: "", bild: String(bild ?? "").slice(0, 2000), lautstaerke: Math.round(s.volume) };
+  if (s.currentEpisode) return { art: "folge", titel: kurz(s.currentEpisode.title), untertitel: kurz(s.currentEpisode.podcast?.title), ...rest };
+  if (s.currentRecording) return { art: "aufnahme", titel: kurz(s.currentRecording.name), untertitel: kurz(s.currentRecording.station_name), ...rest };
+  if (s.currentStation && (s.isPlaying || s.isPaused)) {
+    return { art: "sender", titel: kurz(s.currentStation.name), untertitel: kurz(s.streamTitle), ...rest, kennung: String(s.currentStation.uuid ?? "").slice(0, 64) };
+  }
   return null;
 }
 

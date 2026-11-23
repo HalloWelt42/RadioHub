@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "Tuşların yönettiği cihaz", fernWeg: "{name} şu anda ulaşılamıyor", fernGestartet: "{name} üzerinde çalıyor",
     tonOriginalHinweis: 'istasyondan değiştirilmeden, en iyi kalite',
     tonVollHinweis: 'bu telefon orijinali çalamazsa dönüştürülür',
     radio: 'Radyo',

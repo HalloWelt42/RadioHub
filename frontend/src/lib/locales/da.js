@@ -17,6 +17,7 @@ export default {
 
   // === Phone view ===
   telefon: {
+    fernWahl: "Enhed som tasterne styrer", fernWeg: "{name} kan ikke nås lige nu", fernGestartet: "Afspiller på {name}",
     tonOriginalHinweis: 'uændret fra stationen, bedste kvalitet',
     tonVollHinweis: 'konverteret, hvis denne telefon ikke kan afspille originalen',
     radio: 'Radio',

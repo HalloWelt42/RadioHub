@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "按键控制的设备", fernWeg: "{name} 目前无法连接", fernGestartet: "正在 {name} 上播放",
     tonOriginalHinweis: '电台原样输出，最佳音质',
     tonVollHinweis: '若本机无法播放原格式则转码',
     radio: '电台',

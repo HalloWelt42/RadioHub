@@ -145,7 +145,7 @@ export class Radiobedienung {
   async spielen(e: SenderEintrag, zeile?: SenderEintrag): Promise<void> {
     this.ausZeile = zeile && zeile.uuid !== e.uuid ? { uuid: e.uuid, zeile: zeile.uuid } : null;
     const w = await this.holen(e);
-    await actions.playStation(w);
+    await actions.playStationFromList(w);
     if (!this.quelle.faehig.messen || (appState.currentStation as { uuid?: string } | null)?.uuid !== e.uuid) return;
     this.messung?.abort();
     const messung = (this.messung = new AbortController());

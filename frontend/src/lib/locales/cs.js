@@ -17,6 +17,7 @@ export default {
 
   // === Phone view ===
   telefon: {
+    fernWahl: "Zařízení ovládané tlačítky", fernWeg: "{name} teď není dostupné", fernGestartet: "Hraje na: {name}",
     tonOriginalHinweis: 'beze změny od stanice, nejlepší kvalita',
     tonVollHinweis: 'převedeno, pokud tento telefon originál nepřehraje',
     radio: 'Rádio',

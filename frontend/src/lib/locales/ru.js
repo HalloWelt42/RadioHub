@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "Устройство, которым управляют кнопки", fernWeg: "{name} сейчас недоступно", fernGestartet: "Играет на {name}",
     tonOriginalHinweis: 'без изменений от станции, лучшее качество',
     tonVollHinweis: 'с перекодированием, если телефон не воспроизводит оригинал',
     radio: 'Радио',

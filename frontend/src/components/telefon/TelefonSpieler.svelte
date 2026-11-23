@@ -3,7 +3,9 @@
    * Spielerleiste über der Fußleiste (Bild, Titel, Wiedergabe/Pause); antippen öffnet den Spieler als Vollbild:
    * bei Folgen Position, Spulen, 15 s zurück und 30 s vor; beim Radio voriger und nächster Sender und Stopp. Der große
    * Knopf hält nur an und setzt fort, beendet wird nur über Stopp (Nutzer 20.11.2026, wie an der Kanzel). Hinter dem
-   * Vollbild liegt das Logo weichgezeichnet als Farbschein, die Bedienflächen darauf sind aus Glas (RAD-56).
+   * Vollbild liegt das Logo weichgezeichnet als Farbschein, die Bedienflächen darauf sind aus Glas (RAD-56). Ist ein
+   * anderes Gerät desselben Kontos offen, wählt der Umschalter oben, wem die Tasten gehören (RAD-96): im Steuermodus sind
+   * sie blau und der Spieler zeigt, was dort läuft.
    */
   import { appState } from '../../lib/store.svelte.js';
   import { t } from '../../lib/i18n.svelte.js';
@@ -24,15 +26,45 @@
   import { BITRATEN } from '../../spieler/kanzel';
   import { faehigkeiten } from '../../lib/playerEngine.js';
   import { geraete, geraeteTexte, geraeteZeile } from '../../spieler/geraete.svelte';
+  import { fern, fernsteuerung } from '../../spieler/fern.svelte';
 
   let { offen = $bindable(false), zeit = 0, dauer = 0, steuerung, bedienung } = $props();
 
-  const info = $derived(beschreibung(appState));
-  const folge = $derived(!!appState.currentEpisode);
-  const spielt = $derived(appState.isPlaying && !appState.isPaused);
+  const lokal = $derived(beschreibung(appState));
+  /** spielt hier nichts, zeigt die Leiste, was woanders läuft; antippen steuert dieses Gerät */
+  const vorschau = $derived(!fern.aktiv && !lokal ? (geraete.spielenWoanders[0] ?? null) : null);
+  const fremd = $derived(fern.aktiv || !!vorschau);
+  const dort = $derived(fern.aktiv ? fern.zustand : (vorschau?.zustand ?? null));
+  const ruht = $derived(fern.aktiv && !fern.erreichbar);
+  const info = $derived(fremd ? fremdeBeschreibung(dort) : lokal);
+  const folge = $derived(fremd ? dort?.art === 'folge' : !!appState.currentEpisode);
+  const spielt = $derived(fremd ? !!dort?.laeuft : appState.isPlaying && !appState.isPaused);
+  const tasten = $derived(fern.aktiv ? { ...steuerung, ...fernsteuerung } : steuerung);
+
+  /** wie beim eigenen Spieler: beim Sender der laufende Titel mit dem Sender darunter */
+  function fremdeBeschreibung(z) {
+    if (!z) return { title: fern.name, artist: t(fern.erreichbar ? 'geraete.bereit' : 'telefon.fernWeg', { name: fern.name }), bild: null };
+    const titelUnten = z.art === 'sender' && z.untertitel;
+    return { title: titelUnten ? z.untertitel : z.titel, artist: titelUnten ? z.titel : (z.art === 'sender' ? '' : z.untertitel), bild: z.bild || null };
+  }
+  function leisteOeffnen() {
+    if (vorschau) fern.waehlen(vorschau.id);
+    offen = true;
+  }
+  function leisteUmschalten() {
+    if (vorschau) fern.waehlen(vorschau.id);
+    tasten.umschalten();
+  }
+  function zurListe() {
+    if (!fern.aktiv) return steuerung.zurListe();
+    steuerung.zurListe({ uuid: dort?.kennung, name: dort?.titel ?? '' });
+  }
+  /** beim Ziehen gilt der eigene Wert, danach der gemeldete des Geräts */
+  let lautZiehen = $state(null);
+  const laut = $derived(lautZiehen ?? dort?.lautstaerke ?? null);
   const bildSrc = $derived(info?.bild || null);
   /** Name der Quelle für die Kachel ohne Logo (Kürzel und Lack wie in der Liste, RAD-100) */
-  const quellName = $derived(appState.currentStation?.name || appState.currentEpisode?.podcast?.title || info?.title || '');
+  const quellName = $derived(fremd ? (dort?.titel || fern.name) : (appState.currentStation?.name || appState.currentEpisode?.podcast?.title || info?.title || ''));
   /** das Bild, sobald es wirklich geladen ist: nur dann trägt es den Farbschein, sonst der Schein aus dem Akzent (RAD-90) */
   let scheinBild = $state(null);
   $effect(() => {
@@ -45,7 +77,7 @@
     return () => { probe.onload = null; };
   });
   /** Auge und Stern unter dem Sender (RAD-94): derselbe Eintrag wie in der Liste, sonst von der Quelle geholt */
-  const senderUuid = $derived(folge ? null : (appState.currentStation?.uuid ?? null));
+  const senderUuid = $derived(fremd ? (dort?.art === 'sender' && dort.kennung ? dort.kennung : null) : (folge ? null : (appState.currentStation?.uuid ?? null)));
   const eintrag = $derived(bedienung.eintragVon(senderUuid));
   $effect(() => { if (offen) void bedienung.eintragHolen(senderUuid); });
   /** Auge: zum nächsten Sender und den bisherigen ausblenden. Bis gewechselt ist, ruht der Knopf für diesen Sender (RAD-124);
@@ -56,14 +88,14 @@
     if (!e || gehtWeg === e.uuid) return;
     gehtWeg = e.uuid;
     try {
-      await Promise.all([steuerung.naechster(), bedienung.ausblenden(e)]);
+      await Promise.all([tasten.naechster(), bedienung.ausblenden(e)]);
     } finally {
       if (gehtWeg === e.uuid) gehtWeg = null;
     }
   }
   /** Herunterladen der laufenden Folge, nur hier im großen Spieler (RAD-102, Wahl B); in Basic die Datei des Feeds,
    *  die der Browser dann selbst öffnet (fremder Server) */
-  const dateiAdresse = $derived(folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
+  const dateiAdresse = $derived(!fremd && folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
     ? podcastquelle.dateiAdresse(appState.currentEpisode.id) : '');
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
@@ -75,6 +107,7 @@
   /** Geräte als Blatt von unten (RAD-18) */
   let geraeteOffen = $state(false);
   const kann = faehigkeiten();
+  const SYMBOL = { rechner: 'fa-desktop', telefon: 'fa-mobile-screen', tablet: 'fa-tablet-screen-button' };
   /** Ton des Zeitversatzes (RAD-92): Original, voll umgewandelt oder eine feste Stufe */
   const bitrate = new Bitrate();
   const tonOptionen = [
@@ -94,14 +127,15 @@
     return (h ? `${h}:${String(m).padStart(2, '0')}` : `${m}`) + `:${String(sek).padStart(2, '0')}`;
   }
 
+  // ohne eigene Wiedergabe gibt es den großen Spieler nur im Steuermodus
   $effect(() => {
-    if (!info) offen = false;
+    if (!fern.aktiv && !lokal) offen = false;
   });
 </script>
 
 {#if info}
-  <div class="tf-leiste">
-    <button class="leiste-info" onclick={() => (offen = true)} aria-label={t('telefon.spielerOeffnen')}>
+  <div class="tf-leiste" class:fern={fremd}>
+    <button class="leiste-info" onclick={leisteOeffnen} aria-label={t('telefon.spielerOeffnen')}>
       <Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse={44} />
       <!-- Rasterdisplay wie die Anzeige der Kanzel (RAD-97, Wahl A): Titel und Sender als Punktmatrix hinter Glas -->
       <span class="ak-glas rh-display tf-raster">
@@ -113,14 +147,14 @@
         </span>
       </span>
     </button>
-    <button class="knopf primaer tf-rund" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+    <button class="knopf tf-rund" class:primaer={!fremd} disabled={ruht} onclick={leisteUmschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
       <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
     </button>
   </div>
 {/if}
 
 {#if offen && info}
-  <div class="vollbild" role="dialog" aria-modal="true" aria-label={info.title}>
+  <div class="vollbild" class:fern={fern.aktiv} role="dialog" aria-modal="true" aria-label={info.title}>
     <!-- Farbschein aus dem Logo über die ganze Fläche, Bedienflächen als Glas darauf (RAD-56, Wahl A) -->
     <div class="tf-schein" class:ohne={!scheinBild} aria-hidden="true" style:background-image={scheinBild ? `url("${scheinBild}")` : null}
       style:--lack={scheinBild ? null : lack(quellName)}></div>
@@ -129,9 +163,23 @@
         <i class="fa-solid fa-chevron-down"></i>
       </button>
     </div>
+    {#if geraete.andere.length || fern.aktiv}
+      <!-- wem die Tasten gehören (RAD-96, Wahl B): dieses Gerät oder ein anderes offenes -->
+      <div class="tf-geraetewahl" role="radiogroup" aria-label={t('telefon.fernWahl')}>
+        <button type="button" role="radio" aria-checked={!fern.aktiv} onclick={() => fern.waehlen(null)}>
+          <i class="fa-solid fa-mobile-screen"></i><span>{geraete.ich?.name ?? t('geraete.diesesGeraet')}</span></button>
+        {#each geraete.andere as g (g.id)}
+          <button type="button" role="radio" aria-checked={fern.zielId === g.id} class="dort" onclick={() => fern.waehlen(g.id)}>
+            <i class="fa-solid {SYMBOL[g.art]}"></i><span>{g.name}</span></button>
+        {/each}
+        {#if ruht}
+          <button type="button" role="radio" aria-checked="true" class="dort" disabled><i class="fa-solid fa-plug-circle-xmark"></i><span>{fern.name}</span></button>
+        {/if}
+      </div>
+    {/if}
     <div class="buehne">
       <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : 'fa-radio'} groesse="min(100cqi, 100cqb)" /></span>
-      {#if !folge && puffer.aktiv && pTitel}
+      {#if !fremd && !folge && puffer.aktiv && pTitel}
         <!-- zeigt der Zeitversatz den Titel unten im Kasten, steht oben nur der Sender, nichts doppelt (RAD-90) -->
         <h2>{info.artist || info.title}</h2>
       {:else}
@@ -152,7 +200,7 @@
             <button class="rund tf-rund" type="button" onclick={() => void bedienung.einblenden(eintrag)}
                     aria-label={t('radio.einblendenVon', { name: eintrag.name })} title={t('radio.einblendenHilfe')}><i class="fa-solid fa-eye"></i></button>
           {:else}
-            <button class="rund tf-rund" type="button" disabled={appState.isRecording || gehtWeg === senderUuid} onclick={ausblendenUndWeiter}
+            <button class="rund tf-rund" type="button" disabled={ruht || (!fremd && appState.isRecording) || gehtWeg === senderUuid} onclick={ausblendenUndWeiter}
                     aria-label={t('radio.ausblendenVon', { name: eintrag.name })} title={t('telefon.ausblendenWeiter')}><i class="fa-solid fa-eye-slash"></i></button>
           {/if}
           <button class="rund tf-rund" class:favorit={eintrag.favorit} type="button" aria-pressed={eintrag.favorit}
@@ -163,6 +211,7 @@
     </div>
 
     {#if folge}
+      {#if !fremd}
       <div class="position">
         <input name="position" type="range" min="0" max={Math.max(1, Math.floor(dauer))} step="1"
           value={ziehen ?? Math.floor(zeit)} aria-label={t('telefon.abspielen')}
@@ -170,33 +219,34 @@
           onchange={(e) => { steuerung.springen(Number(e.currentTarget.value)); ziehen = null; }} />
         <div class="zeiten"><span>{uhr(ziehen ?? zeit)}</span><span>-{uhr(Math.max(0, dauer - (ziehen ?? zeit)))}</span></div>
       </div>
+      {/if}
       <div class="knoepfe">
-        <button class="rund tf-rund mittel" onclick={() => steuerung.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
+        <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.zurueck(15)} aria-label={t('telefon.zurueck15')} title={t('telefon.zurueck15')}>
           <i class="fa-solid fa-rotate-left"></i><span class="tf-zahl">15</span>
         </button>
-        <button class="knopf primaer tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf tf-rund tf-gross" class:primaer={!fremd} disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
-        <button class="rund tf-rund mittel" onclick={() => steuerung.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
+        <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.vor(30)} aria-label={t('telefon.vor30')} title={t('telefon.vor30')}>
           <i class="fa-solid fa-rotate-right"></i><span class="tf-zahl">30</span>
         </button>
       </div>
     {:else}
       <div class="knoepfe">
-        <button class="rund tf-rund mittel" onclick={steuerung.voriger} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
+        <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.voriger()} aria-label={t('telefon.voriger')} title={t('telefon.voriger')}>
           <i class="fa-solid fa-backward-step"></i>
         </button>
-        <button class="rund tf-rund mittel" onclick={steuerung.stoppen} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
+        <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.stoppen()} aria-label={t('telefon.stopp')} title={t('telefon.stopp')}>
           <i class="fa-solid fa-stop"></i>
         </button>
-        <button class="knopf primaer tf-rund tf-gross" onclick={steuerung.umschalten} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
+        <button class="knopf tf-rund tf-gross" class:primaer={!fremd} disabled={ruht} onclick={() => tasten.umschalten()} aria-label={spielt ? t('telefon.pause') : t('telefon.abspielen')}>
           <i class="fa-solid {spielt ? 'fa-pause' : 'fa-play'}"></i>
         </button>
-        <button class="rund tf-rund mittel" onclick={steuerung.naechster} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
+        <button class="rund tf-rund mittel" disabled={ruht} onclick={() => tasten.naechster()} aria-label={t('telefon.naechster')} title={t('telefon.naechster')}>
           <i class="fa-solid fa-forward-step"></i>
         </button>
       </div>
-      {#if puffer.aktiv}
+      {#if !fremd && puffer.aktiv}
         <!-- Zeitversatz mit Titeln und Werbung (RAD-46, Entwurf puffer.html Zustand 6) -->
         <div class="tf-versatz">
           <div class="tf-versatz-kopf">
@@ -222,12 +272,19 @@
         </div>
       {/if}
     {/if}
+    {#if fern.aktiv && laut !== null}
+      <label class="tf-laut"><i class="fa-solid fa-volume-high" aria-hidden="true"></i>
+        <input name="fern-lautstaerke" type="range" min="0" max="100" step="1" value={laut} aria-label="{t('kanzel.lautstaerke')}: {fern.name}" disabled={ruht}
+          oninput={(ev) => { lautZiehen = Number(ev.currentTarget.value); fern.lautstaerke(lautZiehen); }}
+          onchange={() => { setTimeout(() => (lautZiehen = null), 600); }} />
+        <span>{laut} %</span></label>
+    {/if}
     <!-- unten nebeneinander (RAD-90): den Sender in der Liste wiederfinden (Nutzer 20.11.2026) und Geräte (RAD-18, blinkt
          ruhig, solange woanders etwas spielt) -->
     {#if !folge || kann.uebergabe}
       <div class="tf-fuss">
-        {#if !folge}
-          <button class="knopf tf-zur-liste" onclick={steuerung.zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
+        {#if !folge && (!fremd || senderUuid)}
+          <button class="knopf tf-zur-liste" onclick={zurListe}><i class="fa-solid fa-location-crosshairs"></i> {t('telefon.inListeZeigen')}</button>
         {/if}
         {#if kann.uebergabe}
           <button class="knopf tf-zur-liste tf-geraete" class:blinkt={geraete.spielenWoanders.length > 0} onclick={() => (geraeteOffen = true)}>
@@ -355,5 +412,20 @@
   .position { margin: 16px 0 4px; }
   .position input { width: 100%; height: 32px; accent-color: var(--t-akzent); }
   .zeiten { display: flex; justify-content: space-between; font-size: 15px; color: var(--t-text-2); font-variant-numeric: tabular-nums; }
+  /* Steuermodus (RAD-96): alles, was auf dem anderen Gerät wirkt, ist blau */
+  .tf-geraetewahl { display: flex; gap: 4px; flex: none; padding: 4px; margin: 0 4px; border-radius: 26px; overflow-x: auto; background: color-mix(in srgb, var(--t-grund) 62%, transparent); }
+  .tf-geraetewahl button { flex: 1 0 auto; min-width: 0; min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 0; border-radius: 22px; background: transparent; color: var(--t-text-2); font: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; }
+  .tf-geraetewahl span { overflow: hidden; text-overflow: ellipsis; max-inline-size: 11em; }
+  .tf-geraetewahl button[aria-checked="true"] { background: var(--t-flaeche-2); color: var(--t-text); }
+  .tf-geraetewahl button.dort[aria-checked="true"] { background: var(--t-fern); color: var(--t-auf-fern); }
+  .fern .knoepfe .tf-rund, .tf-leiste.fern .tf-rund { background: color-mix(in srgb, var(--t-fern) 24%, var(--t-flaeche-2)); color: var(--t-fern-hell);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-fern) 55%, transparent), 0 4px 12px rgb(0 0 0 / .3); }
+  .fern .knoepfe .tf-gross, .tf-leiste.fern .tf-rund { background: var(--t-fern); color: var(--t-auf-fern); box-shadow: 0 0 20px color-mix(in srgb, var(--t-fern) 45%, transparent); }
+  .fern .tf-rund:disabled { opacity: .45; }
+  .tf-laut { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; padding: 8px 14px; border-radius: 14px; color: var(--t-text);
+    background: color-mix(in srgb, var(--t-fern) 18%, color-mix(in srgb, var(--t-flaeche-2) 70%, transparent)); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .tf-laut input { flex: 1; min-width: 0; height: 36px; accent-color: var(--t-fern); }
+  .tf-laut span { min-inline-size: 3.2em; text-align: right; }
   .knoepfe { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 16px 0 8px; }
 </style>

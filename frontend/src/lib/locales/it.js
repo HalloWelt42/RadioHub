@@ -17,6 +17,7 @@ export default {
 
   // === Vista telefono ===
   telefon: {
+    fernWahl: "Dispositivo comandato dai tasti", fernWeg: "{name} non è raggiungibile al momento", fernGestartet: "In riproduzione su {name}",
     tonOriginalHinweis: "come trasmesso dalla stazione, qualità migliore",
     tonVollHinweis: "convertito, se questo telefono non riproduce l'originale",
     radio: "Radio",

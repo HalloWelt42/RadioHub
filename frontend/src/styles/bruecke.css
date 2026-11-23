@@ -142,6 +142,10 @@
   --t-text: var(--text);
   --t-text-2: var(--text-2);
   --t-akzent: var(--akzent);
+  /* Steuermodus (RAD-96): die Farbe für alles, was auf einem anderen Gerät wirkt */
+  --t-fern: color-mix(in srgb, var(--led-blau) 82%, white);
+  --t-fern-hell: color-mix(in srgb, var(--led-blau) 42%, var(--text));
+  --t-auf-fern: white;
   --t-akzent-flaeche: var(--akzent-flaeche);
   --t-akzent-text: var(--auf-akzent);
   --t-fehler: var(--gefahr);

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 const gespielt: string[] = [];
 vi.mock("../src/lib/store.svelte.js", () => ({
   appState: { currentStation: null },
-  actions: { playStation: async (w: { uuid: string }) => { gespielt.push(w.uuid); }, showToast: () => {} },
+  actions: { playStationFromList: async (w: { uuid: string }) => { gespielt.push(w.uuid); }, showToast: () => {} },
 }));
 import { Radiobedienung } from "../src/lib/radio/bedienung.svelte";
 import type { Senderquelle } from "../src/lib/radio/quelle";

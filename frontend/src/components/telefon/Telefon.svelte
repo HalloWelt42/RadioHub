@@ -111,8 +111,7 @@
 
   /** Laufenden Sender in der Liste zeigen: Spieler zu, zur Zeile rollen; steht er wegen eines Filters nicht in der
    *  Liste, sucht ihn die Liste gezielt (als Suche sichtbar, mit einem Tipp entfernbar) */
-  async function zurListe() {
-    const sender = appState.currentStation;
+  async function zurListe(sender = appState.currentStation) {
     if (!sender) return;
     spielerOffen = false;
     if (appState.activeTab !== 'radio') actions.navigateTo('/radio');

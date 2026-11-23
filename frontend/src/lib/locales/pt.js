@@ -17,6 +17,7 @@ export default {
 
   // === Vista no telemóvel ===
   telefon: {
+    fernWahl: "Dispositivo controlado pelas teclas", fernWeg: "{name} não está acessível neste momento", fernGestartet: "A tocar em {name}",
     tonOriginalHinweis: 'tal como a estação emite, melhor qualidade',
     tonVollHinweis: 'convertido, se este telemóvel não reproduzir o original',
     radio: 'Rádio',

@@ -17,6 +17,7 @@ export default {
 
   // === Phone view ===
   telefon: {
+    fernWahl: "Which device the buttons control", fernWeg: "{name} is not reachable right now", fernGestartet: "Playing on {name}",
     tonOriginalHinweis: 'unchanged from the station, best quality',
     tonVollHinweis: 'converted, if this phone cannot play the original',
     radio: 'Radio',

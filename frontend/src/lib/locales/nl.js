@@ -17,6 +17,7 @@ export default {
 
   // === Phone view ===
   telefon: {
+    fernWahl: "Welk apparaat de toetsen bedienen", fernWeg: "{name} is nu niet bereikbaar", fernGestartet: "Speelt op {name}",
     tonOriginalHinweis: 'onveranderd van de zender, beste kwaliteit',
     tonVollHinweis: 'omgezet als deze telefoon het origineel niet afspeelt',
     radio: 'Radio',

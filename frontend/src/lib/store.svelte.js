@@ -93,6 +93,14 @@ export function senderfolgeSetzen(folge) {
   senderfolge = folge;
 }
 
+/** Steuert dieses Gerät ein anderes (RAD-96), spielt dort, was man in einer Liste antippt. Nur diese Wege fragen; der Wecker,
+ *  die Übergabe und Vor und Zurück spielen immer hier.
+ *  @type {((art: string, quelle: any, podcast?: any, stelle?: number) => boolean) | null} */
+let umleitung = null;
+export function umleitungSetzen(weg) {
+  umleitung = weg;
+}
+
 async function zumNachbarn(schritt) {
   const jetzt = appState.currentStation;
   if (!jetzt || !senderfolge) return;
@@ -146,11 +154,18 @@ export const actions = {
     await engine.playStation(station);
   },
 
+  /** ein Sender aus einer Liste angetippt */
+  async playStationFromList(station) {
+    if (umleitung?.('sender', station)) return;
+    await engine.playStation(station);
+  },
+
   playEpisode(episode, podcast) {
     engine.playPodcast(episode, podcast);
   },
 
   playEpisodeFromList(episode, podcast, playlist) {
+    if (umleitung?.('folge', episode, podcast)) return;
     appState.podcastPlaylist = playlist || [];
     appState.podcastPlaylistPodcast = podcast || null;
     appState.currentEpisodeIndex = playlist ? playlist.findIndex(e => e.id === episode.id) : -1;
@@ -184,6 +199,7 @@ export const actions = {
 
   // Recording-Wiedergabe
   async playRecording(recording, startTime = 0) {
+    if (umleitung?.('aufnahme', recording, null, startTime)) return;
     await engine.playRecording(recording, startTime);
   },
 

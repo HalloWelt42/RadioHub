@@ -17,6 +17,7 @@ export default {
 
   // === Vue téléphone ===
   telefon: {
+    fernWahl: "Appareil commandé par les touches", fernWeg: "{name} est injoignable pour le moment", fernGestartet: "Lecture sur {name}",
     tonOriginalHinweis: "tel que diffusé par la station, meilleure qualité",
     tonVollHinweis: "converti, si ce téléphone ne lit pas l'original",
     radio: "Radio",

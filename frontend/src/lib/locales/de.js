@@ -17,6 +17,7 @@ export default {
 
   // === Telefonansicht ===
   telefon: {
+    fernWahl: "Wem die Tasten gehören", fernWeg: "{name} ist gerade nicht erreichbar", fernGestartet: "Spielt auf {name}",
     tonOriginalHinweis: 'unverändert vom Sender, beste Qualität',
     tonVollHinweis: 'umgewandelt, wenn dieses Telefon das Original nicht abspielt',
     radio: 'Radio',

@@ -17,6 +17,7 @@ export default {
 
   // === Phone view ===
   telefon: {
+    fernWahl: "Laite, jota painikkeet ohjaavat", fernWeg: "{name} ei ole nyt tavoitettavissa", fernGestartet: "Soi laitteella {name}",
     tonOriginalHinweis: 'aseman alkuperäinen, paras laatu',
     tonVollHinweis: 'muunnettu, jos tämä puhelin ei toista alkuperäistä',
     radio: 'Radio',

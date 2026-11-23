@@ -9,6 +9,7 @@
   import { appState, senderfolgeSetzen } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { filterzustand } from "../../lib/radio";
+  import { fern } from "../../spieler/fern.svelte";
   import { einzelnAusgeblendet } from "../../lib/radio/bedienung.svelte";
   import { bewertungName, format, landName, qualitaetName, sterneVon, zahl } from "../../lib/radio/anzeige";
   import type { Radiobedienung } from "../../lib/radio/bedienung.svelte";
@@ -31,7 +32,8 @@
 
   const filter = $derived(filterzustand.filter);
   const chips = $derived(aktive(filter));
-  const spielend = $derived((appState.currentStation as { uuid?: string } | null)?.uuid ?? null);
+  // im Steuermodus zeigt die Liste, was auf dem gesteuerten Gerät läuft (RAD-96)
+  const spielend = $derived(fern.aktiv ? (fern.zustand?.kennung || null) : ((appState.currentStation as { uuid?: string } | null)?.uuid ?? null));
   const aendern = (arbeit: (f: Schnellfilter) => Schnellfilter) => filterzustand.aendern(arbeit);
 
   $effect(() => {

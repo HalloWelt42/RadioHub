@@ -15,6 +15,7 @@ export default {
   puffer,
 
   telefon: {
+    fernWahl: "ボタンで操作する機器", fernWeg: "{name} に現在接続できません", fernGestartet: "{name} で再生中",
     tonOriginalHinweis: '放送局のまま無変換、最高音質',
     tonVollHinweis: 'この端末で元の形式を再生できない場合に変換',
     radio: 'ラジオ',

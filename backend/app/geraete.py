@@ -1,4 +1,5 @@
-"""Übergabe zwischen Geräten im Radio (RAD-18): was ein Gerät meldet und was bei Holen und Dorthin mitreist.
+"""Übergabe zwischen Geräten im Radio (RAD-18, RAD-96): was ein Gerät meldet und was bei Holen, Dorthin und Steuern
+mitreist.
 
 Den Vermittler stellt der Appkern (appkern.uebergabe); hier stehen nur die Modelle des Radios. Ein Paket trägt die
 Quelle so, wie die Oberfläche sie zum Abspielen braucht (Sender, Folge mit Abo, Aufnahme), ohne lange Texte; die
@@ -21,6 +22,10 @@ class RadioZustand(BaseModel):
     titel: str = Field("", max_length=300)
     untertitel: str = Field("", max_length=300)
     laeuft: bool = False
+    #: für die Fernsteuerung (RAD-96): uuid des Senders, Bild der Quelle, Lautstärke
+    kennung: str = Field("", max_length=64)
+    bild: str = Field("", max_length=2000)
+    lautstaerke: Optional[int] = Field(None, ge=0, le=100)
 
 
 class _Verweis(BaseModel):
