@@ -13,7 +13,7 @@ from pathlib import Path
 from appkern.kellerwolke import Kellerwolke
 
 from .einstellungen import AblageEinstellungen
-from .port import Ablage, AblageFehler, Belegt, Eintrag, NichtEingerichtet, NichtErreichbar, NichtGefunden, eltern
+from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, NichtEingerichtet, NichtErreichbar, NichtGefunden, eltern
 from .speicher import SpeicherAblage
 
 
@@ -39,6 +39,15 @@ class KeineAblage(Ablage):
         raise self._fehlt()
 
     async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
+        raise self._fehlt()
+
+    async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
+        raise self._fehlt()
+
+    async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
+        raise self._fehlt()
+
+    async def anfragestand(self, anfrage: str) -> Anfragestand:
         raise self._fehlt()
 
     async def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:
@@ -110,7 +119,7 @@ def einrichten(zugang: Kellerwolke | None, einstellungen: AblageEinstellungen | 
 
 
 __all__ = [
-    "Ablage", "AblageEinstellungen", "AblageFehler", "Belegt", "Eintrag", "KeineAblage", "NichtEingerichtet",
+    "Ablage", "AblageEinstellungen", "AblageFehler", "Anfragestand", "Belegt", "Eintrag", "KeineAblage", "NichtEingerichtet",
     "NichtErreichbar", "NichtGefunden", "SpeicherAblage", "ablage", "einrichten", "eltern", "setzen", "starten",
     "vorgeben", "wolke", "wolke_setzen",
 ]

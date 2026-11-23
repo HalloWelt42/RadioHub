@@ -158,4 +158,8 @@ export default {
     aboUeberspringen: 'Hoppa över reklam', aboUeberspringenHilfe: 'Hoppa över upptäckta reklamställen i alla avsnitt av prenumerationen',
     aboZahlEins: '1 avsnitt med reklam', aboZahl: '{n} avsnitt med reklam', aboPruefen: 'Kontrollera nya avsnitt', aboPruefenHilfe: 'Sök automatiskt efter reklam i nya avsnitt av prenumerationen',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
+  },
 };

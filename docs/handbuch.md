@@ -141,6 +141,13 @@ Zeitleiste der Großansicht (Doppelklick springt weiterhin hin) oder der Taste i
 Titel im Puffer, ein Tipp auf den Balken klappt ihn auf. Gespeicherte tragen einen Haken; nach dem Löschen der Aufnahme
 geht es wieder. Der laufende Titel und der erste, vorn abgeschnittene, lassen sich so nicht sichern (dafür Aufnahme, Bereich).
 
+Transkripte der Folgen (RAD-22): die Taste Transkript in den Details einer Folge (am Telefon im großen Spieler) zeigt den Text
+im selben Feld wie das Mitlesen: spielt die Folge, läuft er mit, ein Klick auf die Zeit springt hin. Bringt der Feed ein
+Transkript mit (VTT, SRT, JSON), gilt das; sonst, oder für einen besseren Text, "Transkribieren": RadioHub speichert die Folge in
+der Kellerwolke und gibt sie der [[Transkription]] (Einstellungen > Dienste, App im Verbund). Der Auftrag zeigt den Fortschritt
+und wartet nach einem Neustart weiter; das Ergebnis liegt als `.transkript.json` neben der Folge und geht dem des Feeds vor.
+Abbrechen beendet das Warten, die Transkription selbst läuft dort zu Ende. Die Suche der Folgen findet den Text.
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge

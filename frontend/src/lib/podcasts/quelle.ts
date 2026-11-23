@@ -17,6 +17,8 @@ export interface Podcastfaehigkeiten {
   automatisch: boolean;
   /** Werbestellen finden und überspringen (Werbequelle, RAD-32) */
   werbung: boolean;
+  /** Transkripte der Folgen lesen und transkribieren lassen (RAD-22) */
+  transkript: boolean;
 }
 
 /** Was der Spieler zum Abspielen einer Folge braucht (in seinem Format) */

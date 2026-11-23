@@ -165,4 +165,8 @@ export default {
     aboUeberspringen: "Saltar publicidad", aboUeberspringenHilfe: "Saltar los tramos publicitarios detectados en todos los episodios de esta suscripción",
     aboZahlEins: "1 episodio con publicidad", aboZahl: "{n} episodios con publicidad", aboPruefen: "Revisar episodios nuevos", aboPruefenHilfe: "Buscar automáticamente publicidad en los episodios nuevos de esta suscripción",
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transcripción', hilfe: 'Leer el texto del episodio; avanza al reproducir', starten: 'Transcribir', startenHilfe: 'Convertir el episodio en texto; se guarda en Kellerwolke', abbrechen: 'Cancelar', laeuft: 'Transcribiendo', feed: 'Texto del feed', gehoert: 'Texto de la transcripción', keins: 'Aún sin transcripción', laedt: 'Cargando transcripción',
+  },
 };

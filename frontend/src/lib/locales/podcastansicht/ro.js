@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: 'Sari peste reclame', aboUeberspringenHilfe: 'Sari peste segmentele publicitare detectate în toate episoadele acestui abonament',
     aboZahlEins: '1 episod cu reclame', aboZahl: '{n} episoade cu reclame', aboPruefen: 'Verifică episoadele noi', aboPruefenHilfe: 'Caută automat reclame în episoadele noi ale acestui abonament',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transcriere', hilfe: 'Citește textul episodului; urmărește redarea', starten: 'Transcrie', startenHilfe: 'Transformă episodul în text; se salvează în Kellerwolke', abbrechen: 'Anulează', laeuft: 'Transcriere în curs', feed: 'Text din flux', gehoert: 'Text din transcriere', keins: 'Încă nicio transcriere', laedt: 'Se încarcă transcrierea',
+  },
 };

@@ -41,6 +41,15 @@ class Belegt(AblageFehler):
 
 
 @dataclass(frozen=True)
+class Anfragestand:
+    """Wie weit eine an eine andere App weitergegebene Anfrage ist."""
+
+    zustand: str
+    fortschritt: float | None = None
+    meldung: str = ""
+
+
+@dataclass(frozen=True)
 class Eintrag:
     """Eine Datei oder ein Ordner in der Ablage."""
 
@@ -95,6 +104,18 @@ class Ablage(ABC):
     async def begleiten(self, pfad: str, rolle: str, zusatz: str, daten: bytes | Path, inhaltstyp: str) -> Eintrag:
         """Begleitdatei einer Rolle neben die Datei `pfad` (Name: ihr Stamm mit `zusatz`), neu oder als neue Version; sie zieht
         mit ihrer Hauptdatei mit."""
+
+    @abstractmethod
+    async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
+        """Inhalt der Begleitdatei einer Rolle neben der Datei, None wenn es keine gibt."""
+
+    @abstractmethod
+    async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
+        """Die Datei einer anderen App für eine Aktion geben; liefert die Kennung der Anfrage."""
+
+    @abstractmethod
+    async def anfragestand(self, anfrage: str) -> Anfragestand:
+        """Stand einer weitergegebenen Anfrage."""
 
     @abstractmethod
     def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:

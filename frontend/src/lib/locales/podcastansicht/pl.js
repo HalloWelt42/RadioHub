@@ -165,4 +165,8 @@ export default {
     aboUeberspringen: 'Pomijaj reklamy', aboUeberspringenHilfe: 'Pomijaj wykryte bloki reklamowe we wszystkich odcinkach tej subskrypcji',
     aboZahlEins: '1 odcinek z reklamami', aboZahl: 'Odcinki z reklamami: {n}', aboPruefen: 'Sprawdzaj nowe odcinki', aboPruefenHilfe: 'Samodzielnie przeszukuj nowe odcinki tej subskrypcji pod kątem reklam',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
+  },
 };

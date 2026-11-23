@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: 'Reklám átugrása', aboUeberspringenHilfe: 'A felismert reklámszakaszok átugrása a feliratkozás minden epizódjában',
     aboZahlEins: '1 epizód reklámmal', aboZahl: '{n} epizód reklámmal', aboPruefen: 'Új epizódok ellenőrzése', aboPruefenHilfe: 'A feliratkozás új epizódjaiban automatikusan reklámot keres',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Átirat', hilfe: 'Az epizód szövegének olvasása; lejátszáskor követi', starten: 'Átírás', startenHilfe: 'Az epizód szöveggé alakítása; közben a Kellerwolke tárhelyre kerül', abbrechen: 'Mégse', laeuft: 'Átírás folyamatban', feed: 'Szöveg a csatornából', gehoert: 'Szöveg az átírásból', keins: 'Még nincs átirat', laedt: 'Átirat betöltése',
+  },
 };

@@ -165,4 +165,8 @@ export default {
     aboUeberspringen: 'Ohita mainokset', aboUeberspringenHilfe: 'Ohita tunnistetut mainoskohdat tämän tilauksen kaikissa jaksoissa',
     aboZahlEins: '1 jakso, jossa mainoksia', aboZahl: '{n} jaksoa, joissa mainoksia', aboPruefen: 'Tarkista uudet jaksot', aboPruefenHilfe: 'Etsi tämän tilauksen uusista jaksoista mainoksia automaattisesti',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
+  },
 };

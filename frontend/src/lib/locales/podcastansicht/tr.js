@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: 'Reklamları atla', aboUeberspringenHilfe: 'Bu aboneliğin tüm bölümlerinde algılanan reklam yerlerini atla',
     aboZahlEins: 'Reklamlı 1 bölüm', aboZahl: 'Reklamlı {n} bölüm', aboPruefen: 'Yeni bölümleri denetle', aboPruefenHilfe: 'Bu aboneliğin yeni bölümlerinde kendiliğinden reklam ara',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Döküm', hilfe: 'Bölümün metnini oku; oynatırken izler', starten: 'Yazıya dök', startenHilfe: 'Bölümü metne çevir; bunun için Kellerwolke içine kaydedilir', abbrechen: 'İptal', laeuft: 'Döküm sürüyor', feed: 'Akıştaki metin', gehoert: 'Dökülen metin', keins: 'Henüz döküm yok', laedt: 'Döküm yükleniyor',
+  },
 };

@@ -300,7 +300,7 @@
         {:else}
           {#each liste.folgen as f, i (f.id)}
             <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id} fokus={gewaehlt === i}
-                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} kannSpeichern={kann.speichern}
+                        onspielen={() => void spielen(f)} onvorn={() => void spielen(f, true)} kannSpeichern={kann.speichern} kannTranskript={kann.transkript}
                         dateiAdresse={kann.herunterladenInListen ? podcastquelle.dateiAdresse(f.id) : ""} onspeichern={() => void speichern(f, true)}
                         onloeschen={() => speichern(f, false)}
                         ongehoert={() => gehoert(f)} ondetails={() => details(f)}

@@ -33,6 +33,7 @@ from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, 
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
+from .services.folgentranskript import folgentranskripte
 from .services.mitlesen import mitleser
 from .services.mitschrift import Mitschriften
 from .services import lernliste, propagandafilter, uebersetzerstimme, zeitstimmen
@@ -60,7 +61,7 @@ class Radiobetrieb(Begleiter):
         self.datenbank: database.Einrichtung | None = None
         self.datenbank_fehler: str | None = None      # /health meldet ihn
         self._aufgaben: list[asyncio.Task] = []
-        geruest.auftraege.anmelden(*abgleich.arten(abgleich.client_fabrik(transport)))
+        geruest.auftraege.anmelden(*abgleich.arten(abgleich.client_fabrik(transport)), folgentranskripte.art())
 
     async def _eintragen(self, ereignis: str, text: str, stufe: str = "info") -> None:
         (log.warning if stufe != "info" else log.info)("%s: %s", ereignis, text)
@@ -70,6 +71,7 @@ class Radiobetrieb(Begleiter):
         einstellungen.binden(self.geruest.einstellungen)
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("uebersetzerstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
+        self.geruest.einstellungen.anbieten("transkription_app", self.geruest.kellerwolke_apps_angebot())
         self.geruest.einstellungen.anbieten("mitlesen_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
         self.geruest.einstellungen.anbieten("mitlesen_modell", self.geruest.leitstelle_angebot("uebersetzen"))
         self.geruest.einstellungen.regel(einstellungen.regeln_pruefen)
@@ -92,6 +94,9 @@ class Radiobetrieb(Begleiter):
         mitleser.stimme = lambda text, sprache: uebersetzerstimme.sprechen(self.geruest.verbund, text, sprache)
         mitleser.stimme_da = uebersetzerstimme.eingerichtet
         mitleser.ziel_name = lambda k: einstellungen.SPRACHEN.get(k, k)
+        folgentranskripte.folge = podcast_service.get_episode
+        folgentranskripte.speichern = podcast_service.download_episode
+        folgentranskripte.abruf = podcast_service.abrufen
         mitschriften = Mitschriften(lambda: get_arbeit_dir("mitlesen"), lambda text, stufe: self._eintragen("radio.mitlesen", text, stufe))
         mitleser.mitschriften = lambda: mitschriften if einstellungen.stand().mitlesen_ablegen else None
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)

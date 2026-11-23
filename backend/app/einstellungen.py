@@ -89,6 +89,9 @@ class AppEinstellungen(Grundeinstellungen):
     mitlesen_ablegen: bool = Field(True, title="Mitlesen in der Kellerwolke ablegen", json_schema_extra=DIENSTE,
                                    description="Legt nach jedem Mitlesen den Ton des Senders ab, daneben die gesprochene Übersetzung "
                                                "und das Transkript (Ordner Mitlesen).")
+    transkription_app: str = Field("Transkription", max_length=120, title="Transkription", json_schema_extra=DIENSTE,
+                                   description="App im Verbund, die Podcast-Folgen auf Knopfdruck transkribiert (RAD-22). Leer: nur "
+                                               "Transkripte, die der Feed mitbringt.")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "

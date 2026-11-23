@@ -367,6 +367,14 @@
   .rh-mitlese-fuss { flex-wrap: wrap; }
   .rh-mitlese-lage { flex-basis: 100%; }
 }
+.rh-mitlese-zeit { padding: 0; border: 0; background: none; font-family: var(--schrift-zahl); font-size: var(--klein); color: var(--akzent); text-align: left; cursor: pointer; align-self: start; }
+.rh-mitlese-zeit:hover { text-decoration: underline; }
+.rh-mitlese-sprecher { display: block; font-size: var(--klein); color: var(--text-2); }
+/* Transkript einer Folge (RAD-22): dasselbe Feld, beim Transkribieren der Fortschritt an seiner Stelle */
+.rh-transkript { margin-block: 10px; }
+.rh-folge-detail .rh-transkript { --rh-mitlese-hoch: 100dvh - 36rem; }
+.rh-transkript-lauf { grid-area: feld; display: grid; gap: 8px; align-content: center; min-block-size: calc(var(--klein) * 8); padding: 12px 14px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); font-size: var(--klein); }
+.rh-transkript-lauf .unbestimmt > span { opacity: .35; }
 @container liste (max-width: 820px) { .rh-mitlese-feld p { grid-template-columns: minmax(0, 1fr); } .rh-mitlese-original { grid-column: 1; } }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
 .rh-werbende { display: grid; gap: 0; }

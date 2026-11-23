@@ -9,8 +9,10 @@
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
   import Werbeteil from "./Werbeteil.svelte";
+  import Transkriptteil from "./Transkriptteil.svelte";
+  import Schalter from "../bausteine/Schalter.svelte";
 
-  let { folge, abo, spielt, offen, fokus = false, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo,
+  let { folge, abo, spielt, offen, fokus = false, kannTranskript = false, kannSpeichern, dateiAdresse, onspielen, onvorn, onspeichern, onloeschen, ongehoert, ondetails, onabo,
         onanhoeren, onwerbung }: {
     folge: Folge;
     abo: Abo | undefined;
@@ -19,6 +21,8 @@
     /** mit der Tastatur gewählt (Rahmen wie in der Senderliste) */
     fokus?: boolean;
     kannSpeichern: boolean;
+    /** Transkript lesen und transkribieren lassen (RAD-22) */
+    kannTranskript?: boolean;
     /** Adresse zum Herunterladen aufs Gerät, leer ohne */
     dateiAdresse: string;
     onspielen: () => void;
@@ -42,6 +46,7 @@
   const beschreibung = $derived(offen ? textAus(folge.beschreibung) : "");
   const mb = $derived(megabyte(folge.groesse));
   let fragt = $state(false);
+  let liest = $state(false);
   let loescht = $state(false);
 
   function speicherKnopf() {
@@ -115,8 +120,10 @@
         {#if dateiAdresse}
           <a class="knopf" href={dateiAdresse} download title={t("podcastAnsicht.herunterladenHilfe")}><i class="fa-solid fa-download"></i>{t("podcastAnsicht.herunterladen")}</a>
         {/if}
+        {#if kannTranskript}<Schalter an={liest} farbe="blau" symbol="fa-closed-captioning" text={t("podcastAnsicht.transkript.titel")} hilfe={t("podcastAnsicht.transkript.hilfe")} onwechsel={(an) => (liest = an)} />{/if}
         {#if aboTitel}<a class="knopf still" href="/podcasts/{folge.aboId}" onclick={(e) => { e.preventDefault(); onabo(); }}><i class="fa-solid fa-podcast"></i>{aboTitel}</a>{/if}
       </div>
+      {#if liest}<Transkriptteil folgeId={folge.id} {spielt} {onanhoeren} />{/if}
       <Werbeteil {folge} {abo} {spielt} {onanhoeren} ongeaendert={onwerbung} />
     </div>
   {/if}

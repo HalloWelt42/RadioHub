@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: '広告をスキップ', aboUeberspringenHilfe: 'この登録番組の全エピソードで検出した広告箇所をスキップ',
     aboZahlEins: '広告のあるエピソード 1 件', aboZahl: '広告のあるエピソード {n} 件', aboPruefen: '新しいエピソードをチェック', aboPruefenHilfe: 'この登録番組の新しいエピソードで広告を自動で探す',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: '書き起こし', hilfe: 'エピソードの文章を読む。再生中は追従', starten: '書き起こす', startenHilfe: 'エピソードを文章にします。Kellerwolke に保存されます', abbrechen: '中止', laeuft: '書き起こし中', feed: 'フィードの文章', gehoert: '書き起こした文章', keins: '書き起こしはまだありません', laedt: '読み込み中',
+  },
 };

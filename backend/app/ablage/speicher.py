@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from pathlib import Path
 
-from .port import Ablage, Belegt, Eintrag, NichtGefunden, eltern, sauberer_pfad
+from .port import Ablage, Anfragestand, Belegt, Eintrag, NichtGefunden, eltern, sauberer_pfad
 
 
 class SpeicherAblage(Ablage):
@@ -17,6 +17,9 @@ class SpeicherAblage(Ablage):
         self.versionen: dict[str, int] = {}
         self.papierkorb: list[str] = []
         self._zeit: dict[str, datetime] = {}
+        #: weitergegebene Anfragen und ihr Stand, für Tests von Hand gesetzt
+        self.anfragen: dict[str, tuple[str, str, str, dict[str, str]]] = {}
+        self.anfragestaende: dict[str, Anfragestand] = {}
 
     def _ordner_anlegen(self, pfad: str) -> None:
         while pfad:
@@ -57,6 +60,19 @@ class SpeicherAblage(Ablage):
         if pfad not in self.dateien:
             raise NichtGefunden(f"{pfad} nicht gefunden")
         return await self.schreiben(f"{pfad.rsplit('.', 1)[0]}{zusatz}", daten.read_bytes() if isinstance(daten, Path) else daten)
+
+    async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
+        stamm = sauberer_pfad(pfad).rsplit(".", 1)[0]
+        return self.dateien.get(f"{stamm}.{rolle}.json")
+
+    async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
+        kennung = f"a{len(self.anfragen) + 1}"
+        self.anfragen[kennung] = (sauberer_pfad(pfad), app, aktion, optionen)
+        self.anfragestaende[kennung] = Anfragestand("wartet")
+        return kennung
+
+    async def anfragestand(self, anfrage: str) -> Anfragestand:
+        return self.anfragestaende[anfrage]
 
     async def lesen(self, pfad: str, start: int | None = None, ende: int | None = None) -> AsyncIterator[bytes]:
         pfad = sauberer_pfad(pfad)

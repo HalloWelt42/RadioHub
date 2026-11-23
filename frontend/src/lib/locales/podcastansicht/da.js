@@ -164,4 +164,8 @@ export default {
     aboUeberspringen: 'Spring reklame over', aboUeberspringenHilfe: 'Spring genkendte reklamesteder over i alle afsnit af dette abonnement',
     aboZahlEins: '1 afsnit med reklame', aboZahl: '{n} afsnit med reklame', aboPruefen: 'Tjek nye afsnit', aboPruefenHilfe: 'Gennemsøg automatisk nye afsnit af dette abonnement for reklame',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
+  },
 };

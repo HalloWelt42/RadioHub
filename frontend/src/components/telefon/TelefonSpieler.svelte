@@ -12,6 +12,7 @@
   import { beschreibung } from '../../lib/telefon/medien.js';
   import Bild from './Bild.svelte';
   import PufferBalken from './PufferBalken.svelte';
+  import Transkriptteil from '../podcast/Transkriptteil.svelte';
   import TelefonPuffer from './TelefonPuffer.svelte';
   import { puffer } from '../../spieler/puffer.svelte';
   import { mitlesetaste } from '../../spieler/mitlesetaste.svelte';
@@ -115,6 +116,9 @@
   const dateiAdresse = $derived(!fremd && folge && podcastquelle.faehig.herunterladen && appState.currentEpisode?.id
     ? podcastquelle.dateiAdresse(appState.currentEpisode.id) : !fremd && aufnahme ? appState.currentRecording?.ladeUrl ?? '' : '');
   const ladeHilfe = $derived(t(aufnahme ? 'aufnahmenAnsicht.laden' : 'podcastAnsicht.herunterladenHilfe'));
+  /** Transkript der laufenden Folge anstelle des Bilds (RAD-22) */
+  let liest = $state(false);
+  const kannLesen = $derived(!fremd && folge && podcastquelle.faehig.transkript && !!appState.currentEpisode?.id);
   let ziehen = $state(null);
   /** Puffer-Liste über dem Spieler (RAD-46) */
   let pufferOffen = $state(false);
@@ -195,6 +199,12 @@
         {/if}
       </div>
     {/if}
+    {#if liest && kannLesen}
+      <div class="tf-mitlesen tf-transkript">
+        <div class="tf-transkript-kopf"><b>{info.title}</b><Schalter an={true} farbe="blau" symbol="fa-closed-captioning" text={t('podcastAnsicht.transkript.titel')} hilfe={t('podcastAnsicht.transkript.hilfe')} onwechsel={() => (liest = false)} /></div>
+        {#key appState.currentEpisode.id}<Transkriptteil folgeId={appState.currentEpisode.id} {spielt} onanhoeren={(von) => steuerung.springen(von)} />{/key}
+      </div>
+    {:else}
     <div class="buehne">
       <span class="tf-cover"><Bild src={bildSrc} name={quellName} symbol={folge ? 'fa-podcast' : aufnahme ? 'fa-circle-dot' : 'fa-radio'} groesse="min(100cqi, 100cqb)" /></span>
       {#if !fremd && !folge && puffer.aktiv && pTitel}
@@ -204,11 +214,14 @@
         <h2>{info.title}</h2>
         <p class="zusatz">{info.artist || (spulbar ? '' : t('telefon.live'))}</p>
       {/if}
-      {#if dateiAdresse}
-        <!-- Herunterladen unter dem Titel, rund wie die Tasten (RAD-102, Wahl B) -->
+      {#if dateiAdresse || kannLesen}
+        <!-- Transkript und Herunterladen unter dem Titel, rund wie die Tasten (RAD-22, RAD-102) -->
         <div class="tf-sender-aktionen">
+          {#if kannLesen}<button class="rund tf-rund" type="button" onclick={() => (liest = true)}
+             aria-label={t('podcastAnsicht.transkript.titel')} title={t('podcastAnsicht.transkript.hilfe')}><i class="fa-solid fa-closed-captioning"></i></button>{/if}
+          {#if dateiAdresse}
           <a class="rund tf-rund" href={dateiAdresse} download target="_blank" rel="noopener"
-             aria-label={ladeHilfe} title={ladeHilfe}><i class="fa-solid fa-download"></i></a>
+             aria-label={ladeHilfe} title={ladeHilfe}><i class="fa-solid fa-download"></i></a>{/if}
         </div>
       {/if}
       {#if eintrag}
@@ -231,6 +244,7 @@
         </div>
       {/if}
     </div>
+    {/if}
 
     {#if spulbar}
       {#if !fremd}

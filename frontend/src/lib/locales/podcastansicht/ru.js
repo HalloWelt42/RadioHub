@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: 'Пропускать рекламу', aboUeberspringenHilfe: 'Пропускать найденную рекламу во всех выпусках этой подписки',
     aboZahlEins: '1 выпуск с рекламой', aboZahl: 'Выпусков с рекламой: {n}', aboPruefen: 'Проверять новые выпуски', aboPruefenHilfe: 'Сами искать рекламу в новых выпусках этой подписки',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Расшифровка', hilfe: 'Читать текст выпуска; при воспроизведении следует за ним', starten: 'Расшифровать', startenHilfe: 'Превратить выпуск в текст; он сохраняется в Kellerwolke', abbrechen: 'Отмена', laeuft: 'Идёт расшифровка', feed: 'Текст из ленты', gehoert: 'Текст расшифровки', keins: 'Расшифровки пока нет', laedt: 'Загрузка расшифровки',
+  },
 };

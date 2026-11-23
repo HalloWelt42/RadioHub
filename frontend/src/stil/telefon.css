@@ -24,6 +24,15 @@
 .tf-mitlesen .rh-mitlese-fuss { flex: 1 1 5em; flex-wrap: nowrap; inline-size: auto; min-inline-size: 0; }
 .tf-mitlesen .rh-mitlese-lage { flex-basis: auto; max-block-size: 1.3em; white-space: nowrap; text-overflow: ellipsis; }
 .tf-mitlesen .rh-detail-schalter .rund { inline-size: 42px; block-size: 42px; }
+/* Transkript im großen Spieler (RAD-22): anstelle des Bilds, die Tasten des Spielers bleiben darunter */
+.tf-transkript { flex: 1 1 0; grid-template: auto minmax(0, 1fr) / minmax(0, 1fr); gap: 6px; padding: 0; }
+.tf-transkript-kopf { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.tf-transkript-kopf > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tf-transkript .rh-mitlesen { margin: 0; }
+.tf-mitlesen .rh-transkript-lauf { grid-area: feld; align-self: start; }
+.tf-transkript-kopf ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; padding-inline: 0; }
+.tf-transkript-kopf .ak-taster-beschriftung { font-size: 0; gap: 0; }
+.tf-transkript-kopf .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
 .rund.liest > i { color: var(--akzent); }
 .tf-liste { min-height: 0; overflow-y: auto; overflow-x: clip; padding: 6px var(--rh-rand) 12px; }
 .tf-hinweis { margin: 16px 0; color: var(--text-2); font-size: var(--klein); }

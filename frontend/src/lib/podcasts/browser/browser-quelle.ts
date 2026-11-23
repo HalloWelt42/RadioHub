@@ -100,7 +100,7 @@ const NICHT_HIER = "In der Webversion nicht verfügbar";
 
 export class BrowserPodcastquelle implements Podcastquelle {
   readonly faehig: Podcastfaehigkeiten = { abonnieren: true, speichern: false, herunterladen: true, herunterladenInListen: false,
-                                           automatisch: false, werbung: false };
+                                           automatisch: false, werbung: false, transkript: false };
   private readonly speicher: Speicher;
   private readonly abruf: typeof fetch;
   private readonly parser: () => DOMParser;

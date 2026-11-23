@@ -160,4 +160,8 @@ export default {
     aboUeberspringen: 'Skip ads', aboUeberspringenHilfe: 'Skip detected ad spots in all episodes of this subscription',
     aboZahlEins: '1 episode with ads', aboZahl: '{n} episodes with ads', aboPruefen: 'Check new episodes', aboPruefenHilfe: 'Search new episodes of this subscription for ads automatically',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
+  },
 };

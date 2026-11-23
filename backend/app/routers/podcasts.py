@@ -429,15 +429,6 @@ async def delete_download(episode_id: int):
     return {"success": True}
 
 
-@router.get("/episodes/{episode_id}/transcript")
-async def get_transcript(episode_id: int):
-    """Transkript einer Episode holen (aus Feed oder Cache)"""
-    transcript = await podcast_service.get_transcript(episode_id)
-    if transcript is None:
-        return {"available": False, "text": None}
-    return {"available": True, "text": transcript}
-
-
 @router.delete("/{podcast_id}/played-downloads")
 async def delete_played_downloads(podcast_id: int):
     """Gehörte Downloads eines Podcasts löschen"""

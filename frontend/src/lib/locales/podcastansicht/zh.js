@@ -157,4 +157,8 @@ export default {
     aboUeberspringen: '跳过广告', aboUeberspringenHilfe: '在此订阅的所有单集中跳过已识别的广告',
     aboZahlEins: '1 集有广告', aboZahl: '{n} 集有广告', aboPruefen: '检查新单集', aboPruefenHilfe: '自动在此订阅的新单集中查找广告',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: '文字稿', hilfe: '阅读节目文字；播放时跟随', starten: '转写', startenHilfe: '把节目转成文字；会保存到 Kellerwolke', abbrechen: '取消', laeuft: '正在转写', feed: '来自订阅源的文字', gehoert: '转写的文字', keins: '还没有文字稿', laedt: '正在加载文字稿',
+  },
 };

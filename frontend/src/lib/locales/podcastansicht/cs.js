@@ -164,4 +164,8 @@ export default {
     aboUeberspringen: 'Přeskakovat reklamu', aboUeberspringenHilfe: 'Přeskakovat rozpoznaná reklamní místa ve všech dílech tohoto odběru',
     aboZahlEins: '1 díl s reklamou', aboZahl: '{n} dílů s reklamou', aboPruefen: 'Kontrolovat nové díly', aboPruefenHilfe: 'Nové díly tohoto odběru automaticky prohledávat na reklamu',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Přepis', hilfe: 'Číst text epizody; při přehrávání běží s ní', starten: 'Přepsat', startenHilfe: 'Převést epizodu na text; uloží se při tom do Kellerwolke', abbrechen: 'Zrušit', laeuft: 'Probíhá přepis', feed: 'Text z kanálu', gehoert: 'Text z přepisu', keins: 'Zatím žádný přepis', laedt: 'Přepis se načítá',
+  },
 };

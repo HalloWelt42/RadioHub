@@ -843,80 +843,11 @@ class PodcastService:
     # Transkription
     # =========================================================================
 
-    async def get_transcript(self, episode_id: int) -> Optional[str]:
-        """Transkript einer Episode holen -- aus Cache oder von URL laden"""
-        with db_session() as conn:
-            c = conn.cursor()
-            c.execute("SELECT transcript, transcript_url FROM podcast_episodes WHERE id = ?",
-                      (episode_id,))
-            row = c.fetchone()
-            if not row:
-                return None
-
-            # Bereits gecacht
-            if row[0]:
-                return row[0]
-
-            # Kein Transkript verfügbar
-            transcript_url = row[1]
-            if not transcript_url:
-                return None
-
-        # Von URL herunterladen und cachen
-        try:
-            client = await self._get_client()
-            resp = await client.get(transcript_url)
-            if resp.status_code != 200:
-                return None
-
-            content_type = resp.headers.get("content-type", "")
-            text = resp.text
-
-            # SRT/VTT zu reinem Text konvertieren
-            if any(x in transcript_url.lower() for x in [".srt", ".vtt"]) or \
-               any(x in content_type for x in ["srt", "vtt"]):
-                text = self._subtitle_to_text(text)
-
-            # HTML-Tags entfernen falls nötig
-            if "<" in text and ">" in text:
-                text = re.sub(r'<[^>]+>', '', text)
-
-            text = text.strip()
-            if not text:
-                return None
-
-            # In DB cachen
-            with db_session() as conn:
-                c = conn.cursor()
-                c.execute("UPDATE podcast_episodes SET transcript = ? WHERE id = ?",
-                          (text, episode_id))
-
-            return text
-
-        except Exception as e:
-            logger.warning(f"Transkript-Download fehlgeschlagen: {e}")
-            return None
-
-    def _subtitle_to_text(self, content: str) -> str:
-        """SRT/VTT Untertitel zu reinem Text konvertieren"""
-        lines = content.strip().split("\n")
-        text_lines = []
-        for line in lines:
-            line = line.strip()
-            # Zeitstempel und Nummern überspringen
-            if not line:
-                continue
-            if re.match(r'^\d+$', line):
-                continue
-            if re.match(r'[\d:.,\-\s>]+$', line):
-                continue
-            if line.startswith("WEBVTT") or line.startswith("NOTE"):
-                continue
-            # HTML-Tags entfernen
-            line = re.sub(r'<[^>]+>', '', line)
-            if line:
-                text_lines.append(line)
-        return "\n".join(text_lines)
+    async def abrufen(self, adresse: str) -> tuple[str, str]:
+        """Inhalt und Typ einer Adresse des Feeds (etwa eines Transkripts)."""
+        antwort = await (await self._get_client()).get(adresse)
+        antwort.raise_for_status()
+        return antwort.text, antwort.headers.get("content-type", "")
 
     # =========================================================================
     # Statistiken

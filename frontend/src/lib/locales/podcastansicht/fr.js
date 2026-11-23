@@ -165,4 +165,8 @@ export default {
     aboUeberspringen: "Sauter la pub", aboUeberspringenHilfe: "Sauter les passages publicitaires détectés dans tous les épisodes de cet abonnement",
     aboZahlEins: "1 épisode avec pub", aboZahl: "{n} épisodes avec pub", aboPruefen: "Vérifier les nouveaux épisodes", aboPruefenHilfe: "Rechercher automatiquement la pub dans les nouveaux épisodes de cet abonnement",
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transcription', hilfe: 'Lire le texte de l\'épisode ; il suit la lecture', starten: 'Transcrire', startenHilfe: 'Mettre l\'épisode en texte ; il est enregistré dans Kellerwolke', abbrechen: 'Annuler', laeuft: 'Transcription en cours', feed: 'Texte du flux', gehoert: 'Texte transcrit', keins: 'Pas encore de transcription', laedt: 'Chargement de la transcription',
+  },
 };

@@ -158,4 +158,8 @@ export default {
     aboUeberspringen: 'Reclame overslaan', aboUeberspringenHilfe: 'Herkende reclamefragmenten in alle afleveringen van dit abonnement overslaan',
     aboZahlEins: '1 aflevering met reclame', aboZahl: '{n} afleveringen met reclame', aboPruefen: 'Nieuwe afleveringen controleren', aboPruefenHilfe: 'Nieuwe afleveringen van dit abonnement vanzelf op reclame doorzoeken',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transcript', hilfe: 'De tekst van de aflevering lezen; loopt mee bij afspelen', starten: 'Transcriberen', startenHilfe: 'De aflevering in tekst omzetten; ze wordt in Kellerwolke bewaard', abbrechen: 'Annuleren', laeuft: 'Transcriptie loopt', feed: 'Tekst uit de feed', gehoert: 'Tekst uit de transcriptie', keins: 'Nog geen transcript', laedt: 'Transcript wordt geladen',
+  },
 };

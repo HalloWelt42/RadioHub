@@ -165,4 +165,8 @@ export default {
     aboUeberspringen: 'Werbung überspringen', aboUeberspringenHilfe: 'Erkannte Werbestellen in allen Folgen dieses Abos überspringen',
     aboZahlEins: '1 Folge mit Werbung', aboZahl: '{n} Folgen mit Werbung', aboPruefen: 'Neue Folgen prüfen', aboPruefenHilfe: 'Neue Folgen dieses Abos von selbst auf Werbung durchsuchen',
   },
+  // Transkript einer Folge (RAD-22)
+  transkript: {
+    titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
+  },
 };

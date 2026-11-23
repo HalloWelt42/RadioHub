@@ -18,7 +18,7 @@ from appkern.kellerwolke import (
     KeinRecht as KwKeinRecht, NichtErreichbar as KwNichtErreichbar, NichtGefunden as KwNichtGefunden,
 )
 
-from .port import Ablage, AblageFehler, Belegt, Eintrag, KeinRecht, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
+from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, KeinRecht, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
 
 log = logging.getLogger("radiohub.ablage")
 
@@ -128,6 +128,28 @@ class KellerwolkeAblage(Ablage):
                 haupt.id, rolle, zusatz, daten, stand=vorhanden.etag if vorhanden else None, nur_neu=vorhanden is None, inhaltstyp=inhaltstyp))
         except KellerwolkeFehler as f:
             raise _uebersetzt(f) from f
+
+    async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
+        try:
+            haupt = await self._sofort.finden(self._voll(pfad))
+            b = next((b for b in await self._sofort.begleiter(haupt.id) if b.rolle == rolle), None) if haupt else None
+            return await self._sofort.lesen_ganz(b.id) if b else None
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+
+    async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
+        try:
+            haupt = await self._schreiben.pfad(self._voll(pfad))
+            return str((await self._schreiben.weitergeben(app, aktion, haupt.id, optionen)).anfrage.id)
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+
+    async def anfragestand(self, anfrage: str) -> Anfragestand:
+        try:
+            a = await self._sofort.anfrage(anfrage)
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+        return Anfragestand(str(getattr(a.zustand, "value", a.zustand)), a.fortschritt, a.meldung or "")
 
     async def verschieben(self, pfad: str, neuer_pfad: str) -> Eintrag:
         knoten = await self._knoten(pfad)
