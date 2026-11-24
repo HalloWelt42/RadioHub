@@ -11,7 +11,7 @@
   import { zielLoesen } from "../spieler/aufnahmeziel";
   import { datum } from "../lib/aufnahmen/anzeige";
   import { puffer } from "../spieler/puffer.svelte";
-  import { bei } from "../lib/radio/abschnitte";
+  import { anfangstitel } from "../lib/radio/abschnitte";
 
   const SYMBOL: Record<string, string> = {
     success: "fa-circle-check", error: "fa-circle-exclamation", warning: "fa-triangle-exclamation", info: "fa-circle-info",
@@ -35,13 +35,21 @@
   // bis man es schließt, höchstens 20 Sekunden
   const AUFNAHME_HINWEIS_MS = 20000;
   let weg = $state<string | null>(null);
+  let beginn = $state<{ sitzung: string; titel: string } | null>(null);
   const aufnahmeHinweis = $derived.by(() => {
     const sitzung = appState.recordingSession as string | null, vorlauf = appState.recordingVorlaufS as number;
     if (!appState.isRecording || !sitzung || !(vorlauf > 0) || weg === sitzung) return null;
-    const a = bei(puffer.abschnitte, puffer.ende - (appState.recordingElapsed as number));
-    return { sitzung, vorlauf, titel: a?.titel || (appState.streamTitle as string | null) || "" };
+    return { sitzung, vorlauf, titel: beginn?.sitzung === sitzung ? beginn.titel : "" };
   });
-  // die Frist hängt an der Aufnahme, nicht am Hinweis: der rechnet mit der laufenden Zeit und begänne sie sonst jede Sekunde neu (RAD-139)
+  // Der Titel am Beginn wird einmal bestimmt und bleibt: jede Sekunde neu gerechnet lag die Stelle mal vor, mal hinter der Grenze, und
+  // er sprang rein und raus (RAD-147)
+  $effect(() => {
+    const sitzung = appState.recordingSession as string | null;
+    if (!appState.isRecording || !sitzung || beginn?.sitzung === sitzung) return;
+    const titel = anfangstitel(puffer.abschnitte, puffer.ende, appState.recordingElapsed as number);
+    if (titel) beginn = { sitzung, titel };
+  });
+  // die Frist hängt an der Aufnahme, nicht am Hinweis: er ändert sich noch, wenn sein Titel feststeht (RAD-139)
   const hinweisSitzung = $derived(aufnahmeHinweis?.sitzung ?? null);
   $effect(() => {
     const s = hinweisSitzung;
@@ -76,7 +84,7 @@
 {:else if aufnahmeHinweis}
   {@const h = aufnahmeHinweis}
   <div class="rh-band rh-aufnahmehinweis" role="status" aria-live="polite">
-    <i class="fa-solid fa-circle"></i><span><b>{t("puffer.aufnahmeAb", { titel: h.titel })}</b>: {t("puffer.aufnahmeAbText", { vorlauf: dauerKurz(h.vorlauf) })}</span>
+    <i class="fa-solid fa-circle"></i><span><b>{h.titel ? t("puffer.aufnahmeAb", { titel: h.titel }) : t("toast.recGestartet")}</b>: {t("puffer.aufnahmeAbText", { vorlauf: dauerKurz(h.vorlauf) })}</span>
     <button class="knopf" type="button" title={t("puffer.beginnAendernHilfe")} onclick={() => { weg = h.sitzung; pufferansicht.oeffnen(); }}><i class="fa-solid fa-list-ul"></i>{t("puffer.beginnAendern")}</button>
     {@render zu(() => (weg = h.sitzung))}
   </div>

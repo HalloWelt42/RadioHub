@@ -29,6 +29,15 @@ export function bei(liste: Abschnitt[], t: number): Abschnitt | null {
   return liste.find((a) => t >= a.von && t < a.bis) ?? (t >= liste[liste.length - 1].bis ? liste[liste.length - 1] : null);
 }
 
+/** so weit hinter dem Beginn wird nachgesehen: der Beginn liegt genau auf einer Grenze, Uhr und Puffer gehen einige Sekunden auseinander */
+const HINTER_DEM_BEGINN_S = 4;
+
+/** Titel, mit dem eine Aufnahme beginnt, die seit `seit` Sekunden läuft (Ende des Puffers `ende`); leer, solange er nicht feststeht */
+export function anfangstitel(liste: Abschnitt[], ende: number, seit: number): string {
+  const a = bei(liste, ende - seit + Math.min(HINTER_DEM_BEGINN_S, seit / 2));
+  return a && a.art !== "werbung" ? a.titel : "";
+}
+
 const hoerbar = (a: Abschnitt): boolean => a.art !== "werbung";
 
 /** Vorheriger Titel: an den Anfang des laufenden, steht man schon nahe daran, an den des vorigen (wie ein Abspieler);

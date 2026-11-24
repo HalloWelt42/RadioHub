@@ -2,7 +2,7 @@
 // übersprungen, kurz nach dem Anfang geht es zum vorigen), Bereich aus zwei Titeln, Zeitleiste und Ausschnitt, dazu
 // die Striche und die Aufnahme auf dem Balken der Kanzel. Daten wie 90s90s am 22.11.2026.
 import { describe, expect, it } from "vitest";
-import { bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../src/lib/radio/abschnitte";
+import { anfangstitel, bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../src/lib/radio/abschnitte";
 import { lageZuSekunde, pufferAufnahme, pufferSekunde, pufferStriche, sekundeZuLage, type Stand } from "../src/spieler/kanzel";
 
 const A = (von: number, bis: number, titel: string, art: Abschnitt["art"] = "titel", laufend = false): Abschnitt =>
@@ -67,5 +67,19 @@ describe("Balken der Kanzel", () => {
     expect(pufferSekunde(stand, 50)).toBeNull();              // jenseits des Gepufferten
     expect(lageZuSekunde(stand, 50)).toBe(500);
     expect(sekundeZuLage(stand, 500)).toBe(50);
+  });
+});
+
+describe("Titel am Beginn einer Aufnahme (RAD-147)", () => {
+  const liste = [A(0, 100, "Vorher"), A(100, 300, "Meiner", "titel", true)];
+  it("trifft den Titel auch, wenn Uhr und Puffer einige Sekunden auseinander liegen", () => {
+    for (const abweichung of [-3, -1, 0, 1, 3]) expect(anfangstitel(liste, 140, 40 + abweichung)).toBe("Meiner");
+  });
+  it("kurzer Vorlauf: nie über das Ende des Puffers hinaus", () => {
+    expect(anfangstitel(liste, 101, 1)).toBe("Meiner");
+  });
+  it("ohne Abschnitte oder in der Werbung steht er noch nicht fest", () => {
+    expect(anfangstitel([], 140, 40)).toBe("");
+    expect(anfangstitel([A(0, 300, "Werbung", "werbung")], 140, 40)).toBe("");
   });
 });
