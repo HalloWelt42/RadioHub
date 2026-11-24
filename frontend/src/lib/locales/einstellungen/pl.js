@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: 'Język', spracheGeraet: 'Język', fehlersuche: 'Diagnostyka', aussehen: 'Wygląd', bildschirm: 'Ekran',
     zeitversatz: 'Przesunięcie czasu', aufnahme: 'Nagrywanie', abruf: 'Pobieranie subskrypcji', zeitansage: 'Zapowiedź godziny', stimme: 'Głos',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Katalogi', helfer: 'Usługi w sieci domowej', zugang: 'Dostęp',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Katalogi', folgen: 'Transkrypcja i lektor odcinków', helfer: 'Usługi w sieci domowej', zugang: 'Dostęp',
     abgleich: 'Nocna synchronizacja',
   },
   hinweis: {

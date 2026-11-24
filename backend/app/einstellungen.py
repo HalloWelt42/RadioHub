@@ -46,6 +46,12 @@ SPRACHEN = {"de": "Deutsch", "en": "English", "fr": "Français", "es": "Español
             "zh": "中文"}
 Sprache = Literal["de", "en", "fr", "es", "it", "pt", "nl", "pl", "cs", "sk", "da", "sv", "no", "fi", "hu", "ro", "tr", "ru",
                   "ja", "zh"]
+SPRECHBAR = ("de", "en", "fr", "es", "it", "pt", "ru", "ja", "zh")   # spricht die Vertonung: Sprechmodell und Übersetzung
+Sprechsprache = Literal["de", "en", "fr", "es", "it", "pt", "ru", "ja", "zh"]
+Klang = Literal["auto", "icl", "abdruck"]
+KLAENGE = {"auto": "Automatisch", "icl": "Nah an der Probe", "abdruck": "Saubere Aussprache"}
+Sprecherweg = Literal["", "ohne", "stimmen", "trennung"]
+SPRECHERWEGE = {"": "Wie in der Transkription", "ohne": "Ohne Sprecher", "stimmen": "Stimmen gruppieren", "trennung": "Mit Sprechertrennung"}
 Pruefart = Literal["url_check", "header_check"]
 Abtastrate = Literal[22050, 32000, 44100, 48000]
 
@@ -92,12 +98,21 @@ class AppEinstellungen(Grundeinstellungen):
     transkription_app: str = Field("Transkription", max_length=120, title="Transkription", json_schema_extra=DIENSTE,
                                    description="App im Verbund, die Podcast-Folgen auf Knopfdruck transkribiert (RAD-22). Leer: nur "
                                                "Transkripte, die der Feed mitbringt.")
-    podcast_sprache: Sprache = Field("de", title="Sprache vertonter Folgen", json_schema_extra={**DIENSTE, "beschriftungen": SPRACHEN},
+    podcast_sprache: Sprechsprache = Field("de", title="Sprache vertonter Folgen",
+                                     json_schema_extra={**DIENSTE, "beschriftungen": {s: SPRACHEN[s] for s in SPRECHBAR}},
                                      description="In diese Sprache vertont RadioHub Podcast-Folgen auf Knopfdruck (RAD-26).")
     podcast_stimme: str = Field("", max_length=200, title="Stimme vertonter Folgen", json_schema_extra=DIENSTE,
                                 description="Stimme der Vertonung für Podcast-Folgen: aus dem Katalog, eine private, die sie für "
                                             "RadioHub freigibt, oder Originalstimmen (je Sprecher seine Stimme aus der Folge). Leer: "
                                             "die Stimme des Übersetzers.")
+    podcast_klang: Klang = Field("auto", title="Klang der Stimme", json_schema_extra={**DIENSTE, "beschriftungen": KLAENGE},
+                                 description="Wie eine eigene Stimme bei vertonten Folgen klingt.")
+    podcast_hoersprache: str = Field("auto", pattern=r"^([a-z]{2}|auto)$", title="Sprache beim Transkribieren", json_schema_extra=DIENSTE,
+                                     description="Sprache der Podcast-Folgen als Kürzel (de, en ...) oder auto: der Hördienst erkennt sie.")
+    podcast_sprecher: Sprecherweg = Field("", title="Sprecher beim Transkribieren", json_schema_extra={**DIENSTE, "beschriftungen": SPRECHERWEGE},
+                                          description="Ob das Transkript einer Folge nennt, wer spricht.")
+    podcast_hoerdienst: str = Field("", max_length=120, title="Hördienst für Folgen", json_schema_extra=DIENSTE,
+                                    description="Hördienst der Leitstelle für Podcast-Folgen. Leer: der eingestellte der Transkription.")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "

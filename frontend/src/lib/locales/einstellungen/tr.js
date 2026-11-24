@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Dil', spracheGeraet: 'Dil', fehlersuche: 'Sorun giderme', aussehen: 'Görünüş', bildschirm: 'Ekran',
     zeitversatz: 'Zaman kaydırma', aufnahme: 'Kayıt', abruf: 'Aboneliklerin alınması', zeitansage: 'Saat anonsu', stimme: 'Ses',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Dizinler', helfer: 'Ev ağındaki hizmetler', zugang: 'Erişim',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Dizinler', folgen: 'Podcast bölümlerinin yazıya dökülmesi ve seslendirilmesi', helfer: 'Ev ağındaki hizmetler', zugang: 'Erişim',
     abgleich: 'Gece eşitlemesi',
   },
   hinweis: {

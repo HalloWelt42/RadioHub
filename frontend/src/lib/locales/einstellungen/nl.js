@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: 'Taal', spracheGeraet: 'Taal', fehlersuche: 'Foutopsporing', aussehen: 'Uiterlijk', bildschirm: 'Scherm',
     zeitversatz: 'Tijdverschuiving', aufnahme: 'Opname', abruf: 'Ophalen van abonnementen', zeitansage: 'Tijdmelding', stimme: 'Stem',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Catalogi', helfer: 'Diensten in het thuisnetwerk', zugang: 'Toegang',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Catalogi', folgen: 'Transcriptie en nasynchronisatie van afleveringen', helfer: 'Diensten in het thuisnetwerk', zugang: 'Toegang',
     abgleich: 'Nachtelijke synchronisatie',
   },
   hinweis: {

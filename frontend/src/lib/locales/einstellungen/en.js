@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Language', spracheGeraet: 'Language', fehlersuche: 'Troubleshooting', aussehen: 'Look', bildschirm: 'Screen',
     zeitversatz: 'Time shift', aufnahme: 'Recording', abruf: 'Fetching subscriptions', zeitansage: 'Time announcement', stimme: 'Voice',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', helfer: 'Services in the home network', zugang: 'Access',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directories', folgen: 'Transcription and dubbing of podcast episodes', helfer: 'Services in the home network', zugang: 'Access',
     abgleich: 'Nightly sync',
   },
   hinweis: {

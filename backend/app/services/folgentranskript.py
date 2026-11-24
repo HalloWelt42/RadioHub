@@ -32,7 +32,7 @@ SATZENDE = re.compile(r"[.!?。！？…][\"')\]»]*$")
 ZEITZEILE = re.compile(r"((?:\d+:)?\d{1,2}:\d{2}[.,]\d{1,3})\s*-->\s*((?:\d+:)?\d{1,2}:\d{2}[.,]\d{1,3})")
 SPRECHER = re.compile(r"<v(?:\.[^ >]+)?\s+([^>]+)>")
 
-Herkunft = Literal["feed", "gehoert", "vertont"]
+Herkunft = Literal["feed", "gehoert", "uebersetzt", "vertont"]
 
 
 class Segment(BaseModel):
@@ -95,6 +95,14 @@ def aus_json(daten: dict) -> list[Segment]:
     return aus
 
 
+def optionen() -> dict[str, str]:
+    """Voreinstellungen für die Anfrage an die Transkription; leer heißt dort Vorgabe. Das Ergebnis wird immer die Hauptfassung (auch
+    mit einem anderen Dienst), die bisherige behält die Transkription als Fassung."""
+    e = einstellungen_stand()
+    gewaehlt = {"sprache": e.podcast_hoersprache, "sprecher": e.podcast_sprecher, "hoerdienst": e.podcast_hoerdienst.strip()}
+    return {k: v for k, v in gewaehlt.items() if v} | {"hauptfassung": "true"}
+
+
 def absaetze(segmente: list[Segment]) -> list[Absatz]:
     """Segmente zu lesbaren Absätzen: ganze Sätze, getrennt an Pausen und Sprecherwechseln."""
     aus: list[Absatz] = []
@@ -139,12 +147,18 @@ class Folgentranskripte:
         self.speichern: Callable[[int], Awaitable[dict]] | None = None
         self.abruf: Callable[[str], Awaitable[tuple[str, str]]] = _kein_abruf
         self._gemerkt: OrderedDict[tuple[int, str], Transkript] = OrderedDict()
+        #: zuletzt gestellte Anfrage je Folge (Pfad), damit zwei Läufe sich eine teilen
+        self._anfragen: dict[str, str] = {}
+        #: während eines Vertonens: was schon übersetzt ist, je Folge und Sprache
+        self.vorab: dict[tuple[int, str], list[Segment]] = {}
 
     # ----- Lesen
 
     async def lesen(self, folge: dict, fassung: str = "") -> Transkript | None:
         """`fassung`: der Text einer vertonten Fassung (Sprache), sonst der des Originals."""
         if fassung:
+            if vorab := self.vorab.get((folge["id"], fassung)):
+                return Transkript(herkunft="uebersetzt", sprache=fassung, absaetze=absaetze(vorab))
             return await self._begleiter(folge, f"{ROLLE}_{fassung}", "vertont")
         return await self._begleiter(folge, ROLLE, "gehoert") or await self._feed(folge)
 
@@ -240,13 +254,25 @@ class Folgentranskripte:
             raise AuftragFehler(f"Transkript nicht lesbar: {f}") from f
 
     async def _hoeren_lassen(self, k: Kontext, pfad: str) -> None:
+        """Läuft für diese Folge schon eine Anfrage (Text geöffnet, dann vertonen), warten beide auf dieselbe; sie läuft dort auch
+        weiter, wenn hier abgebrochen wird."""
         if "anfrage" not in k.zwischenstand:
-            try:
-                anfrage = await ablage().weitergeben(pfad, einstellungen_stand().transkription_app.strip(), "transkribieren", {"sprache": "auto"})
-            except AblageFehler as f:
-                raise AuftragFehler(f"Transkription: {f}") from f
+            anfrage = self._anfragen.get(pfad)
+            if anfrage is None or not await self._offen(anfrage):
+                try:
+                    anfrage = await ablage().weitergeben(pfad, einstellungen_stand().transkription_app.strip(), "transkribieren", optionen())
+                except AblageFehler as f:
+                    raise AuftragFehler(f"Transkription: {f}") from f
             await k.merken(anfrage=anfrage)
+        self._anfragen[pfad] = k.zwischenstand["anfrage"]
         await self._abwarten(k, k.zwischenstand["anfrage"])
+
+    @staticmethod
+    async def _offen(anfrage: str) -> bool:
+        try:
+            return (await ablage().anfragestand(anfrage)).zustand in ("wartet", "laeuft")
+        except AblageFehler:
+            return False
 
     async def _transkribieren(self, k: Kontext) -> Ergebnis:
         e: Eingabe = k.eingabe

@@ -23,14 +23,14 @@ describe("Folgenfassung", () => {
     }) as never;
     const x = new Folgenfassung(7, a);
     await x.laden();
-    expect(x.da).toBe(false);
-    await x.vertonen("original");
+    expect(x.stand?.fassungen).toEqual([]);
+    await x.vertonen();
     expect(x.stand?.lauf?.schritt).toBe("Übersetzen");
     await vi.advanceTimersByTimeAsync(5000);
-    expect([x.da, x.stand?.gewaehlt]).toEqual([true, "de"]);
+    expect([x.stand?.fassungen.length, x.stand?.gewaehlt]).toEqual([1, "de"]);
     expect(await x.waehlen("")).toBe(true);
     await vi.advanceTimersByTimeAsync(30_000);
-    expect(wege).toEqual(["GET /api/podcasts/episodes/7/vertonung", 'POST /api/podcasts/episodes/7/vertonung {"stimme":"original"}',
+    expect(wege).toEqual(["GET /api/podcasts/episodes/7/vertonung", "POST /api/podcasts/episodes/7/vertonung",
       "GET /api/podcasts/episodes/7/vertonung", 'PUT /api/podcasts/episodes/7/fassung {"sprache":""}']);
   });
 

@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', vonSelbst: 'Jakso tallentuu samalla itsestään Kellerwolkeen.', vertont: 'Puhutun version teksti', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
+    titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', entsteht: 'Tekstiä luodaan, se näkyy heti kun se on valmis.', uebersetzt: 'Käännetty, puhutaan parhaillaan', vertont: 'Puhutun version teksti', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
   },
-  vertonung: { fertig: 'Versio kielellä {sprache} on valmis', auf: 'Kielellä {sprache}', hilfe: 'Käännä jakso ja puhuta se kielellä {sprache}; alkuperäinen, versio ja molemmat tekstit ovat yhdessä Kellerwolkessa', umschalten: 'Ääni ja teksti kielellä {sprache} tai alkuperäisenä', stimme: 'Puhujan ääni', abbrechenHilfe: 'Keskeytä puhuttaminen', laeuft: 'Puhuttaminen käynnissä' },
+  vertonung: { fertig: 'Versio kielellä {sprache} on valmis', umschalten: 'Ääni ja teksti kielellä {sprache} tai alkuperäisenä', neu: 'Luo uudelleen nykyisillä esiasetuksilla' },
   neues: { tag: 'Uutta 24 tunnissa: {n}', woche: 'Uutta 7 päivässä: {n}', monat: 'Uutta 30 päivässä: {n}' },
 };

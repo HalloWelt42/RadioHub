@@ -5,10 +5,13 @@
   import Loeschfrage from "../../podcast/Loeschfrage.svelte";
   import { t } from "../../../lib/i18n.svelte.js";
   import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, textAus } from "../../../lib/podcasts/anzeige";
-  import type { Abo, Folge } from "../../../lib/podcasts";
+  import { untrack } from "svelte";
+  import { podcastquelle, type Abo, type Folge } from "../../../lib/podcasts";
+  import { Folgenwerbung } from "../../../spieler/folgenwerbung.svelte";
   import Langtext from "../../radio/Langtext.svelte";
   import Schalter from "../../bausteine/Schalter.svelte";
   import Werbeteil from "../../podcast/Werbeteil.svelte";
+  import Werbetasten from "../../podcast/Werbetasten.svelte";
 
   let { folge: f, abo, spielt, kannSpeichern, dateiAdresse, onhoeren, onvorn, onspeichern, onloeschen, ongehoert, onzu, onanhoeren, onwerbung }: {
     folge: Folge;
@@ -26,6 +29,8 @@
     onwerbung: (werbung: { anzahl: number; dauer: number }) => void;
   } = $props();
 
+  const werbung = new Folgenwerbung(() => f, () => abo, (w) => onwerbung(w));
+  $effect(() => { void f.id; if (podcastquelle.faehig.werbung) untrack(() => void werbung.laden()); });
   let fragt = $state(false);
   let loescht = $state(false);
   const stand = $derived(standVon(f));
@@ -64,8 +69,9 @@
         {/if}
         {#if dateiAdresse}<a class="knopf" href={dateiAdresse} download><i class="fa-solid fa-download"></i>{t("podcastAnsicht.telefon.herunterladen")}</a>{/if}
         <Schalter an={stand.art === "gehoert"} text={t("podcastAnsicht.telefon.gehoert")} onwechsel={ongehoert} />
+        {#if podcastquelle.faehig.werbung}<Werbetasten {werbung} folge={f} {abo} {spielt} />{/if}
       </div>
-      <Werbeteil folge={f} {abo} {spielt} schmal {onanhoeren} ongeaendert={onwerbung} />
+      <Werbeteil {werbung} folge={f} schmal {onanhoeren} />
     {/if}
   </div>
 </div>

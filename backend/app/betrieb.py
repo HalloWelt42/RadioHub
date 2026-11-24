@@ -76,6 +76,7 @@ class Radiobetrieb(Begleiter):
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("uebersetzerstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("podcast_stimme", lambda: zeitstimmen.angebot_folgen(self.geruest.verbund))
+        self.geruest.einstellungen.anbieten("podcast_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
         self.geruest.einstellungen.anbieten("transkription_app", self.geruest.kellerwolke_apps_angebot())
         self.geruest.einstellungen.anbieten("mitlesen_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
         self.geruest.einstellungen.anbieten("mitlesen_modell", self.geruest.leitstelle_angebot("uebersetzen"))

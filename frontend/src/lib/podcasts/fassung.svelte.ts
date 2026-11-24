@@ -33,14 +33,9 @@ export class Folgenfassung {
     return `/api/podcasts/episodes/${this.folgeId}`;
   }
 
-  /** die Fassung in der eingestellten Sprache gibt es schon */
-  get da(): boolean {
-    return !!this.stand?.fassungen.some((f) => f.sprache === this.stand?.ziel);
-  }
-
   laden = (): Promise<void> => this.holen(() => this.a<Fassungsstand>(`${this.weg}/vertonung`));
-  vertonen = (stimme = ""): Promise<void> => this.holen(() => this.a<Fassungsstand>(`${this.weg}/vertonung`, { methode: "POST", daten: { stimme } }));
-  abbrechen = (): Promise<void> => this.holen(() => this.a<Fassungsstand>(`${this.weg}/vertonung/lauf`, { methode: "DELETE" }));
+  /** nach den Voreinstellungen; gibt es die Fassung schon, entsteht sie neu */
+  vertonen = (): Promise<void> => this.holen(() => this.a<Fassungsstand>(`${this.weg}/vertonung`, { methode: "POST" }));
   /** ob es gelang */
   waehlen = async (sprache: string): Promise<boolean> => {
     await this.holen(() => this.a<Fassungsstand>(`${this.weg}/fassung`, { methode: "PUT", daten: { sprache } }));

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -12,6 +13,10 @@ from appkern.auftraege import AuftragFehler
 from app import ablage as ablage_paket
 from app.ablage import Anfragestand, SpeicherAblage
 from app.services import folgentranskript as ft
+
+def _einst(**w):
+    return SimpleNamespace(**{"transkription_app": "Transkription", "podcast_hoersprache": "auto", "podcast_sprecher": "", "podcast_hoerdienst": "", **w})
+
 
 PFAD = "Podcasts/Abo/2026-11-23 Folge.mp3"
 
@@ -93,11 +98,11 @@ def bau(speicher):
 
 
 async def test_auftrag_speichert_gibt_weiter_und_wartet(speicher, monkeypatch):
-    monkeypatch.setattr(ft, "einstellungen_stand", lambda: type("E", (), {"transkription_app": "Transkription"})())
+    monkeypatch.setattr(ft, "einstellungen_stand", _einst)
     x, k = bau(speicher), Kontext()
     lauf = asyncio.create_task(x._transkribieren(k))
     await asyncio.sleep(0.03)
-    assert speicher.anfragen["a1"] == (PFAD, "Transkription", "transkribieren", {"sprache": "auto"})
+    assert speicher.anfragen["a1"] == (PFAD, "Transkription", "transkribieren", {"sprache": "auto", "hauptfassung": "true"})
     speicher.anfragestaende["a1"] = Anfragestand("laeuft", 0.4, "Abschnitt 2 von 5")
     await asyncio.sleep(0.03)
     assert (0.4, "Abschnitt 2 von 5", None) in k.schritte
@@ -108,8 +113,29 @@ async def test_auftrag_speichert_gibt_weiter_und_wartet(speicher, monkeypatch):
     assert (await x._transkribieren(wieder)).absaetze == 1 and len(speicher.anfragen) == 1
 
 
+def test_voreinstellungen(monkeypatch):
+    monkeypatch.setattr(ft, "einstellungen_stand", lambda: _einst(podcast_hoersprache="en", podcast_sprecher="trennung", podcast_hoerdienst="x"))
+    assert ft.optionen() == {"sprache": "en", "sprecher": "trennung", "hoerdienst": "x", "hauptfassung": "true"}
+
+
+async def test_zweiter_lauf_teilt_die_laufende_anfrage(speicher, monkeypatch):
+    monkeypatch.setattr(ft, "einstellungen_stand", _einst)
+    x = bau(speicher)
+    erster, zweiter = (asyncio.create_task(x._hoeren_lassen(Kontext(), PFAD)) for _ in range(2))
+    await speicher.schreiben(PFAD, b"ton")
+    await asyncio.sleep(0.03)
+    assert list(speicher.anfragen) == ["a1"]
+    speicher.anfragestaende["a1"] = Anfragestand("fertig", 1.0)
+    await asyncio.gather(erster, zweiter)
+    dritter = asyncio.create_task(x._hoeren_lassen(Kontext(), PFAD))          # die alte ist fertig: neu heißt neu
+    await asyncio.sleep(0.03)
+    assert list(speicher.anfragen) == ["a1", "a2"]
+    speicher.anfragestaende["a2"] = Anfragestand("fertig", 1.0)
+    await dritter
+
+
 async def test_auftrag_nennt_den_grund(speicher, monkeypatch):
-    monkeypatch.setattr(ft, "einstellungen_stand", lambda: type("E", (), {"transkription_app": "Transkription"})())
+    monkeypatch.setattr(ft, "einstellungen_stand", _einst)
     x = bau(speicher)
     with pytest.raises(AuftragFehler, match="gibt es nicht mehr"):
         await x._transkribieren(Kontext(folge_id=2))

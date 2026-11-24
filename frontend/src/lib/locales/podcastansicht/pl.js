@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', vonSelbst: 'Odcinek zapisze się przy tym sam w Kellerwolke.', vertont: 'Tekst nagranej wersji', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
+    titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', entsteht: 'Tekst właśnie powstaje, pojawi się, gdy będzie gotowy.', uebersetzt: 'Przetłumaczone, trwa nagrywanie', vertont: 'Tekst nagranej wersji', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
   },
-  vertonung: { fertig: 'Wersja w języku {sprache} jest gotowa', auf: 'Po {sprache}', hilfe: 'Przetłumacz odcinek i nagraj go w języku {sprache}; oryginał, wersja i oba teksty są razem w Kellerwolke', umschalten: 'Dźwięk i tekst w języku {sprache} lub oryginał', stimme: 'Głos lektora', abbrechenHilfe: 'Przerwij nagrywanie', laeuft: 'Nagrywanie trwa' },
+  vertonung: { fertig: 'Wersja w języku {sprache} jest gotowa', umschalten: 'Dźwięk i tekst w języku {sprache} lub oryginał', neu: 'Utwórz ponownie z obecnymi ustawieniami' },
   neues: { tag: 'Nowe w 24 godziny: {n}', woche: 'Nowe w 7 dni: {n}', monat: 'Nowe w 30 dni: {n}' },
 };

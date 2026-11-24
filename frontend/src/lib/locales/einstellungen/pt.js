@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Idioma', spracheGeraet: 'Idioma', fehlersuche: 'Diagnóstico', aussehen: 'Aspeto', bildschirm: 'Ecrã',
     zeitversatz: 'Diferido', aufnahme: 'Gravação', abruf: 'Atualização das subscrições', zeitansage: 'Hora falada', stimme: 'Voz',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Diretórios', helfer: 'Serviços na rede doméstica', zugang: 'Acesso',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Diretórios', folgen: 'Transcrição e dobragem de episódios', helfer: 'Serviços na rede doméstica', zugang: 'Acesso',
     abgleich: 'Sincronização noturna',
   },
   hinweis: {

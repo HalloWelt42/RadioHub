@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Limbă', spracheGeraet: 'Limbă', fehlersuche: 'Depanare', aussehen: 'Aspect', bildschirm: 'Ecran',
     zeitversatz: 'Decalaj', aufnahme: 'Înregistrare', abruf: 'Preluarea abonamentelor', zeitansage: 'Anunțarea orei', stimme: 'Voce',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directoare', helfer: 'Servicii în rețeaua de acasă', zugang: 'Acces',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Directoare', folgen: 'Transcrierea și dublajul episoadelor', helfer: 'Servicii în rețeaua de acasă', zugang: 'Acces',
     abgleich: 'Sincronizare nocturnă',
   },
   hinweis: {

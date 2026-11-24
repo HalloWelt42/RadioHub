@@ -12,7 +12,7 @@ export interface Transkriptabsatz {
 }
 
 export interface Transkript {
-  herkunft: "feed" | "gehoert" | "vertont";
+  herkunft: "feed" | "gehoert" | "uebersetzt" | "vertont";
   sprache: string;
   absaetze: Transkriptabsatz[];
 }
@@ -53,7 +53,6 @@ export class Folgentext {
 
   laden = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(this.fassung ? `${this.weg}?fassung=${encodeURIComponent(this.fassung)}` : this.weg));
   transkribieren = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(this.weg, { methode: "POST" }));
-  abbrechen = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(`${this.weg}/lauf`, { methode: "DELETE" }));
 
   beenden(): void {
     this.zu = true;

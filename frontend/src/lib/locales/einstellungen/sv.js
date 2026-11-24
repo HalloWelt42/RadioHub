@@ -14,7 +14,7 @@ export default {
   karte: {
     sprache: 'Språk', spracheGeraet: 'Språk', fehlersuche: 'Felsökning', aussehen: 'Utseende', bildschirm: 'Skärm',
     zeitversatz: 'Tidsförskjutning', aufnahme: 'Inspelning', abruf: 'Hämtning av prenumerationer', zeitansage: 'Tidsutrop', stimme: 'Röst',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Kataloger', helfer: 'Tjänster i hemnätverket', zugang: 'Åtkomst',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Kataloger', folgen: 'Transkribering och intalning av avsnitt', helfer: 'Tjänster i hemnätverket', zugang: 'Åtkomst',
     abgleich: 'Nattlig synkning',
   },
   hinweis: {

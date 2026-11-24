@@ -34,7 +34,6 @@ UNBEKANNT = ("", "auto", "und")
 class Eingabe(BaseModel):
     folge_id: int
     sprache: str
-    stimme: str = ""                  # leer: die Einstellung
 
 
 class Ergebnis(BaseModel):
@@ -117,7 +116,7 @@ class Folgenvertonung:
     async def _vertonen(self, k: Kontext) -> Ergebnis:
         e: Eingabe = k.eingabe
         dienst = self.dienst()
-        wahl = (e.stimme or stimme_der_folgen()).strip()
+        wahl = stimme_der_folgen()
         ersatz = stimmwahl(stimme_aus(einstellungen_stand()) if wahl == ORIGINAL else wahl)
         if dienst is None or ersatz is None:
             raise AuftragFehler("Vertonung oder Stimme fehlt (Einstellungen)")
@@ -125,8 +124,11 @@ class Folgenvertonung:
         pfad, name = folge.pfad, folge.titel
         if "vertonung" not in k.zwischenstand:
             await self._abgeben(k, e, dienst, ersatz, wahl == ORIGINAL, pfad, name)
-        stand = await self._abwarten(k, dienst, k.zwischenstand["vertonung"])
-        return await self._ablegen(k, e, dienst, stand, pfad, name, wahl)
+        try:
+            stand = await self._abwarten(k, e, dienst, k.zwischenstand["vertonung"])
+            return await self._ablegen(k, e, dienst, stand, pfad, name, wahl)
+        finally:
+            self.transkripte.vorab.pop((e.folge_id, e.sprache), None)
 
     async def _abgeben(self, k: Kontext, e: Eingabe, dienst: Vertonungsdienst, stimme: dict[str, str], original: bool, pfad: str,
                        name: str) -> None:
@@ -144,14 +146,25 @@ class Folgenvertonung:
         try:
             await ablage().herunterladen(pfad, ton)
             await k.pruefen()
-            auftrag = await dienst.abgeben(ton, name, ausgang, e.sprache, stimme, original=original, segmente=segmente)
+            auftrag = await dienst.abgeben(ton, name, ausgang, e.sprache, stimme, original=original, segmente=segmente,
+                                          klang=einstellungen_stand().podcast_klang)
         except (AblageFehler, VerbundFehler) as f:
             raise AuftragFehler(f"Vertonung: {f}") from f
         finally:
             ton.unlink(missing_ok=True)
         await k.merken(vertonung=auftrag)
 
-    async def _abwarten(self, k: Kontext, dienst: Vertonungsdienst, auftrag: str) -> Auftragsstand:
+    async def _vorab_holen(self, e: Eingabe, dienst: Vertonungsdienst, auftrag: str) -> None:
+        """Was schon übersetzt ist, zum Mitlesen; misslingt es, kommt der Text am Ende mit dem Ton."""
+        try:
+            vorab = (await dienst.texte(auftrag)).vorab
+        except VerbundFehler:
+            return
+        if vorab is not None:
+            self.transkripte.vorab[(e.folge_id, e.sprache)] = [
+                Segment(start=s.start, ende=s.ende, text=s.text, sprecher=s.sprecher or "") for s in vorab.segmente]
+
+    async def _abwarten(self, k: Kontext, e: Eingabe, dienst: Vertonungsdienst, auftrag: str) -> Auftragsstand:
         await k.fortschritt(None, "Vertonung", phase="vertonen")
         while True:
             try:
@@ -174,6 +187,7 @@ class Folgenvertonung:
                     await self._loslassen(k, dienst, auftrag, abbrechen=False)
                     raise AuftragFehler(f"Vertonung: {(s.fehler or s.zustand).strip().splitlines()[0]}")
                 await k.fortschritt(s.fortschritt, s.schritt or "wartet")
+                await self._vorab_holen(e, dienst, auftrag)
             await asyncio.sleep(TAKT_S)
 
     @staticmethod

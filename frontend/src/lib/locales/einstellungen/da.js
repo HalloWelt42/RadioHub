@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: 'Sprog', spracheGeraet: 'Sprog', fehlersuche: 'Fejlsøgning', aussehen: 'Udseende', bildschirm: 'Skærm',
     zeitversatz: 'Tidsforskydning', aufnahme: 'Optagelse', abruf: 'Hentning af abonnementer', zeitansage: 'Tidsmelding', stimme: 'Stemme',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Kataloger', helfer: 'Tjenester på hjemmenetværket', zugang: 'Adgang',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Kataloger', folgen: 'Transskription og indtaling af podcastepisoder', helfer: 'Tjenester på hjemmenetværket', zugang: 'Adgang',
     abgleich: 'Natlig synkronisering',
   },
   hinweis: {

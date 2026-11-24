@@ -31,10 +31,11 @@ class Dienst:
         self.uebersetzt = Textspur(sprache="de", segmente=[Spurtext(start=0, ende=2, text="Hallo.", sprecher="Sprecher"),
                                                             Spurtext(start=2, ende=4, text="Tschüss.", sprecher="Sprecher")])
         self.gehoert: Textspur | None = None
+        self.vorab: Textspur | None = None
 
-    async def abgeben(self, ton, name, ausgang, sprache, stimme, *, original, segmente):
+    async def abgeben(self, ton, name, ausgang, sprache, stimme, *, original, segmente, klang):
         self.abgaben.append(SimpleNamespace(inhalt=ton.read_bytes(), name=name, ausgang=ausgang, sprache=sprache, stimme=stimme,
-                                            original=original, segmente=segmente))
+                                            original=original, segmente=segmente, klang=klang))
         return f"v{len(self.abgaben)}"
 
     async def stand(self, _auftrag):
@@ -43,7 +44,7 @@ class Dienst:
         return self.zustand
 
     async def texte(self, _auftrag):
-        return Texte(transkript=self.gehoert, uebersetzung=self.uebersetzt)
+        return Texte(transkript=self.gehoert, uebersetzung=self.uebersetzt, vorab=self.vorab)
 
     async def ton(self, plan_id, ziel):
         ziel.write_bytes(f"ton {plan_id}".encode())
@@ -53,8 +54,8 @@ class Dienst:
 
 
 class Kontext:
-    def __init__(self, stimme="", zwischenstand=None):
-        self.eingabe = fv.Eingabe(folge_id=1, sprache="de", stimme=stimme)
+    def __init__(self, sprache="de", zwischenstand=None):
+        self.eingabe = fv.Eingabe(folge_id=1, sprache=sprache)
         self.zwischenstand, self.schritte, self.halt = dict(zwischenstand or {}), [], False
 
     async def pruefen(self):
@@ -68,7 +69,8 @@ class Kontext:
 @pytest.fixture
 def umgebung(monkeypatch, tmp_path):
     s = SpeicherAblage()
-    einst = SimpleNamespace(transkription_app="Transkription", podcast_stimme="", uebersetzerstimme="katalog:sohee", zeitstimme="")
+    einst = SimpleNamespace(transkription_app="Transkription", podcast_stimme="", uebersetzerstimme="katalog:sohee", zeitstimme="",
+                            podcast_klang="auto", podcast_hoersprache="auto", podcast_sprecher="", podcast_hoerdienst="")
     monkeypatch.setattr(ablage_paket, "_aktuell", s)
     monkeypatch.setattr(ft, "TAKT_S", 0.01)
     monkeypatch.setattr(fv, "TAKT_S", 0.01)
@@ -173,11 +175,41 @@ async def test_abbruch_und_fehler(umgebung):
         await u.v._vertonen(Kontext())
 
 
+async def test_neu_vertonen_mit_geaenderten_voreinstellungen(umgebung):
+    u = umgebung
+    await _transkript(u.s)
+    u.dienst.zustand = Auftragsstand(zustand="fertig", ergebnis={"plan_id": "p1"})
+    await u.v._vertonen(Kontext())
+    u.einst.podcast_stimme, u.einst.podcast_klang = "katalog:ryan", "icl"
+    u.dienst.zustand = Auftragsstand(zustand="fertig", ergebnis={"plan_id": "p2"})
+    e = await u.v._vertonen(Kontext())
+    assert [(a.stimme["name"], a.klang) for a in u.dienst.abgaben] == [("sohee", "auto"), ("ryan", "icl")]
+    assert u.s.dateien[e.pfad] == b"ton p2" and u.s.versionen[e.pfad] == 2 and len(await u.s.begleiter(PFAD)) == 3
+    await u.v._vertonen(Kontext("fr"))
+    assert len(await u.s.begleiter(PFAD)) == 5, "eine zweite Sprache steht daneben"
+    assert [f.sprache for _, f in u.gemerkt] == ["de", "de", "fr"]
+
+
+async def test_uebersetzter_text_schon_waehrend_des_vertonens(umgebung):
+    u = umgebung
+    await _transkript(u.s)
+    u.dienst.vorab = Textspur(sprache="de", segmente=[Spurtext(start=0, ende=2, text="Hallo.")])
+    lauf = asyncio.create_task(u.v._vertonen(Kontext()))
+    await asyncio.sleep(0.05)
+    folge = {"id": 1, "is_downloaded": 1, "local_path": PFAD}
+    t = await u.t.lesen(folge, "de")
+    assert (t.herkunft, t.sprache, t.absaetze[0].text) == ("uebersetzt", "de", "Hallo.")
+    u.dienst.zustand = Auftragsstand(zustand="fertig", ergebnis={"plan_id": "p1"})
+    await lauf
+    assert (await u.t.lesen(folge, "de")).herkunft == "vertont" and not u.t.vorab
+
+
 async def test_originalstimmen_hoert_die_vertonung(umgebung):
     u = umgebung
     u.dienst.zustand = Auftragsstand(zustand="fertig", ergebnis={"plan_id": "p1"})
     u.dienst.gehoert = Textspur(sprache="en", segmente=[Spurtext(start=0, ende=2, text="Hello.", sprecher="Anna")])
-    await u.v._vertonen(Kontext(stimme=fv.ORIGINAL))
+    u.einst.podcast_stimme = fv.ORIGINAL
+    await u.v._vertonen(Kontext())
     (abgabe,) = u.dienst.abgaben
     assert abgabe.original and abgabe.segmente is None and not u.s.anfragen and abgabe.stimme == {"art": "katalog", "name": "sohee"}
     original = json.loads(await u.s.begleiter_lesen(PFAD, "transkript"))
@@ -216,6 +248,10 @@ def test_wege(client):
         assert client.get(f"{weg}/play?fassung=de").content == b"deutsch" and client.get(f"{weg}/play").content == b"englisch"
         assert client.get(f"{weg}/play?fassung=fr").status_code == 404 and client.get(f"{weg}/datei?fassung=fr").status_code == 404
         assert client.put(f"{weg}/fassung", json={"sprache": ""}).json()["gewaehlt"] == ""
+        erste = client.get(f"{weg}/play?fassung=de", headers={"Range": "bytes=0-2"})
+        assert erste.status_code == 206 and erste.content == b"deu" and erste.headers["cache-control"] == "no-cache"
+        anders = client.get(f"{weg}/play?fassung=de", headers={"Range": "bytes=0-2", "If-Range": '"alt"'})
+        assert anders.status_code == 200 and anders.content == b"deutsch", "anderer Stand: ganz von vorn"
         dateien = client.get(f"{weg}/dateien").json()["dateien"]
         assert [(d["art"], d["pfad"].rsplit("/", 1)[1]) for d in dateien] == [
             ("folge", "2026-11-24 Episode.mp3"), ("begleiter", "2026-11-24 Episode.de.sprache.m4a"),

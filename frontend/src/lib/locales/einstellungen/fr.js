@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: "Langue", spracheGeraet: "Langue", fehlersuche: "Dépannage", aussehen: "Apparence", bildschirm: "Écran",
     zeitversatz: "Différé", aufnahme: "Enregistrement", abruf: "Récupération des abonnements", zeitansage: "Annonce de l'heure", stimme: "Voix",
-    kellerwolke: "Kellerwolke", verzeichnisse: "Annuaires", helfer: "Services du réseau local", zugang: "Accès",
+    kellerwolke: "Kellerwolke", verzeichnisse: "Annuaires", folgen: 'Transcription et doublage des épisodes', helfer: "Services du réseau local", zugang: "Accès",
     abgleich: "Synchronisation nocturne",
   },
   hinweis: {

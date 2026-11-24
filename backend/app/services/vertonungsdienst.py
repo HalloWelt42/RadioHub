@@ -12,6 +12,8 @@ import httpx
 from appkern.verbund import Verbund, VerbundFehler
 from pydantic import BaseModel
 
+from ..einstellungen import Klang
+
 ABFRAGE = httpx.Timeout(60.0, connect=10.0)
 HOCHLADEN = httpx.Timeout(300.0, connect=10.0, write=300.0)
 
@@ -32,6 +34,8 @@ class Texte(BaseModel):
     """`transkript`: was die Vertonung selbst gehört hat; `uebersetzung`: der Text der neuen Tonspur an seinen Zeiten."""
     transkript: Textspur | None = None
     uebersetzung: Textspur | None = None
+    #: solange der Auftrag läuft: was schon übersetzt ist, an den Zeiten der Aufnahme
+    vorab: Textspur | None = None
 
 
 class Auftragsstand(BaseModel):
@@ -51,11 +55,11 @@ class Vertonungsdienst:
         self.verbund, self.adresse = verbund, adresse.strip().rstrip("/")
 
     async def abgeben(self, ton: Path, name: str, ausgang: str | None, sprache: str, stimme: dict[str, str], *, original: bool,
-                      segmente: list[Spurtext] | None) -> str:
+                      segmente: list[Spurtext] | None, klang: Klang = "auto") -> str:
         """Kennung des Auftrags. `original`: je Sprecher seine Stimme aus der Aufnahme, `stimme` als Ersatz; dann hört die Vertonung
         selbst, weil sie die Sprecher trennen muss."""
         daten = {"name": name[:200], "sprache": sprache, "format": "m4a", "behalten": "false", "stimme": json.dumps(stimme),
-                 "stimmen": "original" if original else "fest"}
+                 "stimmen": "original" if original else "fest", "klonmodus": klang}
         if ausgang:
             daten["ausgangssprache"] = ausgang
         if segmente and not original:

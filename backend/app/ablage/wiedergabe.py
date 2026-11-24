@@ -47,8 +47,11 @@ async def ausliefern(pfad: str, request: Request | None = None, *, dateiname: st
     if eintrag is None or eintrag.ist_ordner:
         raise HTTPException(404, "Datei nicht gefunden")
     name = dateiname or eintrag.name
-    teil = bereich(request.headers.get("range") if request else None, eintrag.groesse)
-    kopf = {"Accept-Ranges": "bytes"}
+    # neu gesprochen oder neu gespeichert heißt: anderer Stand unter derselben Adresse; der Browser fragt nach, statt Altes zu mischen
+    stand = f'"{eintrag.groesse:x}-{int(eintrag.geaendert.timestamp()):x}"'
+    if_range = request.headers.get("if-range") if request else None
+    teil = bereich(request.headers.get("range") if request and if_range in (None, stand) else None, eintrag.groesse)
+    kopf = {"Accept-Ranges": "bytes", "ETag": stand, "Cache-Control": "no-cache"}
     art = "attachment" if herunterladen else "inline"
     kopf["Content-Disposition"] = f"{art}; filename*=UTF-8''{quote(name)}"
     if teil is None:

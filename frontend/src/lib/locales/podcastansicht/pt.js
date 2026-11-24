@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcrição', hilfe: 'Ler o texto do episódio; acompanha a reprodução', starten: 'Transcrever', startenHilfe: 'Passar o episódio a texto; fica guardado na Kellerwolke', abbrechen: 'Cancelar', laeuft: 'A transcrever', feed: 'Texto do feed', vonSelbst: 'O episódio é guardado automaticamente na Kellerwolke.', vertont: 'Texto da dobragem', gehoert: 'Texto da transcrição', keins: 'Ainda sem transcrição', laedt: 'A carregar a transcrição',
+    titel: 'Transcrição', hilfe: 'Ler o texto do episódio; acompanha a reprodução', starten: 'Transcrever', startenHilfe: 'Passar o episódio a texto; fica guardado na Kellerwolke', abbrechen: 'Cancelar', laeuft: 'A transcrever', feed: 'Texto do feed', entsteht: 'O texto está a ser criado e aparece assim que estiver pronto.', uebersetzt: 'Traduzido, a ser dobrado', vertont: 'Texto da dobragem', gehoert: 'Texto da transcrição', keins: 'Ainda sem transcrição', laedt: 'A carregar a transcrição',
   },
-  vertonung: { fertig: 'A versão em {sprache} está pronta', auf: 'Em {sprache}', hilfe: 'Traduzir o episódio e dobrá-lo em {sprache}; original, versão e ambos os textos ficam juntos na Kellerwolke', umschalten: 'Som e texto em {sprache} ou no original', stimme: 'Voz da dobragem', abbrechenHilfe: 'Cancelar dobragem', laeuft: 'Dobragem em curso' },
+  vertonung: { fertig: 'A versão em {sprache} está pronta', umschalten: 'Som e texto em {sprache} ou no original', neu: 'Criar de novo com as predefinições atuais' },
   neues: { tag: 'Novo em 24 horas: {n}', woche: 'Novo em 7 dias: {n}', monat: 'Novo em 30 dias: {n}' },
 };

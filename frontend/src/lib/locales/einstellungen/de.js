@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Sprache', spracheGeraet: 'Sprache', fehlersuche: 'Fehlersuche', aussehen: 'Aussehen', bildschirm: 'Bildschirm',
     zeitversatz: 'Zeitversatz', aufnahme: 'Aufnahme', abruf: 'Abruf der Abos', zeitansage: 'Zeitansage', stimme: 'Stimme',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Verzeichnisse', helfer: 'Dienste im Heimnetz', zugang: 'Zugang',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Verzeichnisse', folgen: 'Transkription und Vertonung der Podcast-Folgen', helfer: 'Dienste im Heimnetz', zugang: 'Zugang',
     abgleich: 'Nächtlicher Abgleich',
   },
   hinweis: {

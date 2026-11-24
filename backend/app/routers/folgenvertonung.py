@@ -39,10 +39,6 @@ class Stand(BaseModel):
     kann_vertonen: bool = False
 
 
-class Vertonen(BaseModel):
-    stimme: str = Field("", max_length=200)          # leer: die Einstellung
-
-
 class Wahl(BaseModel):
     sprache: str = Field("", max_length=8)
 
@@ -88,13 +84,13 @@ async def lesen(folge_id: int, request: Request) -> Stand:
 
 
 @router.post("/episodes/{folge_id}/vertonung")
-async def vertonen(folge_id: int, eingabe: Vertonen, request: Request) -> Stand:
+async def vertonen(folge_id: int, request: Request) -> Stand:
     folge = await _folge(folge_id)
     if not fv.folgenvertonung.kann():
         raise HTTPException(503, "Vertonung, Stimme oder Transkription fehlt (Einstellungen)")
     ziel = einstellungen_stand().podcast_sprache
     await request.app.state.geruest.auftraege.einreihen(
-        fv.ART, {"folge_id": folge_id, "sprache": ziel, "stimme": eingabe.stimme.strip()},
+        fv.ART, {"folge_id": folge_id, "sprache": ziel},
         titel=f"Vertonen ({SPRACHEN.get(ziel, ziel)}): {folge.get('title') or folge_id}", von="RadioHub")
     return await _stand(folge_id, request)
 
@@ -130,3 +126,4 @@ async def dateien(folge_id: int) -> Dateien:
         raise HTTPException(503, str(f)) from f
     aus = [Datei(pfad=haupt.pfad, groesse=haupt.groesse, art="folge")] if haupt else []
     return Dateien(dateien=aus + [Datei(pfad=b.pfad, groesse=b.groesse, art="begleiter") for b in begleiter])
+

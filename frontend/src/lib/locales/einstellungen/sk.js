@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: 'Jazyk', spracheGeraet: 'Jazyk', fehlersuche: 'Hľadanie chýb', aussehen: 'Vzhľad', bildschirm: 'Obrazovka',
     zeitversatz: 'Časový posun', aufnahme: 'Nahrávanie', abruf: 'Sťahovanie odberov', zeitansage: 'Hlásenie času', stimme: 'Hlas',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Adresáre', helfer: 'Služby v domácej sieti', zugang: 'Prístup',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Adresáre', folgen: 'Prepis a dabing epizód podcastov', helfer: 'Služby v domácej sieti', zugang: 'Prístup',
     abgleich: 'Nočná synchronizácia',
   },
   hinweis: {

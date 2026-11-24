@@ -167,8 +167,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Prepis', hilfe: 'Čítať text epizódy; pri prehrávaní beží s ňou', starten: 'Prepísať', startenHilfe: 'Previesť epizódu na text; uloží sa pritom do Kellerwolke', abbrechen: 'Zrušiť', laeuft: 'Prebieha prepis', feed: 'Text z kanála', vonSelbst: 'Epizóda sa pritom sama uloží do Kellerwolke.', vertont: 'Text dabingu', gehoert: 'Text z prepisu', keins: 'Zatiaľ žiadny prepis', laedt: 'Prepis sa načítava',
+    titel: 'Prepis', hilfe: 'Čítať text epizódy; pri prehrávaní beží s ňou', starten: 'Prepísať', startenHilfe: 'Previesť epizódu na text; uloží sa pritom do Kellerwolke', abbrechen: 'Zrušiť', laeuft: 'Prebieha prepis', feed: 'Text z kanála', entsteht: 'Text práve vzniká, zobrazí sa, hneď ako bude hotový.', uebersetzt: 'Preložené, práve sa nahovára', vertont: 'Text dabingu', gehoert: 'Text z prepisu', keins: 'Zatiaľ žiadny prepis', laedt: 'Prepis sa načítava',
   },
-  vertonung: { fertig: 'Verzia v jazyku {sprache} je hotová', auf: 'V jazyku {sprache}', hilfe: 'Preložiť epizódu a nahovoriť ju v jazyku {sprache}; originál, verzia aj oba texty zostanú spolu v Kellerwolke', umschalten: 'Zvuk a text v jazyku {sprache} alebo originál', stimme: 'Hlas dabingu', abbrechenHilfe: 'Zrušiť dabing', laeuft: 'Dabing prebieha' },
+  vertonung: { fertig: 'Verzia v jazyku {sprache} je hotová', umschalten: 'Zvuk a text v jazyku {sprache} alebo originál', neu: 'Vytvoriť znova s terajším prednastavením' },
   neues: { tag: 'Nové za 24 hodín: {n}', woche: 'Nové za 7 dní: {n}', monat: 'Nové za 30 dní: {n}' },
 };

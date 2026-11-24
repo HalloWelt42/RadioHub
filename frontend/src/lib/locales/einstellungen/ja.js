@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: '言語', spracheGeraet: '言語', fehlersuche: 'トラブルシューティング', aussehen: '外観', bildschirm: '画面',
     zeitversatz: 'タイムシフト', aufnahme: '録音', abruf: '登録番組の取得', zeitansage: '時報', stimme: '音声',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'ディレクトリ', helfer: 'ホームネットワークのサービス', zugang: 'アクセス',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'ディレクトリ', folgen: 'ポッドキャストの文字起こしと吹き替え', helfer: 'ホームネットワークのサービス', zugang: 'アクセス',
     abgleich: '夜間の同期',
   },
   hinweis: {

@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: 'Язык', spracheGeraet: 'Язык', fehlersuche: 'Диагностика', aussehen: 'Внешний вид', bildschirm: 'Экран',
     zeitversatz: 'Задержка эфира', aufnahme: 'Запись', abruf: 'Обновление подписок', zeitansage: 'Объявление времени', stimme: 'Голос',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Каталоги', helfer: 'Службы в домашней сети', zugang: 'Доступ',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Каталоги', folgen: 'Расшифровка и озвучка выпусков', helfer: 'Службы в домашней сети', zugang: 'Доступ',
     abgleich: 'Ночная сверка',
   },
   hinweis: {

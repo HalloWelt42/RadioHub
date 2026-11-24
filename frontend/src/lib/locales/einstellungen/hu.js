@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Nyelv', spracheGeraet: 'Nyelv', fehlersuche: 'Hibakeresés', aussehen: 'Kinézet', bildschirm: 'Képernyő',
     zeitversatz: 'Időeltolás', aufnahme: 'Felvétel', abruf: 'Feliratkozások lekérése', zeitansage: 'Időbemondás', stimme: 'Hang',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Jegyzékek', helfer: 'Szolgáltatások az otthoni hálózaton', zugang: 'Hozzáférés',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Jegyzékek', folgen: 'Podcast-epizódok átírása és szinkronja', helfer: 'Szolgáltatások az otthoni hálózaton', zugang: 'Hozzáférés',
     abgleich: 'Éjszakai egyeztetés',
   },
   hinweis: {

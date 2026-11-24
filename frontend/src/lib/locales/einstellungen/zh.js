@@ -12,7 +12,7 @@ export default {
   karte: {
     sprache: '语言', spracheGeraet: '语言', fehlersuche: '故障排查', aussehen: '外观', bildschirm: '屏幕',
     zeitversatz: '时移', aufnahme: '录音', abruf: '订阅获取', zeitansage: '报时', stimme: '语音',
-    kellerwolke: 'Kellerwolke', verzeichnisse: '目录', helfer: '家庭网络中的服务', zugang: '访问',
+    kellerwolke: 'Kellerwolke', verzeichnisse: '目录', folgen: '播客单集的转写与配音', helfer: '家庭网络中的服务', zugang: '访问',
     abgleich: '夜间同步',
   },
   hinweis: {

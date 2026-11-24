@@ -141,21 +141,21 @@ Zeitleiste der Großansicht (Doppelklick springt weiterhin hin) oder der Taste i
 Titel im Puffer, ein Tipp auf den Balken klappt ihn auf. Gespeicherte tragen einen Haken; nach dem Löschen der Aufnahme
 geht es wieder. Der laufende Titel und der erste, vorn abgeschnittene, lassen sich so nicht sichern (dafür Aufnahme, Bereich).
 
-Transkripte der Folgen (RAD-22): die Taste Transkript in den Details einer Folge (am Telefon im großen Spieler) zeigt den Text
-im selben Feld wie das Mitlesen: spielt die Folge, läuft er mit, ein Klick auf die Zeit springt hin. Bringt der Feed ein
-Transkript mit (VTT, SRT, JSON), gilt das; sonst, oder für einen besseren Text, "Transkribieren": RadioHub speichert die Folge in
-der Kellerwolke und gibt sie der [[Transkription]] (Einstellungen > Dienste, App im Verbund). Der Auftrag zeigt den Fortschritt
-und wartet nach einem Neustart weiter; das Ergebnis liegt als `.transkript.json` neben der Folge und geht dem des Feeds vor.
-Abbrechen beendet das Warten, die Transkription selbst läuft dort zu Ende. Die Suche der Folgen findet den Text.
+Transkripte der Folgen (RAD-22): die Taste Transkript in den Details einer Folge (am Telefon im großen Spieler) blendet alles
+andere aus und zeigt den Text; spielt die Folge, läuft er mit, ein Klick auf die Zeit springt hin. Bringt der Feed ein Transkript
+mit (VTT, SRT, JSON), gilt das; sonst entsteht der Text beim Öffnen von selbst: RadioHub speichert die Folge in der Kellerwolke
+und gibt sie der [[Transkription]]. Der Auftrag wartet nach einem Neustart weiter; das Ergebnis liegt als `.transkript.json` neben der
+Folge und geht dem des Feeds vor. Die Suche der Folgen findet den Text.
 
-Folgen in einer anderen Sprache (RAD-26): "Auf Deutsch" im Transkript einer Folge (daneben die Stimme: die des Übersetzers,
-Katalog, private Stimmen oder Originalstimmen) speichert sie, transkribiert sie, wenn noch kein gehörtes Transkript da ist, und
-gibt Ton und Text dem Dienst der [[Vertonung]]; sie übersetzt und spricht zeitgenau. Der Auftrag zeigt den Fortschritt und
-verfolgt die Vertonung nach einem Neustart weiter; Abbrechen beendet sie auch dort. Danach schaltet die Taste mit dem
-Namen der Sprache Ton und Text zwischen Fassung und Original um, an derselben Stelle und für alle Geräte. In der Kellerwolke
-liegen Original, Fassung (`.de.sprache.m4a`) und beide Texte (`.transkript.json`, `.de.transkript.json`) beieinander. Löschen nennt
-vorher jede Datei und legt alle zusammen in den Papierkorb. Sprache und Stimme ab Werk: Einstellungen > Dienste
-(`podcast_sprache`, `podcast_stimme`).
+Folgen in einer anderen Sprache (RAD-26, RAD-138): eine einzige Taste (Deutsch) im Transkript. Beim ersten Mal gibt RadioHub Ton und
+Text dem Dienst der [[Vertonung]]; sie übersetzt und spricht zeitgenau. Der übersetzte Text erscheint, sobald er da ist, der Ton
+schaltet um, wenn er fertig ist. Danach wechselt die Taste jederzeit zwischen Fassung und Original, an derselben Stelle und für alle
+Geräte; Ausschalten bricht nichts ab (das geht unter Aufträge). In der Kellerwolke liegen Original, Fassung
+(`.de.sprache.m4a`) und beide Texte (`.transkript.json`, `.de.transkript.json`) beieinander. Löschen nennt vorher jede Datei und legt alle
+zusammen in den Papierkorb. Wie transkribiert und vertont wird, steht unter Einstellungen > Dienste, "Transkription und Vertonung der
+Podcast-Folgen": `podcast_hoersprache`, `podcast_sprecher`, `podcast_hoerdienst`, `podcast_sprache`, `podcast_stimme` (auch
+Originalstimmen), `podcast_klang`. Das Symbol neben Kopieren lässt mit geänderten Voreinstellungen neu entstehen, was man gerade
+sieht (Original: neu transkribieren, Fassung: neu vertonen); das bisherige wird eine frühere Version der Datei.
 
 Neues der Abos (RAD-136): vor der Zahl ungehörter Folgen steht das Neue, grün die letzten 24 Stunden, gelb 7 Tage, blau 30 Tage;
 am Abo und am Ordner die jüngste Stufe mit Neuem (3/53), bei "Alle Abos" alle drei (12/79/323/19320). Gezählt werden

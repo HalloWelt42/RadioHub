@@ -97,6 +97,12 @@
 .rh-folge-detail { grid-template-columns: minmax(0, 1fr); }
 .rh-folge-detail .rh-langtext p { color: var(--text-2); max-inline-size: 72ch; }
 .rh-detail-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Tastenreihe einer Folge (RAD-138): alle gleich hoch, die beschrifteten gleich breit, Nebensachen als Symbole dahinter */
+.rh-folge-tasten { align-items: stretch; }
+.rh-folge-tasten > .knopf:not(.still), .rh-folge-tasten > ak-taster { inline-size: calc(var(--gross) * 9.5); block-size: 46px; justify-content: center; }
+.rh-folge-tasten > ak-taster[art="flach"] .ak-taster-knopf { inline-size: 100%; block-size: 46px; min-inline-size: 0; padding-inline: 8px; }
+.rh-folge-tasten > .rund { inline-size: 46px; block-size: 46px; }
+.rh-folge-tasten > .knopf.still { block-size: 46px; margin-inline-start: auto; }
 
 @container liste (max-width: 52em) {
   .rh-folgen-spalten { display: flex; flex-wrap: wrap; gap: 4px 14px; }
@@ -160,9 +166,6 @@
 /* Werbung in Folgen (Entwurf podcast-werbung.html, RAD-32): bernstein heißt Werbung */
 .rh-werbemarke-text { display: inline-flex; gap: 6px; align-items: center; color: var(--warn); font-weight: 600; }
 .rh-werbeteil { grid-column: 1 / -1; display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--rh-ecke-zeile); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
-.rh-werbe-kopf { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
-.rh-werbe-kopf h3 { margin: 0; display: flex; gap: 8px; align-items: center; font-size: var(--gross); }
-.rh-werbe-kopf h3 i { color: var(--led-bernstein); }
 .rh-werbeleiste { position: relative; block-size: 14px; border-radius: 7px; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); overflow: hidden; }
 .rh-werbeleiste .gehoert { position: absolute; inset: 0 auto 0 0; background-color: var(--led-gruen); opacity: .55; }
 .rh-werbeleiste .werbung { position: absolute; top: 0; bottom: 0; background-color: var(--violett); }   /* wie auf der Spulbahn (RAD-43) */

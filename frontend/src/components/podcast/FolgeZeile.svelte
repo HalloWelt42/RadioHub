@@ -4,10 +4,13 @@
   // gespeicherte Folge zu löschen fragt vorher und nennt die Datei (Nutzerdatei, kommt in den Papierkorb).
   import { t } from "../../lib/i18n.svelte.js";
   import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
-  import type { Abo, Folge } from "../../lib/podcasts";
+  import { untrack } from "svelte";
+  import { podcastquelle, type Abo, type Folge } from "../../lib/podcasts";
+  import { Folgenwerbung } from "../../spieler/folgenwerbung.svelte";
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
   import Werbeteil from "./Werbeteil.svelte";
+  import Werbetasten from "./Werbetasten.svelte";
   import Loeschfrage from "./Loeschfrage.svelte";
   import Transkriptteil from "./Transkriptteil.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
@@ -45,6 +48,8 @@
   const datum = $derived(tage === 0 ? t("podcastAnsicht.heute") : tage === 1 ? t("podcastAnsicht.gestern") : datumKurz(folge.datum));
   const beschreibung = $derived(offen ? textAus(folge.beschreibung) : "");
   const mb = $derived(megabyte(folge.groesse));
+  const werbung = new Folgenwerbung(() => folge, () => abo, (w) => onwerbung(w));
+  $effect(() => { if (offen && podcastquelle.faehig.werbung) untrack(() => void werbung.laden()); });
   let fragt = $state(false);
   let liest = $state(false);
   let loescht = $state(false);
@@ -105,25 +110,23 @@
   {/if}
   {#if offen}
     <div class="rh-detail rh-folge-detail">
-      {#if beschreibung}<Langtext text={beschreibung} />{/if}
-      <div class="rh-detail-knoepfe">
-        <button class="knopf primaer" type="button" onclick={onspielen}><i class="fa-solid fa-play"></i>
-          {stand.art === "laeuft" ? t("podcastAnsicht.weiterAb", { zeit: stelleText(folge.stelle) }) : t("podcastAnsicht.hoeren")}</button>
-        {#if folge.stelle && !gehoert}<button class="knopf" type="button" onclick={onvorn}><i class="fa-solid fa-backward-fast"></i>{t("podcastAnsicht.vonVorn")}</button>{/if}
-        <button class="knopf" type="button" onclick={ongehoert}><i class="fa-solid {gehoert ? 'fa-rotate-left' : 'fa-check'}"></i>
-          {gehoert ? t("podcastAnsicht.alsUngehoert") : t("podcastAnsicht.alsGehoert")}</button>
-        {#if kannSpeichern}
-          <button class="knopf" type="button" onclick={speicherKnopf}><i class="fa-solid {folge.gespeichert ? 'fa-trash-can rh-loeschen' : 'fa-cloud-arrow-up'}"></i>
-            {folge.gespeichert ? t("podcastAnsicht.speicherLoeschen", { mb }) : t("podcastAnsicht.speichern")}</button>
-        {/if}
-        {#if dateiAdresse}
-          <a class="knopf" href={dateiAdresse} download title={t("podcastAnsicht.herunterladenHilfe")}><i class="fa-solid fa-download"></i>{t("podcastAnsicht.herunterladen")}</a>
-        {/if}
-        {#if kannTranskript}<Schalter an={liest} farbe="blau" symbol="fa-closed-captioning" text={t("podcastAnsicht.transkript.titel")} hilfe={t("podcastAnsicht.transkript.hilfe")} onwechsel={(an) => (liest = an)} />{/if}
-        {#if aboTitel}<a class="knopf still" href="/podcasts/{folge.aboId}" onclick={(e) => { e.preventDefault(); onabo(); }}><i class="fa-solid fa-podcast"></i>{aboTitel}</a>{/if}
-      </div>
-      {#if liest}<Transkriptteil folgeId={folge.id} {spielt} {onanhoeren} />{/if}
-      <Werbeteil {folge} {abo} {spielt} {onanhoeren} ongeaendert={onwerbung} />
+      {#snippet lesetaste()}<Schalter an={liest} farbe="blau" symbol="fa-closed-captioning" text={t("podcastAnsicht.transkript.titel")} hilfe={t("podcastAnsicht.transkript.hilfe")} onwechsel={(an) => (liest = an)} />{/snippet}
+      {#if liest}
+        <!-- das Transkript nimmt den ganzen Platz ein, seine Taste bleibt rechts (RAD-138), wie das Mitlesen beim Radio -->
+        <Transkriptteil folgeId={folge.id} {spielt} {onanhoeren} schalter={lesetaste} />
+      {:else}
+        {#if beschreibung}<Langtext text={beschreibung} />{/if}
+        <!-- eine Reihe, gleich hoch und gleich breit (RAD-138); Speichern, Herunterladen und Gehört stehen schon oben in der Zeile -->
+        <div class="rh-detail-knoepfe rh-folge-tasten">
+          <button class="knopf primaer" type="button" onclick={onspielen}><i class="fa-solid fa-play"></i>
+            {stand.art === "laeuft" ? t("podcastAnsicht.weiterAb", { zeit: stelleText(folge.stelle) }) : t("podcastAnsicht.hoeren")}</button>
+          {#if folge.stelle && !gehoert}<button class="knopf" type="button" onclick={onvorn}><i class="fa-solid fa-backward-fast"></i>{t("podcastAnsicht.vonVorn")}</button>{/if}
+          {#if kannTranskript}{@render lesetaste()}{/if}
+          {#if podcastquelle.faehig.werbung}<Werbetasten {werbung} {folge} {abo} {spielt} />{/if}
+          {#if aboTitel}<a class="knopf still" href="/podcasts/{folge.aboId}" onclick={(e) => { e.preventDefault(); onabo(); }}><i class="fa-solid fa-podcast"></i>{aboTitel}</a>{/if}
+        </div>
+        <Werbeteil {werbung} {folge} {onanhoeren} />
+      {/if}
     </div>
   {/if}
 </article>

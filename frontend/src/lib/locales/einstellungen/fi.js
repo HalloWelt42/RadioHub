@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: 'Kieli', spracheGeraet: 'Kieli', fehlersuche: 'Vianetsintä', aussehen: 'Ulkoasu', bildschirm: 'Näyttö',
     zeitversatz: 'Aikasiirto', aufnahme: 'Tallennus', abruf: 'Tilausten haku', zeitansage: 'Aikailmoitus', stimme: 'Ääni',
-    kellerwolke: 'Kellerwolke', verzeichnisse: 'Hakemistot', helfer: 'Kotiverkon palvelut', zugang: 'Pääsy',
+    kellerwolke: 'Kellerwolke', verzeichnisse: 'Hakemistot', folgen: 'Podcast-jaksojen litterointi ja puhuttaminen', helfer: 'Kotiverkon palvelut', zugang: 'Pääsy',
     abgleich: 'Yöllinen vertailu',
   },
   hinweis: {

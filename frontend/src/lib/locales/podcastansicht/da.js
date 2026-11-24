@@ -167,8 +167,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', vonSelbst: 'Episoden gemmes automatisk i Kellerwolke.', vertont: 'Tekst fra indtalingen', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
+    titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', entsteht: 'Teksten er ved at blive lavet og vises, så snart den er klar.', uebersetzt: 'Oversat, indtales nu', vertont: 'Tekst fra indtalingen', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
   },
-  vertonung: { fertig: 'Versionen på {sprache} er klar', auf: 'På {sprache}', hilfe: 'Oversæt episoden og få den indtalt på {sprache}; original, version og begge tekster ligger samlet i Kellerwolke', umschalten: 'Lyd og tekst på {sprache} eller original', stimme: 'Stemme til indtaling', abbrechenHilfe: 'Afbryd indtaling', laeuft: 'Indtaling i gang' },
+  vertonung: { fertig: 'Versionen på {sprache} er klar', umschalten: 'Lyd og tekst på {sprache} eller original', neu: 'Lav igen med de nuværende forvalg' },
   neues: { tag: 'Nyt på 24 timer: {n}', woche: 'Nyt på 7 dage: {n}', monat: 'Nyt på 30 dage: {n}' },
 };

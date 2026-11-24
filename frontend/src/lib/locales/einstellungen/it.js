@@ -13,7 +13,7 @@ export default {
   karte: {
     sprache: "Lingua", spracheGeraet: "Lingua", fehlersuche: "Diagnostica", aussehen: "Aspetto", bildschirm: "Schermo",
     zeitversatz: "Differita", aufnahme: "Registrazione", abruf: "Controllo degli abbonamenti", zeitansage: "Annuncio dell'ora", stimme: "Voce",
-    kellerwolke: "Kellerwolke", verzeichnisse: "Cataloghi", helfer: "Servizi della rete domestica", zugang: "Accesso",
+    kellerwolke: "Kellerwolke", verzeichnisse: "Cataloghi", folgen: 'Trascrizione e doppiaggio degli episodi', helfer: "Servizi della rete domestica", zugang: "Accesso",
     abgleich: "Sincronizzazione notturna",
   },
   hinweis: {
