@@ -21,6 +21,9 @@ export default {
     zeitansage: 'Tidsmeldingen gælder for hver enhed, som hidtil på telefonen; nu kan den også indstilles på computeren.',
     abgleich: 'Seneste synkronisering og Synkronisér nu står ovenfor; her klokkeslættet.',
   },
+  messung: {
+    umfang: '{n} hændelser, {mb}', bericht: 'Rapport', laden: 'Hent', grenzen: 'Klippegrænser', nichts: 'Intet usædvanligt', leer: 'Intet målt endnu', alleLoeschen: 'Slet måledata', loeschenFrage: 'Slet {n} målefiler ({mb}) fra serveren? Optagelserne bliver.', grund_pause: 'ved pausen', grund_tal: 'i niveaudalen', grund_angabe: 'ved meldingen', grund_werbung: 'reklame',
+  },
   geltung: {
     alle: 'Alle enheder', geraet: 'Denne enhed', fest: 'Fastlagt',
     alleHilfe: 'Gælder for alle enheder; gem via linjen nederst',

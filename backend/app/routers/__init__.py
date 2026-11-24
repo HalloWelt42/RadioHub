@@ -29,6 +29,7 @@ from .lernlauf import router as lernlauf_router
 from .mitlesen import router as mitlesen_router
 from .folgentranskript import router as folgentranskript_router
 from .folgenvertonung import router as folgenvertonung_router
+from .messung import router as messung_router
 from .radio import router as radio_router
 
 # In dieser Reihenfolge eingebunden (main.app_bauen), alle hinter der Anmeldung
@@ -37,7 +38,7 @@ ALLE = [
     config_router, blocklist_router, buffer_router, hls_router, filters_router, ad_detection_router, categories_router,
     recording_folders_router, storage_router, services_router, favicons_router,
     station_tags_router, station_custom_urls_router, wecker_router, zeitansage_router,
-    radio_router, lernlauf_router, mitlesen_router, folgentranskript_router, folgenvertonung_router,
+    radio_router, lernlauf_router, mitlesen_router, folgentranskript_router, folgenvertonung_router, messung_router,
 ]
 
 __all__ = [
@@ -46,7 +47,7 @@ __all__ = [
     "mitlesen_router",
     "folgentranskript_router",
     "folgenvertonung_router",
-    "radio_router",
+    "radio_router", "messung_router",
     "stations_router",
     "favorites_router",
     "recording_router",

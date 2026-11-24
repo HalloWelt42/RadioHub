@@ -22,6 +22,9 @@ export default {
     zeitansage: 'Aikailmoitus on laitekohtainen, kuten ennenkin puhelimessa; nyt sen voi asettaa myös tietokoneella.',
     abgleich: 'Viimeisin vertailu ja Vertaa nyt ovat yllä; tässä kellonaika.',
   },
+  messung: {
+    umfang: '{n} tapahtumaa, {mb}', bericht: 'Raportti', laden: 'Lataa', grenzen: 'Leikkausrajat', nichts: 'Ei mitään poikkeavaa', leer: 'Ei vielä mitattu', alleLoeschen: 'Poista mittaukset', loeschenFrage: 'Poistetaanko {n} mittaustiedostoa ({mb}) palvelimelta? Tallenteet säilyvät.', grund_pause: 'tauossa', grund_tal: 'tasolaaksossa', grund_angabe: 'ilmoituksessa', grund_werbung: 'mainos',
+  },
   geltung: {
     alle: 'Kaikki laitteet', geraet: 'Tämä laite', fest: 'Kiinteä',
     alleHilfe: 'Koskee kaikkia laitteita; tallenna alapalkista',

@@ -15,6 +15,7 @@ import re
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
 
+from .messung import messung
 from .stromleser import Angabe
 
 logger = logging.getLogger("radiohub.titelbuch")
@@ -48,6 +49,7 @@ class Titelbuch:
         titel = titel_aus(a.roh)
         if "StreamTitle=" in a.roh and titel != self._letzter_roh:
             self._letzter_roh = titel
+            messung.merken("angabe", ton_s=round(a.sekunde, 2), roh=a.roh[:300])
             self.wechsel.append((a.sekunde, titel, bool(titel) and self._gesperrt(titel)))
         if not titel or titel == self._letzter:
             return

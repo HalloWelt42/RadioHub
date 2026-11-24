@@ -144,6 +144,9 @@ class AppEinstellungen(Grundeinstellungen):
     hls_sample_rate: Abtastrate = Field(44100, title="Abtastrate", json_schema_extra={**WIEDERGABE, "beschriftungen": {
         "22050": "22.050 Hz", "32000": "32.000 Hz", "44100": "44.100 Hz", "48000": "48.000 Hz"}},
                                         description="Abtastrate des Puffers.")
+    messmodus: bool = Field(False, title="Messmodus", json_schema_extra=ALLGEMEIN,
+                            description="Schreibt beim Hören und Aufnehmen mit, was geschieht (Ton, Verbindungen, Schnitt, Auslastung), um "
+                                        "Auffälliges hinterher zu erklären. Höchstens 200 MB auf dem Server, nichts geht aus dem Haus.")
     aufnahme_reserve_gb: int = Field(5, ge=1, le=1000, title="Reserve beim Aufnehmen", json_schema_extra={**AUFNAHMEN, "einheit": "GB"},
                                      description="So viel Platz bleibt auf dem Datenträger des Servers und in der Kellerwolke frei. "
                                                  "Eine Aufnahme läuft beliebig lang und endet sauber, wenn nur noch die Reserve da ist.")

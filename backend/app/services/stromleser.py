@@ -23,6 +23,8 @@ from urllib.parse import urljoin, urlsplit
 
 import certifi
 
+from .messung import messung
+
 logger = logging.getLogger("radiohub.stromleser")
 
 KENNUNG = "RadioHub/1.0"
@@ -181,6 +183,7 @@ class Stromleser:
                     if not self._laeuft:
                         break
                     logger.warning(f"Strom unterbrochen: {f}")
+                    messung.merken("strom_weg", rechner=urlsplit(self.adresse).hostname, grund=f"{type(f).__name__}: {f}", ton_bytes=self.ton_bytes, versuch=versuche + 1)
                 versuche = 1 if self.ton_bytes > vorher else versuche + 1    # kam Ton, zählt der Abbruch neu
                 if not self._laeuft or versuche > NEU_VERBINDEN_VERSUCHE:
                     break

@@ -47,6 +47,9 @@ let _halter = null;
 /** Stückwache (RAD-130): so lange ruht das Laden nach einer Schleife; weniger Vorrat als das gilt als aufgebraucht */
 const LADEN_RUHT_MS = 1000, VORRAT_AUS_S = 0.5;
 
+/** so lange darf ein Tonstück von 1 s laden, ohne aufzufallen (Messmodus) */
+const STUECK_LANGSAM_MS = 800;
+
 /** Zeit im Tonelement für "live" im Zeitversatz */
 function _liveZeit() {
   const s = _audioEl.seekable;
@@ -83,6 +86,14 @@ export function init(audioElement, appState) {
   if (_audioEl && _appState) {
     _audioEl.volume = _appState.volume / 100;
   }
+}
+
+/** @type {((art: string, werte: Record<string, unknown>) => void) | null} */
+let _auffaellig = null;
+
+/** Messmodus (RAD-143): was im Zeitversatz auffällt (Fehler von hls.js, Schleifen, langsame Stücke, Sprünge) */
+export function beiAuffaelligem(melden) {
+  _auffaellig = melden;
 }
 
 /** @type {(() => void) | null} */
@@ -1313,6 +1324,7 @@ export function springeZuPuffer(sekunde) {
   if (zeit === null || !_audioEl) return false;
   const live = _audioEl.seekable.length ? _liveZeit() : Infinity;
   if (zeit > _audioEl.currentTime && live < zeit - RAND_S) return false;
+  _auffaellig?.('sprung', { von: _audioEl.currentTime, nach: Math.min(zeit, live), ziel: sekunde });
   _audioEl.currentTime = Math.min(zeit, live);
   const hs = _appState.hlsStatus;
   const segment = Math.floor(sekunde / (hs?.segment_duration || 1));
@@ -1462,6 +1474,7 @@ function _switchToHLS(gen, startSekunde = null) {
       return;
     }
 
+    _auffaellig?.('hls_fehler', { fehler: data.details, ernst: !!data.fatal, stueck: data.frag?.sn ?? null });
     if (data.fatal) {
       console.error('HLS Fatal Error:', data.type, data.details);
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
@@ -1491,9 +1504,12 @@ function _stueckeWachen(hls, gen) {
   const wache = new Stueckwache();
   hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
     if (_generation !== gen || _hlsInstance !== hls) return;
+    const laden = data.frag.stats?.loading;
+    if (_auffaellig && laden?.end - laden?.start > STUECK_LANGSAM_MS) _auffaellig('stueck_langsam', { stueck: data.frag.sn, ms: Math.round(laden.end - laden.start) });
     const tat = wache.geladen(data.frag.sn, Date.now());
     if (tat === 'weiter') return;
     console.warn(`Tonstück ${data.frag.sn} in einer Schleife:`, tat);
+    _auffaellig?.('stueckschleife', { stueck: data.frag.sn, tat });
     if (tat === 'neu') return tonAuffrischen();
     hls.stopLoad();
     if (_audioEl && data.frag.start - _audioEl.currentTime < VORRAT_AUS_S) _audioEl.currentTime = data.frag.end + 0.05;

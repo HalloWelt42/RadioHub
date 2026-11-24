@@ -22,6 +22,9 @@ export default {
     zeitansage: "L'annuncio dell'ora si imposta per dispositivo, come sul telefono; ora anche sul computer.",
     abgleich: "Ultima sincronizzazione e Sincronizza ora si trovano sopra; qui l'orario.",
   },
+  messung: {
+    umfang: '{n} eventi, {mb}', bericht: 'Rapporto', laden: 'Scarica', grenzen: 'Limiti del taglio', nichts: 'Niente di insolito', leer: 'Ancora nessuna misura', alleLoeschen: 'Elimina misure', loeschenFrage: 'Eliminare {n} file di misura ({mb}) dal server? Le registrazioni restano.', grund_pause: 'alla pausa', grund_tal: 'nella valle di livello', grund_angabe: 'all\'annuncio', grund_werbung: 'pubblicità',
+  },
   geltung: {
     alle: "Tutti i dispositivi", geraet: "Questo dispositivo", fest: "Fisso",
     alleHilfe: "Vale per tutti i dispositivi; salva con la barra in basso",

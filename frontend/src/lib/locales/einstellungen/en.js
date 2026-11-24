@@ -22,6 +22,9 @@ export default {
     zeitansage: 'The time announcement applies per device, as before on the phone; now also on the computer.',
     abgleich: 'Last sync and Sync now are shown above; here the time.',
   },
+  messung: {
+    umfang: '{n} events, {mb}', bericht: 'Report', laden: 'Download', grenzen: 'Cut boundaries', nichts: 'Nothing unusual', leer: 'Nothing measured yet', alleLoeschen: 'Delete measurements', loeschenFrage: 'Delete {n} measurement files ({mb}) from the server? Recordings stay.', grund_pause: 'at the pause', grund_tal: 'in the level dip', grund_angabe: 'at the announcement', grund_werbung: 'ads',
+  },
   geltung: {
     alle: 'All devices', geraet: 'This device', fest: 'Fixed',
     alleHilfe: 'Applies to all devices; save with the bar below',

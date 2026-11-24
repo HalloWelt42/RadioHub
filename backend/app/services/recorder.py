@@ -33,6 +33,7 @@ import json
 import logging
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import Awaitable, Callable, Optional
@@ -44,6 +45,7 @@ from .aufnahmen import TITEL_ZAEHLT, aufnahmen
 from .config_service import config_service
 from . import feinschnitt_lauf, werbestellen
 from .laufschnitt import LANG_S, Laufschnitt
+from .messung import messung
 from ..sendewerbung.sitzung import Werbestelle
 from .empfang import Abnehmer, Empfang, empfaenge
 from .stromleser import StromFehler, Wiedergabeliste
@@ -778,13 +780,17 @@ class RecorderManager:
                 try:
                     groesse = file_path.stat().st_size
                     lokal = session.laufschnitt.platz_fuer(index, file_path.suffix) if session.laufschnitt else None
+                    beginn = time.monotonic()
                     fertig = await aufnahmen.teil_ablegen(session.id, index, title, start_ms, duration_ms, file_path, lokal)
+                    messung.merken("abgelegt", sitzung=session.id, nr=index, titel=title, start_s=start_ms / 1000, dauer_ton_s=duration_ms / 1000,
+                                   mb=round(groesse / 1e6, 2), dauer_s=round(time.monotonic() - beginn, 2), versuch=versuch)
                     if lokal:
                         session.laufschnitt.gehalten(fertig["path"], lokal)
                     session.abgelegt_bytes += groesse
                     session.abgelegte_segmente += 1
                     break
                 except Exception as e:
+                    messung.merken("abgelegt", sitzung=session.id, nr=index, titel=title, fehler=f"{type(e).__name__}: {e}", versuch=versuch)
                     if versuch == 0:
                         logger.warning(f"REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner, wird wiederholt)")
                         if session.logger:
@@ -804,6 +810,7 @@ class RecorderManager:
         try:
             await session.laufschnitt.durchgang()
         except Exception as e:
+            messung.merken("feinschnitt", sitzung=session.id, fehler=f"{type(e).__name__}: {e}")
             logger.warning(f"REC Feinschnitt eines Abschnitts von {session.id} fehlgeschlagen: {e} (wird nachgeholt)")
             session.logger.log(f"FEINSCHNITT-FEHLER {e}")
         finally:
@@ -898,6 +905,7 @@ class RecorderManager:
                         # Gap erkannt
                         in_gap = True
                         elapsed_ms = int(session.duration * 1000)
+                        messung.merken("luecke", sitzung=session.id, ton_s=round(session.ton_s, 1))
                         session.events.append({
                             "type": "gap_start",
                             "t": elapsed_ms,
@@ -908,6 +916,7 @@ class RecorderManager:
                                 f"{current_segs} Segmente)")
                     if stall_count >= STALL_MAX_CHECKS:
                         elapsed = stall_count * STALL_CHECK_INTERVAL
+                        messung.merken("steht", sitzung=session.id, ton_s=round(session.ton_s, 1))
                         session.events.append({
                             "type": "stall",
                             "t": int(session.duration * 1000),
@@ -1065,6 +1074,15 @@ class RecorderManager:
                 conn.execute("UPDATE sessions SET file_size = (SELECT COALESCE(SUM(file_size), 0) FROM segments WHERE session_id = ?) "
                              "WHERE id = ?", (session.id, session.id))
             feinschnitt_lauf.status_setzen(session.id, status, nur_wenn="feinschnitt")
+
+    def messlage(self) -> dict:
+        """Für den Messmodus: die laufende Aufnahme (Ton gegen Uhr, was lokal liegt, wie weit der Feinschnitt ist)."""
+        s = self.active_session
+        if not s:
+            return {}
+        return {"sitzung": s.id, "ton_s": round(s.ton_s, 1), "uhr_s": round(s.duration, 1), "stuecke": s.segment_count,
+                "ablage_wartet": sum(1 for x in s.ablage_tasks if not x.done()), "fein": s.laufschnitt.fertig if s.laufschnitt else None,
+                "neu_verbunden": s.empfang.stromleser.neu_verbunden if s.empfang else None}
 
     async def _platz_voll(self) -> str:
         """Wo nur noch die Reserve frei ist, in Worten; leer, wenn überall Platz ist. Ein unbekannter Platz der Ablage (sie ist

@@ -22,6 +22,9 @@ export default {
     zeitansage: "El anuncio de la hora se ajusta por dispositivo, como en el teléfono; ahora también en el ordenador.",
     abgleich: "Última sincronización y Sincronizar ahora están arriba; aquí, la hora.",
   },
+  messung: {
+    umfang: '{n} eventos, {mb}', bericht: 'Informe', laden: 'Descargar', grenzen: 'Límites del corte', nichts: 'Nada llamativo', leer: 'Nada medido todavía', alleLoeschen: 'Borrar mediciones', loeschenFrage: '¿Borrar {n} archivos de medición ({mb}) del servidor? Las grabaciones permanecen.', grund_pause: 'en la pausa', grund_tal: 'en el valle de nivel', grund_angabe: 'en el anuncio', grund_werbung: 'publicidad',
+  },
   geltung: {
     alle: "Todos los dispositivos", geraet: "Este dispositivo", fest: "Fijo",
     alleHilfe: "Vale para todos los dispositivos; guardar con la barra de abajo",

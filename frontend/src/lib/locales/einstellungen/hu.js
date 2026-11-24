@@ -22,6 +22,9 @@ export default {
     zeitansage: 'Az időbemondás eszközönként érvényes, mint eddig a telefonon; most már számítógépen is beállítható.',
     abgleich: 'Az utolsó egyeztetés és az Egyeztetés most fent látható; itt az időpont.',
   },
+  messung: {
+    umfang: '{n} esemény, {mb}', bericht: 'Jelentés', laden: 'Letöltés', grenzen: 'Vágási határok', nichts: 'Semmi feltűnő', leer: 'Még nincs mérés', alleLoeschen: 'Mérések törlése', loeschenFrage: 'Törlöd a(z) {n} mérési fájlt ({mb}) a kiszolgálóról? A felvételek maradnak.', grund_pause: 'a szünetnél', grund_tal: 'a szintvölgyben', grund_angabe: 'a bejelentésnél', grund_werbung: 'reklám',
+  },
   geltung: {
     alle: 'Minden eszköz', geraet: 'Ez az eszköz', fest: 'Rögzített',
     alleHilfe: 'Minden eszközre érvényes; mentés a lenti sávval',

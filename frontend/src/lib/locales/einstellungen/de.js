@@ -22,6 +22,9 @@ export default {
     zeitansage: 'Die Zeitansage gilt je Gerät, wie bisher am Telefon; jetzt auch am Rechner einstellbar.',
     abgleich: 'Letzter Abgleich und Jetzt abgleichen stehen darüber; hier die Uhrzeit.',
   },
+  messung: {
+    umfang: '{n} Ereignisse, {mb}', bericht: 'Bericht', laden: 'Laden', grenzen: 'Grenzen des Schnitts', nichts: 'Nichts Auffälliges', leer: 'Noch nichts gemessen', alleLoeschen: 'Messdaten löschen', loeschenFrage: '{n} Messdateien ({mb}) vom Server löschen? Aufnahmen bleiben.', grund_pause: 'an der Pause', grund_tal: 'im Pegeltal', grund_angabe: 'bei der Angabe', grund_werbung: 'Werbung',
+  },
   geltung: {
     alle: 'Alle Geräte', geraet: 'Dieses Gerät', fest: 'Fest vorgegeben',
     alleHilfe: 'Gilt für alle Geräte; speichern über die Leiste unten',

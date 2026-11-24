@@ -21,6 +21,9 @@ export default {
     zeitansage: 'De tijdmelding geldt per apparaat, zoals op de telefoon; nu ook op de computer in te stellen.',
     abgleich: 'Laatste synchronisatie en Nu synchroniseren staan hierboven; hier de tijd.',
   },
+  messung: {
+    umfang: '{n} gebeurtenissen, {mb}', bericht: 'Rapport', laden: 'Downloaden', grenzen: 'Grenzen van de knip', nichts: 'Niets opvallends', leer: 'Nog niets gemeten', alleLoeschen: 'Meetgegevens wissen', loeschenFrage: '{n} meetbestanden ({mb}) van de server wissen? Opnames blijven.', grund_pause: 'bij de pauze', grund_tal: 'in het niveaudal', grund_angabe: 'bij de melding', grund_werbung: 'reclame',
+  },
   geltung: {
     alle: 'Alle apparaten', geraet: 'Dit apparaat', fest: 'Vast ingesteld',
     alleHilfe: 'Geldt voor alle apparaten; opslaan via de balk onderaan',

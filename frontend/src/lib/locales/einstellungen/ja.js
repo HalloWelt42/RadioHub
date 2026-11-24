@@ -21,6 +21,9 @@ export default {
     zeitansage: '時報はデバイスごとの設定です。これまでのスマートフォンに加え、パソコンでも設定できるようになりました。',
     abgleich: '前回の同期と今すぐ同期は上にあります。ここでは時刻を設定します。',
   },
+  messung: {
+    umfang: 'イベント {n} 件、{mb}', bericht: 'レポート', laden: 'ダウンロード', grenzen: '分割の境界', nichts: '目立つ点なし', leer: 'まだ測定していません', alleLoeschen: '測定データを削除', loeschenFrage: 'サーバーの測定ファイル {n} 件 ({mb}) を削除しますか? 録音は残ります。', grund_pause: '休止部分', grund_tal: '音量の谷', grund_angabe: '告知の位置', grund_werbung: '広告',
+  },
   geltung: {
     alle: '全デバイス', geraet: 'このデバイス', fest: '固定',
     alleHilfe: '全デバイスに適用。下のバーから保存します',

@@ -22,6 +22,9 @@ export default {
     zeitansage: 'A hora falada aplica-se por dispositivo, como até agora no telemóvel; agora também se define no computador.',
     abgleich: 'Última sincronização e Sincronizar agora estão acima; aqui fica a hora.',
   },
+  messung: {
+    umfang: '{n} eventos, {mb}', bericht: 'Relatório', laden: 'Transferir', grenzen: 'Limites do corte', nichts: 'Nada de invulgar', leer: 'Ainda nada medido', alleLoeschen: 'Apagar medições', loeschenFrage: 'Apagar {n} ficheiros de medição ({mb}) do servidor? As gravações ficam.', grund_pause: 'na pausa', grund_tal: 'no vale de nível', grund_angabe: 'no anúncio', grund_werbung: 'publicidade',
+  },
   geltung: {
     alle: 'Todos os dispositivos', geraet: 'Este dispositivo', fest: 'Fixo',
     alleHilfe: 'Aplica-se a todos os dispositivos; guarde na barra em baixo',

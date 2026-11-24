@@ -23,6 +23,9 @@ export default {
     zeitansage: 'Tidsutropet gäller per enhet, som tidigare på telefonen; nu går det även att ställa in på datorn.',
     abgleich: 'Senaste synkning och Synka nu finns ovanför; här ställer du in klockslaget.',
   },
+  messung: {
+    umfang: '{n} händelser, {mb}', bericht: 'Rapport', laden: 'Ladda ner', grenzen: 'Klippgränser', nichts: 'Inget ovanligt', leer: 'Inget mätt ännu', alleLoeschen: 'Radera mätdata', loeschenFrage: 'Radera {n} mätfiler ({mb}) från servern? Inspelningarna finns kvar.', grund_pause: 'vid pausen', grund_tal: 'i nivådalen', grund_angabe: 'vid annonseringen', grund_werbung: 'reklam',
+  },
   geltung: {
     alle: 'Alla enheter', geraet: 'Den här enheten', fest: 'Fast inställt',
     alleHilfe: 'Gäller alla enheter; spara via fältet nedan',

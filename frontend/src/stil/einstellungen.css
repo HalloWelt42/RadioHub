@@ -255,3 +255,11 @@
   .rh-a-zeile.rh-spot { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name stimmen" "grund grund frei"; }
   .rh-spot-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 }
+
+/* Messmodus (RAD-143): mitgeschriebene Tage mit Bericht */
+.rh-messung { display: grid; gap: 8px; margin-top: 10px; }
+.rh-messung-zeile { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px 14px; align-items: center; }
+.rh-messung-bericht { display: grid; gap: 4px; max-block-size: calc(var(--gross) * 18); overflow-y: auto; padding: 10px 12px; border-radius: var(--r2); background-color: var(--mulde); box-shadow: var(--rh-mulde); font-size: var(--klein); }
+.rh-messung-bericht p { margin: 0; overflow-wrap: anywhere; }
+.rh-messung > .knopf { justify-self: start; }
+@media (max-width: 700px) { .rh-messung-zeile { grid-template-columns: minmax(0, 1fr); } }

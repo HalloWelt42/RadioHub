@@ -22,6 +22,9 @@ export default {
     zeitansage: 'Saat anonsu, telefonda olduğu gibi cihaz başına geçerlidir; artık bilgisayarda da ayarlanabilir.',
     abgleich: 'Son eşitleme ve Şimdi eşitle yukarıda; burada saat.',
   },
+  messung: {
+    umfang: '{n} olay, {mb}', bericht: 'Rapor', laden: 'İndir', grenzen: 'Kesim sınırları', nichts: 'Olağan dışı bir şey yok', leer: 'Henüz ölçüm yok', alleLoeschen: 'Ölçümleri sil', loeschenFrage: 'Sunucudaki {n} ölçüm dosyası ({mb}) silinsin mi? Kayıtlar kalır.', grund_pause: 'duraklamada', grund_tal: 'seviye çukurunda', grund_angabe: 'bildirimde', grund_werbung: 'reklam',
+  },
   geltung: {
     alle: 'Tüm cihazlar', geraet: 'Bu cihaz', fest: 'Sabit',
     alleHilfe: 'Tüm cihazlar için geçerli; alttaki çubukla kaydet',

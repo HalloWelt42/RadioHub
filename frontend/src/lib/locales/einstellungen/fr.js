@@ -22,6 +22,9 @@ export default {
     zeitansage: "L'annonce de l'heure se règle par appareil, comme sur le téléphone ; désormais aussi sur ordinateur.",
     abgleich: "Dernière synchronisation et Synchroniser maintenant se trouvent au-dessus ; ici, l'heure.",
   },
+  messung: {
+    umfang: '{n} événements, {mb}', bericht: 'Rapport', laden: 'Télécharger', grenzen: 'Limites de découpe', nichts: 'Rien de particulier', leer: 'Rien de mesuré encore', alleLoeschen: 'Supprimer les mesures', loeschenFrage: 'Supprimer {n} fichiers de mesure ({mb}) du serveur ? Les enregistrements restent.', grund_pause: 'à la pause', grund_tal: 'au creux de niveau', grund_angabe: 'à l\'annonce', grund_werbung: 'publicité',
+  },
   geltung: {
     alle: "Tous les appareils", geraet: "Cet appareil", fest: "Fixé",
     alleHilfe: "Vaut pour tous les appareils ; enregistrer avec la barre en bas",

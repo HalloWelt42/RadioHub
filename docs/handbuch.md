@@ -60,7 +60,9 @@ Verbinden spielt es nicht, die Wiedergabe beginnt danach (Hinweis mit Restzeit u
 springt es über Werbung ("Zurück und anhören"), live schaltet es stumm, bis sie vorbei ist ("Ton an"). Solange
 Werbung nicht zu hören ist, steht die Kanzel in Bernstein auf WERBUNG; die Stellen stehen bernsteinfarben auf dem
 Balken des Zeitversatzes. Ein Sender mit einem einzigen gefundenen Spot trägt in der Liste die Marke "Werbung". Woran
-Werbung in den Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`. Manche Sender
+Werbung in den Sendedaten zu erkennen ist, steht als Regeln in `backend/app/sendewerbung/angaben.toml`. Start und Sprung
+gehen nie näher an die Kante des Puffers als "live" (8 s, RAD-142): nach einem Spot beginnt die Wiedergabe, sobald sein Ende
+so weit zurückliegt, vorher zählt die Restzeit; ist das Ende einer Werbung noch nicht erreichbar, geht es stumm hindurch. Manche Sender
 spielen beim Verbinden je Hörer einen Vorlauf ein und nennen dabei als Titel nur ihren Namen (RAD-47); er zählt als
 Werbung beim Verbinden, wenn an seinem Ende eine Stille liegt, sonst war es nur ein später gemeldeter Titel.
 
@@ -214,6 +216,13 @@ liegt nur der laufende Abschnitt (höchstens 400 MB); ein Stück ohne Titelwechs
 Kellerwolke weg, sammeln sich die Stücke lokal und gehen nach, sobald sie wieder da ist. Bleibt auf dem Datenträger des
 Servers oder in der Kellerwolke nur noch die Reserve frei (Einstellungen > Aufnahmen, Vorgabe 5 GB), endet die Aufnahme
 sauber: sie heißt "Platz voll", Meldung und Protokoll nennen den Grund; unter der Reserve beginnt keine neue.
+Messmodus (RAD-143, Einstellungen > Allgemein > Bedienung, Fehlersuche): schreibt mit, was beim Hören und Aufnehmen geschieht,
+um Auffälliges hinterher zu erklären. Server: Angaben und Abrisse des Senders, jedes Ablegen mit Dauer, jeder Durchgang des
+Feinschnitts und jede Grenze mit ihrem Grund (an der Pause, im Pegeltal, bei der Angabe, Werbung) und ihrer Umgebung,
+Aussetzer, alle 30 s Auslastung und laufende Aufnahme. Oberfläche: Ereignisse des Tonelements je Sekunde, Stocken mit Dauer,
+Vorrat, Sprünge, Fehler, Netz, hängende Seite. Je Tag eine Datei in `{{wurzel}}/data/messung`, zusammen höchstens 200 MB,
+danach schreibt er nichts mehr. Die Karte zeigt je Tag einen Bericht, lädt die Datei und löscht auf Wunsch alle. Er kostet
+kaum Leistung und darf eine Nacht laufen; nichts davon verlässt den Server.
 Die Zahlen: neben den Aufnahmen steht die Zahl ihrer Titel (Note). Werbung, Einschübe und kurze Stücke, die nur den Sender
 nennen, zählen nicht als Titel; die Stücke bleiben in der Aufnahme.
 Geräte (RAD-18, nur PRO): Jedes Fenster von RadioHub meldet sich beim Vermittler des Appkerns

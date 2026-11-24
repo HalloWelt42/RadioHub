@@ -21,6 +21,9 @@ export default {
     zeitansage: 'Tidsopplesningen gjelder per enhet, som før på telefonen; nå kan den også stilles inn på datamaskinen.',
     abgleich: 'Siste synkronisering og Synkroniser nå står over; her er klokkeslettet.',
   },
+  messung: {
+    umfang: '{n} hendelser, {mb}', bericht: 'Rapport', laden: 'Last ned', grenzen: 'Klippegrenser', nichts: 'Ingenting uvanlig', leer: 'Ingenting målt ennå', alleLoeschen: 'Slett måledata', loeschenFrage: 'Slette {n} målefiler ({mb}) fra serveren? Opptakene blir.', grund_pause: 'ved pausen', grund_tal: 'i nivådalen', grund_angabe: 'ved meldingen', grund_werbung: 'reklame',
+  },
   geltung: {
     alle: 'Alle enheter', geraet: 'Denne enheten', fest: 'Fastsatt',
     alleHilfe: 'Gjelder alle enheter; lagre via linjen nederst',

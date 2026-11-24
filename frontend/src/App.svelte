@@ -21,6 +21,7 @@
   import { werbesprungStarten } from "./spieler/werbesprung.svelte";
   import { radiowerbungStarten } from "./spieler/radiowerbung.svelte";
   import { pufferStarten } from "./spieler/puffer.svelte";
+  import { messungStarten } from "./spieler/messung.svelte";
 
 
   // Adresse und Bereich (Zurück und Vor im Browser; alte #-Adressen und die Wurzel leitet der Router um)
@@ -42,6 +43,7 @@
   werbesprungStarten();
   radiowerbungStarten();
   pufferStarten();
+  messungStarten();
 
   // Neue Fassung erkennen; neu geladen wird nur auf Wunsch über den Hinweis (RAD-20)
   $effect(() => {

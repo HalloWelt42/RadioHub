@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import shutil
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
@@ -27,6 +28,7 @@ from ..database import db_session
 from . import feinschnitt, feinschnitt_lauf, werbestellen
 from .audio_utils import probe_duration
 from .aufnahmen import aufnahmen
+from .messung import messung
 from .schnitt import SitzungGegenstand, schritt_fortschreiben, schritte
 from .segment_splitter import Stueck, splitter
 
@@ -136,8 +138,12 @@ class Laufschnitt:
     async def durchgang(self, abschluss: bool = False) -> int:
         """Schneidet, was feststeht; liefert die Zahl der neuen feinen Stücke."""
         async with self._laeuft:
+            beginn = time.monotonic()
             try:
-                return await self._durchgang(abschluss)
+                anzahl = await self._durchgang(abschluss)
+                messung.merken("feinschnitt", sitzung=self.sitzung_id, stuecke=anzahl, fertig=self.fertig, abschluss=abschluss,
+                               dauer_s=round(time.monotonic() - beginn, 2), lokal_mb=round(sum(p.stat().st_size for p in self._lokal.values() if p.exists()) / 1e6, 1))
+                return anzahl
             finally:
                 if abschluss:
                     shutil.rmtree(self._ordner, ignore_errors=True)
@@ -170,12 +176,28 @@ class Laufschnitt:
             raise
         finally:
             shutil.rmtree(ordner, ignore_errors=True)
+        self._messen(analyse, behalten, von)
         self._ab_wechsel_s = von + (max(ende, angabe.t) if angabe else ende)
         self.werbung += [werbestellen.Neu(von=von + v, bis=von + b, text=w.name + (" (beim Verbinden)" if w.beim_verbinden else ""))
                          for v, b, w in self.abschnitt(von, ende).werbung if b - v > 0.5]
         await self._analyse_ablegen(analyse, ende, abschluss)
         logger.info(f"Feinschnitt {self.sitzung_id}: {len(stuecke)} Stücke bis {(von + ende) / 60:.0f} min")
         return len(stuecke)
+
+    def _messen(self, analyse: feinschnitt_lauf.Analyse, behalten: list[feinschnitt.Stueck], von: float) -> None:
+        """Je Grenze ihr Grund und der Abstand zur Angabe (Messmodus): daran lässt sich die Regel prüfen und verbessern."""
+        if not messung.aktiv:
+            return
+        angaben = [feinschnitt.Angabe(*w) for w in analyse.wechsel]
+        for s in behalten:
+            a = feinschnitt.angabe_der_grenze(s.bis, angaben, analyse.stillen, pegel=analyse.pegel)
+            pausen = [(round(v, 2), round(b, 2)) for v, b in analyse.stillen if abs(b - s.bis) <= 8]
+            grund = "werbung" if a is None else "pause" if any(v - 0.05 <= s.bis <= b + 0.05 for v, b in pausen) else \
+                    "angabe" if abs(a.t - s.bis) < 0.01 else "tal"
+            messung.merken("grenze", sitzung=self.sitzung_id, bei_s=round(von + s.bis, 2), davor=s.name, grund=grund,
+                           angabe_s=round(von + a.t, 2) if a else None, abstand_s=round(s.bis - a.t, 2) if a else None,
+                           pausen=[(round(von + v, 2), round(von + b, 2)) for v, b in pausen],
+                           pegel=[(round(von + t, 1), m) for t, m in analyse.pegel if abs(t - s.bis) <= 6])
 
     async def _schneiden(self, beteiligt: list[dict], behalten: list[feinschnitt.Stueck], von: float, rest_name: str,
                          ordner: Path) -> tuple[list[Stueck], Stueck | None]:

@@ -30,6 +30,7 @@ from . import database, einstellungen, uebergang
 from .ablage import AblageEinstellungen, AblageFehler
 from .config import DB_PATH, VERSION, get_arbeit_dir
 from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, timeshift_buffer
+from .services.messung import messung
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
@@ -115,7 +116,9 @@ class Radiobetrieb(Begleiter):
         mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs
         seed_domain_blacklist()         # Werbedomains der Erkennung
         aufnahmen.aufraeumen()          # alte Arbeitskopien
-        self._aufgaben = [asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
+        messung.lage = rec_manager.messlage
+        self._aufgaben = [asyncio.create_task(messung.laufen(), name="messung"),
+                          asyncio.create_task(self._podcasts_abrufen(), name="podcast-abruf"),
                           asyncio.create_task(self._liegengebliebene_ablegen(), name="aufnahmen-nachholen"),
                           asyncio.create_task(mitschriften.nachholen(), name="mitschriften-nachholen"),
                           asyncio.create_task(self._abgleich_planen(), name="abgleich-plan"),
@@ -140,6 +143,7 @@ class Radiobetrieb(Begleiter):
             await asyncio.wait_for(asyncio.shield(rec_manager.feinschnitt_abwarten()), FEINSCHNITT_BEIM_ENDE_S)
         except asyncio.TimeoutError:
             log.warning("Feinschnitt beim Beenden nicht fertig: die groben Stücke bleiben")
+        messung.schreiben()
         await buffer_manager.stop_buffering()
         await timeshift_buffer.stop_buffering()
         await hls_buffer.stop()

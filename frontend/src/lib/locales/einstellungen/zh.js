@@ -21,6 +21,9 @@ export default {
     zeitansage: '报时按设备设置，和以前在手机上一样；现在也可以在电脑上设置。',
     abgleich: '上次同步和立即同步在上方；这里设置时间。',
   },
+  messung: {
+    umfang: '{n} 个事件，{mb}', bericht: '报告', laden: '下载', grenzen: '剪切边界', nichts: '没有异常', leer: '尚未测量', alleLoeschen: '删除测量数据', loeschenFrage: '从服务器删除 {n} 个测量文件（{mb}）？录音会保留。', grund_pause: '在停顿处', grund_tal: '在电平低谷', grund_angabe: '在通知处', grund_werbung: '广告',
+  },
   geltung: {
     alle: '所有设备', geraet: '此设备', fest: '固定',
     alleHilfe: '适用于所有设备；通过下方栏保存',

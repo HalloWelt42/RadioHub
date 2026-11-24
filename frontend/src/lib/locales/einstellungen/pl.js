@@ -21,6 +21,9 @@ export default {
     zeitansage: 'Zapowiedź godziny działa osobno dla każdego urządzenia, jak dotąd na telefonie; teraz można ją ustawić także na komputerze.',
     abgleich: 'Ostatnia synchronizacja i Synchronizuj teraz są powyżej; tutaj ustawiasz godzinę.',
   },
+  messung: {
+    umfang: '{n} zdarzeń, {mb}', bericht: 'Raport', laden: 'Pobierz', grenzen: 'Granice cięcia', nichts: 'Nic szczególnego', leer: 'Jeszcze nic nie zmierzono', alleLoeschen: 'Usuń pomiary', loeschenFrage: 'Usunąć {n} plików pomiarów ({mb}) z serwera? Nagrania pozostają.', grund_pause: 'na pauzie', grund_tal: 'w dołku poziomu', grund_angabe: 'przy zapowiedzi', grund_werbung: 'reklama',
+  },
   geltung: {
     alle: 'Wszystkie urządzenia', geraet: 'To urządzenie', fest: 'Ustalone na stałe',
     alleHilfe: 'Dotyczy wszystkich urządzeń; zapisz paskiem na dole',

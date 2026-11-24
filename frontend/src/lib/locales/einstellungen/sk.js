@@ -21,6 +21,9 @@ export default {
     zeitansage: 'Hlásenie času platí pre každé zariadenie zvlášť, ako doteraz na telefóne; teraz sa dá nastaviť aj na počítači.',
     abgleich: 'Posledná synchronizácia a Synchronizovať teraz sú vyššie; tu je čas.',
   },
+  messung: {
+    umfang: '{n} udalostí, {mb}', bericht: 'Správa', laden: 'Stiahnuť', grenzen: 'Hranice strihu', nichts: 'Nič nápadné', leer: 'Zatiaľ nič nezmerané', alleLoeschen: 'Zmazať merania', loeschenFrage: 'Zmazať {n} súborov meraní ({mb}) zo servera? Nahrávky zostanú.', grund_pause: 'v pauze', grund_tal: 'v poklese úrovne', grund_angabe: 'pri ohlásení', grund_werbung: 'reklama',
+  },
   geltung: {
     alle: 'Všetky zariadenia', geraet: 'Toto zariadenie', fest: 'Pevne dané',
     alleHilfe: 'Platí pre všetky zariadenia; uložte lištou dole',

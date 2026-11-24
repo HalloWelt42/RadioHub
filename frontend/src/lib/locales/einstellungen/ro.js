@@ -22,6 +22,9 @@ export default {
     zeitansage: 'Anunțarea orei se aplică pe fiecare dispozitiv, ca până acum pe telefon; acum se poate seta și pe calculator.',
     abgleich: 'Ultima sincronizare și Sincronizează acum sunt mai sus; aici ora.',
   },
+  messung: {
+    umfang: '{n} evenimente, {mb}', bericht: 'Raport', laden: 'Descarcă', grenzen: 'Limitele tăierii', nichts: 'Nimic deosebit', leer: 'Încă nimic măsurat', alleLoeschen: 'Șterge măsurătorile', loeschenFrage: 'Ștergeți {n} fișiere de măsurare ({mb}) de pe server? Înregistrările rămân.', grund_pause: 'la pauză', grund_tal: 'în valea de nivel', grund_angabe: 'la anunț', grund_werbung: 'reclamă',
+  },
   geltung: {
     alle: 'Toate dispozitivele', geraet: 'Acest dispozitiv', fest: 'Fixat',
     alleHilfe: 'Se aplică tuturor dispozitivelor; salvează cu bara de jos',

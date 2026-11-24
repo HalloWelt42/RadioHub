@@ -22,6 +22,7 @@
   import Felder from "./Felder.svelte";
   import Karte from "./Karte.svelte";
   import KategorienTeil from "./KategorienTeil.svelte";
+  import MessungTeil from "./MessungTeil.svelte";
   import MusterTeil from "./MusterTeil.svelte";
   import OrtTeil from "./OrtTeil.svelte";
   import TastaturTeil from "./TastaturTeil.svelte";
@@ -45,7 +46,7 @@
     { id: "allgemein", symbol: "fa-gear", reiter: [
       ...(S ? [r("bedienung", "fa-hand-pointer", [
         { karte: "sprache", symbol: "fa-language", felder: ["language"] },
-        { karte: "fehlersuche", symbol: "fa-stethoscope", felder: ["geraet:entwickleransicht"] }])]
+        { karte: "fehlersuche", symbol: "fa-stethoscope", felder: ["geraet:entwickleransicht", "messmodus"], teil: MessungTeil }])]
         : [r("bedienung", "fa-hand-pointer", [{ karte: "spracheGeraet", symbol: "fa-language", felder: ["geraet:sprache"] }])]),
       r("tastatur", "fa-keyboard", [{ teil: TastaturTeil }]),
       r("ueber", "fa-circle-info", [{ teil: UeberTeil }]),
@@ -71,7 +72,7 @@
       { id: "aufnahmen", symbol: "fa-circle-dot", reiter: [
         r("ordner", "fa-folder-tree", [{ teil: AufnahmeordnerTeil }]),
         r("titel", "fa-ban", [{ teil: MusterTeil }]),
-        r("technik", "fa-sliders", [{ karte: "aufnahme", symbol: "fa-circle-dot", felder: ["recording_bitrate", "recording_debug_log"] }]),
+        r("technik", "fa-sliders", [{ karte: "aufnahme", symbol: "fa-circle-dot", felder: ["recording_bitrate", "aufnahme_reserve_gb", "recording_debug_log"] }]),
       ] },
       { id: "podcasts", symbol: "fa-podcast", reiter: [r("abruf", "", [
         { karte: "abruf", symbol: "fa-rotate", felder: ["podcast_auto_refresh", "podcast_refresh_interval"] }], t("einstellungen.bereich.podcasts"))] },
