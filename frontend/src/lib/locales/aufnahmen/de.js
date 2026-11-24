@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Ordner löschen', ordnerLoeschenFrage: 'Ordner "{name}" löschen? Er ist leer.',
   ordnerVoll: '"{name}" enthält {n} Aufnahmen und lässt sich erst löschen, wenn er leer ist.', verstanden: 'Verstanden',
   zielLeiste: 'Neue Aufnahmen landen in {name}',
-  dateien: 'Dateien', frei: 'GB frei',
+  dateien: 'Dateien', frei: 'GB frei', freiHilfe: 'Platz der Kellerwolke, dort liegen die Aufnahmen',
   suche: 'Sender oder Titel suchen', wolkeSuche: 'Dateien in diesem Ordner suchen', aktualisieren: 'Aktualisieren',
   alleFilter: 'Alle Aufnahmen', alleDateien: 'Alle Audiodateien dieses Ordners', chipOrdner: 'Ordner', chipAufnahme: 'Aufnahme', chipSuche: 'Suche',
   filterEntfernen: 'Filter entfernen',

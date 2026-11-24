@@ -161,4 +161,5 @@ export default {
   transkript: {
     titel: '書き起こし', hilfe: 'エピソードの文章を読む。再生中は追従', starten: '書き起こす', startenHilfe: 'エピソードを文章にします。Kellerwolke に保存されます', abbrechen: '中止', laeuft: '書き起こし中', feed: 'フィードの文章', gehoert: '書き起こした文章', keins: '書き起こしはまだありません', laedt: '読み込み中',
   },
+  neues: { tag: '24 時間以内の新着: {n}', woche: '7 日以内の新着: {n}', monat: '30 日以内の新着: {n}' },
 };

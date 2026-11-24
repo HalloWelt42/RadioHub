@@ -107,6 +107,7 @@ export default {
     vollstaendig: "Ci sono tutti i frammenti vocali", laeuft: "Creazione in corso",
   },
   ablage: {
+    endablage: 'Archivio finale', endHinweis: 'Registrazioni, episodi e trascrizioni sono in Kellerwolke', tbFrei: 'TB liberi', tbGesamt: 'TB totali',
     datenordner: "Cartella dati", festHilfe: "Stabilito durante l'installazione",
     hinweis: "La posizione di database e buffer viene stabilita durante l'installazione. Qui si vede solo quanto spazio occupano; per spostarli serve una nuova installazione.",
     gb: "{name} GB", dateien: "File", frei: "Libero GB", belegt: "Occupato {belegt} GB su {gesamt} GB",

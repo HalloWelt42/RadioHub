@@ -169,4 +169,5 @@ export default {
   transkript: {
     titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
   },
+  neues: { tag: 'Neu in 24 Stunden: {n}', woche: 'Neu in 7 Tagen: {n}', monat: 'Neu in 30 Tagen: {n}' },
 };

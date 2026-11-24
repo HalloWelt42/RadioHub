@@ -106,6 +106,7 @@ export default {
     vollstaendig: 'Alle lydbiter finnes', laeuft: 'Lages',
   },
   ablage: {
+    endablage: 'Endelig lager', endHinweis: 'Opptak, episoder og utskrifter ligger i Kellerwolke', tbFrei: 'TB ledig', tbGesamt: 'TB totalt',
     datenordner: 'Datamappe', festHilfe: 'Fastsatt ved installasjonen',
     hinweis: 'Hvor database og buffer ligger, fastsettes ved installasjonen. Her vises bare hvor mye som er brukt; flytting er bare mulig med en ny installasjon.',
     gb: '{name} GB', dateien: 'Filer', frei: 'Ledig GB', belegt: 'Brukt {belegt} GB av {gesamt} GB',

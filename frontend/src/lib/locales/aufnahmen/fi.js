@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Poista kansio', ordnerLoeschenFrage: 'Poistetaanko kansio "{name}"? Se on tyhjä.',
   ordnerVoll: '"{name}" sisältää {n} tallennetta, ja sen voi poistaa vasta tyhjänä.', verstanden: 'Selvä',
   zielLeiste: 'Uudet tallenteet menevät kansioon {name}',
-  dateien: 'Tiedostot', frei: 'Gt vapaana',
+  dateien: 'Tiedostot', frei: 'Gt vapaana', freiHilfe: 'Kellerwolken tila, jossa tallenteet ovat',
   suche: 'Hae asemaa tai kappaletta', wolkeSuche: 'Hae tiedostoja tästä kansiosta', aktualisieren: 'Päivitä',
   alleFilter: 'Kaikki tallenteet', alleDateien: 'Kaikki tämän kansion äänitiedostot', chipOrdner: 'Kansio', chipAufnahme: 'Tallenne', chipSuche: 'Haku',
   filterEntfernen: 'Poista suodatin',

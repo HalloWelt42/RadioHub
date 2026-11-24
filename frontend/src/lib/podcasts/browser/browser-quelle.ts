@@ -266,7 +266,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
     return {
       id: d.id, titel: d.titel || d.feed, autor: d.autor, beschreibung: d.beschreibung, bild: d.bild, feed: d.feed,
       autoLaden: false, angeheftet: d.angeheftet, sortierung: d.sortierung, ordnerId: d.ordnerId, aktualisiert: d.aktualisiert,
-      folgen: folgen.length, gespeichert: 0, ungehoert: ungehoert.length, heuteUngehoert: juenger(TAG_MS), wocheUngehoert: juenger(7 * TAG_MS),
+      folgen: folgen.length, gespeichert: 0, ungehoert: ungehoert.length, heuteUngehoert: juenger(TAG_MS), wocheUngehoert: juenger(7 * TAG_MS), monatUngehoert: juenger(30 * TAG_MS),
       dauerGesamt: folgen.reduce((s, f) => s + f.dauer, 0), werbungUeberspringen: false, werbungPruefen: false, werbungFolgen: 0,
     };
   }

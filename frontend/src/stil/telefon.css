@@ -107,6 +107,7 @@
 .tp-stand-zeile { margin-top: 6px; font-size: var(--klein); }
 .tp-stand { grid-template-columns: calc(var(--gross) * 5) auto; align-items: center; gap: 8px; }
 .tp-gespeichert { color: var(--led-blau); }
+.tp-neues-alle { display: flex; justify-content: space-between; gap: 8px; margin: 0 2px 6px; font-size: var(--klein); color: var(--text-2); }
 .tp-ungehoert { display: inline-flex; gap: 6px; align-items: center; color: var(--text-2); }
 .tp-auto { color: var(--gut); display: inline-flex; gap: 4px; align-items: center; }
 .tp-ordner { display: flex; gap: 8px; align-items: center; margin: 12px 4px 6px; font-size: var(--klein); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }

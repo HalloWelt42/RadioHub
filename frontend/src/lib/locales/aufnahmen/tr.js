@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Klasörü sil', ordnerLoeschenFrage: '"{name}" klasörü silinsin mi? Boş.',
   ordnerVoll: '"{name}" {n} kayıt içeriyor ve ancak boşken silinebilir.', verstanden: 'Anladım',
   zielLeiste: 'Yeni kayıtlar {name} klasörüne gider',
-  dateien: 'Dosyalar', frei: 'GB boş',
+  dateien: 'Dosyalar', frei: 'GB boş', freiHilfe: 'Kayıtların bulunduğu Kellerwolke alanı',
   suche: 'İstasyon veya başlık ara', wolkeSuche: 'Bu klasörde dosya ara', aktualisieren: 'Yenile',
   alleFilter: 'Tüm kayıtlar', alleDateien: 'Bu klasördeki tüm ses dosyaları', chipOrdner: 'Klasör', chipAufnahme: 'Kayıt', chipSuche: 'Arama',
   filterEntfernen: 'Filtreyi kaldır',

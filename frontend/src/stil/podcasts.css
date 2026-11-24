@@ -22,6 +22,13 @@
 .rh-abo.an .rh-zahl, .rh-alle-abos.an .rh-zahl { color: var(--akzent); }
 .rh-abo:focus-visible, .rh-alle-abos:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 1px; }
 .rh-abo-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.4; }
+/* Neues vor der Zahl (RAD-136): grün 24 Stunden, gelb 7 Tage, blau 30 Tage; Schriftmarken, in Hell und Dunkel lesbar */
+.rh-neuzahl { white-space: nowrap; }
+.rh-neuzahl > strong { font-weight: 700; }
+.rh-neuzahl > i { font-style: normal; color: var(--text-3); margin-inline: 1px; }
+.rh-neu-tag { color: var(--gut); }
+.rh-neu-woche { color: color-mix(in srgb, var(--led-gelb) var(--rh-gelb-anteil, 85%), var(--text)); }
+.rh-neu-monat { color: color-mix(in srgb, var(--info) 82%, var(--text)); }
 .rh-abo-ende { display: inline-flex; align-items: center; gap: 4px; }
 .rh-griff { position: absolute; left: 4px; top: 0; bottom: 0; inline-size: 20px; display: grid; place-items: center; color: var(--text-3);
   cursor: grab; font-size: var(--klein); opacity: .45; transition: opacity var(--schnell); }

@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'All pieces are present', laeuft: 'Being created',
   },
   ablage: {
+    endablage: 'Final storage', endHinweis: 'Recordings, episodes and transcripts are kept in Kellerwolke', tbFrei: 'TB free', tbGesamt: 'TB total',
     datenordner: 'Data folder', festHilfe: 'Set during installation',
     hinweis: 'Where the database and buffer live is set during installation. This only shows how much is used; moving them takes a new installation.',
     gb: '{name} GB', dateien: 'Files', frei: 'Free GB', belegt: 'Used {belegt} GB of {gesamt} GB',

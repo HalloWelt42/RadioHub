@@ -161,4 +161,5 @@ export default {
   transkript: {
     titel: 'Döküm', hilfe: 'Bölümün metnini oku; oynatırken izler', starten: 'Yazıya dök', startenHilfe: 'Bölümü metne çevir; bunun için Kellerwolke içine kaydedilir', abbrechen: 'İptal', laeuft: 'Döküm sürüyor', feed: 'Akıştaki metin', gehoert: 'Dökülen metin', keins: 'Henüz döküm yok', laedt: 'Döküm yükleniyor',
   },
+  neues: { tag: '24 saatte yeni: {n}', woche: '7 günde yeni: {n}', monat: '30 günde yeni: {n}' },
 };

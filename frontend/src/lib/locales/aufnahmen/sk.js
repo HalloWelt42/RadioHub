@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Vymazať priečinok', ordnerLoeschenFrage: 'Vymazať priečinok "{name}"? Je prázdny.',
   ordnerVoll: '"{name}" obsahuje {n} nahrávok a dá sa vymazať, až keď bude prázdny.', verstanden: 'Rozumiem',
   zielLeiste: 'Nové nahrávky sa ukladajú do {name}',
-  dateien: 'Súbory', frei: 'GB voľné',
+  dateien: 'Súbory', frei: 'GB voľné', freiHilfe: 'Miesto v Kellerwolke, kde sú nahrávky',
   suche: 'Hľadať stanicu alebo skladbu', wolkeSuche: 'Hľadať súbory v tomto priečinku', aktualisieren: 'Aktualizovať',
   alleFilter: 'Všetky nahrávky', alleDateien: 'Všetky zvukové súbory tohto priečinka', chipOrdner: 'Priečinok', chipAufnahme: 'Nahrávka', chipSuche: 'Hľadanie',
   filterEntfernen: 'Odobrať filter',

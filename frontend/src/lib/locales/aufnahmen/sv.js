@@ -8,7 +8,7 @@ export default {
   ordnerLoeschen: 'Radera mapp', ordnerLoeschenFrage: 'Radera mappen "{name}"? Den är tom.',
   ordnerVoll: '"{name}" innehåller {n} inspelningar och kan raderas först när den är tom.', verstanden: 'Uppfattat',
   zielLeiste: 'Nya inspelningar hamnar i {name}',
-  dateien: 'Filer', frei: 'GB ledigt',
+  dateien: 'Filer', frei: 'GB ledigt', freiHilfe: 'Utrymme i Kellerwolke, där inspelningarna ligger',
   suche: 'Sök station eller spår', wolkeSuche: 'Sök filer i den här mappen', aktualisieren: 'Uppdatera',
   alleFilter: 'Alla inspelningar', alleDateien: 'Alla ljudfiler i den här mappen', chipOrdner: 'Mapp', chipAufnahme: 'Inspelning', chipSuche: 'Sökning',
   filterEntfernen: 'Ta bort filter',

@@ -1,6 +1,6 @@
 <script lang="ts">
   // Seitenleiste der Podcasts (Entwurf podcasts.html): oben eine schlichte Wahl (alle, ungehört, gespeichert),
-  // darunter die Abos mit der Zahl ungehörter Folgen. Ein Klick wählt genau ein Abo (Nutzer: "meist wird eh nur einer
+  // darunter die Abos mit der Zahl ungehörter Folgen und dem Neuen davor (RAD-136). Ein Klick wählt genau ein Abo (Nutzer: "meist wird eh nur einer
   // gewählt"), noch einmal zurück zu allen; mit Befehls- oder Strg-Taste mehrere. Angeheftete stehen fest oben
   // (Nadel am Abo heftet an und löst). Darunter die eigenen Ordner untereinander (RAD-23), dann die losen Abos.
   // Gezogen wird an der Griffleiste: das gezogene bleibt blass sichtbar, ein gestrichelter Platzhalter mit seinem Namen
@@ -11,6 +11,7 @@
   import { angeboteneWahl, podcastquelle, type Abo, type Folgenwahl, type Ordner } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import OrdnerKopf from "./OrdnerKopf.svelte";
+  import Neuzahl from "./Neuzahl.svelte";
 
   let { abos, ordner, gewaehlt, wahl, offen, uebernimmt, onwahl, onabos, onordnen, onanheften, onabonnieren, onsichern, onuebernehmen, onzu,
         onordnerneu, onordneraendern, onordnerloeschen, onordnerordnen, onzuordnen }: {
@@ -37,7 +38,6 @@
     onzuordnen: (aboId: number, ordnerId: string | null, ids: number[]) => void;
   } = $props();
 
-  const alleUngehoert = $derived(abos.reduce((s, a) => s + a.ungehoert, 0));
   const angeheftet = $derived(abos.filter((a) => a.angeheftet));
   const bekannt = $derived(new Set(ordner.map((o) => o.id)));
   /** Ordner eines Abos; einer, den es nicht (mehr) gibt, zählt als lose */
@@ -153,7 +153,7 @@
     <AboBild abo={a} klein />
     <span class="rh-abo-name">{a.titel}{#if a.autoLaden} <i class="fa-solid fa-cloud-arrow-down rh-auto" title={t("podcastAnsicht.autoHilfe")}></i>{/if}</span>
     <span class="rh-abo-ende">
-      <span class="rh-zahl" title={t("podcastAnsicht.ungehoert")}>{a.ungehoert || ""}</span>
+      <Neuzahl abos={[a]} />
       <button class="rh-nadel" class:an={a.angeheftet} type="button" aria-pressed={a.angeheftet}
               aria-label="{a.angeheftet ? t('podcastAnsicht.loesen') : t('podcastAnsicht.anheften')}: {a.titel}"
               title={a.angeheftet ? t("podcastAnsicht.loesenHilfe") : t("podcastAnsicht.anheftenHilfe")}
@@ -192,7 +192,7 @@
       {#if abos.length}
         <div class="rh-facetten rh-abos">
           <button class="rh-facette rh-alle-abos" class:an={!gewaehlt.length} type="button" aria-pressed={!gewaehlt.length} onclick={() => onabos([])}>
-            <span class="rh-abo-name">{t("podcastAnsicht.alleAbos")}</span><span class="rh-zahl" title={t("podcastAnsicht.ungehoert")}>{alleUngehoert || ""}</span>
+            <span class="rh-abo-name">{t("podcastAnsicht.alleAbos")}</span><Neuzahl {abos} alle />
           </button>
           {#if legtAn}
             <span class="rh-ordner-eingabe rh-ordner-neu">

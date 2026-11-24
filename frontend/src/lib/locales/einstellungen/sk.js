@@ -106,6 +106,7 @@ export default {
     vollstaendig: 'Všetky hlasové úseky sú k dispozícii', laeuft: 'Vytvára sa',
   },
   ablage: {
+    endablage: 'Konečné úložisko', endHinweis: 'Nahrávky, epizódy a prepisy sú v Kellerwolke', tbFrei: 'TB voľné', tbGesamt: 'TB spolu',
     datenordner: 'Dátový priečinok', festHilfe: 'Určené pri inštalácii',
     hinweis: 'Kde leží databáza a buffer, sa určuje pri inštalácii. Tu je len vidieť, koľko miesta je obsadené; presunúť to možno len novou inštaláciou.',
     gb: '{name} GB', dateien: 'Súbory', frei: 'Voľné GB', belegt: 'Obsadené {belegt} GB z {gesamt} GB',

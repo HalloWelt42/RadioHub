@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Slet mappe', ordnerLoeschenFrage: 'Slet mappen "{name}"? Den er tom.',
   ordnerVoll: '"{name}" indeholder {n} optagelser og kan først slettes, når den er tom.', verstanden: 'Forstået',
   zielLeiste: 'Nye optagelser havner i {name}',
-  dateien: 'Filer', frei: 'GB fri',
+  dateien: 'Filer', frei: 'GB fri', freiHilfe: 'Plads i Kellerwolke, hvor optagelserne ligger',
   suche: 'Søg efter station eller nummer', wolkeSuche: 'Søg efter filer i denne mappe', aktualisieren: 'Opdater',
   alleFilter: 'Alle optagelser', alleDateien: 'Alle lydfiler i denne mappe', chipOrdner: 'Mappe', chipAufnahme: 'Optagelse', chipSuche: 'Søgning',
   filterEntfernen: 'Fjern filter',

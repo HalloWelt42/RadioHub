@@ -234,8 +234,9 @@ class PodcastService:
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
                 (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-1 day')) as today_unplayed,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND published_at >= datetime('now', '-7 days')) as week_unplayed,
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-1 day')) as today_unplayed,
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-7 days')) as week_unplayed,
+                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-30 days')) as month_unplayed,
                 (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration,
                 (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
                  WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
@@ -417,9 +418,9 @@ class PodcastService:
         elif filter_status == "played":
             where += " AND is_played = 1"
         elif filter_status == "today":
-            where += " AND published_at >= datetime('now', '-1 day')"
+            where += " AND datetime(published_at) >= datetime('now', 'localtime', '-1 day')"
         elif filter_status == "week":
-            where += " AND published_at >= datetime('now', '-7 days')"
+            where += " AND datetime(published_at) >= datetime('now', 'localtime', '-7 days')"
 
         with db_session() as conn:
             c = conn.cursor()
@@ -463,9 +464,9 @@ class PodcastService:
         elif filter_status == "played":
             where_clauses.append("pe.is_played = 1")
         elif filter_status == "today":
-            where_clauses.append("pe.published_at >= datetime('now', '-1 day')")
+            where_clauses.append("datetime(pe.published_at) >= datetime('now', 'localtime', '-1 day')")
         elif filter_status == "week":
-            where_clauses.append("pe.published_at >= datetime('now', '-7 days')")
+            where_clauses.append("datetime(pe.published_at) >= datetime('now', 'localtime', '-7 days')")
 
         where = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
@@ -854,8 +855,8 @@ class PodcastService:
     # =========================================================================
 
     async def get_stats(self) -> dict:
-        """Umfassende Podcast-Statistiken (Speicher: der lokale für Zwischenstände)"""
-        total, used, free = shutil.disk_usage(DATA_DIR)
+        """Umfassende Podcast-Statistiken; der Platz ist der der Kellerwolke, in der die Folgen liegen"""
+        platz = await ablage().platz()
 
         with db_session() as conn:
             c = conn.cursor()
@@ -875,16 +876,16 @@ class PodcastService:
             c.execute("SELECT COALESCE(SUM(file_size), 0) FROM podcast_episodes WHERE is_downloaded = 1")
             dl_size = c.fetchone()[0]
 
-            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-1 day')")
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE datetime(published_at) >= datetime('now', 'localtime', '-1 day')")
             today_count = c.fetchone()[0]
 
-            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-1 day') AND is_played = 0")
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE datetime(published_at) >= datetime('now', 'localtime', '-1 day') AND is_played = 0")
             today_unplayed = c.fetchone()[0]
 
-            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-7 days')")
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE datetime(published_at) >= datetime('now', 'localtime', '-7 days')")
             week_count = c.fetchone()[0]
 
-            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE published_at >= datetime('now', '-7 days') AND is_played = 0")
+            c.execute("SELECT COUNT(*) FROM podcast_episodes WHERE datetime(published_at) >= datetime('now', 'localtime', '-7 days') AND is_played = 0")
             week_unplayed = c.fetchone()[0]
 
         return {
@@ -897,14 +898,15 @@ class PodcastService:
             "week": week_count,
             "week_unplayed": week_unplayed,
             "download_size_mb": round(dl_size / (1024 * 1024), 1) if dl_size else 0,
-            "disk_free_gb": round(free / (1024**3), 2),
+            "frei_bytes": platz.frei,
+            "gesamt_bytes": platz.gesamt,
         }
 
     async def get_storage_stats(self) -> dict:
         """Speicher-Statistiken (Kompatibilität)"""
         stats = await self.get_stats()
         return {
-            "disk_free_gb": stats["disk_free_gb"],
+            "frei_bytes": stats["frei_bytes"],
             "saved_episodes": stats["downloaded"],
             "saved_size_mb": stats["download_size_mb"],
         }
@@ -1058,11 +1060,13 @@ class PodcastService:
             return 0
 
     def _parse_pub_date(self, date_str: str) -> str:
-        """RFC 2822 pubDate nach ISO 8601 konvertieren für korrekte Sortierung."""
+        """RFC 2822 pubDate nach ISO 8601 in Ortszeit konvertieren, für Sortierung und Anzeige."""
         if not date_str:
             return ""
         try:
             dt = parsedate_to_datetime(date_str)
+            if dt.tzinfo is not None:            # Ortszeit, wie sie gezeigt und für "neu in 24 Stunden" gezählt wird
+                dt = dt.astimezone()
             return dt.strftime("%Y-%m-%dT%H:%M:%S")
         except Exception:
             # Fallback: Original-String zurückgeben

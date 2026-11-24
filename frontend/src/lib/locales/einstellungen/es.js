@@ -107,6 +107,7 @@ export default {
     vollstaendig: "Están todos los fragmentos de voz", laeuft: "Creando",
   },
   ablage: {
+    endablage: 'Almacén final', endHinweis: 'Grabaciones, episodios y transcripciones están en Kellerwolke', tbFrei: 'TB libres', tbGesamt: 'TB en total',
     datenordner: "Carpeta de datos", festHilfe: "Fijado en la instalación",
     hinweis: "La ubicación de la base de datos y del búfer se fija en la instalación. Aquí solo se muestra cuánto espacio ocupan; para moverlos hace falta una nueva instalación.",
     gb: "{name} GB", dateien: "Archivos", frei: "Libre GB", belegt: "Ocupado {belegt} GB de {gesamt} GB",

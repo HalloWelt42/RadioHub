@@ -162,4 +162,5 @@ export default {
   transkript: {
     titel: 'Transcript', hilfe: 'De tekst van de aflevering lezen; loopt mee bij afspelen', starten: 'Transcriberen', startenHilfe: 'De aflevering in tekst omzetten; ze wordt in Kellerwolke bewaard', abbrechen: 'Annuleren', laeuft: 'Transcriptie loopt', feed: 'Tekst uit de feed', gehoert: 'Tekst uit de transcriptie', keins: 'Nog geen transcript', laedt: 'Transcript wordt geladen',
   },
+  neues: { tag: 'Nieuw in 24 uur: {n}', woche: 'Nieuw in 7 dagen: {n}', monat: 'Nieuw in 30 dagen: {n}' },
 };

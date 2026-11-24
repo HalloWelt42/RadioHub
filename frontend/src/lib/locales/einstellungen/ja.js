@@ -106,6 +106,7 @@ export default {
     vollstaendig: '音声パーツはすべてそろっています', laeuft: '作成中',
   },
   ablage: {
+    endablage: '最終保存先', endHinweis: '録音、エピソード、書き起こしは Kellerwolke にあります', tbFrei: 'TB 空き', tbGesamt: 'TB 合計',
     datenordner: 'データフォルダ', festHilfe: 'インストール時に決定',
     hinweis: 'データベースとバッファの場所はインストール時に決まります。ここでは使用量だけを表示します。移動するには新しくインストールし直す必要があります。',
     gb: '{name} GB', dateien: 'ファイル', frei: '空き GB', belegt: '{gesamt} GB 中 {belegt} GB 使用',

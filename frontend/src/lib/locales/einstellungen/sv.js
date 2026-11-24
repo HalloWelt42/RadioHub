@@ -108,6 +108,7 @@ export default {
     vollstaendig: 'Alla talfraser finns', laeuft: 'Skapas',
   },
   ablage: {
+    endablage: 'Slutlagring', endHinweis: 'Inspelningar, avsnitt och utskrifter ligger i Kellerwolke', tbFrei: 'TB ledigt', tbGesamt: 'TB totalt',
     datenordner: 'Datamapp', festHilfe: 'Bestämt vid installationen',
     hinweis: 'Var databas och buffert ligger bestäms vid installationen. Här visas bara hur mycket som används; flytt går bara via en ny installation.',
     gb: '{name} GB', dateien: 'Filer', frei: 'Ledigt GB', belegt: 'Använt {belegt} GB av {gesamt} GB',

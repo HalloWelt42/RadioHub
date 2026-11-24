@@ -168,4 +168,5 @@ export default {
   transkript: {
     titel: 'Prepis', hilfe: 'Čítať text epizódy; pri prehrávaní beží s ňou', starten: 'Prepísať', startenHilfe: 'Previesť epizódu na text; uloží sa pritom do Kellerwolke', abbrechen: 'Zrušiť', laeuft: 'Prebieha prepis', feed: 'Text z kanála', gehoert: 'Text z prepisu', keins: 'Zatiaľ žiadny prepis', laedt: 'Prepis sa načítava',
   },
+  neues: { tag: 'Nové za 24 hodín: {n}', woche: 'Nové za 7 dní: {n}', monat: 'Nové za 30 dní: {n}' },
 };

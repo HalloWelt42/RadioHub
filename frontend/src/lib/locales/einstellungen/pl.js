@@ -106,6 +106,7 @@ export default {
     vollstaendig: 'Wszystkie fragmenty mowy są dostępne', laeuft: 'Generowanie',
   },
   ablage: {
+    endablage: 'Miejsce docelowe', endHinweis: 'Nagrania, odcinki i transkrypcje są w Kellerwolke', tbFrei: 'TB wolne', tbGesamt: 'TB razem',
     datenordner: 'Folder danych', festHilfe: 'Ustalone podczas instalacji',
     hinweis: 'Położenie bazy danych i bufora ustala się podczas instalacji. Tu widać tylko, ile miejsca jest zajęte; przenieść je można tylko przez nową instalację.',
     gb: '{name} GB', dateien: 'Pliki', frei: 'Wolne GB', belegt: 'Zajęte {belegt} GB z {gesamt} GB',

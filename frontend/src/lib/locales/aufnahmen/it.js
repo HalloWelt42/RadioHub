@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: "Elimina cartella", ordnerLoeschenFrage: "Eliminare la cartella \"{name}\"? È vuota.",
   ordnerVoll: "\"{name}\" contiene {n} registrazioni e si può eliminare solo quando è vuota.", verstanden: "Ho capito",
   zielLeiste: "Le nuove registrazioni finiscono in {name}",
-  dateien: "File", frei: "GB liberi",
+  dateien: "File", frei: "GB liberi", freiHilfe: 'Spazio di Kellerwolke, dove sono le registrazioni',
   suche: "Cerca stazione o titolo", wolkeSuche: "Cerca file in questa cartella", aktualisieren: "Aggiorna",
   alleFilter: "Tutte le registrazioni", alleDateien: "Tutti i file audio di questa cartella", chipOrdner: "Cartella", chipAufnahme: "Registrazione", chipSuche: "Ricerca",
   filterEntfernen: "Rimuovi filtro",

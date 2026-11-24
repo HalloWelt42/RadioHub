@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: "Eliminar carpeta", ordnerLoeschenFrage: "¿Eliminar la carpeta \"{name}\"? Está vacía.",
   ordnerVoll: "\"{name}\" contiene {n} grabaciones y solo se puede eliminar cuando esté vacía.", verstanden: "Entendido",
   zielLeiste: "Las grabaciones nuevas van a {name}",
-  dateien: "Archivos", frei: "GB libres",
+  dateien: "Archivos", frei: "GB libres", freiHilfe: 'Espacio de Kellerwolke, donde están las grabaciones',
   suche: "Buscar emisora o título", wolkeSuche: "Buscar archivos en esta carpeta", aktualisieren: "Actualizar",
   alleFilter: "Todas las grabaciones", alleDateien: "Todos los archivos de audio de esta carpeta", chipOrdner: "Carpeta", chipAufnahme: "Grabación", chipSuche: "Búsqueda",
   filterEntfernen: "Quitar filtro",

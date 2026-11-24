@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Șterge dosarul', ordnerLoeschenFrage: 'Ștergi dosarul "{name}"? Este gol.',
   ordnerVoll: '"{name}" conține {n} înregistrări și poate fi șters doar când este gol.', verstanden: 'Am înțeles',
   zielLeiste: 'Înregistrările noi ajung în {name}',
-  dateien: 'Fișiere', frei: 'GB liberi',
+  dateien: 'Fișiere', frei: 'GB liberi', freiHilfe: 'Spațiul din Kellerwolke, unde sunt înregistrările',
   suche: 'Caută post sau titlu', wolkeSuche: 'Caută fișiere în acest dosar', aktualisieren: 'Actualizează',
   alleFilter: 'Toate înregistrările', alleDateien: 'Toate fișierele audio din acest dosar', chipOrdner: 'Dosar', chipAufnahme: 'Înregistrare', chipSuche: 'Căutare',
   filterEntfernen: 'Elimină filtrul',

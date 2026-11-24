@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Kaikki puheosat ovat valmiina', laeuft: 'Luodaan',
   },
   ablage: {
+    endablage: 'Lopullinen tallennus', endHinweis: 'Tallenteet, jaksot ja litteroinnit ovat Kellerwolkessa', tbFrei: 'Tt vapaana', tbGesamt: 'Tt yhteensä',
     datenordner: 'Datakansio', festHilfe: 'Määritetty asennuksessa',
     hinweis: 'Tietokannan ja puskurin sijainti määritetään asennuksessa. Tässä näkyy vain käytetty tila; siirto onnistuu vain uudella asennuksella.',
     gb: '{name} Gt', dateien: 'Tiedostot', frei: 'Vapaa Gt', belegt: 'Käytössä {belegt} Gt / {gesamt} Gt',

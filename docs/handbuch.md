@@ -148,6 +148,14 @@ der Kellerwolke und gibt sie der [[Transkription]] (Einstellungen > Dienste, App
 und wartet nach einem Neustart weiter; das Ergebnis liegt als `.transkript.json` neben der Folge und geht dem des Feeds vor.
 Abbrechen beendet das Warten, die Transkription selbst läuft dort zu Ende. Die Suche der Folgen findet den Text.
 
+Neues der Abos (RAD-136): vor der Zahl ungehörter Folgen steht das Neue, grün die letzten 24 Stunden, gelb 7 Tage, blau 30 Tage;
+am Abo und am Ordner die jüngste Stufe mit Neuem (3/53), bei "Alle Abos" alle drei (12/79/323/19320). Gezählt werden
+ungehörte Folgen nach ihrer Erscheinungszeit (Ortszeit).
+
+Endablage (RAD-135): Aufnahmen, Folgen, Mitgelesenes und Bausteine liegen in der [[Kellerwolke]], ihr Datenträger zählt; die
+Aufnahmen und Einstellungen > Ablage zeigen dessen Platz (Kellerwolke ab 0.98). Lokal liegen nur Datenbank und Zwischenstände:
+laufende Aufnahme, Puffer, Download, Mitlesen und Arbeitskopie beim Schneiden, bis sie abgelegt sind.
+
 Werbung in Podcasts (RAD-32): die Details einer Folge zeigen ihre Werbestellen mit Herkunft. Sie kommen aus Kapiteln
 des Feeds, deren Titel nach Werbung klingt, von Hand (beim Hören am Beginn und am Ende markieren) oder aus dem Vergleich
 der Fassungen: viele Anbieter setzen Werbung erst beim Abruf ein, je Abruf andere. Für eine gespeicherte Folge

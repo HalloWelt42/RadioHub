@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from pathlib import Path
 
-from .port import Ablage, Anfragestand, Belegt, Eintrag, NichtGefunden, eltern, sauberer_pfad
+from .port import Ablage, Anfragestand, Belegt, Eintrag, NichtGefunden, Platz, eltern, sauberer_pfad
 
 
 class SpeicherAblage(Ablage):
@@ -110,6 +110,9 @@ class SpeicherAblage(Ablage):
         for p in [p for p in list(self.ordner) if p == pfad or p.startswith(pfad + "/")]:
             self.ordner.discard(p)
         return True
+
+    async def platz(self) -> Platz:
+        return Platz(gesamt=20 * 1024**4, frei=10 * 1024**4)
 
     async def zustand(self) -> dict:
         return {"art": "speicher", "ziel": "Arbeitsspeicher", "wurzel": "", "verbunden": True, "meldung": "Testablage"}

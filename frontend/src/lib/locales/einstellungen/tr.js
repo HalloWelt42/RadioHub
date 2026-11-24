@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Tüm ses parçaları mevcut', laeuft: 'Oluşturuluyor',
   },
   ablage: {
+    endablage: 'Son depolama', endHinweis: 'Kayıtlar, bölümler ve dökümler Kellerwolke içindedir', tbFrei: 'TB boş', tbGesamt: 'TB toplam',
     datenordner: 'Veri klasörü', festHilfe: 'Kurulumda belirlendi',
     hinweis: 'Veritabanının ve tamponun nerede duracağı kurulumda belirlenir. Burada yalnızca ne kadar yer kullanıldığı görünür; taşımak ancak yeni bir kurulumla mümkündür.',
     gb: '{name} GB', dateien: 'Dosyalar', frei: 'Boş GB', belegt: 'Kullanılan {belegt} GB / {gesamt} GB',

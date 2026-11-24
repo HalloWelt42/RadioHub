@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Toate fragmentele vocale există', laeuft: 'Se generează',
   },
   ablage: {
+    endablage: 'Stocare finală', endHinweis: 'Înregistrările, episoadele și transcrierile sunt în Kellerwolke', tbFrei: 'TB liberi', tbGesamt: 'TB în total',
     datenordner: 'Dosar de date', festHilfe: 'Stabilit la instalare',
     hinweis: 'Unde se află baza de date și bufferul se stabilește la instalare. Aici apare doar cât spațiu este ocupat; mutarea este posibilă doar printr-o instalare nouă.',
     gb: '{name} GB', dateien: 'Fișiere', frei: 'GB liberi', belegt: 'Ocupat {belegt} GB din {gesamt} GB',

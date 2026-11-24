@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import ssl
+import time
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -18,9 +19,11 @@ from appkern.kellerwolke import (
     KeinRecht as KwKeinRecht, NichtErreichbar as KwNichtErreichbar, NichtGefunden as KwNichtGefunden,
 )
 
-from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, KeinRecht, NichtErreichbar, NichtGefunden, eltern, sauberer_pfad
+from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, KeinRecht, NichtErreichbar, NichtGefunden, Platz, eltern, sauberer_pfad
 
 log = logging.getLogger("radiohub.ablage")
+
+PLATZ_GILT_S = 60.0
 
 
 def _uebersetzt(fehler: KellerwolkeFehler) -> AblageFehler:
@@ -50,6 +53,8 @@ class KellerwolkeAblage(Ablage):
         self._schreiben = zugang.mit_geduld(geduld_s)
         self._sofort = zugang.mit_geduld(0)
         self._zugang = zugang
+        self._platz: Platz | None = None
+        self._platz_seit = 0.0
 
     def __repr__(self) -> str:
         return f"KellerwolkeAblage({self._zugang.adresse!r}, {self._wurzel!r})"
@@ -174,6 +179,19 @@ class KellerwolkeAblage(Ablage):
             raise _uebersetzt(f) from f
 
     # --- Stand ------------------------------------------------------------------------------------------------------
+
+    async def platz(self) -> Platz:
+        """Aus der Kellerwolke, kurz gemerkt; kennt sie die Auskunft noch nicht oder ist sie weg, unbekannt."""
+        if self._platz is not None and time.monotonic() - self._platz_seit < PLATZ_GILT_S:
+            return self._platz
+        try:
+            s = await self._sofort.speicher()
+            self._platz = Platz(s.gesamt, s.frei)
+        except KellerwolkeFehler as f:
+            log.info("Platz der Kellerwolke: %s", f)
+            self._platz = Platz()
+        self._platz_seit = time.monotonic()
+        return self._platz
 
     async def zustand(self) -> dict:
         stand = {"art": "kellerwolke", "ziel": self._zugang.adresse, "wurzel": self._wurzel, "verbunden": False}

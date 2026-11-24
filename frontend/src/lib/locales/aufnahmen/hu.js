@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Mappa törlése', ordnerLoeschenFrage: 'Törlöd a(z) "{name}" mappát? Üres.',
   ordnerVoll: 'A(z) "{name}" {n} felvételt tartalmaz, és csak üresen törölhető.', verstanden: 'Értem',
   zielLeiste: 'Az új felvételek ide kerülnek: {name}',
-  dateien: 'Fájlok', frei: 'GB szabad',
+  dateien: 'Fájlok', frei: 'GB szabad', freiHilfe: 'A Kellerwolke helye, itt vannak a felvételek',
   suche: 'Adó vagy cím keresése', wolkeSuche: 'Fájlok keresése ebben a mappában', aktualisieren: 'Frissítés',
   alleFilter: 'Minden felvétel', alleDateien: 'A mappa összes hangfájlja', chipOrdner: 'Mappa', chipAufnahme: 'Felvétel', chipSuche: 'Keresés',
   filterEntfernen: 'Szűrő eltávolítása',

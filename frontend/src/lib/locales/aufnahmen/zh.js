@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: '删除文件夹', ordnerLoeschenFrage: '删除文件夹 "{name}"？它是空的。',
   ordnerVoll: '"{name}" 中有 {n} 个录音，清空后才能删除。', verstanden: '知道了',
   zielLeiste: '新录音存入 {name}',
-  dateien: '文件', frei: 'GB 可用',
+  dateien: '文件', frei: 'GB 可用', freiHilfe: '录音所在的 Kellerwolke 空间',
   suche: '搜索电台或曲名', wolkeSuche: '在此文件夹中搜索文件', aktualisieren: '更新',
   alleFilter: '全部录音', alleDateien: '此文件夹的所有音频文件', chipOrdner: '文件夹', chipAufnahme: '录音', chipSuche: '搜索',
   filterEntfernen: '移除筛选',

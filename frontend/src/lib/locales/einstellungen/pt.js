@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Todos os segmentos de voz estão disponíveis', laeuft: 'A gerar',
   },
   ablage: {
+    endablage: 'Armazenamento final', endHinweis: 'Gravações, episódios e transcrições estão na Kellerwolke', tbFrei: 'TB livres', tbGesamt: 'TB no total',
     datenordner: 'Pasta de dados', festHilfe: 'Definida na instalação',
     hinweis: 'A localização da base de dados e do buffer é definida na instalação. Aqui só se vê quanto está ocupado; mudar de local só é possível com uma nova instalação.',
     gb: '{name} GB', dateien: 'Ficheiros', frei: 'GB livres', belegt: 'Ocupado {belegt} GB de {gesamt} GB',

@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'フォルダを削除', ordnerLoeschenFrage: 'フォルダ "{name}" を削除しますか？ 空です。',
   ordnerVoll: '"{name}" には録音が {n} 件あり、空になるまで削除できません。', verstanden: 'わかりました',
   zielLeiste: '新しい録音は {name} に入ります',
-  dateien: 'ファイル', frei: 'GB 空き',
+  dateien: 'ファイル', frei: 'GB 空き', freiHilfe: '録音が置かれる Kellerwolke の空き容量',
   suche: '放送局または曲名を検索', wolkeSuche: 'このフォルダのファイルを検索', aktualisieren: '更新',
   alleFilter: 'すべての録音', alleDateien: 'このフォルダのすべての音声ファイル', chipOrdner: 'フォルダ', chipAufnahme: '録音', chipSuche: '検索',
   filterEntfernen: 'フィルターを解除',

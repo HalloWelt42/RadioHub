@@ -168,4 +168,5 @@ export default {
   transkript: {
     titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
   },
+  neues: { tag: 'Nyt på 24 timer: {n}', woche: 'Nyt på 7 dage: {n}', monat: 'Nyt på 30 dage: {n}' },
 };

@@ -32,13 +32,13 @@
 
   // ----- Laden: Liste, Ordner, Kennzahlen -------------------------------------------------------------------------
   let alle = $state<number | null>(null);
-  let kennzahlen = $state<{ dateien: number; mb: number; freiGb: number } | null>(null);
+  let kennzahlen = $state<{ dateien: number; mb: number; freiGb: number | null } | null>(null);
 
   async function zaehlen(): Promise<void> {
     try {
       alle = (await quelle.aufnahmen({ suche: "", ordner: "", sort: "datum", absteigend: true }, 0, 1)).gesamt;
       const s = await api.getRecordingsStats();
-      kennzahlen = { dateien: Number(s.file_count) || 0, mb: Number(s.used_mb) || 0, freiGb: Number(s.disk_free_gb) || 0 };
+      kennzahlen = { dateien: Number(s.file_count) || 0, mb: Number(s.used_mb) || 0, freiGb: s.frei_bytes == null ? null : s.frei_bytes / 1024 ** 3 };
     } catch {
       kennzahlen = null;
     }

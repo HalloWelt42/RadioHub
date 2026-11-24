@@ -161,4 +161,5 @@ export default {
   transkript: {
     titel: '文字稿', hilfe: '阅读节目文字；播放时跟随', starten: '转写', startenHilfe: '把节目转成文字；会保存到 Kellerwolke', abbrechen: '取消', laeuft: '正在转写', feed: '来自订阅源的文字', gehoert: '转写的文字', keins: '还没有文字稿', laedt: '正在加载文字稿',
   },
+  neues: { tag: '24 小时内新增: {n}', woche: '7 天内新增: {n}', monat: '30 天内新增: {n}' },
 };

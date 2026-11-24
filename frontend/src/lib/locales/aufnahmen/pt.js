@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Eliminar pasta', ordnerLoeschenFrage: 'Eliminar a pasta "{name}"? Está vazia.',
   ordnerVoll: '"{name}" contém {n} gravações e só pode ser eliminada quando estiver vazia.', verstanden: 'Entendido',
   zielLeiste: 'As novas gravações vão para {name}',
-  dateien: 'Ficheiros', frei: 'GB livres',
+  dateien: 'Ficheiros', frei: 'GB livres', freiHilfe: 'Espaço da Kellerwolke, onde estão as gravações',
   suche: 'Procurar estação ou faixa', wolkeSuche: 'Procurar ficheiros nesta pasta', aktualisieren: 'Atualizar',
   alleFilter: 'Todas as gravações', alleDateien: 'Todos os ficheiros de áudio desta pasta', chipOrdner: 'Pasta', chipAufnahme: 'Gravação', chipSuche: 'Pesquisa',
   filterEntfernen: 'Remover filtro',

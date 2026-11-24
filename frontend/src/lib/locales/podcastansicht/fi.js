@@ -169,4 +169,5 @@ export default {
   transkript: {
     titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
   },
+  neues: { tag: 'Uutta 24 tunnissa: {n}', woche: 'Uutta 7 päivässä: {n}', monat: 'Uutta 30 päivässä: {n}' },
 };

@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Usuń folder', ordnerLoeschenFrage: 'Usunąć folder "{name}"? Jest pusty.',
   ordnerVoll: '"{name}" zawiera nagrania ({n}) i można go usunąć dopiero, gdy będzie pusty.', verstanden: 'Rozumiem',
   zielLeiste: 'Nowe nagrania trafiają do {name}',
-  dateien: 'Pliki', frei: 'GB wolne',
+  dateien: 'Pliki', frei: 'GB wolne', freiHilfe: 'Miejsce w Kellerwolke, gdzie są nagrania',
   suche: 'Szukaj stacji lub utworu', wolkeSuche: 'Szukaj plików w tym folderze', aktualisieren: 'Odśwież',
   alleFilter: 'Wszystkie nagrania', alleDateien: 'Wszystkie pliki audio w tym folderze', chipOrdner: 'Folder', chipAufnahme: 'Nagranie', chipSuche: 'Szukaj',
   filterEntfernen: 'Usuń filtr',

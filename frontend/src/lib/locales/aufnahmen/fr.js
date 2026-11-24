@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: "Supprimer le dossier", ordnerLoeschenFrage: "Supprimer le dossier \"{name}\" ? Il est vide.",
   ordnerVoll: "\"{name}\" contient {n} enregistrements et ne peut être supprimé qu'une fois vide.", verstanden: "Compris",
   zielLeiste: "Les nouveaux enregistrements vont dans {name}",
-  dateien: "Fichiers", frei: "Go libres",
+  dateien: "Fichiers", frei: "Go libres", freiHilfe: 'Espace de Kellerwolke, où sont les enregistrements',
   suche: "Chercher une station ou un titre", wolkeSuche: "Chercher des fichiers dans ce dossier", aktualisieren: "Actualiser",
   alleFilter: "Tous les enregistrements", alleDateien: "Tous les fichiers audio de ce dossier", chipOrdner: "Dossier", chipAufnahme: "Enregistrement", chipSuche: "Recherche",
   filterEntfernen: "Retirer le filtre",

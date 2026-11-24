@@ -64,6 +64,7 @@
   --rh-lack-6: #11807a; --rh-lack-7: #5f6b78; --rh-lack-8: #a0457a; --rh-lack-9: #3f6f8f; --rh-lack-10: #6b7a1f;
 }
 :root[data-theme="hell"] {
+  --rh-gelb-anteil: 44%;   /* Gelb als Schrift: im Hellen mit viel Textfarbe, damit es lesbar bleibt (RAD-136) */
   --rh-logo: #1f5fa6;
 }
 

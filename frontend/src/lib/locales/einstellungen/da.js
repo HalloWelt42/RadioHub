@@ -106,6 +106,7 @@ export default {
     vollstaendig: 'Alle lydbidder findes', laeuft: 'Oprettes',
   },
   ablage: {
+    endablage: 'Endeligt lager', endHinweis: 'Optagelser, episoder og udskrifter ligger i Kellerwolke', tbFrei: 'TB fri', tbGesamt: 'TB i alt',
     datenordner: 'Datamappe', festHilfe: 'Fastlagt ved installationen',
     hinweis: 'Hvor database og buffer ligger, fastlægges ved installationen. Her står kun, hvor meget der er optaget; det kan kun flyttes med en ny installation.',
     gb: '{name} GB', dateien: 'Filer', frei: 'Fri GB', belegt: 'Optaget {belegt} GB af {gesamt} GB',

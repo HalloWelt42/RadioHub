@@ -161,4 +161,5 @@ export default {
   transkript: {
     titel: 'Átirat', hilfe: 'Az epizód szövegének olvasása; lejátszáskor követi', starten: 'Átírás', startenHilfe: 'Az epizód szöveggé alakítása; közben a Kellerwolke tárhelyre kerül', abbrechen: 'Mégse', laeuft: 'Átírás folyamatban', feed: 'Szöveg a csatornából', gehoert: 'Szöveg az átírásból', keins: 'Még nincs átirat', laedt: 'Átirat betöltése',
   },
+  neues: { tag: 'Új 24 órán belül: {n}', woche: 'Új 7 napon belül: {n}', monat: 'Új 30 napon belül: {n}' },
 };

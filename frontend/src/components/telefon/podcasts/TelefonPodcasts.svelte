@@ -14,6 +14,7 @@
     type Podcastsortierung } from "../../../lib/podcasts";
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import AboBild from "../../podcast/AboBild.svelte";
+  import Neuzahl from "../../podcast/Neuzahl.svelte";
   import Band from "../../radio/Band.svelte";
   import Suchfeld from "../../radio/Suchfeld.svelte";
   import TAboKopf from "./TAboKopf.svelte";
@@ -207,6 +208,7 @@
     </div></div>
     <div class="tf-liste">
       {#if ansicht.aboUebersicht}
+        {#if aboliste.abos.length}<p class="tp-neues-alle">{t("podcastAnsicht.alleAbos")} <Neuzahl abos={aboliste.abos} alle /></p>{/if}
         {#each gruppen as g (g.name)}
           <p class="tp-ordner"><i class="fa-solid {g.symbol}"></i>{g.name}</p>
           {#each g.abos as a (a.id)}
@@ -215,7 +217,7 @@
               <AboBild abo={a} />
               <div><b>{a.titel}</b>{#if a.autor}<div class="tf-meta"><span>{a.autor}</span></div>{/if}
                 <div class="tf-meta">
-                  {#if a.ungehoert}<span class="tp-ungehoert">{t("podcastAnsicht.telefon.ungehoertZahl", { n: a.ungehoert })}</span>
+                  {#if a.ungehoert}<span class="tp-ungehoert"><Neuzahl abos={[a]} /> {t("podcastAnsicht.ungehoert")}</span>
                   {:else}<span>{t("podcastAnsicht.telefon.alleGehoert")}</span>{/if}
                   {#if kann.speichern}<span title={t("podcastAnsicht.telefon.gespeichertHilfe")}><i class="fa-solid fa-cloud"></i> {t("podcastAnsicht.telefon.gespeichertVon", { n: a.gespeichert, von: a.folgen })}</span>{/if}
                   {#if a.autoLaden}<span class="tp-auto"><i class="fa-solid fa-bolt"></i>{t("podcastAnsicht.telefon.neueSpeichernAn")}</span>{/if}

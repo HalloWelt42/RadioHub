@@ -25,6 +25,7 @@ export interface Abo {
   ungehoert: number;
   heuteUngehoert: number;
   wocheUngehoert: number;
+  monatUngehoert: number;
   /** Länge aller Folgen in Sekunden */
   dauerGesamt: number;
   /** Werbestellen beim Hören überspringen (RAD-32) */

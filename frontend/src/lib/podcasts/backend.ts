@@ -52,7 +52,7 @@ export class BackendPodcastquelle implements Podcastquelle {
       feed: text(r.feed_url), autoLaden: !!r.auto_download, angeheftet: !!r.angeheftet,
       sortierung: PODCASTSORTIERUNG.includes(r.sortierung) ? r.sortierung : "", ordnerId: r.ordner_id || null, aktualisiert: text(r.last_updated),
       folgen: zahl(r.episode_count), gespeichert: zahl(r.downloaded_count), ungehoert: zahl(r.unplayed_count), heuteUngehoert: zahl(r.today_unplayed),
-      wocheUngehoert: zahl(r.week_unplayed), dauerGesamt: zahl(r.total_duration),
+      wocheUngehoert: zahl(r.week_unplayed), monatUngehoert: zahl(r.month_unplayed), dauerGesamt: zahl(r.total_duration),
       werbungUeberspringen: r.werbung_ueberspringen === undefined ? true : !!r.werbung_ueberspringen, werbungPruefen: !!r.werbung_pruefen,
       werbungFolgen: zahl(r.werbung_folgen),
     };

@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Map verwijderen', ordnerLoeschenFrage: 'Map "{name}" verwijderen? Hij is leeg.',
   ordnerVoll: '"{name}" bevat {n} opnamen en kan pas worden verwijderd als hij leeg is.', verstanden: 'Begrepen',
   zielLeiste: 'Nieuwe opnamen komen in {name}',
-  dateien: 'Bestanden', frei: 'GB vrij',
+  dateien: 'Bestanden', frei: 'GB vrij', freiHilfe: 'Ruimte van Kellerwolke, waar de opnamen staan',
   suche: 'Zender of nummer zoeken', wolkeSuche: 'Bestanden in deze map zoeken', aktualisieren: 'Vernieuwen',
   alleFilter: 'Alle opnamen', alleDateien: 'Alle audiobestanden in deze map', chipOrdner: 'Map', chipAufnahme: 'Opname', chipSuche: 'Zoeken',
   filterEntfernen: 'Filter verwijderen',

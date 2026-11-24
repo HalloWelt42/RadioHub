@@ -41,6 +41,14 @@ class Belegt(AblageFehler):
 
 
 @dataclass(frozen=True)
+class Platz:
+    """Platz der Ablage in Bytes; None: unbekannt (die Ablage nennt ihn nicht oder ist gerade nicht erreichbar)."""
+
+    gesamt: int | None = None
+    frei: int | None = None
+
+
+@dataclass(frozen=True)
 class Anfragestand:
     """Wie weit eine an eine andere App weitergegebene Anfrage ist."""
 
@@ -128,6 +136,10 @@ class Ablage(ABC):
     @abstractmethod
     async def loeschen(self, pfad: str) -> bool:
         """In den Papierkorb (wiederherstellbar); False, wenn es nichts zu löschen gab."""
+
+    @abstractmethod
+    async def platz(self) -> Platz:
+        """Platz dort, wo am Ende alles liegt (nie der lokale der Zwischenstände)."""
 
     @abstractmethod
     async def zustand(self) -> dict:

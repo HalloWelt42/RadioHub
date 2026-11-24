@@ -599,6 +599,10 @@ class RadioHubAPI {
     return this.fetch('/api/storage/zones');
   }
 
+  async getAblageZustand() {
+    return this.fetch('/api/storage/ablage');
+  }
+
   // === Externe Dienste ===
 
   async getServices() {

@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Delete folder', ordnerLoeschenFrage: 'Delete folder "{name}"? It is empty.',
   ordnerVoll: '"{name}" holds {n} recordings and can only be deleted once it is empty.', verstanden: 'Got it',
   zielLeiste: 'New recordings land in {name}',
-  dateien: 'Files', frei: 'GB free',
+  dateien: 'Files', frei: 'GB free', freiHilfe: 'Space in Kellerwolke, where the recordings are kept',
   suche: 'Search station or title', wolkeSuche: 'Search files in this folder', aktualisieren: 'Refresh',
   alleFilter: 'All recordings', alleDateien: 'All audio files in this folder', chipOrdner: 'Folder', chipAufnahme: 'Recording', chipSuche: 'Search',
   filterEntfernen: 'Remove filter',

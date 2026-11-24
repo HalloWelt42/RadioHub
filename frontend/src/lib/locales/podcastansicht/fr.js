@@ -169,4 +169,5 @@ export default {
   transkript: {
     titel: 'Transcription', hilfe: 'Lire le texte de l\'épisode ; il suit la lecture', starten: 'Transcrire', startenHilfe: 'Mettre l\'épisode en texte ; il est enregistré dans Kellerwolke', abbrechen: 'Annuler', laeuft: 'Transcription en cours', feed: 'Texte du flux', gehoert: 'Texte transcrit', keins: 'Pas encore de transcription', laedt: 'Chargement de la transcription',
   },
+  neues: { tag: 'Nouveau en 24 heures: {n}', woche: 'Nouveau en 7 jours: {n}', monat: 'Nouveau en 30 jours: {n}' },
 };

@@ -106,6 +106,7 @@ export default {
     vollstaendig: 'Alle spraakfragmenten zijn aanwezig', laeuft: 'Wordt gegenereerd',
   },
   ablage: {
+    endablage: 'Eindopslag', endHinweis: 'Opnamen, afleveringen en transcripties staan in Kellerwolke', tbFrei: 'TB vrij', tbGesamt: 'TB totaal',
     datenordner: 'Gegevensmap', festHilfe: 'Bij de installatie vastgelegd',
     hinweis: 'Waar database en buffer staan, wordt bij de installatie vastgelegd. Hier staat alleen hoeveel er bezet is; verhuizen kan alleen via een nieuwe installatie.',
     gb: '{name} GB', dateien: 'Bestanden', frei: 'Vrij GB', belegt: 'Bezet {belegt} GB van {gesamt} GB',

@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Minden hangrészlet megvan', laeuft: 'Létrehozás folyamatban',
   },
   ablage: {
+    endablage: 'Végső tárhely', endHinweis: 'Felvételek, epizódok és átiratok a Kellerwolke tárhelyen vannak', tbFrei: 'TB szabad', tbGesamt: 'TB összesen',
     datenordner: 'Adatmappa', festHilfe: 'Telepítéskor rögzítve',
     hinweis: 'Hogy az adatbázis és a puffer hol van, azt a telepítés határozza meg. Itt csak a foglalt hely látszik; áthelyezni csak új telepítéssel lehet.',
     gb: '{name} GB', dateien: 'Fájlok', frei: 'Szabad GB', belegt: 'Foglalt: {belegt} GB / {gesamt} GB',

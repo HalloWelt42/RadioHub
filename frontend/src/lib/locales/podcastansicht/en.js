@@ -164,4 +164,5 @@ export default {
   transkript: {
     titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
   },
+  neues: { tag: 'New in 24 hours: {n}', woche: 'New in 7 days: {n}', monat: 'New in 30 days: {n}' },
 };

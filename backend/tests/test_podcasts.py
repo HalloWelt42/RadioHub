@@ -208,3 +208,26 @@ def test_abo_nennt_ob_ein_cover_da_ist(monkeypatch, tmp_path):
     monkeypatch.setattr(podcast_service, "get_image_path", lambda pid, episode_id=None: Path(tmp_path / "cover.jpg") if pid == 1 else None)
     assert podcast_service._mit_bildangabe({"id": 1})["hat_bild"] is True
     assert podcast_service._mit_bildangabe({"id": 2})["hat_bild"] is False
+
+
+async def test_neues_in_1_7_und_30_tagen(client):
+    """RAD-136: ungehörte Folgen nach Erscheinen, an der Stunde genau (nicht am Kalendertag) und in Ortszeit."""
+    from datetime import datetime, timedelta
+    with db_session() as conn:
+        abo = conn.execute("INSERT INTO podcast_subscriptions (feed_url, title) VALUES (?, ?)", (f"https://feed.test/{uuid.uuid4().hex}", "Neues")).lastrowid
+        for stunden, gehoert in ((2, 0), (23, 1), (25, 0), (24 * 6, 0), (24 * 8, 0), (24 * 29, 0), (24 * 31, 0)):
+            conn.execute("INSERT INTO podcast_episodes (podcast_id, guid, title, audio_url, published_at, is_played) VALUES (?, ?, 'x', 'https://a.test/1.mp3', ?, ?)",
+                         (abo, uuid.uuid4().hex, (datetime.now() - timedelta(hours=stunden)).strftime("%Y-%m-%dT%H:%M:%S"), gehoert))
+    try:
+        a = next(x for x in client.get("/api/podcasts/subscriptions").json()["subscriptions"] if x["id"] == abo)
+        assert (a["today_unplayed"], a["week_unplayed"], a["month_unplayed"], a["unplayed_count"]) == (1, 3, 5, 6)
+    finally:
+        with db_session() as conn:
+            conn.execute("DELETE FROM podcast_episodes WHERE podcast_id = ?", (abo,))
+            conn.execute("DELETE FROM podcast_subscriptions WHERE id = ?", (abo,))
+
+
+def test_erscheinungszeit_in_ortszeit():
+    from datetime import datetime, timezone
+    erwartet = datetime(2026, 11, 23, 19, 0, tzinfo=timezone.utc).astimezone().strftime("%Y-%m-%dT%H:%M:%S")
+    assert podcast_service._parse_pub_date("Mon, 23 Nov 2026 20:00:00 +0100") == erwartet == podcast_service._parse_pub_date("Mon, 23 Nov 2026 19:00:00 GMT")

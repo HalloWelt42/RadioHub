@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Удалить папку', ordnerLoeschenFrage: 'Удалить папку "{name}"? Она пуста.',
   ordnerVoll: 'В "{name}" записей: {n}; удалить её можно только пустой.', verstanden: 'Понятно',
   zielLeiste: 'Новые записи попадают в {name}',
-  dateien: 'Файлы', frei: 'ГБ свободно',
+  dateien: 'Файлы', frei: 'ГБ свободно', freiHilfe: 'Место в Kellerwolke, где лежат записи',
   suche: 'Поиск станции или трека', wolkeSuche: 'Поиск файлов в этой папке', aktualisieren: 'Обновить',
   alleFilter: 'Все записи', alleDateien: 'Все аудиофайлы этой папки', chipOrdner: 'Папка', chipAufnahme: 'Запись', chipSuche: 'Поиск',
   filterEntfernen: 'Убрать фильтр',

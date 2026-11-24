@@ -6,6 +6,7 @@
   import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import type { Abo, Ordner } from "../../lib/podcasts";
+  import Neuzahl from "./Neuzahl.svelte";
 
   let { ordner, abos, ziel, ongriff, onende, onueber, onablegen, onumbenennen, onklappen, onloeschen }: {
     ordner: Ordner;
@@ -22,7 +23,6 @@
     onloeschen: () => Promise<void>;
   } = $props();
 
-  const ungehoert = $derived(abos.reduce((s, a) => s + a.ungehoert, 0));
   let bearbeitet = $state(false);
   let name = $state("");
   let fragt = $state(false);
@@ -76,7 +76,7 @@
     <span class="rh-abo-name">{ordner.name}</span>
   {/if}
   <span class="rh-abo-ende">
-    <span class="rh-zahl" title={t("podcastAnsicht.ungehoert")}>{ungehoert || ""}</span>
+    <Neuzahl {abos} />
     <button class="rh-nadel" type="button" aria-label="{t('podcastAnsicht.ordnerUmbenennen')}: {ordner.name}" title={t("podcastAnsicht.ordnerUmbenennen")}
             onclick={bearbeiten}><i class="fa-solid fa-pen"></i></button>
     <button class="rh-nadel" type="button" aria-label="{t('podcastAnsicht.ordnerAufloesen')}: {ordner.name}" title={t("podcastAnsicht.ordnerAufloesen")}

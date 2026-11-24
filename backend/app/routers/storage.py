@@ -18,5 +18,6 @@ async def list_zones():
 
 @router.get("/ablage")
 async def ablage_zustand():
-    """Stand der Ablage (Kellerwolke): Ziel, Wurzelordner, verbunden, Meldung"""
-    return await ablage().zustand()
+    """Stand der Ablage (Kellerwolke): Ziel, Wurzelordner, verbunden, Meldung und ihr Platz"""
+    platz = await ablage().platz()
+    return {**await ablage().zustand(), "frei_bytes": platz.frei, "gesamt_bytes": platz.gesamt}

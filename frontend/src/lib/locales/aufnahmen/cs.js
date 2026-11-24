@@ -6,7 +6,7 @@ export default {
   ordnerLoeschen: 'Smazat složku', ordnerLoeschenFrage: 'Smazat složku "{name}"? Je prázdná.',
   ordnerVoll: '"{name}" obsahuje {n} nahrávek a lze ji smazat, až bude prázdná.', verstanden: 'Rozumím',
   zielLeiste: 'Nové nahrávky se ukládají do {name}',
-  dateien: 'Soubory', frei: 'GB volno',
+  dateien: 'Soubory', frei: 'GB volno', freiHilfe: 'Místo v Kellerwolke, kde jsou nahrávky',
   suche: 'Hledat stanici nebo skladbu', wolkeSuche: 'Hledat soubory v této složce', aktualisieren: 'Aktualizovat',
   alleFilter: 'Všechny nahrávky', alleDateien: 'Všechny zvukové soubory této složky', chipOrdner: 'Složka', chipAufnahme: 'Nahrávka', chipSuche: 'Hledání',
   filterEntfernen: 'Odebrat filtr',

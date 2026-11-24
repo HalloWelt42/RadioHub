@@ -169,4 +169,5 @@ export default {
   transkript: {
     titel: 'Transcrição', hilfe: 'Ler o texto do episódio; acompanha a reprodução', starten: 'Transcrever', startenHilfe: 'Passar o episódio a texto; fica guardado na Kellerwolke', abbrechen: 'Cancelar', laeuft: 'A transcrever', feed: 'Texto do feed', gehoert: 'Texto da transcrição', keins: 'Ainda sem transcrição', laedt: 'A carregar a transcrição',
   },
+  neues: { tag: 'Novo em 24 horas: {n}', woche: 'Novo em 7 dias: {n}', monat: 'Novo em 30 dias: {n}' },
 };

@@ -13,7 +13,7 @@ from pathlib import Path
 from appkern.kellerwolke import Kellerwolke
 
 from .einstellungen import AblageEinstellungen
-from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, NichtEingerichtet, NichtErreichbar, NichtGefunden, eltern
+from .port import Ablage, AblageFehler, Anfragestand, Belegt, Eintrag, NichtEingerichtet, NichtErreichbar, NichtGefunden, Platz, eltern
 from .speicher import SpeicherAblage
 
 
@@ -59,6 +59,9 @@ class KeineAblage(Ablage):
 
     async def loeschen(self, pfad: str) -> bool:
         raise self._fehlt()
+
+    async def platz(self) -> Platz:
+        return Platz()
 
     async def zustand(self) -> dict:
         return {"art": "keine", "ziel": "", "wurzel": "", "verbunden": False, "meldung": self.grund}
@@ -119,7 +122,7 @@ def einrichten(zugang: Kellerwolke | None, einstellungen: AblageEinstellungen | 
 
 
 __all__ = [
-    "Ablage", "AblageEinstellungen", "AblageFehler", "Anfragestand", "Belegt", "Eintrag", "KeineAblage", "NichtEingerichtet",
+    "Ablage", "AblageEinstellungen", "AblageFehler", "Anfragestand", "Belegt", "Eintrag", "KeineAblage", "Platz", "NichtEingerichtet",
     "NichtErreichbar", "NichtGefunden", "SpeicherAblage", "ablage", "einrichten", "eltern", "setzen", "starten",
     "vorgeben", "wolke", "wolke_setzen",
 ]

@@ -169,4 +169,5 @@ export default {
   transkript: {
     titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
   },
+  neues: { tag: 'Nowe w 24 godziny: {n}', woche: 'Nowe w 7 dni: {n}', monat: 'Nowe w 30 dni: {n}' },
 };

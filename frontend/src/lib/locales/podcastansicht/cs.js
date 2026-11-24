@@ -168,4 +168,5 @@ export default {
   transkript: {
     titel: 'Přepis', hilfe: 'Číst text epizody; při přehrávání běží s ní', starten: 'Přepsat', startenHilfe: 'Převést epizodu na text; uloží se při tom do Kellerwolke', abbrechen: 'Zrušit', laeuft: 'Probíhá přepis', feed: 'Text z kanálu', gehoert: 'Text z přepisu', keins: 'Zatím žádný přepis', laedt: 'Přepis se načítá',
   },
+  neues: { tag: 'Nové za 24 hodin: {n}', woche: 'Nové za 7 dní: {n}', monat: 'Nové za 30 dní: {n}' },
 };

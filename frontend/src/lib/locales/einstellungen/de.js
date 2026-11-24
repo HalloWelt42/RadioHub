@@ -107,6 +107,7 @@ export default {
     vollstaendig: 'Alle Sprachbausteine sind da', laeuft: 'Wird erzeugt',
   },
   ablage: {
+    endablage: 'Endablage', endHinweis: 'Aufnahmen, Folgen und Mitgelesenes liegen in der Kellerwolke', tbFrei: 'TB frei', tbGesamt: 'TB gesamt',
     datenordner: 'Datenordner', festHilfe: 'Bei der Installation festgelegt',
     hinweis: 'Wo Datenbank und Puffer liegen, wird bei der Installation festgelegt. Hier steht nur, wie viel belegt ist; umziehen lässt sich das nur über eine neue Installation.',
     gb: '{name} GB', dateien: 'Dateien', frei: 'Frei GB', belegt: 'Belegt {belegt} GB von {gesamt} GB',

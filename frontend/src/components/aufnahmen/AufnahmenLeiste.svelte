@@ -15,7 +15,7 @@
     ohneOrdner: number | null;
     ebene: Wolkenebene | null;
     wolkeFehler: string;
-    kennzahlen: { dateien: number; mb: number; freiGb: number } | null;
+    kennzahlen: { dateien: number; mb: number; freiGb: number | null } | null;
     offen: boolean;
     wolkeMoeglich: boolean;
     onquelle: (q: "aufnahmen" | "wolke") => void;
@@ -146,7 +146,7 @@
     {:else if kennzahlen}
       <span><b>{kennzahlen.dateien.toLocaleString("de-DE")}</b> {t("aufnahmenAnsicht.dateien")}</span>
       <span><b>{Math.round(kennzahlen.mb).toLocaleString("de-DE")}</b> MB</span>
-      <span><b>{Math.round(kennzahlen.freiGb).toLocaleString("de-DE")}</b> {t("aufnahmenAnsicht.frei")}</span>
+      {#if kennzahlen.freiGb !== null}<span title={t("aufnahmenAnsicht.freiHilfe")}><i class="fa-solid fa-cloud"></i> <b>{Math.round(kennzahlen.freiGb).toLocaleString("de-DE")}</b> {t("aufnahmenAnsicht.frei")}</span>{/if}
     {/if}
   </div>
 </aside>

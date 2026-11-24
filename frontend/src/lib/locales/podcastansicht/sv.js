@@ -162,4 +162,5 @@ export default {
   transkript: {
     titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
   },
+  neues: { tag: 'Nytt på 24 timmar: {n}', woche: 'Nytt på 7 dagar: {n}', monat: 'Nytt på 30 dagar: {n}' },
 };

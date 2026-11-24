@@ -107,6 +107,7 @@ export default {
     vollstaendig: "Tous les extraits vocaux sont là", laeuft: "Création en cours",
   },
   ablage: {
+    endablage: 'Stockage final', endHinweis: 'Enregistrements, épisodes et transcriptions sont dans Kellerwolke', tbFrei: 'To libres', tbGesamt: 'To au total',
     datenordner: "Dossier de données", festHilfe: "Fixé lors de l'installation",
     hinweis: "L'emplacement de la base de données et du tampon est fixé lors de l'installation. Ici, seul l'espace occupé est indiqué ; un déménagement passe par une nouvelle installation.",
     gb: "{name} Go", dateien: "Fichiers", frei: "Libre Go", belegt: "Occupé {belegt} Go sur {gesamt} Go",

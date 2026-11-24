@@ -106,6 +106,7 @@ export default {
     vollstaendig: '所有语音片段都已齐全', laeuft: '正在生成',
   },
   ablage: {
+    endablage: '最终存储', endHinweis: '录音、节目和文字稿都在 Kellerwolke 中', tbFrei: 'TB 可用', tbGesamt: 'TB 总计',
     datenordner: '数据文件夹', festHilfe: '安装时确定',
     hinweis: '数据库和缓冲的位置在安装时确定。这里只显示已用空间；如需迁移只能重新安装。',
     gb: '{name} GB', dateien: '文件', frei: '可用 GB', belegt: '已用 {belegt} GB，共 {gesamt} GB',
