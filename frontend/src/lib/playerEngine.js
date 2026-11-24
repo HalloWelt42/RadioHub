@@ -311,7 +311,7 @@ export async function folgenfassung(fassung) {
   const folge = _appState?.currentEpisode;
   if (!folge || !_audioEl || (folge.fassung || '') === fassung) return;
   const stelle = _audioEl.currentTime || 0;
-  const neu = { ...folge, fassung, is_downloaded: fassung ? 1 : folge.is_downloaded, resume_position: stelle };
+  const neu = { ...folge, fassung, is_downloaded: 1, resume_position: stelle };   // wer eine Fassung hat, ist gespeichert
   if (_appState.isPlaying && !_appState.isPaused) return playPodcast(neu, folge.podcast);
   _appState.currentEpisode = neu;
   const el = _audioEl;
