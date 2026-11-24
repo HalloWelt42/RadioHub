@@ -44,6 +44,24 @@ class PodcastSearchResult:
     source: str  # "itunes" oder "fyyd"
 
 
+def _neu_seit(tage: int) -> str:
+    return f"COALESCE(SUM(is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-{tage} days')), 0)"
+
+
+#: Abos mit ihren Zahlen, jede Tabelle einmal gezählt (RAD-136): einzelne Unterabfragen je Abo und Zahl brauchten auf dem Pi
+#: vier Sekunden und hielten so lange den ganzen Dienst an, auch den Zeitversatz
+ABOS_MIT_ZAHLEN = f"""SELECT ps.*, COALESCE(z.episode_count, 0) AS episode_count, COALESCE(z.downloaded_count, 0) AS downloaded_count,
+    COALESCE(z.unplayed_count, 0) AS unplayed_count, COALESCE(z.today_unplayed, 0) AS today_unplayed,
+    COALESCE(z.week_unplayed, 0) AS week_unplayed, COALESCE(z.month_unplayed, 0) AS month_unplayed,
+    COALESCE(z.total_duration, 0) AS total_duration, COALESCE(w.werbung_folgen, 0) AS werbung_folgen
+    FROM podcast_subscriptions ps
+    LEFT JOIN (SELECT podcast_id, COUNT(*) AS episode_count, SUM(is_downloaded = 1) AS downloaded_count, SUM(is_played = 0) AS unplayed_count,
+               {_neu_seit(1)} AS today_unplayed, {_neu_seit(7)} AS week_unplayed, {_neu_seit(30)} AS month_unplayed,
+               SUM(duration) AS total_duration FROM podcast_episodes GROUP BY podcast_id) z ON z.podcast_id = ps.id
+    LEFT JOIN (SELECT e.podcast_id, COUNT(DISTINCT w.folge_id) AS werbung_folgen FROM werbestellen w
+               JOIN podcast_episodes e ON e.id = w.folge_id WHERE w.verworfen = 0 GROUP BY e.podcast_id) w ON w.podcast_id = ps.id"""
+
+
 class PodcastService:
     REFRESH_INTERVAL = 6 * 3600  # 6 Stunden (Fallback)
 
@@ -230,17 +248,7 @@ class PodcastService:
         """Alle Abos mit Episoden-Statistiken"""
         with db_session() as conn:
             c = conn.cursor()
-            c.execute('''SELECT ps.*,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-1 day')) as today_unplayed,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-7 days')) as week_unplayed,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0 AND datetime(published_at) >= datetime('now', 'localtime', '-30 days')) as month_unplayed,
-                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration,
-                (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
-                 WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
-                FROM podcast_subscriptions ps ORDER BY ps.angeheftet DESC, ps.sort_order, ps.title''')
+            c.execute(f"{ABOS_MIT_ZAHLEN} ORDER BY ps.angeheftet DESC, ps.sort_order, ps.title")
             return [self._mit_bildangabe(dict(row)) for row in c.fetchall()]
 
     def _mit_bildangabe(self, abo: dict) -> dict:
@@ -252,14 +260,7 @@ class PodcastService:
     async def get_subscription(self, podcast_id: int) -> Optional[dict]:
         with db_session() as conn:
             c = conn.cursor()
-            c.execute('''SELECT ps.*,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id) as episode_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_downloaded = 1) as downloaded_count,
-                (SELECT COUNT(*) FROM podcast_episodes WHERE podcast_id = ps.id AND is_played = 0) as unplayed_count,
-                (SELECT COALESCE(SUM(duration), 0) FROM podcast_episodes WHERE podcast_id = ps.id) as total_duration,
-                (SELECT COUNT(DISTINCT w.folge_id) FROM werbestellen w JOIN podcast_episodes e ON e.id = w.folge_id
-                 WHERE e.podcast_id = ps.id AND w.verworfen = 0) as werbung_folgen
-                FROM podcast_subscriptions ps WHERE ps.id = ?''', (podcast_id,))
+            c.execute(f"{ABOS_MIT_ZAHLEN} WHERE ps.id = ?", (podcast_id,))
             row = c.fetchone()
             return self._mit_bildangabe(dict(row)) if row else None
 
