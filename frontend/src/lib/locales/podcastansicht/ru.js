@@ -160,8 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Расшифровка', hilfe: 'Читать текст выпуска; при воспроизведении следует за ним', starten: 'Расшифровать', startenHilfe: 'Превратить выпуск в текст; он сохраняется в Kellerwolke', abbrechen: 'Отмена', laeuft: 'Идёт расшифровка', feed: 'Текст из ленты', vertont: 'Текст озвучки', gehoert: 'Текст расшифровки', keins: 'Расшифровки пока нет', laedt: 'Загрузка расшифровки',
+    titel: 'Расшифровка', hilfe: 'Читать текст выпуска; при воспроизведении следует за ним', starten: 'Расшифровать', startenHilfe: 'Превратить выпуск в текст; он сохраняется в Kellerwolke', abbrechen: 'Отмена', laeuft: 'Идёт расшифровка', feed: 'Текст из ленты', vonSelbst: 'Выпуск при этом сам сохранится в Kellerwolke.', vertont: 'Текст озвучки', gehoert: 'Текст расшифровки', keins: 'Расшифровки пока нет', laedt: 'Загрузка расшифровки',
   },
-  vertonung: { auf: 'На языке: {sprache}', hilfe: 'Перевести выпуск и озвучить на языке: {sprache}; оригинал, версия и оба текста хранятся вместе в Kellerwolke', umschalten: 'Звук и текст: {sprache} или оригинал', stimme: 'Голос озвучки', abbrechenHilfe: 'Прервать озвучку', laeuft: 'Идёт озвучка' },
+  vertonung: { fertig: 'Версия готова: {sprache}', auf: 'На языке: {sprache}', hilfe: 'Перевести выпуск и озвучить на языке: {sprache}; оригинал, версия и оба текста хранятся вместе в Kellerwolke', umschalten: 'Звук и текст: {sprache} или оригинал', stimme: 'Голос озвучки', abbrechenHilfe: 'Прервать озвучку', laeuft: 'Идёт озвучка' },
   neues: { tag: 'Новое за 24 часа: {n}', woche: 'Новое за 7 дней: {n}', monat: 'Новое за 30 дней: {n}' },
 };

@@ -161,8 +161,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcript', hilfe: 'De tekst van de aflevering lezen; loopt mee bij afspelen', starten: 'Transcriberen', startenHilfe: 'De aflevering in tekst omzetten; ze wordt in Kellerwolke bewaard', abbrechen: 'Annuleren', laeuft: 'Transcriptie loopt', feed: 'Tekst uit de feed', vertont: 'Tekst van de nasynchronisatie', gehoert: 'Tekst uit de transcriptie', keins: 'Nog geen transcript', laedt: 'Transcript wordt geladen',
+    titel: 'Transcript', hilfe: 'De tekst van de aflevering lezen; loopt mee bij afspelen', starten: 'Transcriberen', startenHilfe: 'De aflevering in tekst omzetten; ze wordt in Kellerwolke bewaard', abbrechen: 'Annuleren', laeuft: 'Transcriptie loopt', feed: 'Tekst uit de feed', vonSelbst: 'De aflevering wordt daarbij vanzelf in de Kellerwolke opgeslagen.', vertont: 'Tekst van de nasynchronisatie', gehoert: 'Tekst uit de transcriptie', keins: 'Nog geen transcript', laedt: 'Transcript wordt geladen',
   },
-  vertonung: { auf: 'In het {sprache}', hilfe: 'Aflevering vertalen en in het {sprache} laten inspreken; origineel, versie en beide teksten staan samen in de Kellerwolke', umschalten: 'Geluid en tekst in het {sprache} of origineel', stimme: 'Stem van de nasynchronisatie', abbrechenHilfe: 'Nasynchronisatie afbreken', laeuft: 'Nasynchronisatie bezig' },
+  vertonung: { fertig: 'De versie in het {sprache} is klaar', auf: 'In het {sprache}', hilfe: 'Aflevering vertalen en in het {sprache} laten inspreken; origineel, versie en beide teksten staan samen in de Kellerwolke', umschalten: 'Geluid en tekst in het {sprache} of origineel', stimme: 'Stem van de nasynchronisatie', abbrechenHilfe: 'Nasynchronisatie afbreken', laeuft: 'Nasynchronisatie bezig' },
   neues: { tag: 'Nieuw in 24 uur: {n}', woche: 'Nieuw in 7 dagen: {n}', monat: 'Nieuw in 30 dagen: {n}' },
 };

@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', vertont: 'Text der Vertonung', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
+    titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', vonSelbst: 'Die Folge wird dabei von selbst in der Kellerwolke gespeichert.', vertont: 'Text der Vertonung', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
   },
-  vertonung: { auf: 'Auf {sprache}', hilfe: 'Folge übersetzen und in {sprache} sprechen lassen; Original, Fassung und beide Texte liegen dann zusammen in der Kellerwolke', umschalten: 'Ton und Text in {sprache} oder im Original', stimme: 'Stimme der Vertonung', abbrechenHilfe: 'Vertonung abbrechen', laeuft: 'Vertonung läuft' },
+  vertonung: { fertig: 'Die Fassung in {sprache} ist fertig', auf: 'Auf {sprache}', hilfe: 'Folge übersetzen und in {sprache} sprechen lassen; Original, Fassung und beide Texte liegen dann zusammen in der Kellerwolke', umschalten: 'Ton und Text in {sprache} oder im Original', stimme: 'Stimme der Vertonung', abbrechenHilfe: 'Vertonung abbrechen', laeuft: 'Vertonung läuft' },
   neues: { tag: 'Neu in 24 Stunden: {n}', woche: 'Neu in 7 Tagen: {n}', monat: 'Neu in 30 Tagen: {n}' },
 };

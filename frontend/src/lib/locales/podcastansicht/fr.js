@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcription', hilfe: 'Lire le texte de l\'épisode ; il suit la lecture', starten: 'Transcrire', startenHilfe: 'Mettre l\'épisode en texte ; il est enregistré dans Kellerwolke', abbrechen: 'Annuler', laeuft: 'Transcription en cours', feed: 'Texte du flux', vertont: 'Texte du doublage', gehoert: 'Texte transcrit', keins: 'Pas encore de transcription', laedt: 'Chargement de la transcription',
+    titel: 'Transcription', hilfe: 'Lire le texte de l\'épisode ; il suit la lecture', starten: 'Transcrire', startenHilfe: 'Mettre l\'épisode en texte ; il est enregistré dans Kellerwolke', abbrechen: 'Annuler', laeuft: 'Transcription en cours', feed: 'Texte du flux', vonSelbst: 'L\'épisode est enregistré automatiquement dans la Kellerwolke.', vertont: 'Texte du doublage', gehoert: 'Texte transcrit', keins: 'Pas encore de transcription', laedt: 'Chargement de la transcription',
   },
-  vertonung: { auf: 'En {sprache}', hilfe: 'Traduire l\'épisode et le faire lire en {sprache} ; l\'original, la version et les deux textes restent ensemble dans la Kellerwolke', umschalten: 'Son et texte en {sprache} ou version originale', stimme: 'Voix du doublage', abbrechenHilfe: 'Annuler le doublage', laeuft: 'Doublage en cours' },
+  vertonung: { fertig: 'La version en {sprache} est prête', auf: 'En {sprache}', hilfe: 'Traduire l\'épisode et le faire lire en {sprache} ; l\'original, la version et les deux textes restent ensemble dans la Kellerwolke', umschalten: 'Son et texte en {sprache} ou version originale', stimme: 'Voix du doublage', abbrechenHilfe: 'Annuler le doublage', laeuft: 'Doublage en cours' },
   neues: { tag: 'Nouveau en 24 heures: {n}', woche: 'Nouveau en 7 jours: {n}', monat: 'Nouveau en 30 jours: {n}' },
 };

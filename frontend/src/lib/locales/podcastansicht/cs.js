@@ -167,8 +167,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Přepis', hilfe: 'Číst text epizody; při přehrávání běží s ní', starten: 'Přepsat', startenHilfe: 'Převést epizodu na text; uloží se při tom do Kellerwolke', abbrechen: 'Zrušit', laeuft: 'Probíhá přepis', feed: 'Text z kanálu', vertont: 'Text dabingu', gehoert: 'Text z přepisu', keins: 'Zatím žádný přepis', laedt: 'Přepis se načítá',
+    titel: 'Přepis', hilfe: 'Číst text epizody; při přehrávání běží s ní', starten: 'Přepsat', startenHilfe: 'Převést epizodu na text; uloží se při tom do Kellerwolke', abbrechen: 'Zrušit', laeuft: 'Probíhá přepis', feed: 'Text z kanálu', vonSelbst: 'Epizoda se přitom sama uloží do Kellerwolke.', vertont: 'Text dabingu', gehoert: 'Text z přepisu', keins: 'Zatím žádný přepis', laedt: 'Přepis se načítá',
   },
-  vertonung: { auf: 'V jazyce {sprache}', hilfe: 'Přeložit epizodu a namluvit ji v jazyce {sprache}; originál, verze i oba texty zůstanou spolu v Kellerwolke', umschalten: 'Zvuk a text v jazyce {sprache} nebo originál', stimme: 'Hlas dabingu', abbrechenHilfe: 'Zrušit dabing', laeuft: 'Dabing probíhá' },
+  vertonung: { fertig: 'Verze v jazyce {sprache} je hotová', auf: 'V jazyce {sprache}', hilfe: 'Přeložit epizodu a namluvit ji v jazyce {sprache}; originál, verze i oba texty zůstanou spolu v Kellerwolke', umschalten: 'Zvuk a text v jazyce {sprache} nebo originál', stimme: 'Hlas dabingu', abbrechenHilfe: 'Zrušit dabing', laeuft: 'Dabing probíhá' },
   neues: { tag: 'Nové za 24 hodin: {n}', woche: 'Nové za 7 dní: {n}', monat: 'Nové za 30 dní: {n}' },
 };

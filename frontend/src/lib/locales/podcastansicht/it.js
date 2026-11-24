@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Trascrizione', hilfe: 'Leggere il testo dell\'episodio; segue la riproduzione', starten: 'Trascrivi', startenHilfe: 'Trasformare l\'episodio in testo; viene salvato in Kellerwolke', abbrechen: 'Annulla', laeuft: 'Trascrizione in corso', feed: 'Testo dal feed', vertont: 'Testo del doppiaggio', gehoert: 'Testo dalla trascrizione', keins: 'Ancora nessuna trascrizione', laedt: 'Caricamento trascrizione',
+    titel: 'Trascrizione', hilfe: 'Leggere il testo dell\'episodio; segue la riproduzione', starten: 'Trascrivi', startenHilfe: 'Trasformare l\'episodio in testo; viene salvato in Kellerwolke', abbrechen: 'Annulla', laeuft: 'Trascrizione in corso', feed: 'Testo dal feed', vonSelbst: 'L\'episodio viene salvato da solo nella Kellerwolke.', vertont: 'Testo del doppiaggio', gehoert: 'Testo dalla trascrizione', keins: 'Ancora nessuna trascrizione', laedt: 'Caricamento trascrizione',
   },
-  vertonung: { auf: 'In {sprache}', hilfe: 'Tradurre l\'episodio e farlo leggere in {sprache}; originale, versione ed entrambi i testi restano insieme nella Kellerwolke', umschalten: 'Audio e testo in {sprache} o originale', stimme: 'Voce del doppiaggio', abbrechenHilfe: 'Annulla doppiaggio', laeuft: 'Doppiaggio in corso' },
+  vertonung: { fertig: 'La versione in {sprache} è pronta', auf: 'In {sprache}', hilfe: 'Tradurre l\'episodio e farlo leggere in {sprache}; originale, versione ed entrambi i testi restano insieme nella Kellerwolke', umschalten: 'Audio e testo in {sprache} o originale', stimme: 'Voce del doppiaggio', abbrechenHilfe: 'Annulla doppiaggio', laeuft: 'Doppiaggio in corso' },
   neues: { tag: 'Nuovi in 24 ore: {n}', woche: 'Nuovi in 7 giorni: {n}', monat: 'Nuovi in 30 giorni: {n}' },
 };

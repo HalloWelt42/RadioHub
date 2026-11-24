@@ -66,6 +66,18 @@
   // die gewählte Fassung (auch eine gerade fertige) gilt beim nächsten Abspielen
   $effect(() => { if (fassung?.stand) podcastquelle.fassungMerken(folgeId, fassung.stand.gewaehlt); });
 
+  // beim Vertonen entsteht zuerst der Text: er erscheint, sobald er da ist; am Ende sagt es ein Hinweis
+  let lief = false;
+  $effect(() => {
+    const laeuft = !!vertonung;
+    void vertonung?.schritt;
+    untrack(() => {
+      if (laeuft && text?.stand && !transkript) void text.laden();
+      if (lief && !laeuft && fassung?.da) actions.showToast(t("podcastAnsicht.vertonung.fertig", { sprache: zielname }), "success");
+      lief = laeuft;
+    });
+  });
+
   async function umschalten(sprache: string) {
     if (!(await fassung?.waehlen(sprache))) return;
     if (imSpieler) void actions.folgenfassung(sprache);
@@ -88,9 +100,10 @@
     sprecher: a.sprecher && a.sprecher !== absaetze[i - 1]?.sprecher ? a.sprecher : "" })));
   const aktiv = $derived(spielt ? absatzBei(absaetze, stelle) : null);
   const anteil = (l: { fortschritt: number | null } | null) => (l?.fortschritt == null ? null : Math.round(l.fortschritt * 100));
-  const prozent = $derived(anteil(lauf));
+  const zielname = $derived(fassung?.stand?.zielname ?? "");
+  const kannTranskribieren = $derived(!gewaehlt && !!text?.stand?.kann_transkribieren && transkript?.herkunft !== "gehoert");
   const laufText = (l: { fortschritt: number | null; schritt: string }, sonst: string) => [anteil(l) === null ? "" : `${anteil(l)} %`, l.schritt || sonst].filter(Boolean).join(" · ");
-  const lage = $derived(vertonung ? laufText(vertonung, t("podcastAnsicht.vertonung.laeuft")) : text?.fehler || fassung?.fehler || (transkript ? t(`podcastAnsicht.transkript.${transkript.herkunft}`) : ""));
+  const lage = $derived(vertonung && transkript ? laufText(vertonung, t("podcastAnsicht.vertonung.laeuft")) : text?.fehler || fassung?.fehler || (transkript ? t(`podcastAnsicht.transkript.${transkript.herkunft}`) : ""));
   const springen = (nr: number) => { const a = absaetze.find((x) => x.nr === nr); if (a) { mitlaufen = true; onanhoeren(a.von); } };
 
   async function kopiere() {
@@ -100,37 +113,55 @@
   }
 </script>
 
+{#snippet transkribieren()}
+  <button class="knopf" type="button" title={t("podcastAnsicht.transkript.startenHilfe")} onclick={() => void text?.transkribieren()}>
+    <i class="fa-solid fa-closed-captioning"></i>{t("podcastAnsicht.transkript.starten")}</button>
+{/snippet}
+{#snippet vertonen()}
+  {#if stimmen.length}<Auswahl bind:wert={stimme} optionen={stimmen} titel={t("podcastAnsicht.vertonung.stimme")} klein onwahl={stimmeWaehlen} />{/if}
+  <button class="knopf" type="button" title={t("podcastAnsicht.vertonung.hilfe", { sprache: zielname })} onclick={() => void fassung?.vertonen()}>
+    <i class="fa-solid fa-language"></i>{t("podcastAnsicht.vertonung.auf", { sprache: zielname })}</button>
+{/snippet}
+{#snippet balken(wert: number | null)}
+  <span class="balken" class:unbestimmt={wert === null}><span style:width="{wert ?? 100}%"></span></span>
+{/snippet}
+
 <section class="rh-mitlesen rh-transkript" {@attach ganzZeigen} aria-label={t("podcastAnsicht.transkript.titel")}>
   <div class="rh-mitlese-tasten">
     {#if transkript}
       <Schalter an={mitlaufen && spielt} symbol="fa-angles-down" text={t("radio.mitlesen.mitlaufen")} hilfe={t("radio.mitlesen.mitlaufenHilfe")} onwechsel={(an) => (mitlaufen = an)} />
     {/if}
     {#if fassung?.da}
-      <Schalter an={gewaehlt === fassung.stand?.ziel} farbe="blau" symbol="fa-language" text={fassung.stand?.zielname ?? ""} hilfe={t("podcastAnsicht.vertonung.umschalten", { sprache: fassung.stand?.zielname ?? "" })}
+      <Schalter an={gewaehlt === fassung.stand?.ziel} farbe="blau" symbol="fa-language" text={zielname} hilfe={t("podcastAnsicht.vertonung.umschalten", { sprache: zielname })}
         onwechsel={(an) => void umschalten(an ? (fassung?.stand?.ziel ?? "") : "")} />
     {/if}
     {#if vertonung}
-      <button class="knopf" type="button" title={t("podcastAnsicht.vertonung.abbrechenHilfe")} aria-label={t("podcastAnsicht.vertonung.abbrechenHilfe")} onclick={() => void fassung?.abbrechen()}><i class="fa-solid fa-stop"></i>{t("podcastAnsicht.transkript.abbrechen")}</button>
-    {:else if !lauf && !gewaehlt && text?.stand?.kann_transkribieren && transkript?.herkunft !== "gehoert"}
-      <button class="knopf" type="button" title={t("podcastAnsicht.transkript.startenHilfe")} aria-label={t("podcastAnsicht.transkript.starten")} onclick={() => void text?.transkribieren()}>
-        <i class="fa-solid fa-closed-captioning"></i>{t("podcastAnsicht.transkript.starten")}</button>
+      <button class="knopf" type="button" title={t("podcastAnsicht.vertonung.abbrechenHilfe")} onclick={() => void fassung?.abbrechen()}><i class="fa-solid fa-stop"></i>{t("podcastAnsicht.transkript.abbrechen")}</button>
+      {#if transkript}{@render balken(anteil(vertonung))}{/if}
     {:else if lauf}
-      <button class="knopf" type="button" aria-label={t("podcastAnsicht.transkript.abbrechen")} onclick={() => void text?.abbrechen()}><i class="fa-solid fa-stop"></i>{t("podcastAnsicht.transkript.abbrechen")}</button>
-    {/if}
-    {#if anbieten && !lauf}
-      <button class="knopf" type="button" title={t("podcastAnsicht.vertonung.hilfe", { sprache: fassung?.stand?.zielname ?? "" })} aria-label={t("podcastAnsicht.vertonung.auf", { sprache: fassung?.stand?.zielname ?? "" })} onclick={() => void fassung?.vertonen()}>
-        <i class="fa-solid fa-language"></i>{t("podcastAnsicht.vertonung.auf", { sprache: fassung?.stand?.zielname ?? "" })}</button>
-      {#if stimmen.length}<Auswahl bind:wert={stimme} optionen={stimmen} titel={t("podcastAnsicht.vertonung.stimme")} klein onwahl={stimmeWaehlen} />{/if}
+      <button class="knopf" type="button" onclick={() => void text?.abbrechen()}><i class="fa-solid fa-stop"></i>{t("podcastAnsicht.transkript.abbrechen")}</button>
+    {:else if transkript}
+      {#if kannTranskribieren}{@render transkribieren()}{/if}
+      {#if anbieten}{@render vertonen()}{/if}
     {/if}
     <span class="rh-mitlese-fuss">
       {#if transkript}<button class="rund rh-mini" type="button" title={t("radio.mitlesen.kopieren")} aria-label={t("radio.mitlesen.kopieren")} onclick={() => void kopiere()}><i class="fa-regular fa-copy"></i></button>{/if}
       <span class="rh-mitlese-lage" class:gestoert={!vertonung && !!(text?.fehler || fassung?.fehler)} title={lage} aria-live="polite">{lage}</span>
     </span>
   </div>
-  {#if lauf}
+  {#if lauf || (vertonung && !transkript)}
+    {@const l = lauf ?? vertonung!}
     <div class="rh-transkript-lauf" role="status">
-      <span>{laufText(lauf, t("podcastAnsicht.transkript.laeuft"))}</span>
-      <span class="balken" class:unbestimmt={prozent === null}><span style:width="{prozent ?? 100}%"></span></span>
+      <span>{laufText(l, t(lauf ? "podcastAnsicht.transkript.laeuft" : "podcastAnsicht.vertonung.laeuft"))}</span>
+      {@render balken(anteil(l))}
+    </div>
+  {:else if text?.stand && !transkript && (kannTranskribieren || anbieten)}
+    <!-- noch kein Text: was man damit tun kann, steht mit Worten im leeren Feld (RAD-26) -->
+    <div class="rh-transkript-lauf rh-transkript-start">
+      <b>{t("podcastAnsicht.transkript.keins")}</b>
+      <span class="rh-transkript-wahl">{#if kannTranskribieren}{@render transkribieren()}{/if}</span>
+      <span class="rh-transkript-wahl">{#if anbieten}{@render vertonen()}{/if}</span>
+      <span>{t("podcastAnsicht.transkript.vonSelbst")}</span>
     </div>
   {:else}
     <Lesefeld bind:this={lesefeld} bind:mitlaufen {zeilen} {aktiv} folgtAktiv onzeit={springen} beschriftung={t("podcastAnsicht.transkript.titel")}

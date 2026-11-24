@@ -160,8 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcriere', hilfe: 'Citește textul episodului; urmărește redarea', starten: 'Transcrie', startenHilfe: 'Transformă episodul în text; se salvează în Kellerwolke', abbrechen: 'Anulează', laeuft: 'Transcriere în curs', feed: 'Text din flux', vertont: 'Textul dublajului', gehoert: 'Text din transcriere', keins: 'Încă nicio transcriere', laedt: 'Se încarcă transcrierea',
+    titel: 'Transcriere', hilfe: 'Citește textul episodului; urmărește redarea', starten: 'Transcrie', startenHilfe: 'Transformă episodul în text; se salvează în Kellerwolke', abbrechen: 'Anulează', laeuft: 'Transcriere în curs', feed: 'Text din flux', vonSelbst: 'Episodul se salvează singur în Kellerwolke.', vertont: 'Textul dublajului', gehoert: 'Text din transcriere', keins: 'Încă nicio transcriere', laedt: 'Se încarcă transcrierea',
   },
-  vertonung: { auf: 'În {sprache}', hilfe: 'Traduce episodul și rostește-l în {sprache}; originalul, versiunea și ambele texte rămân împreună în Kellerwolke', umschalten: 'Sunet și text în {sprache} sau original', stimme: 'Vocea dublajului', abbrechenHilfe: 'Anulează dublajul', laeuft: 'Dublaj în curs' },
+  vertonung: { fertig: 'Versiunea în {sprache} este gata', auf: 'În {sprache}', hilfe: 'Traduce episodul și rostește-l în {sprache}; originalul, versiunea și ambele texte rămân împreună în Kellerwolke', umschalten: 'Sunet și text în {sprache} sau original', stimme: 'Vocea dublajului', abbrechenHilfe: 'Anulează dublajul', laeuft: 'Dublaj în curs' },
   neues: { tag: 'Noi în 24 de ore: {n}', woche: 'Noi în 7 zile: {n}', monat: 'Noi în 30 de zile: {n}' },
 };

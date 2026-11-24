@@ -161,8 +161,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', vertont: 'Text från intalningen', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
+    titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', vonSelbst: 'Avsnittet sparas då automatiskt i Kellerwolke.', vertont: 'Text från intalningen', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
   },
-  vertonung: { auf: 'På {sprache}', hilfe: 'Översätt avsnittet och låt det talas in på {sprache}; original, version och båda texterna ligger tillsammans i Kellerwolke', umschalten: 'Ljud och text på {sprache} eller original', stimme: 'Röst för intalningen', abbrechenHilfe: 'Avbryt intalningen', laeuft: 'Intalning pågår' },
+  vertonung: { fertig: 'Versionen på {sprache} är klar', auf: 'På {sprache}', hilfe: 'Översätt avsnittet och låt det talas in på {sprache}; original, version och båda texterna ligger tillsammans i Kellerwolke', umschalten: 'Ljud och text på {sprache} eller original', stimme: 'Röst för intalningen', abbrechenHilfe: 'Avbryt intalningen', laeuft: 'Intalning pågår' },
   neues: { tag: 'Nytt på 24 timmar: {n}', woche: 'Nytt på 7 dagar: {n}', monat: 'Nytt på 30 dagar: {n}' },
 };

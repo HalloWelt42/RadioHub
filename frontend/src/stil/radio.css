@@ -362,9 +362,7 @@
   .rh-mitlese-tasten { grid-template-columns: 52px 52px; grid-auto-flow: dense; gap: 6px; justify-self: end; }
   .rh-mitlese-tasten > :not(ak-taster) { grid-column: 1 / -1; }
   .rh-richtung > ak-taster { grid-column: 1 / -1; }
-  /* Tasten wie die Schalter daneben: gleich groß, nur das Symbol (RAD-26) */
-  .rh-mitlese-tasten > .knopf { grid-column: auto; inline-size: 52px; padding-inline: 0; justify-content: center; align-self: stretch; block-size: auto; font-size: 0; gap: 0; }
-  .rh-mitlese-tasten > .knopf i { font-size: var(--gross); margin: 0; }
+  .rh-mitlese-tasten > .knopf { inline-size: 100%; padding-inline: 8px; gap: 6px; font-size: var(--klein); }
   .rh-mitlese-tasten ak-taster[art="flach"] .ak-taster-knopf { min-inline-size: 0; padding-inline: 0; }
   .rh-mitlese-tasten > ak-taster .ak-taster-beschriftung { font-size: 0; gap: 0; }
   .rh-mitlese-tasten > ak-taster .ak-taster-beschriftung i { font-size: var(--gross); margin: 0; }
@@ -379,7 +377,13 @@
 .rh-loeschfrage .rueckfrage > span { white-space: pre-line; overflow-wrap: anywhere; }   /* je Datei eine Zeile (RAD-26) */
 .rh-folge-detail .rh-transkript { --rh-mitlese-hoch: 100dvh - 36rem; }
 .rh-transkript-lauf { grid-area: feld; display: grid; gap: 8px; align-content: center; min-block-size: calc(var(--klein) * 8); padding: 12px 14px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante); font-size: var(--klein); }
-.rh-transkript-lauf .unbestimmt > span { opacity: .35; }
+.rh-transkript-start { align-content: start; gap: 12px; min-block-size: calc(var(--klein) * 14); padding: 16px 18px; font-size: inherit; }
+.rh-transkript-start > span:last-child { font-size: var(--klein); color: var(--text-3); }
+.rh-transkript-wahl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rh-transkript-wahl:empty { display: none; }
+.rh-transkript-wahl .knopf { min-inline-size: 11em; justify-content: flex-start; }
+.rh-transkript-wahl .auswahl { order: 1; }
+.rh-transkript .unbestimmt > span { opacity: .35; }
 @container liste (max-width: 820px) { .rh-mitlese-feld p { grid-template-columns: minmax(0, 1fr); } .rh-mitlese-original { grid-column: 1; } }
 /* Werbende zusammengefasst, aufklappbar bis zu den Spots */
 .rh-werbende { display: grid; gap: 0; }

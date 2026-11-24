@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Utskrift', hilfe: 'Les teksten til episoden; den følger avspillingen', starten: 'Skriv ut', startenHilfe: 'Gjør episoden om til tekst; den lagres i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Tekst fra feeden', vertont: 'Tekst fra innlesingen', gehoert: 'Tekst fra utskriften', keins: 'Ingen utskrift ennå', laedt: 'Utskrift lastes',
+    titel: 'Utskrift', hilfe: 'Les teksten til episoden; den følger avspillingen', starten: 'Skriv ut', startenHilfe: 'Gjør episoden om til tekst; den lagres i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Tekst fra feeden', vonSelbst: 'Episoden lagres automatisk i Kellerwolke.', vertont: 'Tekst fra innlesingen', gehoert: 'Tekst fra utskriften', keins: 'Ingen utskrift ennå', laedt: 'Utskrift lastes',
   },
-  vertonung: { auf: 'På {sprache}', hilfe: 'Oversett episoden og få den lest inn på {sprache}; original, versjon og begge tekster ligger samlet i Kellerwolke', umschalten: 'Lyd og tekst på {sprache} eller original', stimme: 'Stemme for innlesing', abbrechenHilfe: 'Avbryt innlesing', laeuft: 'Innlesing pågår' },
+  vertonung: { fertig: 'Versjonen på {sprache} er klar', auf: 'På {sprache}', hilfe: 'Oversett episoden og få den lest inn på {sprache}; original, versjon og begge tekster ligger samlet i Kellerwolke', umschalten: 'Lyd og tekst på {sprache} eller original', stimme: 'Stemme for innlesing', abbrechenHilfe: 'Avbryt innlesing', laeuft: 'Innlesing pågår' },
   neues: { tag: 'Nytt på 24 timer: {n}', woche: 'Nytt på 7 dager: {n}', monat: 'Nytt på 30 dager: {n}' },
 };

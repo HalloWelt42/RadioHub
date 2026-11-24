@@ -168,8 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcripción', hilfe: 'Leer el texto del episodio; avanza al reproducir', starten: 'Transcribir', startenHilfe: 'Convertir el episodio en texto; se guarda en Kellerwolke', abbrechen: 'Cancelar', laeuft: 'Transcribiendo', feed: 'Texto del feed', vertont: 'Texto del doblaje', gehoert: 'Texto de la transcripción', keins: 'Aún sin transcripción', laedt: 'Cargando transcripción',
+    titel: 'Transcripción', hilfe: 'Leer el texto del episodio; avanza al reproducir', starten: 'Transcribir', startenHilfe: 'Convertir el episodio en texto; se guarda en Kellerwolke', abbrechen: 'Cancelar', laeuft: 'Transcribiendo', feed: 'Texto del feed', vonSelbst: 'El episodio se guarda solo en la Kellerwolke.', vertont: 'Texto del doblaje', gehoert: 'Texto de la transcripción', keins: 'Aún sin transcripción', laedt: 'Cargando transcripción',
   },
-  vertonung: { auf: 'En {sprache}', hilfe: 'Traducir el episodio y locutarlo en {sprache}; el original, la versión y ambos textos quedan juntos en la Kellerwolke', umschalten: 'Audio y texto en {sprache} u original', stimme: 'Voz del doblaje', abbrechenHilfe: 'Cancelar doblaje', laeuft: 'Doblaje en curso' },
+  vertonung: { fertig: 'La versión en {sprache} está lista', auf: 'En {sprache}', hilfe: 'Traducir el episodio y locutarlo en {sprache}; el original, la versión y ambos textos quedan juntos en la Kellerwolke', umschalten: 'Audio y texto en {sprache} u original', stimme: 'Voz del doblaje', abbrechenHilfe: 'Cancelar doblaje', laeuft: 'Doblaje en curso' },
   neues: { tag: 'Nuevo en 24 horas: {n}', woche: 'Nuevo en 7 días: {n}', monat: 'Nuevo en 30 días: {n}' },
 };

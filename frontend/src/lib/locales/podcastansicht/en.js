@@ -163,8 +163,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', vertont: 'Text of the dubbing', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
+    titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', vonSelbst: 'The episode is saved in the Kellerwolke automatically.', vertont: 'Text of the dubbing', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
   },
-  vertonung: { auf: 'In {sprache}', hilfe: 'Translate the episode and have it spoken in {sprache}; original, version and both texts are kept together in the Kellerwolke', umschalten: 'Audio and text in {sprache} or original', stimme: 'Voice of the dubbing', abbrechenHilfe: 'Cancel dubbing', laeuft: 'Dubbing in progress' },
+  vertonung: { fertig: 'The version in {sprache} is ready', auf: 'In {sprache}', hilfe: 'Translate the episode and have it spoken in {sprache}; original, version and both texts are kept together in the Kellerwolke', umschalten: 'Audio and text in {sprache} or original', stimme: 'Voice of the dubbing', abbrechenHilfe: 'Cancel dubbing', laeuft: 'Dubbing in progress' },
   neues: { tag: 'New in 24 hours: {n}', woche: 'New in 7 days: {n}', monat: 'New in 30 days: {n}' },
 };
