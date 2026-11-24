@@ -9,7 +9,7 @@ import type {
   RegelEntwurf, RegelFolgen, Regeluebersicht, RegelVorschau, SenderEintrag, Sichtbarkeit, StationQuery,
 } from "../typen";
 import { abfragePruefen, durchgangSchluessel, durchgehen, eintrag, kurz, nachStimmen, seite, type Durchgang } from "./abfrage";
-import { angabenAusText, bericht, leereAngaben, type EigeneAngaben } from "./angaben";
+import { angabenAusText, bericht, leereAngaben, nachgezogen, type EigeneAngaben } from "./angaben";
 import { ausgeblendetSeite, kandidaten, laender } from "./auswahl";
 import { NichtGefunden, NichtVerfuegbar, Quellfehler } from "./fehler";
 import { bestandLesen, type Senderbestand } from "./format";
@@ -93,6 +93,9 @@ export class StatischeQuelle implements Senderquelle {
   private async bereit(signal?: AbortSignal): Promise<{ b: Senderbestand; s: Sicht }> {
     const b = await this.bestand();
     signal?.throwIfAborted();
+    // Sender, die das Verzeichnis unter neuer Kennung führt: die eigenen Angaben gelten für sie weiter (RAD-119);
+    // gespeichert wird das mit der nächsten Änderung
+    this.angaben = nachgezogen(this.angaben, (u) => { const i = b.nachfolger.get(u); return i === undefined ? u : b.uuid[i]; });
     this.sichtStand ??= new Sicht(b, this.angaben);
     return { b, s: this.sichtStand };
   }
@@ -116,7 +119,7 @@ export class StatischeQuelle implements Senderquelle {
   }
 
   private stelle(b: Senderbestand, uuid: string): number {
-    const i = b.nachUuid.get(uuid);
+    const i = b.nachUuid.get(uuid) ?? b.nachfolger.get(uuid);
     if (i === undefined) throw new NichtGefunden("Sender nicht gefunden");
     return i;
   }
@@ -133,7 +136,7 @@ export class StatischeQuelle implements Senderquelle {
 
   async varianten(uuid: string): Promise<SenderEintrag[]> {
     const { b, s } = await this.bereit();
-    const i = b.nachUuid.get(uuid);
+    const i = b.nachUuid.get(uuid) ?? b.nachfolger.get(uuid);
     if (i === undefined) return [];
     const glieder = (b.glieder.get(b.gruppe[i]) ?? []).filter((x) => s.sichtbar[x]);
     // wie das Backend: Vertreter vorn, dann Qualität, Bitrate, Stimmen, uuid
@@ -149,8 +152,8 @@ export class StatischeQuelle implements Senderquelle {
   async sichtbarkeit(uuid: string): Promise<Sichtbarkeit> {
     const { b, s } = await this.bereit();
     const i = this.stelle(b, uuid);
-    return { uuid, sichtbar: !!s.sichtbar[i], verschwunden: false, favorit: !!s.favorit[i], freigegeben: !!s.freigegeben[i],
-             gesperrt: this.angaben.sperren.includes(uuid), gruende: s.gruende(i) };
+    return { uuid: b.uuid[i], sichtbar: !!s.sichtbar[i], verschwunden: false, favorit: !!s.favorit[i], freigegeben: !!s.freigegeben[i],
+             gesperrt: this.angaben.sperren.includes(b.uuid[i]), gruende: s.gruende(i) };
   }
 
   async steckbrief(e: SenderEintrag): Promise<Steckbrief> {
@@ -347,8 +350,9 @@ export class StatischeQuelle implements Senderquelle {
 
   // ----- Abgleich ---------------------------------------------------------------------------------------------------
 
-  abgleich(): Promise<Abgleichstand> {
-    return Promise.reject(new NichtVerfuegbar("Abgleich mit dem Senderverzeichnis"));
+  /** Stand der mitgelieferten Liste; abgleichen kann nur die volle App */
+  async abgleich(): Promise<Abgleichstand> {
+    return { zuletzt: (await this.bestand()).kopf.erzeugt, uhrzeit: "", ueberfaellig: false, auftrag: null };
   }
 
   abgleichStarten(): Promise<string> {

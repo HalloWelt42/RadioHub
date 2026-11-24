@@ -276,6 +276,7 @@ export interface SenderAnfrage {
 export interface Abgleichstand {
   zuletzt: string | null;
   uhrzeit: string;
+  ueberfaellig: boolean;
   auftrag: string | null;
 }
 

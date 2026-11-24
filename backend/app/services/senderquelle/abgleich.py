@@ -4,6 +4,9 @@ bestanden haben, damit lastcheckok stimmt), fragt bei einem Ausfall den nächste
 service_radio_browser_servers, übernimmt jede Seite sofort (neu oder aktualisiert, nie ersetzt), markiert danach
 Verschwundene (nie löschen) und bereitet den Bestand samt Sichtbarkeit neu auf.
 
+Bleibt der nächtliche Abgleich aus (Rechner aus, Hintergrundaufgaben standen), gilt er als überfällig: der Plan holt
+ihn nach und das Protokoll meldet es; die Oberfläche zeigt das Alter des Bestands (RAD-119).
+
 Verschwunden ist, wer in diesem und im vorigen vollständigen Abgleich fehlt; so kostet ein Sender, der beim Blättern
 gerade die Seite wechselt, nichts. Liefert das Verzeichnis weniger als die Hälfte des Bestands, bricht der Abgleich
 ab, ohne etwas als verschwunden zu markieren."""
@@ -11,6 +14,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
 import httpx
@@ -29,13 +33,15 @@ ART = "sender_abgleich"
 ART_AUFBEREITEN = "sender_aufbereiten"
 SEITE = 10_000
 MINDESTANTEIL = 0.5
+UEBERFAELLIG_NACH = timedelta(hours=26)   # eine Nacht und zwei Stunden für den Lauf selbst
+NACHHOLEN_ALLE = timedelta(hours=6)       # so oft versucht der Plan einen überfälligen Abgleich
 BEGINN_SCHLUESSEL = "abgleich_beginn"    # in cache_meta: Beginn des letzten vollständigen Abgleichs
 
 ClientBauen = Callable[[], httpx.AsyncClient]
 
 
 class AbgleichEingabe(BaseModel):
-    anlass: Literal["zeitplan", "hand", "start"] = "hand"
+    anlass: Literal["zeitplan", "hand", "start", "nachholen"] = "hand"
 
 
 class AbgleichErgebnis(BaseModel):
@@ -66,6 +72,19 @@ async def seite_laden(client: httpx.AsyncClient, server: list[str], bevorzugt: i
             fehler.append(f"{server[nummer]}: {f}")
             log.warning("Senderverzeichnis %s antwortet nicht: %s", server[nummer], f)
     raise AuftragFehler("Kein Server des Senderverzeichnisses erreichbar (" + "; ".join(fehler) + ")")
+
+
+def ueberfaellig(zuletzt: str | None, uhrzeit: str, jetzt: datetime) -> bool:
+    """Ob der nächtliche Abgleich ausgeblieben ist. `zuletzt` ist das Ende des letzten vollständigen Abgleichs (ISO mit
+    Zone, None: nie); ohne eingestellte Uhrzeit ist nie etwas fällig. `jetzt` mit Zone."""
+    if not uhrzeit:
+        return False
+    if zuletzt is None:
+        return True
+    ende = datetime.fromisoformat(zuletzt)
+    if ende.tzinfo is None:
+        ende = ende.replace(tzinfo=timezone.utc)
+    return jetzt - ende > UEBERFAELLIG_NACH
 
 
 def server_liste() -> list[str]:

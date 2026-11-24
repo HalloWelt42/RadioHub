@@ -138,6 +138,7 @@ export interface Senderquelle {
   laenderLeisteSetzen(codes: string[]): Promise<void>;
 
   // ----- Abgleich mit dem Senderverzeichnis --------------------------------------------------------------------------
+  /** Stand des Bestands: letzter Abgleich, in der Webversion die Entstehung der mitgelieferten Liste */
   abgleich(): Promise<Abgleichstand>;
   /** startet den Abgleich als Auftrag; Kennung des Auftrags */
   abgleichStarten(): Promise<string>;

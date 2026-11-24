@@ -366,3 +366,22 @@ def test_abgleich_bricht_ab_wenn_das_verzeichnis_fast_leer_ist(verzeichnis):
     liste[:] = [_datensatz(PRAEFIX + "einzig", "Einzig")]
     stand = _abgleich(c)
     assert stand["zustand"] == "fehler" and "nichts als verschwunden" in stand["fehler"]
+
+
+def test_abgleich_gilt_nach_einer_verpassten_nacht_als_ueberfaellig():
+    from datetime import datetime, timedelta, timezone
+    jetzt = datetime(2026, 11, 24, 8, 0, tzinfo=timezone.utc)
+    vor = lambda **k: (jetzt - timedelta(**k)).isoformat()     # noqa: E731
+    assert not abgleich.ueberfaellig(vor(hours=5), "04:30", jetzt)
+    assert not abgleich.ueberfaellig(vor(hours=25), "04:30", jetzt)
+    assert abgleich.ueberfaellig(vor(hours=27), "04:30", jetzt)
+    assert abgleich.ueberfaellig("2026-06-14T14:57:34.660232", "04:30", jetzt)      # alter Stand ohne Zone
+    assert abgleich.ueberfaellig(None, "04:30", jetzt)
+    assert not abgleich.ueberfaellig(vor(days=90), "", jetzt)                        # ohne Uhrzeit ist nichts fällig
+
+
+def test_stand_nennt_den_ausgebliebenen_abgleich(verzeichnis):
+    c, _, _ = verzeichnis
+    with db_session() as conn:
+        conn.execute("INSERT OR REPLACE INTO cache_meta (key, value) VALUES ('abgleich_zuletzt', '2026-06-14T14:57:34+00:00')")
+    assert c.get("/api/radio/abgleich").json()["ueberfaellig"] is True

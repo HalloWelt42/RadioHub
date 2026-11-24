@@ -11,7 +11,7 @@ Start:
 3. einmal: Werte der Tabelle config, die jetzt Einstellungen sind, übernehmen (`uebergang.config_uebernehmen`)
 4. Ablage über den Zugang des Gerüsts zur Kellerwolke, verwaiste Aufnahmen bereinigen, Werbedomains, Podcast-Abruf
    alle `podcast_refresh_interval` Sekunden, liegengebliebene Aufnahmen nachträglich ablegen, Abgleich mit dem
-   Senderverzeichnis jede Nacht zur Uhrzeit `abgleich_uhrzeit` (Auftrag `sender_abgleich`)
+   Senderverzeichnis jede Nacht zur Uhrzeit `abgleich_uhrzeit` (Auftrag `sender_abgleich`), ausgebliebene nachgeholt
 
 Was dabei geschieht, steht im Protokoll der App (Datenbank, Übertrag, Ablage, Abruf der Podcasts) und im Log.
 """
@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -42,6 +42,7 @@ from .services.senderquelle import abgleich, dienst as senderquelle
 log = logging.getLogger("radiohub.betrieb")
 
 ERSTER_ABRUF_S = 60
+NACHHOLEN_ERST_S = 120       # erster Blick nach einem ausgebliebenen Abgleich
 LERNLISTE_ERST_S, LERNLISTE_ALLE_S = 300, 6 * 3600
 
 
@@ -176,19 +177,31 @@ class Radiobetrieb(Begleiter):
 
     async def _abgleich_planen(self) -> None:
         """Jede Nacht zur Uhrzeit der Einstellung abgleich_uhrzeit (leer: nie); eine geänderte Uhrzeit gilt ohne
-        Neustart."""
+        Neustart. Einen ausgebliebenen Abgleich meldet und holt der Plan nach (RAD-119)."""
         gemerkt, naechster = None, None
+        nachholen_ab = datetime.now() + timedelta(seconds=NACHHOLEN_ERST_S)
         while True:
             uhrzeit = einstellungen.stand().abgleich_uhrzeit
             if uhrzeit != gemerkt:
                 gemerkt, naechster = uhrzeit, naechster_lauf(uhrzeit, datetime.now())
-            if naechster and datetime.now() >= naechster:
-                try:
+            try:
+                if naechster and datetime.now() >= naechster:
+                    naechster = naechster_lauf(uhrzeit, datetime.now() + timedelta(minutes=1))
                     await self._einreihen(abgleich.ART, "zeitplan")
-                except Exception as f:  # noqa: BLE001 - der nächste Tag versucht es wieder
-                    await self._eintragen("radio.abgleich", f"Abgleich nicht eingereiht: {f}", "warnung")
-                naechster = naechster_lauf(uhrzeit, datetime.now() + timedelta(minutes=1))
+                elif datetime.now() >= nachholen_ab:
+                    nachholen_ab = datetime.now() + abgleich.NACHHOLEN_ALLE
+                    await self._abgleich_nachholen(uhrzeit)
+            except Exception as f:  # noqa: BLE001 - der nächste Durchgang versucht es wieder
+                await self._eintragen("radio.abgleich", f"Abgleich nicht eingereiht: {f}", "warnung")
             await asyncio.sleep(30)
+
+    async def _abgleich_nachholen(self, uhrzeit: str) -> None:
+        zuletzt = await senderquelle.abgleich_zuletzt()
+        if not abgleich.ueberfaellig(zuletzt, uhrzeit, datetime.now(timezone.utc)):
+            return
+        await self._eintragen("radio.abgleich", "Nächtlicher Abgleich mit dem Senderverzeichnis ist ausgeblieben (letzter: "
+                              f"{zuletzt or 'nie'}), er wird nachgeholt", "warnung")
+        await self._einreihen(abgleich.ART, "nachholen")
 
     async def _lernliste_weitergeben(self) -> None:
         """Alle paar Stunden: was man hört und was dazu passt, an den Lernlauf des Propaganda-Filters (HELF-256)."""

@@ -14,6 +14,10 @@ EIGENE_ANPASSUNG). Ihre Kennungen gelten für die uuid und für die Rechner der
 Stream-Adressen samt ihren übergeordneten Namen. Fehlt die Datei, bricht das Werkzeug ab, damit die Liste nie ohne sie
 entsteht; wer keine hat, sagt das mit --ohne-eigene-anpassung.
 
+Nachfolger (RAD-119): Das Verzeichnis legt Sender unter neuer Kennung neu an. Favoriten, Bewertungen und Sperren der
+Webversion hängen an der alten; darum vergleicht das Werkzeug mit der vorigen Liste im Zielordner (--vorige) und führt
+im Kopf je weggefallener Kennung die Zeile des Senders mit derselben Adresse. Frühere Nachfolger laufen mit.
+
 Format von sender.json (Spaltenformat, Fassung FORMAT): {"kopf": {...}, "zeilen": [[...], ...]}. Der Kopf nennt die
 Fassung des Formats und der Aufbereitung, den Zeitpunkt, die Herkunft, die Anzahl, die Spalten und die Wörterbücher;
 Spalten mit wiederkehrenden Werten (Land, Sprache, Genre, Tag, Codec, ...) tragen Nummern in ihr Wörterbuch, die
@@ -78,6 +82,12 @@ class Kopf(BaseModel):
     woerter: dict[str, list[str]]           # Wörterbuch -> Werte, häufigste zuerst
     sprachnamen: dict[str, str]             # Code der Sprachtabelle -> deutscher Name (nur Codes der Liste)
     eintragscodes: dict[str, str]           # genauer Spracheintrag der Liste -> Code, wenn die Tabelle ihn kennt
+    nachfolger: dict[str, int] = {}         # Kennung einer früheren Liste -> Zeile des Senders mit derselben Adresse
+
+
+class Vorgaenger(BaseModel):
+    """Die vorige Liste, soweit der Vergleich sie braucht: Kennung -> Adresse ohne Schema (auch ihrer Nachfolger)."""
+    adressen: dict[str, str] = {}
 
 
 class StatischeListe(BaseModel):
@@ -88,6 +98,7 @@ class StatischeListe(BaseModel):
 class Bericht(BaseModel):
     gelesen: int
     geschrieben: int
+    nachfolger: int
     datei: str
     bytes: int
 
@@ -229,8 +240,34 @@ def _eintragscodes(sender: list[Sender]) -> dict[str, str]:
     return {e: c for e in eintraege if (c := sprachtabelle.code_von(e))}
 
 
+def vorgaenger_lesen(datei: Path) -> Vorgaenger:
+    """Kennungen und Adressen der vorigen Liste; ohne Datei (erste Liste) keine."""
+    if not datei.is_file():
+        return Vorgaenger()
+    daten = json.loads(datei.read_text(encoding="utf-8"))
+    stelle = {name: n for n, name in enumerate(daten["kopf"]["spalten"])}
+    zeilen = daten["zeilen"]
+    adressen = {z[stelle["uuid"]]: dubletten.adresse_norm(z[stelle["adresse_aufgeloest"]] or z[stelle["adresse"]]) for z in zeilen}
+    for kennung, zeile in daten["kopf"].get("nachfolger", {}).items():
+        adressen.setdefault(kennung, adressen[zeilen[zeile][stelle["uuid"]]])
+    return Vorgaenger(adressen=adressen)
+
+
+def nachfolger_finden(vorgaenger: Vorgaenger, sender: list[Sender]) -> dict[str, int]:
+    """Je Kennung, die es nicht mehr gibt, die Zeile des Senders mit derselben Adresse (der beliebteste, wenn mehrere)."""
+    nach_adresse: dict[str, int] = {}
+    for zeile, s in enumerate(sender):
+        bisher = nach_adresse.get(s.adresse_norm)
+        if s.adresse_norm and (bisher is None or s.stimmen > sender[bisher].stimmen):
+            nach_adresse[s.adresse_norm] = zeile
+    vorhanden = {s.uuid for s in sender}
+    return {kennung: nach_adresse[adresse] for kennung, adresse in sorted(vorgaenger.adressen.items())
+            if kennung not in vorhanden and adresse in nach_adresse}
+
+
 def liste_bauen(saetze: Iterable[Verzeichnisdatensatz], quelle: Literal["verzeichnis", "datenbank"],
-                zeit: datetime | None = None, anpassung: Anpassung | None = None) -> tuple[StatischeListe, int]:
+                zeit: datetime | None = None, anpassung: Anpassung | None = None,
+                vorgaenger: Vorgaenger | None = None) -> tuple[StatischeListe, int]:
     """Die statische Liste aus den Datensätzen (je uuid der erste, ohne was die Anpassung trifft) und die Zahl der
     gelesenen Datensätze."""
     gelesen = 0
@@ -253,7 +290,8 @@ def liste_bauen(saetze: Iterable[Verzeichnisdatensatz], quelle: Literal["verzeic
     zeilen = [_zeile(s, w, zeilennummer[gruppen[s.uuid]]) for s in sender]
     kopf = Kopf(aufbereitung=senderdaten.FASSUNG, quelle=quelle, anzahl=len(zeilen), spalten=list(SPALTEN),
                 erzeugt=(zeit or datetime.now(timezone.utc)).isoformat(timespec="seconds"), woerter=woerter,
-                sprachnamen=_sprachnamen(sender), eintragscodes=_eintragscodes(sender))
+                sprachnamen=_sprachnamen(sender), eintragscodes=_eintragscodes(sender),
+                nachfolger=nachfolger_finden(vorgaenger or Vorgaenger(), sender))
     return StatischeListe.model_construct(kopf=kopf, zeilen=zeilen), gelesen
 
 
@@ -273,18 +311,20 @@ async def _alle(quelle: AsyncIterator[Verzeichnisdatensatz]) -> list[Verzeichnis
     return [d async for d in quelle]
 
 
-def erzeugen(ordner: Path, datenbank: Path | None = None, eigene: Anpassung | None = None) -> Bericht:
+def erzeugen(ordner: Path, datenbank: Path | None = None, eigene: Anpassung | None = None,
+             vorige: Path | None = None) -> Bericht:
+    vorgaenger = vorgaenger_lesen(vorige or ordner / DATEI)
     anpassung = Anpassung(kennungen=anpassung_baustein.laden().kennungen | (eigene or Anpassung()).kennungen)
     if datenbank is not None:
-        liste, gelesen = liste_bauen(aus_datenbank(datenbank), "datenbank", anpassung=anpassung)
+        liste, gelesen = liste_bauen(aus_datenbank(datenbank), "datenbank", anpassung=anpassung, vorgaenger=vorgaenger)
     else:
         try:
             saetze = asyncio.run(_alle(aus_verzeichnis()))
         except abgleich.AuftragFehler as f:
             raise SystemExit(str(f)) from f
-        liste, gelesen = liste_bauen(saetze, "verzeichnis", anpassung=anpassung)
+        liste, gelesen = liste_bauen(saetze, "verzeichnis", anpassung=anpassung, vorgaenger=vorgaenger)
     ziel = schreiben(liste, ordner)
-    return Bericht(gelesen=gelesen, geschrieben=liste.kopf.anzahl, datei=str(ziel), bytes=ziel.stat().st_size)
+    return Bericht(gelesen=gelesen, geschrieben=liste.kopf.anzahl, nachfolger=len(liste.kopf.nachfolger), datei=str(ziel), bytes=ziel.stat().st_size)
 
 
 def main() -> None:
@@ -292,14 +332,16 @@ def main() -> None:
     teiler.add_argument("--aus", required=True, type=Path, help="Ordner für sender.json")
     teiler.add_argument("--aus-datenbank", type=Path, default=None,
                         help="statt des Verzeichnisses die Tabelle stations dieser Datenbank (nur lesend)")
+    teiler.add_argument("--vorige", type=Path, default=None,
+                        help="vorige sender.json für die Nachfolger (sonst die im Zielordner)")
     wahl = teiler.add_mutually_exclusive_group()
     wahl.add_argument("--anpassung", type=Path, default=None, help="eigene Anpassung der Webversion (Datei)")
     wahl.add_argument("--ohne-eigene-anpassung", action="store_true", help="bewusst ohne eigene Anpassung")
     argumente = teiler.parse_args()
     eigene = Anpassung() if argumente.ohne_eigene_anpassung else eigene_anpassung(argumente.anpassung)
-    bericht = erzeugen(argumente.aus, argumente.aus_datenbank, eigene)
+    bericht = erzeugen(argumente.aus, argumente.aus_datenbank, eigene, argumente.vorige)
     print(f"{bericht.geschrieben} abspielbare von {bericht.gelesen} Sendern nach {bericht.datei} "
-          f"({bericht.bytes / 1_000_000:.1f} MB)")
+          f"({bericht.bytes / 1_000_000:.1f} MB), {bericht.nachfolger} frühere Kennungen mit Nachfolger")
     sys.stdout.flush()
 
 

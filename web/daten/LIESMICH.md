@@ -23,6 +23,9 @@ Aus dem Ordner `backend/`:
 Das Werkzeug erwartet die eigene Anpassung der Webversion (`--anpassung <Datei>`, siehe Kopf des Werkzeugs); wer keine
 hat, sagt es mit `--ohne-eigene-anpassung`.
 
+Vor dem Überschreiben vergleicht das Werkzeug mit der vorigen Liste im Zielordner: Sender, die das Verzeichnis unter neuer
+Kennung führt, stehen im Kopf als Nachfolger, damit Favoriten, Bewertungen und Sperren der Webversion weiter gelten.
+
 Ohne `--aus-datenbank` lädt das Werkzeug das ganze Verzeichnis seitenweise über die eingestellten Server; mit der
 Angabe liest es die Tabelle `stations` der Datenbank nur lesend (ohne verschwundene Sender). Das Format beschreibt der
 Kopf des Werkzeugs (`backend/app/werkzeuge/statische_liste.py`), gelesen wird es in

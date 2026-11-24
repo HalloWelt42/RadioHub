@@ -328,11 +328,37 @@ describe("eigene Angaben", () => {
     expect(await q.wiedergabe(e)).toMatchObject({ uuid: "a", url: "https://strom.test/a", url_resolved: "https://strom.test/a", countrycode: "DE" });
     expect(await q.gespielt()).toBeNull();
     expect((await q.steckbrief(e)).adresse).toBe("https://strom.test/a");
-    for (const aufruf of [q.kategorien(), q.abgleich(), q.abgleichStarten(), q.eigeneAdresse(), q.werbungWidersprechen(),
+    for (const aufruf of [q.kategorien(), q.abgleichStarten(), q.eigeneAdresse(), q.werbungWidersprechen(),
                           q.kategorieZuordnen()]) {
       await expect(aufruf).rejects.toBeInstanceOf(NichtVerfuegbar);
     }
     expect(e.werbung).toEqual({ stufe: "keine", entscheidung: null });
+  });
+
+  it("führt eigene Angaben unter der neuen Kennung eines Senders weiter (RAD-119)", async () => {
+    const speicher = fluechtigerSpeicher();
+    const { q: frueher } = quelle([{ uuid: "alt", name: "Welle" }, { uuid: "gesperrt", name: "Laut" }, { uuid: "b", name: "B" }], speicher);
+    await frueher.abfragen({});
+    await frueher.favorit({ uuid: "alt" } as SenderEintrag, true);
+    await frueher.bewerten("alt", "sterne:2", true);
+    await frueher.sperren("gesperrt");
+
+    const liste = probe([{ uuid: "neu", name: "Welle" }, { uuid: "neu-laut", name: "Laut" }, { uuid: "b", name: "B" }]) as { kopf: Record<string, unknown>; zeilen: unknown[][] };
+    const zeile = (uuid: string) => liste.zeilen.findIndex((z) => z[0] === uuid);
+    liste.kopf.nachfolger = { alt: zeile("neu"), gesperrt: zeile("neu-laut") };
+    const q = new StatischeQuelle({ laden: async () => liste, speicher });
+    const r = await q.abfragen({});
+    expect(namen(r)).not.toContain("Laut");                                   // die Sperre gilt weiter
+    const welle = r.eintraege.find((e) => e.name === "Welle") as SenderEintrag;
+    expect([welle.uuid, welle.favorit, welle.bewertungen]).toEqual(["neu", true, ["sterne:2"]]);
+    expect((await q.sichtbarkeit("alt")).uuid).toBe("neu");                    // alter Direktlink
+    await q.favorit(welle, false);                                             // lässt sich auch wieder abwählen
+    expect((await q.abfragen({ nur_favoriten: true })).eintraege).toEqual([]);
+  });
+
+  it("nennt den Stand der mitgelieferten Liste", async () => {
+    const { q } = quelle([{ uuid: "a", name: "A" }]);
+    expect(await q.abgleich()).toEqual({ zuletzt: "2026-11-20T12:00:00+00:00", uhrzeit: "", ueberfaellig: false, auftrag: null });
   });
 
   it("zeigt das Logo aus der Liste direkt, ohne Logo das Kürzel (RAD-105)", async () => {

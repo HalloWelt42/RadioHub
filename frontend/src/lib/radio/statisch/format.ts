@@ -31,6 +31,8 @@ export interface Kopf {
   sprachnamen: Record<string, string>;
   /** genauer Spracheintrag -> Code, wenn die Sprachtabelle ihn kennt */
   eintragscodes: Record<string, string>;
+  /** Kennung einer früheren Liste -> Zeile des Senders mit derselben Adresse (RAD-119) */
+  nachfolger?: Record<string, number>;
 }
 
 /** Der Bestand der Liste, je Feld eine Spalte (Stelle i ist der Sender i). Wortlisten sind Nummern ins Wörterbuch. */
@@ -65,6 +67,8 @@ export interface Senderbestand {
   /** Suchtext ohne Diakritika, klein (wie die Volltextsuche des Backends) */
   readonly suchtext: string[];
   readonly nachUuid: Map<string, number>;
+  /** Kennung einer früheren Liste -> Stelle des Senders, der sie abgelöst hat */
+  readonly nachfolger: Map<string, number>;
   /** Wert -> Sender (aufsteigend) */
   readonly mitSprache: Map<string, number[]>;
   readonly mitEintrag: Map<string, number[]>;
@@ -121,6 +125,17 @@ function text(roh: unknown, feld: string): string {
 function ganzzahl(roh: unknown, feld: string): number {
   if (typeof roh !== "number" || !Number.isInteger(roh)) throw new Formatfehler(`Zahl für ${feld} erwartet`);
   return roh;
+}
+
+/** Nachfolger früherer Kennungen; fremde Zeilen sind ein Fehler der Liste */
+function nachfolgerLesen(kopf: Kopf, vorhanden: Map<string, number>): Map<string, number> {
+  if (kopf.nachfolger === undefined) return new Map();
+  if (!istObjekt(kopf.nachfolger)) throw new Formatfehler("Nachfolger sind keine Zuordnung");
+  return new Map(Object.entries(kopf.nachfolger).map(([alt, roh]) => {
+    const i = ganzzahl(roh, "nachfolger");
+    if (i < 0 || i >= kopf.anzahl || vorhanden.has(alt)) throw new Formatfehler(`Nachfolger von ${alt} passt nicht`);
+    return [alt, i];
+  }));
 }
 
 /** Name einer Sprache aus ihrem Schlüssel (Code oder frei:<Eintrag>) */
@@ -222,7 +237,7 @@ export function bestandLesen(roh: unknown): Senderbestand {
     if (bisher === undefined || b.landName[i] > bisher) landnamen.set(b.land[i], b.landName[i]);
   }
   return {
-    ...b, glieder, landnamen, reihen: reihenBauen(b),
+    ...b, nachfolger: nachfolgerLesen(kopf, b.nachUuid), glieder, landnamen, reihen: reihenBauen(b),
     mitSprache: indexBauen(b.sprachen, w.sprache), mitEintrag: indexBauen(b.eintraege, w.spracheintrag),
     mitGenre: indexBauen(b.genres, w.genre), mitTag: indexBauen(b.tags, w.tag),
   };

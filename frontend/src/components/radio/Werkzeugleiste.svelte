@@ -1,6 +1,7 @@
 <script lang="ts">
   // Kopf der Liste (Entwurf rechner.html): Knopf Filter (unter 1100 Pixel), Trefferzähler als Segmentanzeige mit der
-  // echten Gesamtzahl, Suche mit Verlauf, Neu laden (sortiert wird am Tabellenkopf, RAD-25) (nur die Liste, Vorgabe 4); darunter die aktiven Filter
+  // echten Gesamtzahl, Suche mit Verlauf, Sender neu erfassen (Abgleich mit dem Verzeichnis, in der Webversion nur die Liste, RAD-119; sortiert
+  // wird am Tabellenkopf, RAD-25); darunter die aktiven Filter
   // als Chips, der Hinweis auf die durch Regeln ausgeblendeten Sender mit Sprung und Alle zurücksetzen.
   import { t } from "../../lib/i18n.svelte.js";
   import { actions } from "../../lib/store.svelte.js";
@@ -9,7 +10,7 @@
   import type { Qualitaet } from "../../lib/radio/typen";
   import Suchfeld from "./Suchfeld.svelte";
 
-  let { filter, gesamt, sichtbar, ausgeblendet, kategorieName, filterOffen, laedt, onaendern, onfilter, onneuladen }: {
+  let { filter, gesamt, sichtbar, ausgeblendet, kategorieName, filterOffen, laedt, neuHinweis, ueberfaellig, onaendern, onfilter, onneuladen }: {
     filter: Schnellfilter;
     gesamt: number | null;
     sichtbar: number | null;
@@ -17,6 +18,10 @@
     kategorieName: (id: string) => string;
     filterOffen: boolean;
     laedt: boolean;
+    /** was der Knopf zum Neuladen tut und wie alt der Bestand ist */
+    neuHinweis: string;
+    /** der nächtliche Abgleich ist ausgeblieben */
+    ueberfaellig: boolean;
     onaendern: (arbeit: (f: Schnellfilter) => Schnellfilter) => void;
     onfilter: () => void;
     onneuladen: () => void;
@@ -58,7 +63,7 @@
     </div>
     <Suchfeld wert={filter.suche} onsuche={(s) => onaendern((f) => ({ ...f, suche: s }))} />
     <!-- nur das Symbol; was er tut, sagt der Hinweis (RAD-70) -->
-    <button class="rund rh-neu-laden" type="button" title={t("radio.neuErfassen")} aria-label={t("radio.neuErfassen")} disabled={laedt}
+    <button class="rund rh-neu-laden" class:alt={ueberfaellig} type="button" title={neuHinweis} aria-label={neuHinweis} disabled={laedt}
             onclick={() => { onneuladen(); }}><i class="fa-solid fa-rotate" class:fa-spin={laedt}></i></button>
   </div>
   <div class="rh-werkzeug-zeile">

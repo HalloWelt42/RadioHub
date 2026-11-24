@@ -3,6 +3,7 @@ ausgeblendete Sender mit Grund, Einzelsperren und Freigaben, Abgleich mit dem Se
 über den Dienst der Senderquelle (services/senderquelle/dienst.py)."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
@@ -154,10 +155,12 @@ async def freigabe_zuruecknehmen(uuid: str) -> Sichtbarkeit:
 
 @router.get("/abgleich", response_model=Abgleichstand)
 async def abgleich_stand(request: Request) -> Abgleichstand:
-    """Ende des letzten Abgleichs, eingestellte Uhrzeit, offener Auftrag."""
+    """Ende des letzten Abgleichs, eingestellte Uhrzeit, ob er überfällig ist, offener Auftrag."""
     auftraege = request.app.state.geruest.auftraege
     offen = (await auftraege.liste(zustand=("wartet", "laeuft"), art=abgleich.ART, grenze=1)).eintraege
-    return Abgleichstand(zuletzt=await dienst.abgleich_zuletzt(), uhrzeit=einstellungen.stand().abgleich_uhrzeit,
+    zuletzt, uhrzeit = await dienst.abgleich_zuletzt(), einstellungen.stand().abgleich_uhrzeit
+    return Abgleichstand(zuletzt=zuletzt, uhrzeit=uhrzeit,
+                         ueberfaellig=abgleich.ueberfaellig(zuletzt, uhrzeit, datetime.now(timezone.utc)),
                          auftrag=offen[0].id if offen else None)
 
 

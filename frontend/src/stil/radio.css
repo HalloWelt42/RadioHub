@@ -104,6 +104,7 @@
   font-size: var(--klein); color: var(--text-2); }
 .rh-hinweis b { color: var(--text); font-family: var(--schrift-zahl); }
 .rh-neu-laden { inline-size: var(--rh-taste); block-size: var(--rh-taste); }   /* nur Symbol, so hoch wie das Suchfeld (RAD-70) */
+.rund.rh-neu-laden.alt > i { color: var(--warn); }   /* der nächtliche Abgleich blieb aus (RAD-119) */
 .rh-hinweis a { margin-left: auto; color: var(--akzent); font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
 .rh-hinweis a:hover { text-decoration: underline; }
 

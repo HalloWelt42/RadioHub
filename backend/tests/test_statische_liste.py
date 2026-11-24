@@ -146,3 +146,23 @@ def test_typografische_zeichen_als_escape(tmp_path):
     roh = datei.read_text(encoding="utf-8")
     assert "\u2013" not in roh and "\\u2013" in roh
     assert json.loads(roh)["zeilen"][0][1] == name
+
+
+def test_nachfolger_mit_derselben_adresse_laufen_mit(tmp_path):
+    def satz(uuid: str, adresse: str, stimmen: int = 1) -> Verzeichnisdatensatz:
+        return Verzeichnisdatensatz.model_validate({"stationuuid": uuid, "name": uuid, "url": adresse, "lastcheckok": 1,
+                                                    "votes": stimmen})
+
+    def bauen(*saetze: Verzeichnisdatensatz) -> dict[str, str]:
+        vorgaenger = sl.vorgaenger_lesen(tmp_path / sl.DATEI)
+        sl.schreiben(sl.liste_bauen(saetze, "verzeichnis", vorgaenger=vorgaenger)[0], tmp_path)
+        kopf, zeilen = _lesen(tmp_path / sl.DATEI)
+        return {alt: zeilen[zeile]["uuid"] for alt, zeile in kopf["nachfolger"].items()}
+
+    assert bauen(satz("alt", "https://strom.test/eins"), satz("bleibt", "https://strom.test/zwei"),
+                 satz("weg", "https://strom.test/drei")) == {}
+    assert bauen(satz("neu-klein", "https://strom.test/eins"), satz("neu-gross", "https://strom.test/eins", 9),
+                 satz("bleibt", "https://strom.test/zwei")) == {"alt": "neu-gross"}
+    # beim nächsten Wechsel zeigt auch die erste Kennung auf den jetzigen Sender
+    assert bauen(satz("noch-neuer", "https://strom.test/eins"), satz("bleibt", "https://strom.test/zwei")) == {
+        "alt": "noch-neuer", "neu-gross": "noch-neuer", "neu-klein": "noch-neuer"}

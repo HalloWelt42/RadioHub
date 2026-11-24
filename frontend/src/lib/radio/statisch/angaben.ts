@@ -48,6 +48,20 @@ export function leereAngaben(zeit: string): EigeneAngaben {
            regeln: [einzelsperrenRegel(zeit)], sperren: [], freigaben: [], laender_leiste: [] };
 }
 
+// ----- Nachziehen -------------------------------------------------------------------------------------------------
+
+/** Dieselben Angaben unter den heutigen Kennungen der Sender (`heute` gibt unbekannte unverändert zurück). Ohne
+ *  Änderung dieselben Angaben; nichts fällt weg, zwei frühere Kennungen desselben Senders werden eine. */
+export function nachgezogen(a: EigeneAngaben, heute: (uuid: string) => string): EigeneAngaben {
+  const betroffen = [...a.favoriten, ...a.sperren, ...a.freigaben, ...Object.keys(a.bewertungen)].some((u) => heute(u) !== u);
+  if (!betroffen) return a;
+  const einmal = (uuids: string[]) => [...new Set(uuids.map(heute))];
+  const sperren = einmal(a.sperren);
+  const bewertungen: Record<string, Bewertung[]> = {};
+  for (const [uuid, werte] of Object.entries(a.bewertungen)) bewertungen[heute(uuid)] ??= werte;
+  return { ...a, favoriten: einmal(a.favoriten), sperren, freigaben: einmal(a.freigaben).filter((u) => !sperren.includes(u)), bewertungen };
+}
+
 // ----- Prüfen -----------------------------------------------------------------------------------------------------
 
 const falsch = (text: string): Quellfehler => new Quellfehler(`Die Datei passt nicht: ${text}`, 422);

@@ -349,4 +349,5 @@ class SenderAnfrage(BaseModel):
 class Abgleichstand(BaseModel):
     zuletzt: str | None            # Ende des letzten vollständigen Abgleichs
     uhrzeit: str                   # Einstellung abgleich_uhrzeit
+    ueberfaellig: bool             # der nächtliche Abgleich ist ausgeblieben
     auftrag: str | None            # Kennung eines offenen Abgleichs

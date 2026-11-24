@@ -8,7 +8,7 @@
   import PufferAnsicht from "./PufferAnsicht.svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
-  import { appState, senderfolgeSetzen } from "../../lib/store.svelte.js";
+  import { actions, appState, senderfolgeSetzen } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { filterzustand, senderquelle } from "../../lib/radio";
   import { Radiobedienung } from "../../lib/radio/bedienung.svelte";
@@ -22,6 +22,7 @@
   import type { Sortierung } from "../../lib/radio/typen";
   import Werkzeugleiste from "./Werkzeugleiste.svelte";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
+  import { abgleichlauf } from "../../lib/radio/abgleichlauf.svelte";
   import { werbende } from "../../lib/radio/werbende.svelte";
 
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -103,6 +104,7 @@
     const zurueck = () => { if (appPfad().startsWith("/radio") && !appPfad().startsWith(`/radio/${PUFFER}`)) filterzustand.ausAdresse(); };
     window.addEventListener("popstate", zurueck);
     void bedienung.bestandLaden();
+    void abgleichlauf.laden(nachAbgleich);
     return () => window.removeEventListener("popstate", zurueck);
   });
 
@@ -117,6 +119,29 @@
   $effect(() => {
     if (fertigeStellen && senderquelle.faehig.werbung) untrack(() => void werbende.laden(true));
   });
+
+  // Alter des Bestands und Abgleich mit dem Verzeichnis (RAD-119): der Knopf gleicht ab und lädt danach die Liste; ohne
+  // Dienst (Webversion) lädt er nur die Liste
+  const standVom = $derived(abgleichlauf.stand?.zuletzt
+    ? t("radio.standVom", { zeit: new Date(abgleichlauf.stand.zuletzt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) }) : "");
+  const neuHinweis = $derived(abgleichlauf.offen && abgleichlauf.auftrag?.schritt ? abgleichlauf.auftrag.schritt
+    : [t(senderquelle.faehig.abgleich ? "radio.neuErfassen" : "radio.listeNeuLaden"), standVom,
+       abgleichlauf.stand?.ueberfaellig ? t("radio.abgleichUeberfaellig") : ""].filter(Boolean).join(", "));
+
+  function listeAuffrischen() {
+    void liste.laden(zuAbfrage(filterzustand.filter));
+    void bedienung.bestandLaden();
+  }
+
+  function nachAbgleich(fehler: string) {
+    if (fehler) return actions.showToast(fehler, "error");
+    listeAuffrischen();
+  }
+
+  function neuErfassen() {
+    if (senderquelle.faehig.abgleich) void abgleichlauf.starten(nachAbgleich);
+    else listeAuffrischen();
+  }
 
   // Vor und Zurück der Wiedergabe folgen der sichtbaren Liste (Vorgabe 7); die Nachbarn bekommen ihre Felder vorab
   $effect(() => {
@@ -233,9 +258,10 @@
       <PufferAnsicht onzu={pufferSchliessen} />
     {:else}
     <Werkzeugleiste {filter} gesamt={liste.gesamt} sichtbar={bedienung.bestand?.sichtbar ?? null} ausgeblendet={bedienung.bestand?.ausgeblendet ?? null}
-                    kategorieName={(id) => kategorien.find((k) => String(k.id) === id)?.name ?? id} {filterOffen} laedt={liste.laedt}
+                    kategorieName={(id) => kategorien.find((k) => String(k.id) === id)?.name ?? id} {filterOffen} laedt={liste.laedt || abgleichlauf.offen}
+                    {neuHinweis} ueberfaellig={abgleichlauf.stand?.ueberfaellig ?? false}
                     onaendern={aendern} onfilter={() => (filterOffen = true)}
-                    onneuladen={() => { void liste.laden(zuAbfrage(filter)); void bedienung.bestandLaden(); }} />
+                    onneuladen={neuErfassen} />
     <!-- Spaltenkopf fest über der rollenden Liste, nicht klebend in ihr: so zittert er beim Rollen nie (RAD-16) -->
     <div class="rh-liste-rahmen">
       {#snippet sortspalte(s: Sortierung, titel: string)}
