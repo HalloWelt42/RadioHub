@@ -80,7 +80,10 @@ gewähltes Abo zeigt seinen Kopf mit "Neue speichern", Aktualisieren, "Alle spei
 und Abbestellen (mit Rückgängig). Je Folge: hören; Speichern legt sie in der Kellerwolke ab (Podcasts/<Abo>/),
 Herunterladen lädt sie als Datei auf das Gerät, das gerade bedient; eine gespeicherte löschen fragt vorher und nennt
 die Datei, die in den Papierkorb geht; als gehört setzen; Details. Spielt eine Folge, hat die Abspielleiste statt der
-Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge.
+Bitrate eine Drehwahl für das Tempo; die Fokus-Taste folgt auch der laufenden Folge. Bei Titeln einer Aufnahme öffnet sie die
+Aufnahme und rollt zum laufenden Titel, bei einer Datei der Kellerwolke öffnet sie deren Ordner (RAD-140). Zurück geht bei
+Titeln an den Anfang, kurz nach dem Anfang zum vorherigen; Vor und Zurück folgen der Reihenfolge (rückwärts, Schleife,
+Zufall) und sind gesperrt, wo es keinen Nachbarn gibt. Der Hinweis jeder Taste sagt, was sie jetzt bewirkt.
 
 Werbung am Klang (HELF-256): ist der Propaganda-Filter eingerichtet, geht der laufende Ton eines Senders (MP3, AAC) in
 Stücken an ihn; erkennt er einen bekannten Spot, der an diesem Sender gefiltert wird, entsteht eine Werbestelle wie aus
@@ -197,12 +200,22 @@ Umwandeln (MP3, OGG, AAC, Bitrate, Mono) gehen genauso. Jeder Schritt lässt sic
 vorige Fassung im Unterordner `Schritte/<Nr>` ihres Ordners, eine Datei legt das Ergebnis beim Rückgängig in den
 Papierkorb; die letzten zehn Schritte bleiben. Am Telefon gibt es den Reiter Aufnahmen ohne Schneiden (Suche, Ordner,
 Details, Titel).
-Nach dem Stopp schneidet RadioHub jede Aufnahme fein (RAD-45, Status "feinschnitt", solange bleibt die Wiedergabe
-gesperrt): Grenzen an den Pausen zwischen den Titeln, bei Sendern mit Überblendung am tiefsten Pegeltal, Werbung als
+Kopf, Werkzeuge, Wellenform und Übersicht bleiben dabei oben stehen, Schneiden, Lautheit und Umwandeln als Leiste über
+der Kanzel; es rollt nur die Liste der Stücke (RAD-141). In niedrigen Fenstern wird alles knapper.
+RadioHub schneidet jede Aufnahme fein (RAD-45): Grenzen an den Pausen zwischen den Titeln, bei Sendern mit Überblendung am tiefsten Pegeltal, Werbung als
 eigenes Stück, Einstreuungen wie der Sendungsname mitten im Lied fallen weg, der Titel eines Stücks ist der mit dem
-größten Anteil. Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json` im Ordner
-der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
+größten Anteil. Das geschieht schon während der Aufnahme, alle Viertelstunde für den fertigen Abschnitt (RAD-139); nach
+dem Stopp bleibt nur der letzte (Status "feinschnitt", in der Liste "wird geschnitten" mit Stand: hören geht, ändern erst
+danach). Die Messwerte (Wechsel der Sendedaten, Stillen, Pegel, Werbestellen) liegen als `Analyse.json`, bei langen
+Aufnahmen je Abschnitt als eigene Datei, im Ordner der Aufnahme; `POST /api/recording/sessions/<Kennung>/feinschnitt` rechnet daraus neu und ersetzt den vorigen
 Feinschnitt (als Schritt des Schnitts, also auch von Hand zurückzunehmen).
+Eine Aufnahme läuft beliebig lang (RAD-139): fertige Stücke gehen gleich in die Kellerwolke, lokal und im Arbeitsspeicher
+liegt nur der laufende Abschnitt (höchstens 400 MB); ein Stück ohne Titelwechsel endet nach einer Stunde. Ist die
+Kellerwolke weg, sammeln sich die Stücke lokal und gehen nach, sobald sie wieder da ist. Bleibt auf dem Datenträger des
+Servers oder in der Kellerwolke nur noch die Reserve frei (Einstellungen > Aufnahmen, Vorgabe 5 GB), endet die Aufnahme
+sauber: sie heißt "Platz voll", Meldung und Protokoll nennen den Grund; unter der Reserve beginnt keine neue.
+Die Zahlen: neben den Aufnahmen steht die Zahl ihrer Titel (Note). Werbung, Einschübe und kurze Stücke, die nur den Sender
+nennen, zählen nicht als Titel; die Stücke bleiben in der Aufnahme.
 Geräte (RAD-18, nur PRO): Jedes Fenster von RadioHub meldet sich beim Vermittler des Appkerns
 (`WS /api/v1/geraete/ws`, angemeldet mit der ersten Nachricht) und sieht die anderen Fenster desselben Kontos. Der
 Knopf Geräte oben rechts nennt ihre Zahl und blinkt ruhig, solange auf einem davon etwas spielt; am Telefon steht er im

@@ -43,6 +43,7 @@
     hlsActive: app.hlsActive,
     currentSegment: app.currentSegment,
     recordingElapsed: app.recordingElapsed,
+    recordingStoppt: app.recordingStoppt,
     recordingIcyCount: app.recordingIcyCount,
     canPlayDirect: app.canPlayDirect,
     canPlayHLS: app.canPlayHLS,

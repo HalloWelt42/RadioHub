@@ -10,8 +10,7 @@ export interface Anfrager {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Rohdaten des Backends
 type Roh = Record<string, any>;
 
-// feinschnitt (RAD-45): nach dem Stopp werden die Stücke noch genau geschnitten; bis dahin bleibt die Wiedergabe gesperrt
-const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", feinschnitt: "laeuft", completed: "fertig", stalled: "abgebrochen", interrupted: "unterbrochen" };
+const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", feinschnitt: "schneidet", completed: "fertig", disk_full: "voll", stalled: "abgebrochen", interrupted: "unterbrochen" };
 
 function luecken(roh: unknown): number {
   try {
@@ -27,8 +26,8 @@ export function aufnahmeAus(r: Roh): Aufnahme {
     id: String(r.id), sender: String(r.station_name ?? ""), senderUuid: String(r.station_uuid ?? ""), beginn: String(r.start_time ?? ""), dauer: Number(r.duration) || 0,
     groesse: Number(r.file_size) || 0, codec: String(r.codec ?? r.file_format ?? "").replace(/^\./, "").toUpperCase(),
     bitrate: r.bitrate ? Number(r.bitrate) : null, art: r.rec_type === "hls-rec" ? "puffer" : "direkt",
-    ordnerId: r.folder_id ?? null, titelzahl: Number(r.segment_count) || 0, status: STATUS[r.status] ?? "fertig",
-    luecken: luecken(r.quality_json),
+    ordnerId: r.folder_id ?? null, titelzahl: Number(r.titel_count ?? r.segment_count) || 0, stueckzahl: Number(r.segment_count) || 0, status: STATUS[r.status] ?? "fertig",
+    luecken: luecken(r.quality_json), arbeit: r.arbeit ? { fertig: Number(r.arbeit.fertig) || 0, gesamt: Number(r.arbeit.gesamt) || 0 } : null,
   };
 }
 
@@ -49,7 +48,7 @@ export class BackendAufnahmequelle implements Aufnahmequelle {
     if (a.suche.trim()) q.set("suche", a.suche.trim());
     if (a.ordner) q.set("ordner", a.ordner);
     const r = await this.api.fetch(`/api/recording/sessions?${q}`);
-    return { aufnahmen: (r.sessions ?? []).map(aufnahmeAus), gesamt: Number(r.gesamt ?? r.count) || 0 };
+    return { aufnahmen: (r.sessions ?? []).map(aufnahmeAus), gesamt: Number(r.gesamt ?? r.count) || 0, titelGesamt: Number(r.titel_gesamt) || 0 };
   }
 
   async aufnahme(id: string): Promise<Aufnahme> {
@@ -85,7 +84,7 @@ export class BackendAufnahmequelle implements Aufnahmequelle {
 
   async ordner(): Promise<Aufnahmeordner[]> {
     const r = await this.api.fetch("/api/recording/folders");
-    return (r.folders ?? []).map((o: Roh) => ({ id: Number(o.id), name: String(o.name), ziel: !!o.is_active, anzahl: Number(o.session_count) || 0 }));
+    return (r.folders ?? []).map((o: Roh) => ({ id: Number(o.id), name: String(o.name), ziel: !!o.is_active, anzahl: Number(o.session_count) || 0, titelzahl: Number(o.titel_count) || 0 }));
   }
 
   async ordnerAnlegen(name: string): Promise<void> {

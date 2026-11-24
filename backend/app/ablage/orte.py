@@ -70,8 +70,13 @@ def titelliste(sitzungsordner: str) -> str:
     return f"{sitzungsordner}/{TITELLISTE}"
 
 
-def analyse(sitzungsordner: str) -> str:
-    return f"{sitzungsordner}/{ANALYSE}"
+def analyse(sitzungsordner: str, abschnitt: int = 0) -> str:
+    """Analyse der Aufnahme; lange Aufnahmen haben eine je Abschnitt (RAD-139)."""
+    return f"{sitzungsordner}/{ANALYSE if not abschnitt else f'Analyse {abschnitt:04d}.json'}"
+
+
+def ist_analyse(dateiname: str) -> bool:
+    return dateiname.startswith("Analyse") and dateiname.endswith(".json")
 
 
 def wellenform(sitzungsordner: str) -> str:

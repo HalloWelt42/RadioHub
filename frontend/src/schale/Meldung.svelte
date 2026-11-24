@@ -32,8 +32,10 @@
     const a = bei(puffer.abschnitte, puffer.ende - (appState.recordingElapsed as number));
     return { sitzung, vorlauf, titel: a?.titel ?? "" };
   });
+  // die Frist hängt an der Aufnahme, nicht am Hinweis: der rechnet mit der laufenden Zeit und begänne sie sonst jede Sekunde neu (RAD-139)
+  const hinweisSitzung = $derived(aufnahmeHinweis?.sitzung ?? null);
   $effect(() => {
-    const s = aufnahmeHinweis?.sitzung;
+    const s = hinweisSitzung;
     if (!s) return;
     const uhr = setTimeout(() => (weg = s), AUFNAHME_HINWEIS_MS);
     return () => clearTimeout(uhr);

@@ -58,6 +58,27 @@ class SegmentSplitter:
         # Aktive Schnitte je Quelle (verhindert Doppel-Schnitte)
         self._aktiv: set[str] = set()
 
+    async def _in_einem(self, audio: Path, grenzen: list[tuple[str, int, int]], endung: str, ziel_dir: Path) -> Optional[list[Stueck]]:
+        """Alle Stücke in einem Durchgang durch die Datei (RAD-139: je Stück einzeln las FFmpeg sie jedes Mal von vorn,
+        88 Stücke aus 4 Stunden dauerten so 100 s). None, wenn das Ergebnis nicht zu den Grenzen passt: dann einzeln."""
+        punkte = sorted({ms for _, start, ende in grenzen for ms in (start, ende)})
+        if len(punkte) < 3 or any(x[2] != y[1] for x, y in zip(grenzen, grenzen[1:])):
+            return None
+        vorn = 1 if punkte[0] > 0 else 0                 # was vor der ersten Grenze liegt, ist das Stück 0 und fällt weg
+        zeiten = ",".join(f"{ms / 1000:.3f}" for ms in punkte[:-1] if ms > 0)
+        ok, fehler = await _ffmpeg(["ffmpeg", "-nostdin", "-y", "-i", str(audio), "-map", "0:a:0", "-c:a", "copy", "-f", "segment",
+                                    "-segment_times", zeiten, "-reset_timestamps", "1", str(ziel_dir / f"teil_%05d{endung}")],
+                                   timeout=1800)
+        dateien = sorted(ziel_dir.glob(f"teil_*{endung}"))
+        if not ok or len(dateien) < len(grenzen) + vorn or any(d.stat().st_size == 0 for d in dateien[:len(grenzen) + vorn]):
+            logger.warning(f"Split in einem Durchgang passt nicht ({len(dateien)} Dateien für {len(grenzen)} Stücke): {fehler}")
+            for d in dateien:
+                d.unlink(missing_ok=True)
+            return None
+        for d in dateien[:vorn] + dateien[len(grenzen) + vorn:]:
+            d.unlink(missing_ok=True)
+        return [Stueck(titel, start, ende, d) for (titel, start, ende), d in zip(grenzen, dateien[vorn:])]
+
     async def _schneiden(self, audio: Path, start_sec: float, dauer_sec: float, ziel: Path) -> bool:
         ok, fehler = await _ffmpeg(["ffmpeg", "-y", "-i", str(audio), "-ss", f"{start_sec:.3f}",
                                     "-t", f"{dauer_sec:.3f}", "-c:a", "copy", str(ziel)], timeout=120)
@@ -117,11 +138,13 @@ class SegmentSplitter:
         try:
             ziel_dir.mkdir(parents=True, exist_ok=True)
             endung = endung if endung.startswith(".") else f".{endung}"
-            stuecke: list[Stueck] = []
-            for i, (titel, start_ms, end_ms) in enumerate(grenzen):
-                ziel = ziel_dir / f"teil_{i:03d}{endung}"
-                if await self._schneiden(audio, start_ms / 1000.0, (end_ms - start_ms) / 1000.0, ziel):
-                    stuecke.append(Stueck(titel, start_ms, end_ms, ziel))
+            stuecke = await self._in_einem(audio, grenzen, endung, ziel_dir)
+            if stuecke is None:
+                stuecke = []
+                for i, (titel, start_ms, end_ms) in enumerate(grenzen):
+                    ziel = ziel_dir / f"teil_{i:05d}{endung}"
+                    if await self._schneiden(audio, start_ms / 1000.0, (end_ms - start_ms) / 1000.0, ziel):
+                        stuecke.append(Stueck(titel, start_ms, end_ms, ziel))
             logger.info(f"Split: {len(stuecke)} von {len(grenzen)} Stücken aus {audio.name}")
             return stuecke
         finally:

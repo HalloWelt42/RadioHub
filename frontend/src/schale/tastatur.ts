@@ -1,7 +1,7 @@
 // Tastatur am Rechner, gemeinsam für beide Bauziele (volle App und Webversion, RAD-4): Leertaste wie die Taste Spielen
 // (spielen, Pause, weiter), S beendet, Pfeile für Lautstärke und Sender, M stumm, die Ziffern 1 bis n wählen die
-// angebotenen Bereiche in der Reihenfolge der Navigation. Bei laufender Aufnahme sind Anhalten, Beenden und
-// Senderwechsel gesperrt. In Eingabefeldern und am Telefon gilt nichts davon.
+// angebotenen Bereiche in der Reihenfolge der Navigation. Bei laufender Aufnahme sind Anhalten und
+// Beenden gesperrt, die Pfeile springen wie die Tasten nur durch die Titel des Zeitversatzes. In Eingabefeldern und am Telefon gilt nichts davon.
 // Die Belegung steht als Tabelle (TASTEN); dieselbe Tabelle zeigt die Seite Einstellungen > Allgemein > Tastatur
 // (RAD-11), damit Beschreibung und Verhalten nie auseinanderlaufen.
 import { actions, appState } from "../lib/store.svelte.js";
@@ -33,8 +33,8 @@ export const TASTEN: readonly Taste[] = [
     tun: () => actions.setVolume(Math.min(100, appState.volume + SCHRITT_LAUTSTAERKE)) },
   { tasten: ["ArrowDown"], name: "leiser", gruppe: "wiedergabe", gesperrtBeiAufnahme: false, nurOhneStrg: false,
     tun: () => actions.setVolume(Math.max(0, appState.volume - SCHRITT_LAUTSTAERKE)) },
-  { tasten: ["ArrowLeft"], name: "zurueck", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: zurueck },
-  { tasten: ["ArrowRight"], name: "weiter", gruppe: "wiedergabe", gesperrtBeiAufnahme: true, nurOhneStrg: false, tun: vor },
+  { tasten: ["ArrowLeft"], name: "zurueck", gruppe: "wiedergabe", gesperrtBeiAufnahme: false, nurOhneStrg: false, tun: zurueck },
+  { tasten: ["ArrowRight"], name: "weiter", gruppe: "wiedergabe", gesperrtBeiAufnahme: false, nurOhneStrg: false, tun: vor },
 ];
 
 export function tasteDerApp(e: KeyboardEvent, bereiche: readonly string[]): void {

@@ -57,6 +57,10 @@ def naechster_lauf(uhrzeit: str, ab: datetime) -> datetime | None:
     return lauf if lauf > ab else lauf + timedelta(days=1)
 
 
+#: so lange wartet das Beenden auf den Feinschnitt einer eben beendeten Aufnahme
+FEINSCHNITT_BEIM_ENDE_S = 6.0
+
+
 class Radiobetrieb(Begleiter):
     def __init__(self, geruest: Geruest, transport: httpx.AsyncBaseTransport | None = None) -> None:
         """`transport` nur für Tests (Senderverzeichnis nachgestellt)."""
@@ -106,6 +110,7 @@ class Radiobetrieb(Begleiter):
         folgenvertonung.dienst = self._vertonungsdienst
         mitschriften = Mitschriften(lambda: get_arbeit_dir("mitlesen"), lambda text, stufe: self._eintragen("radio.mitlesen", text, stufe))
         mitleser.mitschriften = lambda: mitschriften if einstellungen.stand().mitlesen_ablegen else None
+        rec_manager.melden = lambda ereignis, text: self._eintragen(ereignis, text, "warnung")
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
         mitschnitte_raeumen()           # Mitschnitte der Empfänge eines vorigen Laufs
         seed_domain_blacklist()         # Werbedomains der Erkennung
@@ -131,6 +136,10 @@ class Radiobetrieb(Begleiter):
         self._aufgaben = []
         if rec_manager.active_session:
             await rec_manager.stop()
+        try:                                # der letzte Abschnitt des Feinschnitts, solange das Beenden warten darf
+            await asyncio.wait_for(asyncio.shield(rec_manager.feinschnitt_abwarten()), FEINSCHNITT_BEIM_ENDE_S)
+        except asyncio.TimeoutError:
+            log.warning("Feinschnitt beim Beenden nicht fertig: die groben Stücke bleiben")
         await buffer_manager.stop_buffering()
         await timeshift_buffer.stop_buffering()
         await hls_buffer.stop()

@@ -5,6 +5,7 @@
 // (tests/kanzel.test.ts); die Bausteine setzen das Ergebnis nur ein.
 import type { Leuchtfarbe } from "appkern-oberflaeche/instrumente";
 import { formatTime, formatTimeShort } from "../lib/formatters.js";
+import { nachbarstelle } from "../lib/reihenfolge.js";
 
 export type Uebersetzer = (schluessel: string, werte?: Record<string, string | number>) => string;
 
@@ -47,6 +48,8 @@ export interface Stand {
   hlsActive: boolean;
   currentSegment: number | null;
   recordingElapsed: number;
+  /** die Aufnahme wird gerade beendet */
+  recordingStoppt: boolean;
   recordingIcyCount: number;
   canPlayDirect: boolean;
   canPlayHLS: boolean | null;
@@ -91,6 +94,12 @@ export const hatZeitversatz = (s: Stand): boolean => s.playerMode === "hls" && !
  *  Aufnahmen wechseln sie wie bisher (lang gedrückt immer) */
 export const springtTitel = (s: Pick<Stand, "playerMode" | "currentStation" | "currentEpisode" | "isLive">): boolean =>
   hatZeitversatz(s as Stand) && !s.isLive;
+
+/** Titel einer Aufnahme: Zurück geht an den Anfang des Titels, kurz nach dem Anfang zum vorherigen (wie im Zeitversatz);
+ *  am ersten Titel immer an seinen Anfang */
+export const ZURUECK_SCHWELLE_S = 5;
+export const zumTitelanfang = (s: Stand): boolean =>
+  s.playerMode === "recording" && (s.zeit > ZURUECK_SCHWELLE_S || nachbar(s, -1) === null);
 
 /** Während einer Aufnahme bleibt der Sender (RAD-83, Nutzer 22.11.2026): Zurück und Vor springen nur durch die Titel
  *  des Puffers, auch lang gedrückt; ohne Zeitversatz sind sie gesperrt, an der Live-Kante gibt es kein Vor */
@@ -268,18 +277,16 @@ const REIHENFOLGE: Record<string, { symbol: string; farbe: Leuchtfarbe; text: st
 };
 export const REIHENFOLGEN = ["linear", "reverse", "loop", "shuffle"] as const;
 
-/** Name des Nachbarn in der Liste (Sender, Folge oder Aufnahme), rundum wie die Aktionen im Store */
+/** Name des Nachbarn in der Liste (Sender, Folge oder Titel), nach derselben Regel wie die Aktionen im Store: Folgen und Titel
+ *  folgen der Reihenfolge (lib/reihenfolge), Sender laufen rundum. Leer: es gibt einen, der Zufall wählt ihn; null: keinen. */
 export function nachbar(s: Stand, schritt: -1 | 1): string | null {
-  if (s.currentEpisode && s.podcastPlaylist.length > 1) {
-    const i = s.currentEpisodeIndex + schritt;
-    return i >= 0 && i < s.podcastPlaylist.length ? (s.podcastPlaylist[i]?.title ?? null) : null;
-  }
-  if (s.playerMode === "recording" && s.recordingPlaylist.length > 1) {
-    const i = s.recordingPlaylist.findIndex((x) => x.path === s.currentRecording?.path);
-    if (i < 0) return null;
-    const n = s.recordingPlaylist.length;
-    return s.recordingPlaylist[(i + schritt + n) % n]?.name ?? null;
-  }
+  const aus = (namen: (string | undefined)[], stelle: number): string | null => {
+    const ziel = nachbarstelle(namen.length, stelle, schritt, s.playMode);
+    return ziel === null ? null : s.playMode === "shuffle" ? "" : (namen[ziel] ?? "");
+  };
+  if (s.currentEpisode) return aus(s.podcastPlaylist.map((x) => x.title), s.currentEpisodeIndex);
+  if (s.playerMode === "recording")
+    return aus(s.recordingPlaylist.map((x) => x.name), s.recordingPlaylist.findIndex((x) => x.path === s.currentRecording?.path));
   if (!s.currentStation || !s.stations.length) return null;
   const i = s.stations.findIndex((x) => x.uuid === s.currentStation?.uuid);
   if (i < 0) return null;
@@ -287,11 +294,10 @@ export function nachbar(s: Stand, schritt: -1 | 1): string | null {
   return s.stations[(i + schritt + n) % n]?.name ?? null;
 }
 
-/** Senderwechsel und Blättern möglich: ein laufender Sender in einer Liste mit Nachbarn, eine Folge oder Aufnahmen mit
- *  mehr als einem Eintrag. Ohne laufenden Sender springt Vor und Zurück nirgendwohin, die Tasten sind dann gesperrt
- *  statt wirkungslos (RAD-28). */
-export const kannBlaettern = (s: Stand): boolean =>
-  (!!s.currentStation && s.stations.length > 1) || !!s.currentEpisode || (s.playerMode === "recording" && s.recordingPlaylist.length > 1);
+/** Blättern möglich: ein laufender Sender in einer Liste mit Nachbarn; bei Folgen und Titeln, wenn es in dieser Richtung einen
+ *  Nachbarn gibt. Eine Taste ohne Wirkung ist gesperrt statt wirkungslos (RAD-28, RAD-140). */
+export const kannBlaettern = (s: Stand, schritt: -1 | 1): boolean =>
+  s.currentEpisode || s.playerMode === "recording" ? nachbar(s, schritt) !== null : !!s.currentStation && s.stations.length > 1;
 
 export const kannModusWechseln = (s: Stand): boolean =>
   !s.currentEpisode && ((s.playerMode === "hls" && s.canPlayDirect) || (s.playerMode === "direct" && s.canPlayHLS === true));
@@ -299,11 +305,11 @@ export const kannModusWechseln = (s: Stand): boolean =>
 export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fokusAn = false): Tasten {
   const art = artVon(s), rec = s.isRecording, laeuft = s.isPlaying && !s.isPaused;
   const folge = art === "podcast", aufnahme = s.playerMode === "recording";
-  const blaettern = kannBlaettern(s);
   const mitTaste = (text: string, taste: string) => t("kanzel.taste", { text, taste });
 
   const blatt = (schritt: -1 | 1): Taste => {
     const richtung = schritt < 0 ? "prev" : "next";
+    const blaettern = kannBlaettern(s, schritt);
     let hilfe: string;
     if (rec) {
       const frei = blaetternInAufnahme(s, schritt);
@@ -315,6 +321,11 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
       const sender = blaettern ? nachbar(s, schritt) || t(`player.${richtung}Sender`) : null;
       const titel = t(schritt < 0 ? "kanzel.titelZurueckKurz" : "kanzel.titelVorKurz");
       hilfe = mitTaste(sender ? t("kanzel.kurzLang", { kurz: titel, lang: sender }) : titel, schritt < 0 ? "←" : "→");
+      return { an: false, licht: "aus", gesperrt: false, hilfe };
+    }
+    if (aufnahme && schritt < 0 && zumTitelanfang(s)) {
+      const vorher = nachbar(s, -1);
+      hilfe = mitTaste(vorher === null ? t("kanzel.titelAnfang") : t("kanzel.kurzLang", { kurz: t("kanzel.titelAnfang"), lang: vorher || t("player.prevTitel") }), "←");
       return { an: false, licht: "aus", gesperrt: false, hilfe };
     }
     if (!blaettern) hilfe = t(folge ? `player.keine${schritt < 0 ? "Prev" : "Next"}Episode` : aufnahme ? `player.keine${schritt < 0 ? "Prev" : "Next"}Titel` : `player.kein${schritt < 0 ? "Prev" : "Next"}`);
@@ -341,13 +352,13 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
   const aufnahmeMoeglich = art === "sender" && s.isPlaying && !aufnahme;
   // Aufnahme: leuchtet, solange sie läuft; ein Druck darauf beendet sie, Stopp beendet sie ebenso (RAD-83)
   const aufnehmen: Taste = {
-    an: rec, licht: rec ? "blinkt" : "aus", gesperrt: !rec && !aufnahmeMoeglich,
-    hilfe: rec ? t("kanzel.aufnahmeBeendenHilfe") : aufnahme ? t("player.nichtBeiWiedergabe") : art !== "sender" ? t("player.keinSender")
+    an: rec, licht: s.recordingStoppt ? "atmet" : rec ? "blinkt" : "aus", gesperrt: s.recordingStoppt || (!rec && !aufnahmeMoeglich),
+    hilfe: s.recordingStoppt ? t("aufnahmenAnsicht.wirdBeendet") : rec ? t("kanzel.aufnahmeBeendenHilfe") : aufnahme ? t("player.nichtBeiWiedergabe") : art !== "sender" ? t("player.keinSender")
       : !s.isPlaying ? t("player.keinPlay") : t("player.recStart"),
   };
 
-  const stopp: Taste = { an: false, licht: "aus", gesperrt: !s.isPlaying && !s.isPaused && !rec,
-    hilfe: t(s.weg?.aufnahme === false ? "kanzel.stoppHilfeOhneAufnahme" : "kanzel.stoppHilfe") };
+  const stopp: Taste = { an: false, licht: "aus", gesperrt: s.recordingStoppt || (!s.isPlaying && !s.isPaused && !rec),
+    hilfe: t(rec ? "kanzel.stoppHilfeAufnahme" : s.weg?.aufnahme === false ? "kanzel.stoppHilfeOhneAufnahme" : "kanzel.stoppHilfe") };
 
   const kann = kannModusWechseln(s);
   const stromModus = s.playerMode === "hls" || s.playerMode === "direct";
@@ -371,7 +382,7 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
   const varianten = fehler && art === "sender";
   const quelle: Tasten["quelle"] = {
     an: false, licht: varianten ? "atmet" : fokusAn ? "an" : "aus", gesperrt: false, varianten,
-    hilfe: varianten ? t("kanzel.andereVariante") : fokusAn ? t("kanzel.fokusAn") : t("kanzel.fokusAus"),
+    hilfe: varianten ? t("kanzel.andereVariante") : t(FOKUSHILFE[artVon(s)][fokusAn ? 1 : 0]),
   };
 
   return {
@@ -385,6 +396,12 @@ export function kanzelTasten(s: Stand, t: Uebersetzer, modusWechselt = false, fo
     reihenfolge,
   };
 }
+
+/** Worauf der Fokus springt, hängt davon ab, was spielt (RAD-140): [aus, ein] */
+const FOKUSHILFE: Record<Art, [string, string]> = {
+  keine: ["kanzel.fokusAus", "kanzel.fokusAn"], sender: ["kanzel.fokusAus", "kanzel.fokusAn"],
+  podcast: ["kanzel.fokusAusFolge", "kanzel.fokusAnFolge"], aufnahme: ["kanzel.fokusAusTitel", "kanzel.fokusAnTitel"],
+};
 
 /** Nächste Reihenfolge der Wiedergabe: linear, rückwärts, Schleife, Zufall, wieder linear */
 export function naechsteReihenfolge(jetzt: string): string {

@@ -52,6 +52,14 @@ class Wiedergabeliste(StromFehler):
     """Hinter der Adresse steht eine Liste von Adressen statt Ton; der Aufrufer nimmt den bisherigen Weg."""
 
 
+def text_aus(roh: bytes) -> str:
+    """Sendedaten als Text: gewöhnlich UTF-8, ältere Sender schicken westeuropäische Zeichen (Ti\xebsto, RAD-139)."""
+    try:
+        return roh.decode("utf-8")
+    except UnicodeDecodeError:
+        return roh.decode("cp1252", "replace")
+
+
 @dataclass(frozen=True)
 class Kopf:
     """Was der Sender beim Verbinden mitteilt."""
@@ -202,7 +210,7 @@ class Stromleser:
             laenge = (await asyncio.wait_for(self._leser.readexactly(1), LESEN_S))[0] * 16
             if laenge and self._bei_angabe:
                 roh = (await asyncio.wait_for(self._leser.readexactly(laenge), LESEN_S)).rstrip(b"\0")
-                await self._bei_angabe(Angabe(roh=roh.decode("utf-8", "replace"), ton_bytes=self.ton_bytes,
+                await self._bei_angabe(Angabe(roh=text_aus(roh), ton_bytes=self.ton_bytes,
                                               sekunde=self.sekunde(self.ton_bytes),
                                               wand_ms=int((time.monotonic() - self._beginn) * 1000)))
             elif laenge:

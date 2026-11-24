@@ -15,7 +15,7 @@
   } = $props();
 </script>
 
-<article class="rh-sender rh-aufnahme" class:spielt>
+<article class="rh-sender rh-aufnahme" class:spielt data-pfad={datei.pfad}>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onhoeren}>
     <span class="rh-a-dateisymbol"><i class="fa-solid fa-file-audio"></i></span>

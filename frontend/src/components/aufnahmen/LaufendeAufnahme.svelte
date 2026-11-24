@@ -40,7 +40,8 @@
     <ak-segmente art="7" stellen="7" farbe="rot" text={uhr}></ak-segmente><span class="ak-etikett">{t("aufnahmenAnsicht.uhr")}</span>
   </div>
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
-    <button class="knopf gefahr" type="button" onclick={() => void actions.stopRecording()}><i class="fa-solid fa-stop"></i>{t("aufnahmenAnsicht.beenden")}</button>
+    <button class="knopf gefahr" type="button" disabled={appState.recordingStoppt} onclick={() => void actions.stopRecording()}>
+      <i class="fa-solid {appState.recordingStoppt ? 'fa-spinner fa-spin' : 'fa-stop'}"></i>{appState.recordingStoppt ? t("aufnahmenAnsicht.wirdBeendet") : t("aufnahmenAnsicht.beenden")}</button>
     <span class="rh-still"><i class="fa-solid fa-lock"></i> {t("aufnahmenAnsicht.gesperrtWaehrend")}</span>
   </div>
 </section>

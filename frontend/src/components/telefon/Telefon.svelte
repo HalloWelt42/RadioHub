@@ -29,6 +29,7 @@
   import TelefonEinstellungen from './TelefonEinstellungen.svelte';
   import Hinweise from '../../schale/Hinweise.svelte';
   import Meldung from '../../schale/Meldung.svelte';
+  import { vor, zurueck } from '../../spieler/aktionen';
 
   /** Was die Telefonansicht anbietet; die Webversion (RAD-4) nur Radio, ohne Wecker und ohne Daten des Backends */
   let { angebot = { podcasts: true, aufnahmen: true, wecker: true, backend: true } } = $props();
@@ -79,7 +80,7 @@
 
   // Vor und Zurück folgen der sichtbaren Liste des Radios (Vorgabe 7); ohne Liste (Radio noch nicht geöffnet) die Favoriten
   function favorit(schritt) {
-    if (appState.currentRecording) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();   // Titel der Aufnahme
+    if (appState.currentRecording || appState.currentEpisode) return schritt < 0 ? zurueck() : vor();   // Titel der Aufnahme, Folge
     if (appState.isRecording) return;   // während einer Aufnahme bleibt der Sender (RAD-83)
     if (appState.stations.length) return schritt < 0 ? actions.navigatePrev() : actions.navigateNext();
     const liste = appState.favorites;
@@ -127,7 +128,10 @@
     const aufnahme = sender ? null : appState.currentRecording;
     if (aufnahme?.session_id) {
       spielerOffen = false;
-      return actions.navigateTo(`/aufnahmen/${encodeURIComponent(aufnahme.session_id)}`);
+      actions.navigateTo(`/aufnahmen/${encodeURIComponent(aufnahme.session_id)}`);
+      await tick();                // schon offen: gleich hin; sonst rollt die Aufnahme selbst, sobald ihre Titel da sind
+      document.querySelector(`.tf-aufnahmen [data-pfad="${CSS.escape(aufnahme.path)}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return;
     }
     if (!sender) return;
     spielerOffen = false;

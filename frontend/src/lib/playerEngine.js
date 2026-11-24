@@ -22,6 +22,7 @@ import { Stueckwache } from './stueckwache.js';
 import { api } from './api.js';
 import { ueberBackend } from './wiedergabeweg.js';
 import { stromHalten } from './stromhalter.js';
+import { nachbarstelle } from './reihenfolge.js';
 import { bitratenwahlLesen, bitratenwahlSetzen } from './bitratenwahl.js';
 import { sendewerbung, startwahl } from './radio/sendewerbung';
 
@@ -85,6 +86,14 @@ export function init(audioElement, appState) {
   if (_audioEl && _appState) {
     _audioEl.volume = _appState.volume / 100;
   }
+}
+
+/** @type {(() => void) | null} */
+let _aufnahmeVoll = null;
+
+/** Was geschieht, wenn der Server eine Aufnahme wegen fast vollen Datenträgers beendet hat (RAD-139) */
+export function beiVollemPlatz(melden) {
+  _aufnahmeVoll = melden;
 }
 
 /**
@@ -828,7 +837,9 @@ function _startRecordingPoll() {
       if (!status?.recording) {
         // Backend sagt: keine Aufnahme. Frontend-State zurücksetzen.
         console.warn('Recording-Status-Poll: Backend hat keine aktive Aufnahme, setze State zurück');
+        const voll = status?.ende?.status === 'disk_full' && status.ende.session_id === _appState.recordingSession;
         _resetRecordingState();
+        if (voll) _aufnahmeVoll?.();
       } else {
         // die Uhr nach dem Ton der Aufnahme (mit nachgespieltem Vorlauf, ohne Wartezeit vor Werbung)
         if (typeof status.duration === 'number') {
@@ -974,12 +985,11 @@ async function _stopRecordingInternal() {
     _appState.recordingElapsed = 0;
     return result;
   } catch (e) {
-    _appState.isRecording = false;
-    _appState.recordingType = 'none';
-    _appState.recordingSession = null;
-    _appState.recordingStationUuid = null;
-    _appState.recordingElapsed = 0;
-    return { success: false, error: e.message };
+    // nur der Server weiß, ob sie noch läuft: läuft sie, bleibt sie sichtbar, sonst ist sie zu Ende
+    const stand = await api.getRecordingStatus().catch(() => null);
+    _resetRecordingState();
+    if (!stand || stand.recording) await checkAndRecoverRecordingState();
+    return { success: !!stand && !stand.recording, error: e.message };
   }
 }
 
@@ -1050,47 +1060,10 @@ export function handleTimeUpdate() {
  */
 export function handleEnded() {
   if (_appState?.playerMode === 'recording') {
-    const playlist = _appState.recordingPlaylist;
-    const mode = _appState.playMode || 'linear';
-
-    if (playlist?.length > 0 && _appState.currentRecording) {
-      const idx = playlist.findIndex(s => s.path === _appState.currentRecording.path);
-
-      if (mode === 'shuffle') {
-        // Zufällig, aber nicht denselben Track
-        const candidates = playlist.length > 1
-          ? playlist.filter((_, i) => i !== idx)
-          : playlist;
-        const next = candidates[Math.floor(Math.random() * candidates.length)];
-        playRecording(next);
-        return;
-      }
-
-      if (mode === 'reverse') {
-        // Rückwärts: vorheriger Track, am Anfang stoppen
-        if (idx > 0) {
-          playRecording(playlist[idx - 1]);
-        }
-        return;
-      }
-
-      if (mode === 'loop') {
-        // Nächster Track, am Ende zurück zum Anfang
-        if (idx >= 0 && idx < playlist.length - 1) {
-          playRecording(playlist[idx + 1]);
-        } else {
-          playRecording(playlist[0]);
-        }
-        return;
-      }
-
-      // linear: nächster Track, am Ende stoppen
-      if (idx >= 0 && idx < playlist.length - 1) {
-        playRecording(playlist[idx + 1]);
-        return;
-      }
-    }
-    stop();
+    const reihe = _appState.recordingPlaylist ?? [];
+    const ziel = nachbarstelle(reihe.length, reihe.findIndex(x => x.path === _appState.currentRecording?.path), 1, _appState.playMode || 'linear');
+    if (ziel !== null) playRecording(reihe[ziel]);
+    else stop();
   } else if (_appState?.playerMode === 'podcast' || (_appState?.playerMode === 'hls' && _appState?.currentEpisode)) {
     // Episode als gehört markieren
     if (_appState.currentEpisode?.id) {
@@ -1098,48 +1071,12 @@ export function handleEnded() {
     }
     _stopPodcastPositionSave();
 
-    const playlist = _appState.podcastPlaylist;
-    const mode = _appState.playMode || 'linear';
-    const podcast = _appState.podcastPlaylistPodcast;
-
-    if (playlist?.length > 0) {
-      const idx = _appState.currentEpisodeIndex;
-
-      if (mode === 'shuffle') {
-        const candidates = playlist.length > 1
-          ? playlist.filter((_, i) => i !== idx) : playlist;
-        const next = candidates[Math.floor(Math.random() * candidates.length)];
-        _appState.currentEpisodeIndex = playlist.indexOf(next);
-        playPodcast(next, podcast);
-        return;
-      }
-
-      if (mode === 'reverse') {
-        // Rückwärts: vorherige Episode, am Anfang stoppen
-        if (idx > 0) {
-          _appState.currentEpisodeIndex = idx - 1;
-          playPodcast(playlist[idx - 1], podcast);
-        }
-        return;
-      }
-
-      if (mode === 'loop') {
-        if (idx >= 0 && idx < playlist.length - 1) {
-          _appState.currentEpisodeIndex = idx + 1;
-          playPodcast(playlist[idx + 1], podcast);
-        } else {
-          _appState.currentEpisodeIndex = 0;
-          playPodcast(playlist[0], podcast);
-        }
-        return;
-      }
-
-      // linear: nächster Track, am Ende stoppen
-      if (idx >= 0 && idx < playlist.length - 1) {
-        _appState.currentEpisodeIndex = idx + 1;
-        playPodcast(playlist[idx + 1], podcast);
-        return;
-      }
+    const folgen = _appState.podcastPlaylist ?? [];
+    const ziel = nachbarstelle(folgen.length, _appState.currentEpisodeIndex, 1, _appState.playMode || 'linear');
+    if (ziel !== null) {
+      _appState.currentEpisodeIndex = ziel;
+      playPodcast(folgen[ziel], _appState.podcastPlaylistPodcast);
+      return;
     }
     stop();
   }

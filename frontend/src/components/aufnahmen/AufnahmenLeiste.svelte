@@ -7,12 +7,14 @@
   import { t } from "../../lib/i18n.svelte.js";
   import type { Aufnahmeansicht, Aufnahmeordner, Wolkenebene } from "../../lib/aufnahmen";
 
-  let { ansicht, ordner, gesamt, ohneOrdner, ebene, wolkeFehler, kennzahlen, offen, wolkeMoeglich,
+  let { ansicht, ordner, gesamt, titelGesamt, ohneOrdner, ebene, wolkeFehler, kennzahlen, offen, wolkeMoeglich,
         onquelle, onordner, onziel, onumbenennen, onloeschen, onanlegen, onpfad, onzu }: {
     ansicht: Aufnahmeansicht;
     ordner: Aufnahmeordner[];
     gesamt: number | null;
-    ohneOrdner: number | null;
+    /** Titel aller Aufnahmen */
+    titelGesamt: number;
+    ohneOrdner: { anzahl: number; titelzahl: number } | null;
     ebene: Wolkenebene | null;
     wolkeFehler: string;
     kennzahlen: { dateien: number; mb: number; freiGb: number | null } | null;
@@ -34,6 +36,7 @@
   let legtAn = $state(false);
   const zielOrdner = $derived(ordner.find((o) => o.ziel) ?? null);
 
+  const zahlen = (n: number) => n.toLocaleString("de-DE");
   function fokus(el: HTMLInputElement) { el.focus(); el.select(); }
   function umbenennen(o: Aufnahmeordner) {
     const neu = name.trim();
@@ -47,6 +50,11 @@
     if (neu) onanlegen(neu);
   }
 </script>
+
+<!-- Aufnahmen und darunter ihre Titel (RAD-139: die Zahl der Aufnahmen allein las sich als Zahl der Titel) -->
+{#snippet bestand(aufnahmen: number, titel: number)}
+  <span class="rh-zahl rh-a-bestand" title={t("aufnahmenAnsicht.bestand", { n: zahlen(aufnahmen), titel: zahlen(titel) })}>{zahlen(aufnahmen)}<small><i class="fa-solid fa-music" aria-hidden="true"></i>{zahlen(titel)}</small></span>
+{/snippet}
 
 <aside class="rh-filter rh-a-leiste" class:offen id="rh-aufnahmen-leiste" aria-label={t("aufnahmenAnsicht.ordner")}>
   <div class="rh-filter-oben rh-folgen-wahl">
@@ -68,7 +76,7 @@
           <button type="button" onclick={() => { name = ""; legtAn = true; }}>{t("aufnahmenAnsicht.ordnerAnlegen")}</button></div>
         <div class="rh-facetten rh-abos">
           <button class="rh-facette rh-alle-abos" class:an={ansicht.ordner === ""} type="button" aria-pressed={ansicht.ordner === ""} onclick={() => onordner("")}>
-            <span class="rh-abo-name">{t("aufnahmenAnsicht.alleAufnahmen")}</span><span class="rh-zahl">{gesamt ?? ""}</span></button>
+            <span class="rh-abo-name">{t("aufnahmenAnsicht.alleAufnahmen")}</span>{#if gesamt !== null}{@render bestand(gesamt, titelGesamt)}{/if}</button>
           {#if legtAn}
             <span class="rh-ordner-eingabe rh-ordner-neu"><i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
               <input type="text" bind:value={name} maxlength="80" placeholder={t("aufnahmenAnsicht.ordnerName")} aria-label={t("aufnahmenAnsicht.ordnerName")} use:fokus
@@ -85,7 +93,7 @@
                   <input type="text" bind:value={name} maxlength="80" aria-label={t("aufnahmenAnsicht.ordnerName")} use:fokus
                          onkeydown={(e) => { e.stopPropagation(); if (e.key === "Enter") umbenennen(o); if (e.key === "Escape") bearbeitet = null; }} onblur={() => umbenennen(o)} /></span>
               {:else}<span class="rh-abo-name">{o.name}</span>{/if}
-              <span class="rh-abo-ende"><span class="rh-zahl">{o.anzahl}</span>
+              <span class="rh-abo-ende">{@render bestand(o.anzahl, o.titelzahl)}
                 <button class="rh-nadel" class:an={o.ziel} type="button" aria-pressed={o.ziel} title={o.ziel ? t("aufnahmenAnsicht.istZiel") : t("aufnahmenAnsicht.ziel")}
                         aria-label="{t('aufnahmenAnsicht.ziel')}: {o.name}" onclick={(e) => { e.stopPropagation(); onziel(o.ziel ? null : o.id); }}><i class="fa-solid fa-circle-dot"></i></button>
                 <button class="rh-nadel" type="button" title={t("aufnahmenAnsicht.umbenennen")} aria-label="{t('aufnahmenAnsicht.umbenennen')}: {o.name}"
@@ -106,7 +114,7 @@
           <div class="rh-facette rh-aordner" class:an={ansicht.ordner === "ohne"} role="button" tabindex="0" aria-pressed={ansicht.ordner === "ohne"}
                onclick={() => onordner("ohne")} onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onordner("ohne"); } }}>
             <i class="fa-solid fa-house rh-ordner-symbol" aria-hidden="true"></i><span class="rh-abo-name">{t("aufnahmenAnsicht.ohneOrdner")}</span>
-            <span class="rh-abo-ende"><span class="rh-zahl">{ohneOrdner ?? ""}</span>
+            <span class="rh-abo-ende">{#if ohneOrdner}{@render bestand(ohneOrdner.anzahl, ohneOrdner.titelzahl)}{/if}
               <button class="rh-nadel" class:an={!zielOrdner} type="button" aria-pressed={!zielOrdner} title={!zielOrdner ? t("aufnahmenAnsicht.istZiel") : t("aufnahmenAnsicht.ziel")}
                       aria-label="{t('aufnahmenAnsicht.ziel')}: {t('aufnahmenAnsicht.ohneOrdner')}" onclick={(e) => { e.stopPropagation(); onziel(null); }}><i class="fa-solid fa-circle-dot"></i></button></span>
           </div>

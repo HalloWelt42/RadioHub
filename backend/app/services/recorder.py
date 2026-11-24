@@ -16,30 +16,34 @@ Ablauf:
 5. Fallback ohne ICY: Ein Segment pro Session; ist der Sender eine Wiedergabeliste, liest FFmpeg selbst
 6. Werbung aus den Sendedaten (RAD-33): Werbestellen, Stillen und Pegel führt der Empfang (sein Stillenwächter prüft
    den ganzen Ton). Beim Abschluss kommt ihr Abschnitt zur Aufnahme (Sekunden ab ihrem Beginn).
-7. Feinschnitt nach dem Stopp (RAD-45): live wird grob beim Eintreffen der Angabe geteilt (die Stücke wachsen sichtbar);
-   danach rücken die Grenzen ans Ende der Stille davor, Werbung wird ein Stück, Einschübe ohne Titel eigene Stücke
-   (feinschnitt.py). Das ist ein Schritt des Schnitts, also mit Rückgängig. Solange er läuft, heißt die Aufnahme
-   "feinschnitt" und die Oberfläche hält sie für laufend (Wiedergabe gesperrt).
+7. Feinschnitt (RAD-45): live wird grob beim Eintreffen der Angabe geteilt (die Stücke wachsen sichtbar); danach rücken
+   die Grenzen ans Ende der Stille davor, Werbung wird ein Stück, Einschübe ohne Titel eigene Stücke (feinschnitt.py).
+   Er folgt der Aufnahme in Abschnitten (laufschnitt.py, RAD-139), beim Stopp bleibt nur der letzte; so lange heißt sie
+   "feinschnitt" und bleibt hörbar. Ein Schritt des Schnitts, also mit Rückgängig.
+8. Beliebig lang (RAD-139): fertige Stücke gehen gleich in die Ablage, ist sie weg, wartet das Ablegen; ein Stück ohne
+   Titelwechsel endet nach einer Stunde. Die Aufnahme endet sauber, wenn ein Datenträger bis auf die Reserve voll ist.
 
 Gap-Detection: Erkennt Dropouts ab 10s (gap_start/gap_end Events).
 Stall nach 60s ohne Wachstum -> FFmpeg Kill.
 Events werden in Session und meta.json gespeichert.
 """
-import logging
 import asyncio
+import itertools
 import json
+import logging
 import shutil
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 
-from ..ablage import orte
+from ..ablage import ablage, orte
 from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
-from .aufnahmen import aufnahmen
+from .aufnahmen import TITEL_ZAEHLT, aufnahmen
 from .config_service import config_service
 from . import feinschnitt_lauf, werbestellen
+from .laufschnitt import LANG_S, Laufschnitt
 from ..sendewerbung.sitzung import Werbestelle
 from .empfang import Abnehmer, Empfang, empfaenge
 from .stromleser import StromFehler, Wiedergabeliste
@@ -48,8 +52,11 @@ from .audio_utils import probe_duration
 
 logger = logging.getLogger("radiohub.recorder")
 
-# Minimaler freier Speicherplatz (100 MB)
-MIN_FREE_DISK_MB = 100
+GB = 1024 ** 3
+#: so oft versucht das Ablegen es wieder, solange die Ablage weg ist
+ABLAGE_WIEDER_S = 30.0
+#: so viele Titel nennt der Stand einer laufenden Aufnahme (eine lange hat Tausende)
+TITEL_IM_STAND = 100
 
 # Stall-Detection: Nach so vielen Pruefungen ohne Wachstum -> stalled
 STALL_CHECK_INTERVAL = 10   # Sekunden zwischen Pruefungen
@@ -142,6 +149,11 @@ class RecordingSession:
         self.ablage_tasks: list[asyncio.Task] = []
         self.ablage_lock = asyncio.Lock()
         self.abgeschlossen: bool = False
+        #: die Aufnahme geht zu Ende: wer auf die Ablage wartet, hört auf
+        self.zu_ende = asyncio.Event()
+        #: Feinschnitt in Abschnitten (nur mit Empfang: er braucht Pausen und Titel)
+        self.laufschnitt: Optional[Laufschnitt] = None
+        self.schnitt_task: Optional[asyncio.Task] = None
 
         # Live-Split Felder
         self.segment_index: int = 0
@@ -203,12 +215,21 @@ CODEC_ERROR_PATTERNS = [
 ]
 
 
+async def _nicht_melden(_ereignis: str, _text: str) -> None:
+    return None
+
+
 class RecorderManager:
     def __init__(self):
         self.active_session: Optional[RecordingSession] = None
         self._monitor_task: Optional[asyncio.Task] = None
         self._stderr_task: Optional[asyncio.Task] = None
         self._feinschnitt_task: Optional[asyncio.Task] = None
+        self._stopp: Optional[asyncio.Task] = None
+        #: wie die letzte Aufnahme endete, die der Server selbst beendet hat (die Oberfläche sagt es dem Nutzer)
+        self._ende: Optional[dict] = None
+        #: meldet ins Protokoll der App (gesetzt beim Start der App)
+        self.melden: Callable[[str, str], Awaitable[None]] = _nicht_melden
 
     def startup(self):
         """Beim Start der App, nachdem die Datenbank eingerichtet ist (betrieb.Radiobetrieb)."""
@@ -345,16 +366,8 @@ class RecorderManager:
                 "session_id": self.active_session.id
             }
 
-        # Platz im Arbeitsordner prüfen (dort liegt die laufende Aufnahme bis zur Ablage)
-        rec_dir = get_arbeit_dir("aufnahmen")
-        try:
-            stat = shutil.disk_usage(str(rec_dir))
-            free_mb = stat.free / (1024 * 1024)
-            if free_mb < MIN_FREE_DISK_MB:
-                return {"success": False,
-                        "error": f"Zu wenig Speicherplatz (min. {MIN_FREE_DISK_MB} MB)"}
-        except Exception:
-            pass
+        if (voll := await self._platz_voll()):
+            return {"success": False, "error": voll}
 
         # Aktiven Aufnahmeordner bestimmen
         folder_name, folder_id = get_active_recording_folder()
@@ -429,6 +442,8 @@ class RecorderManager:
                     session.warte_task = asyncio.create_task(self._nach_werbung_beginnen(session, warten_auf, bis_s))
                 else:
                     await session.empfang.anmelden(session.abnehmer, von_s, bis_s)
+                session.laufschnitt = Laufschnitt(session_id, lambda v, d: session.empfang.abschnitt(session.versatz_s + v, d),
+                                                  lambda: session.titelbuch.wechsel, session.ablage_lock)
 
             # In DB speichern (file_path = Ordner der Aufnahme in der Ablage; die Titelliste
             # wird beim Ablegen eingetragen)
@@ -529,11 +544,12 @@ class RecorderManager:
     def _werbung_ablegen(self, session: RecordingSession, dauer: float) -> None:
         """Die Werbestellen der Aufnahme speichern (Sekunden des ganzen aufgenommenen Tons); eine noch offene endet mit
         der Aufnahme."""
-        stellen = self._werbung(session, dauer)
-        if not stellen:
+        frueher = session.laufschnitt.werbung if session.laufschnitt else []
+        ab = max((n.bis for n in frueher), default=0.0)
+        neue = [*frueher, *(werbestellen.Neu(von=v, bis=b, text=w.name + (" (beim Verbinden)" if w.beim_verbinden else ""))
+                            for v, b, w in self._werbung(session, dauer) if v >= ab)]
+        if not neue:
             return
-        neue = [werbestellen.Neu(von=v, bis=b, text=w.name + (" (beim Verbinden)" if w.beim_verbinden else ""))
-                for v, b, w in stellen]
         try:
             zahl = werbestellen.ersetzen(werbestellen.Bezug.aufnahme(session.id), "sendedaten", neue)
             session.logger.log(f"WERBUNG {zahl} Stellen zur Aufnahme")
@@ -690,9 +706,11 @@ class RecorderManager:
                                audio_bytes: int):
         """ICY-Callback: Titelwechsel -> Segment-Rotation."""
         session = self.active_session
-        if not session or not session.process or not session._split_lock:
-            return
+        if session and session.process and session._split_lock:
+            await self._teilen(session, title, elapsed_ms)
 
+    async def _teilen(self, session: RecordingSession, title: str, elapsed_ms: int) -> None:
+        """Das laufende Stück beenden und das nächste beginnen, an der Stelle `elapsed_ms` im Ton."""
         async with session._split_lock:
             # Minimum-Segment-Dauer pruefen
             if session.current_segment_start:
@@ -750,20 +768,46 @@ class RecorderManager:
         Scheitert das Ablegen, bleibt die Datei im Arbeitsordner und wird beim Abschluss erneut versucht."""
         start_ms = session.kumuliert_ms
         session.kumuliert_ms += duration_ms
+        session.ablage_tasks = [x for x in session.ablage_tasks if not x.done()]
+        session.ablage_tasks.append(asyncio.create_task(self._ablegen_bis_es_geht(session, index, title, start_ms, duration_ms, file_path)))
 
-        async def ablegen():
-            async with session.ablage_lock:
+    async def _ablegen_bis_es_geht(self, session: RecordingSession, index: int, title: str, start_ms: int, duration_ms: int,
+                                   file_path: Path) -> None:
+        async with session.ablage_lock:
+            for versuch in itertools.count():
                 try:
                     groesse = file_path.stat().st_size
-                    await aufnahmen.teil_ablegen(session.id, index, title, start_ms, duration_ms, file_path)
+                    lokal = session.laufschnitt.platz_fuer(index, file_path.suffix) if session.laufschnitt else None
+                    fertig = await aufnahmen.teil_ablegen(session.id, index, title, start_ms, duration_ms, file_path, lokal)
+                    if lokal:
+                        session.laufschnitt.gehalten(fertig["path"], lokal)
                     session.abgelegt_bytes += groesse
                     session.abgelegte_segmente += 1
+                    break
                 except Exception as e:
-                    logger.warning(f"REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner)")
-                    if session.logger:
-                        session.logger.log(f"ABLAGE-FEHLER {file_path.name}: {e}")
+                    if versuch == 0:
+                        logger.warning(f"REC Ablage-Fehler {file_path.name}: {e} (bleibt im Arbeitsordner, wird wiederholt)")
+                        if session.logger:
+                            session.logger.log(f"ABLAGE-FEHLER {file_path.name}: {e}")
+                    if session.zu_ende.is_set() or not file_path.exists():
+                        return                        # der Abschluss legt ab, was noch im Arbeitsordner liegt
+                    try:
+                        await asyncio.wait_for(session.zu_ende.wait(), ABLAGE_WIEDER_S)
+                    except asyncio.TimeoutError:
+                        pass
+        ls = session.laufschnitt
+        if ls and not session.zu_ende.is_set() and (session.schnitt_task is None or session.schnitt_task.done()) and ls.faellig():
+            session.schnitt_task = asyncio.create_task(self._abschnitt_schneiden(session))
 
-        session.ablage_tasks.append(asyncio.create_task(ablegen()))
+    async def _abschnitt_schneiden(self, session: RecordingSession) -> None:
+        """Ein Durchgang des Feinschnitts während der Aufnahme; scheitert er, holt der nächste ihn nach."""
+        try:
+            await session.laufschnitt.durchgang()
+        except Exception as e:
+            logger.warning(f"REC Feinschnitt eines Abschnitts von {session.id} fehlgeschlagen: {e} (wird nachgeholt)")
+            session.logger.log(f"FEINSCHNITT-FEHLER {e}")
+        finally:
+            feinschnitt_lauf.FORTSCHRITT.pop(session.id, None)
 
     async def _ablage_abwarten(self, session: RecordingSession):
         if session.ablage_tasks:
@@ -819,6 +863,10 @@ class RecorderManager:
                     return
                 if session.wartet:              # wartet auf das Ende laufender Werbung: noch kein Ton
                     continue
+
+                # ein Stück ohne Titelwechsel endet nach einer Stunde: es geht in die Ablage, lokal wächst nichts endlos
+                if session.empfang and not session.ton_zu_ende and session.ton_s - session.current_segment_ton_s >= LANG_S:
+                    await self._teilen(session, session.current_segment_title, int(session.ton_s * 1000))
 
                 # --- Stall-Detection: Segment-Count + Dateigroesse pruefen ---
                 current_size = session.file_size
@@ -876,28 +924,16 @@ class RecorderManager:
                         await asyncio.shield(self._abschliessen(session, "stalled"))
                         return
 
-                # --- Disk-Space pruefen ---
-                try:
-                    rec_dir = get_arbeit_dir("aufnahmen")
-                    stat = shutil.disk_usage(str(rec_dir))
-                    free_mb = stat.free / (1024 * 1024)
-                    if free_mb < MIN_FREE_DISK_MB:
-                        logger.warning(f"REC DISK FULL: {session.id} "
-                              f"(nur {free_mb:.0f}MB frei)")
-                        log.log(f"DISK FULL: {free_mb:.0f}MB frei -- Aufnahme beendet")
-                        if session.process.returncode is None:
-                            session.process.terminate()
-                            try:
-                                await asyncio.wait_for(
-                                    session.process.wait(), timeout=5
-                                )
-                            except asyncio.TimeoutError:
-                                session.process.kill()
-                                await session.process.wait()
-                        await asyncio.shield(self._abschliessen(session, "disk_full"))
-                        return
-                except Exception:
-                    pass
+                # --- Platz: lokal und in der Ablage bis auf die Reserve ---
+                if (voll := await self._platz_voll()):
+                    logger.warning(f"REC Platz voll: {session.id}: {voll}")
+                    log.log(f"PLATZ VOLL: {voll} -- Aufnahme beendet")
+                    self._ende = {"session_id": session.id, "status": "disk_full", "grund": voll}
+                    await self.melden("radio.aufnahme", f"Aufnahme {session.station_name} nach {session.duration / 3600:.1f} h beendet: {voll}")
+                    if session.process.returncode is None:
+                        await self._stop_ffmpeg_graceful(session.process, ende_des_tons=session.empfang is not None)
+                    await asyncio.shield(self._abschliessen(session, "disk_full"))
+                    return
 
                 # --- Periodischer Snapshot (alle ~5 Minuten) ---
                 snapshot_counter += 1
@@ -947,6 +983,7 @@ class RecorderManager:
         if session.abgeschlossen:
             return
         session.abgeschlossen = True
+        session.zu_ende.set()
         if self.active_session and self.active_session.id == session.id:
             self.active_session = None
         # nichts mehr vom Empfang (endet er dadurch, meldet sein Stillenwächter die letzten Stillen)
@@ -986,7 +1023,9 @@ class RecorderManager:
         self._werbung_ablegen(session, dauer_ton)
 
         try:
-            await aufnahmen.rest_ablegen(session.id, session.session_dir, session.kumuliert_ms)
+            # was schon liegt, bestimmt den Anfang: was am Schluss nicht mehr durchging, folgt der Reihe nach
+            await aufnahmen.rest_ablegen(session.id, session.session_dir,
+                                         max((s["end_ms"] for s in aufnahmen.segmente(session.id)), default=0))
         except Exception as e:
             logger.warning(f"REC Ablage beim Abschluss unvollständig: {e} (wird beim nächsten Start nachgeholt)")
 
@@ -996,48 +1035,60 @@ class RecorderManager:
         duration = real_duration if real_duration > 0 else (
             sum(s["duration_ms"] or 0 for s in segmente) / 1000.0 or session.duration)
         quality_json = self._build_quality_json(session) if session.events else None
-        plan = await self._feinschnitt_vorbereiten(session, duration) if status == "completed" and segmente else None
+        schneiden = bool(segmente) and session.laufschnitt is not None and status in ("completed", "disk_full")
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE sessions SET
                 end_time = ?, duration = ?, file_size = ?, status = ?, quality_json = ?
                 WHERE id = ?''',
                 (datetime.now().isoformat(), duration,
-                 sum(s["file_size"] or 0 for s in segmente), "feinschnitt" if plan else status, quality_json, session.id))
-        if plan:
-            self._feinschnitt_task = asyncio.create_task(self._feinschnitt(session, plan))
+                 sum(s["file_size"] or 0 for s in segmente), "feinschnitt" if schneiden else status, quality_json, session.id))
+        if schneiden:
+            self._feinschnitt_task = asyncio.create_task(self._feinschnitt(session, status))
 
     async def feinschnitt_abwarten(self) -> None:
         """Bis ein laufender Feinschnitt fertig ist (Tests, Herunterfahren)."""
         if self._feinschnitt_task:
             await asyncio.gather(self._feinschnitt_task, return_exceptions=True)
 
-    async def _feinschnitt_vorbereiten(self, session: RecordingSession, dauer: float) -> Optional[list]:
-        """Die Analyse der Aufnahme festhalten (Analyse.json in der Ablage, zum späteren Neurechnen) und die Stücke des
-        Feinschnitts planen; None, wenn es nichts zu verbessern gibt (ohne Sendedaten, ein Stück)."""
-        if not session.titelbuch or not session.empfang or not session.abnehmer or dauer <= 0:
-            return None
-        teil = session.empfang.abschnitt(session.versatz_s, dauer)
-        analyse = feinschnitt_lauf.Analyse(dauer=dauer, wechsel=session.titelbuch.wechsel, stillen=teil.stillen,
-                                           pegel=teil.pegel, werbung=[(v, b, w.name) for v, b, w in teil.werbung])
+    async def _feinschnitt(self, session: RecordingSession, status: str) -> None:
+        """Der letzte Abschnitt des Feinschnitts; schlägt er fehl, bleiben dort die groben Stücke."""
         try:
-            await feinschnitt_lauf.analyse_ablegen(session.id, analyse)
-        except Exception as f:            # ohne gespeicherte Analyse geht nur das spätere Neurechnen nicht
-            logger.warning(f"REC Analyse nicht abgelegt: {f}")
-        stuecke = feinschnitt_lauf.planen(analyse, len(aufnahmen.segmente(session.id)))
-        if stuecke:
-            session.logger.log("FEINSCHNITT " + feinschnitt_lauf.zusammenfassung(stuecke))
-        return stuecke
-
-    async def _feinschnitt(self, session: RecordingSession, stuecke: list) -> None:
-        """Den Feinschnitt ausführen; schlägt er fehl, bleiben die groben Stücke."""
-        try:
-            await feinschnitt_lauf.ausfuehren(session.id, stuecke)
+            await session.laufschnitt.durchgang(abschluss=True)
         except Exception as f:
             logger.warning(f"REC Feinschnitt {session.id} fehlgeschlagen: {f} (die groben Stücke bleiben)")
             session.logger.log(f"FEINSCHNITT-FEHLER {f}")
+        finally:
+            feinschnitt_lauf.FORTSCHRITT.pop(session.id, None)
+            aufnahmen.verwerfen(session.id)
+            with db_session() as conn:
+                conn.execute("UPDATE sessions SET file_size = (SELECT COALESCE(SUM(file_size), 0) FROM segments WHERE session_id = ?) "
+                             "WHERE id = ?", (session.id, session.id))
+            feinschnitt_lauf.status_setzen(session.id, status, nur_wenn="feinschnitt")
+
+    async def _platz_voll(self) -> str:
+        """Wo nur noch die Reserve frei ist, in Worten; leer, wenn überall Platz ist. Ein unbekannter Platz der Ablage (sie ist
+        gerade weg) gilt als frei: dann sammeln sich die Stücke lokal."""
+        from ..einstellungen import stand
+        reserve = stand().aufnahme_reserve_gb * GB
+        lokal = shutil.disk_usage(str(get_arbeit_dir("aufnahmen"))).free
+        if lokal < reserve:
+            return f"auf dem Datenträger des Servers sind nur noch {lokal / GB:.1f} GB frei (Reserve {reserve // GB} GB)"
+        try:
+            frei = (await ablage().platz()).frei
+        except Exception:  # noqa: BLE001
+            frei = None
+        if frei is not None and frei < reserve:
+            return f"in der Kellerwolke sind nur noch {frei / GB:.1f} GB frei (Reserve {reserve // GB} GB)"
+        return ""
 
     async def stop(self) -> dict:
+        """Stoppt die Aufnahme; ein zweiter Ruf währenddessen wartet auf denselben Stopp (RAD-139)."""
+        if self._stopp is None or self._stopp.done():
+            self._stopp = asyncio.create_task(self._stoppen())
+        return await asyncio.shield(self._stopp)
+
+    async def _stoppen(self) -> dict:
         """Stoppt aktive Aufnahme.
 
         Live-Split: Letztes Segment finalisieren, Segmente sind bereits in DB.
@@ -1048,6 +1099,7 @@ class RecorderManager:
             return {"success": False, "error": "Keine aktive Aufnahme"}
 
         session = self.active_session
+        session.zu_ende.set()                # wer auf die Ablage wartet, versucht es noch einmal und hört dann auf
 
         # Monitor-Task + Stderr-Watcher abbrechen
         if self._monitor_task and not self._monitor_task.done():
@@ -1189,7 +1241,7 @@ class RecorderManager:
         """Aktueller Aufnahme-Status"""
 
         if not self.active_session:
-            return {"recording": False}
+            return {"recording": False, "ende": self._ende}
 
         session = self.active_session
 
@@ -1198,9 +1250,8 @@ class RecorderManager:
 
         if not alive:
             asyncio.create_task(self._abschliessen(session, "interrupted"))
-            return {"recording": False}
+            return {"recording": False, "ende": self._ende}
 
-        # Disk-Space
         free_mb = None
         try:
             rec_dir = get_arbeit_dir("aufnahmen")
@@ -1237,7 +1288,7 @@ class RecorderManager:
                     "ignored": e.get("ignored", False),
                     "raw_title": e.get("raw_title", e.get("title", ""))
                 }
-                for e in session.titelbuch.entries
+                for e in session.titelbuch.entries[-TITEL_IM_STAND:]
             ]
 
         return status
@@ -1246,7 +1297,7 @@ class RecorderManager:
                   "groesse": "s.file_size"}
 
     def get_sessions(self, limit: int = 50, ab: int = 0, suche: str = "", ordner: str = "", sort: str = "datum",
-                     absteigend: bool = True) -> tuple[list, int]:
+                     absteigend: bool = True) -> tuple[list, int, int]:
         """Sessions seitenweise (RAD-17: nicht mehr nur die neuesten 50), gefiltert nach Ordner ("" alle, "ohne" ohne
         Ordner, sonst die Kennung) und Suche in Sender und Titeln; dazu die Zahl aller Treffer. Hängengebliebene
         'recording'-Einträge ohne laufende Aufnahme werden 'interrupted'. Fehlende Dateien in der Ablage bereinigt nur
@@ -1267,7 +1318,9 @@ class RecorderManager:
         with db_session() as conn:
             c = conn.cursor()
             gesamt = c.execute(f"SELECT COUNT(*) FROM sessions s {wo}", werte).fetchone()[0]
-            c.execute(f'''SELECT s.*, COUNT(seg.id) as segment_count
+            titel = c.execute(f"SELECT COUNT(*) FROM sessions s LEFT JOIN segments seg ON seg.session_id = s.id "
+                              f"{wo} {'AND' if wo else 'WHERE'} {TITEL_ZAEHLT}", werte).fetchone()[0]
+            c.execute(f'''SELECT s.*, COUNT(seg.id) as segment_count, COUNT(CASE WHEN {TITEL_ZAEHLT} THEN 1 END) AS titel_count
                 FROM sessions s
                 LEFT JOIN segments seg ON seg.session_id = s.id
                 {wo}
@@ -1282,21 +1335,32 @@ class RecorderManager:
                 with db_session() as conn:
                     conn.cursor().execute(
                         "UPDATE sessions SET status = 'interrupted' WHERE id = ?", (row["id"],))
-        return rows, gesamt
+            row.update(self._lebendig(row["id"]))
+        return rows, gesamt, titel
+
+    def _lebendig(self, session_id: str) -> dict:
+        """Was sich gerade ändert: der Stand des Feinschnitts (fertige und alle Stücke des Abschnitts), bei der laufenden
+        Aufnahme ihre Länge und Größe bis jetzt."""
+        stand = feinschnitt_lauf.FORTSCHRITT.get(session_id)
+        arbeit = {"fertig": stand[0], "gesamt": stand[1]} if stand else None
+        session = self.active_session
+        if session and session.id == session_id:
+            return {"arbeit": None, "duration": session.ton_s if session.empfang else session.duration, "file_size": session.file_size}
+        return {"arbeit": arbeit}
 
     def get_session(self, session_id: str) -> Optional[dict]:
         """Einzelne Session, mit der Zahl ihrer Stücke wie in der Liste (get_sessions)"""
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute("SELECT s.*, (SELECT COUNT(*) FROM segments t WHERE t.session_id = s.id) AS segment_count "
-                      "FROM sessions s WHERE s.id = ?", (session_id,))
+            c.execute(f"SELECT s.*, COUNT(seg.id) AS segment_count, COUNT(CASE WHEN {TITEL_ZAEHLT} THEN 1 END) AS titel_count "
+                      "FROM sessions s LEFT JOIN segments seg ON seg.session_id = s.id WHERE s.id = ? GROUP BY s.id", (session_id,))
             row = c.fetchone()
-            return dict(row) if row else None
+            return {**dict(row), **self._lebendig(session_id)} if row else None
 
     async def delete_session(self, session_id: str) -> bool:
         """Session löschen: Dateien in den Papierkorb der Ablage, Einträge weg."""
-        if self.active_session and self.active_session.id == session_id:
+        if (self.active_session and self.active_session.id == session_id) or aufnahmen.laeuft(session_id):
             return False
         return await aufnahmen.sitzung_loeschen(session_id)
 

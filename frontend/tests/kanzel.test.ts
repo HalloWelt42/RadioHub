@@ -14,7 +14,7 @@ const HLS = { first_segment: 100, last_segment: 1900, segment_duration: 1, buffe
 function stand(teil: Partial<Stand> = {}): Stand {
   return {
     isPlaying: false, isPaused: false, isRecording: false, playerMode: "none", isLive: true, currentStation: null, currentEpisode: null,
-    currentRecording: null, streamTitle: null, streamQuality: null, hlsStatus: null, hlsActive: false, currentSegment: null, recordingElapsed: 0,
+    currentRecording: null, streamTitle: null, streamQuality: null, hlsStatus: null, hlsActive: false, currentSegment: null, recordingElapsed: 0, recordingStoppt: false,
     recordingIcyCount: 0, canPlayDirect: true, canPlayHLS: null, playMode: "linear", stations: [], podcastPlaylist: [], currentEpisodeIndex: -1,
     recordingPlaylist: [], medium: "spielt", fehlerCode: null, zeit: 0, dauer: 0, lage: 0, hoerdauer: 0, ...teil,
   };
@@ -253,9 +253,9 @@ describe("Bitrate des Zeitversatzes", () => {
 describe("Vor und Zurück (RAD-28)", () => {
   const liste = [SENDER, { ...SENDER, uuid: "b", name: "B" }];
   it("frisch geöffnet ohne laufenden Sender gesperrt, mit laufendem Sender in der Liste frei", () => {
-    expect(kannBlaettern(stand({ stations: liste }))).toBe(false);
-    expect(kannBlaettern(spielt({ stations: liste }))).toBe(true);
-    expect(kannBlaettern(spielt({ stations: [SENDER] }))).toBe(false);
+    expect(kannBlaettern(stand({ stations: liste }), 1)).toBe(false);
+    expect(kannBlaettern(spielt({ stations: liste }), 1)).toBe(true);
+    expect(kannBlaettern(spielt({ stations: [SENDER] }), 1)).toBe(false);
   });
 });
 
@@ -267,5 +267,36 @@ describe("Lasche der Meldungen (RAD-113)", () => {
     expect(laschenLage(700, 900, 1000)).toEqual({ links: 488, rechts: 12 });
     // Fenster schmaler als die Lasche: von Rand zu Rand
     expect(laschenLage(200, 400, 450)).toEqual({ links: 12, rechts: 12 });
+  });
+});
+
+describe("Tasten je Zusammenhang (RAD-140)", () => {
+  const reihe = [1, 2, 3].map((n) => ({ path: `p${n}`, name: `Titel ${n}`, playUrl: "" }));
+  const titel = (nr: number, teil: Partial<Stand> = {}) => stand({ isPlaying: true, playerMode: "recording", currentRecording: reihe[nr - 1], recordingPlaylist: reihe, ...teil } as Partial<Stand>);
+  it("Titel einer Aufnahme: Zurück erst an den Anfang, dann zum vorherigen; am letzten gibt es kein Vor", () => {
+    expect(kanzelTasten(titel(2, { zeit: 60 }), t).zurueck.hilfe).toContain("An den Anfang dieses Titels");
+    expect(kanzelTasten(titel(2, { zeit: 2 }), t).zurueck.hilfe).toContain("Titel 1");
+    expect(kanzelTasten(titel(1, { zeit: 2 }), t).zurueck).toMatchObject({ gesperrt: false });
+    expect(kanzelTasten(titel(3), t).vor).toMatchObject({ gesperrt: true });
+    expect(kanzelTasten(titel(3, { playMode: "loop" }), t).vor.hilfe).toContain("Titel 1");
+    expect(kanzelTasten(titel(3, { playMode: "reverse" }), t).vor.hilfe).toContain("Titel 2");
+    expect(kanzelTasten(titel(3, { playMode: "shuffle" }), t).vor.gesperrt).toBe(false);
+  });
+  it("Folgen: an den Enden der Liste gesperrt statt rundum", () => {
+    const folgen = [{ title: "F1" }, { title: "F2" }];
+    const f = (i: number) => stand({ isPlaying: true, playerMode: "podcast", currentEpisode: folgen[i], podcastPlaylist: folgen, currentEpisodeIndex: i });
+    expect(kanzelTasten(f(1), t).vor.gesperrt).toBe(true);
+    expect(kanzelTasten(f(0), t).vor.hilfe).toContain("F2");
+  });
+  it("Fokus sagt, wohin er springt", () => {
+    expect(kanzelTasten(titel(1), t).quelle.hilfe).toContain("Titel der Aufnahme");
+    expect(kanzelTasten(spielt(), t, false, true).quelle.hilfe).toContain("Sender");
+    expect(kanzelTasten(stand({ currentEpisode: { title: "F" } }), t).quelle.hilfe).toContain("Folge");
+  });
+  it("während die Aufnahme beendet wird, sind Stopp und Aufnahme gesperrt", () => {
+    const k = kanzelTasten(spielt({ isRecording: true, recordingStoppt: true }), t);
+    expect(k.stopp.gesperrt && k.aufnahme.gesperrt).toBe(true);
+    expect(k.aufnahme.licht).toBe("atmet");
+    expect(kanzelTasten(spielt({ isRecording: true }), t).stopp.hilfe).not.toContain("(S)");
   });
 });

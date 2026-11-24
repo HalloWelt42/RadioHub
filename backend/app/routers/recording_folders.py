@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from ..ablage import orte
 from ..database import db_session
-from ..services.aufnahmen import aufnahmen
+from ..services.aufnahmen import TITEL_ZAEHLT, aufnahmen
 
 router = APIRouter(prefix="/api/recording/folders", tags=["recording-folders"])
 
@@ -35,9 +35,11 @@ async def get_folders():
     """Alle Aufnahme-Ordner mit Session-Anzahl."""
     with db_session() as conn:
         c = conn.cursor()
-        c.execute('''SELECT rf.*, COUNT(s.id) as session_count
+        c.execute(f'''SELECT rf.*, COUNT(DISTINCT s.id) as session_count,
+                   COUNT(CASE WHEN {TITEL_ZAEHLT} THEN 1 END) AS titel_count
             FROM recording_folders rf
             LEFT JOIN sessions s ON s.folder_id = rf.id
+            LEFT JOIN segments seg ON seg.session_id = s.id
             GROUP BY rf.id
             ORDER BY rf.sort_order, rf.id''')
         folders = [dict(row) for row in c.fetchall()]

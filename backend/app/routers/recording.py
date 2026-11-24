@@ -77,8 +77,8 @@ async def get_sessions(limit: int = Query(50, ge=1, le=500), ab: int = Query(0, 
                        ordner: str = Query("", pattern=r"^(|ohne|\d+)$"),
                        sort: Literal["datum", "sender", "dauer", "groesse"] = "datum", absteigend: bool = True):
     """Aufnahmen seitenweise mit Suche in Sender und Titeln, Ordnerfilter und Sortierung (RAD-17)."""
-    sessions, gesamt = rec_manager.get_sessions(limit, ab, suche, ordner, sort, absteigend)
-    return {"count": len(sessions), "gesamt": gesamt, "sessions": sessions}
+    sessions, gesamt, titel = rec_manager.get_sessions(limit, ab, suche, ordner, sort, absteigend)
+    return {"count": len(sessions), "gesamt": gesamt, "titel_gesamt": titel, "sessions": sessions}
 
 
 @router.get("/sessions/{session_id}")

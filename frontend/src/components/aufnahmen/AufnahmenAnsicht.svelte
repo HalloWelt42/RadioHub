@@ -3,13 +3,14 @@
   // Quelle (eigene Aufnahmen oder die ganze Kellerwolke) und Ordnern, Werkzeugleiste, Kopf der laufenden oder gewählten
   // Aufnahme, Liste der Aufnahmen, Titel einer Aufnahme oder Dateien eines Ordners der Kellerwolke, und der Schnitt als
   // Arbeitsplatz über die ganze Breite. Zustand und Adresse in lib/aufnahmen, Schnitt in lib/schnitt; hier nur die Ansicht.
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { api } from "../../lib/api.js";
   import { appPfad } from "../../lib/router.js";
-  import { abwaerts, aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste,
+  import { fokus as folgen } from "../../spieler/fokus.svelte";
+  import { abwaerts, imGange as aendertSich, zumAendern, zumHoeren, aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste,
     type Aufnahme, type Aufnahmeansicht, type Aufnahmesortierung, type Titel, type Wolkendatei, type Wolkenebene, reiheAus, type Spieleintrag } from "../../lib/aufnahmen";
   import { dauer } from "../../lib/aufnahmen/anzeige";
   import { schnittquelle, type Schnittgegenstand } from "../../lib/schnitt";
@@ -32,11 +33,12 @@
 
   // ----- Laden: Liste, Ordner, Kennzahlen -------------------------------------------------------------------------
   let alle = $state<number | null>(null);
+  let alleTitel = $state(0);
   let kennzahlen = $state<{ dateien: number; mb: number; freiGb: number | null } | null>(null);
 
   async function zaehlen(): Promise<void> {
     try {
-      alle = (await quelle.aufnahmen({ suche: "", ordner: "", sort: "datum", absteigend: true }, 0, 1)).gesamt;
+      ({ gesamt: alle, titelGesamt: alleTitel } = await quelle.aufnahmen({ suche: "", ordner: "", sort: "datum", absteigend: true }, 0, 1));
       const s = await api.getRecordingsStats();
       kennzahlen = { dateien: Number(s.file_count) || 0, mb: Number(s.used_mb) || 0, freiGb: s.frei_bytes == null ? null : s.frei_bytes / 1024 ** 3 };
     } catch {
@@ -94,7 +96,10 @@
     try {
       const [a, x, w, g] = await Promise.all([quelle.aufnahme(id), quelle.titel(id), quelle.titelwechsel(id).catch(() => 0), quelle.gesperrt().catch(() => new Set<string>())]);
       if (zustand.ansicht.aufnahme !== id) return;
+      const fertig = gewaehlt?.id === id && gewaehlt.status === "schneidet" && a.status !== "schneidet";
       gewaehlt = a; titel = x; titelwechsel = w; gesperrt = g;
+      // der Feinschnitt hat die Stücke ersetzt: die gehörte Reihe folgt den neuen, der laufende Titel spielt zu Ende
+      if (fertig && (appState.currentRecording as Spieleintrag | null)?.session_id === id) appState.recordingPlaylist = reiheAus(quelle, a, x);
     } catch (f) {
       detailFehler = (f as Error).message;
     }
@@ -111,15 +116,25 @@
   });
 
   // laufende oder fein geschnittene Aufnahme (RAD-45): alle fünf Sekunden nachholen (siehe oben)
-  const imGange = $derived(!!appState.isRecording || gewaehlt?.status === "laeuft" || liste.aufnahmen.some((a) => a.status === "laeuft"));
+  const imGange = $derived(!!appState.isRecording || (!!gewaehlt && aendertSich(gewaehlt)) || liste.aufnahmen.some(aendertSich));
+  const schneidet = $derived(gewaehlt?.status === "schneidet" || liste.aufnahmen.some((a) => a.status === "schneidet"));
   $effect(() => {
     if (!imGange) return;
     const uhr = setInterval(() => {
       if (ansicht.quelle !== "aufnahmen") return;
       void liste.laden(zustand.abfrage());
-      if (gewaehlt?.status === "laeuft") void details(gewaehlt.id);
-    }, 5000);
+      if (gewaehlt && aendertSich(gewaehlt)) void details(gewaehlt.id);
+    }, schneidet ? 2000 : 5000);
     return () => clearInterval(uhr);
+  });
+  // ist der Feinschnitt fertig, stimmen auch die Zahlen der Leiste
+  let schnittZuletzt = false;
+  $effect(() => {
+    const jetzt = schneidet;
+    untrack(() => {
+      if (schnittZuletzt && !jetzt) { void ordnerliste.laden().catch(() => undefined); void zaehlen(); }
+      schnittZuletzt = jetzt;
+    });
   });
 
   // ----- Kellerwolke ----------------------------------------------------------------------------------------------
@@ -206,7 +221,7 @@
   }
 
   async function hoeren(a: Aufnahme, ab?: Titel) {
-    if (a.status === "laeuft") return;
+    if (!zumHoeren(a)) return;
     await sicher(async () => {
       const reihe = a.id === gewaehlt?.id && titel.length ? titel : await quelle.titel(a.id);
       const eintraege = reiheAus(quelle, a, reihe);
@@ -215,6 +230,37 @@
   }
   const spielt = (a: Aufnahme) => jetzt?.session_id === a.id;
 
+  // Fokus der Kanzel (RAD-19, RAD-140): ist er an, öffnet die Ansicht die Aufnahme, aus der gehört wird (oder den Ordner der
+  // Kellerwolke), und rollt zum laufenden Titel, beim Öffnen und bei jedem Wechsel; dazwischen rollt man frei. Ein offener
+  // Schnitt bleibt offen: dort wird gearbeitet.
+  let listeEl = $state<HTMLElement>();
+  let gefolgt: string | null = null;
+  const laeuftHier = $derived(appState.playerMode === "recording" && (appState.isPlaying || appState.isPaused) ? (appState.currentRecording as Spieleintrag | null) : null);
+  $effect(() => {
+    const x = laeuftHier;
+    const an = folgen.an;
+    untrack(() => {
+      if (!an) { gefolgt = null; return; }
+      if (!x || x.path === gefolgt || ansicht.schnitt) return;
+      gefolgt = x.path;
+      if (x.session_id) {
+        if (ansicht.quelle !== "aufnahmen" || ansicht.aufnahme !== x.session_id) gehen((a) => ({ ...a, quelle: "aufnahmen", aufnahme: x.session_id!, schnitt: false, pfad: "" }));
+      } else if (ansicht.quelle !== "wolke" || ansicht.pfad !== elternOrdner(x.path)) gehen((a) => ({ ...a, quelle: "wolke", aufnahme: null, schnitt: false, pfad: elternOrdner(x.path) }));
+      void hinrollen(x.path);
+    });
+  });
+
+  /** zur Zeile rollen, sobald sie da ist (Titel und Ordner laden erst) */
+  async function hinrollen(pfad: string) {
+    for (let i = 0; i < 25; i++) {
+      await tick();
+      const zeile = listeEl?.querySelector(`[data-pfad="${CSS.escape(pfad)}"]`);
+      if (zeile) return zeile.scrollIntoView({ block: "center", behavior: "smooth" });
+      if (gefolgt !== pfad) return;
+      await new Promise((weiter) => setTimeout(weiter, 120));
+    }
+  }
+
   // ----- Schnitt --------------------------------------------------------------------------------------------------
   let schnittBereich = $state<{ von: number; bis: number } | null>(null);
   const schnittGegenstand = $derived<Schnittgegenstand | null>(!ansicht.schnitt ? null
@@ -222,7 +268,7 @@
     : ansicht.aufnahme ? { art: "sitzung", kennung: ansicht.aufnahme } : null);
 
   function schneiden(a: Aufnahme, x?: Titel) {
-    if (a.status === "laeuft") return;
+    if (!zumAendern(a)) return;
     schnittBereich = x ? { von: x.start, bis: x.start + x.dauer } : null;
     gehen((v) => ({ ...v, quelle: "aufnahmen", aufnahme: a.id, schnitt: true }));
   }
@@ -303,7 +349,8 @@
     return { id: -1, nr: titel.length + 1, titel: angaben.at(-1)?.title || t("aufnahmenAnsicht.begonnen"), start,
              dauer: Math.max(0, (appState.recordingElapsed as number) - start), groesse: 0, pfad: "" };
   });
-  const ohneOrdner = $derived(alle === null ? null : Math.max(0, alle - ordnerliste.ordner.reduce((s, o) => s + o.anzahl, 0)));
+  const ohneOrdner = $derived(alle === null ? null : { anzahl: Math.max(0, alle - ordnerliste.ordner.reduce((s, o) => s + o.anzahl, 0)),
+    titelzahl: Math.max(0, alleTitel - ordnerliste.ordner.reduce((s, o) => s + o.titelzahl, 0)) });
   const wolke = $derived(ansicht.quelle === "wolke");
 
   const chips = $derived.by<Chip[]>(() => {
@@ -316,11 +363,12 @@
     return c;
   });
   const zusatz = $derived(wolke ? (ebene?.kette.map((k) => k.name).join(" / ") || t("aufnahmenAnsicht.wolkeWurzel"))
-    : !liste.mehr && liste.aufnahmen.length ? dauer(liste.aufnahmen.reduce((s, a) => s + a.dauer, 0)) : "");
+    : liste.aufnahmen.length ? [t("aufnahmenAnsicht.telefon.titel", { n: liste.titelGesamt.toLocaleString("de-DE") }),
+      liste.mehr ? "" : dauer(liste.aufnahmen.reduce((s, a) => s + a.dauer, 0))].filter(Boolean).join(" · ") : "");
 </script>
 
 <div class="rh-radio rh-podcasts rh-aufnahmen" class:rh-im-schnitt={!!schnittGegenstand}>
-  <AufnahmenLeiste {ansicht} ordner={ordnerliste.ordner} gesamt={alle} {ohneOrdner} {ebene} {wolkeFehler} {kennzahlen} offen={leisteOffen} wolkeMoeglich={kann.wolke}
+  <AufnahmenLeiste {ansicht} ordner={ordnerliste.ordner} gesamt={alle} titelGesamt={alleTitel} {ohneOrdner} {ebene} {wolkeFehler} {kennzahlen} offen={leisteOffen} wolkeMoeglich={kann.wolke}
                    onquelle={(q) => gehen((a) => ({ ...a, quelle: q, aufnahme: null, schnitt: false, pfad: "" }))}
                    onordner={(o) => { leisteOffen = false; gehen((a) => ({ ...a, ordner: o, aufnahme: null })); }}
                    onziel={(id) => void sicher(() => ordnerliste.zielSetzen(id))}
@@ -338,7 +386,7 @@
                          onsuche={(s) => { if (wolke) wolkeSuche = s; else aendern((a) => ({ ...a, suche: s })); }}
                          onleiste={() => (leisteOffen = true)} onaktualisieren={() => void allesNeu()} />
     {/if}
-    <div class="rh-liste" role="list" aria-label={t("aufnahmenAnsicht.aufnahmen")}>
+    <div class="rh-liste" role="list" bind:this={listeEl} aria-label={t("aufnahmenAnsicht.aufnahmen")}>
       {#if schnittGegenstand}
         {#key `${schnittGegenstand.art}:${schnittGegenstand.kennung}`}
           <SchnittArbeitsplatz gegenstand={schnittGegenstand} bereich={schnittBereich} onschliessen={schnittZu} ongeaendert={() => void allesNeu()} />
@@ -368,7 +416,7 @@
         {/if}
       {:else if gewaehlt}
         <AufnahmeKopf aufnahme={gewaehlt} ordner={ordnerliste.ordner} {titelwechsel} zip={quelle.alsZip(gewaehlt.id)} eineDatei={quelle.alsEineDatei(gewaehlt.id)}
-                      kannSchneiden={kann.schnitt && gewaehlt.status !== "laeuft"} kannVerwalten={kann.verwalten && gewaehlt.status !== "laeuft"}
+                      kannSchneiden={kann.schnitt && zumAendern(gewaehlt)} kannVerwalten={kann.verwalten && zumAendern(gewaehlt)}
                       onhoeren={() => void hoeren(gewaehlt!)} onschneiden={() => schneiden(gewaehlt!)} onteilen={() => teilen(gewaehlt!)}
                       onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} />
         <div class="rh-spalten rh-a-spalten" aria-hidden="true"><span>{t("aufnahmenAnsicht.spalteTitel")}</span><span class="rh-ohne-sort">{t("aufnahmenAnsicht.spalteAb")}</span>
@@ -376,12 +424,14 @@
         {#if detailFehler}
           <div class="rh-ohne-treffer"><i class="fa-solid fa-triangle-exclamation"></i><b>{t("aufnahmenAnsicht.ladenFehler")}</b><span>{detailFehler}</span></div>
         {:else}
-          {#if gewaehlt.status === "laeuft" && !appState.isRecording}
-            <p class="rh-still rh-a-feinschnitt"><i class="fa-solid fa-spinner fa-spin"></i>{t("aufnahmenAnsicht.feinschnittLaeuft")}</p>
+          {#if gewaehlt.status === "schneidet"}
+            <div class="rh-auftrag rh-a-feinschnitt" role="status"><span>{t("aufnahmenAnsicht.feinschnittLaeuft")}</span>
+              <div class="balken"><span style:width="{gewaehlt.arbeit ? Math.round((gewaehlt.arbeit.fertig / Math.max(1, gewaehlt.arbeit.gesamt)) * 100) : 4}%"></span></div>
+              <span class="rh-zahl">{gewaehlt.arbeit ? `${gewaehlt.arbeit.fertig}/${gewaehlt.arbeit.gesamt}` : ""}</span></div>
           {/if}
           {#each titel as x (x.id)}
             <TitelZeile titel={x} spielt={jetzt?.path === x.pfad} gesperrt={gesperrt.has(x.titel)} letzter={titel.length === 1} datei={quelle.titelDatei(x.id)}
-                        imGange={gewaehlt.status === "laeuft"}
+                        imGange={!zumHoeren(gewaehlt)} fest={!zumAendern(gewaehlt)}
                         kannSchneiden={kann.schnitt} kannVerwalten={kann.verwalten} onhoeren={() => void hoeren(gewaehlt!, x)} onschneiden={() => schneiden(gewaehlt!, x)}
                         onsperren={() => sperren(x)} onloeschen={() => titelLoeschen(gewaehlt!, x)} />
           {/each}

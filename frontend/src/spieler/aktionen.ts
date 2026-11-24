@@ -7,7 +7,8 @@ import * as engine from "../lib/playerEngine.js";
 import { naechsteReihenfolge } from "./kanzel";
 import { tonelement } from "./tonelement";
 import { puffer } from "./puffer.svelte";
-import { blaetternInAufnahme, springtTitel } from "./kanzel";
+import { blaetternInAufnahme, springtTitel, ZURUECK_SCHWELLE_S } from "./kanzel";
+import { nachbarstelle } from "../lib/reihenfolge.js";
 import { bitratenwahlLesen, bitratenwahlSetzen } from "../lib/bitratenwahl.js";
 import type { Bitratenwahl } from "./kanzel";
 
@@ -54,13 +55,14 @@ export function aufnehmen(): void {
 }
 
 /** Zurück (RAD-60): hinter live im Zeitversatz an den Anfang des Titels, kurz nach dem Anfang zum vorherigen;
- *  sonst der vorherige Sender (Folge, Aufnahme) */
+ *  ebenso in den Titeln einer Aufnahme (RAD-140), sonst der vorherige Sender (Folge) */
 export function zurueck(): void {
   if (app.isRecording) {
     if (blaetternInAufnahme(app, -1)) puffer.vorher();
     return;
   }
   if (springtTitel(app)) puffer.vorher();
+  else if (app.playerMode === "recording" && (tonelement().currentTime > ZURUECK_SCHWELLE_S || !hatVorigen())) tonelement().currentTime = 0;
   else actions.navigatePrev();
 }
 
@@ -74,7 +76,10 @@ export function vor(): void {
   else if (!puffer.weiter()) live();
 }
 
-/** lang gedrückt: immer der Sender (Folge, Aufnahme), auch im Zeitversatz; während einer Aufnahme wie kurz (RAD-83) */
+const hatVorigen = (): boolean => nachbarstelle(app.recordingPlaylist.length,
+  app.recordingPlaylist.findIndex((x) => x.path === app.currentRecording?.path), -1, app.playMode) !== null;
+
+/** lang gedrückt: immer der Sender (Folge, Titel), auch im Zeitversatz; während einer Aufnahme wie kurz (RAD-83) */
 export function zurueckSender(): void {
   if (app.isRecording) zurueck();
   else actions.navigatePrev();
@@ -138,9 +143,6 @@ export function zurQuelle(varianten = false): void {
     const aufnahme = app.currentRecording;
     app.sourceJumpRequest = { type: "recording", id: aufnahme?.session_id, ts };
     actions.navigateTo(aufnahme?.session_id ? `/aufnahmen/${aufnahme.session_id}` : "/aufnahmen");
-    setTimeout(() => {
-      document.querySelector(".session-item.playing, .segment-entry.playing")?.scrollIntoView({ block: "center", behavior: "smooth" });
-    }, 150);
   }
 }
 

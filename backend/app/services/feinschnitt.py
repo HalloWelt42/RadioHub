@@ -152,6 +152,18 @@ def einstreuungen_entfernen(angaben: list[Angabe], r: Regeln = Regeln()) -> list
     return liste
 
 
+def angabe_der_grenze(bei: float, angaben: list[Angabe], stillen: list[tuple[float, float]], r: Regeln = Regeln(),
+                      pegel: Pegel | None = None) -> Angabe | None:
+    """Die Angabe, deren Wechsel bei `bei` geschnitten wird (sie kommt gewöhnlich etwas danach); None: es ist keiner, etwa der
+    Rand einer Werbung. Wer ab dort weiterrechnet, lässt sie weg, sonst zählte derselbe Wechsel zweimal."""
+    vorige = float("-inf")
+    for a in einstreuungen_entfernen(sorted((x for x in angaben if not x.gesperrt), key=lambda x: x.t), r):
+        vorige = grenze(a.t, stillen, r, vorige, pegel)
+        if abs(schnittstelle(vorige, stillen, r) - bei) <= r.naehe_s:
+            return a
+    return None
+
+
 def stuecke(dauer: float, angaben: list[Angabe], stillen: list[tuple[float, float]], werbung: list[Werbung],
             r: Regeln = Regeln(), einschub: str = "Einschub", pegel: Pegel | None = None) -> list[Stueck]:
     """Die Stücke einer Aufnahme von 0 bis `dauer` (Sekunden des aufgenommenen Tons)."""

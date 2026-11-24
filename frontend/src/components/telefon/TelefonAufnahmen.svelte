@@ -2,14 +2,14 @@
   // Aufnahmen am Telefon nach dem Entwurf (mockups/radio-filter/telefon-aufnahmen.html, RAD-17): die Liste mit Suche und
   // Ordnern als Chips, eine geöffnete Aufnahme mit Angaben, Laden, Ordner, Löschen (RAD-134) und ihren Titeln. Schneiden
   // gibt es am Rechner. Dieselben Bausteine wie das Radio am Telefon; Zustand und Adresse wie am Rechner.
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { Nachladen } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { zahl } from "../../lib/radio/anzeige";
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
-  import { aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste, reiheAus, type Aufnahme, type Spieleintrag, type Titel } from "../../lib/aufnahmen";
+  import { aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste, reiheAus, imGange, vorzeitig, zumAendern, zumHoeren, type Aufnahme, type Spieleintrag, type Titel } from "../../lib/aufnahmen";
   import { datum, zeit } from "../../lib/aufnahmen/anzeige";
   import AufnahmeKopf from "../aufnahmen/AufnahmeKopf.svelte";
   import Logo from "../radio/Logo.svelte";
@@ -34,24 +34,44 @@
     untrack(() => void liste.laden(zustand.abfrage()));
   });
 
+  // läuft eine Aufnahme oder wird eine fein geschnitten, holt die Liste nach
+  const aendertSich = $derived((!!gewaehlt && imGange(gewaehlt)) || liste.aufnahmen.some(imGange));
+  $effect(() => {
+    if (!aendertSich) return;
+    const uhr = setInterval(() => {
+      void liste.laden(zustand.abfrage());
+      if (gewaehlt && imGange(gewaehlt)) void holen(gewaehlt.id);
+    }, 4000);
+    return () => clearInterval(uhr);
+  });
+
+  async function holen(kennung: string) {
+    try {
+      const [a, x] = await Promise.all([quelle.aufnahme(kennung), quelle.titel(kennung)]);
+      if (zustand.ansicht.aufnahme === kennung) { gewaehlt = a; titel = x; }
+    } catch (f) {
+      actions.showToast((f as Error).message, "error");
+    }
+  }
+
   const id = $derived(ansicht.quelle === "aufnahmen" ? ansicht.aufnahme : null);
   $effect(() => {
     const kennung = id;
     untrack(async () => {
       if (!kennung) { gewaehlt = null; titel = []; return; }
       gewaehlt = liste.aufnahmen.find((a) => a.id === kennung) ?? gewaehlt;
-      try {
-        const [a, x] = await Promise.all([quelle.aufnahme(kennung), quelle.titel(kennung)]);
-        if (zustand.ansicht.aufnahme === kennung) { gewaehlt = a; titel = x; }
-      } catch (f) {
-        actions.showToast((f as Error).message, "error");
-      }
+      await holen(kennung);
+      // "In der Liste zeigen": steht der laufende Titel in dieser Aufnahme, rollt die Liste zu ihm
+      await tick();
+      const pfad = (appState.currentRecording as Spieleintrag | null)?.path;
+      if (pfad) listeEl?.querySelector(`[data-pfad="${CSS.escape(pfad)}"]`)?.scrollIntoView({ block: "center" });
     });
   });
+  let listeEl = $state<HTMLElement>();
 
   const jetzt = $derived(appState.isPlaying ? ((appState.currentRecording as Spieleintrag | null) ?? null) : null);
   async function hoeren(a: Aufnahme, ab?: Titel) {
-    if (a.status === "laeuft") return;
+    if (!zumHoeren(a)) return;
     if (appState.isRecording) { actions.showToast(t("aufnahmenAnsicht.erstBeenden"), "error"); return; }
     try {
       const reihe = a.id === gewaehlt?.id && titel.length ? titel : await quelle.titel(a.id);
@@ -94,7 +114,7 @@
     { wert: "ohne", name: t("aufnahmenAnsicht.ohneOrdner") }]);
 </script>
 
-<div class="tf-radio tf-aufnahmen">
+<div class="tf-radio tf-aufnahmen" bind:this={listeEl}>
   {#if gewaehlt && id}
     <div class="t-kopf-zurueck tf-a-kopf">
       <button class="rund" type="button" aria-label={t("aufnahmenAnsicht.telefon.zurueck")} title={t("aufnahmenAnsicht.telefon.zurueck")}
@@ -104,13 +124,13 @@
     <div class="tf-liste">
       <div class="tf-a-detail">
         <AufnahmeKopf aufnahme={gewaehlt} ordner={ordnerliste.ordner} titelwechsel={0} zip={quelle.alsZip(gewaehlt.id)} eineDatei={quelle.alsEineDatei(gewaehlt.id)}
-                      kannSchneiden={false} kannVerwalten={quelle.faehig.verwalten && gewaehlt.status !== "laeuft"} onhoeren={() => void hoeren(gewaehlt!)}
+                      kannSchneiden={false} kannVerwalten={quelle.faehig.verwalten && zumAendern(gewaehlt)} onhoeren={() => void hoeren(gewaehlt!)}
                       onschneiden={() => undefined} onteilen={async () => undefined} onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} />
       </div>
       {#each titel as x (x.id)}
         {@const spielt = jetzt?.path === x.pfad}
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-        <div class="tf-sender" class:spielt onclick={() => void hoeren(gewaehlt!, x)}>
+        <div class="tf-sender" class:spielt data-pfad={x.pfad} onclick={() => void hoeren(gewaehlt!, x)}>
           <span class="rh-a-nr">{String(x.nr).padStart(2, "0")}</span>
           <div><b>{x.titel}</b><div class="tf-meta"><span>{t("aufnahmenAnsicht.spalteAb")} {zeit(x.start)}</span><span>{zeit(x.dauer)}</span></div></div>
           <span class="tf-aktionen">
@@ -148,9 +168,10 @@
             <div><b>{a.sender}</b>
               <div class="tf-meta"><span>{datum(a.beginn)}</span><span>{ordnerName(a.ordnerId)}</span>
                 {#if a.status === "laeuft"}<span class="rh-a-warn">{t("aufnahmenAnsicht.nimmtAuf")}</span>
-                {:else if a.status !== "fertig"}<span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>{t(`aufnahmenAnsicht.${a.status}`)}</span>{/if}</div>
+                {:else if a.status === "schneidet"}<span class="rh-a-arbeit"><i class="fa-solid fa-spinner fa-spin"></i>{t("aufnahmenAnsicht.schneidet")}{#if a.arbeit}{" "}{a.arbeit.fertig}/{a.arbeit.gesamt}{/if}</span>
+                {:else if vorzeitig(a)}<span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>{t(`aufnahmenAnsicht.${a.status}`)}</span>{/if}</div>
               <div class="t-titel"><i class="fa-solid fa-list"></i>{t("aufnahmenAnsicht.telefon.titel", { n: a.titelzahl })} · {zeit(a.dauer)}</div></div>
-            <span class="tf-aktionen">{#if a.status !== "laeuft"}<button class="rund" type="button" aria-label={t("aufnahmenAnsicht.hoeren")} title={t("aufnahmenAnsicht.hoeren")}
+            <span class="tf-aktionen">{#if zumHoeren(a)}<button class="rund" type="button" aria-label={t("aufnahmenAnsicht.hoeren")} title={t("aufnahmenAnsicht.hoeren")}
                     onclick={(e) => { e.stopPropagation(); void hoeren(a); }}><i class="fa-solid {spielt ? 'fa-volume-high' : 'fa-play'}"></i></button>{/if}</span>
           </div>
         {/each}

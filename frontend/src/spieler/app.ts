@@ -25,6 +25,7 @@ export interface AppZustand {
   hlsActive: boolean;
   currentSegment: number | null;
   recordingElapsed: number;
+  recordingStoppt: boolean;
   recordingStationUuid: string | null;
   recordingVorlaufS: number;
   recordingIcyCount: number;

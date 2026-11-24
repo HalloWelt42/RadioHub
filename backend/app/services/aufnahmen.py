@@ -33,6 +33,15 @@ logger = logging.getLogger("radiohub.aufnahmen")
 ARBEITSKOPIE_HALTEN_S = 6 * 3600
 
 
+#: in diesen Zuständen gehört die Aufnahme dem Aufnehmen und seinem Feinschnitt: hören geht, ändern nicht
+LAEUFT = ("recording", "feinschnitt")
+
+#: SQL (sessions s, segments seg): ein Titel ist ein Stück, das keine Werbung, kein Einschub und keine kurze Senderkennung ist
+#: (RAD-139: Sender schicken zwischen den Liedern ihren Namen als Titel)
+TITEL_ZAEHLT = ("seg.id IS NOT NULL AND seg.title NOT LIKE 'Werbung%' AND seg.title <> 'Einschub' AND NOT (seg.duration_ms < 25000 AND "
+                "(instr(lower(s.station_name), lower(seg.title)) > 0 OR instr(lower(seg.title), lower(s.station_name)) = 1))")
+
+
 class AufnahmeFehler(Exception):
     """Fachlicher Fehler mit Meldung für die Oberfläche (etwa: Aufnahme läuft noch)."""
 
@@ -85,6 +94,10 @@ class Aufnahmen:
                 if seg["segment_index"] != index:
                     conn.execute("UPDATE segments SET segment_index = ? WHERE id = ?", (index, seg["id"]))
 
+    def laeuft(self, session_id: str) -> bool:
+        sitzung = self.sitzung(session_id)
+        return bool(sitzung) and sitzung.get("status") in LAEUFT
+
     def _bereit(self, session_id: str) -> dict:
         sitzung = self.sitzung(session_id)
         if not sitzung:
@@ -96,18 +109,24 @@ class Aufnahmen:
     # --- Ablegen ----------------------------------------------------------------------------------------------------
 
     async def teil_ablegen(self, session_id: str, index: int, titel: str, start_ms: int, dauer_ms: int,
-                           datei: Path) -> dict:
-        """Ein fertiges Stück aus dem Arbeitsordner ablegen und eintragen; die lokale Datei ist danach weg."""
+                           datei: Path, behalten: Path | None = None) -> dict:
+        """Ein fertiges Stück aus dem Arbeitsordner ablegen und hinten eintragen; `index` zählt im Namen der Datei. Die lokale
+        Datei ist danach weg oder liegt unter `behalten` (für den Feinschnitt)."""
         sitzung = self.sitzung(session_id)
         if not sitzung:
             raise AufnahmeFehler("Aufnahme nicht gefunden", 404)
-        pfad = orte.stueck(sitzung["file_path"], index, titel, datei.suffix)
+        pfad = await ablage().freier_pfad(orte.stueck(sitzung["file_path"], index, titel, datei.suffix))
         eintrag = await ablage().ablegen(pfad, datei)
         with db_session() as conn:
             conn.execute("""INSERT INTO segments (session_id, segment_index, title, start_ms, end_ms, duration_ms,
                             file_path, file_size) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                         (session_id, index, titel, start_ms, start_ms + dauer_ms, dauer_ms, pfad, eintrag.groesse))
-        datei.unlink(missing_ok=True)
+                         (session_id, conn.execute("SELECT COUNT(*) FROM segments WHERE session_id = ?", (session_id,)).fetchone()[0],
+                          titel, start_ms, start_ms + dauer_ms, dauer_ms, pfad, eintrag.groesse))
+        if behalten is not None:
+            behalten.parent.mkdir(parents=True, exist_ok=True)
+            datei.replace(behalten)
+        else:
+            datei.unlink(missing_ok=True)
         return {"index": index, "path": pfad, "size": eintrag.groesse}
 
     async def stuecke_ablegen(self, session_id: str, stuecke: list[Stueck]) -> int:
@@ -225,13 +244,17 @@ class Aufnahmen:
             datei.unlink(missing_ok=True)
 
     def aufraeumen(self, halten_s: float = ARBEITSKOPIE_HALTEN_S) -> int:
-        """Arbeitskopien, mit denen länger nicht gearbeitet wurde, löschen."""
+        """Arbeitskopien, mit denen länger nicht gearbeitet wurde, löschen (auch Ordner eines unterbrochenen Schnitts)."""
         grenze = time.time() - halten_s
         weg = 0
         for datei in get_arbeit_dir("schnitt").iterdir():
-            if datei.is_file() and datei.stat().st_mtime < grenze:
+            if datei.stat().st_mtime >= grenze:
+                continue
+            if datei.is_dir():
+                shutil.rmtree(datei, ignore_errors=True)
+            else:
                 datei.unlink(missing_ok=True)
-                weg += 1
+            weg += 1
         return weg
 
     async def _veraendert(self, sitzung: dict) -> None:
@@ -396,8 +419,8 @@ class Aufnahmen:
         sitzung = self.sitzung(session_id)
         if not sitzung:
             raise AufnahmeFehler("Aufnahme nicht gefunden", 404)
-        if sitzung.get("status") == "recording":
-            raise AufnahmeFehler("Aktive Aufnahme kann nicht verschoben werden")
+        if sitzung.get("status") in LAEUFT:
+            raise AufnahmeFehler("Die Aufnahme läuft noch oder wird gerade geschnitten")
         alt = sitzung["file_path"]
         neu = orte.aufnahmeordner(sitzung["station_name"], sitzung["start_time"], ordner_name)
         if alt != neu:

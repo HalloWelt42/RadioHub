@@ -9,6 +9,8 @@
 
 import { api } from './api.js';
 import * as engine from './playerEngine.js';
+import { nachbarstelle } from './reihenfolge.js';
+import { dauer } from './aufnahmen/anzeige';
 import * as router from './router.js';
 import { t } from './i18n.svelte.js';
 
@@ -37,6 +39,7 @@ export const appState = $state({
   isRecording: false,
   recordingType: 'none',    // 'none' | 'direct'
   recordingVorlaufS: 0,     // so viel Ton hatte die Aufnahme beim Start (aus dem Puffer, RAD-46)
+  recordingStoppt: false,   // die Aufnahme wird gerade beendet (Ablegen dauert einige Sekunden)
   recordingSession: null,
   recordingStationUuid: null,  // Sender der laufenden Aufnahme (sie läuft auch beim Senderwechsel weiter, RAD-46)
   recordingElapsed: 0,
@@ -108,6 +111,27 @@ async function zumNachbarn(schritt) {
   // inzwischen anders gewählt: nichts überfahren
   if (ziel && appState.currentStation?.uuid === jetzt.uuid) await engine.playStation(ziel);
 }
+
+/** Zum Nachbarn dessen, was spielt: Folge oder Titel nach der gewählten Reihenfolge (ohne Nachbarn geschieht nichts), sonst Sender
+ * @param {-1 | 1} schritt */
+function blaettern(schritt) {
+  if (appState.currentEpisode && appState.podcastPlaylist.length > 0) {
+    const ziel = nachbarstelle(appState.podcastPlaylist.length, appState.currentEpisodeIndex, schritt, appState.playMode);
+    if (ziel === null) return;
+    appState.currentEpisodeIndex = ziel;
+    return engine.playPodcast(appState.podcastPlaylist[ziel], appState.podcastPlaylistPodcast);
+  }
+  if (appState.playerMode === 'recording') {
+    const reihe = appState.recordingPlaylist;
+    const ziel = nachbarstelle(reihe.length, reihe.findIndex((x) => x.path === appState.currentRecording?.path), schritt, appState.playMode);
+    if (ziel === null) return;
+    return engine.playRecording(reihe[ziel]);
+  }
+  return zumNachbarn(schritt);
+}
+
+/** @type {Promise<void> | null} läuft gerade ein Stopp der Aufnahme */
+let stoppt = null;
 
 export const actions = {
   // Navigation
@@ -218,14 +242,24 @@ export const actions = {
     }
   },
 
-  async stopRecording() {
-    const result = await engine.stopRecording();
-    if (result?.success) {
-      const dur = result.duration ? ` (${Math.round(result.duration)}s)` : '';
-      actions.showToast(`${t('toast.recGespeichert')}${dur}`, 'success');
-    } else {
-      actions.showToast(t('toast.stopFehler'), 'error');
-    }
+  /** Aufnahme beenden: das Ablegen dauert einige Sekunden (RAD-139). Solange zeigen die Tasten Arbeit, ein zweiter Druck
+   *  wartet auf denselben Stopp. */
+  stopRecording() {
+    stoppt ??= (async () => {
+      appState.recordingStoppt = true;
+      try {
+        const result = await engine.stopRecording();
+        if (result?.success) {
+          actions.showToast(`${t('toast.recGespeichert')}${result.duration ? ` (${dauer(result.duration)})` : ''}`, 'success');
+        } else {
+          actions.showToast(t('toast.stopFehler'), 'error');
+        }
+      } finally {
+        appState.recordingStoppt = false;
+        stoppt = null;
+      }
+    })();
+    return stoppt;
   },
 
   // Favorites
@@ -271,105 +305,13 @@ export const actions = {
     }
   },
 
-  // Navigation durch Sender oder Recording-Segmente
+  // Blättern: Folgen des Podcasts, Titel der Aufnahme, sonst Sender
   navigatePrev() {
-    // Podcast-Modus: durch Playlist navigieren
-    if (appState.playerMode === 'podcast' && appState.podcastPlaylist.length > 0) {
-      const playlist = appState.podcastPlaylist;
-      const idx = appState.currentEpisodeIndex;
-      const podcast = appState.podcastPlaylistPodcast;
-
-      if (appState.playMode === 'shuffle') {
-        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
-        const next = candidates[Math.floor(Math.random() * candidates.length)];
-        appState.currentEpisodeIndex = playlist.indexOf(next);
-        engine.playPodcast(next, podcast);
-        return;
-      }
-
-      if (idx > 0) {
-        appState.currentEpisodeIndex = idx - 1;
-        engine.playPodcast(playlist[idx - 1], podcast);
-      } else {
-        appState.currentEpisodeIndex = playlist.length - 1;
-        engine.playPodcast(playlist[playlist.length - 1], podcast);
-      }
-      return;
-    }
-
-    // Recording-Modus: durch Playlist navigieren
-    if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
-      const playlist = appState.recordingPlaylist;
-      const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
-      const mode = appState.playMode || 'linear';
-
-      if (mode === 'shuffle') {
-        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
-        engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
-        return;
-      }
-
-      // Prev: rueckwaerts, bei reverse vorwaerts
-      const forward = mode === 'reverse';
-      const prevIdx = forward ? idx + 1 : idx - 1;
-      if (prevIdx >= 0 && prevIdx < playlist.length) {
-        engine.playRecording(playlist[prevIdx]);
-      } else if (mode === 'loop') {
-        engine.playRecording(playlist[forward ? 0 : playlist.length - 1]);
-      }
-      return;
-    }
-    return zumNachbarn(-1);
+    return blaettern(-1);
   },
 
   navigateNext() {
-    // Podcast-Modus: durch Playlist navigieren
-    if (appState.playerMode === 'podcast' && appState.podcastPlaylist.length > 0) {
-      const playlist = appState.podcastPlaylist;
-      const idx = appState.currentEpisodeIndex;
-      const podcast = appState.podcastPlaylistPodcast;
-
-      if (appState.playMode === 'shuffle') {
-        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
-        const next = candidates[Math.floor(Math.random() * candidates.length)];
-        appState.currentEpisodeIndex = playlist.indexOf(next);
-        engine.playPodcast(next, podcast);
-        return;
-      }
-
-      if (idx >= 0 && idx < playlist.length - 1) {
-        appState.currentEpisodeIndex = idx + 1;
-        engine.playPodcast(playlist[idx + 1], podcast);
-      } else {
-        appState.currentEpisodeIndex = 0;
-        engine.playPodcast(playlist[0], podcast);
-      }
-      return;
-    }
-
-    // Recording-Modus: durch Playlist navigieren
-    if (appState.playerMode === 'recording' && appState.recordingPlaylist.length > 0) {
-      const playlist = appState.recordingPlaylist;
-      const idx = playlist.findIndex(s => s.path === appState.currentRecording?.path);
-      const mode = appState.playMode || 'linear';
-
-      if (mode === 'shuffle') {
-        const candidates = playlist.length > 1 ? playlist.filter((_, i) => i !== idx) : playlist;
-        engine.playRecording(candidates[Math.floor(Math.random() * candidates.length)]);
-        return;
-      }
-
-      // Next: vorwaerts, bei reverse rueckwaerts
-      const forward = mode !== 'reverse';
-      const nextIdx = forward ? idx + 1 : idx - 1;
-      if (nextIdx >= 0 && nextIdx < playlist.length) {
-        engine.playRecording(playlist[nextIdx]);
-      } else if (mode === 'loop') {
-        engine.playRecording(playlist[forward ? 0 : playlist.length - 1]);
-      }
-      return;
-    }
-    return zumNachbarn(1);
+    return blaettern(1);
   },
 
   // Stream-Modus wechseln (Original/HLS)
@@ -377,3 +319,5 @@ export const actions = {
     engine.toggleStreamMode();
   }
 };
+
+engine.beiVollemPlatz(() => actions.showToast(t('toast.recVoll'), 'error'));

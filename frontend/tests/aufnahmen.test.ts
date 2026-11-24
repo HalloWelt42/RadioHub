@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { aufnahmeAus, titelAus } from "../src/lib/aufnahmen/backend";
 import { Aufnahmeliste, ausAdresse, leer, zuAdresse } from "../src/lib/aufnahmen/zustand.svelte";
 import type { Aufnahmequelle } from "../src/lib/aufnahmen/quelle";
-import type { Aufnahme } from "../src/lib/aufnahmen/typen";
+import { imGange, vorzeitig, zumAendern, zumHoeren, type Aufnahme } from "../src/lib/aufnahmen/typen";
 import { Arbeitsplatz } from "../src/lib/schnitt/arbeitsplatz.svelte";
 import { strom, type Schnittinfo } from "../src/lib/schnitt/quelle";
 
@@ -146,5 +146,19 @@ describe("Fortschrittsstrom", () => {
     expect([n, gemeldet]).toEqual([3, ["1/2 Schneiden"]]);
     await expect(strom(antwort('data: {"type":"error","message":"Die Aufnahme läuft noch"}\n\n'), () => {})).rejects.toThrow("Die Aufnahme läuft noch");
     await expect(strom(new Response(JSON.stringify({ detail: "Kein Stück" }), { status: 422 }), () => {})).rejects.toThrow("Kein Stück");
+  });
+});
+
+describe("Zustände einer Aufnahme (RAD-139)", () => {
+  const mit = (status: string, rest = {}) => aufnahmeAus({ id: "x", station_name: "N", status, segment_count: 88, titel_count: 55, ...rest });
+  it("nach dem Stopp wird geschnitten: hören ja, ändern nein, mit Fortschritt", () => {
+    const a = mit("feinschnitt", { arbeit: { fertig: 4, gesamt: 11 } });
+    expect(a).toMatchObject({ status: "schneidet", titelzahl: 55, stueckzahl: 88, arbeit: { fertig: 4, gesamt: 11 } });
+    expect([zumHoeren(a), zumAendern(a), imGange(a), vorzeitig(a)]).toEqual([true, false, true, false]);
+  });
+  it("läuft: nur ansehen; voll: alles geht, mit Hinweis", () => {
+    expect([zumHoeren(mit("recording")), zumAendern(mit("recording"))]).toEqual([false, false]);
+    const voll = mit("disk_full");
+    expect([voll.status, zumHoeren(voll), zumAendern(voll), vorzeitig(voll)]).toEqual(["voll", true, true, true]);
   });
 });

@@ -2,7 +2,15 @@
 // (Stücken) in der Ablage; ein Ordner sammelt Aufnahmen, höchstens einer ist das Ziel neuer Aufnahmen. Dazu die ganze
 // Kellerwolke Ebene für Ebene, aus der der Schnitt beliebige Audiodateien öffnet.
 
-export type Aufnahmestatus = "fertig" | "laeuft" | "abgebrochen" | "unterbrochen";
+/** schneidet: beendet, die Stücke werden noch genau geschnitten (hören geht, ändern nicht); voll: endete, weil der Platz bis
+ *  auf die Reserve belegt war */
+export type Aufnahmestatus = "fertig" | "laeuft" | "schneidet" | "voll" | "abgebrochen" | "unterbrochen";
+export const zumHoeren = (a: Aufnahme): boolean => a.status !== "laeuft";
+export const zumAendern = (a: Aufnahme): boolean => a.status !== "laeuft" && a.status !== "schneidet";
+/** eine Aufnahme, die sich noch ändert: ihre Ansicht holt nach */
+export const imGange = (a: Aufnahme): boolean => a.status === "laeuft" || a.status === "schneidet";
+/** endete anders als gewollt */
+export const vorzeitig = (a: Aufnahme): boolean => a.status === "voll" || a.status === "abgebrochen" || a.status === "unterbrochen";
 
 export interface Aufnahme {
   id: string;
@@ -20,8 +28,13 @@ export interface Aufnahme {
   /** direkt vom Sender oder aus dem Puffer des Zeitversatzes */
   art: "direkt" | "puffer";
   ordnerId: number | null;
+  /** Titel: ohne Werbung, Einschübe und kurze Senderkennung (RAD-139) */
   titelzahl: number;
+  /** alle Stücke */
+  stueckzahl: number;
   status: Aufnahmestatus;
+  /** Stand des Feinschnitts, solange er arbeitet */
+  arbeit: { fertig: number; gesamt: number } | null;
   /** Lücken laut Messung beim Aufnehmen */
   luecken: number;
 }
@@ -43,6 +56,7 @@ export interface Aufnahmeordner {
   /** neue Aufnahmen landen hier */
   ziel: boolean;
   anzahl: number;
+  titelzahl: number;
 }
 
 export type Aufnahmesortierung = "datum" | "sender" | "dauer" | "groesse";
@@ -59,6 +73,8 @@ export interface Aufnahmeabfrage {
 export interface Aufnahmeseite {
   aufnahmen: Aufnahme[];
   gesamt: number;
+  /** Titel aller Aufnahmen der Abfrage */
+  titelGesamt: number;
 }
 
 export interface Wolkendatei {

@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from ..ablage import AblageFehler
 from ..config import AUDIO_MIMETYPES
 from ..services.audio_processor import audio_processor
-from ..services.aufnahmen import AufnahmeFehler
+from ..services.aufnahmen import AufnahmeFehler, aufnahmen
 from ..services.peaks_generator import BYTES_PER_SAMPLE, SAMPLE_RATE, peaks_bereich
 from ..services.schnitt import StueckWahl, gegenstand
 from .ereignisstrom import ereignisstrom
@@ -30,6 +30,13 @@ def _gegenstand(art: str, kennung: str):
         return gegenstand(art, kennung)
     except AufnahmeFehler as f:
         raise HTTPException(f.status, str(f)) from f
+
+
+def _zum_aendern(art: str, kennung: str):
+    """Wie `_gegenstand`, aber nicht, solange die Aufnahme läuft oder ihr Feinschnitt noch arbeitet (RAD-139)."""
+    if art == "sitzung" and aufnahmen.laeuft(kennung):
+        raise HTTPException(409, "Die Aufnahme läuft noch oder wird gerade geschnitten")
+    return _gegenstand(art, kennung)
 
 
 async def _sicher(arbeit):
@@ -94,7 +101,7 @@ async def wellenform(art: Art, kennung: str, start: float = Query(0, ge=0), daue
 
 @router.post("/schneiden")
 async def schneiden(req: Schneiden):
-    g = _gegenstand(req.art, req.kennung)
+    g = _zum_aendern(req.art, req.kennung)
     wahl = [StueckWahl(s.von, s.bis, s.name, s.behalten) for s in req.stuecke]
     if not any(w.behalten for w in wahl):
         raise HTTPException(422, "Kein Stück zum Behalten gewählt")
@@ -104,7 +111,7 @@ async def schneiden(req: Schneiden):
 @router.post("/normalisieren")
 async def normalisieren(req: Gegenstand):
     """Auf -16 LUFS, alle Stücke gemeinsam gemessen (gleicher Pegel über die ganze Aufnahme)."""
-    g = _gegenstand(req.art, req.kennung)
+    g = _zum_aendern(req.art, req.kennung)
 
     async def bearbeitung(pfade: list[Path], fortschritt) -> list[Path]:
         return await audio_processor.normalize_segments(pfade, -16.0, on_progress=fortschritt)
@@ -114,7 +121,7 @@ async def normalisieren(req: Gegenstand):
 
 @router.post("/umwandeln")
 async def umwandeln(req: Umwandeln):
-    g = _gegenstand(req.art, req.kennung)
+    g = _zum_aendern(req.art, req.kennung)
 
     async def bearbeitung(pfade: list[Path], fortschritt) -> list[Path]:
         fertig = []
@@ -129,7 +136,7 @@ async def umwandeln(req: Umwandeln):
 
 @router.post("/rueckgaengig")
 async def rueckgaengig(req: Gegenstand):
-    was = await _sicher(_gegenstand(req.art, req.kennung).rueckgaengig())
+    was = await _sicher(_zum_aendern(req.art, req.kennung).rueckgaengig())
     if was is None:
         raise HTTPException(409, "Kein Schritt zum Zurücknehmen")
     return {"zurueckgenommen": was}

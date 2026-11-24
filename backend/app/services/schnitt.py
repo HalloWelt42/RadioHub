@@ -60,6 +60,15 @@ def _schritt_anlegen(schluessel: str, was: str, daten: dict) -> int:
                             (schluessel, was, json.dumps(daten))).lastrowid
 
 
+def schritt_fortschreiben(schluessel: str, schritt_id: int | None, was: str, daten: dict) -> int:
+    """Einen Schritt anlegen oder den angelegten weiterschreiben (der laufende Feinschnitt wächst mit der Aufnahme)."""
+    if schritt_id is None:
+        return _schritt_anlegen(schluessel, was, daten)
+    with db_session() as conn:
+        conn.execute("UPDATE schnitt_schritte SET was = ?, daten = ? WHERE id = ?", (was, json.dumps(daten), schritt_id))
+    return schritt_id
+
+
 def zeiten_unveraendert(schluessel: str) -> bool:
     """Hat kein Schritt die Zeiten im Ton verschoben (nur Schnitte ohne Verwerfen, die das ausdrücklich vermerken)?"""
     with db_session() as conn:

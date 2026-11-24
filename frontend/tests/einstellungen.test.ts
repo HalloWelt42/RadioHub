@@ -78,7 +78,7 @@ describe("Tastatur aus einer Tabelle", () => {
     zustand.aufrufe.length = 0;
     for (const t of TASTEN) tasteDerApp(taste(t.tasten[0]), bereiche);
     const gewirkt = TASTEN.filter((t) => !t.gesperrtBeiAufnahme).map((t) => t.name);
-    expect(gewirkt).toEqual(["stumm", "lauter", "leiser"]);
+    expect(gewirkt).toEqual(["stumm", "lauter", "leiser", "zurueck", "weiter"]);
     expect(zustand.aufrufe.length).toBe(gewirkt.length);
     zustand.appState.isRecording = false;
   });

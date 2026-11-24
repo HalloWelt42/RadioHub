@@ -14,6 +14,7 @@ export const SEITE = 50;
 export class Aufnahmeliste {
   aufnahmen = $state<Aufnahme[]>([]);
   gesamt = $state<number | null>(null);
+  titelGesamt = $state(0);
   laedt = $state(false);
   fehler = $state("");
   geladen = $state(false);
@@ -35,6 +36,7 @@ export class Aufnahmeliste {
       if (lauf !== this.lauf) return;
       this.aufnahmen = s.aufnahmen;
       this.gesamt = s.gesamt;
+      this.titelGesamt = s.titelGesamt;
       this.fehler = "";
     } catch (f) {
       if (lauf === this.lauf) this.fehler = (f as Error).message;

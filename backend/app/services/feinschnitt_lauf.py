@@ -28,6 +28,8 @@ SCHRITT = "Feinschnitt"
 
 class Analyse(BaseModel):
     fassung: int = 1
+    #: Beginn dieses Abschnitts in der Aufnahme (lange Aufnahmen werden in Abschnitten geschnitten, RAD-139)
+    ab: float = 0.0
     dauer: float
     #: (Sekunde, Titel, gesperrt), auch Wechsel zu einem leeren Titel
     wechsel: list[tuple[float, str, bool]] = []
@@ -48,11 +50,38 @@ def planen(a: Analyse, stuecke_bisher: int = 0) -> Optional[list[feinschnitt.Stu
     return stuecke if len(stuecke) > 1 or a.werbung or stuecke_bisher > 1 else None
 
 
-async def analyse_ablegen(session_id: str, a: Analyse) -> Optional[str]:
+#: so weit um einen Wechsel braucht die Rechnung den Pegel; was dazwischen liegt, wird nicht abgelegt
+PEGEL_RAND_S = 20.0
+
+
+def schlank(a: Analyse) -> Analyse:
+    """Nur der Pegel um die Wechsel und Werbestellen (je Stunde sonst 36000 Werte)."""
+    stellen = sorted([t for t, _, _ in a.wechsel] + [x for v, b, _ in a.werbung for x in (v, b)])
+    behalten, i = [], 0
+    for t, wert in a.pegel:
+        while i < len(stellen) and stellen[i] + PEGEL_RAND_S < t:
+            i += 1
+        if i < len(stellen) and stellen[i] - PEGEL_RAND_S <= t:
+            behalten.append((t, wert))
+    return a.model_copy(update={"pegel": behalten})
+
+
+def zusammen(teile: list[Analyse]) -> Analyse:
+    """Die Abschnitte einer Aufnahme als eine Analyse, auf die Zeit der Aufnahme."""
+    alle = sorted(teile, key=lambda x: x.ab)
+    r = lambda t, x: round(t + x.ab, 3)                                              # noqa: E731
+    wechsel = [(r(t, x), titel, g) for x in alle for t, titel, g in x.wechsel]
+    return Analyse(dauer=max(x.ab + x.dauer for x in alle),
+                   wechsel=[w for i, w in enumerate(wechsel) if i == 0 or w[1] != wechsel[i - 1][1]],
+                   stillen=[(r(v, x), r(b, x)) for x in alle for v, b in x.stillen], pegel=[(r(t, x), m) for x in alle for t, m in x.pegel],
+                   werbung=[(r(v, x), r(b, x), w) for x in alle for v, b, w in x.werbung])
+
+
+async def analyse_ablegen(session_id: str, a: Analyse, abschnitt: int = 0) -> Optional[str]:
     sitzung = aufnahmen.sitzung(session_id)
     if not sitzung:
         return None
-    pfad = orte.analyse(sitzung["file_path"])
+    pfad = orte.analyse(sitzung["file_path"], abschnitt)
     await ablage().schreiben(pfad, a.model_dump_json().encode())
     return pfad
 
@@ -62,12 +91,14 @@ async def analyse_lesen(session_id: str) -> Optional[Analyse]:
     if not sitzung:
         return None
     try:
-        return Analyse.model_validate_json(await ablage().lesen_ganz(orte.analyse(sitzung["file_path"])))
+        teile = [e for e in await ablage().liste(sitzung["file_path"]) if orte.ist_analyse(e.name)]
+        gelesen = [Analyse.model_validate_json(await ablage().lesen_ganz(e.pfad)) for e in teile]
+        return zusammen(gelesen) if gelesen else None
     except Exception:
         return None
 
 
-def _status(session_id: str, status: str, nur_wenn: Optional[str] = None) -> None:
+def status_setzen(session_id: str, status: str, nur_wenn: Optional[str] = None) -> None:
     with db_session() as conn:
         if nur_wenn:
             conn.execute("UPDATE sessions SET status = ? WHERE id = ? AND status = ?", (status, session_id, nur_wenn))
@@ -75,24 +106,29 @@ def _status(session_id: str, status: str, nur_wenn: Optional[str] = None) -> Non
             conn.execute("UPDATE sessions SET status = ? WHERE id = ?", (status, session_id))
 
 
+#: Stand eines laufenden Feinschnitts je Aufnahme: (fertige, alle Stücke)
+FORTSCHRITT: dict[str, tuple[int, int]] = {}
+
+
 async def ausfuehren(session_id: str, stuecke: list[feinschnitt.Stueck]) -> int:
     """Als Schritt des Schnitts anwenden (ein voriger Feinschnitt als letzter Schritt wird erst zurückgenommen).
     Solange heißt die Aufnahme "feinschnitt" (die Oberfläche sperrt die Wiedergabe). Liefert die Zahl der Stücke."""
     from .schnitt import StueckWahl, gegenstand, schritte
 
-    _status(session_id, "feinschnitt")
+    status_setzen(session_id, "feinschnitt")
     g = gegenstand("sitzung", session_id)
     try:
         bisher = schritte(g.schluessel)
         if bisher and bisher[-1]["was"].startswith(SCHRITT):
             await g.rueckgaengig()
         wahl = [StueckWahl(von=s.von, bis=s.bis, name=s.name) for s in stuecke]
-        anzahl = await g.schneiden(wahl, lambda *_: None,
+        anzahl = await g.schneiden(wahl, lambda fertig, alle, _was: FORTSCHRITT.__setitem__(session_id, (fertig, alle)),
                                    was=f"{SCHRITT}: {len(wahl)} Stücke an den Pausen, Werbung für sich")
         logger.info(f"Feinschnitt {session_id}: {anzahl} Stücke")
         return anzahl
     finally:
-        _status(session_id, "completed", nur_wenn="feinschnitt")
+        FORTSCHRITT.pop(session_id, None)
+        status_setzen(session_id, "completed", nur_wenn="feinschnitt")
 
 
 async def neu(session_id: str) -> int:

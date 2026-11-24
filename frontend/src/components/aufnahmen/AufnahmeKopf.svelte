@@ -5,7 +5,7 @@
   import { Auswahl, Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { datum, dauer, groesse } from "../../lib/aufnahmen/anzeige";
-  import type { Aufnahme, Aufnahmeordner } from "../../lib/aufnahmen";
+  import { vorzeitig, zumHoeren, type Aufnahme, type Aufnahmeordner } from "../../lib/aufnahmen";
   import Logo from "../radio/Logo.svelte";
 
   let { aufnahme: a, ordner, titelwechsel, zip, eineDatei, kannSchneiden, kannVerwalten, onhoeren, onschneiden, onteilen, onverschieben, onloeschen }: {
@@ -27,7 +27,7 @@
   let arbeitet = $state(false);
   const ordnerName = $derived(ordner.find((o) => o.id === a.ordnerId)?.name ?? t("aufnahmenAnsicht.ohneOrdner"));
   const ordnerWahl = $derived([{ wert: "", titel: t("aufnahmenAnsicht.ohneOrdner") }, ...ordner.map((o) => ({ wert: String(o.id), titel: o.name }))]);
-  const guete = $derived<["rot" | "gelb" | "gruen", string]>(a.status === "abgebrochen" ? ["rot", t("aufnahmenAnsicht.abgebrochen")]
+  const guete = $derived<["rot" | "gelb" | "gruen", string]>(vorzeitig(a) ? ["rot", t(`aufnahmenAnsicht.${a.status}`)]
     : a.luecken ? ["gelb", t("aufnahmenAnsicht.luecken", { n: a.luecken })] : ["gruen", t("aufnahmenAnsicht.ohneLuecken")]);
 
   async function sicher(arbeit: () => Promise<void>) {
@@ -48,9 +48,9 @@
     </div>
   </div>
   <div class="rh-detail-knoepfe rh-abo-knoepfe">
-    <button class="knopf primaer" type="button" disabled={a.status === "laeuft"} title={a.status === "laeuft" ? t("aufnahmenAnsicht.erstBeenden") : undefined} onclick={onhoeren}><i class="fa-solid fa-play"></i>{t("aufnahmenAnsicht.hoeren")}</button>
+    <button class="knopf primaer" type="button" disabled={!zumHoeren(a)} title={zumHoeren(a) ? undefined : t("aufnahmenAnsicht.erstBeenden")} onclick={onhoeren}><i class="fa-solid fa-play"></i>{t("aufnahmenAnsicht.hoeren")}</button>
     {#if kannSchneiden}<button class="knopf" type="button" onclick={onschneiden}><i class="fa-solid fa-scissors"></i>{t("aufnahmenAnsicht.schneiden")}</button>{/if}
-    {#if kannSchneiden && a.titelzahl <= 1 && titelwechsel > 1}
+    {#if kannSchneiden && a.stueckzahl <= 1 && titelwechsel > 1}
       <button class="knopf" type="button" disabled={arbeitet} title={t("aufnahmenAnsicht.teilenHilfe")} onclick={() => void sicher(onteilen)}>
         <i class="fa-solid {arbeitet ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'}"></i>{t("aufnahmenAnsicht.teilen", { n: titelwechsel })}</button>
     {/if}
@@ -63,7 +63,7 @@
     {/if}
   </div>
   {#if fragt}
-    <Rueckfrage frage={t("aufnahmenAnsicht.aufnahmeLoeschenFrage", { name: `${a.sender}, ${datum(a.beginn)}`, n: a.titelzahl, mb: groesse(a.groesse) })}
+    <Rueckfrage frage={t("aufnahmenAnsicht.aufnahmeLoeschenFrage", { name: `${a.sender}, ${datum(a.beginn)}`, n: a.stueckzahl, mb: groesse(a.groesse) })}
                 knopf={t("aufnahmenAnsicht.loeschen")} beschaeftigt={arbeitet} onabbrechen={() => (fragt = false)}
                 onja={() => void sicher(async () => { await onloeschen(); fragt = false; })} />
   {/if}
