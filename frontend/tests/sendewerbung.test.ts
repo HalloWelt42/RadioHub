@@ -28,10 +28,12 @@ describe("Start nach dem Spot beim Verbinden", () => {
   it("ohne Spot an der Live-Kante", () => {
     expect(startwahl(puffer())).toEqual({ art: "start", sekunde: null });
   });
-  it("mit Spot: wartet mit Restzeit, bis sein Ende samt Vorlauf im Puffer liegt, dann ab seinem Ende", () => {
+  it("mit Spot: wartet mit Restzeit, bis sein Ende so weit hinter der Kante liegt wie live, dann ab seinem Ende", () => {
     const spot = stelle();
-    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 9 }))).toEqual({ art: "werbung", stelle: spot, rest: 5.05 });
-    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 16 }))).toEqual({ art: "start", sekunde: 15.05 });
+    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 9 }))).toEqual({ art: "werbung", stelle: spot, rest: 13.05 });
+    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 16 })).art).toBe("werbung");      // früher begann sie hier und zitterte (RAD-142)
+    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 23 }))).toEqual({ art: "start", sekunde: 15.05 });
+    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 90 }))).toEqual({ art: "start", sekunde: null });   // Puffer lief schon
   });
   it("Ende noch offen: Restzeit unbekannt", () => {
     const spot = stelle({ bis: null, format: "titel", angekuendigt_ms: null });
@@ -47,6 +49,10 @@ describe("An einer Stelle des Tons", () => {
   const nie = () => false;
   it("springt, wenn das Ende schon im Puffer liegt", () => {
     expect(werbetat(85, puffer({ werbestellen: [im], last_segment: 300 }), nie)).toEqual({ art: "springen", stelle: im, nach: 102.45 });
+  });
+  it("springt nie in den Abstand zur Kante: sonst landete es davor und spränge immer wieder (RAD-142)", () => {
+    expect(werbetat(96, puffer({ werbestellen: [im], last_segment: 104 }), nie).art).toBe("stumm");
+    expect(werbetat(96, puffer({ werbestellen: [im], last_segment: 111 }), nie).art).toBe("springen");
   });
   it("stumm mit Restzeit, wenn das Ende noch nicht im Puffer liegt (live)", () => {
     expect(werbetat(90, puffer({ werbestellen: [im], last_segment: 95 }), nie)).toEqual({ art: "stumm", stelle: im, rest: 12.45 });

@@ -24,7 +24,7 @@ import { ueberBackend } from './wiedergabeweg.js';
 import { stromHalten } from './stromhalter.js';
 import { nachbarstelle } from './reihenfolge.js';
 import { bitratenwahlLesen, bitratenwahlSetzen } from './bitratenwahl.js';
-import { sendewerbung, startwahl } from './radio/sendewerbung';
+import { LIVE_ABSTAND_S, pufferEnde, RAND_S, sendewerbung, startwahl } from './radio/sendewerbung';
 
 // === Interne State-Variablen (nicht reaktiv) ===
 let _audioEl = null;
@@ -44,9 +44,6 @@ let _errorTimer = null;
 let _reconnectAttempts = 0;
 /** hält den direkten Live-Strom mit eigenem Vorrat und verbindet bei Abriss neu (RAD-84) */
 let _halter = null;
-/** "Live" im Zeitversatz heißt so viele Sekunden hinter der Kante des Puffers (RAD-84): die Stücke sind 1 s lang, dicht
- *  an der Kante (bisher 0,3 bis 3 s) reichte schon kurzes Zögern im Netz für Aussetzer. Eine Stelle für alle Wege. */
-const LIVE_ABSTAND_S = 8;
 /** Stückwache (RAD-130): so lange ruht das Laden nach einer Schleife; weniger Vorrat als das gilt als aufgebraucht */
 const LADEN_RUHT_MS = 1000, VORRAT_AUS_S = 0.5;
 
@@ -1247,7 +1244,7 @@ async function _ueberZeitversatz(station, gen) {
     }
     if (wahl.art === 'start') {
       _appState.werbeStart = null;
-      _appState.isLive = wahl.sekunde === null;
+      _appState.isLive = wahl.sekunde === null || pufferEnde(status) - wahl.sekunde <= LIVE_ABSTAND_S + 2;
       _switchToHLS(gen, wahl.sekunde);
       return true;
     }
@@ -1308,15 +1305,18 @@ export function tonZuPuffer(zeit, fragmente = _fragmente()) {
   return f.sn * dauer + (zeit - f.start);
 }
 
-/** RAD-33: an eine Sekunde des Puffers springen (Werbung überspringen, zurück zum Anfang einer Stelle) */
+/** RAD-33: an eine Sekunde des Puffers springen (Werbung überspringen, zurück zum Anfang einer Stelle). Nach vorn springt es
+ *  nur, wenn das Ziel erreichbar ist: nie dichter an die Kante als "live" (RAD-84), sonst spränge man davor und gleich wieder
+ *  (RAD-142). Liefert, ob gesprungen wurde. */
 export function springeZuPuffer(sekunde) {
   const zeit = pufferZuTon(sekunde);
   if (zeit === null || !_audioEl) return false;
-  // nie dichter an die Kante als "live" (RAD-84)
-  _audioEl.currentTime = _audioEl.seekable.length ? Math.min(zeit, _liveZeit()) : zeit;
+  const live = _audioEl.seekable.length ? _liveZeit() : Infinity;
+  if (zeit > _audioEl.currentTime && live < zeit - RAND_S) return false;
+  _audioEl.currentTime = Math.min(zeit, live);
   const hs = _appState.hlsStatus;
   const segment = Math.floor(sekunde / (hs?.segment_duration || 1));
-  _appState.isLive = hs?.last_segment != null && segment >= hs.last_segment - 1;
+  _appState.isLive = hs?.last_segment != null && zeit >= live - RAND_S;
   _appState.currentSegment = _appState.isLive ? hs.last_segment : segment;
   return true;
 }

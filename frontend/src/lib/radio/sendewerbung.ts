@@ -125,8 +125,14 @@ export interface Pufferstand {
 
 /** so viele Stücke braucht der Puffer, bevor die Wiedergabe beginnt (wie bisher beim Wechsel in den Zeitversatz) */
 export const MINDESTENS_STUECKE = 3;
-/** so viel Ton nach dem Ende des Spots soll schon im Puffer liegen, bevor die Wiedergabe dort beginnt */
-export const VORLAUF_S = 1.5;
+/** "Live" im Zeitversatz heißt so viele Sekunden hinter der Kante des Puffers (RAD-84): die Stücke sind 1 s lang, dicht an der
+ *  Kante reicht schon kurzes Zögern im Netz für Aussetzer. Näher an die Kante geht kein Start und kein Sprung; eine Stelle für
+ *  alle Wege. Wer ein Ziel näher an der Kante ansteuert, landet davor und spränge immer wieder (RAD-142). */
+export const LIVE_ABSTAND_S = 8;
+
+/** liegt das Ende des Spots höchstens so viel vor live, beginnt die Wiedergabe genau dort; sonst live (der Puffer lief schon, etwa
+ *  nach einem Neuladen der Seite) */
+export const NACH_SPOT_S = 4;
 
 export type Startwahl =
   | { art: "warten" }
@@ -146,8 +152,9 @@ export function startwahl(p: Pufferstand): Startwahl {
   const spot = p.werbung_ueberspringen ? p.werbestellen?.find((w) => w.beim_verbinden && w.von < 0.5) : undefined;
   if (!spot) return { art: "start", sekunde: null };
   const ende = pufferEnde(p);
-  if (spot.bis !== null && ende >= spot.bis + VORLAUF_S) return { art: "start", sekunde: spot.bis };
-  return { art: "werbung", stelle: spot, rest: spot.bis === null ? null : restVon(spot.bis, ende) };
+  if (spot.bis !== null && ende >= spot.bis + LIVE_ABSTAND_S)
+    return { art: "start", sekunde: ende - spot.bis <= LIVE_ABSTAND_S + NACH_SPOT_S ? spot.bis : null };
+  return { art: "werbung", stelle: spot, rest: spot.bis === null ? null : restVon(spot.bis + LIVE_ABSTAND_S, ende) };
 }
 
 /** so nah am Ende einer Stelle wird nicht mehr gesprungen (der Sprung wäre nur ein Ruckeln) */
@@ -159,12 +166,12 @@ export type Werbetat =
   | { art: "stumm"; stelle: Werbestelle; rest: number | null };
 
 /** Was an der Stelle `t` (Sekunden des Puffers) zu tun ist: liegt sie in einer nicht angehörten Werbestelle, springen,
- *  wenn ihr Ende schon im Puffer liegt, sonst stumm bis dahin. */
+ *  wenn ihr Ende erreichbar ist (im Puffer und nicht näher an der Kante als live), sonst stumm bis dahin. */
 export function werbetat(t: number, p: Pufferstand, angehoert: (s: Werbestelle) => boolean): Werbetat {
   if (!p.werbung_ueberspringen) return { art: "nichts" };
   const s = (p.werbestellen ?? []).find((w) => t >= w.von && (w.bis === null || t < w.bis - RAND_S) && !angehoert(w));
   if (!s) return { art: "nichts" };
-  if (s.bis !== null && s.bis + RAND_S <= pufferEnde(p)) return { art: "springen", stelle: s, nach: s.bis };
+  if (s.bis !== null && s.bis + LIVE_ABSTAND_S <= pufferEnde(p)) return { art: "springen", stelle: s, nach: s.bis };
   return { art: "stumm", stelle: s, rest: s.bis === null ? null : restVon(s.bis, t) };
 }
 

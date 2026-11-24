@@ -45,11 +45,16 @@ class Radiowerbung {
     if (ton.paused || ton.seeking) return;
     const t = tonZuPuffer(ton.currentTime);
     if (t === null) return;
-    const tat = werbetat(t, p, (s) => this.angehoert.has(stellenSchluessel(s)));
+    let tat = werbetat(t, p, (s) => this.angehoert.has(stellenSchluessel(s)));
     if (tat.art === "springen") {
-      this.tonAn();
-      if (springeZuPuffer(tat.nach)) this.uebersprungen(tat.stelle);
-    } else if (tat.art === "stumm") {
+      if (springeZuPuffer(tat.nach)) {
+        this.tonAn();
+        this.uebersprungen(tat.stelle);
+        return;
+      }
+      tat = { art: "stumm", stelle: tat.stelle, rest: tat.nach - t };      // der Ton ist noch nicht so weit: stumm hindurch
+    }
+    if (tat.art === "stumm") {
       stummSetzen("werbung", true);
       const s = tat.stelle;
       werbehinweis.jetzt = { art: "stumm", dauer: dauerVon(s), rest: tat.rest, herkunft: herkunftVon(s), werbender: s.werbender,
