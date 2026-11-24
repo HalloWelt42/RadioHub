@@ -6,7 +6,7 @@
   import { vorzeitig, zumAendern, zumHoeren, type Aufnahme } from "../../lib/aufnahmen";
   import Logo from "../radio/Logo.svelte";
 
-  let { aufnahme: a, ordner, spielt, laufendeSekunden, kannSchneiden, onwaehlen, onhoeren, onschneiden }: {
+  let { aufnahme: a, ordner, spielt, laufendeSekunden, kannSchneiden, onwaehlen, onhoeren, onschneiden, onsender }: {
     aufnahme: Aufnahme;
     ordner: string;
     spielt: boolean;
@@ -16,6 +16,7 @@
     onwaehlen: () => void;
     onhoeren: () => void;
     onschneiden: () => void;
+    onsender: () => void;
   } = $props();
 
   const laeuft = $derived(a.status === "laeuft");
@@ -24,7 +25,9 @@
 <article class="rh-sender rh-aufnahme" class:spielt class:laeuft>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="rh-sender-kern" onclick={onwaehlen}>
-    <Logo uuid={a.senderUuid} name={a.sender} logo="" />
+    {#if a.senderUuid}<button class="rh-zum-sender" type="button" title={t("aufnahmenAnsicht.zumSender")} aria-label="{t('aufnahmenAnsicht.zumSender')}: {a.sender}"
+            onclick={(e) => { e.stopPropagation(); onsender(); }}><Logo uuid={a.senderUuid} name={a.sender} logo="" /></button>
+    {:else}<Logo uuid={a.senderUuid} name={a.sender} logo="" />{/if}
     <div class="name"><b>{a.sender}</b>
       <div class="meta"><span>{datum(a.beginn)}</span><span>{ordner}</span>
         {#if a.status === "schneidet"}<span class="rh-a-arbeit"><i class="fa-solid fa-spinner fa-spin"></i>{t("aufnahmenAnsicht.schneidet")}{#if a.arbeit}{" "}<b class="rh-zahl">{a.arbeit.fertig}/{a.arbeit.gesamt}</b>{/if}</span>{/if}

@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'neemt op', zaehlerHilfe: 'Totaal aantal opnamen voor de selectie, niet alleen de geladen', zaehlerWolkeHilfe: 'Audiobestanden in deze map',
   aktualisierenHilfe: 'Lijst opnieuw laden', aktiveFilter: 'Actieve filters', geladen: 'geladen', nochmal: 'Opnieuw proberen',
   ladenFehler: 'Laden is mislukt', gespeichert: 'Opname opgeslagen in {name}', erstBeenden: 'Stop eerst de opname, luister daarna', begonnen: 'Begonnen stuk', feinschnittLaeuft: 'De stukken worden precies op de pauzes gesneden; luisteren kan al.',
+  zumSender: 'Naar de zender; meer nummers komen bij deze opname', senderWeg: 'Deze zender bestaat niet meer', kommtZu: 'komt bij {name}', wirdAngehaengt: 'Opname komt bij {name}',
   wirdBeendet: 'Wordt afgerond', schneidet: 'wordt gesneden', voll: 'opslag vol', bestand: '{n} opnames, {titel} nummers',
   verschoben: 'Verplaatst naar {name}', wolkeGesperrt: 'De Kellerwolke geeft deze map niet vrij',
   sort_sender: 'Sorteren op zender', sort_datum: 'Sorteren op datum, nieuwste eerst', sort_dauer: 'Sorteren op duur',

@@ -8,7 +8,7 @@
   import type { Aufnahme } from "../../lib/aufnahmen";
   import Logo from "../radio/Logo.svelte";
 
-  let { aufnahme: a, ziel }: { aufnahme: Aufnahme; ziel: string } = $props();
+  let { aufnahme: a, ziel, kommtZu = "" }: { aufnahme: Aufnahme; ziel: string; /** an diese Aufnahme kommt sie */ kommtZu?: string } = $props();
 
   const titel = $derived((appState.recordingIcyEntries as { title: string; t: number; ignored?: boolean }[]) ?? []);
   const luecken = $derived(((appState.recordingEvents as { type: string }[]) ?? []).filter((e) => e.type === "gap_start").length);
@@ -23,7 +23,7 @@
     <h2>{t("aufnahmenAnsicht.laeuft", { sender: a.sender })}</h2>
     <p class="rh-still">{t("aufnahmenAnsicht.laeuftSeit", { zeit: new Date(a.beginn).toLocaleTimeString("de-DE") })} ·
       {appState.recordingVorlaufS >= 60 ? t("aufnahmenAnsicht.rueckblick", { n: Math.round(appState.recordingVorlaufS / 60) }) : t("aufnahmenAnsicht.direkt")} ·
-      {t("aufnahmenAnsicht.nach", { name: ziel })}
+      {kommtZu ? t("aufnahmenAnsicht.kommtZu", { name: kommtZu }) : t("aufnahmenAnsicht.nach", { name: ziel })}
       {#if appState.devMode && luecken} · <span class="rh-a-warn"><i class="fa-solid fa-triangle-exclamation"></i>{t("aufnahmenAnsicht.luecken", { n: luecken })}</span>{/if}</p>
     {#if titel.length}
       <ol class="rh-live-titel">

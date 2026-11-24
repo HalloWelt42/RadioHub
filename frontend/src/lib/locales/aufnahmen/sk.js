@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'nahráva', zaehlerHilfe: 'Celkový počet nahrávok pre výber, nielen načítaných', zaehlerWolkeHilfe: 'Zvukové súbory v tomto priečinku',
   aktualisierenHilfe: 'Znova načítať zoznam', aktiveFilter: 'Aktívne filtre', geladen: 'načítané', nochmal: 'Skúsiť znova',
   ladenFehler: 'Načítanie sa nepodarilo', gespeichert: 'Nahrávka uložená do {name}', erstBeenden: 'Najprv ukončite nahrávanie, potom počúvajte', begonnen: 'Rozpracovaná časť', feinschnittLaeuft: 'Časti sa presne strihajú v pauzách; počúvať sa dá už teraz.',
+  zumSender: 'K stanici; ďalšie skladby sa pridajú k tejto nahrávke', senderWeg: 'Táto stanica už neexistuje', kommtZu: 'pridá sa k {name}', wirdAngehaengt: 'Nahrávka sa pridá k {name}',
   wirdBeendet: 'Ukončuje sa', schneidet: 'strihá sa', voll: 'miesto plné', bestand: '{n} nahrávok, {titel} skladieb',
   verschoben: 'Presunuté do {name}', wolkeGesperrt: 'Kellerwolke tento priečinok nesprístupňuje',
   sort_sender: 'Zoradiť podľa stanice', sort_datum: 'Zoradiť podľa dátumu, najnovšie prvé', sort_dauer: 'Zoradiť podľa dĺžky',

@@ -3,6 +3,7 @@
  * Included in locales/fi.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Uudet kappaleet lisätään: "{name}"', zielLoesen: 'Vapauta kohde: uusista kappaleista tulee taas oma tallenne',
   zeitversatz: 'Aikasiirto',
   titelZurueck: 'Kappale',
   titelZurueckHilfe: 'Tämän kappaleen alkuun, heti alun jälkeen: edellinen kappale',

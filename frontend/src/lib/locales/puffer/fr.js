@@ -3,6 +3,7 @@
  * view (desktop and phone), notice after a recording starts. Included in locales/fr.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Les nouveaux titres s\'ajoutent à "{name}"', zielLoesen: 'Libérer la cible : les nouveaux titres forment de nouveau un enregistrement à part',
   zeitversatz: "Différé",
   titelZurueck: "Titre",
   titelZurueckHilfe: "Au début de ce titre ; juste après le début : titre précédent",

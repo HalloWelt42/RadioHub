@@ -2,6 +2,7 @@
  * RadioHub - Japanese translations: buffer and recording.
  */
 export default {
+  zielHinweis: '新しい曲は "{name}" に追加されます', zielLoesen: '追加先を解除: 新しい曲は再び別の録音になります',
   zeitversatz: 'タイムシフト',
   titelZurueck: '曲',
   titelZurueckHilfe: 'この曲の先頭へ。先頭直後なら前の曲へ',

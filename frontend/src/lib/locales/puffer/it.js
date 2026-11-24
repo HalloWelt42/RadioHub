@@ -3,6 +3,7 @@
  * view (desktop and phone), notice after a recording starts. Included in locales/it.js as section "puffer".
  */
 export default {
+  zielHinweis: 'I nuovi titoli si aggiungono a "{name}"', zielLoesen: 'Sciogli destinazione: i nuovi titoli tornano una registrazione a sé',
   zeitversatz: "Differita",
   titelZurueck: "Brano",
   titelZurueckHilfe: "All'inizio di questo brano; subito dopo l'inizio: brano precedente",

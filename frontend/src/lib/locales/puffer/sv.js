@@ -3,6 +3,7 @@
  * Included in locales/sv.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Nya låtar läggs till "{name}"', zielLoesen: 'Släpp målet: nya låtar blir åter en egen inspelning',
   zeitversatz: 'Tidsförskjutning',
   titelZurueck: 'Spår',
   titelZurueckHilfe: 'Till början av spåret, strax efter början: föregående spår',

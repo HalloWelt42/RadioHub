@@ -56,7 +56,7 @@ def _aufbau(pfad: Path) -> dict:
 
 
 # Tabellen, denen spätere Stufen Spalten anhängen (stations in Stufe 2, wecker in Stufe 3, Abos in Stufe 4)
-ERWEITERT = {"stations", "wecker", "podcast_subscriptions", "podcast_episodes"}   # Abos auch in Stufe 5 (ordner_id), Folgen in Stufe 7 (chapters_url)
+ERWEITERT = {"stations", "wecker", "podcast_subscriptions", "podcast_episodes", "sessions"}   # Abos auch in Stufe 5 (ordner_id), Folgen in Stufe 7 (chapters_url), Aufnahmen in Stufe 13 (ziel_id)
 
 
 def _nur_dazu(vorher: dict, nachher: dict) -> None:

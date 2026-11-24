@@ -69,6 +69,25 @@ def schritt_fortschreiben(schluessel: str, schritt_id: int | None, was: str, dat
     return schritt_id
 
 
+def schritt_zum_anhaengen(schluessel: str, quelle_id: str) -> tuple[int | None, dict]:
+    """Der begonnene Schritt, der diese Aufnahme anhängt (nach einem Abbruch geht er weiter), sonst (None, {})."""
+    letzter = _letzter(schluessel)
+    return (letzter[0], letzter[2]) if letzter and letzter[2].get("angehaengt") == quelle_id else (None, {})
+
+
+def pfade_in_schritten(schluessel: str, alt: str, neu: str) -> None:
+    """Der Ordner des Gegenstands ist umgezogen: die Schritte kennen ihre Dateien dort."""
+    def um(wert):
+        if isinstance(wert, str):
+            return neu + wert[len(alt):] if wert == alt or wert.startswith(alt + "/") else wert
+        if isinstance(wert, list):
+            return [um(x) for x in wert]
+        return {k: um(v) for k, v in wert.items()} if isinstance(wert, dict) else wert
+    with db_session() as conn:
+        for z in conn.execute("SELECT id, daten FROM schnitt_schritte WHERE gegenstand = ?", (schluessel,)).fetchall():
+            conn.execute("UPDATE schnitt_schritte SET daten = ? WHERE id = ?", (json.dumps(um(json.loads(z[1]))), z[0]))
+
+
 def zeiten_unveraendert(schluessel: str) -> bool:
     """Hat kein Schritt die Zeiten im Ton verschoben (nur Schnitte ohne Verwerfen, die das ausdrücklich vermerken)?"""
     with db_session() as conn:
@@ -310,6 +329,9 @@ class SitzungGegenstand(Gegenstand):
         return len(fertig)
 
     async def _zuruecknehmen(self, daten: dict) -> None:
+        if daten.get("angehaengt"):
+            from .anhaengen import abtrennen
+            return await abtrennen(self.kennung, daten)
         sitzung = self._sitzung()
         for pfad in daten.get("neu", []):
             await ablage().loeschen(pfad)

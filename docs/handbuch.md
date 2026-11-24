@@ -216,6 +216,12 @@ liegt nur der laufende Abschnitt (höchstens 400 MB); ein Stück ohne Titelwechs
 Kellerwolke weg, sammeln sich die Stücke lokal und gehen nach, sobald sie wieder da ist. Bleibt auf dem Datenträger des
 Servers oder in der Kellerwolke nur noch die Reserve frei (Einstellungen > Aufnahmen, Vorgabe 5 GB), endet die Aufnahme
 sauber: sie heißt "Platz voll", Meldung und Protokoll nennen den Grund; unter der Reserve beginnt keine neue.
+Weitere Titel dazu aufnehmen (RAD-145): Logo und Sendername einer Aufnahme springen zum Sender und spielen ihn; die Aufnahme ist
+dann das Ziel, der Hinweis "Neue Titel kommen zu ..." nennt sie und löst sie mit dem X. Was man dort aufnimmt oder als Titel
+oder Bereich aus dem Puffer sichert, entsteht als eigene Aufnahme und hängt sich nach dem Feinschnitt hinten an das Ziel
+(Länge, Titelliste, Werbestellen und Messwerte zählen weiter; ihr Rest liegt danach unter `Angehängt/<Zeit>` im Ordner des
+Ziels). Geht es nicht (Ziel weg oder im Schnitt, anderes Format), bleibt sie eine eigene. Rückgängig im Schnitt macht daraus
+wieder eine eigene Aufnahme. Löschen nimmt Angehängtes mit.
 Messmodus (RAD-143, Einstellungen > Allgemein > Bedienung, Fehlersuche): schreibt mit, was beim Hören und Aufnehmen geschieht,
 um Auffälliges hinterher zu erklären. Server: Angaben und Abrisse des Senders, jedes Ablegen mit Dauer, jeder Durchgang des
 Feinschnitts und jede Grenze mit ihrem Grund (an der Pause, im Pegeltal, bei der Angabe, Werbung) und ihrer Umgebung,

@@ -2,6 +2,7 @@
  * RadioHub - Hungarian translations: buffer and recording (RAD-46).
  */
 export default {
+  zielHinweis: 'Az új számok ide kerülnek: "{name}"', zielLoesen: 'Cél feloldása: az új számok ismét külön felvétel lesznek',
   zeitversatz: 'Időeltolás',
   titelZurueck: 'Szám',
   titelZurueckHilfe: 'A szám elejére, közvetlenül az eleje után: előző szám',

@@ -30,6 +30,7 @@ from . import database, einstellungen, uebergang
 from .ablage import AblageEinstellungen, AblageFehler
 from .config import DB_PATH, VERSION, get_arbeit_dir
 from .services import buffer_manager, hls_buffer, podcast_service, rec_manager, timeshift_buffer
+from .services import anhaengen
 from .services.messung import messung
 from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
@@ -259,5 +260,6 @@ class Radiobetrieb(Begleiter):
             anzahl = await aufnahmen.liegengebliebene_ablegen()
             if anzahl:
                 await self._eintragen("radio.ablage", f"{anzahl} liegengebliebene Stücke nachträglich abgelegt")
+            await anhaengen.nachholen()
         except AblageFehler as f:
             await self._eintragen("radio.ablage", f"Nachholen nicht möglich: {f}", "warnung")

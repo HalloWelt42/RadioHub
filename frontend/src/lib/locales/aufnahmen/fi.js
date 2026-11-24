@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'tallentaa', zaehlerHilfe: 'Valinnan tallenteet yhteensä, ei vain ladatut', zaehlerWolkeHilfe: 'Äänitiedostot tässä kansiossa',
   aktualisierenHilfe: 'Lataa luettelo uudelleen', aktiveFilter: 'Käytössä olevat suodattimet', geladen: 'ladattu', nochmal: 'Yritä uudelleen',
   ladenFehler: 'Lataus ei onnistunut', gespeichert: 'Tallenne tallennettu kansioon {name}', erstBeenden: 'Lopeta ensin tallennus, sitten kuuntele', begonnen: 'Aloitettu kappale', feinschnittLaeuft: 'Osat leikataan tarkasti tauoista; kuunnella voi jo nyt.',
+  zumSender: 'Asemalle; uudet kappaleet lisätään tähän tallenteeseen', senderWeg: 'Tätä asemaa ei enää ole', kommtZu: 'lisätään: {name}', wirdAngehaengt: 'Tallenne lisätään: {name}',
   wirdBeendet: 'Lopetetaan', schneidet: 'leikataan', voll: 'tila täynnä', bestand: '{n} tallennetta, {titel} kappaletta',
   verschoben: 'Siirretty kansioon {name}', wolkeGesperrt: 'Kellerwolke ei salli pääsyä tähän kansioon',
   sort_sender: 'Lajittele aseman mukaan', sort_datum: 'Lajittele päivän mukaan, uusimmat ensin', sort_dauer: 'Lajittele keston mukaan',

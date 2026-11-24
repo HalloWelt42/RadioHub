@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'tar opp', zaehlerHilfe: 'Totalt antall opptak for utvalget, ikke bare de lastede', zaehlerWolkeHilfe: 'Lydfiler i denne mappen',
   aktualisierenHilfe: 'Last listen på nytt', aktiveFilter: 'Aktive filtre', geladen: 'lastet', nochmal: 'Prøv igjen',
   ladenFehler: 'Lasting mislyktes', gespeichert: 'Opptak lagret i {name}', erstBeenden: 'Avslutt opptaket først, lytt så', begonnen: 'Påbegynt stykke', feinschnittLaeuft: 'Delene klippes nøyaktig ved pausene; du kan allerede lytte.',
+  zumSender: 'Til stasjonen; flere spor legges til dette opptaket', senderWeg: 'Denne stasjonen finnes ikke lenger', kommtZu: 'legges til {name}', wirdAngehaengt: 'Opptaket legges til {name}',
   wirdBeendet: 'Avsluttes', schneidet: 'klippes', voll: 'lager fullt', bestand: '{n} opptak, {titel} spor',
   verschoben: 'Flyttet til {name}', wolkeGesperrt: 'Kellerwolke gir ikke tilgang til denne mappen',
   sort_sender: 'Sorter etter stasjon', sort_datum: 'Sorter etter dato, nyeste først', sort_dauer: 'Sorter etter lengde',

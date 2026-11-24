@@ -9,10 +9,11 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { api } from "../../lib/api.js";
   import { appPfad } from "../../lib/router.js";
+  import { zumSender } from "../../spieler/aufnahmeziel";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
   import { abwaerts, imGange as aendertSich, zumAendern, zumHoeren, aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste,
     type Aufnahme, type Aufnahmeansicht, type Aufnahmesortierung, type Titel, type Wolkendatei, type Wolkenebene, reiheAus, type Spieleintrag } from "../../lib/aufnahmen";
-  import { dauer } from "../../lib/aufnahmen/anzeige";
+  import { datum, dauer } from "../../lib/aufnahmen/anzeige";
   import { schnittquelle, type Schnittgegenstand } from "../../lib/schnitt";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
   import Band from "../radio/Band.svelte";
@@ -70,7 +71,7 @@
     untrack(() => {
       if (!an && nahmAuf) {
         void allesNeu();
-        band = { symbol: "fa-circle-check", text: t("aufnahmenAnsicht.gespeichert", { name: zielName }), art: "gut" };
+        band = { symbol: "fa-circle-check", text: kommtZu ? t("aufnahmenAnsicht.wirdAngehaengt", { name: kommtZu }) : t("aufnahmenAnsicht.gespeichert", { name: zielName }), art: "gut" };
       }
       nahmAuf = an;
     });
@@ -96,6 +97,7 @@
     try {
       const [a, x, w, g] = await Promise.all([quelle.aufnahme(id), quelle.titel(id), quelle.titelwechsel(id).catch(() => 0), quelle.gesperrt().catch(() => new Set<string>())]);
       if (zustand.ansicht.aufnahme !== id) return;
+      if (a.status === "angehaengt" && a.zielId) return gehen((v) => ({ ...v, aufnahme: a.zielId, schnitt: false }));
       const fertig = gewaehlt?.id === id && gewaehlt.status === "schneidet" && a.status !== "schneidet";
       gewaehlt = a; titel = x; titelwechsel = w; gesperrt = g;
       // der Feinschnitt hat die Stücke ersetzt: die gehörte Reihe folgt den neuen, der laufende Titel spielt zu Ende
@@ -132,7 +134,7 @@
   $effect(() => {
     const jetzt = schneidet;
     untrack(() => {
-      if (schnittZuletzt && !jetzt) { void ordnerliste.laden().catch(() => undefined); void zaehlen(); }
+      if (schnittZuletzt && !jetzt) { void ordnerliste.laden().catch(() => undefined); void zaehlen(); if (gewaehlt) void details(gewaehlt.id); }
       schnittZuletzt = jetzt;
     });
   });
@@ -341,6 +343,16 @@
   const zielName = $derived(ordnerliste.ziel?.name ?? t("aufnahmenAnsicht.ohneOrdner"));
   const ordnerName = (id: number | null) => ordnerliste.name(id) ?? t("aufnahmenAnsicht.ohneOrdner");
   const laufend = $derived(appState.isRecording ? (liste.aufnahmen.find((a) => a.status === "laeuft") ?? null) : null);
+  // Name der Aufnahme, an die die laufende kommt (RAD-145); bleibt stehen, bis das Band am Ende ihn nennt
+  let kommtZu = $state("");
+  $effect(() => {
+    const l = laufend;
+    untrack(() => {
+      if (!l) return;
+      const z = liste.aufnahmen.find((a) => a.id === l.zielId) ?? (appState.aufnahmeziel?.id === l.zielId ? appState.aufnahmeziel : null);
+      kommtZu = l.zielId && z ? `${z.sender}, ${datum(z.beginn)}` : "";
+    });
+  });
   // das begonnene Stück der gewählten laufenden Aufnahme (RAD-45): ab dem Ende der abgelegten, Titel aus den Sendedaten
   const begonnen = $derived.by((): Titel | null => {
     if (!appState.isRecording || !gewaehlt || gewaehlt.id !== laufend?.id) return null;
@@ -418,7 +430,7 @@
         <AufnahmeKopf aufnahme={gewaehlt} ordner={ordnerliste.ordner} {titelwechsel} zip={quelle.alsZip(gewaehlt.id)} eineDatei={quelle.alsEineDatei(gewaehlt.id)}
                       kannSchneiden={kann.schnitt && zumAendern(gewaehlt)} kannVerwalten={kann.verwalten && zumAendern(gewaehlt)}
                       onhoeren={() => void hoeren(gewaehlt!)} onschneiden={() => schneiden(gewaehlt!)} onteilen={() => teilen(gewaehlt!)}
-                      onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} />
+                      onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} onsender={zumHoeren(gewaehlt) ? () => void zumSender(gewaehlt!) : undefined} />
         <div class="rh-spalten rh-a-spalten" aria-hidden="true"><span>{t("aufnahmenAnsicht.spalteTitel")}</span><span class="rh-ohne-sort">{t("aufnahmenAnsicht.spalteAb")}</span>
           <span class="rechts">{t("aufnahmenAnsicht.spalteLaenge")}</span><span class="rechts">{t("aufnahmenAnsicht.spalteGroesse")}</span><span></span></div>
         {#if detailFehler}
@@ -441,7 +453,7 @@
           {/if}
         {/if}
       {:else}
-        {#if laufend}<LaufendeAufnahme aufnahme={laufend} ziel={zielName} />{/if}
+        {#if laufend}<LaufendeAufnahme aufnahme={laufend} ziel={zielName} {kommtZu} />{/if}
         {#snippet asort(titel: string, s: Aufnahmesortierung)}
           <SortSpalte {titel} hilfe={t(`aufnahmenAnsicht.sort_${s}`)} aktiv={ansicht.sort === s} absteigend={ansicht.absteigend} onwahl={() => sortieren(s)} />
         {/snippet}
@@ -465,7 +477,7 @@
         {:else}
           {#each liste.aufnahmen as a (a.id)}
             <AufnahmeZeile aufnahme={a} ordner={ordnerName(a.ordnerId)} spielt={spielt(a)} laufendeSekunden={a.status === "laeuft" ? (appState.recordingElapsed as number) : null}
-                           kannSchneiden={kann.schnitt} onwaehlen={() => gehen((v) => ({ ...v, aufnahme: a.id }))} onhoeren={() => void hoeren(a)} onschneiden={() => schneiden(a)} />
+                           kannSchneiden={kann.schnitt} onwaehlen={() => gehen((v) => ({ ...v, aufnahme: a.id }))} onhoeren={() => void hoeren(a)} onschneiden={() => schneiden(a)} onsender={() => void zumSender(a)} />
           {/each}
           <Nachladen geladen={liste.aufnahmen.length} gesamt={liste.gesamt} laedt={liste.laedt} fehler={liste.fehler} onmehr={() => void liste.nachladen()}
                      einheit={t("aufnahmenAnsicht.geladen")} />

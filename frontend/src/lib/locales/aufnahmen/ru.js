@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'записывает', zaehlerHilfe: 'Всего записей по выбору, а не только загруженные', zaehlerWolkeHilfe: 'Аудиофайлы в этой папке',
   aktualisierenHilfe: 'Перезагрузить список', aktiveFilter: 'Активные фильтры', geladen: 'загружено', nochmal: 'Повторить',
   ladenFehler: 'Загрузить не удалось', gespeichert: 'Запись сохранена в {name}', erstBeenden: 'Сначала завершите запись, потом слушайте', begonnen: 'Начатый фрагмент', feinschnittLaeuft: 'Фрагменты точно нарезаются по паузам; слушать уже можно.',
+  zumSender: 'К станции; новые треки добавятся к этой записи', senderWeg: 'Этой станции больше нет', kommtZu: 'добавится к {name}', wirdAngehaengt: 'Запись добавится к {name}',
   wirdBeendet: 'Завершается', schneidet: 'нарезается', voll: 'место закончилось', bestand: 'Записей: {n}, треков: {titel}',
   verschoben: 'Перемещено в {name}', wolkeGesperrt: 'Kellerwolke не открывает доступ к этой папке',
   sort_sender: 'Сортировать по станции', sort_datum: 'Сортировать по дате, сначала новые', sort_dauer: 'Сортировать по длительности',

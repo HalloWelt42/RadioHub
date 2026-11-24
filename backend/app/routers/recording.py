@@ -37,6 +37,8 @@ class RecordingStartRequest(BaseModel):
     station_name: str
     stream_url: str
     bitrate: int = 0
+    #: an diese Aufnahme anhängen, sobald fertig (RAD-145)
+    ziel: str | None = None
 
 
 @router.post("/start")
@@ -46,7 +48,8 @@ async def start_recording(req: RecordingStartRequest):
         station_uuid=req.station_uuid,
         station_name=req.station_name,
         stream_url=req.stream_url,
-        bitrate=req.bitrate
+        bitrate=req.bitrate,
+        ziel_id=req.ziel,
     )
 
     if not result.get("success"):

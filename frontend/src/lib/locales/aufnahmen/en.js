@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'recording', zaehlerHilfe: 'Total recordings for the selection, not just the loaded ones', zaehlerWolkeHilfe: 'Audio files in this folder',
   aktualisierenHilfe: 'Reload the list', aktiveFilter: 'Active filters', geladen: 'loaded', nochmal: 'Try again',
   ladenFehler: 'Loading failed', gespeichert: 'Recording saved in {name}', erstBeenden: 'Stop the recording first, then listen', begonnen: 'Piece in progress', feinschnittLaeuft: 'The pieces are being cut precisely at the pauses; you can already listen.',
+  zumSender: 'Go to the station; further tracks are added to this recording', senderWeg: 'This station no longer exists', kommtZu: 'will be added to {name}', wirdAngehaengt: 'Recording is added to {name}',
   wirdBeendet: 'Finishing', schneidet: 'being cut', voll: 'storage full', bestand: '{n} recordings, {titel} tracks',
   verschoben: 'Moved to {name}', wolkeGesperrt: 'The Kellerwolke does not share this folder',
   sort_sender: 'Sort by station', sort_datum: 'Sort by date, newest first', sort_dauer: 'Sort by length',

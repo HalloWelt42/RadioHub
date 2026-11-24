@@ -102,9 +102,24 @@ class Aufnahmen:
         sitzung = self.sitzung(session_id)
         if not sitzung:
             raise AufnahmeFehler("Aufnahme nicht gefunden", 404)
-        if sitzung.get("status") == "recording":
-            raise AufnahmeFehler("Aufnahme läuft noch")
+        if sitzung.get("status") in ("recording", "angehaengt"):
+            raise AufnahmeFehler("Aufnahme läuft noch" if sitzung["status"] == "recording" else "Die Aufnahme ist an eine andere angehängt")
         return sitzung
+
+    def pfade_umziehen(self, session_id: str, alt: str, neu: str) -> None:
+        """Der Ordner der Aufnahme ist umgezogen: ihre Einträge und Schritte, und die der an sie angehängten (sie liegen darin)."""
+        if alt == neu:
+            return
+        from .schnitt import SitzungGegenstand, pfade_in_schritten
+        with db_session() as conn:
+            c = conn.cursor()
+            ids = [session_id, *(r[0] for r in c.execute("SELECT id FROM sessions WHERE ziel_id = ? AND status = 'angehaengt'", (session_id,)))]
+            for sid in ids:
+                _prefix_umschreiben(c, "sessions", "file_path", alt, neu, "id = ?", (sid,))
+                _prefix_umschreiben(c, "sessions", "meta_file_path", alt, neu, "id = ?", (sid,))
+                _prefix_umschreiben(c, "segments", "file_path", alt, neu, "session_id = ?", (sid,))
+        for sid in ids:
+            pfade_in_schritten(SitzungGegenstand(sid).schluessel, alt, neu)
 
     # --- Ablegen ----------------------------------------------------------------------------------------------------
 
@@ -375,8 +390,9 @@ class Aufnahmen:
             await ablage().loeschen(meta)
         self.verwerfen(session_id)
         with db_session() as conn:
-            conn.execute("DELETE FROM segments WHERE session_id = ?", (session_id,))
-            conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
+            for sid in [session_id, *(r[0] for r in conn.execute("SELECT id FROM sessions WHERE ziel_id = ? AND status = 'angehaengt'", (session_id,)).fetchall())]:
+                conn.execute("DELETE FROM segments WHERE session_id = ?", (sid,))
+                conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
         return True
 
     async def segment_loeschen(self, session_id: str, segment_id: int) -> bool:
@@ -425,13 +441,9 @@ class Aufnahmen:
         neu = orte.aufnahmeordner(sitzung["station_name"], sitzung["start_time"], ordner_name)
         if alt != neu:
             await ablage().verschieben(alt, neu)
+        self.pfade_umziehen(session_id, alt, neu)
         with db_session() as conn:
-            c = conn.cursor()
-            if alt != neu:
-                _prefix_umschreiben(c, "sessions", "file_path", alt, neu, "id = ?", (session_id,))
-                _prefix_umschreiben(c, "sessions", "meta_file_path", alt, neu, "id = ?", (session_id,))
-                _prefix_umschreiben(c, "segments", "file_path", alt, neu, "session_id = ?", (session_id,))
-            c.execute("UPDATE sessions SET folder_id = ? WHERE id = ?", (folder_id, session_id))
+            conn.execute("UPDATE sessions SET folder_id = ? WHERE id = ? OR (ziel_id = ? AND status = 'angehaengt')", (folder_id, session_id, session_id))
         return alt != neu
 
     async def ordner_umbenennen(self, folder_id: int, alter_name: str, neuer_name: str) -> None:
@@ -441,12 +453,9 @@ class Aufnahmen:
         if await ablage().eintrag(alt) is not None:
             await ablage().verschieben(alt, neu)
         with db_session() as conn:
-            c = conn.cursor()
-            ids = "id IN (SELECT id FROM sessions WHERE folder_id = ?)"
-            _prefix_umschreiben(c, "sessions", "file_path", alt, neu, ids, (folder_id,))
-            _prefix_umschreiben(c, "sessions", "meta_file_path", alt, neu, ids, (folder_id,))
-            _prefix_umschreiben(c, "segments", "file_path", alt, neu,
-                                "session_id IN (SELECT id FROM sessions WHERE folder_id = ?)", (folder_id,))
+            alle = [r[0] for r in conn.execute("SELECT id FROM sessions WHERE folder_id = ? AND status <> 'angehaengt'", (folder_id,))]
+        for session_id in alle:
+            self.pfade_umziehen(session_id, alt, neu)
 
     async def ordner_loeschen(self, name: str) -> None:
         """Leeren Aufnahmeordner in den Papierkorb; mit Dateien darin bleibt er."""

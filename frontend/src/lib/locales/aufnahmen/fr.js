@@ -35,6 +35,7 @@ export default {
   nimmtAuf: "enregistre", zaehlerHilfe: "Total des enregistrements de la sélection, pas seulement ceux chargés", zaehlerWolkeHilfe: "Fichiers audio de ce dossier",
   aktualisierenHilfe: "Recharger la liste", aktiveFilter: "Filtres actifs", geladen: "chargés", nochmal: "Réessayer",
   ladenFehler: "Le chargement a échoué", gespeichert: "Enregistrement sauvegardé dans {name}", erstBeenden: "Arrêtez d'abord l'enregistrement, puis écoutez", begonnen: "Morceau commencé", feinschnittLaeuft: 'Les morceaux sont découpés précisément aux pauses ; l\'écoute est déjà possible.',
+  zumSender: 'Vers la station ; d\'autres titres s\'ajoutent à cet enregistrement', senderWeg: 'Cette station n\'existe plus', kommtZu: 's\'ajoute à {name}', wirdAngehaengt: 'L\'enregistrement s\'ajoute à {name}',
   wirdBeendet: 'Finalisation', schneidet: 'découpe en cours', voll: 'espace plein', bestand: '{n} enregistrements, {titel} titres',
   verschoben: "Déplacé vers {name}", wolkeGesperrt: "La Kellerwolke ne donne pas accès à ce dossier",
   sort_sender: "Trier par station", sort_datum: "Trier par date, plus récents d'abord", sort_dauer: "Trier par durée",

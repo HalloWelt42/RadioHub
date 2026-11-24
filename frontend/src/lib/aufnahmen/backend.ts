@@ -10,7 +10,7 @@ export interface Anfrager {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Rohdaten des Backends
 type Roh = Record<string, any>;
 
-const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", feinschnitt: "schneidet", completed: "fertig", disk_full: "voll", stalled: "abgebrochen", interrupted: "unterbrochen" };
+const STATUS: Record<string, Aufnahmestatus> = { recording: "laeuft", feinschnitt: "schneidet", completed: "fertig", disk_full: "voll", stalled: "abgebrochen", interrupted: "unterbrochen", angehaengt: "angehaengt" };
 
 function luecken(roh: unknown): number {
   try {
@@ -27,7 +27,7 @@ export function aufnahmeAus(r: Roh): Aufnahme {
     groesse: Number(r.file_size) || 0, codec: String(r.codec ?? r.file_format ?? "").replace(/^\./, "").toUpperCase(),
     bitrate: r.bitrate ? Number(r.bitrate) : null, art: r.rec_type === "hls-rec" ? "puffer" : "direkt",
     ordnerId: r.folder_id ?? null, titelzahl: Number(r.titel_count ?? r.segment_count) || 0, stueckzahl: Number(r.segment_count) || 0, status: STATUS[r.status] ?? "fertig",
-    luecken: luecken(r.quality_json), arbeit: r.arbeit ? { fertig: Number(r.arbeit.fertig) || 0, gesamt: Number(r.arbeit.gesamt) || 0 } : null,
+    luecken: luecken(r.quality_json), zielId: r.ziel_id ?? null, arbeit: r.arbeit ? { fertig: Number(r.arbeit.fertig) || 0, gesamt: Number(r.arbeit.gesamt) || 0 } : null,
   };
 }
 

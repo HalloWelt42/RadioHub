@@ -3,6 +3,7 @@
  * telemóvel), aviso após iniciar uma gravação. Incluído em locales/pt.js como secção "puffer".
  */
 export default {
+  zielHinweis: 'As novas faixas juntam-se a "{name}"', zielLoesen: 'Soltar destino: as novas faixas voltam a ser uma gravação própria',
   zeitversatz: 'Diferido',
   titelZurueck: 'Faixa',
   titelZurueckHilfe: 'Para o início desta faixa; logo após o início: faixa anterior',

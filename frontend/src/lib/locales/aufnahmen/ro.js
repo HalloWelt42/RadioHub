@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'înregistrează', zaehlerHilfe: 'Total înregistrări pentru selecție, nu doar cele încărcate', zaehlerWolkeHilfe: 'Fișiere audio în acest dosar',
   aktualisierenHilfe: 'Reîncarcă lista', aktiveFilter: 'Filtre active', geladen: 'încărcate', nochmal: 'Încearcă din nou',
   ladenFehler: 'Încărcarea nu a reușit', gespeichert: 'Înregistrare salvată în {name}', erstBeenden: 'Încheie întâi înregistrarea, apoi ascultă', begonnen: 'Bucată începută', feinschnittLaeuft: 'Bucățile sunt tăiate precis la pauze; se poate asculta deja.',
+  zumSender: 'La post; alte titluri se adaugă la această înregistrare', senderWeg: 'Acest post nu mai există', kommtZu: 'se adaugă la {name}', wirdAngehaengt: 'Înregistrarea se adaugă la {name}',
   wirdBeendet: 'Se încheie', schneidet: 'se taie', voll: 'spațiu plin', bestand: '{n} înregistrări, {titel} titluri',
   verschoben: 'Mutat în {name}', wolkeGesperrt: 'Kellerwolke nu partajează acest dosar',
   sort_sender: 'Sortează după post', sort_datum: 'Sortează după dată, cele mai noi întâi', sort_dauer: 'Sortează după durată',

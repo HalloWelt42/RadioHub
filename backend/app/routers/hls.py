@@ -121,6 +121,7 @@ class PufferAufnahme(BaseModel):
     """Sekunden des Puffers; ohne `von_s` am Anfang des laufenden Titels, ohne `bis_s` bis zum Stopp."""
     von_s: Optional[float] = None
     bis_s: Optional[float] = None
+    ziel: Optional[str] = None
 
 
 @router.post("/aufnahme")
@@ -136,7 +137,7 @@ async def aufnahme_aus_dem_puffer(wunsch: PufferAufnahme):
     v = hls_buffer.versatz_s
     ergebnis = await rec_manager.start(sitzung.station_uuid, sitzung.station_name, sitzung.stream_url,
                                        sitzung.input_bitrate, von_s=None if wunsch.von_s is None else wunsch.von_s + v,
-                                       bis_s=None if wunsch.bis_s is None else wunsch.bis_s + v)
+                                       bis_s=None if wunsch.bis_s is None else wunsch.bis_s + v, ziel_id=wunsch.ziel)
     if not ergebnis.get("success"):
         raise HTTPException(409, ergebnis.get("error", "Aufnahme nicht gestartet"))
     return ergebnis
@@ -145,6 +146,7 @@ async def aufnahme_aus_dem_puffer(wunsch: PufferAufnahme):
 class Titelwunsch(BaseModel):
     """Eine Sekunde des Puffers, die im Titel liegt."""
     bei_s: float
+    ziel: Optional[str] = None
 
 
 @router.post("/titel")
@@ -158,7 +160,7 @@ async def titel_sichern(wunsch: Titelwunsch):
         raise HTTPException(409, "An dieser Stelle ist kein fertiger Titel")
     v = hls_buffer.versatz_s
     try:
-        kennung = await titelsicherung.sichern(empfang, a["von"] + v, a["bis"] + v, a["titel"])
+        kennung = await titelsicherung.sichern(empfang, a["von"] + v, a["bis"] + v, a["titel"], wunsch.ziel)
     except titelsicherung.SicherungFehler as f:
         raise HTTPException(409, str(f)) from f
     return {"session_id": kennung, "titel": a["titel"]}

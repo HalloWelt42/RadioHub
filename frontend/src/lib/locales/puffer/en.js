@@ -2,6 +2,7 @@
  * Buffer and recording (RAD-46). Included in locales/en.js as area "puffer".
  */
 export default {
+  zielHinweis: 'New tracks are added to "{name}"', zielLoesen: 'Release target: new tracks become their own recording again',
   zeitversatz: 'Time shift',
   titelZurueck: 'Track',
   titelZurueckHilfe: 'To the start of this track; shortly after the start: previous track',

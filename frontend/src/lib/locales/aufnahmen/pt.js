@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'a gravar', zaehlerHilfe: 'Total de gravações para a seleção, não só as carregadas', zaehlerWolkeHilfe: 'Ficheiros de áudio nesta pasta',
   aktualisierenHilfe: 'Recarregar a lista', aktiveFilter: 'Filtros ativos', geladen: 'carregadas', nochmal: 'Tentar de novo',
   ladenFehler: 'Não foi possível carregar', gespeichert: 'Gravação guardada em {name}', erstBeenden: 'Termine primeiro a gravação, depois ouça', begonnen: 'Peça iniciada', feinschnittLaeuft: 'As partes estão a ser cortadas com precisão nas pausas; já se pode ouvir.',
+  zumSender: 'Ir para a estação; mais faixas juntam-se a esta gravação', senderWeg: 'Esta estação já não existe', kommtZu: 'junta-se a {name}', wirdAngehaengt: 'A gravação junta-se a {name}',
   wirdBeendet: 'A terminar', schneidet: 'a ser cortada', voll: 'espaço cheio', bestand: '{n} gravações, {titel} faixas',
   verschoben: 'Movida para {name}', wolkeGesperrt: 'A Kellerwolke não dá acesso a esta pasta',
   sort_sender: 'Ordenar por estação', sort_datum: 'Ordenar por data, mais recentes primeiro', sort_dauer: 'Ordenar por duração',

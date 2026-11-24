@@ -2,6 +2,7 @@
  * RadioHub - Russian translations: buffer and recording.
  */
 export default {
+  zielHinweis: 'Новые треки добавляются к "{name}"', zielLoesen: 'Снять цель: новые треки снова станут отдельной записью',
   zeitversatz: 'Задержка эфира',
   titelZurueck: 'Трек',
   titelZurueckHilfe: 'К началу этого трека, сразу после начала: предыдущий трек',

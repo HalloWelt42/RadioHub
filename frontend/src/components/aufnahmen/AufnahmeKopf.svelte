@@ -8,7 +8,7 @@
   import { vorzeitig, zumHoeren, type Aufnahme, type Aufnahmeordner } from "../../lib/aufnahmen";
   import Logo from "../radio/Logo.svelte";
 
-  let { aufnahme: a, ordner, titelwechsel, zip, eineDatei, kannSchneiden, kannVerwalten, onhoeren, onschneiden, onteilen, onverschieben, onloeschen }: {
+  let { aufnahme: a, ordner, titelwechsel, zip, eineDatei, kannSchneiden, kannVerwalten, onhoeren, onschneiden, onteilen, onverschieben, onloeschen, onsender }: {
     aufnahme: Aufnahme;
     ordner: Aufnahmeordner[];
     titelwechsel: number;
@@ -21,6 +21,8 @@
     onteilen: () => Promise<void>;
     onverschieben: (ordnerId: number | null) => void;
     onloeschen: () => Promise<void>;
+    /** zum Sender dieser Aufnahme, weitere Titel kommen dazu (RAD-145) */
+    onsender?: () => void;
   } = $props();
 
   let fragt = $state(false);
@@ -37,9 +39,11 @@
 </script>
 
 <section class="rh-abo-kopf rh-a-kopf">
-  <Logo uuid={a.senderUuid} name={a.sender} logo="" />
+  {#if onsender && a.senderUuid}
+    <button class="rh-zum-sender" type="button" title={t("aufnahmenAnsicht.zumSender")} aria-label="{t('aufnahmenAnsicht.zumSender')}: {a.sender}" onclick={onsender}><Logo uuid={a.senderUuid} name={a.sender} logo="" /></button>
+  {:else}<Logo uuid={a.senderUuid} name={a.sender} logo="" />{/if}
   <div class="rh-abo-text">
-    <h2>{a.sender}</h2>
+    <h2>{#if onsender && a.senderUuid}<button class="rh-zum-sender" type="button" title={t("aufnahmenAnsicht.zumSender")} onclick={onsender}>{a.sender}</button>{:else}{a.sender}{/if}</h2>
     <p class="rh-still">{datum(a.beginn)} · {a.art === "puffer" ? t("aufnahmenAnsicht.puffer") : t("aufnahmenAnsicht.direkt")} · {ordnerName}</p>
     <div class="rh-abo-zahlen">
       <span><b>{a.titelzahl}</b>{t("aufnahmenAnsicht.titelzahl")}</span><span><b>{dauer(a.dauer)}</b>{t("aufnahmenAnsicht.lang")}</span>

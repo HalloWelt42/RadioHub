@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'nimmt auf', zaehlerHilfe: 'Aufnahmen gesamt für die Auswahl, nicht nur die geladenen', zaehlerWolkeHilfe: 'Audiodateien in diesem Ordner',
   aktualisierenHilfe: 'Liste neu laden', aktiveFilter: 'Aktive Filter', geladen: 'geladen', nochmal: 'Nochmal versuchen',
   ladenFehler: 'Laden hat nicht geklappt', gespeichert: 'Aufnahme gespeichert in {name}', erstBeenden: 'Erst die Aufnahme beenden, dann hören', begonnen: 'Begonnenes Stück', feinschnittLaeuft: 'Die Stücke werden an den Pausen fein geschnitten; hören geht schon.',
+  zumSender: 'Zum Sender; weitere Titel kommen zu dieser Aufnahme', senderWeg: 'Diesen Sender gibt es nicht mehr', kommtZu: 'kommt zu {name}', wirdAngehaengt: 'Aufnahme kommt zu {name}',
   wirdBeendet: 'Wird beendet', schneidet: 'wird geschnitten', voll: 'Platz voll', bestand: '{n} Aufnahmen, {titel} Titel',
   verschoben: 'Verschoben nach {name}', wolkeGesperrt: 'Die Kellerwolke gibt diesen Ordner nicht frei',
   sort_sender: 'Nach Sender sortieren', sort_datum: 'Nach Datum sortieren, neueste zuerst', sort_dauer: 'Nach Länge sortieren',

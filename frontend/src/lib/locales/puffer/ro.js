@@ -2,6 +2,7 @@
  * RadioHub - Romanian translations: buffer and recording (RAD-46).
  */
 export default {
+  zielHinweis: 'Titlurile noi se adaugă la "{name}"', zielLoesen: 'Eliberează ținta: titlurile noi devin din nou o înregistrare proprie',
   zeitversatz: 'Decalaj',
   titelZurueck: 'Piesă',
   titelZurueckHilfe: 'La începutul acestei piese, imediat după început: piesa anterioară',

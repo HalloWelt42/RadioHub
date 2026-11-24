@@ -2,6 +2,7 @@
  * RadioHub - Chinese (Simplified) translations: buffer and recording.
  */
 export default {
+  zielHinweis: '新曲目将添加到 "{name}"', zielLoesen: '解除目标：新曲目重新成为单独录音',
   zeitversatz: '时移',
   titelZurueck: '曲目',
   titelZurueckHilfe: '回到本曲开头；刚开始时：上一首',

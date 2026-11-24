@@ -4,7 +4,7 @@
 
 /** schneidet: beendet, die Stücke werden noch genau geschnitten (hören geht, ändern nicht); voll: endete, weil der Platz bis
  *  auf die Reserve belegt war */
-export type Aufnahmestatus = "fertig" | "laeuft" | "schneidet" | "voll" | "abgebrochen" | "unterbrochen";
+export type Aufnahmestatus = "fertig" | "laeuft" | "schneidet" | "voll" | "abgebrochen" | "unterbrochen" | "angehaengt";
 export const zumHoeren = (a: Aufnahme): boolean => a.status !== "laeuft";
 export const zumAendern = (a: Aufnahme): boolean => a.status !== "laeuft" && a.status !== "schneidet";
 /** eine Aufnahme, die sich noch ändert: ihre Ansicht holt nach */
@@ -33,6 +33,8 @@ export interface Aufnahme {
   /** alle Stücke */
   stueckzahl: number;
   status: Aufnahmestatus;
+  /** an diese Aufnahme kommt sie, sobald sie fertig ist (RAD-145) */
+  zielId: string | null;
   /** Stand des Feinschnitts, solange er arbeitet */
   arbeit: { fertig: number; gesamt: number } | null;
   /** Lücken laut Messung beim Aufnehmen */

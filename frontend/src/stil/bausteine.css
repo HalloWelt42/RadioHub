@@ -121,6 +121,9 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 @media (max-width: 560px) { .rh-werbehinweis .rh-werbe-mehr { display: none; } }
 .rh-aufnahmehinweis > i { color: var(--led-rot); }
 .rh-band span { min-width: 0; }
+/* Ziel neuer Titel (RAD-145): bleibt stehen, darum eine Zeile */
+:root:not([data-kanzel]) .rh-band.rh-zielhinweis { flex-wrap: nowrap; padding-block: 6px; }
+:root:not([data-kanzel]) .rh-band.rh-zielhinweis > span { flex: 1; }
 @keyframes rh-ein { from { opacity: 0; translate: 0 10px; } }
 
 /* Mit Kanzel (RAD-74, Vorschlag C "Lasche"): die Meldung liegt hinter der Kanzel und fährt als Lasche über der Lautstärke

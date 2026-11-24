@@ -35,6 +35,7 @@ export default {
   nimmtAuf: '録音中', zaehlerHilfe: '読み込み済みだけでなく、選択条件に合う全録音数', zaehlerWolkeHilfe: 'このフォルダの音声ファイル',
   aktualisierenHilfe: 'リストを再読み込み', aktiveFilter: '有効なフィルター', geladen: '読み込み済み', nochmal: '再試行',
   ladenFehler: '読み込めませんでした', gespeichert: '録音を {name} に保存しました', erstBeenden: '先に録音を終了してから聞いてください', begonnen: '途中のトラック', feinschnittLaeuft: '休止部分で正確に分割しています。再生はもうできます。',
+  zumSender: '放送局へ。新しい曲はこの録音に追加されます', senderWeg: 'この放送局はもうありません', kommtZu: '{name} に追加されます', wirdAngehaengt: '録音は {name} に追加されます',
   wirdBeendet: '終了中', schneidet: '分割中', voll: '容量不足', bestand: '録音 {n} 件、曲 {titel} 件',
   verschoben: '{name} に移動しました', wolkeGesperrt: 'Kellerwolke がこのフォルダへのアクセスを許可していません',
   sort_sender: '放送局順に並べ替え', sort_datum: '日付順 (新しい順) に並べ替え', sort_dauer: '長さ順に並べ替え',

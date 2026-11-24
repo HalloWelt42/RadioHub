@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'kaydediyor', zaehlerHilfe: 'Seçim için toplam kayıt, yalnızca yüklenenler değil', zaehlerWolkeHilfe: 'Bu klasördeki ses dosyaları',
   aktualisierenHilfe: 'Listeyi yeniden yükle', aktiveFilter: 'Etkin filtreler', geladen: 'yüklendi', nochmal: 'Tekrar dene',
   ladenFehler: 'Yükleme başarısız oldu', gespeichert: 'Kayıt {name} içine kaydedildi', erstBeenden: 'Önce kaydı bitir, sonra dinle', begonnen: 'Başlanan parça', feinschnittLaeuft: 'Parçalar duraklamalarda hassas şekilde kesiliyor; şimdiden dinlenebilir.',
+  zumSender: 'İstasyona git; yeni parçalar bu kayda eklenir', senderWeg: 'Bu istasyon artık yok', kommtZu: 'şuna eklenir: {name}', wirdAngehaengt: 'Kayıt şuna eklenir: {name}',
   wirdBeendet: 'Bitiriliyor', schneidet: 'kesiliyor', voll: 'alan dolu', bestand: '{n} kayıt, {titel} parça',
   verschoben: '{name} içine taşındı', wolkeGesperrt: 'Kellerwolke bu klasörü paylaşmıyor',
   sort_sender: 'İstasyona göre sırala', sort_datum: 'Tarihe göre sırala, en yeni önce', sort_dauer: 'Süreye göre sırala',

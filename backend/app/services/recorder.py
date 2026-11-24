@@ -41,7 +41,7 @@ from typing import Awaitable, Callable, Optional
 from ..ablage import ablage, orte
 from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
-from .aufnahmen import TITEL_ZAEHLT, aufnahmen
+from .aufnahmen import TITEL_ZAEHLT, AufnahmeFehler, aufnahmen
 from .config_service import config_service
 from . import feinschnitt_lauf, werbestellen
 from .laufschnitt import LANG_S, Laufschnitt
@@ -59,6 +59,10 @@ GB = 1024 ** 3
 ABLAGE_WIEDER_S = 30.0
 #: so viele Titel nennt der Stand einer laufenden Aufnahme (eine lange hat Tausende)
 TITEL_IM_STAND = 100
+
+#: FFmpeg schreibt sonst in Blöcken von 256 KB (bei 128 kbit/s alle 16 s): das galt als Aussetzer, bei kleinen Bitraten sogar als
+#: Stillstand (RAD-146), und ein Absturz kostete den ganzen Block
+GLEICH_SCHREIBEN = ("-flush_packets", "1")
 
 # Stall-Detection: Nach so vielen Pruefungen ohne Wachstum -> stalled
 STALL_CHECK_INTERVAL = 10   # Sekunden zwischen Pruefungen
@@ -305,7 +309,7 @@ class RecorderManager:
             return [
                 "ffmpeg", "-y",
                 *self._eingang(session),
-                "-c:a", "copy",
+                "-c:a", "copy", *GLEICH_SCHREIBEN,
                 str(output_file)
             ]
         else:
@@ -319,6 +323,7 @@ class RecorderManager:
                 "-c:a", "libmp3lame", "-b:a", br,
                 "-ac", "2",       # Stereo
                 "-ar", "44100",   # Samplerate
+                *GLEICH_SCHREIBEN,
                 str(output_file)
             ]
 
@@ -356,10 +361,10 @@ class RecorderManager:
                 await process.wait()
 
     async def start(self, station_uuid: str, station_name: str, stream_url: str,
-                    bitrate: int = 0, von_s: Optional[float] = None, bis_s: Optional[float] = None) -> dict:
+                    bitrate: int = 0, von_s: Optional[float] = None, bis_s: Optional[float] = None, ziel_id: Optional[str] = None) -> dict:
         """Startet Aufnahme mit Live-Split bei ICY-Titelwechsel. `von_s`, `bis_s`: Abschnitt auf der Zeitachse des
         laufenden Empfangs (Aufnahme ab hier, Bereich sichern); ohne `von_s` beginnt sie bei laufendem Empfang am
-        Anfang des laufenden Titels, sonst jetzt."""
+        Anfang des laufenden Titels, sonst jetzt. `ziel_id`: ist sie fertig, kommt sie an diese Aufnahme (RAD-145)."""
 
         if self.active_session:
             return {
@@ -370,6 +375,12 @@ class RecorderManager:
 
         if (voll := await self._platz_voll()):
             return {"success": False, "error": voll}
+
+        from .anhaengen import ziel_pruefen
+        try:
+            ziel_pruefen(ziel_id, station_uuid)
+        except AufnahmeFehler as f:
+            return {"success": False, "error": str(f)}
 
         # Aktiven Aufnahmeordner bestimmen
         folder_name, folder_id = get_active_recording_folder()
@@ -454,11 +465,11 @@ class RecorderManager:
                 c.execute('''INSERT INTO sessions
                     (id, station_uuid, station_name, stream_url, bitrate,
                      start_time, file_path, status, codec, file_format,
-                     meta_file_path, folder_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     meta_file_path, folder_id, ziel_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     (session_id, station_uuid, station_name, stream_url, bitrate,
                      session.start_time.isoformat(), ablage_ordner, "recording",
-                     codec, ext, None, folder_id))
+                     codec, ext, None, folder_id, ziel_id))
 
             mode = "Stream-Copy" if codec else "MP3-Encoding"
             logger.info(f"REC gestartet: {session_id} ({mode}, {codec or 'fallback'}, Live-Split)")
@@ -1054,6 +1065,8 @@ class RecorderManager:
                  sum(s["file_size"] or 0 for s in segmente), "feinschnitt" if schneiden else status, quality_json, session.id))
         if schneiden:
             self._feinschnitt_task = asyncio.create_task(self._feinschnitt(session, status))
+        else:
+            self._feinschnitt_task = asyncio.create_task(self._ans_ziel(session, status))
 
     async def feinschnitt_abwarten(self) -> None:
         """Bis ein laufender Feinschnitt fertig ist (Tests, Herunterfahren)."""
@@ -1073,7 +1086,19 @@ class RecorderManager:
             with db_session() as conn:
                 conn.execute("UPDATE sessions SET file_size = (SELECT COALESCE(SUM(file_size), 0) FROM segments WHERE session_id = ?) "
                              "WHERE id = ?", (session.id, session.id))
+            await self._ans_ziel(session, status)
             feinschnitt_lauf.status_setzen(session.id, status, nur_wenn="feinschnitt")
+
+    async def _ans_ziel(self, session: RecordingSession, status: str) -> None:
+        """Gehört die fertige Aufnahme an eine andere (RAD-145), kommt sie dorthin; sonst bleibt sie eine eigene."""
+        if not (aufnahmen.sitzung(session.id) or {}).get("ziel_id"):
+            return
+        from .anhaengen import anhaengen
+        try:
+            await anhaengen(session.id, status)
+        except Exception as f:
+            logger.warning(f"REC {session.id} bleibt eine eigene Aufnahme: {f}")
+            await self.melden("radio.aufnahme", f"Aufnahme {session.station_name} wurde nicht angehängt und bleibt eine eigene: {f}")
 
     def messlage(self) -> dict:
         """Für den Messmodus: die laufende Aufnahme (Ton gegen Uhr, was lokal liegt, wie weit der Feinschnitt ist)."""
@@ -1320,7 +1345,7 @@ class RecorderManager:
         Ordner, sonst die Kennung) und Suche in Sender und Titeln; dazu die Zahl aller Treffer. Hängengebliebene
         'recording'-Einträge ohne laufende Aufnahme werden 'interrupted'. Fehlende Dateien in der Ablage bereinigt nur
         `repair` auf Anfrage, nie das Listen."""
-        bedingungen, werte = [], []
+        bedingungen, werte = ["s.status <> 'angehaengt'"], []
         if ordner == "ohne":
             bedingungen.append("s.folder_id IS NULL")
         elif ordner:
@@ -1330,14 +1355,14 @@ class RecorderManager:
             muster = f"%{suche.strip()}%"
             bedingungen.append("(s.station_name LIKE ? OR EXISTS (SELECT 1 FROM segments t WHERE t.session_id = s.id AND t.title LIKE ?))")
             werte += [muster, muster]
-        wo = f"WHERE {' AND '.join(bedingungen)}" if bedingungen else ""
+        wo = f"WHERE {' AND '.join(bedingungen)}"
         reihe = self.SORTIERUNG.get(sort, "s.start_time")
         richtung = "DESC" if absteigend else "ASC"
         with db_session() as conn:
             c = conn.cursor()
             gesamt = c.execute(f"SELECT COUNT(*) FROM sessions s {wo}", werte).fetchone()[0]
             titel = c.execute(f"SELECT COUNT(*) FROM sessions s LEFT JOIN segments seg ON seg.session_id = s.id "
-                              f"{wo} {'AND' if wo else 'WHERE'} {TITEL_ZAEHLT}", werte).fetchone()[0]
+                              f"{wo} AND {TITEL_ZAEHLT}", werte).fetchone()[0]
             c.execute(f'''SELECT s.*, COUNT(seg.id) as segment_count, COUNT(CASE WHEN {TITEL_ZAEHLT} THEN 1 END) AS titel_count
                 FROM sessions s
                 LEFT JOIN segments seg ON seg.session_id = s.id

@@ -587,7 +587,12 @@ CREATE TABLE podcast_fassungen (
 ALTER TABLE podcast_episodes ADD COLUMN fassung TEXT NOT NULL DEFAULT '';
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10, STUFE_11, STUFE_12]
+# Stufe 13 (RAD-145): eine Aufnahme kann an eine andere angehängt werden; hier steht, an welche
+STUFE_13 = """
+ALTER TABLE sessions ADD COLUMN ziel_id TEXT;
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10, STUFE_11, STUFE_12, STUFE_13]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

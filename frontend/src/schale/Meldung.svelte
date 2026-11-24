@@ -8,6 +8,8 @@
   import { t } from "../lib/i18n.svelte.js";
   import { aktualisierung, neuLaden, spaeter } from "../lib/aktualisierung.svelte.js";
   import { werbehinweis } from "../spieler/werbehinweis.svelte";
+  import { zielLoesen } from "../spieler/aufnahmeziel";
+  import { datum } from "../lib/aufnahmen/anzeige";
   import { puffer } from "../spieler/puffer.svelte";
   import { bei } from "../lib/radio/abschnitte";
 
@@ -22,6 +24,13 @@
   const werbeSchluessel = (w: { art: string; dauer: number | null; werbender?: string; herkunft: string }) =>
     `${w.art}|${w.dauer ?? ""}|${w.werbender ?? ""}|${w.herkunft}`;
 
+  // Ziel der nächsten Aufnahme (RAD-145), solange sein Sender läuft; gelöst wird es mit dem X, während aufgenommen wird nicht mehr
+  const ziel = $derived.by(() => {
+    const z = appState.aufnahmeziel as { sender: string; senderUuid: string; beginn: string } | null;
+    const uuid = (appState.currentStation as { uuid?: string } | null)?.uuid;
+    return z && z.senderUuid === uuid && (appState.isPlaying || appState.isPaused) ? z : null;
+  });
+
   // Nach dem Start einer Aufnahme aus dem Zeitversatz (RAD-46): ab welchem Titel und wie viel aus dem Puffer kam; steht,
   // bis man es schließt, höchstens 20 Sekunden
   const AUFNAHME_HINWEIS_MS = 20000;
@@ -30,7 +39,7 @@
     const sitzung = appState.recordingSession as string | null, vorlauf = appState.recordingVorlaufS as number;
     if (!appState.isRecording || !sitzung || !(vorlauf > 0) || weg === sitzung) return null;
     const a = bei(puffer.abschnitte, puffer.ende - (appState.recordingElapsed as number));
-    return { sitzung, vorlauf, titel: a?.titel ?? "" };
+    return { sitzung, vorlauf, titel: a?.titel || (appState.streamTitle as string | null) || "" };
   });
   // die Frist hängt an der Aufnahme, nicht am Hinweis: der rechnet mit der laufenden Zeit und begänne sie sonst jede Sekunde neu (RAD-139)
   const hinweisSitzung = $derived(aufnahmeHinweis?.sitzung ?? null);
@@ -75,6 +84,11 @@
   <div class="rh-band" class:gut={meldung.type === "success"} class:fehler={meldung.type === "error"} role="status" aria-live="polite">
     <i class="fa-solid {SYMBOL[meldung.type ?? 'info'] ?? SYMBOL.info}"></i><span>{meldung.message}</span>
     {@render zu(() => (appState.toast = null))}
+  </div>
+{:else if ziel}
+  <div class="rh-band rh-zielhinweis" role="status" aria-live="polite">
+    <i class="fa-solid fa-folder-plus"></i><span>{t("puffer.zielHinweis", { name: `${ziel.sender}, ${datum(ziel.beginn)}` })}</span>
+    {#if !appState.isRecording}<button class="rund rh-band-zu" type="button" aria-label={t("puffer.zielLoesen")} title={t("puffer.zielLoesen")} onclick={zielLoesen}><i class="fa-solid fa-xmark"></i></button>{/if}
   </div>
 {:else if aktualisierung.neu && !aktualisierung.spaeter}
   <div class="rh-band" role="status" aria-live="polite">

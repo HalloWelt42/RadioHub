@@ -11,6 +11,7 @@
   import { Suchverlauf } from "../../lib/radio/suchverlauf";
   import { aufnahmeliste as liste, aufnahmequelle as quelle, aufnahmezustand as zustand, ordnerliste, reiheAus, imGange, vorzeitig, zumAendern, zumHoeren, type Aufnahme, type Spieleintrag, type Titel } from "../../lib/aufnahmen";
   import { datum, zeit } from "../../lib/aufnahmen/anzeige";
+  import { zumSender } from "../../spieler/aufnahmeziel";
   import AufnahmeKopf from "../aufnahmen/AufnahmeKopf.svelte";
   import Logo from "../radio/Logo.svelte";
   import Suchfeld from "../radio/Suchfeld.svelte";
@@ -125,7 +126,7 @@
       <div class="tf-a-detail">
         <AufnahmeKopf aufnahme={gewaehlt} ordner={ordnerliste.ordner} titelwechsel={0} zip={quelle.alsZip(gewaehlt.id)} eineDatei={quelle.alsEineDatei(gewaehlt.id)}
                       kannSchneiden={false} kannVerwalten={quelle.faehig.verwalten && zumAendern(gewaehlt)} onhoeren={() => void hoeren(gewaehlt!)}
-                      onschneiden={() => undefined} onteilen={async () => undefined} onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} />
+                      onschneiden={() => undefined} onteilen={async () => undefined} onverschieben={(o) => verschieben(gewaehlt!, o)} onloeschen={() => loeschen(gewaehlt!)} onsender={zumHoeren(gewaehlt) ? () => void zumSender(gewaehlt!) : undefined} />
       </div>
       {#each titel as x (x.id)}
         {@const spielt = jetzt?.path === x.pfad}
@@ -164,7 +165,8 @@
           {@const spielt = jetzt?.session_id === a.id}
           <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
           <div class="tf-sender" class:spielt onclick={() => zustand.gehen((v) => ({ ...v, aufnahme: a.id }))}>
-            <Logo uuid={a.senderUuid} name={a.sender} logo="" />
+            {#if a.senderUuid}<button class="rh-zum-sender" type="button" title={t("aufnahmenAnsicht.zumSender")} aria-label="{t('aufnahmenAnsicht.zumSender')}: {a.sender}"
+                    onclick={(e) => { e.stopPropagation(); void zumSender(a); }}><Logo uuid={a.senderUuid} name={a.sender} logo="" /></button>{:else}<Logo uuid={a.senderUuid} name={a.sender} logo="" />{/if}
             <div><b>{a.sender}</b>
               <div class="tf-meta"><span>{datum(a.beginn)}</span><span>{ordnerName(a.ordnerId)}</span>
                 {#if a.status === "laeuft"}<span class="rh-a-warn">{t("aufnahmenAnsicht.nimmtAuf")}</span>

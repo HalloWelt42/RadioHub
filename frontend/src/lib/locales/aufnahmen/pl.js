@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'nagrywa', zaehlerHilfe: 'Łączna liczba nagrań dla wyboru, nie tylko wczytanych', zaehlerWolkeHilfe: 'Pliki audio w tym folderze',
   aktualisierenHilfe: 'Wczytaj listę ponownie', aktiveFilter: 'Aktywne filtry', geladen: 'wczytano', nochmal: 'Spróbuj ponownie',
   ladenFehler: 'Wczytywanie nie powiodło się', gespeichert: 'Nagranie zapisane w {name}', erstBeenden: 'Najpierw zakończ nagrywanie, potem słuchaj', begonnen: 'Rozpoczęty fragment', feinschnittLaeuft: 'Fragmenty są dokładnie cięte na pauzach; słuchać można już teraz.',
+  zumSender: 'Do stacji; kolejne utwory trafią do tego nagrania', senderWeg: 'Tej stacji już nie ma', kommtZu: 'trafi do {name}', wirdAngehaengt: 'Nagranie trafi do {name}',
   wirdBeendet: 'Kończenie', schneidet: 'trwa cięcie', voll: 'brak miejsca', bestand: '{n} nagrań, {titel} utworów',
   verschoben: 'Przeniesiono do {name}', wolkeGesperrt: 'Kellerwolke nie udostępnia tego folderu',
   sort_sender: 'Sortuj według stacji', sort_datum: 'Sortuj według daty, najnowsze najpierw', sort_dauer: 'Sortuj według długości',

@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'optager', zaehlerHilfe: 'Optagelser i alt for udvalget, ikke kun de indlæste', zaehlerWolkeHilfe: 'Lydfiler i denne mappe',
   aktualisierenHilfe: 'Indlæs listen igen', aktiveFilter: 'Aktive filtre', geladen: 'indlæst', nochmal: 'Prøv igen',
   ladenFehler: 'Indlæsningen mislykkedes', gespeichert: 'Optagelse gemt i {name}', erstBeenden: 'Afslut først optagelsen, lyt så', begonnen: 'Påbegyndt stykke', feinschnittLaeuft: 'Stykkerne klippes præcist ved pauserne; du kan allerede lytte.',
+  zumSender: 'Til stationen; flere numre føjes til denne optagelse', senderWeg: 'Denne station findes ikke længere', kommtZu: 'føjes til {name}', wirdAngehaengt: 'Optagelsen føjes til {name}',
   wirdBeendet: 'Afsluttes', schneidet: 'klippes', voll: 'lager fuldt', bestand: '{n} optagelser, {titel} numre',
   verschoben: 'Flyttet til {name}', wolkeGesperrt: 'Kellerwolke giver ikke adgang til denne mappe',
   sort_sender: 'Sortér efter station', sort_datum: 'Sortér efter dato, nyeste først', sort_dauer: 'Sortér efter længde',

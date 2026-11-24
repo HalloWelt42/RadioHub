@@ -3,6 +3,7 @@
  * Telefon), Hinweis nach dem Start einer Aufnahme. Eingebunden in locales/de.js als Bereich "puffer".
  */
 export default {
+  zielHinweis: 'Neue Titel kommen zu "{name}"', zielLoesen: 'Ziel lösen: neue Titel werden wieder eine eigene Aufnahme',
   zeitversatz: 'Zeitversatz',
   titelZurueck: 'Titel',
   titelZurueckHilfe: 'An den Anfang dieses Titels, kurz nach dem Anfang: vorheriger Titel',

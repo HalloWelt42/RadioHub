@@ -171,20 +171,20 @@ class Puffer {
   /** Aufnahme ab dem Anfang eines Abschnitts (Sekunden des Puffers), läuft bis Stopp; ohne `von` am Anfang des
    *  laufenden Titels (wie die Taste Aufnahme) */
   async aufnehmenAb(von?: number): Promise<Aufnahmestart> {
-    const r = await this.a<Aufnahmestart>("/api/hls/aufnahme", { methode: "POST", daten: { von_s: von ?? null } });
+    const r = await this.a<Aufnahmestart>("/api/hls/aufnahme", { methode: "POST", daten: { von_s: von ?? null, ziel: engine.aufnahmeziel() } });
     await engine.checkAndRecoverRecordingState();
     return r;
   }
 
   /** den fertigen Titel als eigene Aufnahme sichern (RAD-132), auch während eine Aufnahme läuft */
   async titelSichern(a: Abschnitt): Promise<void> {
-    const r = await this.a<{ session_id: string }>("/api/hls/titel", { methode: "POST", daten: { bei_s: (a.von + a.bis) / 2 } });
+    const r = await this.a<{ session_id: string }>("/api/hls/titel", { methode: "POST", daten: { bei_s: (a.von + a.bis) / 2, ziel: engine.aufnahmeziel() } });
     this.geladen = this.geladen.map((x) => (x.von === a.von ? { ...x, gesichert: r.session_id } : x));
   }
 
   /** Einen Bereich als fertige Aufnahme sichern; sie endet von selbst an seinem Ende */
   async bereichSichern(von: number, bis: number): Promise<Aufnahmestart> {
-    const r = await this.a<Aufnahmestart>("/api/hls/aufnahme", { methode: "POST", daten: { von_s: von, bis_s: bis } });
+    const r = await this.a<Aufnahmestart>("/api/hls/aufnahme", { methode: "POST", daten: { von_s: von, bis_s: bis, ziel: engine.aufnahmeziel() } });
     await engine.checkAndRecoverRecordingState();
     return r;
   }

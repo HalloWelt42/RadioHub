@@ -39,6 +39,8 @@ export const appState = $state({
   isRecording: false,
   recordingType: 'none',    // 'none' | 'direct'
   recordingVorlaufS: 0,     // so viel Ton hatte die Aufnahme beim Start (aus dem Puffer, RAD-46)
+  /** @type {{ id: string, sender: string, senderUuid: string, beginn: string } | null} neue Aufnahmen dieses Senders kommen an diese (RAD-145) */
+  aufnahmeziel: null,
   recordingStoppt: false,   // die Aufnahme wird gerade beendet (Ablegen dauert einige Sekunden)
   recordingSession: null,
   recordingStationUuid: null,  // Sender der laufenden Aufnahme (sie läuft auch beim Senderwechsel weiter, RAD-46)

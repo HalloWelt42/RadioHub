@@ -38,7 +38,7 @@ async def get_folders():
         c.execute(f'''SELECT rf.*, COUNT(DISTINCT s.id) as session_count,
                    COUNT(CASE WHEN {TITEL_ZAEHLT} THEN 1 END) AS titel_count
             FROM recording_folders rf
-            LEFT JOIN sessions s ON s.folder_id = rf.id
+            LEFT JOIN sessions s ON s.folder_id = rf.id AND s.status <> 'angehaengt'
             LEFT JOIN segments seg ON seg.session_id = s.id
             GROUP BY rf.id
             ORDER BY rf.sort_order, rf.id''')
@@ -81,7 +81,7 @@ async def delete_folder(folder_id: int):
         if not folder:
             raise HTTPException(404, "Ordner nicht gefunden")
 
-        c.execute("SELECT COUNT(*) FROM sessions WHERE folder_id = ?", (folder_id,))
+        c.execute("SELECT COUNT(*) FROM sessions WHERE folder_id = ? AND status <> 'angehaengt'", (folder_id,))
         count = c.fetchone()[0]
         if count > 0:
             raise HTTPException(400, f"Ordner enthält noch {count} Aufnahmen")

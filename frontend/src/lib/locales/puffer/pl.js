@@ -3,6 +3,7 @@
  * Included in locales/pl.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Nowe utwory trafiają do "{name}"', zielLoesen: 'Zwolnij cel: nowe utwory znów będą osobnym nagraniem',
   zeitversatz: 'Przesunięcie czasu',
   titelZurueck: 'Utwór',
   titelZurueckHilfe: 'Na początek tego utworu, tuż po początku: poprzedni utwór',

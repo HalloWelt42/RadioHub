@@ -30,6 +30,13 @@
 /* Feinschnitt nach dem Aufnehmen (RAD-45): kurzer Hinweis über den Stücken */
 .rh-a-feinschnitt { margin-bottom: 8px; font-size: var(--klein); }
 .rh-a-arbeit { display: inline-flex; gap: 6px; align-items: center; }
+/* Logo und Name führen zum Sender (RAD-145): Verweise ohne eigene Gestalt */
+.rh-zum-sender { padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; border-radius: var(--r2); }
+.rh-sender-kern > .rh-zum-sender { grid-area: logo; }
+.rh-abo-kopf > .rh-zum-sender { grid-area: bild; align-self: start; }
+.rh-zum-sender:hover { color: var(--akzent); }
+.rh-zum-sender:hover .rh-logo-bild { box-shadow: 0 0 0 2px var(--akzent); }
+.rh-zum-sender:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
 /* Zahl der Aufnahmen und ihrer Titel (RAD-139) */
 .rh-a-bestand { display: inline-flex; gap: 8px; align-items: baseline; white-space: nowrap; }
 .rh-a-bestand small { display: inline-flex; gap: 4px; align-items: baseline; font-size: .85em; color: var(--text-3); }

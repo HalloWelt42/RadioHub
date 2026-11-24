@@ -35,6 +35,7 @@ export default {
   nimmtAuf: '录音中', zaehlerHilfe: '符合所选条件的录音总数，而非仅已加载的', zaehlerWolkeHilfe: '此文件夹中的音频文件',
   aktualisierenHilfe: '重新加载列表', aktiveFilter: '已启用的筛选', geladen: '已加载', nochmal: '重试',
   ladenFehler: '加载失败', gespeichert: '录音已保存到 {name}', erstBeenden: '请先结束录音再收听', begonnen: '未完成的片段', feinschnittLaeuft: '正在按停顿精确剪切；现在就可以收听。',
+  zumSender: '前往电台；新曲目会添加到此录音', senderWeg: '此电台已不存在', kommtZu: '将添加到 {name}', wirdAngehaengt: '录音将添加到 {name}',
   wirdBeendet: '正在结束', schneidet: '正在剪切', voll: '空间已满', bestand: '{n} 个录音，{titel} 首曲目',
   verschoben: '已移到 {name}', wolkeGesperrt: 'Kellerwolke 不允许访问此文件夹',
   sort_sender: '按电台排序', sort_datum: '按日期排序，最新在前', sort_dauer: '按时长排序',

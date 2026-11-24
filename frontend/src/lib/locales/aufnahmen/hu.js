@@ -35,6 +35,7 @@ export default {
   nimmtAuf: 'felvesz', zaehlerHilfe: 'Összes felvétel a kiválasztásra, nem csak a betöltöttek', zaehlerWolkeHilfe: 'Hangfájlok ebben a mappában',
   aktualisierenHilfe: 'Lista újratöltése', aktiveFilter: 'Aktív szűrők', geladen: 'betöltve', nochmal: 'Újrapróbálás',
   ladenFehler: 'A betöltés nem sikerült', gespeichert: 'Felvétel mentve ide: {name}', erstBeenden: 'Előbb fejezd be a felvételt, aztán hallgasd', begonnen: 'Megkezdett darab', feinschnittLaeuft: 'A darabokat a szüneteknél pontosan vágjuk; hallgatni már lehet.',
+  zumSender: 'Az adóhoz; a további számok ehhez a felvételhez kerülnek', senderWeg: 'Ez az adó már nem létezik', kommtZu: 'ide kerül: {name}', wirdAngehaengt: 'A felvétel ide kerül: {name}',
   wirdBeendet: 'Befejezés', schneidet: 'vágás alatt', voll: 'a hely betelt', bestand: '{n} felvétel, {titel} szám',
   verschoben: 'Áthelyezve ide: {name}', wolkeGesperrt: 'A Kellerwolke nem osztja meg ezt a mappát',
   sort_sender: 'Rendezés adó szerint', sort_datum: 'Rendezés dátum szerint, legújabb elöl', sort_dauer: 'Rendezés hossz szerint',

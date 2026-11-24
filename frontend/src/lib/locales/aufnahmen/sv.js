@@ -37,6 +37,7 @@ export default {
   nimmtAuf: 'spelar in', zaehlerHilfe: 'Totalt antal inspelningar för urvalet, inte bara de inlästa', zaehlerWolkeHilfe: 'Ljudfiler i den här mappen',
   aktualisierenHilfe: 'Ladda om listan', aktiveFilter: 'Aktiva filter', geladen: 'inlästa', nochmal: 'Försök igen',
   ladenFehler: 'Laddningen misslyckades', gespeichert: 'Inspelningen sparad i {name}', erstBeenden: 'Avsluta inspelningen först, lyssna sedan', begonnen: 'Påbörjat stycke', feinschnittLaeuft: 'Delarna klipps exakt vid pauserna; det går redan att lyssna.',
+  zumSender: 'Till stationen; fler låtar läggs till denna inspelning', senderWeg: 'Den här stationen finns inte längre', kommtZu: 'läggs till {name}', wirdAngehaengt: 'Inspelningen läggs till {name}',
   wirdBeendet: 'Avslutas', schneidet: 'klipps', voll: 'lagringen full', bestand: '{n} inspelningar, {titel} låtar',
   verschoben: 'Flyttad till {name}', wolkeGesperrt: 'Kellerwolke ger inte åtkomst till den här mappen',
   sort_sender: 'Sortera efter station', sort_datum: 'Sortera efter datum, nyaste först', sort_dauer: 'Sortera efter längd',

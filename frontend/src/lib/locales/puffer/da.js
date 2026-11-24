@@ -2,6 +2,7 @@
  * RadioHub - Danish translations: buffer and recording (RAD-46).
  */
 export default {
+  zielHinweis: 'Nye numre føjes til "{name}"', zielLoesen: 'Slip målet: nye numre bliver igen en egen optagelse',
   zeitversatz: 'Tidsforskydning',
   titelZurueck: 'Nummer',
   titelZurueckHilfe: 'Til starten af dette nummer, kort efter starten: forrige nummer',

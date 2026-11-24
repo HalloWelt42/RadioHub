@@ -2,6 +2,7 @@
  * RadioHub - Slovak translations: buffer and recording (RAD-46).
  */
 export default {
+  zielHinweis: 'Nové skladby sa pridávajú k "{name}"', zielLoesen: 'Uvoľniť cieľ: nové skladby budú opäť vlastná nahrávka',
   zeitversatz: 'Časový posun',
   titelZurueck: 'Skladba',
   titelZurueckHilfe: 'Na začiatok tejto skladby, krátko po začiatku: predchádzajúca skladba',

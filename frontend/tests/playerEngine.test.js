@@ -720,7 +720,17 @@ describe('PlayerEngine', () => {
         station_name: STATION_A.name,
         stream_url: STATION_A.url_resolved,
         bitrate: STATION_A.bitrate,
+        ziel: null,
       });
+    });
+
+    it('TC-R6: mit Ziel kommt sie an diese Aufnahme, aber nur beim Sender des Ziels (RAD-145)', async () => {
+      state.currentStation = STATION_A;
+      state.aufnahmeziel = { id: 'rec_alt', sender: 'A', senderUuid: STATION_A.uuid, beginn: '' };
+      await engine.startRecording();
+      expect(api.startRecording).toHaveBeenCalledWith(expect.objectContaining({ ziel: 'rec_alt' }));
+      state.aufnahmeziel = { id: 'rec_alt', sender: 'B', senderUuid: 'andere', beginn: '' };
+      expect(engine.aufnahmeziel()).toBe(null);
     });
   });
 

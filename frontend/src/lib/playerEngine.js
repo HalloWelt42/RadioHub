@@ -88,6 +88,12 @@ export function init(audioElement, appState) {
   }
 }
 
+/** Die Aufnahme, an die Neues dieses Senders kommt (RAD-145), sonst null */
+export function aufnahmeziel() {
+  const z = _appState?.aufnahmeziel;
+  return z && z.senderUuid === _appState.currentStation?.uuid ? z.id : null;
+}
+
 /** @type {((art: string, werte: Record<string, unknown>) => void) | null} */
 let _auffaellig = null;
 
@@ -802,7 +808,8 @@ export async function startRecording() {
       station_uuid: _appState.currentStation.uuid,
       station_name: _appState.currentStation.name,
       stream_url: _appState.currentStation.url_resolved || _appState.currentStation.url,
-      bitrate: _appState.currentStation.bitrate || 128
+      bitrate: _appState.currentStation.bitrate || 128,
+      ziel: aufnahmeziel()
     });
 
     if (result.success) {

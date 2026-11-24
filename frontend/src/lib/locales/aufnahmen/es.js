@@ -35,6 +35,7 @@ export default {
   nimmtAuf: "grabando", zaehlerHilfe: "Total de grabaciones de la selección, no solo las cargadas", zaehlerWolkeHilfe: "Archivos de audio de esta carpeta",
   aktualisierenHilfe: "Volver a cargar la lista", aktiveFilter: "Filtros activos", geladen: "cargadas", nochmal: "Reintentar",
   ladenFehler: "No se pudo cargar", gespeichert: "Grabación guardada en {name}", erstBeenden: "Termina primero la grabación y luego escucha", begonnen: "Fragmento empezado", feinschnittLaeuft: 'Las piezas se están cortando con precisión en las pausas; ya se puede escuchar.',
+  zumSender: 'Ir a la emisora; los nuevos títulos se añaden a esta grabación', senderWeg: 'Esta emisora ya no existe', kommtZu: 'se añade a {name}', wirdAngehaengt: 'La grabación se añade a {name}',
   wirdBeendet: 'Finalizando', schneidet: 'cortando', voll: 'espacio lleno', bestand: '{n} grabaciones, {titel} títulos',
   verschoben: "Movido a {name}", wolkeGesperrt: "La Kellerwolke no da acceso a esta carpeta",
   sort_sender: "Ordenar por emisora", sort_datum: "Ordenar por fecha, más recientes primero", sort_dauer: "Ordenar por duración",

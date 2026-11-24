@@ -3,6 +3,7 @@
  * Included in locales/no.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Nye spor legges til "{name}"', zielLoesen: 'Løs målet: nye spor blir igjen et eget opptak',
   zeitversatz: 'Tidsforskyvning',
   titelZurueck: 'Spor',
   titelZurueckHilfe: 'Til starten av dette sporet, rett etter starten: forrige spor',

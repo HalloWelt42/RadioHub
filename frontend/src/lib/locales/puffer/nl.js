@@ -3,6 +3,7 @@
  * Included in locales/nl.js as section "puffer".
  */
 export default {
+  zielHinweis: 'Nieuwe nummers komen bij "{name}"', zielLoesen: 'Doel loslaten: nieuwe nummers worden weer een eigen opname',
   zeitversatz: 'Tijdverschuiving',
   titelZurueck: 'Nummer',
   titelZurueckHilfe: 'Naar het begin van dit nummer, kort na het begin: vorig nummer',

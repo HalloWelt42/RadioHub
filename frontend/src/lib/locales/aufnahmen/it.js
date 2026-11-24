@@ -35,6 +35,7 @@ export default {
   nimmtAuf: "registra", zaehlerHilfe: "Totale delle registrazioni della selezione, non solo quelle caricate", zaehlerWolkeHilfe: "File audio in questa cartella",
   aktualisierenHilfe: "Ricarica l'elenco", aktiveFilter: "Filtri attivi", geladen: "caricate", nochmal: "Riprova",
   ladenFehler: "Caricamento non riuscito", gespeichert: "Registrazione salvata in {name}", erstBeenden: "Termina prima la registrazione, poi ascolta", begonnen: "Pezzo iniziato", feinschnittLaeuft: 'I pezzi vengono tagliati con precisione sulle pause; si può già ascoltare.',
+  zumSender: 'Alla stazione; altri titoli si aggiungono a questa registrazione', senderWeg: 'Questa stazione non esiste più', kommtZu: 'si aggiunge a {name}', wirdAngehaengt: 'La registrazione si aggiunge a {name}',
   wirdBeendet: 'In chiusura', schneidet: 'in taglio', voll: 'spazio pieno', bestand: '{n} registrazioni, {titel} titoli',
   verschoben: "Spostato in {name}", wolkeGesperrt: "La Kellerwolke non concede questa cartella",
   sort_sender: "Ordina per stazione", sort_datum: "Ordina per data, più recenti prima", sort_dauer: "Ordina per durata",

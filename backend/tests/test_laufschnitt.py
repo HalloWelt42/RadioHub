@@ -260,3 +260,20 @@ async def test_aufnahme_schneidet_waehrend_sie_laeuft(client, mp3, monkeypatch):
     assert namen == ["A - Eins", "B - Zwei", "C - Drei"], namen
     sitzung = aufnahmen.sitzung(ergebnis["session_id"])
     assert sitzung["status"] == "completed" and sitzung["file_size"] == sum(z["file_size"] for z in aufnahmen.segmente(sitzung["id"]))
+
+
+async def test_datei_waechst_stetig(mp3, tmp_path):  # noqa: F811
+    """RAD-146: das Wachsen der Datei ist das Lebenszeichen der Aufnahme; FFmpeg darf es nicht in großen Blöcken zurückhalten."""
+    ziel = tmp_path / "stueck.mp3"
+    p = await asyncio.create_subprocess_exec("ffmpeg", "-v", "error", "-y", "-f", "mp3", "-i", "pipe:0", "-c:a", "copy", *recorder_modul.GLEICH_SCHREIBEN, str(ziel),
+                                             stdin=asyncio.subprocess.PIPE)
+    p.stdin.write(mp3)
+    await p.stdin.drain()
+    for _ in range(40):
+        await asyncio.sleep(0.1)
+        if ziel.exists() and ziel.stat().st_size > 10_000:
+            break
+    groesse = ziel.stat().st_size if ziel.exists() else 0
+    p.stdin.close()
+    await p.wait()
+    assert groesse > 10_000, "weit unter 256 KB und doch schon auf der Platte"
