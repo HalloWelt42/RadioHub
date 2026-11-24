@@ -37,11 +37,11 @@ async def _auftrag(request: Request, folge_id: int):
 
 
 @router.get("/episodes/{folge_id}/transkript")
-async def lesen(folge_id: int, request: Request) -> Stand:
+async def lesen(folge_id: int, request: Request, fassung: str = "") -> Stand:
     folge = await _folge(folge_id)
     a = await _auftrag(request, folge_id)
     offen = a is not None and a.zustand in ("wartet", "laeuft")
-    t = None if offen else await folgentranskripte.lesen(folge)
+    t = None if offen else await folgentranskripte.lesen(folge, fassung)
     return Stand(transkript=t, kann_transkribieren=folgentranskripte.kann(),
                  lauf=Lauf(id=a.id, fortschritt=a.fortschritt, schritt=a.schritt) if offen else None,
                  fehler=(a.fehler or "") if a is not None and a.zustand in ("fehler", "unterbrochen") and t is None else "")

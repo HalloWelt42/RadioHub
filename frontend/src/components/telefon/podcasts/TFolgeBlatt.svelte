@@ -2,7 +2,7 @@
   // Blatt einer Folge am Telefon (Entwurf telefon-podcasts.html, Zustände 4 und 5): Abo, Datum, Länge, Größe in der
   // Kellerwolke, Stand, Beschreibung (drei Zeilen, Rest aufklappbar). Weiter ab der Stelle oder hören, von vorn,
   // speichern (gespeichert: löschen fragt mit Datei und Größe), herunterladen aufs Telefon, gehört.
-  import { Rueckfrage } from "appkern-oberflaeche";
+  import Loeschfrage from "../../podcast/Loeschfrage.svelte";
   import { t } from "../../../lib/i18n.svelte.js";
   import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, textAus } from "../../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../../lib/podcasts";
@@ -51,8 +51,7 @@
     </div>
     {#if f.beschreibung}<Langtext text={textAus(f.beschreibung)} klasse="tp-text" />{/if}
     {#if fragt}
-      <Rueckfrage frage={t("podcastAnsicht.loeschenFrage")} hinweis={t("podcastAnsicht.loeschenHinweis", { pfad: f.ablagePfad, mb: megabyte(f.groesse) })}
-                  knopf={t("podcastAnsicht.loeschen")} beschaeftigt={loescht} onabbrechen={() => (fragt = false)} onja={() => void loeschen()} />
+      <Loeschfrage folge={f} beschaeftigt={loescht} onabbrechen={() => (fragt = false)} onja={() => void loeschen()} />
     {:else}
       <div class="tp-aktionen">
         <button class="knopf primaer" type="button" onclick={onhoeren}><i class="fa-solid {weiter ? 'fa-forward' : 'fa-play'}"></i>

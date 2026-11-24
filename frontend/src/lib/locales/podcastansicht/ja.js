@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'このエピソードをファイルとしてこの端末にダウンロード',
   loeschenFrage: '保存したエピソードを削除しますか？',
   loeschenHinweis: 'ファイル {pfad} ({mb} MB) は Kellerwolke のごみ箱に移動します。エピソードは登録番組に残り、フィードにある限りもう一度保存できます。',
+  loeschenMehrere: '次の{n}個のファイル（{mb} MB）をまとめてKellerwolkeのゴミ箱に移動します：\n{pfade}\nエピソードは購読に残り、フィードが提供している間は再保存できます。',
   loeschen: '削除',
   anheften: '上部に固定',
   anheftenHilfe: 'サイドバーの上部に固定',
@@ -159,7 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: '書き起こし', hilfe: 'エピソードの文章を読む。再生中は追従', starten: '書き起こす', startenHilfe: 'エピソードを文章にします。Kellerwolke に保存されます', abbrechen: '中止', laeuft: '書き起こし中', feed: 'フィードの文章', gehoert: '書き起こした文章', keins: '書き起こしはまだありません', laedt: '読み込み中',
+    titel: '書き起こし', hilfe: 'エピソードの文章を読む。再生中は追従', starten: '書き起こす', startenHilfe: 'エピソードを文章にします。Kellerwolke に保存されます', abbrechen: '中止', laeuft: '書き起こし中', feed: 'フィードの文章', vertont: '吹き替えのテキスト', gehoert: '書き起こした文章', keins: '書き起こしはまだありません', laedt: '読み込み中',
   },
+  vertonung: { auf: '{sprache}にする', hilfe: 'エピソードを翻訳して{sprache}で読み上げます。原音、吹き替え、両方のテキストはKellerwolkeにまとめて保存されます', umschalten: '{sprache}または原音の音声とテキスト', stimme: '吹き替えの声', abbrechenHilfe: '吹き替えを中止', laeuft: '吹き替え中' },
   neues: { tag: '24 時間以内の新着: {n}', woche: '7 日以内の新着: {n}', monat: '30 日以内の新着: {n}' },
 };

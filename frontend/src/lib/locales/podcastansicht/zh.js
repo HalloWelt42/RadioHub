@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: '将此单集作为文件下载到本设备',
   loeschenFrage: '删除已保存的单集？',
   loeschenHinweis: '文件 {pfad} ({mb} MB) 将移入 Kellerwolke 的回收站。单集仍保留在订阅中，只要订阅源还提供就可以再次保存。',
+  loeschenMehrere: '这 {n} 个文件（{mb} MB）将一起移入 Kellerwolke 回收站：\n{pfade}\n本集仍保留在订阅中，只要订阅源提供就可以重新保存。',
   loeschen: '删除',
   anheften: '置顶',
   anheftenHilfe: '在侧栏顶部置顶',
@@ -159,7 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: '文字稿', hilfe: '阅读节目文字；播放时跟随', starten: '转写', startenHilfe: '把节目转成文字；会保存到 Kellerwolke', abbrechen: '取消', laeuft: '正在转写', feed: '来自订阅源的文字', gehoert: '转写的文字', keins: '还没有文字稿', laedt: '正在加载文字稿',
+    titel: '文字稿', hilfe: '阅读节目文字；播放时跟随', starten: '转写', startenHilfe: '把节目转成文字；会保存到 Kellerwolke', abbrechen: '取消', laeuft: '正在转写', feed: '来自订阅源的文字', vertont: '配音文本', gehoert: '转写的文字', keins: '还没有文字稿', laedt: '正在加载文字稿',
   },
+  vertonung: { auf: '转为{sprache}', hilfe: '翻译本集并用{sprache}朗读；原声、新版本和两份文本一起保存在 Kellerwolke', umschalten: '{sprache}或原声的音频与文本', stimme: '配音声音', abbrechenHilfe: '取消配音', laeuft: '正在配音' },
   neues: { tag: '24 小时内新增: {n}', woche: '7 天内新增: {n}', monat: '30 天内新增: {n}' },
 };

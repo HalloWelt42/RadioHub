@@ -20,6 +20,8 @@
 .tf-mitlesen .rh-mitlese-feld { block-size: auto; min-height: 0; padding: 8px 10px; }
 .tf-mitlesen .rh-mitlese-tasten { display: flex; flex-wrap: wrap; align-items: center; justify-self: stretch; max-inline-size: none; }
 .tf-mitlesen ak-taster[art="flach"] .ak-taster-knopf { inline-size: 46px; block-size: 42px; }
+.tf-mitlesen .rh-mitlese-tasten > .knopf { inline-size: 46px; min-block-size: 42px; }
+.tf-mitlesen .rh-mitlese-tasten .auswahl { flex: 0 1 11em; min-inline-size: 0; }
 .tf-mitlesen .rh-richtung ak-taster[art="flach"] .ak-taster-knopf { inline-size: auto; padding-inline: 10px; }
 .tf-mitlesen .rh-mitlese-fuss { flex: 1 1 5em; flex-wrap: nowrap; inline-size: auto; min-inline-size: 0; }
 .tf-mitlesen .rh-mitlese-lage { flex-basis: auto; max-block-size: 1.3em; white-space: nowrap; text-overflow: ellipsis; }

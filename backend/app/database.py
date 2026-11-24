@@ -573,7 +573,21 @@ CREATE TABLE hoerverlauf (
 CREATE INDEX hoerverlauf_tag ON hoerverlauf(tag);
 """
 
-STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10, STUFE_11]
+# Stufe 12 (RAD-26): vertonte Fassungen einer Folge (je Sprache eine) und welche man hört (leer: das Original). Ton und Text
+# liegen als Begleitdateien neben der Folge in der Ablage, hier steht nur, was es gibt
+STUFE_12 = """
+CREATE TABLE podcast_fassungen (
+    folge_id INTEGER NOT NULL REFERENCES podcast_episodes(id) ON DELETE CASCADE,
+    sprache TEXT NOT NULL,
+    pfad TEXT NOT NULL,
+    stimme TEXT NOT NULL DEFAULT '',
+    angelegt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (folge_id, sprache)
+) WITHOUT ROWID;
+ALTER TABLE podcast_episodes ADD COLUMN fassung TEXT NOT NULL DEFAULT '';
+"""
+
+STUFEN: list[str] = [STUFE_1, STUFE_2, STUFE_3, STUFE_4, STUFE_5, STUFE_6, STUFE_7, STUFE_8, STUFE_9, STUFE_10, STUFE_11, STUFE_12]
 
 # Spalten, die der frühere Start einem älteren Bestand per ALTER nachgetragen hat (Tabelle, Spalte, Festlegung).
 NACHTRAEGE: list[tuple[str, str, str]] = [

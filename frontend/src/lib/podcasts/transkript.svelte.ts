@@ -12,7 +12,7 @@ export interface Transkriptabsatz {
 }
 
 export interface Transkript {
-  herkunft: "feed" | "gehoert";
+  herkunft: "feed" | "gehoert" | "vertont";
   sprache: string;
   absaetze: Transkriptabsatz[];
 }
@@ -42,13 +42,16 @@ export class Folgentext {
   private uhr: ReturnType<typeof setTimeout> | undefined;
   private zu = false;
 
+  /** welcher Text: der einer vertonten Fassung (Sprache) oder leer der des Originals */
+  fassung = "";
+
   constructor(readonly folgeId: number, private readonly a: Anfrage = netz()) {}
 
   private get weg(): string {
     return `/api/podcasts/episodes/${this.folgeId}/transkript`;
   }
 
-  laden = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(this.weg));
+  laden = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(this.fassung ? `${this.weg}?fassung=${encodeURIComponent(this.fassung)}` : this.weg));
   transkribieren = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(this.weg, { methode: "POST" }));
   abbrechen = (): Promise<void> => this.holen(() => this.a<Transkriptstand>(`${this.weg}/lauf`, { methode: "DELETE" }));
 

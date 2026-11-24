@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'Stiahnuť túto epizódu ako súbor do tohto zariadenia',
   loeschenFrage: 'Vymazať uloženú epizódu?',
   loeschenHinweis: 'Súbor {pfad} ({mb} MB) sa presunie do koša Kellerwolke. Epizóda zostane v odbere a dá sa znova uložiť, kým ju feed ponúka.',
+  loeschenMehrere: 'Týchto {n} súborov ({mb} MB) sa spoločne presunie do koša Kellerwolke:\n{pfade}\nEpizóda zostane v odbere a dá sa znova uložiť, kým ju kanál ponúka.',
   loeschen: 'Vymazať',
   anheften: 'Pripnúť hore',
   anheftenHilfe: 'Pripnúť hore v bočnom paneli',
@@ -166,7 +167,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Prepis', hilfe: 'Čítať text epizódy; pri prehrávaní beží s ňou', starten: 'Prepísať', startenHilfe: 'Previesť epizódu na text; uloží sa pritom do Kellerwolke', abbrechen: 'Zrušiť', laeuft: 'Prebieha prepis', feed: 'Text z kanála', gehoert: 'Text z prepisu', keins: 'Zatiaľ žiadny prepis', laedt: 'Prepis sa načítava',
+    titel: 'Prepis', hilfe: 'Čítať text epizódy; pri prehrávaní beží s ňou', starten: 'Prepísať', startenHilfe: 'Previesť epizódu na text; uloží sa pritom do Kellerwolke', abbrechen: 'Zrušiť', laeuft: 'Prebieha prepis', feed: 'Text z kanála', vertont: 'Text dabingu', gehoert: 'Text z prepisu', keins: 'Zatiaľ žiadny prepis', laedt: 'Prepis sa načítava',
   },
+  vertonung: { auf: 'V jazyku {sprache}', hilfe: 'Preložiť epizódu a nahovoriť ju v jazyku {sprache}; originál, verzia aj oba texty zostanú spolu v Kellerwolke', umschalten: 'Zvuk a text v jazyku {sprache} alebo originál', stimme: 'Hlas dabingu', abbrechenHilfe: 'Zrušiť dabing', laeuft: 'Dabing prebieha' },
   neues: { tag: 'Nové za 24 hodín: {n}', woche: 'Nové za 7 dní: {n}', monat: 'Nové za 30 dní: {n}' },
 };

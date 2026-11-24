@@ -258,7 +258,7 @@ export async function playPodcast(episode, podcast) {
 
   // Nicht gespeicherte Folgen über den Puffer des Backends (stabiler Strom, 128 kbps AAC); gespeicherte und die der
   // Webversion spielen direkt (RAD-102)
-  if (folgenweg.puffern && !episode.is_downloaded && episode.remote_audio_url && Hls.isSupported()) {
+  if (folgenweg.puffern && !episode.fassung && !episode.is_downloaded && episode.remote_audio_url && Hls.isSupported()) {
     try {
       const result = await api.startHLSPodcast(episode);
       if (_generation !== gen) return;
@@ -301,6 +301,23 @@ export async function playPodcast(episode, podcast) {
     console.warn('Podcast autoplay blocked:', e.message);
   }
   _startPodcastPositionSave();
+}
+
+/**
+ * Die laufende Folge in einer anderen Fassung weiterhören (RAD-26), an derselben Stelle: Original und Fassung sind gleich lang.
+ * Angehalten bleibt sie angehalten.
+ */
+export async function folgenfassung(fassung) {
+  const folge = _appState?.currentEpisode;
+  if (!folge || !_audioEl || (folge.fassung || '') === fassung) return;
+  const stelle = _audioEl.currentTime || 0;
+  const neu = { ...folge, fassung, is_downloaded: fassung ? 1 : folge.is_downloaded, resume_position: stelle };
+  if (_appState.isPlaying && !_appState.isPaused) return playPodcast(neu, folge.podcast);
+  _appState.currentEpisode = neu;
+  const el = _audioEl;
+  el.src = _weg.folge.adresse(neu);
+  el.addEventListener('loadedmetadata', () => { el.currentTime = stelle; }, { once: true });
+  el.load();
 }
 
 // ============================================================

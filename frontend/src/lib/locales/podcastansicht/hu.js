@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'Az epizód letöltése fájlként erre az eszközre',
   loeschenFrage: 'Törlöd a mentett epizódot?',
   loeschenHinweis: 'A(z) {pfad} fájl ({mb} MB) a Kellerwolke kukájába kerül. Az epizód a feliratkozásban marad, és újra menthető, amíg a feed kínálja.',
+  loeschenMehrere: 'Ez a {n} fájl ({mb} MB) együtt kerül a Kellerwolke kukájába:\n{pfade}\nAz epizód az előfizetésben marad, és újra menthető, amíg a csatorna kínálja.',
   loeschen: 'Törlés',
   anheften: 'Kitűzés felülre',
   anheftenHilfe: 'Kitűzés az oldalsáv tetejére',
@@ -159,7 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Átirat', hilfe: 'Az epizód szövegének olvasása; lejátszáskor követi', starten: 'Átírás', startenHilfe: 'Az epizód szöveggé alakítása; közben a Kellerwolke tárhelyre kerül', abbrechen: 'Mégse', laeuft: 'Átírás folyamatban', feed: 'Szöveg a csatornából', gehoert: 'Szöveg az átírásból', keins: 'Még nincs átirat', laedt: 'Átirat betöltése',
+    titel: 'Átirat', hilfe: 'Az epizód szövegének olvasása; lejátszáskor követi', starten: 'Átírás', startenHilfe: 'Az epizód szöveggé alakítása; közben a Kellerwolke tárhelyre kerül', abbrechen: 'Mégse', laeuft: 'Átírás folyamatban', feed: 'Szöveg a csatornából', vertont: 'A szinkron szövege', gehoert: 'Szöveg az átírásból', keins: 'Még nincs átirat', laedt: 'Átirat betöltése',
   },
+  vertonung: { auf: '{sprache} nyelven', hilfe: 'Az epizód lefordítása és felolvastatása {sprache} nyelven; az eredeti, a változat és mindkét szöveg együtt marad a Kellerwolkéban', umschalten: 'Hang és szöveg {sprache} nyelven vagy eredetiben', stimme: 'A szinkron hangja', abbrechenHilfe: 'Szinkron megszakítása', laeuft: 'Szinkron folyamatban' },
   neues: { tag: 'Új 24 órán belül: {n}', woche: 'Új 7 napon belül: {n}', monat: 'Új 30 napon belül: {n}' },
 };

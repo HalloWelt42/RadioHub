@@ -19,6 +19,7 @@ export default {
   herunterladenHilfe: 'Lataa tämä jakso tiedostona tälle laitteelle',
   loeschenFrage: 'Poistetaanko tallennettu jakso?',
   loeschenHinweis: 'Tiedosto {pfad} ({mb} MB) siirtyy Kellerwolken roskakoriin. Jakso pysyy tilauksessa ja sen voi tallentaa uudelleen, niin kauan kuin syöte tarjoaa sitä.',
+  loeschenMehrere: 'Nämä {n} tiedostoa ({mb} Mt) siirretään yhdessä Kellerwolken roskakoriin:\n{pfade}\nJakso pysyy tilauksessa ja sen voi tallentaa uudelleen niin kauan kuin syöte tarjoaa sen.',
   loeschen: 'Poista',
   anheften: 'Kiinnitä ylös',
   anheftenHilfe: 'Kiinnitä sivupalkin yläosaan',
@@ -167,7 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
+    titel: 'Litterointi', hilfe: 'Lue jakson teksti; se seuraa toistoa', starten: 'Litteroi', startenHilfe: 'Muuta jakso tekstiksi; se tallennetaan Kellerwolkeen', abbrechen: 'Peruuta', laeuft: 'Litterointi käynnissä', feed: 'Teksti syötteestä', vertont: 'Puhutun version teksti', gehoert: 'Teksti litteroinnista', keins: 'Ei vielä litterointia', laedt: 'Ladataan litterointia',
   },
+  vertonung: { auf: 'Kielellä {sprache}', hilfe: 'Käännä jakso ja puhuta se kielellä {sprache}; alkuperäinen, versio ja molemmat tekstit ovat yhdessä Kellerwolkessa', umschalten: 'Ääni ja teksti kielellä {sprache} tai alkuperäisenä', stimme: 'Puhujan ääni', abbrechenHilfe: 'Keskeytä puhuttaminen', laeuft: 'Puhuttaminen käynnissä' },
   neues: { tag: 'Uutta 24 tunnissa: {n}', woche: 'Uutta 7 päivässä: {n}', monat: 'Uutta 30 päivässä: {n}' },
 };

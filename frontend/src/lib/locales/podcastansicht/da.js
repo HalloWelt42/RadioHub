@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'Hent dette afsnit som fil til denne enhed',
   loeschenFrage: 'Slet gemt afsnit?',
   loeschenHinweis: 'Filen {pfad} ({mb} MB) flyttes til papirkurven i Kellerwolke. Afsnittet bliver i abonnementet og kan gemmes igen, så længe feedet tilbyder det.',
+  loeschenMehrere: 'Disse {n} filer ({mb} MB) flyttes sammen til papirkurven i Kellerwolke:\n{pfade}\nEpisoden bliver i abonnementet og kan gemmes igen, så længe feedet tilbyder den.',
   loeschen: 'Slet',
   anheften: 'Fastgør øverst',
   anheftenHilfe: 'Fastgør øverst i sidepanelet',
@@ -166,7 +167,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
+    titel: 'Udskrift', hilfe: 'Læs episodens tekst; den følger med under afspilning', starten: 'Udskriv', startenHilfe: 'Lav episoden om til tekst; den gemmes i Kellerwolke', abbrechen: 'Afbryd', laeuft: 'Udskrift i gang', feed: 'Tekst fra feedet', vertont: 'Tekst fra indtalingen', gehoert: 'Tekst fra udskriften', keins: 'Ingen udskrift endnu', laedt: 'Udskrift indlæses',
   },
+  vertonung: { auf: 'På {sprache}', hilfe: 'Oversæt episoden og få den indtalt på {sprache}; original, version og begge tekster ligger samlet i Kellerwolke', umschalten: 'Lyd og tekst på {sprache} eller original', stimme: 'Stemme til indtaling', abbrechenHilfe: 'Afbryd indtaling', laeuft: 'Indtaling i gang' },
   neues: { tag: 'Nyt på 24 timer: {n}', woche: 'Nyt på 7 dage: {n}', monat: 'Nyt på 30 dage: {n}' },
 };

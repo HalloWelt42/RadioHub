@@ -328,9 +328,9 @@ async def get_episode_image(episode_id: int):
 # === Episode-Playback ===
 
 @router.get("/episodes/{episode_id}/play")
-async def play_episode(episode_id: int, request: Request):
-    """Heruntergeladene Episode aus der Ablage streamen (mit Range zum Spulen)"""
-    path = podcast_service.get_episode_audio_path(episode_id)
+async def play_episode(episode_id: int, request: Request, fassung: str = ""):
+    """Heruntergeladene Episode aus der Ablage streamen (mit Range zum Spulen), auf Wunsch eine vertonte Fassung"""
+    path = podcast_service.get_episode_audio_path(episode_id, fassung)
     if not path:
         raise HTTPException(404, "Episode nicht heruntergeladen")
     return await ausliefern(path, request)
@@ -349,13 +349,15 @@ async def stream_episode(episode_id: int, request: Request):
 
 
 @router.get("/episodes/{episode_id}/datei")
-async def folge_als_datei(episode_id: int, request: Request):
+async def folge_als_datei(episode_id: int, request: Request, fassung: str = ""):
     """Folge als Datei auf das Gerät, das fragt (RAD-17, "Herunterladen"): gespeichert aus der Ablage, sonst vom Feed
     durchgeleitet; der Name ist der, den sie in der Ablage trüge ("2026-10-01 Folge 1.mp3")."""
     episode = await podcast_service.get_episode(episode_id)
     if not episode:
         raise HTTPException(404, "Episode nicht gefunden")
-    pfad = podcast_service.get_episode_audio_path(episode_id)
+    pfad = podcast_service.get_episode_audio_path(episode_id, fassung)
+    if fassung and not pfad:
+        raise HTTPException(404, "Diese Fassung gibt es nicht")
     if pfad:
         return await ausliefern(pfad, request, herunterladen=True)
     adresse = episode.get("audio_url")

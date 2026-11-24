@@ -19,6 +19,7 @@ export default {
   herunterladenHilfe: 'Ladda ner avsnittet som fil till den här enheten',
   loeschenFrage: 'Radera sparat avsnitt?',
   loeschenHinweis: 'Filen {pfad} ({mb} MB) hamnar i papperskorgen i Kellerwolke. Avsnittet finns kvar i prenumerationen och kan sparas igen så länge flödet erbjuder det.',
+  loeschenMehrere: 'Dessa {n} filer ({mb} MB) flyttas tillsammans till papperskorgen i Kellerwolke:\n{pfade}\nAvsnittet finns kvar i prenumerationen och kan sparas igen så länge flödet erbjuder det.',
   loeschen: 'Radera',
   anheften: 'Fäst överst',
   anheftenHilfe: 'Fäst överst i sidofältet',
@@ -160,7 +161,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
+    titel: 'Utskrift', hilfe: 'Läs avsnittets text; den följer uppspelningen', starten: 'Skriv ut', startenHilfe: 'Gör avsnittet till text; det sparas i Kellerwolke', abbrechen: 'Avbryt', laeuft: 'Utskrift pågår', feed: 'Text från flödet', vertont: 'Text från intalningen', gehoert: 'Text från utskriften', keins: 'Ingen utskrift ännu', laedt: 'Utskrift laddas',
   },
+  vertonung: { auf: 'På {sprache}', hilfe: 'Översätt avsnittet och låt det talas in på {sprache}; original, version och båda texterna ligger tillsammans i Kellerwolke', umschalten: 'Ljud och text på {sprache} eller original', stimme: 'Röst för intalningen', abbrechenHilfe: 'Avbryt intalningen', laeuft: 'Intalning pågår' },
   neues: { tag: 'Nytt på 24 timmar: {n}', woche: 'Nytt på 7 dagar: {n}', monat: 'Nytt på 30 dagar: {n}' },
 };

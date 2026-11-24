@@ -492,6 +492,12 @@ export class BrowserPodcastquelle implements Podcastquelle {
     throw new Quellfehler(NICHT_HIER, 501);
   }
 
+  async dateien(): Promise<[]> {
+    return [];
+  }
+
+  fassungMerken(): void {}
+
   dateiAdresse(id: number): string {
     return this.eintrag(id)?.adresse ?? "";
   }

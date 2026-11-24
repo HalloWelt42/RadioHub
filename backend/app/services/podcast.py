@@ -25,8 +25,9 @@ logger = logging.getLogger("radiohub.podcast")
 
 
 # Zahl und Dauer der Werbestellen je Folge in den Listen (RAD-32); die Folge heißt in den Abfragen pe
-WERBUNG_SPALTEN = ("(SELECT COUNT(*) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_anzahl, "
-                   "(SELECT COALESCE(SUM(w.bis - w.von), 0) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_dauer")
+FOLGEN_SPALTEN = ("(SELECT COUNT(*) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_anzahl, "
+                   "(SELECT COALESCE(SUM(w.bis - w.von), 0) FROM werbestellen w WHERE w.folge_id = pe.id AND w.verworfen = 0) AS werbung_dauer, "
+                  "(SELECT group_concat(f.sprache) FROM podcast_fassungen f WHERE f.folge_id = pe.id) AS fassungen")
 
 
 def _bilder_dir(podcast_id: int) -> Path:
@@ -425,7 +426,7 @@ class PodcastService:
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute(f'''SELECT pe.*, {WERBUNG_SPALTEN} FROM podcast_episodes pe
+            c.execute(f'''SELECT pe.*, {FOLGEN_SPALTEN} FROM podcast_episodes pe
                 {where} ORDER BY {sort_by} {sort_order} LIMIT ? OFFSET ?''',
                 params + [limit, offset])
             episodes = [dict(row) for row in c.fetchall()]
@@ -473,7 +474,7 @@ class PodcastService:
 
         with db_session() as conn:
             c = conn.cursor()
-            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {FOLGEN_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 {where} ORDER BY pe.{sort_by} {sort_order} LIMIT ? OFFSET ?''',
@@ -516,7 +517,7 @@ class PodcastService:
         with db_session() as conn:
             c = conn.cursor()
 
-            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {FOLGEN_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 WHERE ({where_clause})
@@ -592,7 +593,7 @@ class PodcastService:
     async def get_episode(self, episode_id: int) -> Optional[dict]:
         with db_session() as conn:
             c = conn.cursor()
-            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {WERBUNG_SPALTEN}
+            c.execute(f'''SELECT pe.*, ps.title as podcast_title, ps.image_url as podcast_image_url, {FOLGEN_SPALTEN}
                 FROM podcast_episodes pe
                 JOIN podcast_subscriptions ps ON pe.podcast_id = ps.id
                 WHERE pe.id = ?''', (episode_id,))
@@ -791,17 +792,23 @@ class PodcastService:
         with db_session() as conn:
             c = conn.cursor()
             c.execute('''UPDATE podcast_episodes
-                SET is_downloaded = 0, local_path = NULL, file_size = 0
+                SET is_downloaded = 0, local_path = NULL, file_size = 0, fassung = ''
                 WHERE id = ?''', (episode_id,))
+            c.execute("DELETE FROM podcast_fassungen WHERE folge_id = ?", (episode_id,))   # ihre Dateien gehen mit
             # Auch aus podcast_saved_episodes entfernen
             c.execute("DELETE FROM podcast_saved_episodes WHERE episode_id = ?", (episode_id,))
 
         return True
 
-    def get_episode_audio_path(self, episode_id: int) -> Optional[str]:
-        """Pfad der heruntergeladenen Episode in der Ablage (None, wenn nicht heruntergeladen)"""
+    def get_episode_audio_path(self, episode_id: int, fassung: str = "") -> Optional[str]:
+        """Pfad der heruntergeladenen Episode in der Ablage (None, wenn nicht heruntergeladen); mit `fassung` der ihrer
+        vertonten Fassung in dieser Sprache (RAD-26)"""
         with db_session() as conn:
             c = conn.cursor()
+            if fassung:
+                c.execute("SELECT pfad FROM podcast_fassungen WHERE folge_id = ? AND sprache = ?", (episode_id, fassung))
+                row = c.fetchone()
+                return row[0] if row else None
             c.execute("SELECT local_path FROM podcast_episodes WHERE id = ? AND is_downloaded = 1",
                       (episode_id,))
             row = c.fetchone()
@@ -836,8 +843,9 @@ class PodcastService:
                 deleted += 1
             with db_session() as conn:
                 conn.execute('''UPDATE podcast_episodes
-                    SET is_downloaded = 0, local_path = NULL, file_size = 0
+                    SET is_downloaded = 0, local_path = NULL, file_size = 0, fassung = ''
                     WHERE id = ?''', (row[0],))
+                conn.execute("DELETE FROM podcast_fassungen WHERE folge_id = ?", (row[0],))
 
         return deleted
 

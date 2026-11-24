@@ -32,7 +32,7 @@ SATZENDE = re.compile(r"[.!?。！？…][\"')\]»]*$")
 ZEITZEILE = re.compile(r"((?:\d+:)?\d{1,2}:\d{2}[.,]\d{1,3})\s*-->\s*((?:\d+:)?\d{1,2}:\d{2}[.,]\d{1,3})")
 SPRECHER = re.compile(r"<v(?:\.[^ >]+)?\s+([^>]+)>")
 
-Herkunft = Literal["feed", "gehoert"]
+Herkunft = Literal["feed", "gehoert", "vertont"]
 
 
 class Segment(BaseModel):
@@ -117,6 +117,16 @@ class Ergebnis(BaseModel):
     absaetze: int
 
 
+class Gehoert(BaseModel):
+    sprache: str = ""
+    segmente: list[Segment]
+
+
+class Gespeichert(BaseModel):
+    pfad: str
+    titel: str
+
+
 async def _kein_abruf(_adresse: str) -> tuple[str, str]:
     raise httpx.HTTPError("kein Abruf eingerichtet")
 
@@ -132,24 +142,31 @@ class Folgentranskripte:
 
     # ----- Lesen
 
-    async def lesen(self, folge: dict) -> Transkript | None:
-        return await self._gehoert(folge) or await self._feed(folge)
+    async def lesen(self, folge: dict, fassung: str = "") -> Transkript | None:
+        """`fassung`: der Text einer vertonten Fassung (Sprache), sonst der des Originals."""
+        if fassung:
+            return await self._begleiter(folge, f"{ROLLE}_{fassung}", "vertont")
+        return await self._begleiter(folge, ROLLE, "gehoert") or await self._feed(folge)
 
-    async def _gehoert(self, folge: dict) -> Transkript | None:
+    def vergessen(self, folge_id: int) -> None:
+        for schluessel in [s for s in self._gemerkt if s[0] == folge_id]:
+            del self._gemerkt[schluessel]
+
+    async def _begleiter(self, folge: dict, rolle: str, herkunft: Herkunft) -> Transkript | None:
         pfad = folge.get("local_path") if folge.get("is_downloaded") else None
         if not pfad:
             return None
-        schluessel = (folge["id"], "gehoert")
+        schluessel = (folge["id"], rolle)
         if (t := self._gemerkt.get(schluessel)) is not None:
             return t
         try:
-            roh = await ablage().begleiter_lesen(pfad, ROLLE)
+            roh = await ablage().begleiter_lesen(pfad, rolle)
         except AblageFehler:
             return None
         if roh is None:
             return None
         daten = json.loads(roh)
-        return self._merken(schluessel, Transkript(herkunft="gehoert", sprache=str(daten.get("sprache") or ""), absaetze=absaetze(aus_json(daten))))
+        return self._merken(schluessel, Transkript(herkunft=herkunft, sprache=str(daten.get("sprache") or ""), absaetze=absaetze(aus_json(daten))))
 
     async def _feed(self, folge: dict) -> Transkript | None:
         adresse = str(folge.get("transcript_url") or "")
@@ -188,18 +205,41 @@ class Folgentranskripte:
     def kann(self) -> bool:
         return bool(einstellungen_stand().transkription_app.strip())
 
-    async def _transkribieren(self, k: Kontext) -> Ergebnis:
-        e: Eingabe = k.eingabe
+    async def gespeichert(self, k: Kontext, folge_id: int) -> Gespeichert:
+        """Die Folge in der Ablage (speichert sie, wenn sie noch nicht da ist)."""
         assert self.folge is not None and self.speichern is not None
-        folge = await self.folge(e.folge_id)
+        folge = await self.folge(folge_id)
         if folge is None:
             raise AuftragFehler("Die Folge gibt es nicht mehr")
         await k.fortschritt(None, "Folge in der Kellerwolke speichern", phase="speichern")
-        gespeichert = await self.speichern(e.folge_id)
-        if not gespeichert.get("success"):
-            raise AuftragFehler(f"Folge nicht gespeichert: {gespeichert.get('error') or 'unbekannt'}")
-        pfad = gespeichert["path"]
+        ablage_stand = await self.speichern(folge_id)
+        if not ablage_stand.get("success"):
+            raise AuftragFehler(f"Folge nicht gespeichert: {ablage_stand.get('error') or 'unbekannt'}")
         await k.pruefen()
+        return Gespeichert(pfad=ablage_stand["path"], titel=str(folge.get("title") or folge_id))
+
+    async def gehoert_sichern(self, k: Kontext, folge_id: int, pfad: str, neu: bool = False) -> Gehoert:
+        """Das gehörte Transkript neben der Folge; fehlt es (oder soll es neu), transkribiert die Transkription."""
+        roh = None if neu else await self._roh(pfad)
+        if roh is None:
+            await self._hoeren_lassen(k, pfad)
+            roh = await self._roh(pfad)
+            if roh is None:
+                raise AuftragFehler("Die Transkription ist fertig, aber ihr Transkript liegt nicht neben der Folge")
+        daten = json.loads(roh)
+        gehoert = Gehoert(sprache=str(daten.get("sprache") or ""), segmente=aus_json(daten))
+        self._text_merken(folge_id, gehoert.segmente)
+        self._gemerkt.pop((folge_id, ROLLE), None)
+        return gehoert
+
+    @staticmethod
+    async def _roh(pfad: str) -> bytes | None:
+        try:
+            return await ablage().begleiter_lesen(pfad, ROLLE)
+        except AblageFehler as f:
+            raise AuftragFehler(f"Transkript nicht lesbar: {f}") from f
+
+    async def _hoeren_lassen(self, k: Kontext, pfad: str) -> None:
         if "anfrage" not in k.zwischenstand:
             try:
                 anfrage = await ablage().weitergeben(pfad, einstellungen_stand().transkription_app.strip(), "transkribieren", {"sprache": "auto"})
@@ -207,13 +247,12 @@ class Folgentranskripte:
                 raise AuftragFehler(f"Transkription: {f}") from f
             await k.merken(anfrage=anfrage)
         await self._abwarten(k, k.zwischenstand["anfrage"])
-        roh = await ablage().begleiter_lesen(pfad, ROLLE)
-        if roh is None:
-            raise AuftragFehler("Die Transkription ist fertig, aber ihr Transkript liegt nicht neben der Folge")
-        segmente = aus_json(json.loads(roh))
-        self._text_merken(e.folge_id, segmente)
-        self._gemerkt.pop((e.folge_id, "gehoert"), None)
-        return Ergebnis(absaetze=len(absaetze(segmente)))
+
+    async def _transkribieren(self, k: Kontext) -> Ergebnis:
+        e: Eingabe = k.eingabe
+        folge = await self.gespeichert(k, e.folge_id)
+        gehoert = await self.gehoert_sichern(k, e.folge_id, folge.pfad, neu=True)
+        return Ergebnis(absaetze=len(absaetze(gehoert.segmente)))
 
     async def _abwarten(self, k: Kontext, anfrage: str) -> None:
         await k.fortschritt(None, "Transkription", phase="hoeren")

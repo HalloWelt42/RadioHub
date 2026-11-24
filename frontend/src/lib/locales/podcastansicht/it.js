@@ -19,6 +19,7 @@ export default {
   herunterladenHilfe: "Scarica questo episodio come file su questo dispositivo",
   loeschenFrage: "Eliminare l'episodio salvato?",
   loeschenHinweis: "Il file {pfad} ({mb} MB) finisce nel cestino della Kellerwolke. L'episodio resta nell'abbonamento e si può salvare di nuovo finché il feed lo offre.",
+  loeschenMehrere: 'Questi {n} file ({mb} MB) vanno insieme nel cestino della Kellerwolke:\n{pfade}\nL\'episodio resta nell\'abbonamento e si può salvare di nuovo finché il feed lo offre.',
   loeschen: "Elimina",
   anheften: "Fissa in alto",
   anheftenHilfe: "Fissa in alto nella barra laterale",
@@ -167,7 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Trascrizione', hilfe: 'Leggere il testo dell\'episodio; segue la riproduzione', starten: 'Trascrivi', startenHilfe: 'Trasformare l\'episodio in testo; viene salvato in Kellerwolke', abbrechen: 'Annulla', laeuft: 'Trascrizione in corso', feed: 'Testo dal feed', gehoert: 'Testo dalla trascrizione', keins: 'Ancora nessuna trascrizione', laedt: 'Caricamento trascrizione',
+    titel: 'Trascrizione', hilfe: 'Leggere il testo dell\'episodio; segue la riproduzione', starten: 'Trascrivi', startenHilfe: 'Trasformare l\'episodio in testo; viene salvato in Kellerwolke', abbrechen: 'Annulla', laeuft: 'Trascrizione in corso', feed: 'Testo dal feed', vertont: 'Testo del doppiaggio', gehoert: 'Testo dalla trascrizione', keins: 'Ancora nessuna trascrizione', laedt: 'Caricamento trascrizione',
   },
+  vertonung: { auf: 'In {sprache}', hilfe: 'Tradurre l\'episodio e farlo leggere in {sprache}; originale, versione ed entrambi i testi restano insieme nella Kellerwolke', umschalten: 'Audio e testo in {sprache} o originale', stimme: 'Voce del doppiaggio', abbrechenHilfe: 'Annulla doppiaggio', laeuft: 'Doppiaggio in corso' },
   neues: { tag: 'Nuovi in 24 ore: {n}', woche: 'Nuovi in 7 giorni: {n}', monat: 'Nuovi in 30 giorni: {n}' },
 };

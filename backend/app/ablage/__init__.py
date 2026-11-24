@@ -44,6 +44,9 @@ class KeineAblage(Ablage):
     async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
         raise self._fehlt()
 
+    async def begleiter(self, pfad: str) -> list[Eintrag]:
+        raise self._fehlt()
+
     async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
         raise self._fehlt()
 

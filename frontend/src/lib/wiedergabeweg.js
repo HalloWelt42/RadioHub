@@ -38,7 +38,7 @@ export const ueberBackend = {
   },
   folge: {
     puffern: true,
-    adresse: (folge) => (folge.is_downloaded ? api.getEpisodePlayUrl(folge.id) : api.getEpisodeStreamUrl(folge.id)),
+    adresse: (folge) => (folge.fassung || folge.is_downloaded ? api.getEpisodePlayUrl(folge.id, folge.fassung) : api.getEpisodeStreamUrl(folge.id)),
     bild: (folge) => (folge.image_url || folge.podcast_image_url || folge.podcast?.image_url ? api.getEpisodeImageUrl(folge.id) : null),
     stelleMerken: (id, sekunden) => { api.updateEpisodePosition(id, sekunden).catch(() => {}); },
     gehoert: (id) => {

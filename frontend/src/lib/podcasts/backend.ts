@@ -2,7 +2,7 @@
 // Seiten zählt das Backend ab einer Stelle (offset); der Zeiger der nächsten Seite ist diese Stelle als Text.
 // Bilder kommen über die eigene App, nie direkt von fremden Servern.
 import type { Folgenwiedergabe, Podcastfaehigkeiten, Podcastquelle } from "./quelle";
-import { PODCASTSORTIERUNG, type Abo, type Aktualisierungsstand, type Folge, type Folgenabfrage, type Folgenfilter, type Folgenseite,
+import { PODCASTSORTIERUNG, type Abo, type Aktualisierungsstand, type Folge, type Folgenabfrage, type Folgendatei, type Folgenfilter, type Folgenseite,
   type Folgensortierung, type Fundstueck, type Ordner, type Podcastsortierung } from "./typen";
 
 /** der Teil von lib/api.js, den die Quelle braucht */
@@ -204,6 +204,16 @@ export class BackendPodcastquelle implements Podcastquelle {
 
   async speichern(id: number, an: boolean): Promise<void> {
     await this.api.fetch(`/api/podcasts/episodes/${id}/download`, { method: an ? "POST" : "DELETE" });
+  }
+
+  async dateien(id: number): Promise<Folgendatei[]> {
+    const r = await this.api.fetch(`/api/podcasts/episodes/${id}/dateien`);
+    return (r.dateien ?? []).map((d: Roh) => ({ pfad: text(d.pfad), groesse: zahl(d.groesse) }));
+  }
+
+  fassungMerken(id: number, sprache: string): void {
+    const roh = this.rohFolgen.get(id);
+    if (roh) roh.fassung = sprache;
   }
 
   async wiedergabe(f: Folge, liste: Folge[] = [f]): Promise<Folgenwiedergabe> {

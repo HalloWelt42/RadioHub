@@ -16,6 +16,8 @@ class SpeicherAblage(Ablage):
         self.ordner: set[str] = set()
         self.versionen: dict[str, int] = {}
         self.papierkorb: list[str] = []
+        #: Hauptdatei -> Rolle -> Pfad der Begleitdatei
+        self.begleitung: dict[str, dict[str, str]] = {}
         self._zeit: dict[str, datetime] = {}
         #: weitergegebene Anfragen und ihr Stand, für Tests von Hand gesetzt
         self.anfragen: dict[str, tuple[str, str, str, dict[str, str]]] = {}
@@ -59,11 +61,17 @@ class SpeicherAblage(Ablage):
         pfad = sauberer_pfad(pfad)
         if pfad not in self.dateien:
             raise NichtGefunden(f"{pfad} nicht gefunden")
-        return await self.schreiben(f"{pfad.rsplit('.', 1)[0]}{zusatz}", daten.read_bytes() if isinstance(daten, Path) else daten)
+        neu = await self.schreiben(f"{pfad.rsplit('.', 1)[0]}{zusatz}", daten.read_bytes() if isinstance(daten, Path) else daten)
+        self.begleitung.setdefault(pfad, {})[rolle] = neu.pfad
+        return neu
 
     async def begleiter_lesen(self, pfad: str, rolle: str) -> bytes | None:
-        stamm = sauberer_pfad(pfad).rsplit(".", 1)[0]
-        return self.dateien.get(f"{stamm}.{rolle}.json")
+        begleitdatei = self.begleitung.get(sauberer_pfad(pfad), {}).get(rolle)
+        return self.dateien.get(begleitdatei) if begleitdatei else None
+
+    async def begleiter(self, pfad: str) -> list[Eintrag]:
+        pfade = self.begleitung.get(sauberer_pfad(pfad), {}).values()
+        return sorted((self._eintrag(p) for p in pfade if p in self.dateien), key=lambda e: e.name)
 
     async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
         kennung = f"a{len(self.anfragen) + 1}"
@@ -104,7 +112,8 @@ class SpeicherAblage(Ablage):
         pfad = sauberer_pfad(pfad)
         if self._eintrag(pfad) is None:
             return False
-        for p in [p for p in list(self.dateien) if p == pfad or p.startswith(pfad + "/")]:
+        mit = set(self.begleitung.pop(pfad, {}).values())          # Begleiter gehen mit
+        for p in [p for p in list(self.dateien) if p == pfad or p in mit or p.startswith(pfad + "/")]:
             del self.dateien[p]
             self.papierkorb.append(p)
         for p in [p for p in list(self.ordner) if p == pfad or p.startswith(pfad + "/")]:

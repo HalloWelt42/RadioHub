@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'Download this episode as a file to this device',
   loeschenFrage: 'Delete saved episode?',
   loeschenHinweis: 'The file {pfad} ({mb} MB) goes to the bin of the Kellerwolke. The episode stays in the subscription and can be saved again as long as the feed offers it.',
+  loeschenMehrere: 'These {n} files ({mb} MB) go to the bin of the Kellerwolke together:\n{pfade}\nThe episode stays in the subscription and can be saved again as long as the feed offers it.',
   loeschen: 'Delete',
   anheften: 'Pin to top',
   anheftenHilfe: 'Pin to the top of the sidebar',
@@ -162,7 +163,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
+    titel: 'Transcript', hilfe: 'Read the text of the episode; it follows while playing', starten: 'Transcribe', startenHilfe: 'Turn the episode into text; it is saved to Kellerwolke for that', abbrechen: 'Cancel', laeuft: 'Transcribing', feed: 'Text from the feed', vertont: 'Text of the dubbing', gehoert: 'Text from transcription', keins: 'No transcript yet', laedt: 'Loading transcript',
   },
+  vertonung: { auf: 'In {sprache}', hilfe: 'Translate the episode and have it spoken in {sprache}; original, version and both texts are kept together in the Kellerwolke', umschalten: 'Audio and text in {sprache} or original', stimme: 'Voice of the dubbing', abbrechenHilfe: 'Cancel dubbing', laeuft: 'Dubbing in progress' },
   neues: { tag: 'New in 24 hours: {n}', woche: 'New in 7 days: {n}', monat: 'New in 30 days: {n}' },
 };

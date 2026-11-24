@@ -148,6 +148,15 @@ der Kellerwolke und gibt sie der [[Transkription]] (Einstellungen > Dienste, App
 und wartet nach einem Neustart weiter; das Ergebnis liegt als `.transkript.json` neben der Folge und geht dem des Feeds vor.
 Abbrechen beendet das Warten, die Transkription selbst läuft dort zu Ende. Die Suche der Folgen findet den Text.
 
+Folgen in einer anderen Sprache (RAD-26): "Auf Deutsch" im Transkript einer Folge (daneben die Stimme: die des Übersetzers,
+Katalog, private Stimmen oder Originalstimmen) speichert sie, transkribiert sie, wenn noch kein gehörtes Transkript da ist, und
+gibt Ton und Text dem Dienst der [[Vertonung]]; sie übersetzt und spricht zeitgenau. Der Auftrag zeigt den Fortschritt und
+verfolgt die Vertonung nach einem Neustart weiter; Abbrechen beendet sie auch dort. Danach schaltet die Taste mit dem
+Namen der Sprache Ton und Text zwischen Fassung und Original um, an derselben Stelle und für alle Geräte. In der Kellerwolke
+liegen Original, Fassung (`.de.sprache.m4a`) und beide Texte (`.transkript.json`, `.de.transkript.json`) beieinander. Löschen nennt
+vorher jede Datei und legt alle zusammen in den Papierkorb. Sprache und Stimme ab Werk: Einstellungen > Dienste
+(`podcast_sprache`, `podcast_stimme`).
+
 Neues der Abos (RAD-136): vor der Zahl ungehörter Folgen steht das Neue, grün die letzten 24 Stunden, gelb 7 Tage, blau 30 Tage;
 am Abo und am Ordner die jüngste Stufe mit Neuem (3/53), bei "Alle Abos" alle drei (12/79/323/19320). Gezählt werden
 ungehörte Folgen nach ihrer Erscheinungszeit (Ortszeit).
@@ -327,7 +336,9 @@ Bitraten, Adressen der Verzeichnisse; seit RAD-11 auch Sprache, Klicktöne, Werb
 der erste Start einmal, je Übertrag. Der Abgleich mit dem Senderverzeichnis läuft
 jede Nacht zur "Uhrzeit des Abgleichs" (Einstellungen > Radio > Senderverzeichnis, `abgleich_uhrzeit`, Vorgabe 04:30, leer: nur auf Anstoß)
 als Auftrag mit Fortschritt; die Server stehen unter "Senderverzeichnis" (`service_radio_browser_servers`), der nächste
-springt ein, wenn einer ausfällt. Aus der Sicherung: die alte `.env` zurücklegen.
+springt ein, wenn einer ausfällt. Sofort startet ihn auch "Sender neu erfassen" über der Senderliste; der Hinweis am Knopf nennt den
+Stand. Bleibt der nächtliche Lauf mehr als 26 Stunden aus, färbt sich das Symbol, das Protokoll meldet es, und der Abgleich wird
+nachgeholt. Aus der Sicherung: die alte `.env` zurücklegen.
 Frisch: Werte aus den Seiten von [[Kellerwolke]] und [[Vertonung]], danach `tools/ausrollen.sh` erneut.
 
 Probe: das Protokoll der App nennt "Verbunden als App RadioHub im Konto admin"; `GET /api/storage/ablage` meldet

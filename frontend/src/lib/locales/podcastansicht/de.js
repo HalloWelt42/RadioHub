@@ -19,6 +19,7 @@ export default {
   herunterladenHilfe: 'Diese Folge als Datei auf dieses Gerät laden',
   loeschenFrage: 'Gespeicherte Folge löschen?',
   loeschenHinweis: 'Die Datei {pfad} ({mb} MB) kommt in den Papierkorb der Kellerwolke. Die Folge bleibt im Abo und lässt sich wieder speichern, solange der Feed sie anbietet.',
+  loeschenMehrere: 'Diese {n} Dateien ({mb} MB) kommen zusammen in den Papierkorb der Kellerwolke:\n{pfade}\nDie Folge bleibt im Abo und lässt sich wieder speichern, solange der Feed sie anbietet.',
   loeschen: 'Löschen',
   anheften: 'Oben anheften',
   anheftenHilfe: 'Oben in der Seitenleiste anheften',
@@ -167,7 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
+    titel: 'Transkript', hilfe: 'Text der Folge lesen; spielt sie, läuft er mit', starten: 'Transkribieren', startenHilfe: 'Den Text der Folge heraushören; sie wird dafür in der Kellerwolke gespeichert', abbrechen: 'Abbrechen', laeuft: 'Transkription läuft', feed: 'Text vom Feed', vertont: 'Text der Vertonung', gehoert: 'Text von der Transkription', keins: 'Noch kein Transkript', laedt: 'Transkript wird geladen',
   },
+  vertonung: { auf: 'Auf {sprache}', hilfe: 'Folge übersetzen und in {sprache} sprechen lassen; Original, Fassung und beide Texte liegen dann zusammen in der Kellerwolke', umschalten: 'Ton und Text in {sprache} oder im Original', stimme: 'Stimme der Vertonung', abbrechenHilfe: 'Vertonung abbrechen', laeuft: 'Vertonung läuft' },
   neues: { tag: 'Neu in 24 Stunden: {n}', woche: 'Neu in 7 Tagen: {n}', monat: 'Neu in 30 Tagen: {n}' },
 };

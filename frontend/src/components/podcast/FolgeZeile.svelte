@@ -2,13 +2,13 @@
   // Zeile einer Folge (Entwurf podcasts.html), dasselbe Raster wie die Senderzeile: Licht, Bild, Titel mit Abo und Datum,
   // Stand, Länge; Speichern (in der Kellerwolke), Herunterladen (als Datei auf dieses Gerät), Gehört, Details. Eine
   // gespeicherte Folge zu löschen fragt vorher und nennt die Datei (Nutzerdatei, kommt in den Papierkorb).
-  import { Rueckfrage } from "appkern-oberflaeche";
   import { t } from "../../lib/i18n.svelte.js";
   import { datumKurz, megabyte, minuten, restAngabe, standVon, stelleText, tageHer, textAus } from "../../lib/podcasts/anzeige";
   import type { Abo, Folge } from "../../lib/podcasts";
   import AboBild from "./AboBild.svelte";
   import Langtext from "../radio/Langtext.svelte";
   import Werbeteil from "./Werbeteil.svelte";
+  import Loeschfrage from "./Loeschfrage.svelte";
   import Transkriptteil from "./Transkriptteil.svelte";
   import Schalter from "../bausteine/Schalter.svelte";
 
@@ -100,8 +100,7 @@
   </div>
   {#if fragt}
     <div class="rh-folge-frage">
-      <Rueckfrage frage={t("podcastAnsicht.loeschenFrage")} hinweis={t("podcastAnsicht.loeschenHinweis", { pfad: folge.ablagePfad || folge.titel, mb })}
-                  knopf={t("podcastAnsicht.loeschen")} beschaeftigt={loescht} onabbrechen={() => (fragt = false)} onja={() => void loeschen()} />
+      <Loeschfrage {folge} beschaeftigt={loescht} onabbrechen={() => (fragt = false)} onja={() => void loeschen()} />
     </div>
   {/if}
   {#if offen}

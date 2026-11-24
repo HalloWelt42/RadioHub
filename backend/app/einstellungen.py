@@ -92,6 +92,12 @@ class AppEinstellungen(Grundeinstellungen):
     transkription_app: str = Field("Transkription", max_length=120, title="Transkription", json_schema_extra=DIENSTE,
                                    description="App im Verbund, die Podcast-Folgen auf Knopfdruck transkribiert (RAD-22). Leer: nur "
                                                "Transkripte, die der Feed mitbringt.")
+    podcast_sprache: Sprache = Field("de", title="Sprache vertonter Folgen", json_schema_extra={**DIENSTE, "beschriftungen": SPRACHEN},
+                                     description="In diese Sprache vertont RadioHub Podcast-Folgen auf Knopfdruck (RAD-26).")
+    podcast_stimme: str = Field("", max_length=200, title="Stimme vertonter Folgen", json_schema_extra=DIENSTE,
+                                description="Stimme der Vertonung für Podcast-Folgen: aus dem Katalog, eine private, die sie für "
+                                            "RadioHub freigibt, oder Originalstimmen (je Sprecher seine Stimme aus der Folge). Leer: "
+                                            "die Stimme des Übersetzers.")
     # --- Propaganda-Filter (HELF-256) ---
     propaganda_filter_adresse: str = Field("", max_length=200, title="Propaganda-Filter", json_schema_extra=DIENSTE,
                                            description="Eigener Dienst, der Werbung in Ton findet (etwa beim Vergleich "

@@ -9,6 +9,7 @@ from appkern.einstellungen import Angebot, Option
 from appkern.verbund import VerbundFehler
 
 from ..einstellungen import stand as einstellungen_stand
+from .folgenvertonung import ORIGINAL
 
 ABFRAGE = httpx.Timeout(15.0, connect=5.0)
 BEREICHE = (("privat", "private Stimme, für RadioHub freigegeben"), ("katalog", "Katalog"))
@@ -30,3 +31,11 @@ async def angebot(verbund) -> Angebot:
             break
         optionen += [Option(wert=str(s["id"]), titel=str(s["name"]), hinweis=hinweis) for s in antwort.json()]
     return Angebot(optionen=optionen, eigener_wert=False, stand=stand or f"{len(optionen)} Stimmen")
+
+
+async def angebot_folgen(verbund) -> Angebot:
+    """Für vertonte Folgen dazu: die Stimme des Übersetzers und die Originalstimmen (RAD-26)."""
+    a = await angebot(verbund)
+    return a.model_copy(update={"optionen": [Option(wert="", titel="Stimme des Übersetzers"),
+                                             Option(wert=ORIGINAL, titel="Originalstimmen", hinweis="je Sprecher seine Stimme aus der Folge"),
+                                             *a.optionen]}) if a.optionen else a

@@ -19,6 +19,7 @@ export default {
   herunterladenHilfe: 'Pobierz ten odcinek jako plik na to urządzenie',
   loeschenFrage: 'Usunąć zapisany odcinek?',
   loeschenHinweis: 'Plik {pfad} ({mb} MB) trafi do kosza Kellerwolke. Odcinek zostaje w subskrypcji i można go znów zapisać, dopóki kanał go oferuje.',
+  loeschenMehrere: 'Te {n} plików ({mb} MB) trafią razem do kosza Kellerwolke:\n{pfade}\nOdcinek pozostaje w subskrypcji i można go zapisać ponownie, dopóki kanał go oferuje.',
   loeschen: 'Usuń',
   anheften: 'Przypnij na górze',
   anheftenHilfe: 'Przypnij na górze paska bocznego',
@@ -167,7 +168,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
+    titel: 'Transkrypcja', hilfe: 'Czytaj tekst odcinka; podąża za odtwarzaniem', starten: 'Transkrybuj', startenHilfe: 'Zamień odcinek na tekst; zostanie zapisany w Kellerwolke', abbrechen: 'Anuluj', laeuft: 'Trwa transkrypcja', feed: 'Tekst z kanału', vertont: 'Tekst nagranej wersji', gehoert: 'Tekst z transkrypcji', keins: 'Brak transkrypcji', laedt: 'Wczytywanie transkrypcji',
   },
+  vertonung: { auf: 'Po {sprache}', hilfe: 'Przetłumacz odcinek i nagraj go w języku {sprache}; oryginał, wersja i oba teksty są razem w Kellerwolke', umschalten: 'Dźwięk i tekst w języku {sprache} lub oryginał', stimme: 'Głos lektora', abbrechenHilfe: 'Przerwij nagrywanie', laeuft: 'Nagrywanie trwa' },
   neues: { tag: 'Nowe w 24 godziny: {n}', woche: 'Nowe w 7 dni: {n}', monat: 'Nowe w 30 dni: {n}' },
 };

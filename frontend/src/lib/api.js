@@ -430,8 +430,9 @@ class RadioHubAPI {
   }
 
   // === Podcasts: Adressen zum Hören und für Bilder ===
-  getEpisodePlayUrl(episodeId) {
-    return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/play`;
+  /** `fassung`: Sprache einer vertonten Fassung (RAD-26), leer das Original */
+  getEpisodePlayUrl(episodeId, fassung = '') {
+    return `${this.baseUrl}/api/podcasts/episodes/${episodeId}/play${fassung ? `?fassung=${encodeURIComponent(fassung)}` : ''}`;
   }
 
   getEpisodeStreamUrl(episodeId) {

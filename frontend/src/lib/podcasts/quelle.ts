@@ -2,7 +2,7 @@
 // Folgen wissen und ändern. Die volle App setzt sie gegen das Backend um (backend.ts). Was eine Umsetzung nicht kann,
 // meldet sie in `faehig`; die Ansichten zeigen den Teil dann nicht (keine toten Knöpfe), wie bei der Senderquelle.
 // Die Webversion liest alles im Browser (browser/browser-quelle.ts, RAD-102); welche gilt, sagt das Bauziel ($ziel/podcasts).
-import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgenseite, Fundstueck, Ordner, Podcastsortierung } from "./typen";
+import type { Abo, Aktualisierungsstand, Folge, Folgenabfrage, Folgendatei, Folgenseite, Fundstueck, Ordner, Podcastsortierung } from "./typen";
 
 export interface Podcastfaehigkeiten {
   /** im Verzeichnis suchen und abonnieren */
@@ -70,6 +70,10 @@ export interface Podcastquelle {
   stelleMerken(id: number, sekunden: number): Promise<void>;
   /** in der Kellerwolke speichern oder dort löschen (in den Papierkorb) */
   speichern(id: number, an: boolean): Promise<void>;
+  /** alle Dateien, die zu einer gespeicherten Folge gehören und mit ihr in den Papierkorb kommen */
+  dateien(id: number): Promise<Folgendatei[]>;
+  /** gewählte Fassung einer Folge (Sprache, leer das Original) für die nächste Wiedergabe merken */
+  fassungMerken(id: number, sprache: string): void;
   /** Adresse, unter der der Browser die Folge als Datei lädt (Herunterladen aufs Gerät) */
   dateiAdresse(id: number): string;
   /** was der Spieler für eine Folge braucht; `liste` wird die Wiedergabeliste (Vor und Zurück) */

@@ -172,6 +172,11 @@ export const actions = {
     engine.playPodcast(episode, podcast);
   },
 
+  /** die laufende Folge in einer anderen Fassung weiterhören (leer: Original) */
+  folgenfassung(fassung) {
+    return engine.folgenfassung(fassung);
+  },
+
   setPodcastSpeed(speed) {
     appState.podcastSpeed = speed;
     engine.setPlaybackRate(speed);

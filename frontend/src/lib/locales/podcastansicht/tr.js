@@ -18,6 +18,7 @@ export default {
   herunterladenHilfe: 'Bu bölümü dosya olarak bu cihaza indir',
   loeschenFrage: 'Kaydedilen bölüm silinsin mi?',
   loeschenHinweis: "{pfad} dosyası ({mb} MB) Kellerwolke'nin çöp kutusuna gider. Bölüm abonelikte kalır ve akış sunduğu sürece yeniden kaydedilebilir.",
+  loeschenMehrere: 'Bu {n} dosya ({mb} MB) birlikte Kellerwolke çöp kutusuna gider:\n{pfade}\nBölüm abonelikte kalır ve akış sunduğu sürece yeniden kaydedilebilir.',
   loeschen: 'Sil',
   anheften: 'Üste sabitle',
   anheftenHilfe: 'Kenar çubuğunun üstüne sabitle',
@@ -159,7 +160,8 @@ export default {
   },
   // Transkript einer Folge (RAD-22)
   transkript: {
-    titel: 'Döküm', hilfe: 'Bölümün metnini oku; oynatırken izler', starten: 'Yazıya dök', startenHilfe: 'Bölümü metne çevir; bunun için Kellerwolke içine kaydedilir', abbrechen: 'İptal', laeuft: 'Döküm sürüyor', feed: 'Akıştaki metin', gehoert: 'Dökülen metin', keins: 'Henüz döküm yok', laedt: 'Döküm yükleniyor',
+    titel: 'Döküm', hilfe: 'Bölümün metnini oku; oynatırken izler', starten: 'Yazıya dök', startenHilfe: 'Bölümü metne çevir; bunun için Kellerwolke içine kaydedilir', abbrechen: 'İptal', laeuft: 'Döküm sürüyor', feed: 'Akıştaki metin', vertont: 'Seslendirme metni', gehoert: 'Dökülen metin', keins: 'Henüz döküm yok', laedt: 'Döküm yükleniyor',
   },
+  vertonung: { auf: '{sprache} dilinde', hilfe: 'Bölümü çevir ve {sprache} dilinde seslendir; orijinal, sürüm ve iki metin Kellerwolke içinde birlikte durur', umschalten: '{sprache} dilinde ya da orijinal ses ve metin', stimme: 'Seslendirme sesi', abbrechenHilfe: 'Seslendirmeyi iptal et', laeuft: 'Seslendirme sürüyor' },
   neues: { tag: '24 saatte yeni: {n}', woche: '7 günde yeni: {n}', monat: '30 günde yeni: {n}' },
 };

@@ -142,6 +142,14 @@ class KellerwolkeAblage(Ablage):
         except KellerwolkeFehler as f:
             raise _uebersetzt(f) from f
 
+    async def begleiter(self, pfad: str) -> list[Eintrag]:
+        try:
+            haupt = await self._sofort.finden(self._voll(pfad))
+            gefunden = await self._sofort.begleiter(haupt.id) if haupt else []
+        except KellerwolkeFehler as f:
+            raise _uebersetzt(f) from f
+        return sorted((self._eintrag(b) for b in gefunden), key=lambda e: e.name)
+
     async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
         try:
             haupt = await self._schreiben.pfad(self._voll(pfad))

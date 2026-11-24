@@ -34,9 +34,11 @@ from .services.ad_detector import seed_domain_blacklist
 from .services.aufnahmen import aufnahmen
 from .services.empfang import empfaenge, mitschnitte_raeumen
 from .services.folgentranskript import folgentranskripte
+from .services.folgenvertonung import folgenvertonung
 from .services.mitlesen import mitleser
 from .services.mitschrift import Mitschriften
 from .services import lernliste, propagandafilter, uebersetzerstimme, zeitstimmen
+from .services.vertonungsdienst import Vertonungsdienst
 from .services.senderquelle import abgleich, dienst as senderquelle
 
 log = logging.getLogger("radiohub.betrieb")
@@ -62,7 +64,8 @@ class Radiobetrieb(Begleiter):
         self.datenbank: database.Einrichtung | None = None
         self.datenbank_fehler: str | None = None      # /health meldet ihn
         self._aufgaben: list[asyncio.Task] = []
-        geruest.auftraege.anmelden(*abgleich.arten(abgleich.client_fabrik(transport)), folgentranskripte.art())
+        geruest.auftraege.anmelden(*abgleich.arten(abgleich.client_fabrik(transport)), folgentranskripte.art(),
+                                   folgenvertonung.art())
 
     async def _eintragen(self, ereignis: str, text: str, stufe: str = "info") -> None:
         (log.warning if stufe != "info" else log.info)("%s: %s", ereignis, text)
@@ -72,6 +75,7 @@ class Radiobetrieb(Begleiter):
         einstellungen.binden(self.geruest.einstellungen)
         self.geruest.einstellungen.anbieten("zeitstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("uebersetzerstimme", lambda: zeitstimmen.angebot(self.geruest.verbund))
+        self.geruest.einstellungen.anbieten("podcast_stimme", lambda: zeitstimmen.angebot_folgen(self.geruest.verbund))
         self.geruest.einstellungen.anbieten("transkription_app", self.geruest.kellerwolke_apps_angebot())
         self.geruest.einstellungen.anbieten("mitlesen_hoerdienst", self.geruest.leitstelle_angebot("hoeren"))
         self.geruest.einstellungen.anbieten("mitlesen_modell", self.geruest.leitstelle_angebot("uebersetzen"))
@@ -98,6 +102,7 @@ class Radiobetrieb(Begleiter):
         folgentranskripte.folge = podcast_service.get_episode
         folgentranskripte.speichern = podcast_service.download_episode
         folgentranskripte.abruf = podcast_service.abrufen
+        folgenvertonung.dienst = self._vertonungsdienst
         mitschriften = Mitschriften(lambda: get_arbeit_dir("mitlesen"), lambda text, stufe: self._eintragen("radio.mitlesen", text, stufe))
         mitleser.mitschriften = lambda: mitschriften if einstellungen.stand().mitlesen_ablegen else None
         rec_manager.startup()           # verwaiste Aufnahmen bereinigen (ihr Rest wird unten nachgeholt)
@@ -174,6 +179,11 @@ class Radiobetrieb(Begleiter):
         await self.geruest.auftraege.gestartet.wait()
         eingabe = {"anlass": anlass} if art == abgleich.ART else None
         await self.geruest.auftraege.einreihen(art, eingabe, von="Zeitplan" if anlass == "zeitplan" else "RadioHub")
+
+    def _vertonungsdienst(self) -> Vertonungsdienst | None:
+        adresse = einstellungen.stand().vertonung_adresse.strip()
+        schluessel = einstellungen.stand().kellerwolke_schluessel.get_secret_value().strip()
+        return Vertonungsdienst(self.geruest.verbund, adresse) if adresse and schluessel else None
 
     async def _abgleich_planen(self) -> None:
         """Jede Nacht zur Uhrzeit der Einstellung abgleich_uhrzeit (leer: nie); eine geänderte Uhrzeit gilt ohne

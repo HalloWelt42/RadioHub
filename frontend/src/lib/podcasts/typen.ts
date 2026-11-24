@@ -69,6 +69,12 @@ export interface Folge {
   aboTitel?: string;
 }
 
+/** Eine Datei, die zu einer gespeicherten Folge gehört (sie selbst, ihre Fassungen und Transkripte) */
+export interface Folgendatei {
+  pfad: string;
+  groesse: number;
+}
+
 /** Welche Folgen: ein Filter für Rechner und Telefon (früher dort heute/Woche/alle, hier alle/ungehört/geladen) */
 export type Folgenfilter = "alle" | "heute" | "woche" | "ungehoert" | "gespeichert" | "gehoert";
 export const FOLGENFILTER: readonly Folgenfilter[] = ["alle", "heute", "woche", "ungehoert", "gespeichert", "gehoert"];

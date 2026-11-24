@@ -118,6 +118,10 @@ class Ablage(ABC):
         """Inhalt der Begleitdatei einer Rolle neben der Datei, None wenn es keine gibt."""
 
     @abstractmethod
+    async def begleiter(self, pfad: str) -> list[Eintrag]:
+        """Alle Begleitdateien neben der Datei, nach Namen; leer, wenn es die Datei oder Begleiter nicht gibt."""
+
+    @abstractmethod
     async def weitergeben(self, pfad: str, app: str, aktion: str, optionen: dict[str, str]) -> str:
         """Die Datei einer anderen App für eine Aktion geben; liefert die Kennung der Anfrage."""
 
