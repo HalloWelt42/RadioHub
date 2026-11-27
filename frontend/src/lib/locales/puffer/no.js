@@ -3,6 +3,7 @@
  * Included in locales/no.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Velg bort sporet: mangler i opptaket etter stopp', anwaehlen: 'Tilbake i opptaket', abwaehlenKurz: 'Velg bort', anwaehlenKurz: 'Angre',
   zielHinweis: 'Nye spor legges til "{name}"', zielLoesen: 'Løs målet: nye spor blir igjen et eget opptak',
   zeitversatz: 'Tidsforskyvning',
   titelZurueck: 'Spor',

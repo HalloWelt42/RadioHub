@@ -275,6 +275,15 @@ Aufnahme (sie leuchtet, solange sie läuft) oder Stopp, das zugleich das Hören 
 Sender: Zurück und Vor springen nur im Zeitversatz durch die Titel des Puffers (an der Live-Kante kein Vor), sonst sind
 sie gesperrt (RAD-83).
 
+Titel abwählen (RAD-150): Läuft eine Aufnahme, trägt in der Puffer-Liste jeder Titel, der in ihr liegt (auch der
+laufende), statt "Aufnahme ab hier" die Taste Abwählen (Verbotszeichen); am Telefon steht sie beim aufgeklappten Titel.
+Ein abgewählter Titel ist durchgestrichen, die Taste zeigt dann Zurück und wählt ihn wieder an, beliebig oft, solange
+die Aufnahme läuft. Die Aufnahme selbst läuft ungestört weiter; die Anzeige zählt abgewählte Titel nicht mit. Nach dem
+Stopp und dem letzten Feinschnitt fehlen die abgewählten Titel ganz, als hätte es sie nie gegeben: Stück und Datei gehen
+in den Papierkorb der Ablage, alles danach rückt nach vorn (Stücke, Werbemarken, Titelliste und die Messwerte des
+Feinschnitts, `services/herausnehmen.py`), ein Schritt zum Rückgängigmachen entsteht nicht. Die Wahl liegt am Server
+(`POST /api/hls/abwahl` mit der Sekunde im Puffer), gilt also auch für andere Geräte.
+
 Podcasts am Telefon (RAD-14): oben Suche, Zählwerk und das Plus zum Abonnieren, darunter die Wahl Neu (Folgen aller
 Abos, neueste zuerst), Ungehört, Gespeichert und Abos (Übersicht nach Ordnern mit ungehört und gespeichert). Ein Abo
 zeigt seinen Kopf mit Aktualisieren, Neue speichern und Abbestellen (fragt vorher) und seine Folgen mit Sortierung. Der

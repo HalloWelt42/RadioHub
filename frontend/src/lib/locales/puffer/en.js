@@ -2,6 +2,7 @@
  * Buffer and recording (RAD-46). Included in locales/en.js as area "puffer".
  */
 export default {
+  abwaehlen: 'Deselect track: left out of the recording after stop', anwaehlen: 'Back into the recording', abwaehlenKurz: 'Deselect', anwaehlenKurz: 'Undo',
   zielHinweis: 'New tracks are added to "{name}"', zielLoesen: 'Release target: new tracks become their own recording again',
   zeitversatz: 'Time shift',
   titelZurueck: 'Track',

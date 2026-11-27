@@ -3,6 +3,7 @@
  * Included in locales/pl.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Odznacz utwór: po zatrzymaniu nie będzie w nagraniu', anwaehlen: 'Z powrotem do nagrania', abwaehlenKurz: 'Odznacz', anwaehlenKurz: 'Cofnij',
   zielHinweis: 'Nowe utwory trafiają do "{name}"', zielLoesen: 'Zwolnij cel: nowe utwory znów będą osobnym nagraniem',
   zeitversatz: 'Przesunięcie czasu',
   titelZurueck: 'Utwór',

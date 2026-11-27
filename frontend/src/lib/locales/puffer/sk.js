@@ -2,6 +2,7 @@
  * RadioHub - Slovak translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Vyradiť skladbu: po zastavení v nahrávke chýba', anwaehlen: 'Späť do nahrávky', abwaehlenKurz: 'Vyradiť', anwaehlenKurz: 'Späť',
   zielHinweis: 'Nové skladby sa pridávajú k "{name}"', zielLoesen: 'Uvoľniť cieľ: nové skladby budú opäť vlastná nahrávka',
   zeitversatz: 'Časový posun',
   titelZurueck: 'Skladba',

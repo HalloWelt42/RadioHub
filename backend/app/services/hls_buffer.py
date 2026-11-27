@@ -529,7 +529,22 @@ class HLSBufferService:
                  "sicher": s.sicher, "laufend": i == len(liste) - 1,
                  # beide Grenzen liegen im Puffer: der Titel lässt sich sichern (RAD-132)
                  "komplett": 0 < i < len(liste) - 1 and s.art == "titel",
-                 "gesichert": titelsicherung.gesichert(self._empfang, s.von, s.bis)} for i, s in enumerate(liste) if s.bis - v > anfang]
+                 "gesichert": titelsicherung.gesichert(self._empfang, s.von, s.bis),
+                 # gehört zur laufenden Aufnahme und lässt sich abwählen (RAD-150)
+                 **self._in_aufnahme(s.von, s.bis, i == len(liste) - 1)} for i, s in enumerate(liste) if s.bis - v > anfang]
+
+    def _in_aufnahme(self, von_e: float, bis_e: float, laufend: bool) -> dict:
+        from .recorder import rec_manager
+        s = rec_manager.active_session
+        drin = bool(s and s.empfang is self._empfang and bis_e > s.versatz_s and s.abnehmer)
+        return {"in_aufnahme": drin, "abgewaehlt": drin and rec_manager.abgewaehlt(von_e)}
+
+    def abwaehlen(self, bei_s: float, an: bool) -> bool:
+        """Den Titel an dieser Stelle (Sekunden des Puffers) aus der laufenden Aufnahme ab- oder wieder anwählen (RAD-150)."""
+        from .recorder import rec_manager
+        v = self._versatz_s
+        a = next((a for a in self.abschnitte() if a["von"] - 0.5 <= bei_s < a["bis"] and a["in_aufnahme"] and a["art"] == "titel"), None)
+        return bool(a) and rec_manager.abwaehlen(a["von"] + v, None if a["laufend"] else a["bis"] + v, an)
 
     async def _monitor_ffmpeg(self):
         """Überwacht ffmpeg Prozess im Hintergrund"""

@@ -3,6 +3,7 @@
  * view (desktop and phone), notice after a recording starts. Included in locales/fr.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Désélectionner : absent de l\'enregistrement après l\'arrêt', anwaehlen: 'Remettre dans l\'enregistrement', abwaehlenKurz: 'Retirer', anwaehlenKurz: 'Annuler',
   zielHinweis: 'Les nouveaux titres s\'ajoutent à "{name}"', zielLoesen: 'Libérer la cible : les nouveaux titres forment de nouveau un enregistrement à part',
   zeitversatz: "Différé",
   titelZurueck: "Titre",

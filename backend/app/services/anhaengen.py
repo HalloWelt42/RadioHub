@@ -10,7 +10,6 @@ Schritten. Bricht es mittendrin ab, zeigt jede Zeile auf eine Datei, die es gibt
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 from pathlib import PurePosixPath
 from typing import Any
@@ -131,7 +130,7 @@ async def abtrennen(ziel_id: str, daten: dict[str, Any]) -> None:
     liste = await aufnahmen.titelliste(ziel)
     if isinstance(liste, dict):
         eigene = [e for e in liste.get("entries", []) if e.get("t", 0) < ab]
-        await _titelliste_schreiben(ziel, {**liste, "entries": eigene, "total_audio_bytes": daten["ziel_bytes"]})
+        await aufnahmen.titelliste_schreiben(ziel, {**liste, "entries": eigene, "total_audio_bytes": daten["ziel_bytes"]})
     aufnahmen._neu_nummerieren(ziel_id)
     for sid in (ziel_id, quelle["id"]):
         _groesse_und_dauer(sid)
@@ -170,14 +169,7 @@ async def _titelliste_uebernehmen(quelle: dict, ziel: dict, ab_ms: int) -> None:
     alt = alt or {"entries": [], "total_audio_bytes": 0}
     b = alt.get("total_audio_bytes", 0)
     eintraege = [{**e, "t": e.get("t", 0) + ab_ms, "b": e.get("b", 0) + b} for e in neu.get("entries", [])]
-    await _titelliste_schreiben(ziel, {**alt, "entries": [*alt.get("entries", []), *eintraege], "total_audio_bytes": b + neu.get("total_audio_bytes", 0)})
-
-
-async def _titelliste_schreiben(sitzung: dict, liste: dict) -> None:
-    pfad = sitzung.get("meta_file_path") or orte.titelliste(sitzung["file_path"])
-    await ablage().schreiben(pfad, json.dumps(liste, ensure_ascii=False, indent=2).encode())
-    with db_session() as conn:
-        conn.execute("UPDATE sessions SET meta_file_path = ? WHERE id = ?", (pfad, sitzung["id"]))
+    await aufnahmen.titelliste_schreiben(ziel, {**alt, "entries": [*alt.get("entries", []), *eintraege], "total_audio_bytes": b + neu.get("total_audio_bytes", 0)})
 
 
 async def nachholen() -> int:

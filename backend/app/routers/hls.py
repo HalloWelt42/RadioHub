@@ -149,6 +149,21 @@ class Titelwunsch(BaseModel):
     ziel: Optional[str] = None
 
 
+class Abwahl(BaseModel):
+    """Eine Sekunde des Puffers im Titel; `an`: abwählen, sonst wieder anwählen."""
+    bei_s: float
+    an: bool = True
+
+
+@router.post("/abwahl")
+async def abwaehlen(wunsch: Abwahl):
+    """Einen Titel der laufenden Aufnahme abwählen (RAD-150): sie läuft weiter, der Titel fehlt danach ganz; solange sie läuft, lässt
+    er sich wieder anwählen."""
+    if not hls_buffer.abwaehlen(wunsch.bei_s, wunsch.an):
+        raise HTTPException(409, "An dieser Stelle ist kein Titel der laufenden Aufnahme")
+    return {"abgewaehlt": wunsch.an}
+
+
 @router.post("/titel")
 async def titel_sichern(wunsch: Titelwunsch):
     """Den fertigen Titel an dieser Stelle als eigene Aufnahme sichern (RAD-132), auch während eine Aufnahme läuft."""

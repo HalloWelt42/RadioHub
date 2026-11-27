@@ -3,6 +3,7 @@
  * view (desktop and phone), notice after a recording starts. Included in locales/es.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Quitar pista: no estará en la grabación al parar', anwaehlen: 'Volver a la grabación', abwaehlenKurz: 'Quitar', anwaehlenKurz: 'Deshacer',
   zielHinweis: 'Los nuevos títulos se añaden a "{name}"', zielLoesen: 'Soltar destino: los nuevos títulos vuelven a ser una grabación propia',
   zeitversatz: "Diferido",
   titelZurueck: "Pista",

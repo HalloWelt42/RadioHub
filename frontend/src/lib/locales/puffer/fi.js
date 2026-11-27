@@ -3,6 +3,7 @@
  * Included in locales/fi.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Jätä kappale pois: puuttuu tallenteesta pysäytyksen jälkeen', anwaehlen: 'Takaisin tallenteeseen', abwaehlenKurz: 'Jätä pois', anwaehlenKurz: 'Kumoa',
   zielHinweis: 'Uudet kappaleet lisätään: "{name}"', zielLoesen: 'Vapauta kohde: uusista kappaleista tulee taas oma tallenne',
   zeitversatz: 'Aikasiirto',
   titelZurueck: 'Kappale',

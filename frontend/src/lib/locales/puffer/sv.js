@@ -3,6 +3,7 @@
  * Included in locales/sv.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Välj bort låten: saknas i inspelningen efter stopp', anwaehlen: 'Tillbaka i inspelningen', abwaehlenKurz: 'Välj bort', anwaehlenKurz: 'Ångra',
   zielHinweis: 'Nya låtar läggs till "{name}"', zielLoesen: 'Släpp målet: nya låtar blir åter en egen inspelning',
   zeitversatz: 'Tidsförskjutning',
   titelZurueck: 'Spår',

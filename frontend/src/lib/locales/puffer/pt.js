@@ -3,6 +3,7 @@
  * telemóvel), aviso após iniciar uma gravação. Incluído em locales/pt.js como secção "puffer".
  */
 export default {
+  abwaehlen: 'Excluir faixa: fica fora da gravação ao parar', anwaehlen: 'De volta à gravação', abwaehlenKurz: 'Excluir', anwaehlenKurz: 'Desfazer',
   zielHinweis: 'As novas faixas juntam-se a "{name}"', zielLoesen: 'Soltar destino: as novas faixas voltam a ser uma gravação própria',
   zeitversatz: 'Diferido',
   titelZurueck: 'Faixa',

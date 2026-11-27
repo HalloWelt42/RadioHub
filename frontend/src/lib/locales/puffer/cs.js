@@ -2,6 +2,7 @@
  * RadioHub - Czech translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Vyřadit skladbu: po zastavení v nahrávce chybí', anwaehlen: 'Zpět do nahrávky', abwaehlenKurz: 'Vyřadit', anwaehlenKurz: 'Zpět',
   zielHinweis: 'Nové skladby se přidávají k "{name}"', zielLoesen: 'Uvolnit cíl: nové skladby budou zase vlastní nahrávka',
   zeitversatz: 'Časový posun',
   titelZurueck: 'Skladba',

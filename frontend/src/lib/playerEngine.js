@@ -861,7 +861,7 @@ function _startRecordingPoll() {
           _recordingStartTime = Date.now() - status.duration * 1000;
         }
         // ICY-Daten und Events aus Status in State übernehmen
-        _appState.recordingIcyCount = status.icy_count || 0;
+        _appState.recordingIcyCount = status.titel_count ?? status.icy_count ?? 0;
         _appState.recordingIcyEntries = status.icy_entries || [];
         _appState.recordingEvents = status.events || [];
         // ICY-Titel live aktualisieren
@@ -930,7 +930,7 @@ export async function checkAndRecoverRecordingState() {
     _appState.recordingSession = activeStatus.session_id || null;
     _appState.recordingStationUuid = activeStatus.station_uuid || null;
     _appState.recordingElapsed = Math.floor(activeStatus.duration || 0);
-    _appState.recordingIcyCount = activeStatus.icy_count || 0;
+    _appState.recordingIcyCount = activeStatus.titel_count ?? activeStatus.icy_count ?? 0;
     _appState.recordingIcyEntries = activeStatus.icy_entries || [];
     _appState.recordingEvents = activeStatus.events || [];
     _recordingStartTime = Date.now() - (_appState.recordingElapsed * 1000);

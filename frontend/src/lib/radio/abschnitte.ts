@@ -18,7 +18,14 @@ export interface Abschnitt {
   komplett: boolean;
   /** Kennung seiner Aufnahme, leer: noch nicht gesichert */
   gesichert: string;
+  /** gehört zur laufenden Aufnahme (RAD-150) */
+  in_aufnahme?: boolean;
+  /** dort abgewählt: fehlt nach dem Stopp in der Aufnahme */
+  abgewaehlt?: boolean;
 }
+
+/** lässt sich gerade aus der laufenden Aufnahme ab- oder wieder anwählen (RAD-150) */
+export const abwaehlbar = (a: Abschnitt): boolean => !!a.in_aufnahme && a.art === "titel";
 
 /** so weit hinter dem Anfang eines Titels springt "Vorheriger Titel" an den Anfang des vorigen statt dieses */
 export const ZURUECK_SCHWELLE_S = 3;

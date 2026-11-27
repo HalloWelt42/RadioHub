@@ -6,7 +6,7 @@
   import { appState, actions } from "../../lib/store.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
   import { formatTimeShort } from "../../lib/formatters.js";
-  import { bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../../lib/radio/abschnitte";
+  import { abwaehlbar, bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
   import { live } from "../../spieler/aktionen";
   import { titelsichern } from "../../spieler/titelsichern.svelte";
@@ -70,6 +70,17 @@
     try {
       await puffer.aufnehmenAb(a.von);
       actions.showToast(t("puffer.aufnahmeGestartet", { titel: name(a) }), "success");
+    } catch (e) {
+      actions.showToast(t("puffer.fehler", { text: (e as Error).message }), "error");
+    } finally {
+      beschaeftigt = false;
+    }
+  }
+
+  async function abwaehlen(a: Abschnitt): Promise<void> {
+    beschaeftigt = true;
+    try {
+      await puffer.abwaehlen(a, !a.abgewaehlt);
     } catch (e) {
       actions.showToast(t("puffer.fehler", { text: (e as Error).message }), "error");
     } finally {
@@ -203,7 +214,7 @@
       {#each [...liste].reverse() as a (a.von)}
         {@const hoert = bei(liste, stelle)?.von === a.von}
         {@const imBer = gewaehlt.some((g) => g.von === a.von)}
-        <li class="rh-pg-zeile {a.art}" class:hoert class:gewaehlt={imBer}>
+        <li class="rh-pg-zeile {a.art}" class:hoert class:gewaehlt={imBer} class:abgewaehlt={a.abgewaehlt}>
           <span class="rh-zahl rh-pg-ab">{uhr(a.von)}</span>
           <span class="rh-pg-name">{#if a.art === "werbung"}<i class="fa-solid fa-rectangle-ad"></i>{/if}<b title={a.titel}>{name(a)}</b>{#if a.laufend}<span class="rh-pg-laeuft">{t("puffer.laeuft")}</span>{/if}</span>
           <span class="rh-zahl rh-pg-laenge">{formatTimeShort(a.bis - a.von)}</span>
@@ -211,8 +222,15 @@
             <button class="rund" type="button" title={t("puffer.hierHoeren")} aria-label={t("puffer.hierHoeren")} onclick={() => hoeren(a)}><i class="fa-solid fa-play"></i></button>
             <button class="rund" type="button" title={titelsichern.hilfe(a)} aria-label={titelsichern.hilfe(a)} disabled={!titelsichern.geht(a)}
               onclick={() => void titelsichern.tun(a)}><i class={titelsichern.symbol(a)}></i></button>
+            {#if aufnahme && abwaehlbar(a)}
+              <!-- während der Aufnahme: derselbe Platz wählt den Titel ab oder wieder an (RAD-150) -->
+              <button class="rund rh-pg-abwahl" type="button" aria-pressed={!!a.abgewaehlt} title={a.abgewaehlt ? t("puffer.anwaehlen") : t("puffer.abwaehlen")}
+                aria-label={a.abgewaehlt ? t("puffer.anwaehlen") : t("puffer.abwaehlen")} disabled={beschaeftigt} onclick={() => void abwaehlen(a)}>
+                <i class="fa-solid {a.abgewaehlt ? 'fa-rotate-left' : 'fa-ban'}"></i></button>
+            {:else}
             <button class="rund rh-pg-rec" type="button" title={t("puffer.aufnahmeAbHier")} aria-label={t("puffer.aufnahmeAbHier")}
               disabled={a.art === "werbung" || aufnahme || beschaeftigt} onclick={() => void aufnehmenAb(a)}><i class="fa-solid fa-circle"></i></button>
+            {/if}
             <button class="rund rh-pg-wahl" type="button" title={t("puffer.bereichWahl")} aria-label={t("puffer.bereichWahl")} aria-pressed={imBer}
               disabled={a.art === "werbung" || a.laufend} onclick={() => waehlen(a)}><i class={imBer ? "fa-solid fa-square-check" : "fa-regular fa-square"}></i></button>
           </span>

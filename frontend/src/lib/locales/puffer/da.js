@@ -2,6 +2,7 @@
  * RadioHub - Danish translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Fravælg nummer: mangler i optagelsen efter stop', anwaehlen: 'Tilbage i optagelsen', abwaehlenKurz: 'Fravælg', anwaehlenKurz: 'Fortryd',
   zielHinweis: 'Nye numre føjes til "{name}"', zielLoesen: 'Slip målet: nye numre bliver igen en egen optagelse',
   zeitversatz: 'Tidsforskydning',
   titelZurueck: 'Nummer',

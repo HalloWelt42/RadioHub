@@ -3,6 +3,7 @@
  * view (desktop and phone), notice after a recording starts. Included in locales/it.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Escludi brano: manca nella registrazione dopo lo stop', anwaehlen: 'Di nuovo nella registrazione', abwaehlenKurz: 'Escludi', anwaehlenKurz: 'Annulla',
   zielHinweis: 'I nuovi titoli si aggiungono a "{name}"', zielLoesen: 'Sciogli destinazione: i nuovi titoli tornano una registrazione a sé',
   zeitversatz: "Differita",
   titelZurueck: "Brano",

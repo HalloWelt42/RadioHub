@@ -182,6 +182,12 @@ class Puffer {
     this.geladen = this.geladen.map((x) => (x.von === a.von ? { ...x, gesichert: r.session_id } : x));
   }
 
+  /** einen Titel aus der laufenden Aufnahme ab- oder wieder anwählen (RAD-150) */
+  async abwaehlen(a: Abschnitt, an: boolean): Promise<void> {
+    await this.a("/api/hls/abwahl", { methode: "POST", daten: { bei_s: a.laufend ? a.von + 1 : (a.von + a.bis) / 2, an } });
+    this.geladen = this.geladen.map((x) => (x.von === a.von ? { ...x, abgewaehlt: an } : x));
+  }
+
   /** Einen Bereich als fertige Aufnahme sichern; sie endet von selbst an seinem Ende */
   async bereichSichern(von: number, bis: number): Promise<Aufnahmestart> {
     const r = await this.a<Aufnahmestart>("/api/hls/aufnahme", { methode: "POST", daten: { von_s: von, bis_s: bis, ziel: engine.aufnahmeziel() } });

@@ -5,7 +5,7 @@
   import { appState, actions } from "../../lib/store.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
   import { formatTimeShort } from "../../lib/formatters.js";
-  import { bei, bereichAus, imBereich, type Abschnitt } from "../../lib/radio/abschnitte";
+  import { abwaehlbar, bei, bereichAus, imBereich, type Abschnitt } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
   import { tick, untrack } from "svelte";
   import { titelsichern } from "../../spieler/titelsichern.svelte";
@@ -56,6 +56,18 @@
     }
   }
 
+  async function abwaehlen(a: Abschnitt) {
+    beschaeftigt = true;
+    try {
+      await puffer.abwaehlen(a, !a.abgewaehlt);
+      offen = null;
+    } catch (e) {
+      actions.showToast(t("puffer.fehler", { text: (e as Error).message }), "error");
+    } finally {
+      beschaeftigt = false;
+    }
+  }
+
   async function sichern(): Promise<void> {
     if (!bereich) return;
     if (appState.isRecording) return actions.showToast(t("puffer.aufnahmeLaeuft"), "error");
@@ -84,7 +96,7 @@
     {#each [...liste].reverse() as a (a.von)}
       {@const hoert = bei(liste, stelle)?.von === a.von}
       {@const imBer = gewaehlt.some((g) => g.von === a.von)}
-      <li class="tp-zeile {a.art}" class:hoert class:gewaehlt={imBer} class:mit-sichern={a.komplett && !bereichAn} data-von={a.von}>
+      <li class="tp-zeile {a.art}" class:abgewaehlt={a.abgewaehlt} class:hoert class:gewaehlt={imBer} class:mit-sichern={a.komplett && !bereichAn} data-von={a.von}>
         <button class="tp-kern" class:mit-wahl={bereichAn} type="button" onclick={() => antippen(a)} aria-expanded={!bereichAn ? offen === a.von : undefined}>
           {#if bereichAn}
             <i class="tp-wahl {imBer ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}" class:aus={a.art === "werbung" || a.laufend}></i>
@@ -99,8 +111,13 @@
         {#if !bereichAn && offen === a.von}
           <div class="tp-tat">
             <button type="button" onclick={() => { puffer.springen(a.von); offen = null; }}><i class="fa-solid fa-play"></i>{t("puffer.hierHoeren")}</button>
+            {#if appState.isRecording && abwaehlbar(a)}
+              <button type="button" aria-pressed={!!a.abgewaehlt} title={a.abgewaehlt ? t("puffer.anwaehlen") : t("puffer.abwaehlen")} disabled={beschaeftigt}
+                onclick={() => void abwaehlen(a)}><i class="fa-solid {a.abgewaehlt ? 'fa-rotate-left' : 'fa-ban'}"></i>{a.abgewaehlt ? t("puffer.anwaehlenKurz") : t("puffer.abwaehlenKurz")}</button>
+            {:else}
             <button type="button" class="tp-rec" title={t("puffer.aufnahmeAbHier")} disabled={a.art === "werbung" || !!appState.isRecording || beschaeftigt}
               onclick={() => void aufnehmen(a)}><i class="fa-solid fa-circle"></i>{t("puffer.aufnehmen")}</button>
+            {/if}
             <button type="button" disabled={a.art === "werbung" || a.laufend} onclick={() => { bereichAn = true; wahl = { a, b: a }; offen = null; }}>
               <i class="fa-solid fa-square-check"></i>{t("puffer.bereich")}</button>
           </div>
@@ -127,6 +144,7 @@
   .tp-oben { padding: 4px var(--rahmen-rand) 10px; }
   .tp-liste { min-height: 0; margin: 0; padding: 0 var(--rahmen-rand) 12px; list-style: none; display: grid; gap: 6px; align-content: start; overflow-y: auto; overflow-x: clip; }
   .tp-zeile { display: grid; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--t-flaeche); }
+  .tp-zeile.abgewaehlt b { text-decoration: line-through; opacity: .6; }
   .tp-zeile.hoert { background: color-mix(in srgb, var(--led-blau) 16%, var(--t-flaeche)); }
   .tp-zeile.gewaehlt { box-shadow: inset 0 0 0 2px var(--led-rot); }
   .tp-zeile.werbung b { color: var(--violett); }

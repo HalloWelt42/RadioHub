@@ -3,6 +3,7 @@
  * Included in locales/nl.js as section "puffer".
  */
 export default {
+  abwaehlen: 'Nummer uitzetten: ontbreekt na stop in de opname', anwaehlen: 'Weer in de opname', abwaehlenKurz: 'Uitzetten', anwaehlenKurz: 'Terug',
   zielHinweis: 'Nieuwe nummers komen bij "{name}"', zielLoesen: 'Doel loslaten: nieuwe nummers worden weer een eigen opname',
   zeitversatz: 'Tijdverschuiving',
   titelZurueck: 'Nummer',

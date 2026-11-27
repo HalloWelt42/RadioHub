@@ -160,6 +160,13 @@ class Aufnahmen:
             conn.execute("UPDATE sessions SET meta_file_path = ? WHERE id = ?", (pfad, session_id))
         return pfad
 
+    async def titelliste_schreiben(self, sitzung: dict, liste: dict) -> None:
+        """Die Titelliste der Aufnahme neu schreiben (Anhängen, Herausnehmen) und eintragen."""
+        pfad = sitzung.get("meta_file_path") or orte.titelliste(sitzung["file_path"])
+        await ablage().schreiben(pfad, json.dumps(liste, ensure_ascii=False, indent=2).encode())
+        with db_session() as conn:
+            conn.execute("UPDATE sessions SET meta_file_path = ? WHERE id = ?", (pfad, sitzung["id"]))
+
     async def titelliste(self, sitzung: dict) -> dict | list | None:
         """Die Titelliste der Aufnahme; fehlt sie in der Ablage (gelöscht, nie abgelegt), gibt es eben keine."""
         pfad = sitzung.get("meta_file_path")

@@ -2,6 +2,7 @@
  * RadioHub - Romanian translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Exclude piesa: lipsește din înregistrare după oprire', anwaehlen: 'Înapoi în înregistrare', abwaehlenKurz: 'Exclude', anwaehlenKurz: 'Anulează',
   zielHinweis: 'Titlurile noi se adaugă la "{name}"', zielLoesen: 'Eliberează ținta: titlurile noi devin din nou o înregistrare proprie',
   zeitversatz: 'Decalaj',
   titelZurueck: 'Piesă',

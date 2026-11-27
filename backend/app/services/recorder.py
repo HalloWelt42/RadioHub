@@ -42,6 +42,7 @@ from ..ablage import ablage, orte
 from ..database import db_session
 from ..config import get_arbeit_dir, get_active_recording_folder
 from .aufnahmen import TITEL_ZAEHLT, AufnahmeFehler, aufnahmen
+from .herausnehmen import stuecke_herausnehmen
 from .config_service import config_service
 from . import feinschnitt_lauf, werbestellen
 from .laufschnitt import LANG_S, Laufschnitt
@@ -160,6 +161,9 @@ class RecordingSession:
         #: Feinschnitt in Abschnitten (nur mit Empfang: er braucht Pausen und Titel)
         self.laufschnitt: Optional[Laufschnitt] = None
         self.schnitt_task: Optional[asyncio.Task] = None
+        #: abgewählte Titel (RAD-150): Beginn eines Abschnitts -> eine Stelle darin, beides Sekunden des Empfangs. Am Ende fällt das
+        #: Stück, das die Stelle enthält, aus der Aufnahme, als hätte es ihn nie gegeben; bis dahin lässt es sich wieder anwählen
+        self.abwahl: dict[float, float] = {}
 
         # Live-Split Felder
         self.segment_index: int = 0
@@ -1066,7 +1070,11 @@ class RecorderManager:
         if schneiden:
             self._feinschnitt_task = asyncio.create_task(self._feinschnitt(session, status))
         else:
-            self._feinschnitt_task = asyncio.create_task(self._ans_ziel(session, status))
+            self._feinschnitt_task = asyncio.create_task(self._ohne_feinschnitt(session, status))
+
+    async def _ohne_feinschnitt(self, session: RecordingSession, status: str) -> None:
+        await self._abgewaehlte_entfernen(session)
+        await self._ans_ziel(session, status)
 
     async def feinschnitt_abwarten(self) -> None:
         """Bis ein laufender Feinschnitt fertig ist (Tests, Herunterfahren)."""
@@ -1077,6 +1085,7 @@ class RecorderManager:
         """Der letzte Abschnitt des Feinschnitts; schlägt er fehl, bleiben dort die groben Stücke."""
         try:
             await session.laufschnitt.durchgang(abschluss=True)
+            await self._abgewaehlte_entfernen(session)
         except Exception as f:
             logger.warning(f"REC Feinschnitt {session.id} fehlgeschlagen: {f} (die groben Stücke bleiben)")
             session.logger.log(f"FEINSCHNITT-FEHLER {f}")
@@ -1099,6 +1108,33 @@ class RecorderManager:
         except Exception as f:
             logger.warning(f"REC {session.id} bleibt eine eigene Aufnahme: {f}")
             await self.melden("radio.aufnahme", f"Aufnahme {session.station_name} wurde nicht angehängt und bleibt eine eigene: {f}")
+
+    def abwaehlen(self, von_e: float, bis_e: Optional[float], an: bool) -> bool:
+        """Einen Titel der laufenden Aufnahme ab- oder wieder anwählen (Sekunden des Empfangs, `bis_e` None: läuft noch). False, wenn
+        er nicht zur Aufnahme gehört."""
+        s = self.active_session
+        if not s or not s.empfang or (bis_e is not None and bis_e <= s.versatz_s):
+            return False
+        schluessel = round(von_e, 1)
+        if not an:
+            s.abwahl.pop(schluessel, None)
+            return True
+        anfang = max(von_e, s.versatz_s)
+        s.abwahl[schluessel] = anfang + (min(5.0, (bis_e - anfang) / 2) if bis_e is not None else 1.0)
+        s.logger.log(f"ABWAHL bei {s.abwahl[schluessel] - s.versatz_s:.1f} s")
+        return True
+
+    def abgewaehlt(self, von_e: float) -> bool:
+        s = self.active_session
+        return bool(s and round(von_e, 1) in s.abwahl)
+
+    async def _abgewaehlte_entfernen(self, session: RecordingSession) -> int:
+        """Die abgewählten Titel aus der fertigen Aufnahme, als hätte es sie nie gegeben (RAD-150)."""
+        stellen = [(p - session.versatz_s) * 1000 for p in session.abwahl.values()]
+        weg = [z for z in aufnahmen.segmente(session.id) if any((z["start_ms"] or 0) <= t < (z["end_ms"] or 0) for t in stellen)]
+        if await stuecke_herausnehmen(session.id, weg):
+            session.logger.log(f"ABGEWÄHLT entfernt: {', '.join(z['title'] for z in weg)}")
+        return len(weg)
 
     def messlage(self) -> dict:
         """Für den Messmodus: die laufende Aufnahme (Ton gegen Uhr, was lokal liegt, wie weit der Feinschnitt ist)."""
@@ -1324,6 +1360,8 @@ class RecorderManager:
         if session.titelbuch and session.titelbuch.entries:
             status["icy_title"] = session.titelbuch.entries[-1].get("title", "")
             status["icy_count"] = session.titelbuch.entry_count
+            # Titel, die bleiben: abgewählte fallen nach dem Schnitt weg (RAD-150)
+            status["titel_count"] = max(0, session.titelbuch.entry_count - len(session.abwahl))
             status["icy_entries"] = [
                 {
                     "title": e.get("title", ""),

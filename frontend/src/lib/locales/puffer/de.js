@@ -3,6 +3,7 @@
  * Telefon), Hinweis nach dem Start einer Aufnahme. Eingebunden in locales/de.js als Bereich "puffer".
  */
 export default {
+  abwaehlen: 'Titel abwählen: fehlt nach dem Stopp in der Aufnahme', anwaehlen: 'Wieder in die Aufnahme', abwaehlenKurz: 'Abwählen', anwaehlenKurz: 'Zurück',
   zielHinweis: 'Neue Titel kommen zu "{name}"', zielLoesen: 'Ziel lösen: neue Titel werden wieder eine eigene Aufnahme',
   zeitversatz: 'Zeitversatz',
   titelZurueck: 'Titel',

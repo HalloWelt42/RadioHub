@@ -2,6 +2,7 @@
  * RadioHub - Russian translations: buffer and recording.
  */
 export default {
+  abwaehlen: 'Исключить трек: после остановки его не будет в записи', anwaehlen: 'Вернуть в запись', abwaehlenKurz: 'Исключить', anwaehlenKurz: 'Вернуть',
   zielHinweis: 'Новые треки добавляются к "{name}"', zielLoesen: 'Снять цель: новые треки снова станут отдельной записью',
   zeitversatz: 'Задержка эфира',
   titelZurueck: 'Трек',

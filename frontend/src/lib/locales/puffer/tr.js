@@ -2,6 +2,7 @@
  * RadioHub - Turkish translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Parçayı çıkar: durdurunca kayıtta olmaz', anwaehlen: 'Kayda geri al', abwaehlenKurz: 'Çıkar', anwaehlenKurz: 'Geri al',
   zielHinweis: 'Yeni parçalar şuna eklenir: "{name}"', zielLoesen: 'Hedefi bırak: yeni parçalar yine ayrı kayıt olur',
   zeitversatz: 'Zaman kaydırma',
   titelZurueck: 'Parça',

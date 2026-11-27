@@ -491,6 +491,9 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-pg-zeile.hoert { background-color: color-mix(in srgb, var(--led-blau) 14%, var(--flaeche-2)); }
 .rh-pg-zeile.gewaehlt { box-shadow: var(--rh-kante), inset 0 0 0 2px var(--led-rot); background-color: color-mix(in srgb, var(--led-rot) 10%, var(--flaeche-2)); }
 .rh-pg-aktionen { display: flex; gap: 4px; }
+/* abgewählt (RAD-150): fehlt nach dem Stopp in der Aufnahme */
+.rh-pg-zeile.abgewaehlt .rh-pg-name b { text-decoration: line-through; color: var(--text-3); }
+.rh-pg-abwahl[aria-pressed="true"] i { color: var(--akzent); }
 .rh-pg-rec i { color: var(--led-rot); }
 .rh-pg-rec:disabled i, .rh-pg-wahl:disabled i { color: var(--text-3); }
 .rh-pg-wahl[aria-pressed="true"] i { color: var(--led-rot); }

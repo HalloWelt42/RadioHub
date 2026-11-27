@@ -2,6 +2,7 @@
  * RadioHub - Japanese translations: buffer and recording.
  */
 export default {
+  abwaehlen: '曲を除外: 停止後の録音に含まれません', anwaehlen: '録音に戻す', abwaehlenKurz: '除外', anwaehlenKurz: '元に戻す',
   zielHinweis: '新しい曲は "{name}" に追加されます', zielLoesen: '追加先を解除: 新しい曲は再び別の録音になります',
   zeitversatz: 'タイムシフト',
   titelZurueck: '曲',

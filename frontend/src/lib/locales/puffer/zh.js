@@ -2,6 +2,7 @@
  * RadioHub - Chinese (Simplified) translations: buffer and recording.
  */
 export default {
+  abwaehlen: '排除曲目：停止后不在录音中', anwaehlen: '放回录音', abwaehlenKurz: '排除', anwaehlenKurz: '撤销',
   zielHinweis: '新曲目将添加到 "{name}"', zielLoesen: '解除目标：新曲目重新成为单独录音',
   zeitversatz: '时移',
   titelZurueck: '曲目',

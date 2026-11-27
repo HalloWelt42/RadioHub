@@ -2,6 +2,7 @@
  * RadioHub - Hungarian translations: buffer and recording (RAD-46).
  */
 export default {
+  abwaehlen: 'Szám kihagyása: leállítás után nem lesz a felvételben', anwaehlen: 'Vissza a felvételbe', abwaehlenKurz: 'Kihagyás', anwaehlenKurz: 'Vissza',
   zielHinweis: 'Az új számok ide kerülnek: "{name}"', zielLoesen: 'Cél feloldása: az új számok ismét külön felvétel lesznek',
   zeitversatz: 'Időeltolás',
   titelZurueck: 'Szám',
