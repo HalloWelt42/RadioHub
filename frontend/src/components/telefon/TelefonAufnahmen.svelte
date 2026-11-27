@@ -147,7 +147,7 @@
                 hilfe={t("aufnahmenAnsicht.suche")} onsuche={(s) => zustand.aendern((a) => ({ ...a, suche: s }))} />
     </div>
     <div class="t-chips">
-      <span class="t-treffer" title={t("aufnahmenAnsicht.zaehlerHilfe")}><ak-segmente art="7" stellen="4" farbe="rot" text={liste.gesamt === null ? "----" : zahl(liste.gesamt)}></ak-segmente>{t("aufnahmenAnsicht.aufnahmen")}</span>
+      <span class="t-treffer" title={t("aufnahmenAnsicht.zaehlerHilfe")}><ak-segmente class="rh-aufnahmezahl" art="7" stellen="4" text={liste.gesamt === null ? "----" : zahl(liste.gesamt)}></ak-segmente>{t("aufnahmenAnsicht.aufnahmen")}</span>
       {#each wahl as w (w.wert)}
         <button type="button" class="chip wahl" class:an={ansicht.ordner === w.wert} aria-pressed={ansicht.ordner === w.wert}
                 onclick={() => zustand.aendern((a) => ({ ...a, ordner: w.wert }))}>{w.name}</button>

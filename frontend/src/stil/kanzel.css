@@ -230,7 +230,7 @@
    mit heller Kante: lesbar auf der gelben Füllung wie auf der leeren Bahn), eine laufende Aufnahme rot hinterlegt, beim
    Überfahren der Titel an der Stelle. Violett bleibt Werbung (rh-werbemarke). */
 .rh-spulbahn { position: relative; }
-.rh-aufnahmemarke { position: absolute; top: 0; bottom: 0; background-color: color-mix(in srgb, var(--led-rot) 60%, transparent); }
+.rh-aufnahmemarke { position: absolute; top: 0; bottom: 0; background-color: color-mix(in srgb, var(--rh-aufnahme) 60%, transparent); }
 .rh-titelstriche { position: relative; align-self: center; block-size: 14px; pointer-events: none; }
 .rh-titelstriche i { position: absolute; top: 0; bottom: 0; inline-size: 2px; margin-left: -1px; border-radius: 1px; background-color: var(--hg);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-1) 65%, transparent); }

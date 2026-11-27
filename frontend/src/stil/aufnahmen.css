@@ -10,7 +10,7 @@
 .rh-aordner .rh-ordner-symbol, .rh-alle-abos .rh-ordner-symbol { color: var(--akzent); }
 .rh-alle-abos:has(.rh-ordner-symbol) { grid-template-columns: 20px minmax(0, 1fr) auto; }
 .rh-aordner:hover .rh-nadel, .rh-aordner:focus-within .rh-nadel { opacity: 1; }
-.rh-aordner .rh-nadel.an { color: var(--led-rot); }
+.rh-aordner .rh-nadel.an { color: var(--rh-aufnahme); }
 .rh-aordner .rh-nadel.an i { rotate: none; }
 .rh-aordner .rh-abo-ende { gap: 2px; }
 .rh-ordner-frage { padding: 0 4px 8px; }
@@ -54,7 +54,9 @@
 .rh-a-nr, .rh-a-dateisymbol { grid-area: logo; inline-size: calc(var(--gross) * 2.4); block-size: calc(var(--gross) * 2.4); display: grid; place-items: center; border-radius: var(--r2);
   font-family: var(--schrift-zahl); color: var(--text-2); background-color: var(--mulde); box-shadow: var(--rh-mulde); }
 .rh-a-dateisymbol { color: var(--akzent); }
-.rh-aufnahme.laeuft { box-shadow: 0 0 0 2px var(--led-rot), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--led-rot) 30%, transparent); }
+/* Zählwerk der Aufnahmen in der Farbe der Aufnahme (RAD-151); im hellen HiFi leuchtet es wie alle Anzeigen hell */
+ak-segmente.rh-aufnahmezahl { --farbe: var(--rh-aufnahme); }
+.rh-aufnahme.laeuft { box-shadow: 0 0 0 2px var(--rh-aufnahme), 0 0 calc(14px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-aufnahme) 30%, transparent); }
 .rh-a-warn { color: var(--led-bernstein); display: inline-flex; gap: 6px; align-items: center; }
 .rh-a-frage { padding: 0 12px 10px; }
 

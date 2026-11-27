@@ -146,7 +146,7 @@
   .tp-zeile { display: grid; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--t-flaeche); }
   .tp-zeile.abgewaehlt b { text-decoration: line-through; opacity: .6; }
   .tp-zeile.hoert { background: color-mix(in srgb, var(--led-blau) 16%, var(--t-flaeche)); }
-  .tp-zeile.gewaehlt { box-shadow: inset 0 0 0 2px var(--led-rot); }
+  .tp-zeile.gewaehlt { box-shadow: inset 0 0 0 2px var(--rh-aufnahme); }
   .tp-zeile.werbung b { color: var(--violett); }
   .tp-kern { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; padding: 0; border: none; background: transparent;
     color: inherit; font: inherit; text-align: left; }
@@ -154,7 +154,7 @@
   .tp-wahl { margin-top: .3em; justify-self: center; }
   .tp-wahl { font-size: calc(var(--gross) * 1.15); color: var(--t-text-2); }
   .tp-wahl.aus { opacity: .35; }
-  .tp-zeile.gewaehlt .tp-wahl { color: var(--led-rot); }
+  .tp-zeile.gewaehlt .tp-wahl { color: var(--rh-aufnahme); }
   .tp-text { display: grid; min-width: 0; }
   .tp-text b { font-size: var(--gross); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tp-text b i { margin-right: 6px; }
@@ -168,8 +168,8 @@
   .tp-tat button, .tp-fuss button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 6px;
     border: 1px solid var(--rand); border-radius: 10px; background: var(--t-flaeche-2); color: var(--t-text); font: inherit; font-size: var(--klein); }
   .tp-tat button:disabled, .tp-fuss button:disabled { opacity: .45; }
-  .tp-rec i, .tp-primaer i { color: var(--led-rot); }
+  .tp-rec i, .tp-primaer i { color: var(--rh-aufnahme); }
   .tp-fuss { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 10px var(--rahmen-rand) 14px;
-    background: color-mix(in srgb, var(--led-rot) 12%, var(--t-flaeche)); font-size: var(--klein); }
+    background: color-mix(in srgb, var(--rh-aufnahme) 12%, var(--t-flaeche)); font-size: var(--klein); }
   .tp-primaer { font-weight: 700; }
 </style>

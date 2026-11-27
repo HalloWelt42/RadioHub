@@ -277,6 +277,13 @@ Aufnahme (sie leuchtet, solange sie läuft) oder Stopp, das zugleich das Hören 
 Sender: Zurück und Vor springen nur im Zeitversatz durch die Titel des Puffers (an der Live-Kante kein Vor), sonst sind
 sie gesperrt (RAD-83).
 
+Farbe der Aufnahme (RAD-151): Was zur Aufnahme gehört, ist Rotorange (Marke `--rh-aufnahme` in
+`stil/radio-marken.css`, dunkel #ff5a00, hell #e04800): Rand des Senders, der aufnimmt, und der laufenden Aufnahme,
+Bereich und Wahl im Puffer (Rechner und Telefon), "Aufnahme ab hier", Spur der Aufnahme in der Kanzel, Hinweis nach dem
+Start, Punkt am Ordner und das Zählwerk der Aufnahmen (im hellen HiFi leuchtet es wie alle Anzeigen hell). Rot bleibt
+für REC in der Anzeige, die Aufnahmetaste, die Zeitanzeige und "Aufnahme beenden", "Läuft" und "Live" sowie Fehler,
+Löschen und Verworfenes. So wirkt eine Aufnahme nicht wie ein Fehler.
+
 Titel abwählen (RAD-150): Läuft eine Aufnahme, trägt in der Puffer-Liste jeder Titel, der in ihr liegt (auch der
 laufende), statt "Aufnahme ab hier" die Taste Abwählen (Verbotszeichen); am Telefon steht sie beim aufgeklappten Titel.
 Ein abgewählter Titel ist durchgestrichen, die Taste zeigt dann Zurück und wählt ihn wieder an, beliebig oft, solange

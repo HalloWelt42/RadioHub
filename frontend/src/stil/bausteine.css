@@ -119,7 +119,7 @@ a:is(.rh-pro, .rh-basic):focus-visible { outline: 1px solid var(--ak-fokus-rand)
 :disabled > .rh-loeschen { color: inherit; }
 /* Hinweis zur Werbung (RAD-32, RAD-33): auf schmalen Geräten ohne die Angaben in Klammern (Entwurf radio-werbung, 7 und 8) */
 @media (max-width: 560px) { .rh-werbehinweis .rh-werbe-mehr { display: none; } }
-.rh-aufnahmehinweis > i { color: var(--led-rot); }
+.rh-aufnahmehinweis > i { color: var(--rh-aufnahme); }
 .rh-band span { min-width: 0; }
 /* Ziel neuer Titel (RAD-145): bleibt stehen, darum eine Zeile */
 :root:not([data-kanzel]) .rh-band.rh-zielhinweis { flex-wrap: nowrap; padding-block: 6px; }

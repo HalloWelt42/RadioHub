@@ -36,7 +36,7 @@
     <button class="knopf rh-filter-auf" type="button" aria-expanded={leisteOffen} aria-controls="rh-aufnahmen-leiste" onclick={onleiste}>
       <i class="fa-solid fa-sliders"></i>{t("aufnahmenAnsicht.ordnerKnopf")}{#if chips.length}<span class="pille">{chips.length}</span>{/if}</button>
     <div class="rh-zaehler" title={wolke ? t("aufnahmenAnsicht.zaehlerWolkeHilfe") : t("aufnahmenAnsicht.zaehlerHilfe")}>
-      <ak-segmente art="7" stellen="5" farbe="rot" text={anzahl === null ? "-----" : zahl(anzahl)}></ak-segmente>
+      <ak-segmente class="rh-aufnahmezahl" art="7" stellen="5" text={anzahl === null ? "-----" : zahl(anzahl)}></ak-segmente>
       <span class="ak-etikett">{wolke ? t("aufnahmenAnsicht.dateien") : t("aufnahmenAnsicht.aufnahmen")}</span>
       {#if zusatz}<span class="rh-breit">{zusatz}</span>{/if}
     </div>

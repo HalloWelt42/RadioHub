@@ -42,7 +42,7 @@
   .pb-striche { position: absolute; inset: 8px 0; pointer-events: none; }
   .pb-striche i { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--t-grund);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 65%, transparent); }
-  .pb-bereich { position: absolute; top: 9px; bottom: 9px; border-radius: 4px; box-shadow: 0 0 0 2px var(--led-rot); pointer-events: none; }
+  .pb-bereich { position: absolute; top: 9px; bottom: 9px; border-radius: 4px; box-shadow: 0 0 0 2px var(--rh-aufnahme); pointer-events: none; }
   .pb-zahlen { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; font-size: var(--klein); color: var(--t-text-2); font-variant-numeric: tabular-nums; }
   .pb-zahlen > span { white-space: nowrap; }
   .pb-zahlen > span:last-child { text-align: right; }

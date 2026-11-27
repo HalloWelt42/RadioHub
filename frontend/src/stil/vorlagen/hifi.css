@@ -68,4 +68,5 @@
 :root[data-vorlage="hifi"][data-theme="hell"] ak-segmente, :root[data-vorlage="hifi"]:not([data-theme]) ak-segmente {
   --led-gruen: var(--rh-leuchte-hell); --led-rot: var(--rh-leuchte-hell); --led-bernstein: var(--rh-leuchte-hell);
   --led-gelb: var(--rh-leuchte-hell); --led-weiss: var(--rh-leuchte-hell); --led-blau: var(--rh-leuchte-hell);
+  --rh-aufnahme: var(--rh-leuchte-hell);
 }
