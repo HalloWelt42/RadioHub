@@ -191,3 +191,16 @@ button.rh-abo-oeffnen:hover { color: var(--text); }
 /* Kopf der Abos in der Leiste: mit Sichern und Übernehmen (RAD-102) brechen die Verweise unter den Titel um */
 .rh-podcast-leiste .rh-gruppe-kopf { flex-wrap: wrap; row-gap: 4px; }
 .rh-podcast-leiste .rh-gruppe-kopf button:disabled { opacity: .6; cursor: default; text-decoration: none; }
+
+/* Leere Liste der Folgen (RAD-149): der ganze Hinweis ist der Knopf dorthin, wo es weitergeht */
+.rh-leerhinweis { inline-size: 100%; border: 0; border-radius: var(--r2); background: none; font: inherit; color: var(--text-2); cursor: pointer; }
+.rh-leerhinweis b { color: var(--text); }
+.rh-leerhinweis:hover b, .rh-leerhinweis:focus-visible b { color: var(--akzent); }
+.rh-leerhinweis:focus-visible { outline: 2px solid var(--akzent-flaeche); outline-offset: 2px; }
+.rh-leerhinweis .knopf { pointer-events: none; }
+.rh-leerhinweis.telefon { padding-block: 28px; }
+.rh-leerverweis { display: inline-flex; gap: 8px; align-items: center; border: 0; background: none; font: inherit; color: var(--akzent); cursor: pointer; padding: 0; }
+.tp-laedt { display: flex; gap: 8px; align-items: center; }
+/* Treffer, die der Browser nicht laden darf (Webversion): blass, mit Grund */
+.rh-fund.gesperrt, .tp-abo.gesperrt { opacity: .6; }
+.rh-fund-grund { display: inline-flex; gap: 6px; align-items: baseline; color: var(--text-3); }

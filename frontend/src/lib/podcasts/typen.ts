@@ -113,6 +113,8 @@ export interface Fundstueck {
   beschreibung: string;
   /** woher (Verzeichnis); ob schon abonniert, sagt die Aboliste (gleicher Feed) */
   herkunft: string;
+  /** hier nicht abrufbar (Webversion: der Server des Podcasts erlaubt es dem Browser nicht); er steht trotzdem da, blass (RAD-149) */
+  gesperrt?: boolean;
 }
 
 export interface Aktualisierungsstand {

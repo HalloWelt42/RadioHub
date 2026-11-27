@@ -25,6 +25,13 @@
   const abonnieren = (feed: string, titel: string) => suche.abonnieren(feed, () => onabonnieren(feed, titel));
 </script>
 
+{#snippet gesperrt(f: { titel: string; autor: string })}
+  <article class="rh-sender rh-fund gesperrt"><div class="rh-sender-kern rh-fund-kern">
+    <AboBild abo={{ titel: f.titel, bild: "" }} />
+    <div class="name"><b>{f.titel}</b><div class="meta">{#if f.autor}<span>{f.autor}</span>{/if}<span class="rh-fund-grund" title={t("podcastAnsicht.nurMitServer")}><i class="fa-solid fa-ban"></i>{t("podcastAnsicht.nurPro")}</span></div></div>
+  </div></article>
+{/snippet}
+
 <section class="rh-verzeichnis">
   <div class="rh-verzeichnis-kopf">
     <h2><i class="fa-solid fa-plus"></i>{t("podcastAnsicht.abonnieren")}</h2>
@@ -45,6 +52,9 @@
     <div class="rh-ohne-treffer"><i class="fa-solid fa-triangle-exclamation"></i><b>{suche.fehler}</b></div>
   {:else if suche.treffer}
     {#each suche.treffer as f (f.feed)}
+      {#if f.gesperrt}
+        {@render gesperrt(f)}
+      {:else}
       <article class="rh-sender rh-fund"><div class="rh-sender-kern rh-fund-kern">
         <AboBild abo={{ titel: f.titel, bild: "" }} />
         <div class="name"><b>{f.titel}</b><div class="meta">{#if f.autor}<span>{f.autor}</span>{/if}</div></div>
@@ -55,6 +65,7 @@
             <i class="fa-solid {suche.arbeitet === f.feed ? 'fa-spinner fa-spin' : 'fa-plus'}"></i>{t("podcastAnsicht.abonnieren")}</button>
         {/if}
       </div></article>
+      {/if}
     {:else}
       <div class="rh-ohne-treffer"><i class="fa-solid fa-magnifying-glass"></i><b>{t("podcastAnsicht.nichtsGefunden")}</b><span>{t("podcastAnsicht.nichtsGefundenHilfe")}</span></div>
     {/each}

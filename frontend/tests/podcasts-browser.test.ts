@@ -126,11 +126,12 @@ describe("Browserquelle", () => {
     const abo = await q.abonnieren(FEED);
     const spaeter = quelle({ [FEED]: "gesperrt" }, speicher).q;
     await expect(spaeter.folgen({ abos: [abo.id] })).rejects.toThrow("problem:abruf");
-    expect((await spaeter.folgen({})).folgen).toEqual([]);
+    // über alle Abos hieß es früher nur "leer"; liefert keines etwas, steht jetzt auch dort der Grund (RAD-149)
+    await expect(spaeter.folgen({})).rejects.toThrow("problem:abruf");
     expect((await spaeter.abos()).map((a) => a.id)).toEqual([abo.id]);
   });
 
-  it("die Suche bietet nur Podcasts an, deren Feed der Browser lesen kann (RAD-109)", async () => {
+  it("die Suche nennt lesbare Podcasts zuerst, die übrigen blass dahinter, statt nichts gefunden zu melden (RAD-109, RAD-149)", async () => {
     const gut = "https://gut.test/feed.xml", gesperrt = "https://gesperrt.test/feed.xml", webseite = "https://seite.test/feed";
     const abruf = (async (adresse: string | URL | Request) => {
       const a = String(adresse);
@@ -142,7 +143,7 @@ describe("Browserquelle", () => {
     }) as typeof fetch;
     const q = new BrowserPodcastquelle({ speicher: fluechtigerSpeicher(), abruf, parser, hinweis: () => "x",
                                          verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
-    expect((await q.suchen("probe")).map((f) => f.feed)).toEqual([gut]);
+    expect((await q.suchen("probe")).map((f) => [f.feed, !!f.gesperrt])).toEqual([[gut, false], [gesperrt, true], [webseite, true]]);
   });
 
   it("nennt die Ursache: Fehler des Servers oder unlesbarer Inhalt", async () => {
@@ -200,5 +201,36 @@ describe("Abos sichern und übernehmen (RAD-102)", () => {
     expect(liste.abos.map((a) => a.titel)).toEqual(["Probe-Podcast", "Zweiter"]);
     expect(austausch.stand).toBeNull();
     expect(uebernahmeText(e)).toBeTypeOf("string");
+  });
+});
+
+describe("Leere Liste: Grund und Weg weiter (RAD-149)", () => {
+  it("ohne Abos führt der Hinweis zur Suche im Verzeichnis, sonst zu dem, was den Folgen im Weg steht", async () => {
+    const { leerhinweis } = await import("../src/lib/podcasts/leer");
+    const { leer } = await import("../src/lib/podcasts/ansicht.svelte");
+    const a = leer();
+    expect(leerhinweis(0, { ...a, wahl: "ungehoert" }).grund).toBe("ohneAbos");
+    expect(leerhinweis(0, a).weiter(a)).toMatchObject({ verzeichnis: true });
+    expect(leerhinweis(2, { ...a, suche: "x" }).weiter({ ...a, suche: "x" }).suche).toBe("");
+    expect(leerhinweis(2, { ...a, wahl: "ungehoert" }).weiter({ ...a, wahl: "ungehoert" }).wahl).toBe("alle");
+    expect(leerhinweis(2, { ...a, abos: [3] }).weiter({ ...a, abos: [3] }).abos).toEqual([]);
+    expect(leerhinweis(2, a).grund).toBe("ohneFolgen");
+  });
+  it("ein Feed, der nicht antwortet, hält die Liste nicht auf: nach der Frist kommt der Hinweis", async () => {
+    const abruf = ((_: unknown, init?: RequestInit) => new Promise((_, nein) => init?.signal?.addEventListener("abort", () => nein(init.signal!.reason)))) as typeof fetch;
+    const q = new BrowserPodcastquelle({ speicher: fluechtigerSpeicher(), abruf, parser, hinweis: (p) => `Problem ${p.art}`, feedfrist: 50,
+                                         verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    await expect(q.abonnieren("https://haengt.test/feed.xml")).rejects.toThrow("Problem frist");
+  });
+  it("liefert kein Abo etwas, weil die Feeds nicht antworten, sagt die Liste das statt leer zu bleiben", async () => {
+    let haengt = false;
+    const abruf = ((adresse: string, init?: RequestInit) => haengt ? new Promise((_, nein) => init?.signal?.addEventListener("abort", () => nein(init.signal!.reason)))
+      : Promise.resolve(new Response(XML, { headers: { "content-type": "application/rss+xml" } }))) as unknown as typeof fetch;
+    const speicher = fluechtigerSpeicher();
+    const erst = new BrowserPodcastquelle({ speicher, abruf, parser, hinweis: (p) => `Problem ${p.art}`, verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    await erst.abonnieren("https://eins.test/feed.xml");
+    haengt = true;
+    const spaeter = new BrowserPodcastquelle({ speicher, abruf, parser, hinweis: (p) => `Problem ${p.art}`, feedfrist: 50, verzeichnis: { weltweit: "https://w.test", deutsch: "https://d.test" } });
+    await expect(spaeter.folgen({})).rejects.toThrow("Problem frist");
   });
 });

@@ -25,6 +25,13 @@
   const abonnieren = (feed: string, titel: string) => suche.abonnieren(feed, () => onabonnieren(feed, titel));
 </script>
 
+{#snippet gesperrt(f: { titel: string; autor: string })}
+  <div class="tf-sender tp-abo gesperrt"><AboBild abo={{ titel: f.titel, bild: "" }} />
+    <div><b>{f.titel}</b>{#if f.autor}<div class="tf-meta"><span>{f.autor}</span></div>{/if}
+      <div class="tf-meta"><span class="rh-fund-grund" title={t("podcastAnsicht.nurMitServer")}><i class="fa-solid fa-ban"></i>{t("podcastAnsicht.nurPro")}</span></div></div>
+  </div>
+{/snippet}
+
 <div class="t-kopf-zurueck tf-a-kopf">
   <button class="rund" type="button" aria-label={t("podcastAnsicht.telefon.zurueck")} title={t("podcastAnsicht.telefon.zurueck")} onclick={onzurueck}><i class="fa-solid fa-chevron-left"></i></button>
   <div><b>{t("podcastAnsicht.telefon.abonnierenTitel")}</b><span class="rh-still">{t("podcastAnsicht.telefon.abonnierenHilfe")}</span></div>
@@ -44,6 +51,9 @@
     <p class="tf-hinweis">{suche.fehler}</p>
   {:else if suche.treffer}
     {#each suche.treffer as f (f.feed)}
+      {#if f.gesperrt}
+        {@render gesperrt(f)}
+      {:else}
       <div class="tf-sender tp-abo"><AboBild abo={{ titel: f.titel, bild: "" }} />
         <div><b>{f.titel}</b>{#if f.autor}<div class="tf-meta"><span>{f.autor}</span></div>{/if}</div>
         {#if abonniert(f.feed)}
@@ -53,6 +63,7 @@
                   onclick={() => void abonnieren(f.feed, f.titel)}><i class="fa-solid {suche.arbeitet === f.feed ? 'fa-spinner fa-spin' : 'fa-plus'}"></i></button></span>
         {/if}
       </div>
+      {/if}
     {:else}
       <p class="tf-hinweis">{t("podcastAnsicht.nichtsGefunden")}: {t("podcastAnsicht.nichtsGefundenHilfe")}</p>
     {/each}

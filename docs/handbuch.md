@@ -76,7 +76,10 @@ höchstens die 40 häufigsten.
 Podcasts am Rechner (wie die Radioseite): links oben die Wahl Alle, Ungehört oder Gespeichert, darunter die Abos mit
 der Zahl ungehörter Folgen. Ein Klick wählt ein Abo, noch einmal alle; mit Befehls- oder Strg-Taste mehrere. Die Nadel
 heftet ein Abo oben an; die Reihenfolge ändert Ziehen am Griff (ein gestrichelter Platzhalter zeigt, wo es landet).
-Neue Podcasts über "Abonnieren" oben in der Werkzeugleiste (Suche im Verzeichnis oder die Adresse eines Feeds). Oben
+Neue Podcasts über "Abonnieren" oben in der Werkzeugleiste (Suche im Verzeichnis oder die Adresse eines Feeds). Ist die Liste der Folgen leer, sagt
+sie warum, und ein Klick auf den Hinweis führt weiter (RAD-149): ohne Abos zur Suche, sonst Suche leeren, alle Folgen oder alle
+Abos; antwortet kein Feed, steht der Grund da. In Basic stehen Podcasts, deren Server den Browser nicht laden lässt, blass mit
+"Nur in RadioHub PRO" in der Suche, ein Feed hat 20 s Zeit. Oben
 Zählwerk, Suche in Titeln und Beschreibungen, Sortierung (jedes Abo merkt sich seine) und Aktualisieren. Ein
 gewähltes Abo zeigt seinen Kopf mit "Neue speichern", Aktualisieren, "Alle speichern" mit Fortschritt, Oben anheften
 und Abbestellen (mit Rückgängig). Je Folge: hören; Speichern legt sie in der Kellerwolke ab (Podcasts/<Abo>/),

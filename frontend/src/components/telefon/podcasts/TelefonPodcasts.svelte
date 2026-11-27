@@ -10,10 +10,11 @@
   import { appPfad } from "../../../lib/router.js";
   import { zahl } from "../../../lib/radio/anzeige";
   import { Suchverlauf } from "../../../lib/radio/suchverlauf";
-  import { aboaustausch, aboliste, dateiWaehlen, Folgenliste, podcastquelle, uebernahmeText, podcastzustand, werbequelle, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
+  import { aboaustausch, aboliste, dateiWaehlen, Folgenliste, leerhinweis, podcastquelle, uebernahmeText, podcastzustand, werbequelle, zuAbfrage, type Abo, type Folge, type Folgenwahl, type Podcastansicht,
     type Podcastsortierung } from "../../../lib/podcasts";
   import type { BandInhalt } from "../../../lib/radio/bedienung.svelte";
   import AboBild from "../../podcast/AboBild.svelte";
+  import Leerhinweis from "../../podcast/Leerhinweis.svelte";
   import Neuzahl from "../../podcast/Neuzahl.svelte";
   import Band from "../../radio/Band.svelte";
   import Suchfeld from "../../radio/Suchfeld.svelte";
@@ -227,7 +228,9 @@
             </div>
           {/each}
         {:else}
-          <p class="tf-hinweis">{aboliste.geladen ? t("podcastAnsicht.telefon.keineAbos") : t("podcastAnsicht.laedt")}</p>
+          {#if aboliste.geladen}
+            <Leerhinweis hinweis={leerhinweis(0, ansicht)} telefon onweiter={() => gehen((x) => ({ ...grund(x), verzeichnis: true }))} />
+          {:else}<p class="tf-hinweis tp-laedt"><i class="fa-solid fa-spinner fa-spin"></i>{t("podcastAnsicht.laedt")}</p>{/if}
         {/each}
         {#if aboliste.geladen}
           <!-- Abos sichern und übernehmen unter der Liste, gleich breit (RAD-102, Wahl A) -->
@@ -249,11 +252,13 @@
 
 {#snippet folgenliste(mitAbo: boolean)}
   {#if !liste.geladen}
-    <p class="tf-hinweis">{t("podcastAnsicht.laedt")}</p>
+    <p class="tf-hinweis tp-laedt"><i class="fa-solid fa-spinner fa-spin"></i>{aboliste.abos.length ? t(aboliste.abos.length === 1 ? "podcastAnsicht.laedtAbo" : "podcastAnsicht.laedtAbos", { n: aboliste.abos.length }) : t("podcastAnsicht.laedt")}</p>
   {:else if liste.fehler && !liste.folgen.length}
     <p class="tf-hinweis">{liste.fehler}</p>
   {:else if !liste.folgen.length}
-    <p class="tf-hinweis">{t("podcastAnsicht.telefon.keineFolgen")}</p>
+    {@const leer = leerhinweis(mitAbo ? aboliste.abos.length : 1, ansicht)}
+    <Leerhinweis hinweis={leer} suche={ansicht.suche} telefon onweiter={() => leer.grund !== "ohneFolgen" ? gehen(leer.weiter) : einAbo ? void aktualisieren(einAbo)
+                  : void sicher(async () => { await aboliste.aktualisieren(); void liste.laden(zuAbfrage(ansicht), ansicht.suche); })} />
   {:else}
     {#each liste.folgen as f (f.id)}
       <TFolge folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} {mitAbo}

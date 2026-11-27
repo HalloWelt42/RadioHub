@@ -8,7 +8,7 @@
   import { actions, appState } from "../../lib/store.svelte.js";
   import { appPfad } from "../../lib/router.js";
   import { aboaustausch, aboliste, dateiWaehlen, uebernahmeText, Folgenliste, Speicherauftrag, podcastquelle, podcastzustand, werbequelle, zuAbfrage, type Aktualisierungsstand, type Folge,
-    type Podcastansicht, type Podcastsortierung } from "../../lib/podcasts";
+    type Podcastansicht, type Podcastsortierung, leerhinweis } from "../../lib/podcasts";
   import { fokus as folgen } from "../../spieler/fokus.svelte";
   import type { BandInhalt } from "../../lib/radio/bedienung.svelte";
   import Band from "../radio/Band.svelte";
@@ -20,6 +20,7 @@
   import Verzeichnis from "./Verzeichnis.svelte";
   import { hoerenAb } from "../../spieler/aktionen";
   import { werbesprung } from "../../spieler/werbesprung.svelte";
+  import Leerhinweis from "./Leerhinweis.svelte";
 
   const liste = new Folgenliste(podcastquelle);
   const auftrag = new Speicherauftrag(podcastquelle, (id) => liste.aendern(id, { gespeichert: true }));
@@ -290,13 +291,13 @@
           <span class="rechts">{@render sortspalte(t("podcastAnsicht.laenge"), "laenge", false, ansicht.sortierung === "laenge", "laenge")}</span>
           <span class="rh-ohne-sort"></span></div>
         {#if !liste.geladen}
-          <div class="rh-ohne-treffer"><i class="fa-solid fa-spinner fa-spin"></i><b>{t("podcastAnsicht.laedt")}</b></div>
+          <div class="rh-ohne-treffer"><i class="fa-solid fa-spinner fa-spin"></i><b>{aboliste.abos.length ? t(aboliste.abos.length === 1 ? "podcastAnsicht.laedtAbo" : "podcastAnsicht.laedtAbos", { n: aboliste.abos.length }) : t("podcastAnsicht.laedt")}</b></div>
         {:else if liste.fehler && !liste.folgen.length}
           <div class="rh-ohne-treffer"><i class="fa-solid fa-triangle-exclamation"></i><b>{t("podcastAnsicht.ladenFehler")}</b><span>{liste.fehler}</span>
             <button class="knopf" type="button" onclick={() => void liste.laden(zuAbfrage(ansicht), ansicht.suche)}><i class="fa-solid fa-rotate"></i>{t("podcastAnsicht.nochmal")}</button></div>
         {:else if !liste.folgen.length}
-          <div class="rh-ohne-treffer"><i class="fa-solid fa-filter-circle-xmark"></i><b>{t("podcastAnsicht.keineTreffer")}</b><span>{t("podcastAnsicht.keineTrefferHilfe")}</span>
-            <button class="knopf" type="button" onclick={() => aendern((a) => ({ ...a, abos: [], wahl: "alle", suche: "", offen: null }))}>{t("podcastAnsicht.zuruecksetzen")}</button></div>
+          {@const leer = leerhinweis(aboliste.abos.length, ansicht)}
+          <Leerhinweis hinweis={leer} suche={ansicht.suche} onweiter={() => leer.grund === "ohneFolgen" ? void aktualisieren() : aendern(leer.weiter)} />
         {:else}
           {#each liste.folgen as f, i (f.id)}
             <FolgeZeile folge={f} abo={aboliste.abo(f.aboId)} spielt={spielend === f.id} offen={ansicht.offen === f.id} fokus={gewaehlt === i}

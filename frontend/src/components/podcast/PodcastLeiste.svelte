@@ -228,7 +228,7 @@
         </div>
         <p class="rh-still rh-abos-hinweis"><i class="fa-solid fa-grip-vertical"></i>{t(ordner.length ? "podcastAnsicht.ordnerHinweis" : "podcastAnsicht.ordnenHinweis")}</p>
       {:else}
-        <p class="rh-leer-facette">{t("podcastAnsicht.keineAbos")}</p>
+        <button class="rh-leer-facette rh-leerverweis" type="button" onclick={onabonnieren}><i class="fa-solid fa-plus"></i>{t("podcastAnsicht.leer.ohneAbosWeiter")}</button>
       {/if}
     </section>
   </div>

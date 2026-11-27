@@ -22,6 +22,7 @@ export { Folgenliste } from "./folgenliste.svelte";
 export { Speicherauftrag } from "./speicherauftrag.svelte";
 export { Verzeichnissuche } from "./verzeichnissuche.svelte";
 export * from "./ansicht.svelte";
+export { leerhinweis, type Leergrund, type Leerhinweis } from "./leer";
 export type { Podcastquelle } from "./quelle";
 export { dateiWaehlen, uebernahmeText, type Uebernahme } from "./austausch.svelte";
 export * from "./typen";

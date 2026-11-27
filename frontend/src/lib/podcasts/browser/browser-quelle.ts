@@ -23,10 +23,14 @@ export interface BrowserPodcastOptionen {
   gleichzeitig?: number;
   /** so lange darf die Prüfung eines Treffers der Suche dauern (ms), danach gilt er als nicht lesbar */
   pruefzeit?: number;
+  /** so lange darf ein Feed laden (ms) */
+  feedfrist?: number;
 }
 
 const SEITE = 50;
 const PRUEFZEIT_MS = 8000;
+/** so lange darf ein Feed laden; antwortet er nicht, gilt er als nicht abrufbar und die übrigen Folgen erscheinen (RAD-149) */
+const FEEDFRIST_MS = 20_000;
 const TAG_MS = 86_400_000;
 
 /** eine Folge im Speicher der Sitzung: aus dem Feed, mit ihrer festen Kennung */
@@ -38,7 +42,7 @@ interface Eintrag extends FeedFolge {
 /** warum ein Feed sich nicht lesen ließ: der Browser bekam keine Antwort (Server erlaubt den Abruf nicht oder ist nicht
  *  erreichbar), der Server meldete einen Fehler, oder der Inhalt ist kein lesbarer Feed */
 export interface Feedproblem {
-  art: "abruf" | "antwort" | "inhalt";
+  art: "abruf" | "antwort" | "inhalt" | "frist";
   detail: string;
 }
 
@@ -86,6 +90,7 @@ async function anfangLesen(antwort: Response): Promise<string> {
 function problemAus(f: unknown): Feedproblem {
   if (f instanceof Antwortfehler) return { art: "antwort", detail: String(f.status) };
   if (f instanceof Feedfehler) return { art: "inhalt", detail: f.message };
+  if (f instanceof DOMException && f.name === "TimeoutError") return { art: "frist", detail: "" };
   return { art: "abruf", detail: f instanceof Error ? f.message : String(f) };
 }
 
@@ -106,6 +111,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
   private readonly parser: () => DOMParser;
   private readonly gleichzeitig: number;
   private readonly pruefzeit: number;
+  private readonly feedfrist: number;
   private ablage: Podcastablage;
   /** Folgen je Abo für diese Sitzung; laufende Abrufe teilen sich ein Versprechen */
   private feeds = new Map<number, Feedstand>();
@@ -119,6 +125,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
     this.parser = o.parser ?? (() => new DOMParser());
     this.gleichzeitig = o.gleichzeitig ?? 4;
     this.pruefzeit = o.pruefzeit ?? PRUEFZEIT_MS;
+    this.feedfrist = o.feedfrist ?? FEEDFRIST_MS;
     this.ablage = ablageLesen(this.speicher);
   }
 
@@ -146,7 +153,7 @@ export class BrowserPodcastquelle implements Podcastquelle {
         try {
           // immer frisch: ein Feed soll aktuell sein, und eine ältere Antwort im Zwischenspeicher ohne Freigabe (CORS)
           // würde den Abruf sonst sperren (RAD-107)
-          const antwort = await this.abruf(versuch, { cache: "no-store" });
+          const antwort = await this.abruf(versuch, { cache: "no-store", signal: AbortSignal.timeout(this.feedfrist) });
           if (!antwort.ok) {
             fehler = new Antwortfehler(antwort.status);
             break;
@@ -314,6 +321,9 @@ export class BrowserPodcastquelle implements Podcastquelle {
       .filter((e) => this.passt(e, a.filter ?? "alle"))
       .filter((e) => !text || e.titel.toLocaleLowerCase().includes(text) || e.beschreibung.toLocaleLowerCase().includes(text))
       .sort((x, y) => richtung * ordnung(x, y));
+    // nichts zu zeigen, weil Feeds nicht antworten: das sagen statt einer leeren Liste (RAD-149)
+    const gestoert = ids.map((id) => this.feeds.get(id)?.problem).find((p) => p);
+    if (!alle.length && gestoert && ids.every((id) => !this.feeds.get(id)?.folgen.length)) throw new FeedGesperrt(this.o.hinweis(gestoert));
     const stelle = Math.max(0, Number(a.nach ?? 0) || 0);
     const anzahl = a.anzahl ?? SEITE;
     const folgen = alle.slice(stelle, stelle + anzahl).map((e) => this.folge(e, ids.length > 1));
@@ -449,9 +459,10 @@ export class BrowserPodcastquelle implements Podcastquelle {
       for (let i = offen.shift(); i !== undefined; i = offen.shift()) gut[i] = await this.lesbar(funde[i].feed, signal);
     }));
     if (signal?.aborted) throw new DOMException("abgebrochen", "AbortError");
+    // was der Browser nicht lesen darf, bleibt sichtbar und kommt hinten an: sonst hieße es "nichts gefunden" (RAD-149)
     const lesbare = funde.filter((_, i) => gut[i]);
     for (const f of lesbare) this.funde.set(f.feed, f);
-    return lesbare;
+    return [...lesbare, ...funde.filter((_, i) => !gut[i]).map((f) => ({ ...f, gesperrt: true }))];
   }
 
   // ----- Folgen --------------------------------------------------------------------------------------------------------
