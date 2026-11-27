@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 
 import httpx
 import pytest
@@ -12,7 +13,7 @@ import pytest
 from app.database import db_session
 from app.services import hoerverlauf, klangerkennung, lernliste
 from app.services import propagandafilter as pf
-from app.sendewerbung.sitzung import Sitzungswerbung, Werbestelle
+from app.sendewerbung.sitzung import KLANG_BEIM_VERBINDEN_S, Sitzungswerbung, Werbestelle
 
 E = pf.FilterEinstellungen(adresse="https://filter.test", schluessel="kw_app_radiohub")
 BPS = 16000.0
@@ -57,8 +58,8 @@ def filter_(monkeypatch) -> Filter:
     return f
 
 
-def stelle(von=10.0, bis=25.0, wirkt=True) -> dict:
-    return {"signatur": "sig-1", "von": von, "bis": bis, "sicher_ab": von + 5, "wirkt": wirkt, "werbender": "firma.de", "abgebrochen": False}
+def stelle(von=10.0, bis=25.0, wirkt=True, signatur="sig-1", werbender="firma.de") -> dict:
+    return {"signatur": signatur, "von": von, "bis": bis, "sicher_ab": von + 5, "wirkt": wirkt, "werbender": werbender, "abgebrochen": False}
 
 
 def erkennung(f: Filter, werbung: Sitzungswerbung, art: str | None = "mp3") -> klangerkennung.Klangerkennung:
@@ -153,6 +154,66 @@ def test_angekuendigtes_gilt_vor_dem_klang():
     assert len(w.stellen) == 1
     w.erkannt("sig", 40.0, 60.0, "")
     assert [s.format for s in w.stellen] == ["adw", "klang"] and w.stellen[1].name == ""
+
+
+def test_spot_beim_verbinden_wird_abgewartet():
+    """RAD-154: ein am Klang erkannter Spot am Anfang des Tons ist ein Spot beim Verbinden und beginnt mit dem ersten Ton, wie
+    eine Angabe beim Verbinden; so wartet der Start ihn ab."""
+    w = Sitzungswerbung()
+    s = w.erkannt("sig", 0.0, 25.0, "AIDA")
+    assert s is not None and (s.von, s.von_aus, s.beim_verbinden) == (0.0, "verbinden", True)
+    knapp = Sitzungswerbung().erkannt("sig", KLANG_BEIM_VERBINDEN_S, 20.0, "AIDA")
+    assert knapp is not None and (knapp.von, knapp.beim_verbinden) == (0.0, True)
+    assert w.erkannt("sig", 0.0, 22.0, "AIDA") is s and s.bis == 22.0 and len(w.stellen) == 1, "dieselbe Stelle rückt nur ihr Ende"
+    spaeter = w.erkannt("sig", KLANG_BEIM_VERBINDEN_S + 0.5, 40.0, "AIDA")
+    assert spaeter is not None and (spaeter.von, spaeter.von_aus, spaeter.beim_verbinden) == (KLANG_BEIM_VERBINDEN_S + 0.5, "klang", False)
+    angekuendigt = Sitzungswerbung()
+    angekuendigt.stellen.append(Werbestelle(von=0, von_aus="verbinden", bis=15, bis_aus="dauer", format="adw", kennung="1", beim_verbinden=True))
+    assert angekuendigt.erkannt("sig", 1.0, 14.0, "") is None and len(angekuendigt.stellen) == 1
+
+
+class _Mitschrift(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__(logging.INFO)
+        self.zeilen: list[str] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.zeilen.append(record.getMessage())
+
+
+@pytest.fixture
+def protokoll():
+    """Was die Klangerkennung ins Protokoll schreibt, direkt am Logger (radiohub reicht im Betrieb nicht an die Wurzel weiter)."""
+    log, mitschrift = logging.getLogger("radiohub.klangerkennung"), _Mitschrift()
+    vorher = log.level
+    log.addHandler(mitschrift)
+    log.setLevel(logging.INFO)
+    yield lambda: mitschrift.zeilen
+    log.setLevel(vorher)
+    log.removeHandler(mitschrift)
+
+
+async def test_funde_im_protokoll(filter_, protokoll):
+    """RAD-154: Beginn und Ende des Stroms, je Fund eine Zeile, auch wenn der Filter ihn in jeder Antwort wieder nennt."""
+    w = Sitzungswerbung()
+    w.stellen.append(Werbestelle(von=40, von_aus="angabe", bis=60, bis_aus="dauer", format="adw", kennung="1"))
+    k = erkennung(filter_, w)
+    k.starten()
+    filter_.stellen = [stelle(0.0, 25.0, signatur="sig-aida", werbender="AIDA"), stelle(30.0, 38.0, wirkt=False, werbender=""),
+                       stelle(41.0, 59.0, signatur="sig-3")]
+    for i in range(3):
+        k.ton(bytes(32000), i * 32000)
+        await bis_(lambda: len(filter_.stuecke) > i)
+    await k.schliessen()
+    zeilen = protokoll()
+    assert zeilen == [
+        "Sender: Strom zum Filter beginnt (s0)",
+        "Sender: Fund AIDA 0.0 bis 25.0 s wirkt, beim Verbinden",
+        "Sender: Fund Signatur sig-1 30.0 bis 38.0 s verworfen: wirkt hier nicht (Vorschlag)",
+        "Sender: Fund firma.de 41.0 bis 59.0 s verworfen: angekündigter Spot gilt vor",
+        "Sender: Strom zum Filter endet (s0, bis 6.0 s)",
+    ], zeilen
+    assert [s.format for s in w.stellen] == ["klang", "adw"] and w.stellen[0].beim_verbinden
 
 
 def _sender(nr: int, genres: list[str], land="DE", stimmen=100, favorit=0, sichtbar=1, url="") -> str:

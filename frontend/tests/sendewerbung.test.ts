@@ -39,6 +39,11 @@ describe("Start nach dem Spot beim Verbinden", () => {
     const spot = stelle({ bis: null, format: "titel", angekuendigt_ms: null });
     expect(startwahl(puffer({ werbestellen: [spot], last_segment: 40 }))).toEqual({ art: "werbung", stelle: spot, rest: null });
   });
+  it("wartet auch einen am Klang erkannten Spot beim Verbinden ab (RAD-154)", () => {
+    const spot = stelle({ bis: 25.3, bis_aus: "klang", format: "klang", kennung: "sig-aida", werbender: "AIDA", angekuendigt_ms: null });
+    expect(startwahl(puffer({ werbestellen: [spot], last_segment: 9 }))).toEqual({ art: "werbung", stelle: spot, rest: 23.3 });
+    expect(startwahl(puffer({ werbestellen: [{ ...spot, von: 12, von_aus: "klang", beim_verbinden: false }] }))).toEqual({ art: "start", sekunde: null });
+  });
   it("gilt nicht, wenn das Überspringen für den Sender aus ist", () => {
     expect(startwahl(puffer({ werbestellen: [stelle()], werbung_ueberspringen: false }))).toEqual({ art: "start", sekunde: null });
   });

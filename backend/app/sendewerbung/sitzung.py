@@ -35,6 +35,13 @@ Herkunft = Literal["angabe", "stille", "verbinden", "dauer", "klang"]
 #: Format einer Stelle, die am Klang erkannt wurde (Propaganda-Filter, HELF-256)
 KLANG = "klang"
 
+#: so spät nach dem ersten Ton darf ein am Klang erkannter Spot beginnen und gilt doch als Spot beim Verbinden (RAD-154). Lief er
+#: schon beim Verbinden, nennt der Filter genau 0 s. Die Schwelle lässt Raum für einen kurzen Rest des Programms davor und für die
+#: Unschärfe des Beginns (der Filter legt ihn auf eine Viertelsekunde fest), bleibt aber weit unter dem kürzesten Spot (5 s): was
+#: später beginnt, lief im Programm. Wie bei einer Angabe beim Verbinden beginnt die Stelle dann mit dem ersten Ton (0 s), damit der
+#: Start sie abwartet (startwahl im Frontend).
+KLANG_BEIM_VERBINDEN_S = 2.0
+
 #: so viele Stillen bleiben gemerkt (eine Stelle braucht nur die in ihrer Nähe)
 STILLEN_HOECHSTENS = 400
 
@@ -135,18 +142,24 @@ class Sitzungswerbung:
             self._geendet(s)
         return s
 
-    def erkannt(self, kennung: str, von: float, bis: float, werbender: str) -> None:
-        """Am Klang erkannte Werbung. Was der Sender selbst ankündigt, gilt vor; dieselbe Stelle noch einmal rückt nur ihr Ende."""
+    def erkannt(self, kennung: str, von: float, bis: float, werbender: str) -> Optional[Werbestelle]:
+        """Am Klang erkannte Werbung. Was der Sender selbst ankündigt, gilt vor (dann None); dieselbe Stelle noch einmal rückt
+        nur ihr Ende. Beginnt sie höchstens `KLANG_BEIM_VERBINDEN_S` nach dem ersten Ton, ist sie ein Spot beim Verbinden."""
+        beim_verbinden = von <= KLANG_BEIM_VERBINDEN_S
+        if beim_verbinden:
+            von = 0.0
         for s in self.stellen:
             if s.format == KLANG and s.kennung == kennung and abs(s.von - von) < 1.0:
                 s.bis = bis
-                return
+                return s
             if s.format != KLANG and von < (s.bis if s.bis is not None else von + 1) and bis > s.von:
-                return
-        neu = Werbestelle(von=von, von_aus="klang", bis=bis, bis_aus="klang", format=KLANG, kennung=kennung, werbender=werbender)
+                return None
+        neu = Werbestelle(von=von, von_aus="verbinden" if beim_verbinden else "klang", bis=bis, bis_aus="klang", format=KLANG,
+                          kennung=kennung, werbender=werbender, beim_verbinden=beim_verbinden)
         self.stellen.append(neu)
         self.stellen.sort(key=lambda s: s.von)
         self._geendet(neu)
+        return neu
 
     def _bestaetigen(self, jetzt: Optional[float] = None) -> None:
         """Offene Stellen, die eine Stille an ihrem Ende brauchen: mit Stille enden sie, ohne (der geprüfte Ton `jetzt`

@@ -4,6 +4,9 @@ Spots, die der Sender selbst ankündigt, als Ausschnitt, damit er sie auch ohne 
 
 Der Empfang wartet nie darauf: ist der Filter fort oder zu langsam, ruht die Erkennung und beginnt später neu. Gefundene
 Stellen bleiben.
+
+Ins Protokoll (RAD-154): Beginn und Ende jedes Stroms zum Filter und je Fund eine Zeile mit Werbendem, von, bis und ob er
+wirkt; ein verworfener Fund mit Grund. Der Filter nennt jeden Fund in jeder Antwort wieder, geschrieben wird er nur einmal.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from collections.abc import Callable
 from typing import Literal
 
 import httpx
+from pydantic import BaseModel
 
 from ..sendewerbung.sitzung import Sitzungswerbung, Werbestelle
 from . import propagandafilter as pf
@@ -28,6 +32,21 @@ RAND_S = 2.0                       # so viel Ton um einen angekündigten Spot ge
 SPOT_VON_S, SPOT_BIS_S = 5.0, 90.0     # nur so lange Spots werden Signatur
 
 Zustand = Literal["aus", "laeuft", "ruht"]
+
+
+class Fundstelle(BaseModel):
+    """Eine Stelle, die der Filter im Strom nennt (Sekunden des Empfangs); weitere Felder bleiben unbeachtet."""
+
+    signatur: str
+    von: float
+    bis: float
+    wirkt: bool
+    werbender: str = ""
+
+    @property
+    def schluessel(self) -> tuple[str, float, bool]:
+        """Derselbe Fund in der nächsten Antwort (das Ende kann rücken, der Beginn bleibt)."""
+        return self.signatur, round(self.von, 1), self.wirkt
 
 
 class Klangerkennung:
@@ -77,6 +96,8 @@ class Klangerkennung:
         kennung = (await self._gut(await c.post("/api/v1/stroeme", json={"quelle": self.uuid, "name": self.name, "art": self.art}))).json()["id"]
         self.zustand, self.grund = "laeuft", ""
         stelle: int | None = None
+        protokolliert: set[tuple[str, float, bool]] = set()          # Funde dieses Stroms, die schon im Protokoll stehen
+        logger.info("%s: Strom zum Filter beginnt (%s)", self.name, kennung)
         try:
             while True:
                 await self._neu.wait()
@@ -93,10 +114,24 @@ class Klangerkennung:
                     stelle = ab + len(stueck)
                     antwort = await self._gut(await c.post(f"/api/v1/stroeme/{kennung}/ton", params={"ab": round(ab / self._bps, 3)}, content=stueck))
                     for s in antwort.json()["stellen"]:
-                        if s["wirkt"]:
-                            self._werbung.erkannt(s["signatur"], s["von"], s["bis"], s["werbender"])
+                        self._uebernehmen(Fundstelle.model_validate(s), protokolliert)
         finally:
+            logger.info("%s: Strom zum Filter endet (%s, bis %.1f s)", self.name, kennung, (stelle or 0) / self._bps)
             self._nebenbei(self._beenden(kennung))
+
+    def _uebernehmen(self, f: Fundstelle, protokolliert: set[tuple[str, float, bool]]) -> None:
+        """Eine Stelle, die der Filter nennt: wirkt sie, wird sie eine Werbestelle. Neue Funde kommen ins Protokoll."""
+        stelle = self._werbung.erkannt(f.signatur, f.von, f.bis, f.werbender) if f.wirkt else None
+        if f.schluessel in protokolliert:
+            return
+        protokolliert.add(f.schluessel)
+        wer = f.werbender or f"Signatur {f.signatur[:8]}"
+        if not f.wirkt:
+            logger.info("%s: Fund %s %.1f bis %.1f s verworfen: wirkt hier nicht (Vorschlag)", self.name, wer, f.von, f.bis)
+        elif stelle is None:
+            logger.info("%s: Fund %s %.1f bis %.1f s verworfen: angekündigter Spot gilt vor", self.name, wer, f.von, f.bis)
+        else:
+            logger.info("%s: Fund %s %.1f bis %.1f s wirkt%s", self.name, wer, f.von, f.bis, ", beim Verbinden" if stelle.beim_verbinden else "")
 
     @staticmethod
     async def _gut(antwort: httpx.Response) -> httpx.Response:
