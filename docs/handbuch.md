@@ -268,7 +268,9 @@ rastet ein. Darunter steht "Länge von höchstens · Titel". Den Titel zeigt die
 gedrückt wechseln sie den Sender (RAD-60). Neben der Segmentanzeige stehen links Puffer und rechts Live; die Anzeige der
 Kanzel ist das einzige Element, das mitwächst, und mindestens so breit, dass sie bündig mit der linken Spalte der Seite
 endet; rechts endet die Kanzel mit demselben Rand wie links. Puffer öffnet die Großansicht `/radio/puffer`: Zeitleiste mit Übersicht und Ausschnitt (Alles, 30 oder 10 Minuten; Rad oder
-Ziehen verschiebt, Doppelklick springt hin), darunter die Titel, neuester oben, je Titel hier hören, Aufnahme ab hier und
+Ziehen verschiebt, Doppelklick springt hin; der Ausschnitt staucht nie: ein üblicher Titel, der Median der fertigen, bleibt
+mindestens 140 px breit, zeigt der Zoom mehr, wird der Ausschnitt schmaler und verschiebbar, und ein Zoom ohne Wirkung ist
+gesperrt, RAD-152), darunter die Titel, neuester oben, je Titel hier hören, Aufnahme ab hier und
 in den Bereich nehmen; ein Bereich wird als fertige Aufnahme gesichert. Am Telefon im Spieler derselbe Balken mit den
 Knöpfen und die Puffer-Liste (antippen klappt Hören, Aufnehmen und Bereich auf). Eine Aufnahme beendet die Taste
 Aufnahme (sie leuchtet, solange sie läuft) oder Stopp, das zugleich das Hören beendet. Während der Aufnahme bleibt der

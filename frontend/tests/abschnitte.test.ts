@@ -2,7 +2,7 @@
 // übersprungen, kurz nach dem Anfang geht es zum vorigen), Bereich aus zwei Titeln, Zeitleiste und Ausschnitt, dazu
 // die Striche und die Aufnahme auf dem Balken der Kanzel. Daten wie 90s90s am 22.11.2026.
 import { describe, expect, it } from "vitest";
-import { anfangstitel, bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../src/lib/radio/abschnitte";
+import { anfangstitel, bei, bereichAus, fenster, imBereich, naechster, prozent, sichtbreite, TITEL_MIN_PX, TITEL_UEBLICH_S, ueblicheLaenge, vorheriger, type Abschnitt } from "../src/lib/radio/abschnitte";
 import { lageZuSekunde, pufferAufnahme, pufferSekunde, pufferStriche, sekundeZuLage, type Stand } from "../src/spieler/kanzel";
 
 const A = (von: number, bis: number, titel: string, art: Abschnitt["art"] = "titel", laufend = false): Abschnitt =>
@@ -81,5 +81,20 @@ describe("Titel am Beginn einer Aufnahme (RAD-147)", () => {
   it("ohne Abschnitte oder in der Werbung steht er noch nicht fest", () => {
     expect(anfangstitel([], 140, 40)).toBe("");
     expect(anfangstitel([A(0, 300, "Werbung", "werbung")], 140, 40)).toBe("");
+  });
+});
+
+describe("Ausschnitt ohne Stauchen (RAD-152)", () => {
+  const titel = (von: number, bis: number, laufend = false): Abschnitt =>
+    ({ von, bis, titel: `T${von}`, art: "titel", sicher: true, laufend, komplett: !laufend, gesichert: "" });
+  it("übliche Länge ist der Median der fertigen Titel, Werbung und der laufende zählen nicht", () => {
+    expect(ueblicheLaenge([])).toBe(TITEL_UEBLICH_S);
+    expect(ueblicheLaenge([titel(0, 100), titel(100, 300), titel(300, 1000, true)])).toBe(150);
+    expect(ueblicheLaenge([titel(0, 100), { ...titel(100, 130), art: "werbung" }, titel(130, 330), titel(330, 630)])).toBe(200);
+  });
+  it("zeigt höchstens so viel Zeit, dass ein üblicher Titel nicht schmaler als die Mindestbreite wird", () => {
+    expect(sichtbreite(1800, 1120, 210)).toBe((1120 / TITEL_MIN_PX) * 210);     // 30 Minuten wären gestaucht: acht Titel
+    expect(sichtbreite(600, 1120, 210)).toBe(600);                              // 10 Minuten passen
+    expect(sichtbreite(1800, 0, 210)).toBe(1800);                               // Breite noch unbekannt
   });
 });

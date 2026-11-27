@@ -85,3 +85,23 @@ export function fenster(mitte: number, breite: number, anfang: number, ende: num
   const von = Math.min(Math.max(anfang, mitte - breite / 2), ende - breite);
   return [von, von + breite];
 }
+
+/** so breit bleibt ein üblicher Titel im Ausschnitt mindestens; zeigt der Zoom mehr Zeit, als dann hineinpasst, zeigt
+ *  der Ausschnitt weniger und lässt sich verschieben, statt die Titel zu stauchen (RAD-152) */
+export const TITEL_MIN_PX = 140;
+/** übliche Länge eines Titels, solange der Puffer noch keinen fertigen hat */
+export const TITEL_UEBLICH_S = 180;
+
+/** übliche Länge eines Titels im Puffer: der Median der fertigen Titel */
+export function ueblicheLaenge(liste: Abschnitt[]): number {
+  const l = liste.filter((a) => a.art === "titel" && !a.laufend).map((a) => a.bis - a.von).sort((x, y) => x - y);
+  if (!l.length) return TITEL_UEBLICH_S;
+  const m = l.length >> 1;
+  return l.length % 2 ? l[m] : (l[m - 1] + l[m]) / 2;
+}
+
+/** Sekunden, die der Ausschnitt zeigt: so viele, wie der Zoom will, höchstens so viele, dass ein üblicher Titel auf
+ *  `pixel` Breite noch TITEL_MIN_PX breit ist (ohne bekannte Breite gilt der Zoom) */
+export function sichtbreite(gewuenscht: number, pixel: number, ueblich: number): number {
+  return pixel > 0 ? Math.min(gewuenscht, (pixel / TITEL_MIN_PX) * ueblich) : gewuenscht;
+}

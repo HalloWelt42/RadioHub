@@ -448,11 +448,15 @@ ul.rh-liste-rollt { --rh-zeile: calc(var(--klein) * 2.9 + 3px); }
 .rh-pg-zoom .knopf.aktiv { color: var(--akzent); }
 .rh-pg-uebersicht { position: relative; display: grid; cursor: pointer; padding-block: 3px; }
 .rh-pg-uebersicht > * { grid-area: 1 / 1; }
-.rh-pg-uebersicht .balken { position: relative; block-size: 10px; border-radius: var(--rh-pille); overflow: hidden; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
+/* Balken, Striche, Ausschnitt und Bereich sitzen alle auf der Mitte der Zeile (RAD-152: der Balken saß oben) */
+.rh-pg-uebersicht .balken { position: relative; align-self: center; block-size: 10px; border-radius: var(--rh-pille); overflow: hidden; background-color: var(--flaeche-2); box-shadow: var(--rh-kante); }
 .rh-pg-uebersicht .balken > span { display: block; block-size: 100%; background-color: var(--akzent-flaeche, var(--akzent)); }
 .rh-pg-uebersicht .rh-titelstriche { block-size: 16px; }
 /* Ausschnitt (blau) und gewählter Bereich (rot) über der Übersicht */
-.rh-pg-fenster, .rh-pg-bereich { position: absolute; top: 50%; translate: 0 -50%; pointer-events: none; }
+/* außerhalb des Rasters: ihr Bezug ist dann der ganze Kasten mit gleichem Rand oben und unten, nicht die Rasterfläche
+   (die reicht vom Inhalt bis zum unteren Rand und schob beide 1,5 px tiefer, RAD-152) */
+.rh-pg-uebersicht > .rh-pg-fenster, .rh-pg-uebersicht > .rh-pg-bereich { grid-area: auto; }
+.rh-pg-fenster, .rh-pg-bereich { position: absolute; inset-block: 0; margin-block: auto; pointer-events: none; }
 .rh-pg-fenster { block-size: 18px; border-radius: 6px; box-shadow: 0 0 0 2px var(--led-blau); background-color: color-mix(in srgb, var(--led-blau) 12%, transparent); }
 .rh-pg-bereich { block-size: 14px; border-radius: 4px; box-shadow: 0 0 0 2px var(--led-rot); }
 .rh-pg-ausschnitt { position: relative; block-size: 68px; border-radius: var(--r2); background-color: var(--flaeche-2); box-shadow: var(--rh-kante);

@@ -6,7 +6,7 @@
   import { appState, actions } from "../../lib/store.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
   import { formatTimeShort } from "../../lib/formatters.js";
-  import { abwaehlbar, bei, bereichAus, fenster, imBereich, naechster, prozent, vorheriger, type Abschnitt } from "../../lib/radio/abschnitte";
+  import { abwaehlbar, bei, bereichAus, fenster, imBereich, naechster, prozent, sichtbreite, ueblicheLaenge, vorheriger, type Abschnitt } from "../../lib/radio/abschnitte";
   import { puffer } from "../../spieler/puffer.svelte";
   import { live } from "../../spieler/aktionen";
   import { titelsichern } from "../../spieler/titelsichern.svelte";
@@ -33,7 +33,13 @@
   const stelle = $derived(puffer.stelle ?? ende);
   /** junger Puffer (Entwurf Zustand 5): nur der Ausschnitt über alles, ohne Übersicht, Zoom und Titelsprünge */
   const jung = $derived(ende - anfang < JUNG_S);
-  const breite = $derived(zoom === "alles" || jung ? ende - anfang : zoom * 60);
+  /** Breite des Ausschnitts in Pixeln: danach richtet sich, wie viel Zeit er zeigt, ohne die Titel zu stauchen (RAD-152) */
+  let pixel = $state(0);
+  const ueblich = $derived(ueblicheLaenge(liste));
+  const breiteFuer = (z: Zoom) => sichtbreite(z === "alles" || jung ? ende - anfang : z * 60, pixel, ueblich);
+  const breite = $derived(breiteFuer(zoom));
+  /** zeigt der Ausschnitt nicht alles, verschieben ihn Rad und Ziehen, und die Übersicht zeigt, wo er liegt */
+  const verschiebbar = $derived(breite < ende - anfang - 1);
   const sicht = $derived(fenster(mitte ?? stelle, breite, anfang, ende));
   const imAusschnitt = $derived(liste.filter((a) => a.bis > sicht[0] && a.von < sicht[1]));
   const werbungSumme = $derived(liste.filter((a) => a.art === "werbung").reduce((s, a) => s + a.bis - a.von, 0));
@@ -114,13 +120,13 @@
     return von + ((x - r.left) / Math.max(1, r.width)) * (bis - von);
   };
   function rad(e: WheelEvent): void {
-    if (zoom === "alles" || jung) return;
+    if (!verschiebbar) return;
     e.preventDefault();
     mitte = Math.min(ende, Math.max(anfang, (mitte ?? stelle) + Math.sign(e.deltaY || e.deltaX) * breite * 0.1));
   }
   function ziehenStart(e: PointerEvent): void {
     if (e.button !== 0) return;
-    zug = { x: e.clientX, mitte: mitte ?? stelle, frei: zoom !== "alles" && !jung, bewegt: false };
+    zug = { x: e.clientX, mitte: mitte ?? stelle, frei: verschiebbar, bewegt: false };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
   function ziehenEnde(e: PointerEvent): void {
@@ -175,7 +181,9 @@
       <div class="rh-pg-leiste-kopf"><span class="ak-etikett">{t("puffer.zeitleiste")}</span>
         <div class="rh-pg-zoom" role="group" aria-label={t("puffer.zoom")}>
           {#each ZOOMS as z (z)}
-            <button class="knopf" class:aktiv={zoom === z} type="button" aria-pressed={zoom === z} onclick={() => { zoom = z; mitte = null; }}>
+            <!-- ein Zoom, der nichts anderes zeigte als der gewählte (die Titel würden sonst gestaucht), ist gesperrt -->
+            <button class="knopf" class:aktiv={zoom === z} type="button" aria-pressed={zoom === z} disabled={zoom !== z && Math.abs(breiteFuer(z) - breite) < 1}
+              onclick={() => { zoom = z; mitte = null; }}>
               {z === "alles" ? t("puffer.zoomAlles") : t("puffer.zoomMin", { n: z })}</button>
           {/each}
         </div>
@@ -187,11 +195,11 @@
           {#each liste.filter((a) => a.art === "werbung") as a (a.von)}<i class="rh-werbemarke" style:left="{prozent(a.von, anfang, ende)}%" style:width="{Math.max(0.5, prozent(a.bis, anfang, ende) - prozent(a.von, anfang, ende))}%"></i>{/each}</div>
         <div class="rh-titelstriche" aria-hidden="true">{#each liste.filter((a) => a.von > anfang + 0.5) as a (a.von)}<i style:left="{prozent(a.von, anfang, ende)}%"></i>{/each}</div>
         {#if bereich}<i class="rh-pg-bereich" style:left="{prozent(bereich.von, anfang, ende)}%" style:width="{prozent(bereich.bis, anfang, ende) - prozent(bereich.von, anfang, ende)}%"></i>{/if}
-        {#if zoom !== "alles"}<i class="rh-pg-fenster" style:left="{prozent(sicht[0], anfang, ende)}%" style:width="{prozent(sicht[1], anfang, ende) - prozent(sicht[0], anfang, ende)}%"></i>{/if}
+        {#if verschiebbar}<i class="rh-pg-fenster" style:left="{prozent(sicht[0], anfang, ende)}%" style:width="{prozent(sicht[1], anfang, ende) - prozent(sicht[0], anfang, ende)}%"></i>{/if}
       </div>
       {/if}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="rh-pg-ausschnitt" bind:this={ausschnitt} class:ziehbar={zoom !== "alles" && !jung} aria-label={t("puffer.ausschnitt")}
+      <div class="rh-pg-ausschnitt" bind:this={ausschnitt} bind:clientWidth={pixel} class:ziehbar={verschiebbar} aria-label={t("puffer.ausschnitt")}
            onwheel={rad} onpointerdown={ziehenStart} onpointermove={ziehen} onpointerup={ziehenEnde} onpointercancel={() => (zug = null)} ondblclick={doppelklick}>
         {#each imAusschnitt as a, i (a.von)}
           {@const l = p(a.von)}
