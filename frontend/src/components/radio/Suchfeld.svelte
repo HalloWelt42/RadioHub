@@ -3,6 +3,7 @@
   // Zeichen, leer sofort; die letzten Suchen klappen unter dem leeren Feld auf (wählen, Verlauf löschen). Gemerkt wird
   // mit Eingabe oder beim Verlassen des Felds, nicht jeder Zwischenstand beim Tippen. Ohne Angaben: die Sendersuche.
   import { untrack } from "svelte";
+  import { geraet } from "../../lib/geraet.svelte.js";
   import { t } from "../../lib/i18n.svelte.js";
   import { senderSuchverlauf, type Suchverlauf } from "../../lib/radio/suchverlauf";
 
@@ -71,6 +72,7 @@
     offen = false;
     verlauf = merken(s);
     suchen(true);
+    if (geraet.telefon) feld?.blur();   // die Tastatur gibt die Treffer frei
   }
 
   function leeren() {
@@ -98,7 +100,10 @@
     {/if}
   </label>
   {#if offen && verlauf.length}
-    <div class="auswahl-liste" role="listbox" aria-label={t("radio.verlauf")}>
+    <!-- Der Fokus bleibt beim Antippen im Feld: Safari (Telefon wie Rechner) gibt Knöpfen keinen Fokus, sonst schlösse das
+         Verlassen des Felds die Liste vor dem Tipp, und nichts würde gewählt (RAD-155) -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="auswahl-liste" role="listbox" tabindex="-1" aria-label={t("radio.verlauf")} onmousedown={(e) => e.preventDefault()}>
       {#each verlauf as s (s)}
         <button type="button" role="option" aria-selected="false" onclick={() => waehlen(s)}><i class="fa-solid fa-clock-rotate-left"></i>{s}</button>
       {/each}

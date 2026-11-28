@@ -266,13 +266,14 @@
 .rh-sender.fokus { box-shadow: 0 0 0 2px var(--akzent-flaeche), var(--rh-schatten-klein); }
 .rh-liste:focus-visible { outline: none; }
 .rh-sender.spielt.aufnahme { box-shadow: 0 0 0 2px var(--rh-aufnahme), 0 0 calc(18px * var(--ak-leuchten)) color-mix(in srgb, var(--rh-aufnahme) 40%, transparent); }
-/* Suchfeld mit Verlauf: die Liste der letzten Suchen klappt unter dem Feld auf (Aufklappliste des Appkerns) */
+/* Suchfeld mit Verlauf: die Liste der letzten Suchen klappt unter dem Feld auf (Aufklappliste des Appkerns); Symbol
+   neben der Suche, nicht darüber wie Titel und Hinweis der Aufklappliste (RAD-155) */
 .rh-suchfeld { flex: 1 1 260px; min-inline-size: 0; display: flex; }
 /* nur ein Löschknopf: das Suchfeld hat einen eigenen, der des Browsers für Felder der Art search entfällt (RAD-10) */
 .rh-suchfeld input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
 .rh-suchfeld .suche { flex: 1; min-inline-size: 0; }
 .rh-suchfeld .auswahl-liste { inline-size: 100%; }
-.rh-suchfeld .auswahl-liste button { display: flex; gap: 10px; align-items: center; white-space: normal; overflow-wrap: anywhere; }
+.rh-suchfeld .auswahl-liste button { display: flex; flex-direction: row; gap: 10px; align-items: center; white-space: normal; overflow-wrap: anywhere; }
 .rh-suchfeld .auswahl-liste button i { color: var(--text-3); }
 .rh-suchfeld .auswahl-liste .rh-verlauf-weg { color: var(--text-3); font-size: var(--marke); justify-content: center; }
 /* eigene Stream-Adresse bearbeiten */
